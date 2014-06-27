@@ -1,0 +1,31 @@
+{
+  "name": "ContentKit-Editor",
+  "version": "0.1.0",
+  "description": "A modern, minimalist WYSIWYG editor.",
+  "repository": "https://github.com/ContentKit/content-kit-editor",
+  "main": "dist/content-kit-editor.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "keywords": [
+    "html",
+    "json",
+    "wysiwyg",
+    "editor",
+    "contenteditable"
+  ],
+  "author": "Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)",
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.8.1",
+    "gulp-concat": "~2.1.7",
+    "gulp-footer": "~1.0.3",
+    "gulp-header": "~1.0.2",
+    "gulp-jshint": "~1.3.4",
+    "gulp-open": "^0.2.8",
+    "gulp-qunit": "^0.3.3",
+    "gulp-rename": "~0.2.2",
+    "gulp-uglify": "~0.2.0",
+    "gulp-util": "~2.2.12"
+  }
+}

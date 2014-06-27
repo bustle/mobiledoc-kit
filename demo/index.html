@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ContentKit Editor</title>
+  <link rel="stylesheet" href="../src/css/editor.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+
+  <header>
+    <h1 class="demo-title">ContentKit Editor</h1>
+    <div class="mode-buttons">
+      <button onclick="ContentKit.Demo.toggleCode(event, this, editor)">Show Code</button>
+    </div>
+  </header>
+
+  <div class="wrapper">
+    <div class="editor" data-placeholder="Write your story here...">
+      <p>A modern, minimalist text editor allowing you to write in a distraction free environment. Simply select any text you would like to format and a toolbar will appear where you can toggle options such as <b>bold</b> and <i>italic</i>, or create a <a href="https://github.com/ContentKit">link</a>.</p>
+      <h2>Create headings by pressing "H1" on the toolbar</h2>
+      <h3>Pressing "H2" will create a subheading, like this one.</h3>
+      <blockquote>Create block quotes by selecting any text and pressing the "quote" button.  Press it again to toggle back to a standard paragraph.</blockquote>
+      <p>To create a <i>list</i>, start typing a dash followed by a space (<b>"- "</b>) on a new line and a list will be automatically created.</p>
+      <p>To create an <i>ordered list</i>, start typing a one followed by a period and a space (<b>"1. "</b>) and the list will be automatically created.</p>
+
+      <h3>Tips &amp; Tricks:</h3>
+      <ul>
+        <li>Pressing <i>enter</i> creates a new paragraph</li>
+        <li>To create a soft line break, hold <i>shift</i> while pressing <i>enter</i></li>
+        <li>Close the formatting toolbar by clicking anywhere, or press ESC</li>
+        <li>Clicking an active format button, will remove that format</li>
+        <li>Double click a word to select it</li>
+        <li>You only have to select a portion of a paragraph if you want to change it to a heading, subheading, or quote</li>
+        <li>Press <i>enter</i> twice to exit a list</li>
+      </ul>
+
+      <h3>Keyboard shortcuts:</h3>
+      <ul>
+        <li><b>bold</b>: (cmd+B)</li>
+        <li><i>italic</i>: (cmd+I)</li>
+        <li>undo: (cmd+z)</li>
+        <li>redo: (cmd+y)</li>
+        <li>select all text: (cmd+a)</li>
+        <li>select letters: (hold shift + arrow keys)</li>
+        <li>close toolbar: (ESC)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="code-panes">
+    <div class="code-pane">
+      <label>ContentKit JSON</label>
+      <code id="code-json"></code>
+    </div>
+    <div class="code-pane">
+      <label>HTML</label>
+      <code id="code-html"></code>
+    </div>
+  </div>
+
+  <script src="../dist/content-kit-editor.js"></script>
+  <script src="content-kit-compiler.js"></script>
+
+  <script src="content-kit-demo.js"></script>
+  <script>
+    var editor = new ContentKit.Editor('.editor', { 
+      parser: new ContentKit.HTMLParser({ includeTypeNames: true }) // shows type names for easier debugging
+    });
+  </script>
+
+</body>
+</html>

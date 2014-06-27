@@ -1,0 +1,141 @@
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  color: #333;
+  margin: 0 1.45em;
+  padding: 0;
+}
+@media only screen and (max-width: 767px) {
+  body {
+    font-size: 0.88em;
+  }
+}
+
+.wrapper {
+  max-width: 50em;
+  margin: 6.7em auto 1em;
+}
+
+header, footer {
+  z-index: 10;
+  background-color: rgba(247,247,248,0.92);
+  position: fixed;
+  left:0; right:0;
+  height: 3.125em;
+}
+header {
+  border-bottom: 1px solid #c4c4c4;
+  top: 0;
+}
+footer {
+  border-top: 1px solid #c4c4c4;
+  bottom: 0;
+}
+
+.demo-title {
+  text-align: center;
+  font-size: 1.4em;
+  letter-spacing: -0.035em;
+  padding: 0;
+  margin: 0 auto;
+  width: 50%;
+  line-height: 2.2em;
+}
+
+.mode-buttons {
+  position: absolute;
+  top: 0;
+  right: 0.5em;
+  line-height: 2.9em;
+}
+.mode-buttons button {
+  background-color: transparent;
+  border: 1px solid #007aff;
+  color: #007aff;
+  border-radius: 5px;
+  padding: 0.5em 1.4em;
+  min-width: 8.7em;
+  font-size: 0.75em;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.mode-buttons button:hover {
+  background-color: rgba(0,122,255,0.15);
+}
+.mode-buttons button:active {
+  background-color: #007aff;
+  color: #FFF;
+  transition: none;
+}
+.mode-buttons button:focus {
+  outline: none;
+  cursor: pointer;
+}
+
+#code-panes {
+  display: none;
+}
+.code-pane {
+  position: absolute;
+  top: 3.125em;
+  bottom: 0;
+  right: 0;
+  width: 50%;
+  border-left: 1px dotted #c0c5ce;
+  background-color: #2b303b;
+  overflow: hidden;
+}
+.code-pane:first-child {
+  left: 0;
+  right: auto;
+  border-left: none;
+}
+.code-pane code {
+  white-space: pre-wrap;
+  font-family: Consolas, Menlo, Courier, monospace;
+  font-size: 0.8em;
+  line-height: 1.4em;
+  background-color: transparent;
+  color: #c0c5ce;
+  padding: 1.5em 1em 1em;
+  overflow: auto;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+}
+.code-pane label {
+  font-size: 0.8em;
+  color: #c0c5ce;
+  background: rgba(30,40,48,0.92);
+  padding: 0.5em 0.75em;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  border-radius: 0 0 0 3px;
+  border-left: 1px solid rgba(192,197,206,0.25);
+  border-bottom: 1px solid rgba(192,197,206,0.25);
+}
+
+.json-key {
+  color: #b48ead;
+}
+.json-number {
+  color: #8fa1b3;
+}
+.json-string {
+  color: #c0c5ce;
+}
+.json-boolean {
+  color: #bf616a;
+}
+.json-null {
+  color: #bf616a;
+}
