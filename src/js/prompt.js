@@ -7,11 +7,10 @@ var Prompt = (function() {
     if (options) {
       var prompt = this;
       var element = document.createElement('input');
-      this.placeholder = options.placeholder;
-      this.command = options.command;
-      this.element = element;
+      prompt.command = options.command;
+      prompt.element = element;
       element.type = 'text';
-      element.placeholder = this.placeholder;
+      element.placeholder = options.placeholder || '';
       element.addEventListener('mouseup', function(e) { e.stopPropagation(); }); // prevents closing prompt when clicking input 
       element.addEventListener('keyup', function(e) {
         var entry = this.value;
@@ -26,12 +25,13 @@ var Prompt = (function() {
 
   Prompt.prototype = {
     display: function(callback) {
-      this.range = window.getSelection().getRangeAt(0); // save the selection range
-      hiliteRange(this.range);
-      this.clear();
-      var element = this.element;
+      var prompt = this;
+      var element = prompt.element;
+      prompt.range = window.getSelection().getRangeAt(0); // save the selection range
+      hiliteRange(prompt.range);
+      prompt.clear();
       setTimeout(function(){ element.focus(); }); // defer focus (disrupts mouseup events)
-      if (callback) { this.onComplete = callback; }
+      if (callback) { prompt.onComplete = callback; }
     },
     dismiss: function() {
       this.clear();

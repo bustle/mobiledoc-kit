@@ -1,13 +1,14 @@
 function Command(options) {
   if(options) {
+    var command = this;
     var name = options.name;
     var prompt = options.prompt;
-    this.name = name;
-    this.tag = options.tag;
-    this.action = options.action || name;
-    this.removeAction = options.removeAction || options.action;
-    this.button = options.button || name;
-    if (prompt) { this.prompt = prompt; }
+    command.name = name;
+    command.tag = options.tag;
+    command.action = options.action || name;
+    command.removeAction = options.removeAction || options.action;
+    command.button = options.button || name;
+    if (prompt) { command.prompt = prompt; }
   }
 }
 Command.prototype.exec = function(value) {

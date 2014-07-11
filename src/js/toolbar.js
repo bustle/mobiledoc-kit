@@ -1,66 +1,72 @@
 var Toolbar = (function() {
 
-  var container = document.body,
-      buttonContainerElement, promptContainerElement;
+  var container = document.body;
+  var buttonContainerElement, promptContainerElement;
 
   function Toolbar(options) {
-    var commands = options && options.commands,
-        commandCount = commands && commands.length,
-        i, button;
-    this.element = createDiv('ck-toolbar');
-    this.isShowing = false;
-    this.activePrompt = null;
-    this.buttons = [];
+    var toolbar = this;
+    var commands = options && options.commands;
+    var commandCount = commands && commands.length;
+    var element = createDiv('ck-toolbar');
+    var i, button;
+    toolbar.element = element;
+    toolbar.isShowing = false;
+    toolbar.activePrompt = null;
+    toolbar.buttons = [];
+    bindEvents(toolbar);
+
     promptContainerElement = createDiv('ck-toolbar-prompt');
-    this.element.appendChild(promptContainerElement);
     buttonContainerElement = createDiv('ck-toolbar-buttons');
-    this.element.appendChild(buttonContainerElement);
+    element.appendChild(promptContainerElement);
+    element.appendChild(buttonContainerElement);
+
     for(i = 0; i < commandCount; i++) {
-      button = new ToolbarButton({ command: commands[i], toolbar: this });
+      button = new ToolbarButton({ command: commands[i], toolbar: toolbar });
+      toolbar.buttons.push(button);
       buttonContainerElement.appendChild(button.element);
-      this.buttons.push(button);
     }
-    bindEvents(this);
   }
 
   Toolbar.prototype = {
     show: function() {
-      if(!this.isShowing) {
-        container.appendChild(this.element);
-        this.isShowing = true;
+      var toolbar = this;
+      if(!toolbar.isShowing) {
+        container.appendChild(toolbar.element);
+        toolbar.isShowing = true;
       }
     },
     hide: function() {
-      if(this.isShowing) {
-        container.removeChild(this.element);
-        this.dismissPrompt();
-        this.isShowing = false;
+      var toolbar = this;
+      if(toolbar.isShowing) {
+        container.removeChild(toolbar.element);
+        toolbar.dismissPrompt();
+        toolbar.isShowing = false;
       }
     },
     displayPrompt: function(prompt) {
       var toolbar = this;
-      buttonContainerElement.style.display = 'none';
-      promptContainerElement.style.display = 'block';
+      swapElements(promptContainerElement, buttonContainerElement);
       promptContainerElement.appendChild(prompt.element);
       prompt.display(function() {
         toolbar.dismissPrompt();
         toolbar.updateForSelection(window.getSelection());
       });
-      this.activePrompt = prompt;
+      toolbar.activePrompt = prompt;
     },
     dismissPrompt: function() {
-      if (this.activePrompt) {
-        promptContainerElement.style.display = 'none';
-        promptContainerElement.innerHTML = '';
-        buttonContainerElement.style.display = 'block';
-        this.activePrompt.dismiss();
-        this.activePrompt = null;
+      var toolbar = this;
+      var activePrompt = toolbar.activePrompt;
+      if (activePrompt) {
+        activePrompt.dismiss();
+        swapElements(buttonContainerElement, promptContainerElement);
+        toolbar.activePrompt = null;
       }
     },
     updateForSelection: function(selection) {
-      this.show();
-      this.positionToSelection(selection);
-      updateButtonsForSelection(this.buttons, selection);
+      var toolbar = this;
+      toolbar.show();
+      toolbar.positionToSelection(selection);
+      updateButtonsForSelection(toolbar.buttons, selection);
     },
     positionToSelection: function(selection) {
       if (!selection.isCollapsed) {
@@ -103,6 +109,7 @@ var Toolbar = (function() {
     var selectedTags = tagsInSelection(selection),
         len = buttons.length,
         i, button;
+
     for (i = 0; i < len; i++) {
       button = buttons[i];
       if (selectedTags.indexOf(button.command.tag) > -1) {
@@ -111,23 +118,6 @@ var Toolbar = (function() {
         button.setInactive();
       }
     }
-  }
-
-  function tagsInSelection(selection) {
-    var node = selection.focusNode.parentNode,
-        tags = [];
-
-    if (!selection.isCollapsed) {
-      while(node) {
-        // Stop traversing up dom when hitting an editor element
-        if (node.contentEditable === 'true') { break; }
-        if (node.tagName) {
-          tags.push(node.tagName.toLowerCase());
-        }
-        node = node.parentNode;
-      }
-    }
-    return tags;
   }
 
   return Toolbar;

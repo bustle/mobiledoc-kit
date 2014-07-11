@@ -22,6 +22,7 @@ function getCurrentSelectionRootNode() {
   var node = getCurrentSelectionNode(),
       tag = getNodeTagName(node);
   while (tag && RootTags.indexOf(tag) === -1) {
+    if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     node = node.parentNode;
     tag = getNodeTagName(node);
   }
@@ -36,53 +37,19 @@ function getCurrentSelectionRootTag() {
   return getNodeTagName(getCurrentSelectionRootNode());
 }
 
-function getElementOffset(element) {
-  var offset = { left: 0, top: 0 };
-  var elementStyle = window.getComputedStyle(element);
-
-  if (elementStyle.position === 'relative') {
-    offset.left = parseInt(elementStyle['margin-left'], 10);
-    offset.top  = parseInt(elementStyle['margin-top'], 10);
-  }
-  return offset;
-}
-
-function createDiv(className) {
-  var div = document.createElement('div');
-  if (className) {
-    div.className = className;
-  }
-  return div;
-}
-
-function extend(object, updates) {
-  updates = updates || {};
-  for(var o in updates) {
-    if (updates.hasOwnProperty(o)) {
-      object[o] = updates[o];
+function tagsInSelection(selection) {
+  var node = selection.focusNode.parentNode,
+      tags = [];
+  if (!selection.isCollapsed) {
+    while(node) {
+      if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+      if (node.tagName) {
+        tags.push(node.tagName.toLowerCase());
+      }
+      node = node.parentNode;
     }
   }
-  return object;
-}
-
-function applyConstructorProperties(instance, props) {
-  for(var p in props) {
-    if (props.hasOwnProperty(p)) {
-      instance[p] = props[p];
-    }
-  }
-}
-
-function inherits(Subclass, Superclass) {
-  Subclass._super = Superclass;
-  Subclass.prototype = Object.create(Superclass.prototype, {
-    constructor: {
-      value: Subclass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
+  return tags;
 }
 
 function moveCursorToBeginningOfSelection(selection) {

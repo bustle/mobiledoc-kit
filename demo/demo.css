@@ -7,7 +7,7 @@
 body {
   font-family: "Helvetica Neue", Helvetica, sans-serif;
   color: #333;
-  margin: 0 1.45em;
+  margin: 0 1.45em 3em;
   padding: 0;
 }
 @media only screen and (max-width: 767px) {
@@ -21,26 +21,20 @@ body {
   margin: 6.7em auto 1em;
 }
 
-header, footer {
-  z-index: 10;
-  background-color: rgba(247,247,248,0.92);
-  position: fixed;
-  left:0; right:0;
-  height: 3.125em;
-}
 header {
-  border-bottom: 1px solid #c4c4c4;
-  top: 0;
-}
-footer {
-  border-top: 1px solid #c4c4c4;
-  bottom: 0;
+  background-color: rgba(255,255,255,0.92);
+  border-bottom: 1px solid #dcdcdc;
+  position: fixed;
+  left:0; right:0; top: 0;
+  z-index: 10;
+  height: 3.125em;
 }
 
 .demo-title {
   text-align: center;
   font-size: 1.4em;
-  letter-spacing: -0.035em;
+  font-weight: 500;
+  letter-spacing: -0.015em;
   padding: 0;
   margin: 0 auto;
   width: 50%;

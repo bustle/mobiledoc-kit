@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Jul 10, 2014
+ * Last modified: Jul 11, 2014
  */
 
 (function(exports, document) {
@@ -46,7 +46,61 @@ var Tags = {
   LIST_ITEM    : 'li'
 };
 
-var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.LIST, Tags.ORDERED_LIST, 'div'];
+var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.LIST, Tags.ORDERED_LIST ];
+
+function extend(object, updates) {
+  updates = updates || {};
+  for(var o in updates) {
+    if (updates.hasOwnProperty(o)) {
+      object[o] = updates[o];
+    }
+  }
+  return object;
+}
+
+function inherits(Subclass, Superclass) {
+  Subclass._super = Superclass;
+  Subclass.prototype = Object.create(Superclass.prototype, {
+    constructor: {
+      value: Subclass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+}
+
+function createDiv(className) {
+  var div = document.createElement('div');
+  if (className) {
+    div.className = className;
+  }
+  return div;
+}
+
+function hideElement(element) {
+  element.style.display = 'none';
+}
+
+function showElement(element) {
+  element.style.display = 'block';
+}
+
+function swapElements(elementToShow, elementToHide) {
+  hideElement(elementToHide);
+  showElement(elementToShow);
+}
+
+function getElementOffset(element) {
+  var offset = { left: 0, top: 0 };
+  var elementStyle = window.getComputedStyle(element);
+
+  if (elementStyle.position === 'relative') {
+    offset.left = parseInt(elementStyle['margin-left'], 10);
+    offset.top  = parseInt(elementStyle['margin-top'], 10);
+  }
+  return offset;
+}
 
 function getNodeTagName(node) {
   return node.tagName && node.tagName.toLowerCase() || null;
@@ -72,6 +126,7 @@ function getCurrentSelectionRootNode() {
   var node = getCurrentSelectionNode(),
       tag = getNodeTagName(node);
   while (tag && RootTags.indexOf(tag) === -1) {
+    if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     node = node.parentNode;
     tag = getNodeTagName(node);
   }
@@ -86,53 +141,19 @@ function getCurrentSelectionRootTag() {
   return getNodeTagName(getCurrentSelectionRootNode());
 }
 
-function getElementOffset(element) {
-  var offset = { left: 0, top: 0 };
-  var elementStyle = window.getComputedStyle(element);
-
-  if (elementStyle.position === 'relative') {
-    offset.left = parseInt(elementStyle['margin-left'], 10);
-    offset.top  = parseInt(elementStyle['margin-top'], 10);
-  }
-  return offset;
-}
-
-function createDiv(className) {
-  var div = document.createElement('div');
-  if (className) {
-    div.className = className;
-  }
-  return div;
-}
-
-function extend(object, updates) {
-  updates = updates || {};
-  for(var o in updates) {
-    if (updates.hasOwnProperty(o)) {
-      object[o] = updates[o];
+function tagsInSelection(selection) {
+  var node = selection.focusNode.parentNode,
+      tags = [];
+  if (!selection.isCollapsed) {
+    while(node) {
+      if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+      if (node.tagName) {
+        tags.push(node.tagName.toLowerCase());
+      }
+      node = node.parentNode;
     }
   }
-  return object;
-}
-
-function applyConstructorProperties(instance, props) {
-  for(var p in props) {
-    if (props.hasOwnProperty(p)) {
-      instance[p] = props[p];
-    }
-  }
-}
-
-function inherits(Subclass, Superclass) {
-  Subclass._super = Superclass;
-  Subclass.prototype = Object.create(Superclass.prototype, {
-    constructor: {
-      value: Subclass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
+  return tags;
 }
 
 function moveCursorToBeginningOfSelection(selection) {
@@ -168,11 +189,10 @@ var Prompt = (function() {
     if (options) {
       var prompt = this;
       var element = document.createElement('input');
-      this.placeholder = options.placeholder;
-      this.command = options.command;
-      this.element = element;
+      prompt.command = options.command;
+      prompt.element = element;
       element.type = 'text';
-      element.placeholder = this.placeholder;
+      element.placeholder = options.placeholder || '';
       element.addEventListener('mouseup', function(e) { e.stopPropagation(); }); // prevents closing prompt when clicking input 
       element.addEventListener('keyup', function(e) {
         var entry = this.value;
@@ -187,12 +207,13 @@ var Prompt = (function() {
 
   Prompt.prototype = {
     display: function(callback) {
-      this.range = window.getSelection().getRangeAt(0); // save the selection range
-      hiliteRange(this.range);
-      this.clear();
-      var element = this.element;
+      var prompt = this;
+      var element = prompt.element;
+      prompt.range = window.getSelection().getRangeAt(0); // save the selection range
+      hiliteRange(prompt.range);
+      prompt.clear();
       setTimeout(function(){ element.focus(); }); // defer focus (disrupts mouseup events)
-      if (callback) { this.onComplete = callback; }
+      if (callback) { prompt.onComplete = callback; }
     },
     dismiss: function() {
       this.clear();
@@ -224,14 +245,15 @@ var Prompt = (function() {
 
 function Command(options) {
   if(options) {
+    var command = this;
     var name = options.name;
     var prompt = options.prompt;
-    this.name = name;
-    this.tag = options.tag;
-    this.action = options.action || name;
-    this.removeAction = options.removeAction || options.action;
-    this.button = options.button || name;
-    if (prompt) { this.prompt = prompt; }
+    command.name = name;
+    command.tag = options.tag;
+    command.action = options.action || name;
+    command.removeAction = options.removeAction || options.action;
+    command.button = options.button || name;
+    if (prompt) { command.prompt = prompt; }
   }
 }
 Command.prototype.exec = function(value) {
@@ -411,16 +433,16 @@ ContentKit.Editor = (function() {
     commands: Command.all
   };
 
-  var editorClassName = 'ck-editor',
-      editorClassNameRegExp = new RegExp(editorClassName);
+  var editorClassName = 'ck-editor';
+  var editorClassNameRegExp = new RegExp(editorClassName);
 
   /**
    * Publically expose this class which sets up indiviual `Editor` classes
    * depending if user passes string selector, Node, or NodeList
    */
   function EditorFactory(element, options) {
-    var editors = [],
-        elements, elementsLen, i;
+    var editors = [];
+    var elements, elementsLen, i;
 
     if (typeof element === 'string') {
       elements = document.querySelectorAll(element);
@@ -448,7 +470,8 @@ ContentKit.Editor = (function() {
    * @param options hash of options
    */
   function Editor(element, options) {
-    applyConstructorProperties(this, options);
+    var editor = this;
+    extend(editor, options);
 
     if (element) {
       var className = element.className;
@@ -460,39 +483,37 @@ ContentKit.Editor = (function() {
       element.className = className;
 
       if (!dataset.placeholder) {
-        dataset.placeholder = this.placeholder;
+        dataset.placeholder = editor.placeholder;
       }
 
-      if(!this.spellcheck) {
+      if(!editor.spellcheck) {
         element.spellcheck = false;
       }
 
-      this.element = element;
-      this.toolbar = new Toolbar({ commands: this.commands });
+      editor.element = element;
+      editor.toolbar = new Toolbar({ commands: editor.commands });
 
-      bindTextSelectionEvents(this);
-      bindTypingEvents(this);
-      bindPasteEvents(this);
+      bindTextSelectionEvents(editor);
+      bindTypingEvents(editor);
+      bindPasteEvents(editor);
 
-      this.enable();
-      if(this.autofocus) {
-        element.focus();
-      }
+      editor.enable();
+      if(editor.autofocus) { element.focus(); }
     }
   }
 
   Editor.prototype = {
     enable: function() {
-      var editor = this,
-          element = editor.element;
+      var editor = this;
+      var element = editor.element;
       if(element && !editor.enabled) {
         element.setAttribute('contentEditable', true);
         editor.enabled = true;
       }
     },
     disable: function() {
-      var editor = this,
-          element = editor.element;
+      var editor = this;
+      var element = editor.element;
       if(element && editor.enabled) {
         element.removeAttribute('contentEditable');
         editor.enabled = false;
@@ -560,11 +581,10 @@ ContentKit.Editor = (function() {
       }
     });
 
-    // Assure there is always a paragraph and not divs
+    // Assure there is always a supported root tag, and not empty text nodes or divs.
+    // Usually only happens when selecting all and deleting content.
     editorEl.addEventListener('keyup', function() {
-      var node = getCurrentSelectionRootNode();
-      // TODO: support root <article> or other block element
-      if(getNodeTagName(node) === 'div' && node.innerHTML !== '') {
+      if (this.innerHTML.length && RootTags.indexOf(getCurrentSelectionRootTag()) === -1) {
         document.execCommand('formatBlock', false, editor.defaultFormatter);
       }
     });
@@ -628,67 +648,73 @@ ContentKit.Editor = (function() {
 
 var Toolbar = (function() {
 
-  var container = document.body,
-      buttonContainerElement, promptContainerElement;
+  var container = document.body;
+  var buttonContainerElement, promptContainerElement;
 
   function Toolbar(options) {
-    var commands = options && options.commands,
-        commandCount = commands && commands.length,
-        i, button;
-    this.element = createDiv('ck-toolbar');
-    this.isShowing = false;
-    this.activePrompt = null;
-    this.buttons = [];
+    var toolbar = this;
+    var commands = options && options.commands;
+    var commandCount = commands && commands.length;
+    var element = createDiv('ck-toolbar');
+    var i, button;
+    toolbar.element = element;
+    toolbar.isShowing = false;
+    toolbar.activePrompt = null;
+    toolbar.buttons = [];
+    bindEvents(toolbar);
+
     promptContainerElement = createDiv('ck-toolbar-prompt');
-    this.element.appendChild(promptContainerElement);
     buttonContainerElement = createDiv('ck-toolbar-buttons');
-    this.element.appendChild(buttonContainerElement);
+    element.appendChild(promptContainerElement);
+    element.appendChild(buttonContainerElement);
+
     for(i = 0; i < commandCount; i++) {
-      button = new ToolbarButton({ command: commands[i], toolbar: this });
+      button = new ToolbarButton({ command: commands[i], toolbar: toolbar });
+      toolbar.buttons.push(button);
       buttonContainerElement.appendChild(button.element);
-      this.buttons.push(button);
     }
-    bindEvents(this);
   }
 
   Toolbar.prototype = {
     show: function() {
-      if(!this.isShowing) {
-        container.appendChild(this.element);
-        this.isShowing = true;
+      var toolbar = this;
+      if(!toolbar.isShowing) {
+        container.appendChild(toolbar.element);
+        toolbar.isShowing = true;
       }
     },
     hide: function() {
-      if(this.isShowing) {
-        container.removeChild(this.element);
-        this.dismissPrompt();
-        this.isShowing = false;
+      var toolbar = this;
+      if(toolbar.isShowing) {
+        container.removeChild(toolbar.element);
+        toolbar.dismissPrompt();
+        toolbar.isShowing = false;
       }
     },
     displayPrompt: function(prompt) {
       var toolbar = this;
-      buttonContainerElement.style.display = 'none';
-      promptContainerElement.style.display = 'block';
+      swapElements(promptContainerElement, buttonContainerElement);
       promptContainerElement.appendChild(prompt.element);
       prompt.display(function() {
         toolbar.dismissPrompt();
         toolbar.updateForSelection(window.getSelection());
       });
-      this.activePrompt = prompt;
+      toolbar.activePrompt = prompt;
     },
     dismissPrompt: function() {
-      if (this.activePrompt) {
-        promptContainerElement.style.display = 'none';
-        promptContainerElement.innerHTML = '';
-        buttonContainerElement.style.display = 'block';
-        this.activePrompt.dismiss();
-        this.activePrompt = null;
+      var toolbar = this;
+      var activePrompt = toolbar.activePrompt;
+      if (activePrompt) {
+        activePrompt.dismiss();
+        swapElements(buttonContainerElement, promptContainerElement);
+        toolbar.activePrompt = null;
       }
     },
     updateForSelection: function(selection) {
-      this.show();
-      this.positionToSelection(selection);
-      updateButtonsForSelection(this.buttons, selection);
+      var toolbar = this;
+      toolbar.show();
+      toolbar.positionToSelection(selection);
+      updateButtonsForSelection(toolbar.buttons, selection);
     },
     positionToSelection: function(selection) {
       if (!selection.isCollapsed) {
@@ -731,6 +757,7 @@ var Toolbar = (function() {
     var selectedTags = tagsInSelection(selection),
         len = buttons.length,
         i, button;
+
     for (i = 0; i < len; i++) {
       button = buttons[i];
       if (selectedTags.indexOf(button.command.tag) > -1) {
@@ -741,23 +768,6 @@ var Toolbar = (function() {
     }
   }
 
-  function tagsInSelection(selection) {
-    var node = selection.focusNode.parentNode,
-        tags = [];
-
-    if (!selection.isCollapsed) {
-      while(node) {
-        // Stop traversing up dom when hitting an editor element
-        if (node.contentEditable === 'true') { break; }
-        if (node.tagName) {
-          tags.push(node.tagName.toLowerCase());
-        }
-        node = node.parentNode;
-      }
-    }
-    return tags;
-  }
-
   return Toolbar;
 }());
 
@@ -766,15 +776,19 @@ var ToolbarButton = (function() {
   var buttonClassName = 'ck-toolbar-btn';
 
   function ToolbarButton(options) {
-    var toolbar = options.toolbar,
-        command = options.command,
-        prompt = command.prompt,
-        element = document.createElement('button'),
-        button = this;
+    var button = this;
+    var toolbar = options.toolbar;
+    var command = options.command;
+    var prompt = command.prompt;
+    var element = document.createElement('button');
 
     if(typeof command === 'string') {
       command = Command.index[command];
     }
+
+    button.element = element;
+    button.command = command;
+    button.isActive = false;
 
     element.title = command.name;
     element.className = buttonClassName;
@@ -786,22 +800,21 @@ var ToolbarButton = (function() {
         command.exec();
       }
     });
-    this.element = element;
-    this.command = command;
-    this.isActive = false;
   }
 
   ToolbarButton.prototype = {
     setActive: function() {
-      if (!this.isActive) {
-        this.element.className = buttonClassName + ' active';
-        this.isActive = true;
+      var button = this;
+      if (!button.isActive) {
+        button.element.className = buttonClassName + ' active';
+        button.isActive = true;
       }
     },
     setInactive: function() {
-      if (this.isActive) {
-        this.element.className = buttonClassName;
-        this.isActive = false;
+      var button = this;
+      if (button.isActive) {
+        button.element.className = buttonClassName;
+        button.isActive = false;
       }
     }
   };

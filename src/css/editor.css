@@ -8,7 +8,7 @@
     http://stackoverflow.com/questions/15015019/prevent-chrome-from-wrapping-contents-of-joined-p-with-a-span
   */
   font-size: 120%;
-  line-height: 150%;
+  line-height: 160%;
 }
 .ck-editor:focus {
   outline: none;

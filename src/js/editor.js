@@ -9,16 +9,16 @@ ContentKit.Editor = (function() {
     commands: Command.all
   };
 
-  var editorClassName = 'ck-editor',
-      editorClassNameRegExp = new RegExp(editorClassName);
+  var editorClassName = 'ck-editor';
+  var editorClassNameRegExp = new RegExp(editorClassName);
 
   /**
    * Publically expose this class which sets up indiviual `Editor` classes
    * depending if user passes string selector, Node, or NodeList
    */
   function EditorFactory(element, options) {
-    var editors = [],
-        elements, elementsLen, i;
+    var editors = [];
+    var elements, elementsLen, i;
 
     if (typeof element === 'string') {
       elements = document.querySelectorAll(element);
@@ -46,7 +46,8 @@ ContentKit.Editor = (function() {
    * @param options hash of options
    */
   function Editor(element, options) {
-    applyConstructorProperties(this, options);
+    var editor = this;
+    extend(editor, options);
 
     if (element) {
       var className = element.className;
@@ -58,39 +59,37 @@ ContentKit.Editor = (function() {
       element.className = className;
 
       if (!dataset.placeholder) {
-        dataset.placeholder = this.placeholder;
+        dataset.placeholder = editor.placeholder;
       }
 
-      if(!this.spellcheck) {
+      if(!editor.spellcheck) {
         element.spellcheck = false;
       }
 
-      this.element = element;
-      this.toolbar = new Toolbar({ commands: this.commands });
+      editor.element = element;
+      editor.toolbar = new Toolbar({ commands: editor.commands });
 
-      bindTextSelectionEvents(this);
-      bindTypingEvents(this);
-      bindPasteEvents(this);
+      bindTextSelectionEvents(editor);
+      bindTypingEvents(editor);
+      bindPasteEvents(editor);
 
-      this.enable();
-      if(this.autofocus) {
-        element.focus();
-      }
+      editor.enable();
+      if(editor.autofocus) { element.focus(); }
     }
   }
 
   Editor.prototype = {
     enable: function() {
-      var editor = this,
-          element = editor.element;
+      var editor = this;
+      var element = editor.element;
       if(element && !editor.enabled) {
         element.setAttribute('contentEditable', true);
         editor.enabled = true;
       }
     },
     disable: function() {
-      var editor = this,
-          element = editor.element;
+      var editor = this;
+      var element = editor.element;
       if(element && editor.enabled) {
         element.removeAttribute('contentEditable');
         editor.enabled = false;
@@ -158,11 +157,10 @@ ContentKit.Editor = (function() {
       }
     });
 
-    // Assure there is always a paragraph and not divs
+    // Assure there is always a supported root tag, and not empty text nodes or divs.
+    // Usually only happens when selecting all and deleting content.
     editorEl.addEventListener('keyup', function() {
-      var node = getCurrentSelectionRootNode();
-      // TODO: support root <article> or other block element
-      if(getNodeTagName(node) === 'div' && node.innerHTML !== '') {
+      if (this.innerHTML.length && RootTags.indexOf(getCurrentSelectionRootTag()) === -1) {
         document.execCommand('formatBlock', false, editor.defaultFormatter);
       }
     });

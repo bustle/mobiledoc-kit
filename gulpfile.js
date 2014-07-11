@@ -14,7 +14,9 @@ var pkg = require('./package.json');
 var src = [
   './src/js/index.js',
   './src/js/constants.js',
-  './src/js/utils.js',
+  './src/js/utils/object-utils.js',
+  './src/js/utils/element-utils.js',
+  './src/js/utils/selection-utils.js',
   './src/js/prompt.js',
   './src/js/commands.js',
   './src/js/editor.js',
