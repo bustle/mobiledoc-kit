@@ -1,7 +1,3 @@
-function getNodeTagName(node) {
-  return node.tagName && node.tagName.toLowerCase() || null;
-}
-
 function getDirectionOfSelection(selection) {
   var position = selection.anchorNode.compareDocumentPosition(selection.focusNode);
   if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
@@ -20,21 +16,23 @@ function getCurrentSelectionNode() {
 
 function getCurrentSelectionRootNode() {
   var node = getCurrentSelectionNode(),
-      tag = getNodeTagName(node);
+      tag = node.tagName;
   while (tag && RootTags.indexOf(tag) === -1) {
     if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     node = node.parentNode;
-    tag = getNodeTagName(node);
+    tag = node.tagName;
   }
   return node;
 }
 
 function getCurrentSelectionTag() {
-  return getNodeTagName(getCurrentSelectionNode());
+  var node = getCurrentSelectionNode();
+  return node ? node.tagName : null;
 }
 
 function getCurrentSelectionRootTag() {
-  return getNodeTagName(getCurrentSelectionRootNode());
+  var node = getCurrentSelectionRootNode();
+  return node ? node.tagName : null;
 }
 
 function tagsInSelection(selection) {
@@ -44,7 +42,7 @@ function tagsInSelection(selection) {
     while(node) {
       if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
       if (node.tagName) {
-        tags.push(node.tagName.toLowerCase());
+        tags.push(node.tagName);
       }
       node = node.parentNode;
     }

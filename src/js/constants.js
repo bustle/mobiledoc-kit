@@ -6,7 +6,7 @@ var Keycodes = {
 var Regex = {
   NEWLINE       : /[\r\n]/g,
   HTTP_PROTOCOL : /^https?:\/\//i,
-  HEADING_TAG   : /^(h1|h2|h3|h4|h5|h6)$/i,
+  HEADING_TAG   : /^(H1|H2|H3|H4|H5|H6)$/i,
   UL_START      : /^[-*]\s/,
   OL_START      : /^1\.\s/
 };
@@ -18,14 +18,16 @@ var SelectionDirection = {
 };
 
 var Tags = {
-  LINK         : 'a',
-  PARAGRAPH    : 'p',
-  HEADING      : 'h2',
-  SUBHEADING   : 'h3',
-  QUOTE        : 'blockquote',
-  LIST         : 'ul',
-  ORDERED_LIST : 'ol',
-  LIST_ITEM    : 'li'
+  PARAGRAPH    : 'P',
+  HEADING      : 'H2',
+  SUBHEADING   : 'H3',
+  QUOTE        : 'BLOCKQUOTE',
+  LIST         : 'UL',
+  ORDERED_LIST : 'OL',
+  LIST_ITEM    : 'LI',
+  LINK         : 'A',
+  BOLD         : 'B',
+  ITALIC       : 'I'
 };
 
 var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.LIST, Tags.ORDERED_LIST ];

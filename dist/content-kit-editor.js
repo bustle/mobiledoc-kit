@@ -24,7 +24,7 @@ var Keycodes = {
 var Regex = {
   NEWLINE       : /[\r\n]/g,
   HTTP_PROTOCOL : /^https?:\/\//i,
-  HEADING_TAG   : /^(h1|h2|h3|h4|h5|h6)$/i,
+  HEADING_TAG   : /^(H1|H2|H3|H4|H5|H6)$/i,
   UL_START      : /^[-*]\s/,
   OL_START      : /^1\.\s/
 };
@@ -36,14 +36,16 @@ var SelectionDirection = {
 };
 
 var Tags = {
-  LINK         : 'a',
-  PARAGRAPH    : 'p',
-  HEADING      : 'h2',
-  SUBHEADING   : 'h3',
-  QUOTE        : 'blockquote',
-  LIST         : 'ul',
-  ORDERED_LIST : 'ol',
-  LIST_ITEM    : 'li'
+  PARAGRAPH    : 'P',
+  HEADING      : 'H2',
+  SUBHEADING   : 'H3',
+  QUOTE        : 'BLOCKQUOTE',
+  LIST         : 'UL',
+  ORDERED_LIST : 'OL',
+  LIST_ITEM    : 'LI',
+  LINK         : 'A',
+  BOLD         : 'B',
+  ITALIC       : 'I'
 };
 
 var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.LIST, Tags.ORDERED_LIST ];
@@ -102,10 +104,6 @@ function getElementOffset(element) {
   return offset;
 }
 
-function getNodeTagName(node) {
-  return node.tagName && node.tagName.toLowerCase() || null;
-}
-
 function getDirectionOfSelection(selection) {
   var position = selection.anchorNode.compareDocumentPosition(selection.focusNode);
   if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
@@ -124,21 +122,23 @@ function getCurrentSelectionNode() {
 
 function getCurrentSelectionRootNode() {
   var node = getCurrentSelectionNode(),
-      tag = getNodeTagName(node);
+      tag = node.tagName;
   while (tag && RootTags.indexOf(tag) === -1) {
     if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     node = node.parentNode;
-    tag = getNodeTagName(node);
+    tag = node.tagName;
   }
   return node;
 }
 
 function getCurrentSelectionTag() {
-  return getNodeTagName(getCurrentSelectionNode());
+  var node = getCurrentSelectionNode();
+  return node ? node.tagName : null;
 }
 
 function getCurrentSelectionRootTag() {
-  return getNodeTagName(getCurrentSelectionRootNode());
+  var node = getCurrentSelectionRootNode();
+  return node ? node.tagName : null;
 }
 
 function tagsInSelection(selection) {
@@ -148,7 +148,7 @@ function tagsInSelection(selection) {
     while(node) {
       if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
       if (node.tagName) {
-        tags.push(node.tagName.toLowerCase());
+        tags.push(node.tagName);
       }
       node = node.parentNode;
     }
@@ -266,7 +266,7 @@ Command.prototype.unexec = function(value) {
 function BoldCommand() {
   Command.call(this, {
     name: 'bold',
-    tag: 'b',
+    tag: Tags.BOLD,
     button: '<i class="ck-icon-bold"></i>'
   });
 }
@@ -281,7 +281,7 @@ BoldCommand.prototype.exec = function() {
 function ItalicCommand() {
   Command.call(this, {
     name: 'italic',
-    tag: 'i',
+    tag: Tags.ITALIC,
     button: '<i class="ck-icon-italic"></i>'
   });
 }

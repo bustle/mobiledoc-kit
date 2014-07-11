@@ -21,7 +21,7 @@ Command.prototype.unexec = function(value) {
 function BoldCommand() {
   Command.call(this, {
     name: 'bold',
-    tag: 'b',
+    tag: Tags.BOLD,
     button: '<i class="ck-icon-bold"></i>'
   });
 }
@@ -36,7 +36,7 @@ BoldCommand.prototype.exec = function() {
 function ItalicCommand() {
   Command.call(this, {
     name: 'italic',
-    tag: 'i',
+    tag: Tags.ITALIC,
     button: '<i class="ck-icon-italic"></i>'
   });
 }
