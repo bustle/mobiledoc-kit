@@ -1,6 +1,6 @@
 # ContentKit-Editor [![Build Status](https://travis-ci.org/ContentKit/content-kit-editor.svg?branch=master)](https://travis-ci.org/ContentKit/content-kit-editor)
 
-A modern, minimalist WYSIWYG editor. **[Demo](https://rawgit.com/ContentKit/content-kit-editor/master/demo)**
+A modern, minimalist WYSIWYG editor.  (**[Demo](https://rawgit.com/ContentKit/content-kit-editor/master/demo/index.html)**)
 
 ---
 
