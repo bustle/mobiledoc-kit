@@ -72,7 +72,8 @@ ContentKit.Editor = (function() {
       bindTextSelectionEvents(editor);
       bindTypingEvents(editor);
       bindPasteEvents(editor);
-
+      bindLinkTooltips(editor);
+      
       editor.enable();
       if(editor.autofocus) { element.focus(); }
     }
@@ -195,6 +196,28 @@ ContentKit.Editor = (function() {
         plainText = data.getData('text/plain');
         var formattedContent = plainTextToBlocks(plainText, editor.defaultFormatter);
         document.execCommand('insertHTML', false, formattedContent);
+      }
+    });
+  }
+
+  function bindLinkTooltips(editor) {
+    var linkTooltip = new Tooltip();
+    var editorElement = editor.element;
+    var tooltipTimeout = null;
+    editorElement.addEventListener('mouseover', function(e) {
+      if (!editor.toolbar.isShowing) {
+        tooltipTimeout = setTimeout(function() {
+          var linkTarget = getTargetNodeDescendentWithTag(Tags.LINK, e.target, this);
+          if (linkTarget) {
+            linkTooltip.showLink(linkTarget.href, linkTarget);
+          }
+        }, 200);
+      }
+    });
+    editorElement.addEventListener('mouseout', function(e) {
+      clearTimeout(tooltipTimeout);
+      if (e.toElement && e.toElement.className !== 'ck-tooltip') {
+        linkTooltip.hide();
       }
     });
   }

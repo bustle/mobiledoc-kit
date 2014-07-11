@@ -93,6 +93,15 @@ function swapElements(elementToShow, elementToHide) {
   showElement(elementToShow);
 }
 
+function getTargetNodeDescendentWithTag(tag, target, container) {
+  while (target && target !== container) {
+    if (target.tagName === tag) {
+      return target;
+    }
+    target = target.parentNode;
+  }
+}
+
 function getElementOffset(element) {
   var offset = { left: 0, top: 0 };
   var elementStyle = window.getComputedStyle(element);
@@ -496,7 +505,8 @@ ContentKit.Editor = (function() {
       bindTextSelectionEvents(editor);
       bindTypingEvents(editor);
       bindPasteEvents(editor);
-
+      bindLinkTooltips(editor);
+      
       editor.enable();
       if(editor.autofocus) { element.focus(); }
     }
@@ -619,6 +629,28 @@ ContentKit.Editor = (function() {
         plainText = data.getData('text/plain');
         var formattedContent = plainTextToBlocks(plainText, editor.defaultFormatter);
         document.execCommand('insertHTML', false, formattedContent);
+      }
+    });
+  }
+
+  function bindLinkTooltips(editor) {
+    var linkTooltip = new Tooltip();
+    var editorElement = editor.element;
+    var tooltipTimeout = null;
+    editorElement.addEventListener('mouseover', function(e) {
+      if (!editor.toolbar.isShowing) {
+        tooltipTimeout = setTimeout(function() {
+          var linkTarget = getTargetNodeDescendentWithTag(Tags.LINK, e.target, this);
+          if (linkTarget) {
+            linkTooltip.showLink(linkTarget.href, linkTarget);
+          }
+        }, 200);
+      }
+    });
+    editorElement.addEventListener('mouseout', function(e) {
+      clearTimeout(tooltipTimeout);
+      if (e.toElement && e.toElement.className !== 'ck-tooltip') {
+        linkTooltip.hide();
       }
     });
   }
@@ -820,6 +852,47 @@ var ToolbarButton = (function() {
   };
 
   return ToolbarButton;
+}());
+
+var Tooltip = (function() {
+
+  var container = document.body;
+
+  function Tooltip() {
+    var tooltip = this;
+    tooltip.element = createDiv('ck-tooltip');
+    tooltip.isShowing = false;
+  }
+
+  Tooltip.prototype = {
+    showMessage: function(message, element) {
+      var tooltip = this;
+      var tooltipElement = tooltip.element;
+      var elementRect = element.getBoundingClientRect();
+
+      tooltipElement.innerHTML = message;
+      if (!tooltip.isShowing) {
+        container.appendChild(tooltipElement);
+        tooltip.isShowing = true;
+      }
+
+      tooltipElement.style.left = parseInt(elementRect.left + (element.offsetWidth / 2) - (tooltipElement.offsetWidth / 2), 10) + 'px';
+      tooltipElement.style.top  = parseInt(window.pageYOffset + elementRect.top + element.offsetHeight + 2, 10) + 'px';
+    },
+    showLink: function(link, element) {
+      var message = '<a href="' + link + '" target="_blank">' + link + '</a>';
+      this.showMessage(message, element);
+    },
+    hide: function() {
+      var tooltip = this;
+      if (tooltip.isShowing) {
+        container.removeChild(tooltip.element);
+        tooltip.isShowing = false;
+      }
+    }
+  };
+
+  return Tooltip;
 }());
 
 }(this, document));

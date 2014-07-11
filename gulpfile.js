@@ -21,7 +21,8 @@ var src = [
   './src/js/commands.js',
   './src/js/editor.js',
   './src/js/toolbar.js',
-  './src/js/toolbar-button.js'
+  './src/js/toolbar-button.js',
+  './src/js/tooltip.js'
 ];
 
 var distName = 'content-kit-editor.js';
