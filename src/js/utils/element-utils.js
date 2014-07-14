@@ -19,7 +19,8 @@ function swapElements(elementToShow, elementToHide) {
   showElement(elementToShow);
 }
 
-function getTargetNodeDescendentWithTag(tag, target, container) {
+function getEventTargetMatchingTag(tag, target, container) {
+  // Traverses up DOM from an event target to find the node matching specifed tag
   while (target && target !== container) {
     if (target.tagName === tag) {
       return target;
@@ -28,13 +29,41 @@ function getTargetNodeDescendentWithTag(tag, target, container) {
   }
 }
 
-function getElementOffset(element) {
-  var offset = { left: 0, top: 0 };
-  var elementStyle = window.getComputedStyle(element);
+function getElementRelativeOffset(element) {
+  var offset = { left: 0, top: -window.pageYOffset };
+  var offsetParent = element.offsetParent;
+  var offsetParentPosition = window.getComputedStyle(offsetParent).position;
+  var offsetParentRect;
 
-  if (elementStyle.position === 'relative') {
-    offset.left = parseInt(elementStyle['margin-left'], 10);
-    offset.top  = parseInt(elementStyle['margin-top'], 10);
+  if (offsetParentPosition === 'relative') {
+    offsetParentRect = offsetParent.getBoundingClientRect();
+    offset.left = offsetParentRect.left;
+    offset.top  = offsetParentRect.top;
   }
   return offset;
+}
+
+function getElementComputedStyleNumericProp(element, prop) {
+  return parseFloat(window.getComputedStyle(element)[prop]);
+}
+
+function positionElementToRect(element, rect, verticalOffset) {
+  var horizontalCenter = (rect.left + rect.right) / 2;
+  var relativeOffset = getElementRelativeOffset(element);
+  var style = element.style;
+  var round = Math.round;
+
+  verticalOffset = verticalOffset || 0;
+  style.left = round(horizontalCenter - relativeOffset.left - (element.offsetWidth / 2)) + 'px';
+  style.top  = round(rect.top - relativeOffset.top - verticalOffset) + 'px';
+}
+
+function positionElementAbove(element, aboveElement) {
+  var elementMargin = getElementComputedStyleNumericProp(element, 'marginBottom');
+  positionElementToRect(element, aboveElement.getBoundingClientRect(), element.offsetHeight + elementMargin);
+}
+
+function positionElementBelow(element, belowElement) {
+  var elementMargin = getElementComputedStyleNumericProp(element, 'marginTop');
+  positionElementToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
 }

@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Jul 11, 2014
+ * Last modified: Jul 13, 2014
  */
 
 (function(exports, document) {
@@ -93,7 +93,8 @@ function swapElements(elementToShow, elementToHide) {
   showElement(elementToShow);
 }
 
-function getTargetNodeDescendentWithTag(tag, target, container) {
+function getEventTargetMatchingTag(tag, target, container) {
+  // Traverses up DOM from an event target to find the node matching specifed tag
   while (target && target !== container) {
     if (target.tagName === tag) {
       return target;
@@ -102,15 +103,43 @@ function getTargetNodeDescendentWithTag(tag, target, container) {
   }
 }
 
-function getElementOffset(element) {
-  var offset = { left: 0, top: 0 };
-  var elementStyle = window.getComputedStyle(element);
+function getElementRelativeOffset(element) {
+  var offset = { left: 0, top: -window.pageYOffset };
+  var offsetParent = element.offsetParent;
+  var offsetParentPosition = window.getComputedStyle(offsetParent).position;
+  var offsetParentRect;
 
-  if (elementStyle.position === 'relative') {
-    offset.left = parseInt(elementStyle['margin-left'], 10);
-    offset.top  = parseInt(elementStyle['margin-top'], 10);
+  if (offsetParentPosition === 'relative') {
+    offsetParentRect = offsetParent.getBoundingClientRect();
+    offset.left = offsetParentRect.left;
+    offset.top  = offsetParentRect.top;
   }
   return offset;
+}
+
+function getElementComputedStyleNumericProp(element, prop) {
+  return parseFloat(window.getComputedStyle(element)[prop]);
+}
+
+function positionElementToRect(element, rect, verticalOffset) {
+  var horizontalCenter = (rect.left + rect.right) / 2;
+  var relativeOffset = getElementRelativeOffset(element);
+  var style = element.style;
+  var round = Math.round;
+
+  verticalOffset = verticalOffset || 0;
+  style.left = round(horizontalCenter - relativeOffset.left - (element.offsetWidth / 2)) + 'px';
+  style.top  = round(rect.top - relativeOffset.top - verticalOffset) + 'px';
+}
+
+function positionElementAbove(element, aboveElement) {
+  var elementMargin = getElementComputedStyleNumericProp(element, 'marginBottom');
+  positionElementToRect(element, aboveElement.getBoundingClientRect(), element.offsetHeight + elementMargin);
+}
+
+function positionElementBelow(element, belowElement) {
+  var elementMargin = getElementComputedStyleNumericProp(element, 'marginTop');
+  positionElementToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
 }
 
 function getDirectionOfSelection(selection) {
@@ -123,15 +152,15 @@ function getDirectionOfSelection(selection) {
   return SelectionDirection.SAME_NODE;
 }
 
-function getCurrentSelectionNode() {
-  var selection = window.getSelection();
+function getCurrentSelectionNode(selection) {
+  selection = selection || window.getSelection();
   var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.anchorNode : selection.focusNode;
   return node && (node.nodeType === 3 ? node.parentNode : node);
 }
 
 function getCurrentSelectionRootNode() {
-  var node = getCurrentSelectionNode(),
-      tag = node.tagName;
+  var node = getCurrentSelectionNode();
+  var tag = node.tagName;
   while (tag && RootTags.indexOf(tag) === -1) {
     if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     node = node.parentNode;
@@ -151,8 +180,8 @@ function getCurrentSelectionRootTag() {
 }
 
 function tagsInSelection(selection) {
-  var node = selection.focusNode.parentNode,
-      tags = [];
+  var node = getCurrentSelectionNode(selection);
+  var tags = [];
   if (!selection.isCollapsed) {
     while(node) {
       if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
@@ -166,8 +195,8 @@ function tagsInSelection(selection) {
 }
 
 function moveCursorToBeginningOfSelection(selection) {
-  var range = document.createRange(),
-      node  = selection.anchorNode;
+  var range = document.createRange();
+  var node  = selection.anchorNode;
   range.setStart(node, 0);
   range.setEnd(node, 0);
   selection.removeAllRanges();
@@ -181,8 +210,8 @@ function restoreRange(range) {
 }
 
 function selectNode(node) {
-  var range = document.createRange(),
-      selection = window.getSelection();
+  var range = document.createRange();
+  var selection = window.getSelection();
   range.setStart(node, 0);
   range.setEnd(node, node.length);
   selection.removeAllRanges();
@@ -234,15 +263,13 @@ var Prompt = (function() {
   };
 
   function hiliteRange(range) {
-    var rangeBounds = range.getBoundingClientRect();
-    var hiliterStyle = hiliter.style;
-    var offset = getElementOffset(container);
+    var rect = range.getBoundingClientRect();
+    var style = hiliter.style;
 
-    hiliterStyle.width  = rangeBounds.width + 'px';
-    hiliterStyle.height = rangeBounds.height + 'px';
-    hiliterStyle.left   = rangeBounds.left - offset.left + 'px';
-    hiliterStyle.top    = rangeBounds.top + window.pageYOffset - offset.top + 'px';
+    style.width  = rect.width  + 'px';
+    style.height = rect.height + 'px';
     container.appendChild(hiliter);
+    positionElementToRect(hiliter, rect);
   }
 
   function unhiliteRange() {
@@ -485,6 +512,8 @@ ContentKit.Editor = (function() {
     if (element) {
       var className = element.className;
       var dataset = element.dataset;
+      var toolbar = new Toolbar({ commands: editor.commands });
+      var linkTooltips;
 
       if (!editorClassNameRegExp.test(className)) {
         className += (className ? ' ' : '') + editorClassName;
@@ -494,41 +523,25 @@ ContentKit.Editor = (function() {
       if (!dataset.placeholder) {
         dataset.placeholder = editor.placeholder;
       }
-
       if(!editor.spellcheck) {
         element.spellcheck = false;
       }
 
+      element.setAttribute('contentEditable', true);
       editor.element = element;
-      editor.toolbar = new Toolbar({ commands: editor.commands });
+      editor.toolbar = toolbar;
+
+      linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
 
       bindTextSelectionEvents(editor);
       bindTypingEvents(editor);
       bindPasteEvents(editor);
-      bindLinkTooltips(editor);
       
-      editor.enable();
       if(editor.autofocus) { element.focus(); }
     }
   }
 
   Editor.prototype = {
-    enable: function() {
-      var editor = this;
-      var element = editor.element;
-      if(element && !editor.enabled) {
-        element.setAttribute('contentEditable', true);
-        editor.enabled = true;
-      }
-    },
-    disable: function() {
-      var editor = this;
-      var element = editor.element;
-      if(element && editor.enabled) {
-        element.removeAttribute('contentEditable');
-        editor.enabled = false;
-      }
-    },
     parse: function() {
       var editor = this;
       if (!editor.parser) {
@@ -633,28 +646,6 @@ ContentKit.Editor = (function() {
     });
   }
 
-  function bindLinkTooltips(editor) {
-    var linkTooltip = new Tooltip();
-    var editorElement = editor.element;
-    var tooltipTimeout = null;
-    editorElement.addEventListener('mouseover', function(e) {
-      if (!editor.toolbar.isShowing) {
-        tooltipTimeout = setTimeout(function() {
-          var linkTarget = getTargetNodeDescendentWithTag(Tags.LINK, e.target, this);
-          if (linkTarget) {
-            linkTooltip.showLink(linkTarget.href, linkTarget);
-          }
-        }, 200);
-      }
-    });
-    editorElement.addEventListener('mouseout', function(e) {
-      clearTimeout(tooltipTimeout);
-      if (e.toElement && e.toElement.className !== 'ck-tooltip') {
-        linkTooltip.hide();
-      }
-    });
-  }
-
   function plainTextToBlocks(plainText, blockTag) {
     var blocks = plainText.split(Regex.NEWLINE),
         len = blocks.length,
@@ -717,8 +708,12 @@ var Toolbar = (function() {
     },
     hide: function() {
       var toolbar = this;
+      var element = toolbar.element;
+      var style = element.style;
       if(toolbar.isShowing) {
-        container.removeChild(toolbar.element);
+        container.removeChild(element);
+        style.left = '';
+        style.top = '';
         toolbar.dismissPrompt();
         toolbar.isShowing = false;
       }
@@ -750,20 +745,8 @@ var Toolbar = (function() {
     },
     positionToSelection: function(selection) {
       if (!selection.isCollapsed) {
-        var clientRectBounds = selection.getRangeAt(0).getBoundingClientRect();
-        this.setPosition(
-          (clientRectBounds.left + clientRectBounds.right) / 2,
-          clientRectBounds.top + window.pageYOffset
-        );
+        positionElementAbove(this.element, selection.getRangeAt(0));
       }
-    },
-    setPosition: function(x, y) {
-      var element = this.element,
-          style = element.style,
-          offset = getElementOffset(container);
-
-      style.left = parseInt(x - (element.offsetWidth / 2) - offset.left, 10) + 'px';
-      style.top  = parseInt(y - element.offsetHeight - offset.top, 10) + 'px';
     }
   };
 
@@ -857,27 +840,46 @@ var ToolbarButton = (function() {
 var Tooltip = (function() {
 
   var container = document.body;
+  var className = 'ck-tooltip';
+  var delay = 200;
 
-  function Tooltip() {
+  function Tooltip(options) {
     var tooltip = this;
-    tooltip.element = createDiv('ck-tooltip');
+    var rootElement = options.rootElement;
+    var timeout;
+
+    tooltip.element = createDiv(className);
     tooltip.isShowing = false;
+
+    rootElement.addEventListener('mouseover', function(e) {
+      var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
+      if (target) {
+        timeout = setTimeout(function() {
+          tooltip.showLink(target.href, target);
+        }, delay);
+      }
+    });
+    
+    rootElement.addEventListener('mouseout', function(e) {
+      clearTimeout(timeout);
+      var toElement = e.toElement || e.relatedTarget;
+      if (toElement && toElement.className !== className) {
+        tooltip.hide();
+      }
+    });
   }
 
   Tooltip.prototype = {
     showMessage: function(message, element) {
       var tooltip = this;
       var tooltipElement = tooltip.element;
-      var elementRect = element.getBoundingClientRect();
 
       tooltipElement.innerHTML = message;
       if (!tooltip.isShowing) {
         container.appendChild(tooltipElement);
         tooltip.isShowing = true;
       }
-
-      tooltipElement.style.left = parseInt(elementRect.left + (element.offsetWidth / 2) - (tooltipElement.offsetWidth / 2), 10) + 'px';
-      tooltipElement.style.top  = parseInt(window.pageYOffset + elementRect.top + element.offsetHeight + 2, 10) + 'px';
+      positionElementBelow(tooltipElement, element);
     },
     showLink: function(link, element) {
       var message = '<a href="' + link + '" target="_blank">' + link + '</a>';

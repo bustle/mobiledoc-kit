@@ -43,15 +43,13 @@ var Prompt = (function() {
   };
 
   function hiliteRange(range) {
-    var rangeBounds = range.getBoundingClientRect();
-    var hiliterStyle = hiliter.style;
-    var offset = getElementOffset(container);
+    var rect = range.getBoundingClientRect();
+    var style = hiliter.style;
 
-    hiliterStyle.width  = rangeBounds.width + 'px';
-    hiliterStyle.height = rangeBounds.height + 'px';
-    hiliterStyle.left   = rangeBounds.left - offset.left + 'px';
-    hiliterStyle.top    = rangeBounds.top + window.pageYOffset - offset.top + 'px';
+    style.width  = rect.width  + 'px';
+    style.height = rect.height + 'px';
     container.appendChild(hiliter);
+    positionElementToRect(hiliter, rect);
   }
 
   function unhiliteRange() {

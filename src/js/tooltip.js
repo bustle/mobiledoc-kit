@@ -1,27 +1,46 @@
 var Tooltip = (function() {
 
   var container = document.body;
+  var className = 'ck-tooltip';
+  var delay = 200;
 
-  function Tooltip() {
+  function Tooltip(options) {
     var tooltip = this;
-    tooltip.element = createDiv('ck-tooltip');
+    var rootElement = options.rootElement;
+    var timeout;
+
+    tooltip.element = createDiv(className);
     tooltip.isShowing = false;
+
+    rootElement.addEventListener('mouseover', function(e) {
+      var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
+      if (target) {
+        timeout = setTimeout(function() {
+          tooltip.showLink(target.href, target);
+        }, delay);
+      }
+    });
+    
+    rootElement.addEventListener('mouseout', function(e) {
+      clearTimeout(timeout);
+      var toElement = e.toElement || e.relatedTarget;
+      if (toElement && toElement.className !== className) {
+        tooltip.hide();
+      }
+    });
   }
 
   Tooltip.prototype = {
     showMessage: function(message, element) {
       var tooltip = this;
       var tooltipElement = tooltip.element;
-      var elementRect = element.getBoundingClientRect();
 
       tooltipElement.innerHTML = message;
       if (!tooltip.isShowing) {
         container.appendChild(tooltipElement);
         tooltip.isShowing = true;
       }
-
-      tooltipElement.style.left = parseInt(elementRect.left + (element.offsetWidth / 2) - (tooltipElement.offsetWidth / 2), 10) + 'px';
-      tooltipElement.style.top  = parseInt(window.pageYOffset + elementRect.top + element.offsetHeight + 2, 10) + 'px';
+      positionElementBelow(tooltipElement, element);
     },
     showLink: function(link, element) {
       var message = '<a href="' + link + '" target="_blank">' + link + '</a>';

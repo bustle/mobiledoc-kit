@@ -9,6 +9,7 @@ body {
   color: #333;
   margin: 0 1.45em 3em;
   padding: 0;
+  overflow-y: scroll;
 }
 @media only screen and (max-width: 767px) {
   body {
@@ -50,11 +51,14 @@ header {
 .mode-buttons button {
   background-color: transparent;
   border: 1px solid #007aff;
+  outline: none;
   color: #007aff;
   border-radius: 5px;
-  padding: 0.5em 1.4em;
-  min-width: 8.7em;
+  padding: 0.6em 1em;
+  margin: 0;
+  min-width: 8.5em;
   font-size: 0.75em;
+  line-height: 1.1em;
   cursor: pointer;
   transition: background-color 0.15s;
 }
@@ -68,7 +72,6 @@ header {
 }
 .mode-buttons button:focus {
   outline: none;
-  cursor: pointer;
 }
 
 #code-panes {

@@ -8,15 +8,15 @@ function getDirectionOfSelection(selection) {
   return SelectionDirection.SAME_NODE;
 }
 
-function getCurrentSelectionNode() {
-  var selection = window.getSelection();
+function getCurrentSelectionNode(selection) {
+  selection = selection || window.getSelection();
   var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.anchorNode : selection.focusNode;
   return node && (node.nodeType === 3 ? node.parentNode : node);
 }
 
 function getCurrentSelectionRootNode() {
-  var node = getCurrentSelectionNode(),
-      tag = node.tagName;
+  var node = getCurrentSelectionNode();
+  var tag = node.tagName;
   while (tag && RootTags.indexOf(tag) === -1) {
     if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     node = node.parentNode;
@@ -36,8 +36,8 @@ function getCurrentSelectionRootTag() {
 }
 
 function tagsInSelection(selection) {
-  var node = selection.focusNode.parentNode,
-      tags = [];
+  var node = getCurrentSelectionNode(selection);
+  var tags = [];
   if (!selection.isCollapsed) {
     while(node) {
       if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
@@ -51,8 +51,8 @@ function tagsInSelection(selection) {
 }
 
 function moveCursorToBeginningOfSelection(selection) {
-  var range = document.createRange(),
-      node  = selection.anchorNode;
+  var range = document.createRange();
+  var node  = selection.anchorNode;
   range.setStart(node, 0);
   range.setEnd(node, 0);
   selection.removeAllRanges();
@@ -66,8 +66,8 @@ function restoreRange(range) {
 }
 
 function selectNode(node) {
-  var range = document.createRange(),
-      selection = window.getSelection();
+  var range = document.createRange();
+  var selection = window.getSelection();
   range.setStart(node, 0);
   range.setEnd(node, node.length);
   selection.removeAllRanges();

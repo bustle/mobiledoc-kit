@@ -37,8 +37,12 @@ var Toolbar = (function() {
     },
     hide: function() {
       var toolbar = this;
+      var element = toolbar.element;
+      var style = element.style;
       if(toolbar.isShowing) {
-        container.removeChild(toolbar.element);
+        container.removeChild(element);
+        style.left = '';
+        style.top = '';
         toolbar.dismissPrompt();
         toolbar.isShowing = false;
       }
@@ -70,20 +74,8 @@ var Toolbar = (function() {
     },
     positionToSelection: function(selection) {
       if (!selection.isCollapsed) {
-        var clientRectBounds = selection.getRangeAt(0).getBoundingClientRect();
-        this.setPosition(
-          (clientRectBounds.left + clientRectBounds.right) / 2,
-          clientRectBounds.top + window.pageYOffset
-        );
+        positionElementAbove(this.element, selection.getRangeAt(0));
       }
-    },
-    setPosition: function(x, y) {
-      var element = this.element,
-          style = element.style,
-          offset = getElementOffset(container);
-
-      style.left = parseInt(x - (element.offsetWidth / 2) - offset.left, 10) + 'px';
-      style.top  = parseInt(y - element.offsetHeight - offset.top, 10) + 'px';
     }
   };
 

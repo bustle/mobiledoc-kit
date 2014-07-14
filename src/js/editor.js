@@ -52,6 +52,8 @@ ContentKit.Editor = (function() {
     if (element) {
       var className = element.className;
       var dataset = element.dataset;
+      var toolbar = new Toolbar({ commands: editor.commands });
+      var linkTooltips;
 
       if (!editorClassNameRegExp.test(className)) {
         className += (className ? ' ' : '') + editorClassName;
@@ -61,41 +63,25 @@ ContentKit.Editor = (function() {
       if (!dataset.placeholder) {
         dataset.placeholder = editor.placeholder;
       }
-
       if(!editor.spellcheck) {
         element.spellcheck = false;
       }
 
+      element.setAttribute('contentEditable', true);
       editor.element = element;
-      editor.toolbar = new Toolbar({ commands: editor.commands });
+      editor.toolbar = toolbar;
+
+      linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
 
       bindTextSelectionEvents(editor);
       bindTypingEvents(editor);
       bindPasteEvents(editor);
-      bindLinkTooltips(editor);
       
-      editor.enable();
       if(editor.autofocus) { element.focus(); }
     }
   }
 
   Editor.prototype = {
-    enable: function() {
-      var editor = this;
-      var element = editor.element;
-      if(element && !editor.enabled) {
-        element.setAttribute('contentEditable', true);
-        editor.enabled = true;
-      }
-    },
-    disable: function() {
-      var editor = this;
-      var element = editor.element;
-      if(element && editor.enabled) {
-        element.removeAttribute('contentEditable');
-        editor.enabled = false;
-      }
-    },
     parse: function() {
       var editor = this;
       if (!editor.parser) {
@@ -196,28 +182,6 @@ ContentKit.Editor = (function() {
         plainText = data.getData('text/plain');
         var formattedContent = plainTextToBlocks(plainText, editor.defaultFormatter);
         document.execCommand('insertHTML', false, formattedContent);
-      }
-    });
-  }
-
-  function bindLinkTooltips(editor) {
-    var linkTooltip = new Tooltip();
-    var editorElement = editor.element;
-    var tooltipTimeout = null;
-    editorElement.addEventListener('mouseover', function(e) {
-      if (!editor.toolbar.isShowing) {
-        tooltipTimeout = setTimeout(function() {
-          var linkTarget = getTargetNodeDescendentWithTag(Tags.LINK, e.target, this);
-          if (linkTarget) {
-            linkTooltip.showLink(linkTarget.href, linkTarget);
-          }
-        }, 200);
-      }
-    });
-    editorElement.addEventListener('mouseout', function(e) {
-      clearTimeout(tooltipTimeout);
-      if (e.toElement && e.toElement.className !== 'ck-tooltip') {
-        linkTooltip.hide();
       }
     });
   }

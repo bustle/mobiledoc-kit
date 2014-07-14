@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Jul 10, 2014
+ * Last modified: Jul 12, 2014
  */
 
 (function(exports, document, undefined) {
@@ -221,7 +221,7 @@ function inherit(Sub, Super) {
 var RegExpTrim     = /^\s+|\s+$/g,
     RegExpTrimLeft = /^\s+/,
     RegExpWSChars  = /(\r\n|\n|\r|\t|\u00A0)/gm,
-    RegExpMultiWS  = / +/g;
+    RegExpMultiWS  = /\s+/g;
 
 /**
  * String.prototype.trim polyfill
@@ -325,7 +325,7 @@ HTMLParser.prototype.parse = function(html) {
         handleNonBlockElementAtRoot(currentNode, blocks);
       }
     } else if (currentNode.nodeType === 3) {
-      text = textOfNode(currentNode);
+      text = currentNode.nodeValue;
       if (trim(text)) {
         block = getLastBlockOrCreate(blocks);
         block.value += text;
