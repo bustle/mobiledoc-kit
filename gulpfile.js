@@ -11,7 +11,7 @@ var open   = require('gulp-open');
 
 var pkg = require('./package.json');
 
-var src = [
+var jsSrc = [
   './src/js/index.js',
   './src/js/constants.js',
   './src/js/utils/object-utils.js',
@@ -25,9 +25,19 @@ var src = [
   './src/js/tooltip.js'
 ];
 
-var distName = 'content-kit-editor.js';
+var cssSrc = [
+  './src/css/editor.css',
+  './src/css/toolbar.css',
+  './src/css/tooltip.css',
+  './src/css/icons.css',
+  './src/css/animations.css'
+];
+
 var distDest = './dist/';
-var distPath = distDest + distName;
+var jsDistName = 'content-kit-editor.js';
+var jsDistPath = distDest + jsDistName;
+var cssDistName = 'content-kit-editor.css';
+var cssDistPath = distDest + cssDistName;
 
 var testRunner = './tests/index.html';
 
@@ -51,23 +61,27 @@ var iifeFooter = ['',
                   ''].join('\n'); 
 
 gulp.task('lint', function() {
-  gulp.src(src)
+  gulp.src(jsSrc)
       .pipe(jshint('.jshintrc'))
       .pipe(jshint.reporter('default'));
 });
 
 gulp.task('lint-built', function() {
-  return gulp.src(distPath)
+  return gulp.src(jsDistPath)
              .pipe(jshint('.jshintrc'))
              .pipe(jshint.reporter('default'));
 });
 
 gulp.task('build', function() {
-  gulp.src(src)
-      .pipe(concat(distName))
+  gulp.src(jsSrc)
+      .pipe(concat(jsDistName))
       .pipe(header(iifeHeader))
       .pipe(header(banner, { pkg : pkg } ))
       .pipe(footer(iifeFooter))
+      .pipe(gulp.dest(distDest));
+
+  gulp.src(cssSrc)
+      .pipe(concat(cssDistName))
       .pipe(gulp.dest(distDest));
 });
 
@@ -82,7 +96,7 @@ gulp.task('test-browser', function(){
 });
 
 gulp.task('watch', function() {
-  gulp.watch(src, ['build']);
+  gulp.watch(jsSrc.concat(cssSrc), ['build']);
 });
 
 

@@ -3,8 +3,13 @@
 <head>
   <meta charset="utf-8">
   <title>ContentKit Editor</title>
-  <link href="../src/css/editor.css" rel="stylesheet">
+
+  <!-- Include Editor CSS (editor.css) -->
+  <link href="../dist/content-kit-editor.css" rel="stylesheet">
+
+  <!-- CSS just for the demo page -->
   <link href="demo.css" rel="stylesheet">
+
 </head>
 <body>
 
@@ -61,10 +66,14 @@
     </div>
   </div>
 
+  <!-- Include Editor JS (content-kit-editor.js) -->
   <script src="../dist/content-kit-editor.js"></script>
+
+  <!-- JS just for the demo page -->
+  <script src="content-kit-demo.js"></script>
   <script src="content-kit-compiler.js"></script>
 
-  <script src="content-kit-demo.js"></script>
+  <!-- This initializes a new Editor -->
   <script>
     var editor = new ContentKit.Editor('.editor', { 
       parser: new ContentKit.HTMLParser({ includeTypeNames: true }) // shows type names for easier debugging

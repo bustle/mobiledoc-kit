@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Jul 13, 2014
+ * Last modified: Jul 14, 2014
  */
 
 (function(exports, document) {
