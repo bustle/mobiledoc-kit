@@ -615,10 +615,10 @@ ContentKit.Editor = (function() {
 
   function handleTextSelection(e, editor) {
     var selection = window.getSelection();
-    if (!selection.isCollapsed && selectionIsInElement(editor.element, selection)) {
-      editor.toolbar.updateForSelection(selection);
-    } else {
+    if (selection.isCollapsed || selection.toString().trim() === '' || !selectionIsInElement(editor.element, selection)) {
       editor.toolbar.hide();
+    } else {
+      editor.toolbar.updateForSelection(selection);
     }
   }
 
