@@ -20,6 +20,14 @@ var Prompt = (function() {
           if (prompt.onComplete) { prompt.onComplete(); }
         }
       });
+
+      window.addEventListener('resize', function() {
+        var activeHilite = hiliter.parentNode;
+        var range = prompt.range;
+        if(activeHilite && range) {
+          positionHiliteRange(range);
+        }
+      });
     }
   }
 
@@ -28,32 +36,27 @@ var Prompt = (function() {
       var prompt = this;
       var element = prompt.element;
       prompt.range = window.getSelection().getRangeAt(0); // save the selection range
-      hiliteRange(prompt.range);
+      container.appendChild(hiliter);
+      positionHiliteRange(prompt.range);
       prompt.clear();
       setTimeout(function(){ element.focus(); }); // defer focus (disrupts mouseup events)
       if (callback) { prompt.onComplete = callback; }
     },
     dismiss: function() {
       this.clear();
-      unhiliteRange();
+      container.removeChild(hiliter);
     },
     clear: function() {
       this.element.value = null;
     }
   };
 
-  function hiliteRange(range) {
+  function positionHiliteRange(range) {
     var rect = range.getBoundingClientRect();
     var style = hiliter.style;
-
     style.width  = rect.width  + 'px';
     style.height = rect.height + 'px';
-    container.appendChild(hiliter);
     positionElementToRect(hiliter, rect);
-  }
-
-  function unhiliteRange() {
-    container.removeChild(hiliter);
   }
 
   return Prompt;

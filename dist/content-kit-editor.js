@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Jul 14, 2014
+ * Last modified: Jul 15, 2014
  */
 
 (function(exports, document) {
@@ -240,6 +240,14 @@ var Prompt = (function() {
           if (prompt.onComplete) { prompt.onComplete(); }
         }
       });
+
+      window.addEventListener('resize', function() {
+        var activeHilite = hiliter.parentNode;
+        var range = prompt.range;
+        if(activeHilite && range) {
+          positionHiliteRange(range);
+        }
+      });
     }
   }
 
@@ -248,32 +256,27 @@ var Prompt = (function() {
       var prompt = this;
       var element = prompt.element;
       prompt.range = window.getSelection().getRangeAt(0); // save the selection range
-      hiliteRange(prompt.range);
+      container.appendChild(hiliter);
+      positionHiliteRange(prompt.range);
       prompt.clear();
       setTimeout(function(){ element.focus(); }); // defer focus (disrupts mouseup events)
       if (callback) { prompt.onComplete = callback; }
     },
     dismiss: function() {
       this.clear();
-      unhiliteRange();
+      container.removeChild(hiliter);
     },
     clear: function() {
       this.element.value = null;
     }
   };
 
-  function hiliteRange(range) {
+  function positionHiliteRange(range) {
     var rect = range.getBoundingClientRect();
     var style = hiliter.style;
-
     style.width  = rect.width  + 'px';
     style.height = rect.height + 'px';
-    container.appendChild(hiliter);
     positionElementToRect(hiliter, rect);
-  }
-
-  function unhiliteRange() {
-    container.removeChild(hiliter);
   }
 
   return Prompt;
@@ -740,13 +743,8 @@ var Toolbar = (function() {
     updateForSelection: function(selection) {
       var toolbar = this;
       toolbar.show();
-      toolbar.positionToSelection(selection);
+      positionElementAbove(toolbar.element, selection.getRangeAt(0));
       updateButtonsForSelection(toolbar.buttons, selection);
-    },
-    positionToSelection: function(selection) {
-      if (!selection.isCollapsed) {
-        positionElementAbove(this.element, selection.getRangeAt(0));
-      }
     }
   };
 
@@ -762,8 +760,9 @@ var Toolbar = (function() {
     });
 
     window.addEventListener('resize', function() {
+      var activePrompt = toolbar.activePrompt;
       if(toolbar.isShowing) {
-        toolbar.positionToSelection(window.getSelection());
+        positionElementAbove(toolbar.element, activePrompt ? activePrompt.range : window.getSelection().getRangeAt(0));
       }
     });
   }

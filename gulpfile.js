@@ -40,6 +40,7 @@ var cssDistName = 'content-kit-editor.css';
 var cssDistPath = distDest + cssDistName;
 
 var testRunner = './tests/index.html';
+var demo       = './demo/index.html';
 
 var banner = ['/*!',
               ' * @overview <%= pkg.name %>: <%= pkg.description %>',
@@ -92,6 +93,11 @@ gulp.task('test', function() {
 
 gulp.task('test-browser', function(){
   return gulp.src(testRunner)
+             .pipe(open('<% file.path %>')); 
+});
+
+gulp.task('demo', function(){
+  return gulp.src(demo)
              .pipe(open('<% file.path %>')); 
 });
 

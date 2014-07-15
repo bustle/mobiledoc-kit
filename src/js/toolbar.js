@@ -69,13 +69,8 @@ var Toolbar = (function() {
     updateForSelection: function(selection) {
       var toolbar = this;
       toolbar.show();
-      toolbar.positionToSelection(selection);
+      positionElementAbove(toolbar.element, selection.getRangeAt(0));
       updateButtonsForSelection(toolbar.buttons, selection);
-    },
-    positionToSelection: function(selection) {
-      if (!selection.isCollapsed) {
-        positionElementAbove(this.element, selection.getRangeAt(0));
-      }
     }
   };
 
@@ -91,8 +86,9 @@ var Toolbar = (function() {
     });
 
     window.addEventListener('resize', function() {
+      var activePrompt = toolbar.activePrompt;
       if(toolbar.isShowing) {
-        toolbar.positionToSelection(window.getSelection());
+        positionElementAbove(toolbar.element, activePrompt ? activePrompt.range : window.getSelection().getRangeAt(0));
       }
     });
   }
