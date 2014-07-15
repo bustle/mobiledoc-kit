@@ -2,6 +2,11 @@
 
 A modern, minimalist WYSIWYG editor.  (**[Demo](https://rawgit.com/ContentKit/content-kit-editor/master/demo/index.html)**)
 
+![screenshot]
+(https://rawgit.com/ContentKit/content-kit-editor/master/demo/screenshot.png)
+
+*ContentKit-Editor is under active development*
+
 ---
 
 ## About ContentKit
