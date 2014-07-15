@@ -755,10 +755,6 @@ var Toolbar = (function() {
       }
     });
 
-    document.addEventListener('mouseup', function() {
-      toolbar.dismissPrompt();
-    });
-
     window.addEventListener('resize', function() {
       var activePrompt = toolbar.activePrompt;
       if(toolbar.isShowing) {

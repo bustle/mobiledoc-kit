@@ -12,7 +12,7 @@
   background: -o-linear-gradient(top,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
   background: -ms-linear-gradient(top,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
   background: linear-gradient(to bottom,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
-  box-shadow: 0 1px 3px -1px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.12), inset 0 1px 0 rgba(0,0,0,0.65);
+  box-shadow: 0 1px 3px -1px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.12), inset 1px 1px 0 #282828, inset -1px -1px 0 #282828;
   border-radius: 5px;
   transition: left 0.1s, top 0.1s;
   margin-bottom: 0.5em; /* space for arrow */
@@ -33,7 +33,7 @@
   border-left: 0.5em solid transparent;
   border-right: 0.5em solid transparent;
   border-top: 0.5em solid rgba(43,43,43,1);
-  bottom: -0.5em;
+  bottom: -0.45em;
   margin-left: -0.5em;
 }
 
@@ -56,6 +56,7 @@
   line-height: 44px;
   cursor: pointer;
   transition: background-color 0.15s;
+  text-shadow: 0 1px rgba(0,0,0,0.7);
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
@@ -89,6 +90,7 @@
   padding: 0 16px;
   width: 288px;
   height: 44px;
+  line-height: 1em;
 }
 .ck-toolbar-prompt input:focus {
   outline: none;
