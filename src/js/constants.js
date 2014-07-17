@@ -12,9 +12,14 @@ var Regex = {
 };
 
 var SelectionDirection = {
-  LEFT_TO_RIGHT : 0,
-  RIGHT_TO_LEFT : 1,
-  SAME_NODE     : 2
+  LEFT_TO_RIGHT : 1,
+  RIGHT_TO_LEFT : 2,
+  SAME_NODE     : 3
+};
+
+var ToolbarDirection = {
+  TOP   : 1,
+  RIGHT : 2
 };
 
 var Tags = {

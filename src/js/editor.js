@@ -6,7 +6,8 @@ ContentKit.Editor = (function() {
     placeholder: 'Write here...',
     spellcheck: true,
     autofocus: true,
-    commands: Command.all
+    textFormatCommands: TextFormatCommand.all,
+    embedCommands: EmbedCommand.all
   };
 
   var editorClassName = 'ck-editor';
@@ -52,8 +53,7 @@ ContentKit.Editor = (function() {
     if (element) {
       var className = element.className;
       var dataset = element.dataset;
-      var toolbar = new Toolbar({ commands: editor.commands });
-      var linkTooltips;
+      var textFormatToolbar = new Toolbar({ commands: editor.textFormatCommands });
 
       if (!editorClassNameRegExp.test(className)) {
         className += (className ? ' ' : '') + editorClassName;
@@ -69,9 +69,16 @@ ContentKit.Editor = (function() {
 
       element.setAttribute('contentEditable', true);
       editor.element = element;
-      editor.toolbar = toolbar;
+      editor.textFormatToolbar = textFormatToolbar;
 
-      linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
+      var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
+
+      if(editor.embedCommands) {
+        var embedIntent = new EmbedIntent({
+          commands: editor.embedCommands,
+          rootElement: element
+        });
+      }
 
       bindTextSelectionEvents(editor);
       bindTypingEvents(editor);
@@ -155,23 +162,11 @@ ContentKit.Editor = (function() {
 
   function handleTextSelection(e, editor) {
     var selection = window.getSelection();
-    if (selection.isCollapsed || selection.toString().trim() === '' || !selectionIsInElement(editor.element, selection)) {
-      editor.toolbar.hide();
+    if (selection.isCollapsed || selection.toString().trim() === '' || !selectionIsInElement(selection, editor.element)) {
+      editor.textFormatToolbar.hide();
     } else {
-      editor.toolbar.updateForSelection(selection);
+      editor.textFormatToolbar.updateForSelection(selection);
     }
-  }
-
-  function selectionIsInElement(element, selection) {
-    var node = selection.focusNode,
-        parentNode = node.parentNode;
-    while(parentNode) {
-      if (parentNode === element) {
-        return true;
-      }
-      parentNode = parentNode.parentNode;
-    }
-    return false;
   }
 
   function bindPasteEvents(editor) {

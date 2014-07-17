@@ -40,7 +40,7 @@ var Tooltip = (function() {
         container.appendChild(tooltipElement);
         tooltip.isShowing = true;
       }
-      positionElementBelow(tooltipElement, element);
+      positionElementCenteredBelow(tooltipElement, element);
     },
     showLink: function(link, element) {
       var message = '<a href="' + link + '" target="_blank">' + link + '</a>';

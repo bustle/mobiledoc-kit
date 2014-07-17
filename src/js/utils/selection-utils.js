@@ -50,6 +50,18 @@ function tagsInSelection(selection) {
   return tags;
 }
 
+function selectionIsInElement(selection, element) {
+  var node = selection.focusNode,
+      parentNode = node.parentNode;
+  while(parentNode) {
+    if (parentNode === element) {
+      return true;
+    }
+    parentNode = parentNode.parentNode;
+  }
+  return false;
+}
+
 function moveCursorToBeginningOfSelection(selection) {
   var range = document.createRange();
   var node  = selection.anchorNode;

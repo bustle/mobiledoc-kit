@@ -22,13 +22,15 @@ var jsSrc = [
   './src/js/editor.js',
   './src/js/toolbar.js',
   './src/js/toolbar-button.js',
-  './src/js/tooltip.js'
+  './src/js/tooltip.js',
+  './src/js/embed-intent.js'
 ];
 
 var cssSrc = [
   './src/css/editor.css',
   './src/css/toolbar.css',
   './src/css/tooltip.css',
+  './src/css/embeds.css',
   './src/css/icons.css',
   './src/css/animations.css'
 ];

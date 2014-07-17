@@ -67,16 +67,35 @@
   border-right: 0.5em solid transparent;
   border-top: 0.5em solid rgba(43,43,43,1);
   bottom: -0.45em;
-  margin-left: -0.5em;
+  margin: 0 0 0 -0.5em;
+}
+
+.ck-toolbar.right {
+  margin: 0 0 0 0.5em;
+}
+.ck-toolbar.right:after {
+  left: -1em;
+  top: 50%;
+  bottom: auto;
+  margin: -0.5em 0 0 0;
+  border-top: 0.5em solid transparent;
+  border-bottom: 0.5em solid transparent;
+  border-right: 0.5em solid rgba(43,43,43,1);
 }
 
 .ck-toolbar,
 .ck-toolbar-prompt {
-  -webkit-animation: toolbarPop 0.5s linear both;
-          animation: toolbarPop 0.5s linear both;
+  -webkit-animation: pop 0.5s linear;
+          animation: pop 0.5s linear;
+}
+
+.ck-toolbar-buttons {
+  border-radius: 5px;
+  overflow: hidden;
 }
 
 .ck-toolbar-btn {
+  display: inline-block;
   background-color: transparent;
   border: none;
   outline: none;
@@ -103,12 +122,6 @@
 .ck-toolbar-btn:active,
 .ck-toolbar-btn.active {
   color: #4CD964;
-}
-.ck-toolbar-btn:first-child {
-  border-radius: 5px 0 0 5px;
-}
-.ck-toolbar-btn:last-child {
-  border-radius: 0 5px 5px 0;
 }
 
 .ck-toolbar-prompt {
@@ -200,6 +213,53 @@
 }
 
 /**
+ * Embeds
+ */
+
+.ck-embed-intent-btn {
+  position: absolute;
+  display: block;
+  background: none;
+  border: none;
+  outline: none;
+  margin: 0 0.4em 0 0;
+  padding: 0;
+  width: 1em;
+  height: 1em;
+  border: 2px solid #ccc;
+  border-radius: 100%;
+  color: #ccc;
+  text-align: center;
+  font-size: 2em;
+  line-height: 0.7em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, -webkit-transform 0.35s;
+  -webkit-animation: pop 0.5s linear;
+          animation: pop 0.5s linear;
+}
+.ck-embed-intent-btn:hover  {
+  color: #999;
+  border-color: #999;
+}
+.ck-embed-intent-btn:active {
+  color: #666;
+  border-color: #666;
+  transition: none;
+}
+.ck-embed-intent-btn:before {
+  content: '+';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.ck-embed-intent-btn.activated {
+  -webkit-transform: rotate(-135deg);
+          transform: rotate(-135deg);
+}
+
+/**
  * Icons
  */
 
@@ -268,7 +328,7 @@
 }
 
 /* Generated with Bounce.js. Edit at http://goo.gl/kRKkQd */
-@-webkit-keyframes toolbarPop { 
+@-webkit-keyframes pop { 
   0% { -webkit-transform: matrix3d(0.7, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1, 0, 0, 10, 0, 1); transform: matrix3d(0.7, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1, 0, 0, 10, 0, 1); }
   1.666667% { -webkit-transform: matrix3d(0.76047, 0, 0, 0, 0, 0.60078, 0, 0, 0, 0, 1, 0, 0, 9.59374, 0, 1); transform: matrix3d(0.76047, 0, 0, 0, 0, 0.60078, 0, 0, 0, 0, 1, 0, 0, 9.59374, 0, 1); }
   3.333333% { -webkit-transform: matrix3d(0.81739, 0, 0, 0, 0, 0.69565, 0, 0, 0, 0, 1, 0, 0, 8.46888, 0, 1); transform: matrix3d(0.81739, 0, 0, 0, 0, 0.69565, 0, 0, 0, 0, 1, 0, 0, 8.46888, 0, 1); }
@@ -332,7 +392,7 @@
   100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); } 
 }
 
-@keyframes toolbarPop { 
+@keyframes pop { 
   0% { -webkit-transform: matrix3d(0.7, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1, 0, 0, 10, 0, 1); transform: matrix3d(0.7, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1, 0, 0, 10, 0, 1); }
   1.666667% { -webkit-transform: matrix3d(0.76047, 0, 0, 0, 0, 0.60078, 0, 0, 0, 0, 1, 0, 0, 9.59374, 0, 1); transform: matrix3d(0.76047, 0, 0, 0, 0, 0.60078, 0, 0, 0, 0, 1, 0, 0, 9.59374, 0, 1); }
   3.333333% { -webkit-transform: matrix3d(0.81739, 0, 0, 0, 0, 0.69565, 0, 0, 0, 0, 1, 0, 0, 8.46888, 0, 1); transform: matrix3d(0.81739, 0, 0, 0, 0, 0.69565, 0, 0, 0, 0, 1, 0, 0, 8.46888, 0, 1); }

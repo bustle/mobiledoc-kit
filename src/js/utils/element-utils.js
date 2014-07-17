@@ -47,23 +47,41 @@ function getElementComputedStyleNumericProp(element, prop) {
   return parseFloat(window.getComputedStyle(element)[prop]);
 }
 
-function positionElementToRect(element, rect, verticalOffset) {
-  var horizontalCenter = (rect.left + rect.right) / 2;
+function positionElementToRect(element, rect, topOffset, leftOffset) {
   var relativeOffset = getElementRelativeOffset(element);
   var style = element.style;
   var round = Math.round;
 
-  verticalOffset = verticalOffset || 0;
-  style.left = round(horizontalCenter - relativeOffset.left - (element.offsetWidth / 2)) + 'px';
-  style.top  = round(rect.top - relativeOffset.top - verticalOffset) + 'px';
+  topOffset = topOffset || 0;
+  leftOffset = leftOffset || 0;
+  style.left = round(rect.left - relativeOffset.left - leftOffset) + 'px';
+  style.top  = round(rect.top  - relativeOffset.top  - topOffset) + 'px';
 }
 
-function positionElementAbove(element, aboveElement) {
+function positionElementHorizontallyCenteredToRect(element, rect, topOffset) {
+  var horizontalCenter = (element.offsetWidth / 2) - (rect.width / 2);
+  positionElementToRect(element, rect, topOffset, horizontalCenter);
+}
+
+function positionElementCenteredAbove(element, aboveElement) {
   var elementMargin = getElementComputedStyleNumericProp(element, 'marginBottom');
-  positionElementToRect(element, aboveElement.getBoundingClientRect(), element.offsetHeight + elementMargin);
+  positionElementHorizontallyCenteredToRect(element, aboveElement.getBoundingClientRect(), element.offsetHeight + elementMargin);
 }
 
-function positionElementBelow(element, belowElement) {
+function positionElementCenteredBelow(element, belowElement) {
   var elementMargin = getElementComputedStyleNumericProp(element, 'marginTop');
-  positionElementToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
+  positionElementHorizontallyCenteredToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
+}
+
+function positionElementToLeftOf(element, leftOfElement) {
+  var verticalCenter = (leftOfElement.offsetHeight / 2) - (element.offsetHeight / 2);
+  var elementMargin = getElementComputedStyleNumericProp(element, 'marginRight');
+  positionElementToRect(element, leftOfElement.getBoundingClientRect(), -verticalCenter, element.offsetWidth + elementMargin);
+}
+
+function positionElementToRightOf(element, rightOfElement) {
+  var verticalCenter = (rightOfElement.offsetHeight / 2) - (element.offsetHeight / 2);
+  var elementMargin = getElementComputedStyleNumericProp(element, 'marginLeft');
+  var rightOfElementRect = rightOfElement.getBoundingClientRect();
+  positionElementToRect(element, rightOfElementRect, -verticalCenter, -rightOfElement.offsetWidth - elementMargin);
 }

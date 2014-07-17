@@ -1,0 +1,46 @@
+/**
+ * Embeds
+ */
+
+.ck-embed-intent-btn {
+  position: absolute;
+  display: block;
+  background: none;
+  border: none;
+  outline: none;
+  margin: 0 0.4em 0 0;
+  padding: 0;
+  width: 1em;
+  height: 1em;
+  border: 2px solid #ccc;
+  border-radius: 100%;
+  color: #ccc;
+  text-align: center;
+  font-size: 2em;
+  line-height: 0.7em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, -webkit-transform 0.35s;
+  -webkit-animation: pop 0.5s linear;
+          animation: pop 0.5s linear;
+}
+.ck-embed-intent-btn:hover  {
+  color: #999;
+  border-color: #999;
+}
+.ck-embed-intent-btn:active {
+  color: #666;
+  border-color: #666;
+  transition: none;
+}
+.ck-embed-intent-btn:before {
+  content: '+';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.ck-embed-intent-btn.activated {
+  -webkit-transform: rotate(-135deg);
+          transform: rotate(-135deg);
+}

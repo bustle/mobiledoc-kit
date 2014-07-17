@@ -1,7 +1,6 @@
 var Toolbar = (function() {
 
   var container = document.body;
-  var buttonContainerElement, promptContainerElement;
 
   function Toolbar(options) {
     var toolbar = this;
@@ -10,20 +9,24 @@ var Toolbar = (function() {
     var element = createDiv('ck-toolbar');
     var i, button;
     toolbar.element = element;
+    toolbar.direction = options.direction || ToolbarDirection.TOP;
+    if (toolbar.direction === ToolbarDirection.RIGHT) {
+      element.className += ' right';
+    }
     toolbar.isShowing = false;
     toolbar.activePrompt = null;
     toolbar.buttons = [];
     bindEvents(toolbar);
 
-    promptContainerElement = createDiv('ck-toolbar-prompt');
-    buttonContainerElement = createDiv('ck-toolbar-buttons');
-    element.appendChild(promptContainerElement);
-    element.appendChild(buttonContainerElement);
+    toolbar.promptContainerElement = createDiv('ck-toolbar-prompt');
+    toolbar.buttonContainerElement = createDiv('ck-toolbar-buttons');
+    element.appendChild(toolbar.promptContainerElement);
+    element.appendChild(toolbar.buttonContainerElement);
 
     for(i = 0; i < commandCount; i++) {
       button = new ToolbarButton({ command: commands[i], toolbar: toolbar });
       toolbar.buttons.push(button);
-      buttonContainerElement.appendChild(button.element);
+      toolbar.buttonContainerElement.appendChild(button.element);
     }
   }
 
@@ -49,8 +52,8 @@ var Toolbar = (function() {
     },
     displayPrompt: function(prompt) {
       var toolbar = this;
-      swapElements(promptContainerElement, buttonContainerElement);
-      promptContainerElement.appendChild(prompt.element);
+      swapElements(toolbar.promptContainerElement, toolbar.buttonContainerElement);
+      toolbar.promptContainerElement.appendChild(prompt.element);
       prompt.display(function() {
         toolbar.dismissPrompt();
         toolbar.updateForSelection(window.getSelection());
@@ -62,15 +65,27 @@ var Toolbar = (function() {
       var activePrompt = toolbar.activePrompt;
       if (activePrompt) {
         activePrompt.dismiss();
-        swapElements(buttonContainerElement, promptContainerElement);
+        swapElements(toolbar.buttonContainerElement, toolbar.promptContainerElement);
         toolbar.activePrompt = null;
       }
     },
     updateForSelection: function(selection) {
       var toolbar = this;
       toolbar.show();
-      positionElementAbove(toolbar.element, selection.getRangeAt(0));
+      toolbar.positionToContent(selection.getRangeAt(0));
       updateButtonsForSelection(toolbar.buttons, selection);
+    },
+    positionToContent: function(content) {
+      var directions = ToolbarDirection;
+      var positioningMethod;
+      switch(this.direction) {
+        case directions.RIGHT:
+          positioningMethod = positionElementToRightOf;
+          break;
+        default:
+          positioningMethod = positionElementCenteredAbove;
+      }
+      positioningMethod(this.element, content);
     }
   };
 
@@ -84,7 +99,7 @@ var Toolbar = (function() {
     window.addEventListener('resize', function() {
       var activePrompt = toolbar.activePrompt;
       if(toolbar.isShowing) {
-        positionElementAbove(toolbar.element, activePrompt ? activePrompt.range : window.getSelection().getRangeAt(0));
+        toolbar.positionToContent(activePrompt ? activePrompt.range : window.getSelection().getRangeAt(0));
       }
     });
   }

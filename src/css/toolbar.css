@@ -34,16 +34,35 @@
   border-right: 0.5em solid transparent;
   border-top: 0.5em solid rgba(43,43,43,1);
   bottom: -0.45em;
-  margin-left: -0.5em;
+  margin: 0 0 0 -0.5em;
+}
+
+.ck-toolbar.right {
+  margin: 0 0 0 0.5em;
+}
+.ck-toolbar.right:after {
+  left: -1em;
+  top: 50%;
+  bottom: auto;
+  margin: -0.5em 0 0 0;
+  border-top: 0.5em solid transparent;
+  border-bottom: 0.5em solid transparent;
+  border-right: 0.5em solid rgba(43,43,43,1);
 }
 
 .ck-toolbar,
 .ck-toolbar-prompt {
-  -webkit-animation: toolbarPop 0.5s linear both;
-          animation: toolbarPop 0.5s linear both;
+  -webkit-animation: pop 0.5s linear;
+          animation: pop 0.5s linear;
+}
+
+.ck-toolbar-buttons {
+  border-radius: 5px;
+  overflow: hidden;
 }
 
 .ck-toolbar-btn {
+  display: inline-block;
   background-color: transparent;
   border: none;
   outline: none;
@@ -70,12 +89,6 @@
 .ck-toolbar-btn:active,
 .ck-toolbar-btn.active {
   color: #4CD964;
-}
-.ck-toolbar-btn:first-child {
-  border-radius: 5px 0 0 5px;
-}
-.ck-toolbar-btn:last-child {
-  border-radius: 0 5px 5px 0;
 }
 
 .ck-toolbar-prompt {

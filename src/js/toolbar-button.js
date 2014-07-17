@@ -20,7 +20,7 @@ var ToolbarButton = (function() {
     element.title = command.name;
     element.className = buttonClassName;
     element.innerHTML = command.button;
-    element.addEventListener('click', function() {
+    element.addEventListener('click', function(e) {
       if (!button.isActive && prompt) {
         toolbar.displayPrompt(prompt);
       } else {

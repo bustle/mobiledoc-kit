@@ -1,31 +1,48 @@
-function Command(options) {
-  if(options) {
-    var command = this;
-    var name = options.name;
-    var prompt = options.prompt;
-    command.name = name;
-    command.tag = options.tag;
-    command.action = options.action || name;
-    command.removeAction = options.removeAction || options.action;
-    command.button = options.button || name;
-    if (prompt) { command.prompt = prompt; }
+function createCommandIndex(commands) {
+  var index = {};
+  var len = commands.length, i, command;
+  for(i = 0; i < len; i++) {
+    command = commands[i];
+    index[command.name] = command;
   }
+  return index;
 }
-Command.prototype.exec = function(value) {
-  document.execCommand(this.action, false, value || null);
-};
-Command.prototype.unexec = function(value) {
-  document.execCommand(this.removeAction, false, value || null);
+
+function Command(options) {
+  var command = this;
+  var name = options.name;
+  var prompt = options.prompt;
+  command.name = name;
+  command.button = options.button || name;
+  if (prompt) { command.prompt = prompt; }
+}
+Command.prototype.exec = function(){};
+
+function TextFormatCommand(options) {
+  Command.call(this, options);
+  this.tag = options.tag;
+  this.action = options.action || this.name;
+  this.removeAction = options.removeAction || this.action;
+}
+inherits(TextFormatCommand, Command);
+
+TextFormatCommand.prototype = {
+  exec: function(value) {
+    document.execCommand(this.action, false, value || null);
+  },
+  unexec: function(value) {
+    document.execCommand(this.removeAction, false, value || null);
+  }
 };
 
 function BoldCommand() {
-  Command.call(this, {
+  TextFormatCommand.call(this, {
     name: 'bold',
     tag: Tags.BOLD,
     button: '<i class="ck-icon-bold"></i>'
   });
 }
-inherits(BoldCommand, Command);
+inherits(BoldCommand, TextFormatCommand);
 BoldCommand.prototype.exec = function() {
   // Don't allow executing bold command on heading tags
   if (!Regex.HEADING_TAG.test(getCurrentSelectionRootTag())) {
@@ -34,16 +51,16 @@ BoldCommand.prototype.exec = function() {
 };
 
 function ItalicCommand() {
-  Command.call(this, {
+  TextFormatCommand.call(this, {
     name: 'italic',
     tag: Tags.ITALIC,
     button: '<i class="ck-icon-italic"></i>'
   });
 }
-inherits(ItalicCommand, Command);
+inherits(ItalicCommand, TextFormatCommand);
 
 function LinkCommand() {
-  Command.call(this, {
+  TextFormatCommand.call(this, {
     name: 'link',
     tag: Tags.LINK,
     action: 'createLink',
@@ -55,7 +72,7 @@ function LinkCommand() {
     })
   });
 }
-inherits(LinkCommand, Command);
+inherits(LinkCommand, TextFormatCommand);
 LinkCommand.prototype.exec = function(url) {
   if(this.tag === getCurrentSelectionTag()) {
     this.unexec();
@@ -69,23 +86,23 @@ LinkCommand.prototype.exec = function(url) {
 
 function FormatBlockCommand(options) {
   options.action = 'formatBlock';
-  Command.call(this, options);
+  TextFormatCommand.call(this, options);
 }
-inherits(FormatBlockCommand, Command);
+inherits(FormatBlockCommand, TextFormatCommand);
 FormatBlockCommand.prototype.exec = function() {
   var tag = this.tag;
   // Brackets neccessary for certain browsers
   var value =  '<' + tag + '>';
+  var rootNode = getCurrentSelectionRootNode();
   // Allow block commands to be toggled back to a paragraph
-  if(tag === getCurrentSelectionRootTag()) {
+  if(tag === rootNode.tagName) {
     value = Tags.PARAGRAPH;
   } else {
     // Flattens the selection before applying the block format.
     // Otherwise, undesirable nested blocks can occur.
-    var root = getCurrentSelectionRootNode();
-    var flatNode = document.createTextNode(root.textContent);
-    root.parentNode.insertBefore(flatNode, root);
-    root.parentNode.removeChild(root);
+    var flatNode = document.createTextNode(rootNode.textContent);
+    rootNode.parentNode.insertBefore(flatNode, rootNode);
+    rootNode.parentNode.removeChild(rootNode);
     selectNode(flatNode);
   }
   
@@ -120,9 +137,9 @@ function SubheadingCommand() {
 inherits(SubheadingCommand, FormatBlockCommand);
 
 function ListCommand(options) {
-  Command.call(this, options);
+  TextFormatCommand.call(this, options);
 }
-inherits(ListCommand, Command);
+inherits(ListCommand, TextFormatCommand);
 ListCommand.prototype.exec = function() {
   ListCommand._super.prototype.exec.call(this);
   
@@ -141,8 +158,7 @@ function UnorderedListCommand() {
   ListCommand.call(this, {
     name: 'list',
     tag: Tags.LIST,
-    action: 'insertUnorderedList',
-    button: '<i class="ck-icon-list"></i>'
+    action: 'insertUnorderedList'
   });
 }
 inherits(UnorderedListCommand, ListCommand);
@@ -151,13 +167,12 @@ function OrderedListCommand() {
   ListCommand.call(this, {
     name: 'ordered list',
     tag: Tags.ORDERED_LIST,
-    action: 'insertOrderedList',
-    button: '<i class="ck-icon-list-ordered"></i>'
+    action: 'insertOrderedList'
   });
 }
 inherits(OrderedListCommand, ListCommand);
 
-Command.all = [
+TextFormatCommand.all = [
   new BoldCommand(),
   new ItalicCommand(),
   new LinkCommand(),
@@ -166,13 +181,36 @@ Command.all = [
   new SubheadingCommand()
 ];
 
-Command.index = (function() {
-  var index = {},
-      commands = Command.all,
-      len = commands.length, i, command;
-  for(i = 0; i < len; i++) {
-    command = commands[i];
-    index[command.name] = command;
-  }
-  return index;
-})();
+TextFormatCommand.index = createCommandIndex(TextFormatCommand.all);
+
+
+function EmbedCommand(options) {
+  Command.call(this, options);
+}
+inherits(EmbedCommand, Command);
+EmbedCommand.prototype.exec = function(value) {
+  alert(this.name);
+};
+
+function ImageEmbedCommand(options) {
+  EmbedCommand.call(this, {
+    name: 'image',
+    button: '<i class="ck-icon-image"></i>'
+  });
+}
+inherits(ImageEmbedCommand, EmbedCommand);
+
+function MediaEmbedCommand(options) {
+  EmbedCommand.call(this, {
+    name: 'media',
+    button: '<i class="ck-icon-embed"></i>'
+  });
+}
+inherits(MediaEmbedCommand, EmbedCommand);
+
+EmbedCommand.all = [
+  new ImageEmbedCommand(),
+  new MediaEmbedCommand()
+];
+
+EmbedCommand.index = createCommandIndex(EmbedCommand.all);
