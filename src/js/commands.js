@@ -188,7 +188,7 @@ function EmbedCommand(options) {
   Command.call(this, options);
 }
 inherits(EmbedCommand, Command);
-EmbedCommand.prototype.exec = function(value) {
+EmbedCommand.prototype.exec = function() {
   alert(this.name);
 };
 
@@ -197,13 +197,49 @@ function ImageEmbedCommand(options) {
     name: 'image',
     button: '<i class="ck-icon-image"></i>'
   });
+
+  var fileBrowser = document.createElement('input');
+  fileBrowser.type = 'file';
+  fileBrowser.accept = 'image/*';
+  fileBrowser.className = 'ck-file-input';
+  fileBrowser.addEventListener('change', this.handleFile);
+  document.body.appendChild(fileBrowser);
+  this.fileBrowser = fileBrowser;
 }
 inherits(ImageEmbedCommand, EmbedCommand);
+ImageEmbedCommand.prototype = {
+  exec: function() {
+    var clickEvent = new MouseEvent('click', { bubbles: false });
+    this.fileBrowser.dispatchEvent(clickEvent);
+  },
+  handleFile: function(e) {
+    var target = e.target;
+    var file = target && target.files[0];
+    var reader = new FileReader();
+    reader.onload = function(event) {
+      var base64File = event.target.result;
+      var selectionRoot = getCurrentSelectionRootNode();
+      var image = document.createElement('img');
+      image.src = base64File;
+
+      // image needs to be placed outside of the current empty paragraph
+      var editorNode = selectionRoot.parentNode;
+      editorNode.insertBefore(image, selectionRoot);
+      editorNode.removeChild(selectionRoot);
+    };
+    reader.readAsDataURL(file);
+    target.value = null; // reset
+  }
+};
 
 function MediaEmbedCommand(options) {
   EmbedCommand.call(this, {
     name: 'media',
-    button: '<i class="ck-icon-embed"></i>'
+    button: '<i class="ck-icon-embed"></i>',
+    prompt: new Prompt({
+      command: this,
+      placeholder: 'Enter a twitter, or youtube url...'
+    })
   });
 }
 inherits(MediaEmbedCommand, EmbedCommand);

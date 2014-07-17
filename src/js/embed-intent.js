@@ -22,7 +22,7 @@ var EmbedIntent = (function() {
     embedIntent.isShowing = false;
     embedIntent.isActive = false;
 
-    function embedIntentHandler() {
+    function embedIntentHandler(e) {
       var currentNode = getCurrentSelectionRootNode();
       var currentNodeHTML = currentNode.innerHTML;
       if (currentNodeHTML === '' || currentNodeHTML === '<br>') {
@@ -30,6 +30,7 @@ var EmbedIntent = (function() {
       } else {
         embedIntent.hide();
       }
+      e.stopPropagation();
     }
 
     rootElement.addEventListener('keyup', embedIntentHandler);

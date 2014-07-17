@@ -44,3 +44,7 @@
   -webkit-transform: rotate(-135deg);
           transform: rotate(-135deg);
 }
+
+.ck-file-input {
+  display:none;
+}

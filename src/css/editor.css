@@ -30,3 +30,8 @@
   padding-left: 1.05em;
   color: #a0a0a0;
 }
+.ck-editor img {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+}

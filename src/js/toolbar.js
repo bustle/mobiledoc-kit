@@ -71,9 +71,13 @@ var Toolbar = (function() {
     },
     updateForSelection: function(selection) {
       var toolbar = this;
-      toolbar.show();
-      toolbar.positionToContent(selection.getRangeAt(0));
-      updateButtonsForSelection(toolbar.buttons, selection);
+      if (selection.isCollapsed) {
+        toolbar.hide();
+      } else {
+        toolbar.show();
+        toolbar.positionToContent(selection.getRangeAt(0));
+        updateButtonsForSelection(toolbar.buttons, selection);
+      }
     },
     positionToContent: function(content) {
       var directions = ToolbarDirection;

@@ -30,7 +30,11 @@
   padding-left: 1.05em;
   color: #a0a0a0;
 }
-
+.ck-editor img {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+}
 /**
  * Toolbar
  */
@@ -257,6 +261,10 @@
 .ck-embed-intent-btn.activated {
   -webkit-transform: rotate(-135deg);
           transform: rotate(-135deg);
+}
+
+.ck-file-input {
+  display:none;
 }
 
 /**
