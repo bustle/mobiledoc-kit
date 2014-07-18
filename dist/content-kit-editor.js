@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Jul 17, 2014
+ * Last modified: Jul 18, 2014
  */
 
 (function(exports, document) {
@@ -218,8 +218,8 @@ function tagsInSelection(selection) {
 }
 
 function selectionIsInElement(selection, element) {
-  var node = selection.focusNode,
-      parentNode = node.parentNode;
+  var node = selection.anchorNode,
+      parentNode = node && node.parentNode;
   while(parentNode) {
     if (parentNode === element) {
       return true;
@@ -1040,6 +1040,10 @@ var EmbedIntent = (function() {
     embedIntent.isActive = false;
 
     function embedIntentHandler(e) {
+      if (!selectionIsInElement(window.getSelection(), rootElement)) {
+        embedIntent.hide();
+        return;
+      }
       var currentNode = getCurrentSelectionRootNode();
       var currentNodeHTML = currentNode.innerHTML;
       if (currentNodeHTML === '' || currentNodeHTML === '<br>') {
@@ -1051,7 +1055,13 @@ var EmbedIntent = (function() {
     }
 
     rootElement.addEventListener('keyup', embedIntentHandler);
-    document.addEventListener('mouseup', embedIntentHandler);
+    document.addEventListener('mouseup', function(e) { setTimeout(function() { embedIntentHandler(e); }); });
+
+    document.addEventListener('keyup', function(e) {
+      if (e.keyCode === Keycodes.ESC) {
+        embedIntent.deactivate();
+      }
+    });
 
     window.addEventListener('resize', function() {
       if(embedIntent.isShowing) {

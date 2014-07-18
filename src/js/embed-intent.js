@@ -23,6 +23,10 @@ var EmbedIntent = (function() {
     embedIntent.isActive = false;
 
     function embedIntentHandler(e) {
+      if (!selectionIsInElement(window.getSelection(), rootElement)) {
+        embedIntent.hide();
+        return;
+      }
       var currentNode = getCurrentSelectionRootNode();
       var currentNodeHTML = currentNode.innerHTML;
       if (currentNodeHTML === '' || currentNodeHTML === '<br>') {
@@ -34,7 +38,13 @@ var EmbedIntent = (function() {
     }
 
     rootElement.addEventListener('keyup', embedIntentHandler);
-    document.addEventListener('mouseup', embedIntentHandler);
+    document.addEventListener('mouseup', function(e) { setTimeout(function() { embedIntentHandler(e); }); });
+
+    document.addEventListener('keyup', function(e) {
+      if (e.keyCode === Keycodes.ESC) {
+        embedIntent.deactivate();
+      }
+    });
 
     window.addEventListener('resize', function() {
       if(embedIntent.isShowing) {

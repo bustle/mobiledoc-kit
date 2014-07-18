@@ -51,8 +51,8 @@ function tagsInSelection(selection) {
 }
 
 function selectionIsInElement(selection, element) {
-  var node = selection.focusNode,
-      parentNode = node.parentNode;
+  var node = selection.anchorNode,
+      parentNode = node && node.parentNode;
   while(parentNode) {
     if (parentNode === element) {
       return true;
