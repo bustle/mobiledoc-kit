@@ -17,12 +17,6 @@
   transition: left 0.1s, top 0.1s;
   margin-bottom: 0.5em; /* space for arrow */
 }
-@media \\0 screen {
-  /* Safari fix: always transitions from 0,0 */
-  .ck-toolbar {
-    transition: none;
-  }
-}
 
 .ck-toolbar:after {
   content: '';
@@ -88,7 +82,7 @@
 }
 .ck-toolbar-btn:active,
 .ck-toolbar-btn.active {
-  color: #4CD964;
+  color: @themeColor;
 }
 
 .ck-toolbar-prompt {
@@ -124,5 +118,5 @@
   position: absolute;
   z-index: -1;
   background-color: rgba(76,217,100,0.08);
-  border-bottom: 2px dotted #4CD964;
+  border-bottom: 2px dotted @themeColor;
 }

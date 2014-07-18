@@ -1,6 +1,7 @@
 var gulp   = require('gulp');
 var jshint = require('gulp-jshint');
 var qunit  = require('gulp-qunit');
+var less   = require('gulp-less');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
@@ -8,6 +9,7 @@ var header = require('gulp-header');
 var footer = require('gulp-footer');
 var util   = require('gulp-util');
 var open   = require('gulp-open');
+var path   = require('path');
 
 var pkg = require('./package.json');
 
@@ -27,12 +29,12 @@ var jsSrc = [
 ];
 
 var cssSrc = [
-  './src/css/editor.css',
-  './src/css/toolbar.css',
-  './src/css/tooltip.css',
-  './src/css/embeds.css',
-  './src/css/icons.css',
-  './src/css/animations.css'
+  './src/css/editor.less',
+  './src/css/toolbar.less',
+  './src/css/tooltip.less',
+  './src/css/embeds.less',
+  './src/css/icons.less',
+  './src/css/animations.less'
 ];
 
 var distDest = './dist/';
@@ -85,6 +87,7 @@ gulp.task('build', function() {
 
   gulp.src(cssSrc)
       .pipe(concat(cssDistName))
+      .pipe(less())
       .pipe(gulp.dest(distDest));
 });
 
