@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Jul 12, 2014
+ * Last modified: Jul 22, 2014
  */
 
 (function(exports, document, undefined) {
@@ -390,7 +390,7 @@ function parseBlockMarkup(node, includeTypeNames) {
     index++;
   }
 
-  return markups;
+  return sortMarkups(markups);
 }
 
 /**
@@ -419,6 +419,21 @@ function parseElementMarkup(node, startIndex, includeTypeNames) {
       return markup;
     }
   }
+}
+
+/**
+ * Ensures markups at the same index are always in a specific order.
+ * For example, so all bold links are consistently marked up 
+ * as <a><b>text</b></a> instead of <b><a>text</a></b>
+ */
+function sortMarkups(markups) {
+  var sorted = markups.sort(function(a, b) {
+    if (a.start === b.start && a.end === b.end) {
+      return b.type - a.type;
+    }
+    return 0;
+  });
+  return sorted;
 }
 
 /**
