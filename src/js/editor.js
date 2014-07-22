@@ -53,7 +53,6 @@ ContentKit.Editor = (function() {
     if (element) {
       var className = element.className;
       var dataset = element.dataset;
-      var textFormatToolbar = new Toolbar({ commands: editor.textFormatCommands });
 
       if (!editorClassNameRegExp.test(className)) {
         className += (className ? ' ' : '') + editorClassName;
@@ -69,20 +68,23 @@ ContentKit.Editor = (function() {
 
       element.setAttribute('contentEditable', true);
       editor.element = element;
-      editor.textFormatToolbar = textFormatToolbar;
+
+      bindTextSelectionEvents(editor);
+      bindTypingEvents(editor);
+      bindPasteEvents(editor);
 
       var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
 
+      editor.textFormatToolbar = new Toolbar({ commands: editor.textFormatCommands });
+
       if(editor.embedCommands) {
+        // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
+        // TODO: manage event listener order
         var embedIntent = new EmbedIntent({
           commands: editor.embedCommands,
           rootElement: element
         });
       }
-
-      bindTextSelectionEvents(editor);
-      bindTypingEvents(editor);
-      bindPasteEvents(editor);
       
       if(editor.autofocus) { element.focus(); }
     }

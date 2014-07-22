@@ -23,11 +23,11 @@ var EmbedIntent = (function() {
     embedIntent.isActive = false;
 
     function embedIntentHandler(e) {
-      if (!selectionIsInElement(window.getSelection(), rootElement)) {
+      var currentNode = getCurrentSelectionRootNode();
+      if (!currentNode) {
         embedIntent.hide();
         return;
       }
-      var currentNode = getCurrentSelectionRootNode();
       var currentNodeHTML = currentNode.innerHTML;
       if (currentNodeHTML === '' || currentNodeHTML === '<br>') {
         embedIntent.showAt(currentNode);
@@ -42,7 +42,7 @@ var EmbedIntent = (function() {
 
     document.addEventListener('keyup', function(e) {
       if (e.keyCode === Keycodes.ESC) {
-        embedIntent.deactivate();
+        embedIntent.hide();
       }
     });
 
@@ -61,6 +61,7 @@ var EmbedIntent = (function() {
       }
     },
     showAt: function(node) {
+      this.hide();
       this.show();
       this.atNode = node;
       positionElementToLeftOf(this.element, node);

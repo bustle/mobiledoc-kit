@@ -71,7 +71,7 @@ gulp.task('lint', function() {
       .pipe(jshint.reporter('default'));
 });
 
-gulp.task('lint-built', function() {
+gulp.task('lint-built', ['build'], function() {
   return gulp.src(jsDistPath)
              .pipe(jshint('.jshintrc'))
              .pipe(jshint.reporter('default'));
@@ -91,12 +91,12 @@ gulp.task('build', function() {
       .pipe(gulp.dest(distDest));
 });
 
-gulp.task('test', function() {
+gulp.task('test', ['build', 'lint-built'], function() {
   return gulp.src(testRunner)
              .pipe(qunit());
 });
 
-gulp.task('test-browser', function(){
+gulp.task('test-browser', ['build', 'lint-built'], function(){
   return gulp.src(testRunner)
              .pipe(open('<% file.path %>')); 
 });

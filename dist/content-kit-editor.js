@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Jul 18, 2014
+ * Last modified: Jul 22, 2014
  */
 
 (function(exports, document) {
@@ -166,7 +166,8 @@ function positionElementToRightOf(element, rightOfElement) {
 }
 
 function getDirectionOfSelection(selection) {
-  var position = selection.anchorNode.compareDocumentPosition(selection.focusNode);
+  var node = selection.anchorNode;
+  var position = node && node.compareDocumentPosition(selection.focusNode);
   if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
     return SelectionDirection.LEFT_TO_RIGHT;
   } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
@@ -183,7 +184,7 @@ function getCurrentSelectionNode(selection) {
 
 function getCurrentSelectionRootNode() {
   var node = getCurrentSelectionNode();
-  var tag = node.tagName;
+  var tag = node && node.tagName;
   while (tag && RootTags.indexOf(tag) === -1) {
     if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     node = node.parentNode;
@@ -625,7 +626,6 @@ ContentKit.Editor = (function() {
     if (element) {
       var className = element.className;
       var dataset = element.dataset;
-      var textFormatToolbar = new Toolbar({ commands: editor.textFormatCommands });
 
       if (!editorClassNameRegExp.test(className)) {
         className += (className ? ' ' : '') + editorClassName;
@@ -641,20 +641,23 @@ ContentKit.Editor = (function() {
 
       element.setAttribute('contentEditable', true);
       editor.element = element;
-      editor.textFormatToolbar = textFormatToolbar;
+
+      bindTextSelectionEvents(editor);
+      bindTypingEvents(editor);
+      bindPasteEvents(editor);
 
       var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
 
+      editor.textFormatToolbar = new Toolbar({ commands: editor.textFormatCommands });
+
       if(editor.embedCommands) {
+        // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
+        // TODO: manage event listener order
         var embedIntent = new EmbedIntent({
           commands: editor.embedCommands,
           rootElement: element
         });
       }
-
-      bindTextSelectionEvents(editor);
-      bindTypingEvents(editor);
-      bindPasteEvents(editor);
       
       if(editor.autofocus) { element.focus(); }
     }
@@ -1040,11 +1043,11 @@ var EmbedIntent = (function() {
     embedIntent.isActive = false;
 
     function embedIntentHandler(e) {
-      if (!selectionIsInElement(window.getSelection(), rootElement)) {
+      var currentNode = getCurrentSelectionRootNode();
+      if (!currentNode) {
         embedIntent.hide();
         return;
       }
-      var currentNode = getCurrentSelectionRootNode();
       var currentNodeHTML = currentNode.innerHTML;
       if (currentNodeHTML === '' || currentNodeHTML === '<br>') {
         embedIntent.showAt(currentNode);
@@ -1059,7 +1062,7 @@ var EmbedIntent = (function() {
 
     document.addEventListener('keyup', function(e) {
       if (e.keyCode === Keycodes.ESC) {
-        embedIntent.deactivate();
+        embedIntent.hide();
       }
     });
 
@@ -1078,6 +1081,7 @@ var EmbedIntent = (function() {
       }
     },
     showAt: function(node) {
+      this.hide();
       this.show();
       this.atNode = node;
       positionElementToLeftOf(this.element, node);

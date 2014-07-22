@@ -1,5 +1,6 @@
 function getDirectionOfSelection(selection) {
-  var position = selection.anchorNode.compareDocumentPosition(selection.focusNode);
+  var node = selection.anchorNode;
+  var position = node && node.compareDocumentPosition(selection.focusNode);
   if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
     return SelectionDirection.LEFT_TO_RIGHT;
   } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
@@ -16,7 +17,7 @@ function getCurrentSelectionNode(selection) {
 
 function getCurrentSelectionRootNode() {
   var node = getCurrentSelectionNode();
-  var tag = node.tagName;
+  var tag = node && node.tagName;
   while (tag && RootTags.indexOf(tag) === -1) {
     if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     node = node.parentNode;
