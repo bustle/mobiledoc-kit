@@ -73,6 +73,8 @@ ContentKit.Editor = (function() {
       bindTypingEvents(editor);
       bindPasteEvents(editor);
 
+      editor.parser = options.parser || new ContentKit.HTMLParser();
+
       var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
 
       editor.textFormatToolbar = new Toolbar({ commands: editor.textFormatCommands });
@@ -90,17 +92,8 @@ ContentKit.Editor = (function() {
     }
   }
 
-  Editor.prototype = {
-    parse: function() {
-      var editor = this;
-      if (!editor.parser) {
-        if (!ContentKit.HTMLParser) {
-          throw new Error('Include the ContentKit compiler for parsing');
-        }
-        editor.parser = new ContentKit.HTMLParser();
-      }
-      return editor.parser.parse(editor.element.innerHTML);
-    }
+  Editor.prototype.parse = function() {
+    return this.parser.parse(this.element.innerHTML);
   };
 
   function bindTextSelectionEvents(editor) {
