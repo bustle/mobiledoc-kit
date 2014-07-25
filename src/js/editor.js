@@ -30,7 +30,7 @@ ContentKit.Editor = (function() {
     }
 
     if (elements) {
-      options = extend(defaults, options);
+      options = merge(defaults, options);
       elementsLen = elements.length;
       for (i = 0; i < elementsLen; i++) {
         editors.push(new Editor(elements[i], options));
@@ -48,7 +48,7 @@ ContentKit.Editor = (function() {
    */
   function Editor(element, options) {
     var editor = this;
-    extend(editor, options);
+    merge(editor, options);
 
     if (element) {
       var className = element.className;
@@ -69,15 +69,13 @@ ContentKit.Editor = (function() {
       element.setAttribute('contentEditable', true);
       editor.element = element;
 
-      bindTextSelectionEvents(editor);
       bindTypingEvents(editor);
       bindPasteEvents(editor);
 
       editor.parser = options.parser || new ContentKit.HTMLParser();
 
+      var textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
       var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
-
-      editor.textFormatToolbar = new Toolbar({ commands: editor.textFormatCommands });
 
       if(editor.embedCommands) {
         // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
@@ -96,25 +94,13 @@ ContentKit.Editor = (function() {
     return this.parser.parse(this.element.innerHTML);
   };
 
-  function bindTextSelectionEvents(editor) {
-    // Mouse text selection
-    document.addEventListener('mouseup', function(e) {
-      setTimeout(function(){ handleTextSelection(e, editor); });
-    });
-
-    // Keyboard text selection
-    editor.element.addEventListener('keyup', function(e) {
-      handleTextSelection(e, editor);
-    });
-  }
-
   function bindTypingEvents(editor) {
     var editorEl = editor.element;
 
     // Breaks out of blockquotes when pressing enter.
     editorEl.addEventListener('keyup', function(e) {
       if(!e.shiftKey && e.which === Keycodes.ENTER) {
-        if(Tags.QUOTE === getCurrentSelectionRootTag()) {
+        if(Tags.QUOTE === getSelectionBlockTagName()) {
           document.execCommand('formatBlock', false, editor.defaultFormatter);
           e.stopPropagation();
         }
@@ -126,7 +112,7 @@ ContentKit.Editor = (function() {
       var selectedText = window.getSelection().anchorNode.textContent,
           selection, selectionNode, command, replaceRegex;
 
-      if (Tags.LIST_ITEM !== getCurrentSelectionTag()) {
+      if (Tags.LIST_ITEM !== getSelectionTagName()) {
         if (Regex.UL_START.test(selectedText)) {
           command = new UnorderedListCommand();
           replaceRegex = Regex.UL_START;
@@ -149,19 +135,10 @@ ContentKit.Editor = (function() {
     // Assure there is always a supported root tag, and not empty text nodes or divs.
     // Usually only happens when selecting all and deleting content.
     editorEl.addEventListener('keyup', function() {
-      if (this.innerHTML.length && RootTags.indexOf(getCurrentSelectionRootTag()) === -1) {
+      if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
         document.execCommand('formatBlock', false, editor.defaultFormatter);
       }
     });
-  }
-
-  function handleTextSelection(e, editor) {
-    var selection = window.getSelection();
-    if (selection.isCollapsed || selection.toString().trim() === '' || !selectionIsInElement(selection, editor.element)) {
-      editor.textFormatToolbar.hide();
-    } else {
-      editor.textFormatToolbar.updateForSelection(selection);
-    }
   }
 
   function bindPasteEvents(editor) {

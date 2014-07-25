@@ -20,6 +20,7 @@ var jsSrc = [
   './src/js/utils/object-utils.js',
   './src/js/utils/element-utils.js',
   './src/js/utils/selection-utils.js',
+  './src/js/view.js',
   './src/js/prompt.js',
   './src/js/commands.js',
   './src/js/editor.js',

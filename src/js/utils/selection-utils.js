@@ -9,58 +9,51 @@ function getDirectionOfSelection(selection) {
   return SelectionDirection.SAME_NODE;
 }
 
-function getCurrentSelectionNode(selection) {
+function getSelectionElement(selection) {
   selection = selection || window.getSelection();
   var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.anchorNode : selection.focusNode;
   return node && (node.nodeType === 3 ? node.parentNode : node);
 }
 
-function getCurrentSelectionRootNode() {
-  var node = getCurrentSelectionNode();
-  var tag = node && node.tagName;
+function getSelectionBlockElement() {
+  var element = getSelectionElement();
+  var tag = element && element.tagName;
   while (tag && RootTags.indexOf(tag) === -1) {
-    if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
-    node = node.parentNode;
-    tag = node.tagName;
+    if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+    element = element.parentNode;
+    tag = element.tagName;
   }
-  return node;
+  return element;
 }
 
-function getCurrentSelectionTag() {
-  var node = getCurrentSelectionNode();
-  return node ? node.tagName : null;
+function getSelectionTagName() {
+  var element = getSelectionElement();
+  return element ? element.tagName : null;
 }
 
-function getCurrentSelectionRootTag() {
-  var node = getCurrentSelectionRootNode();
-  return node ? node.tagName : null;
+function getSelectionBlockTagName() {
+  var element = getSelectionBlockElement();
+  return element ? element.tagName : null;
 }
 
 function tagsInSelection(selection) {
-  var node = getCurrentSelectionNode(selection);
+  var element = getSelectionElement(selection);
   var tags = [];
   if (!selection.isCollapsed) {
-    while(node) {
-      if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
-      if (node.tagName) {
-        tags.push(node.tagName);
+    while(element) {
+      if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+      if (element.tagName) {
+        tags.push(element.tagName);
       }
-      node = node.parentNode;
+      element = element.parentNode;
     }
   }
   return tags;
 }
 
 function selectionIsInElement(selection, element) {
-  var node = selection.anchorNode,
-      parentNode = node && node.parentNode;
-  while(parentNode) {
-    if (parentNode === element) {
-      return true;
-    }
-    parentNode = parentNode.parentNode;
-  }
-  return false;
+  var node = selection.anchorNode;
+  return node && nodeIsDescendantOfElement(node, element);
 }
 
 function moveCursorToBeginningOfSelection(selection) {

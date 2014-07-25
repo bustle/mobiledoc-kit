@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Jul 22, 2014
+ * Last modified: Jul 25, 2014
  */
 
 (function(exports, document) {
@@ -55,7 +55,7 @@ var Tags = {
 
 var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.LIST, Tags.ORDERED_LIST ];
 
-function extend(object, updates) {
+function merge(object, updates) {
   updates = updates || {};
   for(var o in updates) {
     if (updates.hasOwnProperty(o)) {
@@ -106,6 +106,17 @@ function getEventTargetMatchingTag(tag, target, container) {
     }
     target = target.parentNode;
   }
+}
+
+function nodeIsDescendantOfElement(node, element) {
+  var parentNode = node.parentNode;
+  while(parentNode) {
+    if (parentNode === element) {
+      return true;
+    }
+    parentNode = parentNode.parentNode;
+  }
+  return false;
 }
 
 function getElementRelativeOffset(element) {
@@ -176,58 +187,51 @@ function getDirectionOfSelection(selection) {
   return SelectionDirection.SAME_NODE;
 }
 
-function getCurrentSelectionNode(selection) {
+function getSelectionElement(selection) {
   selection = selection || window.getSelection();
   var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.anchorNode : selection.focusNode;
   return node && (node.nodeType === 3 ? node.parentNode : node);
 }
 
-function getCurrentSelectionRootNode() {
-  var node = getCurrentSelectionNode();
-  var tag = node && node.tagName;
+function getSelectionBlockElement() {
+  var element = getSelectionElement();
+  var tag = element && element.tagName;
   while (tag && RootTags.indexOf(tag) === -1) {
-    if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
-    node = node.parentNode;
-    tag = node.tagName;
+    if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+    element = element.parentNode;
+    tag = element.tagName;
   }
-  return node;
+  return element;
 }
 
-function getCurrentSelectionTag() {
-  var node = getCurrentSelectionNode();
-  return node ? node.tagName : null;
+function getSelectionTagName() {
+  var element = getSelectionElement();
+  return element ? element.tagName : null;
 }
 
-function getCurrentSelectionRootTag() {
-  var node = getCurrentSelectionRootNode();
-  return node ? node.tagName : null;
+function getSelectionBlockTagName() {
+  var element = getSelectionBlockElement();
+  return element ? element.tagName : null;
 }
 
 function tagsInSelection(selection) {
-  var node = getCurrentSelectionNode(selection);
+  var element = getSelectionElement(selection);
   var tags = [];
   if (!selection.isCollapsed) {
-    while(node) {
-      if (node.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
-      if (node.tagName) {
-        tags.push(node.tagName);
+    while(element) {
+      if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+      if (element.tagName) {
+        tags.push(element.tagName);
       }
-      node = node.parentNode;
+      element = element.parentNode;
     }
   }
   return tags;
 }
 
 function selectionIsInElement(selection, element) {
-  var node = selection.anchorNode,
-      parentNode = node && node.parentNode;
-  while(parentNode) {
-    if (parentNode === element) {
-      return true;
-    }
-    parentNode = parentNode.parentNode;
-  }
-  return false;
+  var node = selection.anchorNode;
+  return node && nodeIsDescendantOfElement(node, element);
 }
 
 function moveCursorToBeginningOfSelection(selection) {
@@ -254,56 +258,87 @@ function selectNode(node) {
   selection.addRange(range);
 }
 
+function View(options) {
+  this.tagName = options.tagName || 'div';
+  this.classNames = options.classNames || [];
+  this.element = document.createElement(this.tagName);
+  this.element.className = this.classNames.join(' ');
+  this.container = options.container || document.body;
+  this.isShowing = false;
+}
+
+View.prototype = {
+  show: function() {
+    var view = this;
+    if(!view.isShowing) {
+      view.container.appendChild(view.element);
+      view.isShowing = true;
+      return true;
+    }
+  },
+  hide: function() {
+    var view = this;
+    if(view.isShowing) {
+      view.container.removeChild(view.element);
+      view.isShowing = false;
+      return true;
+    }
+  },
+  addClass: function(className) {
+    this.classNames.push(className);
+    this.element.className = this.classNames.join(' ');
+  },
+  removeClass: function(className) {
+    this.classNames.splice(this.classNames.indexOf(className), 1);
+    this.element.className = this.classNames.join(' ');
+  }
+};
+
 var Prompt = (function() {
 
   var container = document.body;
   var hiliter = createDiv('ck-editor-hilite');
 
   function Prompt(options) {
-    if (options) {
-      var prompt = this;
-      var element = document.createElement('input');
-      prompt.command = options.command;
-      prompt.element = element;
-      element.type = 'text';
-      element.placeholder = options.placeholder || '';
-      element.addEventListener('mouseup', function(e) { e.stopPropagation(); }); // prevents closing prompt when clicking input 
-      element.addEventListener('keyup', function(e) {
-        var entry = this.value;
-        if(entry && !e.shiftKey && e.which === Keycodes.ENTER) {
-          restoreRange(prompt.range);
-          prompt.command.exec(entry);
-          if (prompt.onComplete) { prompt.onComplete(); }
-        }
-      });
+    var prompt = this;
+    options.tagName = 'input';
+    View.call(prompt, options);
 
-      window.addEventListener('resize', function() {
-        var activeHilite = hiliter.parentNode;
-        var range = prompt.range;
-        if(activeHilite && range) {
-          positionHiliteRange(range);
-        }
-      });
-    }
+    prompt.command = options.command;
+    prompt.element.placeholder = options.placeholder || '';
+    prompt.element.addEventListener('mouseup', function(e) { e.stopPropagation(); }); // prevents closing prompt when clicking input 
+    prompt.element.addEventListener('keyup', function(e) {
+      var entry = this.value;
+      if(entry && !e.shiftKey && e.which === Keycodes.ENTER) {
+        restoreRange(prompt.range);
+        prompt.command.exec(entry);
+        if (prompt.onComplete) { prompt.onComplete(); }
+      }
+    });
+
+    window.addEventListener('resize', function() {
+      var activeHilite = hiliter.parentNode;
+      var range = prompt.range;
+      if(activeHilite && range) {
+        positionHiliteRange(range);
+      }
+    });
   }
+  inherits(Prompt, View);
 
   Prompt.prototype = {
-    display: function(callback) {
+    show: function(callback) {
       var prompt = this;
       var element = prompt.element;
+      element.value = null;
       prompt.range = window.getSelection().getRangeAt(0); // save the selection range
       container.appendChild(hiliter);
       positionHiliteRange(prompt.range);
-      prompt.clear();
       setTimeout(function(){ element.focus(); }); // defer focus (disrupts mouseup events)
       if (callback) { prompt.onComplete = callback; }
     },
-    dismiss: function() {
-      this.clear();
+    hide: function() {
       container.removeChild(hiliter);
-    },
-    clear: function() {
-      this.element.value = null;
     }
   };
 
@@ -365,7 +400,7 @@ function BoldCommand() {
 inherits(BoldCommand, TextFormatCommand);
 BoldCommand.prototype.exec = function() {
   // Don't allow executing bold command on heading tags
-  if (!Regex.HEADING_TAG.test(getCurrentSelectionRootTag())) {
+  if (!Regex.HEADING_TAG.test(getSelectionBlockTagName())) {
     BoldCommand._super.prototype.exec.call(this);
   }
 };
@@ -394,7 +429,7 @@ function LinkCommand() {
 }
 inherits(LinkCommand, TextFormatCommand);
 LinkCommand.prototype.exec = function(url) {
-  if(this.tag === getCurrentSelectionTag()) {
+  if(this.tag === getSelectionTagName()) {
     this.unexec();
   } else {
     if (!Regex.HTTP_PROTOCOL.test(url)) {
@@ -413,16 +448,16 @@ FormatBlockCommand.prototype.exec = function() {
   var tag = this.tag;
   // Brackets neccessary for certain browsers
   var value =  '<' + tag + '>';
-  var rootNode = getCurrentSelectionRootNode();
+  var blockElement = getSelectionBlockElement();
   // Allow block commands to be toggled back to a paragraph
-  if(tag === rootNode.tagName) {
+  if(tag === blockElement.tagName) {
     value = Tags.PARAGRAPH;
   } else {
     // Flattens the selection before applying the block format.
     // Otherwise, undesirable nested blocks can occur.
-    var flatNode = document.createTextNode(rootNode.textContent);
-    rootNode.parentNode.insertBefore(flatNode, rootNode);
-    rootNode.parentNode.removeChild(rootNode);
+    var flatNode = document.createTextNode(blockElement.textContent);
+    blockElement.parentNode.insertBefore(flatNode, blockElement);
+    blockElement.parentNode.removeChild(blockElement);
     selectNode(flatNode);
   }
   
@@ -464,13 +499,13 @@ ListCommand.prototype.exec = function() {
   ListCommand._super.prototype.exec.call(this);
   
   // After creation, lists need to be unwrapped from the default formatter P tag
-  var listNode = getCurrentSelectionRootNode();
-  var wrapperNode = listNode.parentNode;
-  if (wrapperNode.firstChild === listNode) {
+  var listElement = getSelectionBlockElement();
+  var wrapperNode = listElement.parentNode;
+  if (wrapperNode.firstChild === listElement) {
     var editorNode = wrapperNode.parentNode;
-    editorNode.insertBefore(listNode, wrapperNode);
+    editorNode.insertBefore(listElement, wrapperNode);
     editorNode.removeChild(wrapperNode);
-    selectNode(listNode);
+    selectNode(listElement);
   }
 };
 
@@ -538,14 +573,14 @@ ImageEmbedCommand.prototype = {
     var reader = new FileReader();
     reader.onload = function(event) {
       var base64File = event.target.result;
-      var selectionRoot = getCurrentSelectionRootNode();
+      var blockElement = getSelectionBlockElement();
       var image = document.createElement('img');
       image.src = base64File;
 
       // image needs to be placed outside of the current empty paragraph
-      var editorNode = selectionRoot.parentNode;
-      editorNode.insertBefore(image, selectionRoot);
-      editorNode.removeChild(selectionRoot);
+      var editorNode = blockElement.parentNode;
+      editorNode.insertBefore(image, blockElement);
+      editorNode.removeChild(blockElement);
     };
     reader.readAsDataURL(file);
     target.value = null; // reset
@@ -603,7 +638,7 @@ ContentKit.Editor = (function() {
     }
 
     if (elements) {
-      options = extend(defaults, options);
+      options = merge(defaults, options);
       elementsLen = elements.length;
       for (i = 0; i < elementsLen; i++) {
         editors.push(new Editor(elements[i], options));
@@ -621,7 +656,7 @@ ContentKit.Editor = (function() {
    */
   function Editor(element, options) {
     var editor = this;
-    extend(editor, options);
+    merge(editor, options);
 
     if (element) {
       var className = element.className;
@@ -642,15 +677,13 @@ ContentKit.Editor = (function() {
       element.setAttribute('contentEditable', true);
       editor.element = element;
 
-      bindTextSelectionEvents(editor);
       bindTypingEvents(editor);
       bindPasteEvents(editor);
 
       editor.parser = options.parser || new ContentKit.HTMLParser();
 
+      var textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
       var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
-
-      editor.textFormatToolbar = new Toolbar({ commands: editor.textFormatCommands });
 
       if(editor.embedCommands) {
         // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
@@ -669,25 +702,13 @@ ContentKit.Editor = (function() {
     return this.parser.parse(this.element.innerHTML);
   };
 
-  function bindTextSelectionEvents(editor) {
-    // Mouse text selection
-    document.addEventListener('mouseup', function(e) {
-      setTimeout(function(){ handleTextSelection(e, editor); });
-    });
-
-    // Keyboard text selection
-    editor.element.addEventListener('keyup', function(e) {
-      handleTextSelection(e, editor);
-    });
-  }
-
   function bindTypingEvents(editor) {
     var editorEl = editor.element;
 
     // Breaks out of blockquotes when pressing enter.
     editorEl.addEventListener('keyup', function(e) {
       if(!e.shiftKey && e.which === Keycodes.ENTER) {
-        if(Tags.QUOTE === getCurrentSelectionRootTag()) {
+        if(Tags.QUOTE === getSelectionBlockTagName()) {
           document.execCommand('formatBlock', false, editor.defaultFormatter);
           e.stopPropagation();
         }
@@ -699,7 +720,7 @@ ContentKit.Editor = (function() {
       var selectedText = window.getSelection().anchorNode.textContent,
           selection, selectionNode, command, replaceRegex;
 
-      if (Tags.LIST_ITEM !== getCurrentSelectionTag()) {
+      if (Tags.LIST_ITEM !== getSelectionTagName()) {
         if (Regex.UL_START.test(selectedText)) {
           command = new UnorderedListCommand();
           replaceRegex = Regex.UL_START;
@@ -722,19 +743,10 @@ ContentKit.Editor = (function() {
     // Assure there is always a supported root tag, and not empty text nodes or divs.
     // Usually only happens when selecting all and deleting content.
     editorEl.addEventListener('keyup', function() {
-      if (this.innerHTML.length && RootTags.indexOf(getCurrentSelectionRootTag()) === -1) {
+      if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
         document.execCommand('formatBlock', false, editor.defaultFormatter);
       }
     });
-  }
-
-  function handleTextSelection(e, editor) {
-    var selection = window.getSelection();
-    if (selection.isCollapsed || selection.toString().trim() === '' || !selectionIsInElement(selection, editor.element)) {
-      editor.textFormatToolbar.hide();
-    } else {
-      editor.textFormatToolbar.updateForSelection(selection);
-    }
   }
 
   function bindPasteEvents(editor) {
@@ -774,28 +786,26 @@ ContentKit.Editor = (function() {
 
 var Toolbar = (function() {
 
-  var container = document.body;
-
   function Toolbar(options) {
     var toolbar = this;
-    var commands = options && options.commands;
+    var commands = options.commands;
     var commandCount = commands && commands.length;
-    var element = createDiv('ck-toolbar');
     var i, button;
-    toolbar.element = element;
     toolbar.direction = options.direction || ToolbarDirection.TOP;
+    options.classNames = ['ck-toolbar'];
     if (toolbar.direction === ToolbarDirection.RIGHT) {
-      element.className += ' right';
+      options.classNames.push('right');
     }
-    toolbar.isShowing = false;
+
+    View.call(toolbar, options);
+
     toolbar.activePrompt = null;
     toolbar.buttons = [];
-    bindEvents(toolbar);
 
     toolbar.promptContainerElement = createDiv('ck-toolbar-prompt');
     toolbar.buttonContainerElement = createDiv('ck-toolbar-buttons');
-    element.appendChild(toolbar.promptContainerElement);
-    element.appendChild(toolbar.buttonContainerElement);
+    toolbar.element.appendChild(toolbar.promptContainerElement);
+    toolbar.element.appendChild(toolbar.buttonContainerElement);
 
     for(i = 0; i < commandCount; i++) {
       button = new ToolbarButton({ command: commands[i], toolbar: toolbar });
@@ -803,90 +813,67 @@ var Toolbar = (function() {
       toolbar.buttonContainerElement.appendChild(button.element);
     }
   }
+  inherits(Toolbar, View);
 
-  Toolbar.prototype = {
-    show: function() {
-      var toolbar = this;
-      if(!toolbar.isShowing) {
-        container.appendChild(toolbar.element);
-        toolbar.isShowing = true;
-      }
-    },
-    hide: function() {
-      var toolbar = this;
-      var element = toolbar.element;
-      var style = element.style;
-      if(toolbar.isShowing) {
-        container.removeChild(element);
-        style.left = '';
-        style.top = '';
-        toolbar.dismissPrompt();
-        toolbar.isShowing = false;
-      }
-    },
-    displayPrompt: function(prompt) {
-      var toolbar = this;
-      swapElements(toolbar.promptContainerElement, toolbar.buttonContainerElement);
-      toolbar.promptContainerElement.appendChild(prompt.element);
-      prompt.display(function() {
-        toolbar.dismissPrompt();
-        toolbar.updateForSelection(window.getSelection());
-      });
-      toolbar.activePrompt = prompt;
-    },
-    dismissPrompt: function() {
-      var toolbar = this;
-      var activePrompt = toolbar.activePrompt;
-      if (activePrompt) {
-        activePrompt.dismiss();
-        swapElements(toolbar.buttonContainerElement, toolbar.promptContainerElement);
-        toolbar.activePrompt = null;
-      }
-    },
-    updateForSelection: function(selection) {
-      var toolbar = this;
-      if (selection.isCollapsed) {
-        toolbar.hide();
-      } else {
-        toolbar.show();
-        toolbar.positionToContent(selection.getRangeAt(0));
-        updateButtonsForSelection(toolbar.buttons, selection);
-      }
-    },
-    positionToContent: function(content) {
-      var directions = ToolbarDirection;
-      var positioningMethod;
-      switch(this.direction) {
-        case directions.RIGHT:
-          positioningMethod = positionElementToRightOf;
-          break;
-        default:
-          positioningMethod = positionElementCenteredAbove;
-      }
-      positioningMethod(this.element, content);
+  Toolbar.prototype.hide = function() {
+    if (Toolbar._super.prototype.hide.call(this)) {
+      var style = this.element.style;
+      style.left = '';
+      style.top = '';
+      this.dismissPrompt();
     }
   };
 
-  function bindEvents(toolbar) {
-    document.addEventListener('keyup', function(e) {
-      if (e.keyCode === Keycodes.ESC) {
-        toolbar.hide();
-      }
+  Toolbar.prototype.displayPrompt = function(prompt) {
+    var toolbar = this;
+    swapElements(toolbar.promptContainerElement, toolbar.buttonContainerElement);
+    toolbar.promptContainerElement.appendChild(prompt.element);
+    prompt.show(function() {
+      toolbar.dismissPrompt();
+      toolbar.updateForSelection(window.getSelection());
     });
+    toolbar.activePrompt = prompt;
+  };
 
-    window.addEventListener('resize', function() {
-      var activePrompt = toolbar.activePrompt;
-      if(toolbar.isShowing) {
-        toolbar.positionToContent(activePrompt ? activePrompt.range : window.getSelection().getRangeAt(0));
-      }
-    });
-  }
+  Toolbar.prototype.dismissPrompt = function(prompt) {
+    var toolbar = this;
+    var activePrompt = toolbar.activePrompt;
+    if (activePrompt) {
+      activePrompt.hide();
+      swapElements(toolbar.buttonContainerElement, toolbar.promptContainerElement);
+      toolbar.activePrompt = null;
+    }
+  };
+  
+  Toolbar.prototype.updateForSelection = function(selection) {
+    var toolbar = this;
+    if (selection.isCollapsed) {
+      toolbar.hide();
+    } else {
+      toolbar.show();
+      toolbar.positionToContent(selection.getRangeAt(0));
+      updateButtonsForSelection(toolbar.buttons, selection);
+    }
+  };
+
+  Toolbar.prototype.positionToContent = function(content) {
+    var directions = ToolbarDirection;
+    var positioningMethod;
+    switch(this.direction) {
+      case directions.RIGHT:
+        positioningMethod = positionElementToRightOf;
+        break;
+      default:
+        positioningMethod = positionElementCenteredAbove;
+    }
+    positioningMethod(this.element, content);
+  };
 
   function updateButtonsForSelection(buttons, selection) {
     var selectedTags = tagsInSelection(selection),
         len = buttons.length,
         i, button;
-
+        
     for (i = 0; i < len; i++) {
       button = buttons[i];
       if (selectedTags.indexOf(button.command.tag) > -1) {
@@ -898,6 +885,47 @@ var Toolbar = (function() {
   }
 
   return Toolbar;
+}());
+
+
+var TextFormatToolbar = (function() {
+
+  function TextFormatToolbar(options) {
+    var toolbar = this;
+    Toolbar.call(this, options);
+    toolbar.rootElement = options.rootElement;
+    toolbar.rootElement.addEventListener('keyup', function() { toolbar.handleTextSelection(); });
+
+    document.addEventListener('keyup', function(e) {
+      if (e.keyCode === Keycodes.ESC) {
+        toolbar.hide();
+      }
+    });
+
+    document.addEventListener('mouseup', function() {
+      setTimeout(function() { toolbar.handleTextSelection(); });
+    });
+
+    window.addEventListener('resize', function() {
+      if(toolbar.isShowing) {
+        var activePromptRange = toolbar.activePrompt && toolbar.activePrompt.range;
+        toolbar.positionToContent(activePromptRange ? activePromptRange : window.getSelection().getRangeAt(0));
+      }
+    });
+  }
+  inherits(TextFormatToolbar, Toolbar);
+
+  TextFormatToolbar.prototype.handleTextSelection = function() {
+    var toolbar = this;
+    var selection = window.getSelection();
+    if (selection.isCollapsed || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
+      toolbar.hide();
+    } else {
+      toolbar.updateForSelection(selection);
+    }
+  };
+
+  return TextFormatToolbar;
 }());
 
 var ToolbarButton = (function() {
@@ -951,78 +979,57 @@ var ToolbarButton = (function() {
   return ToolbarButton;
 }());
 
-var Tooltip = (function() {
+function Tooltip(options) {
+  var tooltip = this;
+  var rootElement = options.rootElement;
+  var delay = options.delay || 200;
+  var timeout;
+  options.classNames = ['ck-tooltip'];
+  View.call(tooltip, options);
 
-  var container = document.body;
-  var className = 'ck-tooltip';
-  var delay = 200;
-
-  function Tooltip(options) {
-    var tooltip = this;
-    var rootElement = options.rootElement;
-    var timeout;
-
-    tooltip.element = createDiv(className);
-    tooltip.isShowing = false;
-
-    rootElement.addEventListener('mouseover', function(e) {
-      var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
-      if (target) {
-        timeout = setTimeout(function() {
-          tooltip.showLink(target.href, target);
-        }, delay);
-      }
-    });
-    
-    rootElement.addEventListener('mouseout', function(e) {
-      clearTimeout(timeout);
-      var toElement = e.toElement || e.relatedTarget;
-      if (toElement && toElement.className !== className) {
-        tooltip.hide();
-      }
-    });
-  }
-
-  Tooltip.prototype = {
-    showMessage: function(message, element) {
-      var tooltip = this;
-      var tooltipElement = tooltip.element;
-
-      tooltipElement.innerHTML = message;
-      if (!tooltip.isShowing) {
-        container.appendChild(tooltipElement);
-        tooltip.isShowing = true;
-      }
-      positionElementCenteredBelow(tooltipElement, element);
-    },
-    showLink: function(link, element) {
-      var message = '<a href="' + link + '" target="_blank">' + link + '</a>';
-      this.showMessage(message, element);
-    },
-    hide: function() {
-      var tooltip = this;
-      if (tooltip.isShowing) {
-        container.removeChild(tooltip.element);
-        tooltip.isShowing = false;
-      }
+  rootElement.addEventListener('mouseover', function(e) {
+    var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
+    if (target) {
+      timeout = setTimeout(function() {
+        tooltip.showLink(target.href, target);
+      }, delay);
     }
-  };
+  });
+  
+  rootElement.addEventListener('mouseout', function(e) {
+    clearTimeout(timeout);
+    var toElement = e.toElement || e.relatedTarget;
+    if (toElement && toElement.className !== tooltip.element.className) {
+      tooltip.hide();
+    }
+  });
+}
+inherits(Tooltip, View);
 
-  return Tooltip;
-}());
+Tooltip.prototype.showMessage = function(message, element) {
+  var tooltip = this;
+  var tooltipElement = tooltip.element;
+  tooltipElement.innerHTML = message;
+  tooltip.show();
+  positionElementCenteredBelow(tooltipElement, element);
+};
+
+Tooltip.prototype.showLink = function(link, element) {
+  var message = '<a href="' + link + '" target="_blank">' + link + '</a>';
+  this.showMessage(message, element);
+};
 
 var EmbedIntent = (function() {
 
-  var container = document.body;
-  var className = 'ck-embed-intent-btn';
-
   function EmbedIntent(options) {
     var embedIntent = this;
-    var element = document.createElement('button');
     var rootElement = options.rootElement;
-    element.className = className;
-    element.title = 'Insert image or embed...';
-    element.addEventListener('mouseup', function(e) {
+    options.tagName = 'button';
+    options.classNames = ['ck-embed-intent-btn'];
+    View.call(embedIntent, options);
+
+    embedIntent.element.title = 'Insert image or embed...';
+    embedIntent.element.addEventListener('mouseup', function(e) {
       if (embedIntent.isActive) {
         embedIntent.deactivate();
       } else {
@@ -1030,28 +1037,28 @@ var EmbedIntent = (function() {
       }
       e.stopPropagation();
     });
-    embedIntent.element = element;
     embedIntent.toolbar = new Toolbar({ commands: options.commands, direction: ToolbarDirection.RIGHT });
-    embedIntent.isShowing = false;
     embedIntent.isActive = false;
 
-    function embedIntentHandler(e) {
-      var currentNode = getCurrentSelectionRootNode();
-      if (!currentNode) {
-        embedIntent.hide();
-        return;
-      }
-      var currentNodeHTML = currentNode.innerHTML;
-      if (currentNodeHTML === '' || currentNodeHTML === '<br>') {
-        embedIntent.showAt(currentNode);
+    function embedIntentHandler() {
+      var blockElement = getSelectionBlockElement();
+      var blockElementContent = blockElement && blockElement.innerHTML;
+      if (blockElementContent === '' || blockElementContent === '<br>') {
+        embedIntent.showAt(blockElement);
       } else {
         embedIntent.hide();
       }
-      e.stopPropagation();
     }
 
     rootElement.addEventListener('keyup', embedIntentHandler);
-    document.addEventListener('mouseup', function(e) { setTimeout(function() { embedIntentHandler(e); }); });
+
+    document.addEventListener('mouseup', function(e) {
+      setTimeout(function() {
+        if (!nodeIsDescendantOfElement(e.target, embedIntent.toolbar.element)) {
+          embedIntentHandler();
+        }
+      });
+    });
 
     document.addEventListener('keyup', function(e) {
       if (e.keyCode === Keycodes.ESC) {
@@ -1062,44 +1069,41 @@ var EmbedIntent = (function() {
     window.addEventListener('resize', function() {
       if(embedIntent.isShowing) {
         positionElementToLeftOf(embedIntent.element, embedIntent.atNode);
+        if (embedIntent.toolbar.isShowing) {
+          embedIntent.toolbar.positionToContent(embedIntent.element);
+        }
       }
     });
   }
+  inherits(EmbedIntent, View);
 
-  EmbedIntent.prototype = {
-    show: function() {
-      if (!this.isShowing) {
-        container.appendChild(this.element);
-        this.isShowing = true;
-      }
-    },
-    showAt: function(node) {
-      this.hide();
-      this.show();
-      this.atNode = node;
-      positionElementToLeftOf(this.element, node);
-    },
-    hide: function() {
-      if (this.isShowing) {
-        container.removeChild(this.element);
-        this.deactivate();
-        this.isShowing = false;
-      }
-    },
-    activate: function() {
-      if (!this.isActive) {
-        this.element.className = className + ' activated';
-        this.toolbar.show();
-        this.toolbar.positionToContent(this.element);
-        this.isActive = true;
-      }
-    },
-    deactivate: function() {
-      if (this.isActive) {
-        this.element.className = className;
-        this.toolbar.hide();
-        this.isActive = false;
-      }
+  EmbedIntent.prototype.hide = function() {
+    if (EmbedIntent._super.prototype.hide.call(this)) {
+      this.deactivate();
+    }
+  };
+
+  EmbedIntent.prototype.showAt = function(node) {
+    this.show();
+    this.deactivate();
+    this.atNode = node;
+    positionElementToLeftOf(this.element, node);
+  };
+
+  EmbedIntent.prototype.activate = function() {
+    if (!this.isActive) {
+      this.addClass('activated');
+      this.toolbar.show();
+      this.toolbar.positionToContent(this.element);
+      this.isActive = true;
+    }
+  };
+
+  EmbedIntent.prototype.deactivate = function() {
+    if (this.isActive) {
+      this.removeClass('activated');
+      this.toolbar.hide();
+      this.isActive = false;
     }
   };
 

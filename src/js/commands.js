@@ -45,7 +45,7 @@ function BoldCommand() {
 inherits(BoldCommand, TextFormatCommand);
 BoldCommand.prototype.exec = function() {
   // Don't allow executing bold command on heading tags
-  if (!Regex.HEADING_TAG.test(getCurrentSelectionRootTag())) {
+  if (!Regex.HEADING_TAG.test(getSelectionBlockTagName())) {
     BoldCommand._super.prototype.exec.call(this);
   }
 };
@@ -74,7 +74,7 @@ function LinkCommand() {
 }
 inherits(LinkCommand, TextFormatCommand);
 LinkCommand.prototype.exec = function(url) {
-  if(this.tag === getCurrentSelectionTag()) {
+  if(this.tag === getSelectionTagName()) {
     this.unexec();
   } else {
     if (!Regex.HTTP_PROTOCOL.test(url)) {
@@ -93,16 +93,16 @@ FormatBlockCommand.prototype.exec = function() {
   var tag = this.tag;
   // Brackets neccessary for certain browsers
   var value =  '<' + tag + '>';
-  var rootNode = getCurrentSelectionRootNode();
+  var blockElement = getSelectionBlockElement();
   // Allow block commands to be toggled back to a paragraph
-  if(tag === rootNode.tagName) {
+  if(tag === blockElement.tagName) {
     value = Tags.PARAGRAPH;
   } else {
     // Flattens the selection before applying the block format.
     // Otherwise, undesirable nested blocks can occur.
-    var flatNode = document.createTextNode(rootNode.textContent);
-    rootNode.parentNode.insertBefore(flatNode, rootNode);
-    rootNode.parentNode.removeChild(rootNode);
+    var flatNode = document.createTextNode(blockElement.textContent);
+    blockElement.parentNode.insertBefore(flatNode, blockElement);
+    blockElement.parentNode.removeChild(blockElement);
     selectNode(flatNode);
   }
   
@@ -144,13 +144,13 @@ ListCommand.prototype.exec = function() {
   ListCommand._super.prototype.exec.call(this);
   
   // After creation, lists need to be unwrapped from the default formatter P tag
-  var listNode = getCurrentSelectionRootNode();
-  var wrapperNode = listNode.parentNode;
-  if (wrapperNode.firstChild === listNode) {
+  var listElement = getSelectionBlockElement();
+  var wrapperNode = listElement.parentNode;
+  if (wrapperNode.firstChild === listElement) {
     var editorNode = wrapperNode.parentNode;
-    editorNode.insertBefore(listNode, wrapperNode);
+    editorNode.insertBefore(listElement, wrapperNode);
     editorNode.removeChild(wrapperNode);
-    selectNode(listNode);
+    selectNode(listElement);
   }
 };
 
@@ -218,14 +218,14 @@ ImageEmbedCommand.prototype = {
     var reader = new FileReader();
     reader.onload = function(event) {
       var base64File = event.target.result;
-      var selectionRoot = getCurrentSelectionRootNode();
+      var blockElement = getSelectionBlockElement();
       var image = document.createElement('img');
       image.src = base64File;
 
       // image needs to be placed outside of the current empty paragraph
-      var editorNode = selectionRoot.parentNode;
-      editorNode.insertBefore(image, selectionRoot);
-      editorNode.removeChild(selectionRoot);
+      var editorNode = blockElement.parentNode;
+      editorNode.insertBefore(image, blockElement);
+      editorNode.removeChild(blockElement);
     };
     reader.readAsDataURL(file);
     target.value = null; // reset

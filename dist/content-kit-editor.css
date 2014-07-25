@@ -69,13 +69,13 @@
   margin: 0 0 0 0.5em;
 }
 .ck-toolbar.right:after {
-  left: -1em;
+  left: -0.95em;
   top: 50%;
   bottom: auto;
   margin: -0.5em 0 0 0;
   border-top: 0.5em solid transparent;
   border-bottom: 0.5em solid transparent;
-  border-right: 0.5em solid #2b2b2b;
+  border-right: 0.5em solid #393939;
 }
 .ck-toolbar,
 .ck-toolbar-prompt {

@@ -1,4 +1,4 @@
-function extend(object, updates) {
+function merge(object, updates) {
   updates = updates || {};
   for(var o in updates) {
     if (updates.hasOwnProperty(o)) {

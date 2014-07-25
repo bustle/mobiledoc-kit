@@ -4,50 +4,45 @@ var Prompt = (function() {
   var hiliter = createDiv('ck-editor-hilite');
 
   function Prompt(options) {
-    if (options) {
-      var prompt = this;
-      var element = document.createElement('input');
-      prompt.command = options.command;
-      prompt.element = element;
-      element.type = 'text';
-      element.placeholder = options.placeholder || '';
-      element.addEventListener('mouseup', function(e) { e.stopPropagation(); }); // prevents closing prompt when clicking input 
-      element.addEventListener('keyup', function(e) {
-        var entry = this.value;
-        if(entry && !e.shiftKey && e.which === Keycodes.ENTER) {
-          restoreRange(prompt.range);
-          prompt.command.exec(entry);
-          if (prompt.onComplete) { prompt.onComplete(); }
-        }
-      });
+    var prompt = this;
+    options.tagName = 'input';
+    View.call(prompt, options);
 
-      window.addEventListener('resize', function() {
-        var activeHilite = hiliter.parentNode;
-        var range = prompt.range;
-        if(activeHilite && range) {
-          positionHiliteRange(range);
-        }
-      });
-    }
+    prompt.command = options.command;
+    prompt.element.placeholder = options.placeholder || '';
+    prompt.element.addEventListener('mouseup', function(e) { e.stopPropagation(); }); // prevents closing prompt when clicking input 
+    prompt.element.addEventListener('keyup', function(e) {
+      var entry = this.value;
+      if(entry && !e.shiftKey && e.which === Keycodes.ENTER) {
+        restoreRange(prompt.range);
+        prompt.command.exec(entry);
+        if (prompt.onComplete) { prompt.onComplete(); }
+      }
+    });
+
+    window.addEventListener('resize', function() {
+      var activeHilite = hiliter.parentNode;
+      var range = prompt.range;
+      if(activeHilite && range) {
+        positionHiliteRange(range);
+      }
+    });
   }
+  inherits(Prompt, View);
 
   Prompt.prototype = {
-    display: function(callback) {
+    show: function(callback) {
       var prompt = this;
       var element = prompt.element;
+      element.value = null;
       prompt.range = window.getSelection().getRangeAt(0); // save the selection range
       container.appendChild(hiliter);
       positionHiliteRange(prompt.range);
-      prompt.clear();
       setTimeout(function(){ element.focus(); }); // defer focus (disrupts mouseup events)
       if (callback) { prompt.onComplete = callback; }
     },
-    dismiss: function() {
-      this.clear();
+    hide: function() {
       container.removeChild(hiliter);
-    },
-    clear: function() {
-      this.element.value = null;
     }
   };
 

@@ -29,6 +29,17 @@ function getEventTargetMatchingTag(tag, target, container) {
   }
 }
 
+function nodeIsDescendantOfElement(node, element) {
+  var parentNode = node.parentNode;
+  while(parentNode) {
+    if (parentNode === element) {
+      return true;
+    }
+    parentNode = parentNode.parentNode;
+  }
+  return false;
+}
+
 function getElementRelativeOffset(element) {
   var offset = { left: 0, top: -window.pageYOffset };
   var offsetParent = element.offsetParent;

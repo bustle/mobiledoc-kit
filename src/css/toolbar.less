@@ -14,7 +14,7 @@
   background: linear-gradient(to bottom,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
   box-shadow: 0 1px 3px -1px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.12), inset 1px 1px 0 #282828, inset -1px -1px 0 #282828;
   border-radius: 5px;
-  transition: left 0.1s, top 0.1s;
+  transition: left @elementMoveSpeed, top @elementMoveSpeed;
   margin-bottom: 0.5em; /* space for arrow */
 }
 
@@ -35,13 +35,13 @@
   margin: 0 0 0 0.5em;
 }
 .ck-toolbar.right:after {
-  left: -1em;
+  left: -0.95em;
   top: 50%;
   bottom: auto;
   margin: -0.5em 0 0 0;
   border-top: 0.5em solid transparent;
   border-bottom: 0.5em solid transparent;
-  border-right: 0.5em solid rgba(43,43,43,1);
+  border-right: 0.5em solid #393939;
 }
 
 .ck-toolbar,
@@ -68,7 +68,7 @@
   height: 44px;
   line-height: 44px;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color @colorChangeSpeed;
   text-shadow: 0 1px rgba(0,0,0,0.7);
   -moz-user-select: none;
   -webkit-user-select: none;

@@ -1,15 +1,14 @@
 var EmbedIntent = (function() {
 
-  var container = document.body;
-  var className = 'ck-embed-intent-btn';
-
   function EmbedIntent(options) {
     var embedIntent = this;
-    var element = document.createElement('button');
     var rootElement = options.rootElement;
-    element.className = className;
-    element.title = 'Insert image or embed...';
-    element.addEventListener('mouseup', function(e) {
+    options.tagName = 'button';
+    options.classNames = ['ck-embed-intent-btn'];
+    View.call(embedIntent, options);
+
+    embedIntent.element.title = 'Insert image or embed...';
+    embedIntent.element.addEventListener('mouseup', function(e) {
       if (embedIntent.isActive) {
         embedIntent.deactivate();
       } else {
@@ -17,28 +16,28 @@ var EmbedIntent = (function() {
       }
       e.stopPropagation();
     });
-    embedIntent.element = element;
     embedIntent.toolbar = new Toolbar({ commands: options.commands, direction: ToolbarDirection.RIGHT });
-    embedIntent.isShowing = false;
     embedIntent.isActive = false;
 
-    function embedIntentHandler(e) {
-      var currentNode = getCurrentSelectionRootNode();
-      if (!currentNode) {
-        embedIntent.hide();
-        return;
-      }
-      var currentNodeHTML = currentNode.innerHTML;
-      if (currentNodeHTML === '' || currentNodeHTML === '<br>') {
-        embedIntent.showAt(currentNode);
+    function embedIntentHandler() {
+      var blockElement = getSelectionBlockElement();
+      var blockElementContent = blockElement && blockElement.innerHTML;
+      if (blockElementContent === '' || blockElementContent === '<br>') {
+        embedIntent.showAt(blockElement);
       } else {
         embedIntent.hide();
       }
-      e.stopPropagation();
     }
 
     rootElement.addEventListener('keyup', embedIntentHandler);
-    document.addEventListener('mouseup', function(e) { setTimeout(function() { embedIntentHandler(e); }); });
+
+    document.addEventListener('mouseup', function(e) {
+      setTimeout(function() {
+        if (!nodeIsDescendantOfElement(e.target, embedIntent.toolbar.element)) {
+          embedIntentHandler();
+        }
+      });
+    });
 
     document.addEventListener('keyup', function(e) {
       if (e.keyCode === Keycodes.ESC) {
@@ -49,44 +48,41 @@ var EmbedIntent = (function() {
     window.addEventListener('resize', function() {
       if(embedIntent.isShowing) {
         positionElementToLeftOf(embedIntent.element, embedIntent.atNode);
+        if (embedIntent.toolbar.isShowing) {
+          embedIntent.toolbar.positionToContent(embedIntent.element);
+        }
       }
     });
   }
+  inherits(EmbedIntent, View);
 
-  EmbedIntent.prototype = {
-    show: function() {
-      if (!this.isShowing) {
-        container.appendChild(this.element);
-        this.isShowing = true;
-      }
-    },
-    showAt: function(node) {
-      this.hide();
-      this.show();
-      this.atNode = node;
-      positionElementToLeftOf(this.element, node);
-    },
-    hide: function() {
-      if (this.isShowing) {
-        container.removeChild(this.element);
-        this.deactivate();
-        this.isShowing = false;
-      }
-    },
-    activate: function() {
-      if (!this.isActive) {
-        this.element.className = className + ' activated';
-        this.toolbar.show();
-        this.toolbar.positionToContent(this.element);
-        this.isActive = true;
-      }
-    },
-    deactivate: function() {
-      if (this.isActive) {
-        this.element.className = className;
-        this.toolbar.hide();
-        this.isActive = false;
-      }
+  EmbedIntent.prototype.hide = function() {
+    if (EmbedIntent._super.prototype.hide.call(this)) {
+      this.deactivate();
+    }
+  };
+
+  EmbedIntent.prototype.showAt = function(node) {
+    this.show();
+    this.deactivate();
+    this.atNode = node;
+    positionElementToLeftOf(this.element, node);
+  };
+
+  EmbedIntent.prototype.activate = function() {
+    if (!this.isActive) {
+      this.addClass('activated');
+      this.toolbar.show();
+      this.toolbar.positionToContent(this.element);
+      this.isActive = true;
+    }
+  };
+
+  EmbedIntent.prototype.deactivate = function() {
+    if (this.isActive) {
+      this.removeClass('activated');
+      this.toolbar.hide();
+      this.isActive = false;
     }
   };
 
