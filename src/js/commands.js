@@ -219,11 +219,11 @@ ImageEmbedCommand.prototype = {
     reader.onload = function(event) {
       var base64File = event.target.result;
       var blockElement = getSelectionBlockElement();
+      var editorNode = blockElement.parentNode;
       var image = document.createElement('img');
       image.src = base64File;
 
       // image needs to be placed outside of the current empty paragraph
-      var editorNode = blockElement.parentNode;
       editorNode.insertBefore(image, blockElement);
       editorNode.removeChild(blockElement);
     };
@@ -232,21 +232,35 @@ ImageEmbedCommand.prototype = {
   }
 };
 
-function MediaEmbedCommand(options) {
+function OEmbedCommand(options) {
   EmbedCommand.call(this, {
-    name: 'media',
+    name: 'oEmbed',
     button: '<i class="ck-icon-embed"></i>',
     prompt: new Prompt({
       command: this,
-      placeholder: 'Enter a twitter, or youtube url...'
+      placeholder: 'Enter a youtube, twitter, instagram url...'
     })
   });
 }
-inherits(MediaEmbedCommand, EmbedCommand);
+inherits(OEmbedCommand, EmbedCommand);
+OEmbedCommand.prototype.exec = function(url) {
+  HTTP.get('http://noembed.com/embed?url=' + url, function(responseText) {
+    var json = JSON.parse(responseText);
+    console.log(json);
+    if (json.html) {
+      var blockElement = getSelectionBlockElement();
+      var editorNode = blockElement.parentNode;
+      var embed = createDiv();
+      embed.innerHTML = json.html;
+      editorNode.insertBefore(embed, blockElement);
+      editorNode.removeChild(blockElement);
+    }
+  });
+};
 
 EmbedCommand.all = [
   new ImageEmbedCommand(),
-  new MediaEmbedCommand()
+  new OEmbedCommand()
 ];
 
 EmbedCommand.index = createCommandIndex(EmbedCommand.all);
