@@ -11,6 +11,17 @@
   100% { opacity: 1; }
 }
 
+@-webkit-keyframes shake {
+  0%, 100% { -webkit-transform: translateX(0); }
+  20%, 60% { -webkit-transform: translateX(-10px); }
+  40%, 80% { -webkit-transform: translateX(10px); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-10px); }
+  40%, 80% { transform: translateX(10px); }
+}
+
 @-webkit-keyframes textGlimmer {
   0% { background-position: -288px 0; }
   100% { background-position: 288px 0; }

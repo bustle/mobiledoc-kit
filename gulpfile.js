@@ -18,6 +18,7 @@ var jsSrc = [
   './src/js/index.js',
   './src/js/constants.js',
   './src/js/utils/object-utils.js',
+  './src/js/utils/array-utils.js',
   './src/js/utils/element-utils.js',
   './src/js/utils/selection-utils.js',
   './src/js/utils/http-utils.js',
@@ -28,7 +29,8 @@ var jsSrc = [
   './src/js/toolbar.js',
   './src/js/toolbar-button.js',
   './src/js/tooltip.js',
-  './src/js/embed-intent.js'
+  './src/js/embed-intent.js',
+  './src/js/message.js'
 ];
 
 var jsExtSrc = './src/js/ext/*';
@@ -38,6 +40,7 @@ var cssSrc = [
   './src/css/toolbar.less',
   './src/css/tooltip.less',
   './src/css/embeds.less',
+  './src/css/message.less',
   './src/css/icons.less',
   './src/css/animations.less'
 ];
@@ -94,7 +97,7 @@ gulp.task('build-js-ext', ['build-js-src'], function() {
 });
 
 // Builds final js output in sequence (tasks are order dependent)
-gulp.task('build-js', ['build-js-src', 'build-js-ext'], function() {
+gulp.task('build-js', ['lint', 'build-js-src', 'build-js-ext'], function() {
   return runSequence('build-js-src', 'build-js-ext');
 });
 

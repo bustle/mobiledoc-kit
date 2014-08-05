@@ -14,13 +14,14 @@ function Command(options) {
   var prompt = options.prompt;
   command.name = name;
   command.button = options.button || name;
+  command.editorContext = null;
   if (prompt) { command.prompt = prompt; }
 }
 Command.prototype.exec = function(){};
 
 function TextFormatCommand(options) {
   Command.call(this, options);
-  this.tag = options.tag;
+  this.tag = options.tag.toUpperCase();
   this.action = options.action || this.name;
   this.removeAction = options.removeAction || this.action;
 }
@@ -188,31 +189,34 @@ function EmbedCommand(options) {
   Command.call(this, options);
 }
 inherits(EmbedCommand, Command);
-EmbedCommand.prototype.exec = function() {
-  alert(this.name);
-};
 
 function ImageEmbedCommand(options) {
   EmbedCommand.call(this, {
     name: 'image',
     button: '<i class="ck-icon-image"></i>'
   });
-
-  var fileBrowser = document.createElement('input');
-  fileBrowser.type = 'file';
-  fileBrowser.accept = 'image/*';
-  fileBrowser.className = 'ck-file-input';
-  fileBrowser.addEventListener('change', this.handleFile);
-  document.body.appendChild(fileBrowser);
-  this.fileBrowser = fileBrowser;
 }
 inherits(ImageEmbedCommand, EmbedCommand);
+
 ImageEmbedCommand.prototype = {
   exec: function() {
+    ImageEmbedCommand._super.prototype.exec.call(this);
     var clickEvent = new MouseEvent('click', { bubbles: false });
+    if (!this.fileBrowser) {
+      var command = this;
+      var fileBrowser = this.fileBrowser = document.createElement('input');
+      fileBrowser.type = 'file';
+      fileBrowser.accept = 'image/*';
+      fileBrowser.className = 'ck-file-input';
+      fileBrowser.addEventListener('change', function(e) {
+        command.handleFile(e);
+      });
+      document.body.appendChild(fileBrowser);
+    }
     this.fileBrowser.dispatchEvent(clickEvent);
   },
   handleFile: function(e) {
+    var command = this;
     var target = e.target;
     var file = target && target.files[0];
     var reader = new FileReader();
@@ -226,6 +230,8 @@ ImageEmbedCommand.prototype = {
       // image needs to be placed outside of the current empty paragraph
       editorNode.insertBefore(image, blockElement);
       editorNode.removeChild(blockElement);
+
+      command.embedIntent.hide();
     };
     reader.readAsDataURL(file);
     target.value = null; // reset
@@ -238,22 +244,29 @@ function OEmbedCommand(options) {
     button: '<i class="ck-icon-embed"></i>',
     prompt: new Prompt({
       command: this,
-      placeholder: 'Enter a youtube, twitter, instagram url...'
+      placeholder: 'Paste a YouTube, Twitter, or any url...'
     })
   });
 }
 inherits(OEmbedCommand, EmbedCommand);
+
 OEmbedCommand.prototype.exec = function(url) {
+  var command = this;
+  var editorContext = command.editorContext;
+  var index = editorContext.getCurrentBlockIndex();
+  command.embedIntent.hide();
   HTTP.get('http://noembed.com/embed?url=' + url, function(responseText) {
     var json = JSON.parse(responseText);
-    console.log(json);
-    if (json.html) {
-      var blockElement = getSelectionBlockElement();
-      var editorNode = blockElement.parentNode;
-      var embed = createDiv();
-      embed.innerHTML = json.html;
-      editorNode.insertBefore(embed, blockElement);
-      editorNode.removeChild(blockElement);
+    if (json.error) {
+      new Message().show('Error: unrecognized embed url');
+    } else {
+      var embedModel = new ContentKit.EmbedModel(json);
+      if (!embedModel.attributes.provider_id) {
+        new Message().show('Error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
+      } else {
+        editorContext.insertBlockAt(embedModel, index);
+        editorContext.syncVisualAt(index);
+      }
     }
   });
 };

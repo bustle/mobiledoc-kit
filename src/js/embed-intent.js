@@ -7,6 +7,7 @@ var EmbedIntent = (function() {
     options.classNames = ['ck-embed-intent-btn'];
     View.call(embedIntent, options);
 
+    embedIntent.editorContext = options.editorContext;
     embedIntent.element.title = 'Insert image or embed...';
     embedIntent.element.addEventListener('mouseup', function(e) {
       if (embedIntent.isActive) {
@@ -16,7 +17,8 @@ var EmbedIntent = (function() {
       }
       e.stopPropagation();
     });
-    embedIntent.toolbar = new Toolbar({ commands: options.commands, direction: ToolbarDirection.RIGHT });
+
+    embedIntent.toolbar = new Toolbar({ embedIntent: embedIntent, editor: embedIntent.editorContext, commands: options.commands, direction: ToolbarDirection.RIGHT });
     embedIntent.isActive = false;
 
     function embedIntentHandler() {

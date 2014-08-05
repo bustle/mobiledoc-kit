@@ -69,18 +69,20 @@ ContentKit.Editor = (function() {
       element.setAttribute('contentEditable', true);
       editor.element = element;
 
+      var compiler = editor.compiler = options.compiler || new ContentKit.Compiler();
+      editor.syncModel();
+
       bindTypingEvents(editor);
       bindPasteEvents(editor);
 
-      editor.parser = options.parser || new ContentKit.HTMLParser();
-
-      var textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
+      editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
       var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
 
       if(editor.embedCommands) {
         // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
         // TODO: manage event listener order
         var embedIntent = new EmbedIntent({
+          editorContext: editor,
           commands: editor.embedCommands,
           rootElement: element
         });
@@ -90,8 +92,50 @@ ContentKit.Editor = (function() {
     }
   }
 
-  Editor.prototype.parse = function() {
-    return this.parser.parse(this.element.innerHTML);
+  Editor.prototype.syncModel = function() {
+    this.model = this.compiler.parse(this.element.innerHTML);
+  };
+
+  Editor.prototype.syncModelAt = function(index) {
+    var blockElements = toArray(this.element.children);
+    var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
+    this.model[index] = parsedBlockModel;
+  };
+
+  Editor.prototype.syncVisualAt = function(index) {
+    var block = this.model[index];
+    var html = this.compiler.render([block]);
+    var blockElements = toArray(this.element.children);
+    blockElements[index].innerHTML = html;
+  };
+
+  Editor.prototype.getCurrentBlockIndex = function() {
+    var selectionEl = getSelectionBlockElement();
+    var blockElements = toArray(this.element.children);
+    return blockElements.indexOf(selectionEl);
+  };
+
+  Editor.prototype.insertBlock = function(model) {
+    this.insertBlockAt(model, this.getCurrentBlockIndex());
+  };
+
+  Editor.prototype.insertBlockAt = function(model, index) {
+    model = model || new ContentKit.TextModel();
+    this.model.splice(index, 0, model);
+  };
+
+  Editor.prototype.addTextFormat = function(opts) {
+    var command = new TextFormatCommand(opts);
+    this.compiler.registerMarkupType(new ContentKit.Type({
+      name : opts.name,
+      tag  : opts.tag || opts.name
+    }));
+    this.textFormatCommands.push(command);
+    this.textFormatToolbar.addCommand(command);
+  };
+
+  Editor.prototype.setRendererFor = function(type, renderer) {
+    this.compiler.renderer.setRendererFor(type, renderer);
   };
 
   function bindTypingEvents(editor) {
@@ -134,9 +178,21 @@ ContentKit.Editor = (function() {
 
     // Assure there is always a supported root tag, and not empty text nodes or divs.
     // Usually only happens when selecting all and deleting content.
+    /*
     editorEl.addEventListener('keyup', function() {
       if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
         document.execCommand('formatBlock', false, editor.defaultFormatter);
+      }
+    });
+    */
+
+    // Experimental: Live update - sync model with textual content as you type
+    editorEl.addEventListener('keyup', function(e) {
+      if (editor.model && editor.model.length) {
+        var index = editor.getCurrentBlockIndex();
+        if (editor.model[index].type === 1) {
+          editor.syncModelAt(index);
+        }
       }
     });
   }

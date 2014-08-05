@@ -4,7 +4,9 @@ var Toolbar = (function() {
     var toolbar = this;
     var commands = options.commands;
     var commandCount = commands && commands.length;
-    var i, button;
+    var i, button, command;
+    toolbar.editor = options.editor || null;
+    toolbar.embedIntent = options.embedIntent || null;
     toolbar.direction = options.direction || ToolbarDirection.TOP;
     options.classNames = ['ck-toolbar'];
     if (toolbar.direction === ToolbarDirection.RIGHT) {
@@ -22,10 +24,13 @@ var Toolbar = (function() {
     toolbar.element.appendChild(toolbar.buttonContainerElement);
 
     for(i = 0; i < commandCount; i++) {
-      button = new ToolbarButton({ command: commands[i], toolbar: toolbar });
-      toolbar.buttons.push(button);
-      toolbar.buttonContainerElement.appendChild(button.element);
+      this.addCommand(commands[i]);
     }
+
+    // Closes prompt if displayed when changing selection
+    document.addEventListener('mouseup', function() {
+      toolbar.dismissPrompt();
+    });
   }
   inherits(Toolbar, View);
 
@@ -36,6 +41,14 @@ var Toolbar = (function() {
       style.top = '';
       this.dismissPrompt();
     }
+  };
+
+  Toolbar.prototype.addCommand = function(command) {
+    command.editorContext = this.editor;
+    command.embedIntent = this.embedIntent;
+    var button = new ToolbarButton({ command: command, toolbar: this });
+    this.buttons.push(button);
+    this.buttonContainerElement.appendChild(button.element);
   };
 
   Toolbar.prototype.displayPrompt = function(prompt) {
@@ -49,7 +62,7 @@ var Toolbar = (function() {
     toolbar.activePrompt = prompt;
   };
 
-  Toolbar.prototype.dismissPrompt = function(prompt) {
+  Toolbar.prototype.dismissPrompt = function() {
     var toolbar = this;
     var activePrompt = toolbar.activePrompt;
     if (activePrompt) {
@@ -87,7 +100,7 @@ var Toolbar = (function() {
     var selectedTags = tagsInSelection(selection),
         len = buttons.length,
         i, button;
-        
+
     for (i = 0; i < len; i++) {
       button = buttons[i];
       if (selectedTags.indexOf(button.command.tag) > -1) {
@@ -132,7 +145,7 @@ var TextFormatToolbar = (function() {
   TextFormatToolbar.prototype.handleTextSelection = function() {
     var toolbar = this;
     var selection = window.getSelection();
-    if (selection.isCollapsed || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
+    if (selection.isCollapsed || !selectionIsEditable(selection) || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
       toolbar.hide();
     } else {
       toolbar.updateForSelection(selection);

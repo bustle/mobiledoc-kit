@@ -2,10 +2,7 @@
 
 'use strict';
 
-var ContentKit = exports.ContentKit || {};
-exports.ContentKit = ContentKit;
-
-ContentKit.Demo = {
+exports.ContentKitDemo = {
   toggleCode: function(e, button, editor) {
     var codeUI = document.getElementById('code-panes'),
         editorUI = editor.element;
@@ -13,8 +10,8 @@ ContentKit.Demo = {
     if(codeUI.style.display === '') {
       var codePaneJSON = document.getElementById('code-json'),
           codePaneHTML = document.getElementById('code-html'),
-          json = editor.parse(),
-          html = new ContentKit.HTMLRenderer().render(json); //editor.element.innerHTML;
+          json = editor.model,
+          html = editor.compiler.render(json);
 
       codePaneJSON.innerHTML = this.syntaxHighlight(json);
       codePaneHTML.textContent = this.formatXML(html);

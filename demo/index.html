@@ -16,7 +16,7 @@
   <header>
     <h1 class="demo-title">ContentKit Editor</h1>
     <div class="mode-buttons">
-      <button onclick="ContentKit.Demo.toggleCode(event, this, editor)">Show Code</button>
+      <button onclick="ContentKitDemo.toggleCode(event, this, editor)">Show Code</button>
     </div>
   </header>
 
@@ -66,17 +66,39 @@
     </div>
   </div>
 
+  <!-- Include JS Module Loader -->
+  <script src="../ext/loader.js"></script>
   <!-- Include Editor JS (content-kit-editor.js) -->
   <script src="../dist/content-kit-editor.js"></script>
 
   <!-- JS just for the demo page -->
-  <script src="content-kit-demo.js"></script>
+  <script src="demo.js"></script>
 
-  <!-- This initializes a new Editor -->
   <script>
-    var editor = new ContentKit.Editor('.editor', { 
-      parser: new ContentKit.HTMLParser({ includeTypeNames: true }) // shows type names for easier debugging
+    // Load the ContentKit Module
+    window.ContentKit = require('content-kit')['default'];
+
+    // Initializes a new Editor
+    var editor = new ContentKit.Editor('.editor', {
+      compiler: new ContentKit.Compiler({
+        includeTypeNames: true // outputs type names for easier debugging
+      })
     });
+
+    /*
+    // Adding a custom text formatting button
+    editor.addTextFormat({
+      name: 'underline',
+      tag: 'u',
+      button: '<u>U</u>'
+    });
+    */
+
+    // Modifing what gets rendered for a Type
+    editor.setRendererFor(ContentKit.Type.EMBED, function(model, type) {
+      return '<figure class="ck-editor-embed" contenteditable="false"><h5>' + type.name + ' (' + model.attributes.provider_name + ') : ' + model.attributes.title + '</h5><img src="' + model.attributes.thumbnail + '"/></figure>';
+    });
+
   </script>
 
 </body>

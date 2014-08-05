@@ -24,6 +24,9 @@ View.prototype = {
       return true;
     }
   },
+  focus: function() {
+    this.element.focus();
+  },
   addClass: function(className) {
     this.classNames.push(className);
     this.element.className = this.classNames.join(' ');

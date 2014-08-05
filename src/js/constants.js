@@ -1,6 +1,8 @@
 var Keycodes = {
+  BKSP  : 8,
   ENTER : 13,
-  ESC   : 27
+  ESC   : 27,
+  DEL   : 46
 };
 
 var Regex = {
@@ -27,6 +29,7 @@ var Tags = {
   HEADING      : 'H2',
   SUBHEADING   : 'H3',
   QUOTE        : 'BLOCKQUOTE',
+  FIGURE       : 'FIGURE',
   LIST         : 'UL',
   ORDERED_LIST : 'OL',
   LIST_ITEM    : 'LI',
@@ -35,4 +38,4 @@ var Tags = {
   ITALIC       : 'I'
 };
 
-var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.LIST, Tags.ORDERED_LIST ];
+var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.FIGURE, Tags.LIST, Tags.ORDERED_LIST ];

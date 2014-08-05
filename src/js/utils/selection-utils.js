@@ -15,7 +15,8 @@ function getSelectionElement(selection) {
   return node && (node.nodeType === 3 ? node.parentNode : node);
 }
 
-function getSelectionBlockElement() {
+function getSelectionBlockElement(selection) {
+  selection = selection || window.getSelection();
   var element = getSelectionElement();
   var tag = element && element.tagName;
   while (tag && RootTags.indexOf(tag) === -1) {
@@ -55,6 +56,34 @@ function selectionIsInElement(selection, element) {
   var node = selection.anchorNode;
   return node && nodeIsDescendantOfElement(node, element);
 }
+
+function selectionIsEditable(selection) {
+  var el = getSelectionBlockElement(selection);
+  return el.contentEditable !== 'false';
+}
+
+/*
+function saveSelection() {
+  var sel = window.getSelection();
+  var ranges = [], i;
+  if (sel.rangeCount) {
+    var rangeCount = sel.rangeCount;
+    for (i = 0; i < rangeCount; i++) {
+      ranges.push(sel.getRangeAt(i));
+    }
+  }
+  return ranges;
+}
+
+function restoreSelection(savedSelection) {
+  var sel = window.getSelection();
+  var len = savedSelection.length, i;
+  sel.removeAllRanges();
+  for (i = 0; i < len; i++) {
+    sel.addRange(savedSelection[i]);
+  }
+}
+*/
 
 function moveCursorToBeginningOfSelection(selection) {
   var range = document.createRange();
