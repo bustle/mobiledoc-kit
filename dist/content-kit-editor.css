@@ -248,19 +248,56 @@
 .ck-file-input {
   display: none;
 }
-.ck-editor-embed {
+.ck-embed {
   text-align: center;
   margin: 1em 0;
-  background-color: #fafafa;
-  border: 2px solid #eee;
-  padding: 1em;
-  border-radius: 4px;
-  color: #666;
-  font-family: Helvetica Neue;
-  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 2px;
 }
-.ck-editor-embed.selected {
+.ck-embed.selected {
   border-color: #4cd964;
+}
+.ck-embed figure {
+  position: relative;
+  margin: 0;
+}
+.ck-embed figcaption {
+  color: #999;
+  font-size: 0.7em;
+  line-height: 1.3em;
+  font-style: italic;
+  margin: 10px 0;
+}
+.ck-embed figcaption a {
+  color: #999;
+  text-decoration: underline;
+}
+.ck-embed figcaption a:hover {
+  color: #666;
+}
+@media screen and (min-width: 1080px) {
+  .ck-embed figcaption {
+    position: absolute;
+    top: 0;
+    right: -140px;
+    width: 120px;
+    text-align: left;
+    margin: 0;
+  }
+}
+.ck-video-container {
+  position: relative;
+  overflow: hidden;
+  padding-top: 56.25%;
+}
+.ck-video-container iframe,
+.ck-video-container object,
+.ck-video-container embed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 .ck-message {
   position: fixed;

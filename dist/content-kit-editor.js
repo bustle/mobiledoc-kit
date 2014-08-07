@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 5, 2014
+ * Last modified: Aug 7, 2014
  */
 
 (function(exports, document) {
@@ -312,6 +312,9 @@ var HTTP = (function() {
       var request = new XMLHttpRequest();
       request.onload = function() {
         callback(this.responseText);
+      };
+      request.onerror = function(error) {
+        callback(this.responseText, error);
       };
       request.open('GET', url);
       request.send();
@@ -693,14 +696,18 @@ OEmbedCommand.prototype.exec = function(url) {
   var editorContext = command.editorContext;
   var index = editorContext.getCurrentBlockIndex();
   command.embedIntent.hide();
-  HTTP.get('http://noembed.com/embed?url=' + url, function(responseText) {
+  HTTP.get('http://noembed.com/embed?url=' + url, function(responseText, error) {
+    if (error) {
+      new Message().show('Embed error: ' + error);
+      return;
+    }
     var json = JSON.parse(responseText);
     if (json.error) {
-      new Message().show('Error: unrecognized embed url');
+      new Message().show('Embed error: ' + json.error);
     } else {
       var embedModel = new ContentKit.EmbedModel(json);
       if (!embedModel.attributes.provider_id) {
-        new Message().show('Error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
+        new Message().show('Embed error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
       } else {
         editorContext.insertBlockAt(embedModel, index);
         editorContext.syncVisualAt(index);
@@ -852,8 +859,8 @@ ContentKit.Editor = (function() {
     this.textFormatToolbar.addCommand(command);
   };
 
-  Editor.prototype.setRendererFor = function(type, renderer) {
-    this.compiler.renderer.setRendererFor(type, renderer);
+  Editor.prototype.willRenderType = function(type, renderer) {
+    this.compiler.renderer.willRenderType(type, renderer);
   };
 
   function bindTypingEvents(editor) {
@@ -895,14 +902,11 @@ ContentKit.Editor = (function() {
     });
 
     // Assure there is always a supported root tag, and not empty text nodes or divs.
-    // Usually only happens when selecting all and deleting content.
-    /*
     editorEl.addEventListener('keyup', function() {
       if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
         document.execCommand('formatBlock', false, editor.defaultFormatter);
       }
     });
-    */
 
     // Experimental: Live update - sync model with textual content as you type
     editorEl.addEventListener('keyup', function(e) {
@@ -1314,7 +1318,7 @@ Message.prototype.show = function(message) {
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 5, 2014
+ * Last modified: Aug 7, 2014
  */
 
 (function(window, document, define, undefined) {
@@ -1592,6 +1596,353 @@ define("models/text",
 
     __exports__["default"] = TextModel;
   });
+define("renderers/embed-renderer",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /**
+     * Embed Service Adapters
+     */
+    var RegExVideoId = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
+    function getVideoIdFromUrl(url) {
+      var match = url.match(RegExVideoId);
+      if (match && match[1].length === 11){
+        return match[1];
+      }
+      return null;
+    }
+
+    function YoutubeAdapter() {}
+    YoutubeAdapter.prototype.render = function(model) {
+      var videoId = getVideoIdFromUrl(model.attributes.url);
+      var embedUrl = 'http://www.youtube.com/embed/' + videoId + '?controls=2&color=white&theme=light';
+      return '<iframe width="100%" height="400" frameborder="0" allowfullscreen src="' + embedUrl + '"></iframe>';
+    };
+
+
+    /**
+     * @class EmbedRenderer
+     * @constructor
+     */
+    function EmbedRenderer() {}
+
+    /**
+     * @method render
+     * @param model
+     * @return String html
+     */
+    EmbedRenderer.prototype.render = function(model) {
+      var adapter = this.adatperFor(model);
+      if (adapter) {
+        return adapter.render(model);
+      }
+
+      return model.attributes.provider_name + ': ' + model.attributes.title + '<img src="' + model.attributes.thumbnail + '"/>';
+    };
+
+    EmbedRenderer.prototype.adatperFor = function(model) {
+      var providerId = model.attributes.provider_id;
+      switch(providerId) {
+        case 1:
+          return new YoutubeAdapter();
+      }
+    };
+
+    __exports__["default"] = EmbedRenderer;
+  });
+define("renderers/html-renderer",
+  ["../types/default-types","../utils/object-utils","../utils/string-utils","../utils/array-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var DefaultBlockTypeSet = __dependency1__.DefaultBlockTypeSet;
+    var DefaultMarkupTypeSet = __dependency1__.DefaultMarkupTypeSet;
+    var merge = __dependency2__.merge;
+    var injectIntoString = __dependency3__.injectIntoString;
+    var sumSparseArray = __dependency4__.sumSparseArray;
+
+    /**
+     * Builds an opening html tag. i.e. '<a href="http://link.com/" rel="author">'
+     */
+    function createOpeningTag(tagName, attributes, selfClosing /*,blacklist*/) {
+      var tag = '<' + tagName;
+      for (var attr in attributes) {
+        if (attributes.hasOwnProperty(attr)) {
+          //if (blacklist && attr in blacklist) { continue; }
+          tag += ' ' + attr + '="' + attributes[attr] + '"';
+        }
+      }
+      if (selfClosing) { tag += '/'; }
+      tag += '>';
+      return tag;
+    }
+
+    /**
+     * Builds a closing html tag. i.e. '</p>'
+     */
+    function createCloseTag(tagName) {
+      return '</' + tagName + '>';
+    }
+
+    /**
+     * @class HTMLRenderer
+     * @constructor
+     */
+    function HTMLRenderer(options) {
+      var defaults = {
+        blockTypes    : DefaultBlockTypeSet,
+        markupTypes   : DefaultMarkupTypeSet
+      };
+      merge(this, defaults, options);
+    }
+
+    /**
+     * @method willRenderType
+     * @param type instance of Type
+     * @param renderer the rendering function that returns a string of html
+     * Registers custom rendering hooks for a type
+     */
+    var renderHooks = {};
+    HTMLRenderer.prototype.willRenderType = function(type, renderer) {
+      renderHooks[type.id] = renderer;
+    };
+
+    /**
+     * @method render
+     * @param data
+     * @return String html
+     */
+    HTMLRenderer.prototype.render = function(data) {
+      var html = '',
+          len = data && data.length,
+          i, block, type, blockHtml;
+
+      for (i = 0; i < len; i++) {
+        block = data[i];
+        type = this.blockTypes.findById(block.type);
+        blockHtml = this.renderBlock(block);
+        if (blockHtml) { html += blockHtml; }
+      }
+      return html;
+    };
+
+    /**
+     * @method renderBlock
+     * @param block a block model
+     * @return String html
+     * Renders a block model into a HTML string.
+     */
+    HTMLRenderer.prototype.renderBlock = function(block) {
+      var typeId = block.type;
+      var type = this.blockTypes.findById(typeId);
+      var hook = renderHooks[typeId];
+
+      if (hook) {
+        return hook.call(type, block);
+      }
+
+      var html = '', tagName, selfClosing;
+
+      if (type) {
+        tagName = type.tag;
+        selfClosing = type.selfClosing;
+        if (tagName) {
+          html += createOpeningTag(tagName, block.attributes, selfClosing);
+        }
+        if (!selfClosing) {
+          html += this.renderMarkup(block.value, block.markup);
+          if (tagName) {
+            html += createCloseTag(tagName);
+          }
+        }
+      }
+      return html;
+    };
+
+    /**
+     * @method renderMarkup
+     * @param text plain text to apply markup to
+     * @param markup an array of markup models
+     * @return String html
+     * Renders a markup model into a HTML string.
+     */
+    HTMLRenderer.prototype.renderMarkup = function(text, markups) {
+      var parsedTagsIndexes = [],
+          len = markups && markups.length, i;
+
+      for (i = 0; i < len; i++) {
+        var markup = markups[i],
+            markupMeta = this.markupTypes.findById(markup.type),
+            tagName = markupMeta.tag,
+            selfClosing = markupMeta.selfClosing,
+            start = markup.start,
+            end = markup.end,
+            openTag = createOpeningTag(tagName, markup.attributes, selfClosing),
+            parsedTagLengthAtIndex = parsedTagsIndexes[start] || 0,
+            parsedTagLengthBeforeIndex = sumSparseArray(parsedTagsIndexes.slice(0, start + 1));
+
+        text = injectIntoString(text, openTag, start + parsedTagLengthBeforeIndex);
+        parsedTagsIndexes[start] = parsedTagLengthAtIndex + openTag.length;
+
+        if (!selfClosing) {
+          var closeTag = createCloseTag(tagName);
+          parsedTagLengthAtIndex = parsedTagsIndexes[end] || 0;
+          parsedTagLengthBeforeIndex = sumSparseArray(parsedTagsIndexes.slice(0, end));
+          text = injectIntoString(text, closeTag, end + parsedTagLengthBeforeIndex);
+          parsedTagsIndexes[end]  = parsedTagLengthAtIndex + closeTag.length;
+        }
+      }
+
+      return text;
+    };
+
+    __exports__["default"] = HTMLRenderer;
+  });
+define("types/default-types",
+  ["./type-set","./type","../renderers/embed-renderer","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var TypeSet = __dependency1__["default"];
+    var Type = __dependency2__["default"];
+    var EmbedRenderer = __dependency3__["default"];
+
+    /**
+     * Default supported block types
+     */
+    var DefaultBlockTypeSet = new TypeSet([
+      new Type({ tag: 'p', name: 'text' }),
+      new Type({ tag: 'h2', name: 'heading' }),
+      new Type({ tag: 'h3', name: 'subheading' }),
+      new Type({ tag: 'img', name: 'image' }),
+      new Type({ tag: 'blockquote', name: 'quote' }),
+      new Type({ tag: 'ul', name: 'list' }),
+      new Type({ tag: 'ol', name: 'ordered list' }),
+      new Type({ name: 'embed', renderer: new EmbedRenderer() }),
+      new Type({ name: 'group', renderer: null })
+    ]);
+
+    /**
+     * Default supported markup types
+     */
+    var DefaultMarkupTypeSet = new TypeSet([
+      new Type({ tag: 'b', name: 'bold' }),
+      new Type({ tag: 'i', name: 'italic' }),
+      new Type({ tag: 'u', name: 'underline' }),
+      new Type({ tag: 'a', name: 'link' }),
+      new Type({ tag: 'br', name: 'break' }),
+      new Type({ tag: 'li', name: 'list item' }),
+      new Type({ tag: 'sub', name: 'subscript' }),
+      new Type({ tag: 'sup', name: 'superscript' })
+    ]);
+
+    /**
+     * Registers public static constants for 
+     * default types on the `Type` class
+     */
+    function registerTypeConstants(typeset) {
+      var typeDict = typeset.idLookup, type, i;
+      for (i in typeDict) {
+        if (typeDict.hasOwnProperty(i)) {
+          type = typeDict[i];
+          Type[type.name] = type;
+        }
+      }
+    }
+
+    registerTypeConstants(DefaultBlockTypeSet);
+    registerTypeConstants(DefaultMarkupTypeSet);
+
+    __exports__.DefaultBlockTypeSet = DefaultBlockTypeSet;
+    __exports__.DefaultMarkupTypeSet = DefaultMarkupTypeSet;
+  });
+define("types/type-set",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /**
+     * @class TypeSet
+     * @private
+     * @constructor
+     * A Set of Types
+     */
+    function TypeSet(types) {
+      var len = types && types.length, i;
+
+      this._autoId    = 1;  // Auto-increment id counter
+      this.idLookup   = {}; // Hash cache for finding by id
+      this.tagLookup  = {}; // Hash cache for finding by tag
+
+      for (i = 0; i < len; i++) {
+        this.addType(types[i]);
+      }
+    }
+
+    TypeSet.prototype = {
+      /**
+       * Adds a type to the set
+       */
+      addType: function(type) {
+        this[type.name] = type;
+        if (type.id === undefined) {
+          type.id = this._autoId++;
+        }
+        this.idLookup[type.id] = type;
+        if (type.tag) {
+          this.tagLookup[type.tag] = type;
+        }
+        return type;
+      },
+
+      /**
+       * Returns type info for a given Node
+       */
+      findByNode: function(node) {
+        return this.findByTag(node.tagName);
+      },
+      /**
+       * Returns type info for a given tag
+       */
+      findByTag: function(tag) {
+        return this.tagLookup[tag.toLowerCase()];
+      },
+      /**
+       * Returns type info for a given id
+       */
+      findById: function(id) {
+        return this.idLookup[id];
+      }
+    };
+
+    __exports__["default"] = TypeSet;
+  });
+define("types/type",
+  ["../utils/string-utils","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var underscore = __dependency1__.underscore;
+
+    /**
+     * @class Type
+     * @constructor
+     * Contains meta info about a node type (id, name, tag, etc).
+     */
+    function Type(options) {
+      if (options) {
+        this.name = underscore(options.name || options.tag).toUpperCase();
+        if (options.id !== undefined) {
+          this.id = options.id;
+        }
+        if (options.tag) {
+          this.tag = options.tag.toLowerCase();
+          this.selfClosing = /^(br|img|hr|meta|link|embed)$/i.test(this.tag);
+        }
+        if (options.renderer) {
+          this.renderer = options.renderer;
+        }
+      }
+    }
+
+    __exports__["default"] = Type;
+  });
 define("parsers/html-parser",
   ["../models/block","../models/markup","../types/default-types","../utils/object-utils","../utils/array-utils","../utils/string-utils","../utils/node-utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
@@ -1776,303 +2127,6 @@ define("parsers/html-parser",
 
     __exports__["default"] = HTMLParser;
   });
-define("renderers/html-renderer",
-  ["../types/default-types","../utils/object-utils","../utils/string-utils","../utils/array-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
-    "use strict";
-    var DefaultBlockTypeSet = __dependency1__.DefaultBlockTypeSet;
-    var DefaultMarkupTypeSet = __dependency1__.DefaultMarkupTypeSet;
-    var merge = __dependency2__.merge;
-    var injectIntoString = __dependency3__.injectIntoString;
-    var sumSparseArray = __dependency4__.sumSparseArray;
-
-    /**
-     * Builds an opening html tag. i.e. '<a href="http://link.com/" rel="author">'
-     */
-    function createOpeningTag(tagName, attributes, selfClosing /*,blacklist*/) {
-      var tag = '<' + tagName;
-      for (var attr in attributes) {
-        if (attributes.hasOwnProperty(attr)) {
-          //if (blacklist && attr in blacklist) { continue; }
-          tag += ' ' + attr + '="' + attributes[attr] + '"';
-        }
-      }
-      if (selfClosing) { tag += '/'; }
-      tag += '>';
-      return tag;
-    }
-
-    /**
-     * Builds a closing html tag. i.e. '</p>'
-     */
-    function createCloseTag(tagName) {
-      return '</' + tagName + '>';
-    }
-
-    /**
-     * @class HTMLRenderer
-     * @constructor
-     */
-    function HTMLRenderer(options) {
-      var defaults = {
-        blockTypes    : DefaultBlockTypeSet,
-        markupTypes   : DefaultMarkupTypeSet
-      };
-      merge(this, defaults, options);
-    }
-
-    /**
-     * @method render
-     * @param data
-     * @return String html
-     */
-    HTMLRenderer.prototype.render = function(data) {
-      var html = '',
-          len = data && data.length,
-          i, block, type, blockHtml;
-
-      for (i = 0; i < len; i++) {
-        block = data[i];
-        type = this.blockTypes.findById(block.type);
-        blockHtml = this.rendererFor(block.type).call(this, block, type);
-        if (blockHtml) { html += blockHtml; }
-      }
-      return html;
-    };
-
-    /**
-     * @method renderBlock
-     * @param block a block model
-     * @return String html
-     * Renders a block model into a HTML string.
-     */
-    HTMLRenderer.prototype.renderBlock = function(block) {
-      var type = this.blockTypes.findById(block.type),
-          html = '', tagName, selfClosing;
-
-      if (type) {
-        tagName = type.tag;
-        selfClosing = type.selfClosing;
-        if (tagName) {
-          html += createOpeningTag(tagName, block.attributes, selfClosing);
-        }
-        if (!selfClosing) {
-          html += this.renderMarkup(block.value, block.markup);
-          if (tagName) {
-            html += createCloseTag(tagName);
-          }
-        }
-      }
-      return html;
-    };
-
-    /**
-     * @method renderMarkup
-     * @param text plain text to apply markup to
-     * @param markup an array of markup models
-     * @return String html
-     * Renders a markup model into a HTML string.
-     */
-    HTMLRenderer.prototype.renderMarkup = function(text, markups) {
-      var parsedTagsIndexes = [],
-          len = markups && markups.length, i;
-
-      for (i = 0; i < len; i++) {
-        var markup = markups[i],
-            markupMeta = this.markupTypes.findById(markup.type),
-            tagName = markupMeta.tag,
-            selfClosing = markupMeta.selfClosing,
-            start = markup.start,
-            end = markup.end,
-            openTag = createOpeningTag(tagName, markup.attributes, selfClosing),
-            parsedTagLengthAtIndex = parsedTagsIndexes[start] || 0,
-            parsedTagLengthBeforeIndex = sumSparseArray(parsedTagsIndexes.slice(0, start + 1));
-
-        text = injectIntoString(text, openTag, start + parsedTagLengthBeforeIndex);
-        parsedTagsIndexes[start] = parsedTagLengthAtIndex + openTag.length;
-
-        if (!selfClosing) {
-          var closeTag = createCloseTag(tagName);
-          parsedTagLengthAtIndex = parsedTagsIndexes[end] || 0;
-          parsedTagLengthBeforeIndex = sumSparseArray(parsedTagsIndexes.slice(0, end));
-          text = injectIntoString(text, closeTag, end + parsedTagLengthBeforeIndex);
-          parsedTagsIndexes[end]  = parsedTagLengthAtIndex + closeTag.length;
-        }
-      }
-
-      return text;
-    };
-
-    /**
-     * @method rendererFor
-     * @param type type id
-     * @returns Function rendering method
-     */
-    HTMLRenderer.prototype.rendererFor = function(type) {
-      return this.blockTypes.idLookup[type].renderer || this.renderBlock;
-    };
-
-    /**
-     * @method setRendererFor
-     * @param type instance of Type or type id
-     * @param renderer the rendering function that returns a string of html
-     * Registers custom rendering for a type
-     */
-    HTMLRenderer.prototype.setRendererFor = function(type, renderer) {
-      if ('number' === typeof type) {
-        type = this.blockTypes.idLookup[type];
-      }
-      type.renderer = renderer;
-    };
-
-    __exports__["default"] = HTMLRenderer;
-  });
-define("types/default-types",
-  ["./type-set","./type","../utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
-    "use strict";
-    var TypeSet = __dependency1__["default"];
-    var Type = __dependency2__["default"];
-    var noop = __dependency3__.noop;
-
-    /**
-     * Default supported block types
-     */
-    var DefaultBlockTypeSet = new TypeSet([
-      new Type({ tag: 'p', name: 'text' }),
-      new Type({ tag: 'h2', name: 'heading' }),
-      new Type({ tag: 'h3', name: 'subheading' }),
-      new Type({ tag: 'img', name: 'image' }),
-      new Type({ tag: 'blockquote', name: 'quote' }),
-      new Type({ tag: 'ul', name: 'list' }),
-      new Type({ tag: 'ol', name: 'ordered list' }),
-      new Type({ name: 'embed', renderer: noop }),
-      new Type({ name: 'group', renderer: noop })
-    ]);
-
-    /**
-     * Default supported markup types
-     */
-    var DefaultMarkupTypeSet = new TypeSet([
-      new Type({ tag: 'b', name: 'bold' }),
-      new Type({ tag: 'i', name: 'italic' }),
-      new Type({ tag: 'u', name: 'underline' }),
-      new Type({ tag: 'a', name: 'link' }),
-      new Type({ tag: 'br', name: 'break' }),
-      new Type({ tag: 'li', name: 'list item' }),
-      new Type({ tag: 'sub', name: 'subscript' }),
-      new Type({ tag: 'sup', name: 'superscript' })
-    ]);
-
-    /**
-     * Registers public static constants for 
-     * default types on the `Type` class
-     */
-    function registerTypeConstants(typeset) {
-      var typeDict = typeset.idLookup, type, i;
-      for (i in typeDict) {
-        if (typeDict.hasOwnProperty(i)) {
-          type = typeDict[i];
-          Type[type.name] = type;
-        }
-      }
-    }
-
-    registerTypeConstants(DefaultBlockTypeSet);
-    registerTypeConstants(DefaultMarkupTypeSet);
-
-    __exports__.DefaultBlockTypeSet = DefaultBlockTypeSet;
-    __exports__.DefaultMarkupTypeSet = DefaultMarkupTypeSet;
-  });
-define("types/type-set",
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /**
-     * @class TypeSet
-     * @private
-     * @constructor
-     * A Set of Types
-     */
-    function TypeSet(types) {
-      var len = types && types.length, i;
-
-      this._autoId    = 1;  // Auto-increment id counter
-      this.idLookup   = {}; // Hash cache for finding by id
-      this.tagLookup  = {}; // Hash cache for finding by tag
-
-      for (i = 0; i < len; i++) {
-        this.addType(types[i]);
-      }
-    }
-
-    TypeSet.prototype = {
-      /**
-       * Adds a type to the set
-       */
-      addType: function(type) {
-        this[type.name] = type;
-        if (type.id === undefined) {
-          type.id = this._autoId++;
-        }
-        this.idLookup[type.id] = type;
-        if (type.tag) {
-          this.tagLookup[type.tag] = type;
-        }
-        return type;
-      },
-
-      /**
-       * Returns type info for a given Node
-       */
-      findByNode: function(node) {
-        return this.findByTag(node.tagName);
-      },
-      /**
-       * Returns type info for a given tag
-       */
-      findByTag: function(tag) {
-        return this.tagLookup[tag.toLowerCase()];
-      },
-      /**
-       * Returns type info for a given id
-       */
-      findById: function(id) {
-        return this.idLookup[id];
-      }
-    };
-
-    __exports__["default"] = TypeSet;
-  });
-define("types/type",
-  ["../utils/string-utils","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var underscore = __dependency1__.underscore;
-
-    /**
-     * @class Type
-     * @constructor
-     * Contains meta info about a node type (id, name, tag, etc).
-     */
-    function Type(options) {
-      if (options) {
-        this.name = underscore(options.name || options.tag).toUpperCase();
-        if (options.id !== undefined) {
-          this.id = options.id;
-        }
-        if (options.tag) {
-          this.tag = options.tag.toLowerCase();
-          this.selfClosing = /^(br|img|hr|meta|link|embed)$/i.test(this.tag);
-        }
-        if (options.renderer) {
-          this.renderer = options.renderer;
-        }
-      }
-    }
-
-    __exports__["default"] = Type;
-  });
 define("utils/array-utils",
   ["exports"],
   function(__exports__) {
@@ -2213,14 +2267,8 @@ define("utils/object-utils",
       Sub.constructor = Sub;
     }
 
-    /**
-     * No operation function
-     */
-    function noop() {}
-
     __exports__.merge = merge;
     __exports__.inherit = inherit;
-    __exports__.noop = noop;
   });
 define("utils/string-utils",
   ["exports"],

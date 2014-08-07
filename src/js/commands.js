@@ -255,14 +255,18 @@ OEmbedCommand.prototype.exec = function(url) {
   var editorContext = command.editorContext;
   var index = editorContext.getCurrentBlockIndex();
   command.embedIntent.hide();
-  HTTP.get('http://noembed.com/embed?url=' + url, function(responseText) {
+  HTTP.get('http://noembed.com/embed?url=' + url, function(responseText, error) {
+    if (error) {
+      new Message().show('Embed error: ' + error);
+      return;
+    }
     var json = JSON.parse(responseText);
     if (json.error) {
-      new Message().show('Error: unrecognized embed url');
+      new Message().show('Embed error: ' + json.error);
     } else {
       var embedModel = new ContentKit.EmbedModel(json);
       if (!embedModel.attributes.provider_id) {
-        new Message().show('Error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
+        new Message().show('Embed error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
       } else {
         editorContext.insertBlockAt(embedModel, index);
         editorContext.syncVisualAt(index);

@@ -9,6 +9,9 @@ var HTTP = (function() {
       request.onload = function() {
         callback(this.responseText);
       };
+      request.onerror = function(error) {
+        callback(this.responseText, error);
+      };
       request.open('GET', url);
       request.send();
     },

@@ -134,8 +134,8 @@ ContentKit.Editor = (function() {
     this.textFormatToolbar.addCommand(command);
   };
 
-  Editor.prototype.setRendererFor = function(type, renderer) {
-    this.compiler.renderer.setRendererFor(type, renderer);
+  Editor.prototype.willRenderType = function(type, renderer) {
+    this.compiler.renderer.willRenderType(type, renderer);
   };
 
   function bindTypingEvents(editor) {
@@ -177,14 +177,11 @@ ContentKit.Editor = (function() {
     });
 
     // Assure there is always a supported root tag, and not empty text nodes or divs.
-    // Usually only happens when selecting all and deleting content.
-    /*
     editorEl.addEventListener('keyup', function() {
       if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
         document.execCommand('formatBlock', false, editor.defaultFormatter);
       }
     });
-    */
 
     // Experimental: Live update - sync model with textual content as you type
     editorEl.addEventListener('keyup', function(e) {

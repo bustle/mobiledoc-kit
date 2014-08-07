@@ -94,9 +94,19 @@
     });
     */
 
-    // Modifing what gets rendered for a Type
-    editor.setRendererFor(ContentKit.Type.EMBED, function(model, type) {
-      return '<figure class="ck-editor-embed" contenteditable="false"><h5>' + type.name + ' (' + model.attributes.provider_name + ') : ' + model.attributes.title + '</h5><img src="' + model.attributes.thumbnail + '"/></figure>';
+    // Overriding what gets rendered for a Type
+    // Here, we are wrapping the default embed renderer with more info and controls
+    editor.willRenderType(ContentKit.Type.EMBED, function(model) {
+      var embedAttrs = model.attributes;
+      var isVideo = embedAttrs.embed_type === 'video';
+      return '<div class="ck-embed" contenteditable="false">' +
+                '<figure>' + 
+                  (isVideo ? '<div class="ck-video-container">' : '') + this.renderer.render(model) + (isVideo ? '</div>' : '') + 
+                  '<figcaption>' + embedAttrs.provider_name + ': ' + 
+                    '<a target="_blank" href="' + embedAttrs.url + '">' + embedAttrs.title + '</a>' + 
+                  '</figcaption>' +
+                '</figure>' +
+              '</div>';
     });
 
   </script>
