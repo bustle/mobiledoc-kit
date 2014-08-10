@@ -84,6 +84,11 @@ function positionElementCenteredBelow(element, belowElement) {
   positionElementHorizontallyCenteredToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
 }
 
+function positionElementCenteredIn(element, inElement) {
+  var verticalCenter = (inElement.offsetHeight / 2) - (element.offsetHeight / 2);
+  positionElementHorizontallyCenteredToRect(element, inElement.getBoundingClientRect(), -verticalCenter);
+}
+
 function positionElementToLeftOf(element, leftOfElement) {
   var verticalCenter = (leftOfElement.offsetHeight / 2) - (element.offsetHeight / 2);
   var elementMargin = getElementComputedStyleNumericProp(element, 'marginRight');

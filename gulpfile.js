@@ -17,25 +17,17 @@ var pkg = require('./package.json');
 var jsSrc = [
   './src/js/index.js',
   './src/js/constants.js',
-  './src/js/utils/object-utils.js',
-  './src/js/utils/array-utils.js',
-  './src/js/utils/element-utils.js',
-  './src/js/utils/selection-utils.js',
-  './src/js/utils/http-utils.js',
-  './src/js/view.js',
-  './src/js/prompt.js',
+  './src/js/utils/*.js',
+  './src/js/views/view.js',
+  './src/js/views/*.js',
   './src/js/commands.js',
-  './src/js/editor.js',
-  './src/js/toolbar.js',
-  './src/js/toolbar-button.js',
-  './src/js/tooltip.js',
-  './src/js/embed-intent.js',
-  './src/js/message.js'
+  './src/js/editor.js'
 ];
 
 var jsExtSrc = './src/js/ext/*';
 
 var cssSrc = [
+  './src/css/variables.less',
   './src/css/editor.less',
   './src/css/toolbar.less',
   './src/css/tooltip.less',

@@ -195,6 +195,9 @@ function ImageEmbedCommand(options) {
     name: 'image',
     button: '<i class="ck-icon-image"></i>'
   });
+  if (window.XHRFileUploader) {
+    this.uploader = new XHRFileUploader({ url: '/upload', maxFileSize: 5000000 });
+  }
 }
 inherits(ImageEmbedCommand, EmbedCommand);
 
@@ -202,39 +205,40 @@ ImageEmbedCommand.prototype = {
   exec: function() {
     ImageEmbedCommand._super.prototype.exec.call(this);
     var clickEvent = new MouseEvent('click', { bubbles: false });
-    if (!this.fileBrowser) {
+    if (!this.fileInput) {
       var command = this;
-      var fileBrowser = this.fileBrowser = document.createElement('input');
-      fileBrowser.type = 'file';
-      fileBrowser.accept = 'image/*';
-      fileBrowser.className = 'ck-file-input';
-      fileBrowser.addEventListener('change', function(e) {
+      var fileInput = this.fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.className = 'ck-file-input';
+      fileInput.addEventListener('change', function(e) {
         command.handleFile(e);
       });
-      document.body.appendChild(fileBrowser);
+      document.body.appendChild(fileInput);
     }
-    this.fileBrowser.dispatchEvent(clickEvent);
+    this.fileInput.dispatchEvent(clickEvent);
   },
   handleFile: function(e) {
-    var command = this;
-    var target = e.target;
-    var file = target && target.files[0];
-    var reader = new FileReader();
-    reader.onload = function(event) {
-      var base64File = event.target.result;
-      var blockElement = getSelectionBlockElement();
-      var editorNode = blockElement.parentNode;
-      var image = document.createElement('img');
-      image.src = base64File;
+    var fileInput = e.target;
+    var editor = this.editorContext;
+    var embedIntent = this.embedIntent;
 
-      // image needs to be placed outside of the current empty paragraph
-      editorNode.insertBefore(image, blockElement);
-      editorNode.removeChild(blockElement);
-
-      command.embedIntent.hide();
-    };
-    reader.readAsDataURL(file);
-    target.value = null; // reset
+    embedIntent.showLoading();
+    this.uploader.upload({
+      fileInput: fileInput,
+      complete: function(response, error) {
+        embedIntent.hideLoading();
+        if (error || !response || !response.url) {
+          return new Message().show(error.message || 'Error uploading image');
+        }
+        var imageModel = new ContentKit.ImageModel({ src: response.url });
+        var index = editor.getCurrentBlockIndex();
+        editor.insertBlockAt(imageModel, index);
+        editor.syncVisualAt(index);
+      }
+    });
+    fileInput.value = null; // reset file input
+    // TODO: client-side render while uploading
   }
 };
 
@@ -244,7 +248,7 @@ function OEmbedCommand(options) {
     button: '<i class="ck-icon-embed"></i>',
     prompt: new Prompt({
       command: this,
-      placeholder: 'Paste a YouTube, Twitter, or any url...'
+      placeholder: 'Paste a YouTube or Twitter url...'
     })
   });
 }
@@ -254,22 +258,29 @@ OEmbedCommand.prototype.exec = function(url) {
   var command = this;
   var editorContext = command.editorContext;
   var index = editorContext.getCurrentBlockIndex();
-  command.embedIntent.hide();
-  HTTP.get('http://noembed.com/embed?url=' + url, function(responseText, error) {
+  var oEmbedEndpoint = 'http://noembed.com/embed?url=';
+  
+  command.embedIntent.showLoading();
+  if (!Regex.HTTP_PROTOCOL.test(url)) {
+    url = 'http://' + url;
+  }
+
+  HTTP.get(oEmbedEndpoint + url, function(responseText, error) {
+    command.embedIntent.hideLoading();
     if (error) {
-      new Message().show('Embed error: ' + error);
-      return;
-    }
-    var json = JSON.parse(responseText);
-    if (json.error) {
-      new Message().show('Embed error: ' + json.error);
+      new Message().show('Embed error: status code ' + error.currentTarget.status);
     } else {
-      var embedModel = new ContentKit.EmbedModel(json);
-      if (!embedModel.attributes.provider_id) {
-        new Message().show('Embed error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
+      var json = JSON.parse(responseText);
+      if (json.error) {
+        new Message().show('Embed error: ' + json.error);
       } else {
-        editorContext.insertBlockAt(embedModel, index);
-        editorContext.syncVisualAt(index);
+        var embedModel = new ContentKit.EmbedModel(json);
+        //if (!embedModel.attributes.provider_id) {
+        //  new Message().show('Embed error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
+        //} else {
+          editorContext.insertBlockAt(embedModel, index);
+          editorContext.syncVisualAt(index);
+        //}
       }
     }
   });

@@ -88,5 +88,19 @@ var EmbedIntent = (function() {
     }
   };
 
+  var loading = createDiv('div');
+  loading.className = 'ck-embed-loading';
+  loading.innerHTML = 'LOADING';
+  EmbedIntent.prototype.showLoading = function() {
+    this.hide();
+    document.body.appendChild(loading);
+    positionElementCenteredIn(loading, this.atNode);
+  };
+
+  EmbedIntent.prototype.hideLoading = function() {
+    document.body.removeChild(loading);
+  };
+
+
   return EmbedIntent;
 }());

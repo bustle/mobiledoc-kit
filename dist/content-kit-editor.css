@@ -21,13 +21,13 @@
   color: #bbb;
 }
 .ck-editor a {
-  color: #2ac845;
+  color: #0b8bff;
 }
 .ck-editor p {
   min-height: 1.6em;
 }
 .ck-editor blockquote {
-  border-left: 4px solid #2ac845;
+  border-left: 4px solid #0b8bff;
   margin: 0 0 0 -1.2em;
   padding-left: 1.05em;
   color: #a0a0a0;
@@ -120,7 +120,7 @@
 }
 .ck-toolbar-btn:active,
 .ck-toolbar-btn.active {
-  color: #4cd964;
+  color: #3ea3ff;
 }
 .ck-toolbar-prompt {
   display: none;
@@ -153,8 +153,8 @@
 .ck-editor-hilite {
   position: absolute;
   z-index: -1;
-  background-color: rgba(76, 217, 100, 0.08);
-  border-bottom: 2px dotted #4cd964;
+  background-color: rgba(62, 163, 255, 0.05);
+  border-bottom: 2px dotted #3ea3ff;
 }
 /**
  * Tooltip
@@ -245,6 +245,9 @@
   -webkit-transform: rotate(-135deg);
   transform: rotate(-135deg);
 }
+.ck-embed-loading {
+  position: absolute;
+}
 .ck-file-input {
   display: none;
 }
@@ -255,7 +258,10 @@
   border-radius: 2px;
 }
 .ck-embed.selected {
-  border-color: #4cd964;
+  border-color: #3ea3ff;
+}
+.ck-embed iframe {
+  margin: 0 auto !important;
 }
 .ck-embed figure {
   position: relative;
@@ -305,8 +311,8 @@
   left: 50%;
   z-index: 10;
   padding: 0.5em 1em;
-  background-color: #a0ebad;
-  border: 1px solid #219e37;
+  background-color: #a4d4ff;
+  border: 1px solid #0071d7;
   color: #333;
   text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.5);
   border-radius: 2px;

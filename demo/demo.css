@@ -50,9 +50,9 @@ header {
 }
 .mode-buttons button {
   background-color: transparent;
-  border: 1px solid #007aff;
+  border: 1px solid #52a3ff;
   outline: none;
-  color: #007aff;
+  color: #52a3ff;
   border-radius: 5px;
   padding: 0.6em 1em;
   margin: 0;
@@ -66,7 +66,7 @@ header {
   background-color: rgba(0,122,255,0.15);
 }
 .mode-buttons button:active {
-  background-color: #007aff;
+  background-color: #52a3ff;
   color: #FFF;
   transition: none;
 }

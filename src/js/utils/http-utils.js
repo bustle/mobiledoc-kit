@@ -10,7 +10,7 @@ var HTTP = (function() {
         callback(this.responseText);
       };
       request.onerror = function(error) {
-        callback(this.responseText, error);
+        callback(null, error);
       };
       request.open('GET', url);
       request.send();

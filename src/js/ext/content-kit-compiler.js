@@ -3,22 +3,23 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 7, 2014
+ * Last modified: Aug 10, 2014
  */
 
 (function(window, document, define, undefined) {
 
 define("content-kit",
-  ["./types/type","./models/block","./models/text","./models/embed","./compiler","./parsers/html-parser","./renderers/html-renderer","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
+  ["./types/type","./models/block","./models/text","./models/image","./models/embed","./compiler","./parsers/html-parser","./renderers/html-renderer","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __exports__) {
     "use strict";
     var Type = __dependency1__["default"];
     var BlockModel = __dependency2__["default"];
     var TextModel = __dependency3__["default"];
-    var EmbedModel = __dependency4__["default"];
-    var Compiler = __dependency5__["default"];
-    var HTMLParser = __dependency6__["default"];
-    var HTMLRenderer = __dependency7__["default"];
+    var ImageModel = __dependency4__["default"];
+    var EmbedModel = __dependency5__["default"];
+    var Compiler = __dependency6__["default"];
+    var HTMLParser = __dependency7__["default"];
+    var HTMLRenderer = __dependency8__["default"];
 
     /**
      * @namespace ContentKit
@@ -29,6 +30,7 @@ define("content-kit",
     ContentKit.Type = Type;
     ContentKit.BlockModel = BlockModel;
     ContentKit.TextModel = TextModel;
+    ContentKit.ImageModel = ImageModel;
     ContentKit.EmbedModel = EmbedModel;
     ContentKit.Compiler = Compiler;
     ContentKit.HTMLParser = HTMLParser;
@@ -147,29 +149,12 @@ define("models/block",
     __exports__["default"] = BlockModel;
   });
 define("models/embed",
-  ["../utils/object-utils","./model","../types/type","exports"],
+  ["../utils/object-utils","../models/model","../types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var inherit = __dependency1__.inherit;
     var Model = __dependency2__["default"];
     var Type = __dependency3__["default"];
-
-    /**
-     * Whitelist of supported services by provider name
-     */
-    var supportedServices = {
-      YOUTUBE   : 1,
-      TWITTER   : 2,
-      INSTAGRAM : 3
-    };
-
-    /**
-     * Returns the id of a supported service from a provider name
-     */
-    function serviceFor(provider) {
-      provider = provider && provider.toUpperCase();
-      return provider && supportedServices[provider] || null;
-    }
 
     /**
      * @class EmbedModel
@@ -189,14 +174,13 @@ define("models/embed",
       var attributes = this.attributes;
       var embedType = options.type;
       var providerName = options.provider_name;
-      var providerId = serviceFor(providerName);
       var embedUrl = options.url;
       var embedTitle = options.title;
       var embedThumbnail = options.thumbnail_url;
+      var embedHtml = options.html;
 
       if (embedType)    { attributes.embed_type = embedType; }
       if (providerName) { attributes.provider_name = providerName; }
-      if (providerId)   { attributes.provider_id = providerId; }
       if (embedUrl)     { attributes.url = embedUrl; }
       if (embedTitle)   { attributes.title = embedTitle; }
 
@@ -205,10 +189,41 @@ define("models/embed",
       } else if (embedThumbnail) {
         attributes.thumbnail = embedThumbnail;
       }
+
+      if (embedHtml && embedType === 'rich') {
+        attributes.html = embedHtml;
+      }
     }
     inherit(Model, EmbedModel);
 
     __exports__["default"] = EmbedModel;
+  });
+define("models/image",
+  ["./block","../types/type","../utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var BlockModel = __dependency1__["default"];
+    var Type = __dependency2__["default"];
+    var inherit = __dependency3__.inherit;
+
+    /**
+     * @class ImageModel
+     * @constructor
+     * @extends BlockModel
+     * A simple BlockModel subclass representing an image
+     */
+    function ImageModel(options) {
+      options = options || {};
+      options.type = Type.IMAGE.id;
+      options.type_name = Type.IMAGE.name;
+      if (options.src) {
+        options.attributes = { src: options.src };
+      }
+      BlockModel.call(this, options);
+    }
+    inherit(ImageModel, BlockModel);
+
+    __exports__["default"] = ImageModel;
   });
 define("models/markup",
   ["./model","../utils/object-utils","exports"],
@@ -262,7 +277,7 @@ define("models/text",
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var BlockModel = __dependency1__["default"];
-    var Type = __dependency2__.Type;
+    var Type = __dependency2__["default"];
     var inherit = __dependency3__.inherit;
 
     /**
@@ -280,353 +295,6 @@ define("models/text",
     inherit(TextModel, BlockModel);
 
     __exports__["default"] = TextModel;
-  });
-define("renderers/embed-renderer",
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /**
-     * Embed Service Adapters
-     */
-    var RegExVideoId = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
-    function getVideoIdFromUrl(url) {
-      var match = url.match(RegExVideoId);
-      if (match && match[1].length === 11){
-        return match[1];
-      }
-      return null;
-    }
-
-    function YoutubeAdapter() {}
-    YoutubeAdapter.prototype.render = function(model) {
-      var videoId = getVideoIdFromUrl(model.attributes.url);
-      var embedUrl = 'http://www.youtube.com/embed/' + videoId + '?controls=2&color=white&theme=light';
-      return '<iframe width="100%" height="400" frameborder="0" allowfullscreen src="' + embedUrl + '"></iframe>';
-    };
-
-
-    /**
-     * @class EmbedRenderer
-     * @constructor
-     */
-    function EmbedRenderer() {}
-
-    /**
-     * @method render
-     * @param model
-     * @return String html
-     */
-    EmbedRenderer.prototype.render = function(model) {
-      var adapter = this.adatperFor(model);
-      if (adapter) {
-        return adapter.render(model);
-      }
-
-      return model.attributes.provider_name + ': ' + model.attributes.title + '<img src="' + model.attributes.thumbnail + '"/>';
-    };
-
-    EmbedRenderer.prototype.adatperFor = function(model) {
-      var providerId = model.attributes.provider_id;
-      switch(providerId) {
-        case 1:
-          return new YoutubeAdapter();
-      }
-    };
-
-    __exports__["default"] = EmbedRenderer;
-  });
-define("renderers/html-renderer",
-  ["../types/default-types","../utils/object-utils","../utils/string-utils","../utils/array-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
-    "use strict";
-    var DefaultBlockTypeSet = __dependency1__.DefaultBlockTypeSet;
-    var DefaultMarkupTypeSet = __dependency1__.DefaultMarkupTypeSet;
-    var merge = __dependency2__.merge;
-    var injectIntoString = __dependency3__.injectIntoString;
-    var sumSparseArray = __dependency4__.sumSparseArray;
-
-    /**
-     * Builds an opening html tag. i.e. '<a href="http://link.com/" rel="author">'
-     */
-    function createOpeningTag(tagName, attributes, selfClosing /*,blacklist*/) {
-      var tag = '<' + tagName;
-      for (var attr in attributes) {
-        if (attributes.hasOwnProperty(attr)) {
-          //if (blacklist && attr in blacklist) { continue; }
-          tag += ' ' + attr + '="' + attributes[attr] + '"';
-        }
-      }
-      if (selfClosing) { tag += '/'; }
-      tag += '>';
-      return tag;
-    }
-
-    /**
-     * Builds a closing html tag. i.e. '</p>'
-     */
-    function createCloseTag(tagName) {
-      return '</' + tagName + '>';
-    }
-
-    /**
-     * @class HTMLRenderer
-     * @constructor
-     */
-    function HTMLRenderer(options) {
-      var defaults = {
-        blockTypes    : DefaultBlockTypeSet,
-        markupTypes   : DefaultMarkupTypeSet
-      };
-      merge(this, defaults, options);
-    }
-
-    /**
-     * @method willRenderType
-     * @param type instance of Type
-     * @param renderer the rendering function that returns a string of html
-     * Registers custom rendering hooks for a type
-     */
-    var renderHooks = {};
-    HTMLRenderer.prototype.willRenderType = function(type, renderer) {
-      renderHooks[type.id] = renderer;
-    };
-
-    /**
-     * @method render
-     * @param data
-     * @return String html
-     */
-    HTMLRenderer.prototype.render = function(data) {
-      var html = '',
-          len = data && data.length,
-          i, block, type, blockHtml;
-
-      for (i = 0; i < len; i++) {
-        block = data[i];
-        type = this.blockTypes.findById(block.type);
-        blockHtml = this.renderBlock(block);
-        if (blockHtml) { html += blockHtml; }
-      }
-      return html;
-    };
-
-    /**
-     * @method renderBlock
-     * @param block a block model
-     * @return String html
-     * Renders a block model into a HTML string.
-     */
-    HTMLRenderer.prototype.renderBlock = function(block) {
-      var typeId = block.type;
-      var type = this.blockTypes.findById(typeId);
-      var hook = renderHooks[typeId];
-
-      if (hook) {
-        return hook.call(type, block);
-      }
-
-      var html = '', tagName, selfClosing;
-
-      if (type) {
-        tagName = type.tag;
-        selfClosing = type.selfClosing;
-        if (tagName) {
-          html += createOpeningTag(tagName, block.attributes, selfClosing);
-        }
-        if (!selfClosing) {
-          html += this.renderMarkup(block.value, block.markup);
-          if (tagName) {
-            html += createCloseTag(tagName);
-          }
-        }
-      }
-      return html;
-    };
-
-    /**
-     * @method renderMarkup
-     * @param text plain text to apply markup to
-     * @param markup an array of markup models
-     * @return String html
-     * Renders a markup model into a HTML string.
-     */
-    HTMLRenderer.prototype.renderMarkup = function(text, markups) {
-      var parsedTagsIndexes = [],
-          len = markups && markups.length, i;
-
-      for (i = 0; i < len; i++) {
-        var markup = markups[i],
-            markupMeta = this.markupTypes.findById(markup.type),
-            tagName = markupMeta.tag,
-            selfClosing = markupMeta.selfClosing,
-            start = markup.start,
-            end = markup.end,
-            openTag = createOpeningTag(tagName, markup.attributes, selfClosing),
-            parsedTagLengthAtIndex = parsedTagsIndexes[start] || 0,
-            parsedTagLengthBeforeIndex = sumSparseArray(parsedTagsIndexes.slice(0, start + 1));
-
-        text = injectIntoString(text, openTag, start + parsedTagLengthBeforeIndex);
-        parsedTagsIndexes[start] = parsedTagLengthAtIndex + openTag.length;
-
-        if (!selfClosing) {
-          var closeTag = createCloseTag(tagName);
-          parsedTagLengthAtIndex = parsedTagsIndexes[end] || 0;
-          parsedTagLengthBeforeIndex = sumSparseArray(parsedTagsIndexes.slice(0, end));
-          text = injectIntoString(text, closeTag, end + parsedTagLengthBeforeIndex);
-          parsedTagsIndexes[end]  = parsedTagLengthAtIndex + closeTag.length;
-        }
-      }
-
-      return text;
-    };
-
-    __exports__["default"] = HTMLRenderer;
-  });
-define("types/default-types",
-  ["./type-set","./type","../renderers/embed-renderer","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
-    "use strict";
-    var TypeSet = __dependency1__["default"];
-    var Type = __dependency2__["default"];
-    var EmbedRenderer = __dependency3__["default"];
-
-    /**
-     * Default supported block types
-     */
-    var DefaultBlockTypeSet = new TypeSet([
-      new Type({ tag: 'p', name: 'text' }),
-      new Type({ tag: 'h2', name: 'heading' }),
-      new Type({ tag: 'h3', name: 'subheading' }),
-      new Type({ tag: 'img', name: 'image' }),
-      new Type({ tag: 'blockquote', name: 'quote' }),
-      new Type({ tag: 'ul', name: 'list' }),
-      new Type({ tag: 'ol', name: 'ordered list' }),
-      new Type({ name: 'embed', renderer: new EmbedRenderer() }),
-      new Type({ name: 'group', renderer: null })
-    ]);
-
-    /**
-     * Default supported markup types
-     */
-    var DefaultMarkupTypeSet = new TypeSet([
-      new Type({ tag: 'b', name: 'bold' }),
-      new Type({ tag: 'i', name: 'italic' }),
-      new Type({ tag: 'u', name: 'underline' }),
-      new Type({ tag: 'a', name: 'link' }),
-      new Type({ tag: 'br', name: 'break' }),
-      new Type({ tag: 'li', name: 'list item' }),
-      new Type({ tag: 'sub', name: 'subscript' }),
-      new Type({ tag: 'sup', name: 'superscript' })
-    ]);
-
-    /**
-     * Registers public static constants for 
-     * default types on the `Type` class
-     */
-    function registerTypeConstants(typeset) {
-      var typeDict = typeset.idLookup, type, i;
-      for (i in typeDict) {
-        if (typeDict.hasOwnProperty(i)) {
-          type = typeDict[i];
-          Type[type.name] = type;
-        }
-      }
-    }
-
-    registerTypeConstants(DefaultBlockTypeSet);
-    registerTypeConstants(DefaultMarkupTypeSet);
-
-    __exports__.DefaultBlockTypeSet = DefaultBlockTypeSet;
-    __exports__.DefaultMarkupTypeSet = DefaultMarkupTypeSet;
-  });
-define("types/type-set",
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /**
-     * @class TypeSet
-     * @private
-     * @constructor
-     * A Set of Types
-     */
-    function TypeSet(types) {
-      var len = types && types.length, i;
-
-      this._autoId    = 1;  // Auto-increment id counter
-      this.idLookup   = {}; // Hash cache for finding by id
-      this.tagLookup  = {}; // Hash cache for finding by tag
-
-      for (i = 0; i < len; i++) {
-        this.addType(types[i]);
-      }
-    }
-
-    TypeSet.prototype = {
-      /**
-       * Adds a type to the set
-       */
-      addType: function(type) {
-        this[type.name] = type;
-        if (type.id === undefined) {
-          type.id = this._autoId++;
-        }
-        this.idLookup[type.id] = type;
-        if (type.tag) {
-          this.tagLookup[type.tag] = type;
-        }
-        return type;
-      },
-
-      /**
-       * Returns type info for a given Node
-       */
-      findByNode: function(node) {
-        return this.findByTag(node.tagName);
-      },
-      /**
-       * Returns type info for a given tag
-       */
-      findByTag: function(tag) {
-        return this.tagLookup[tag.toLowerCase()];
-      },
-      /**
-       * Returns type info for a given id
-       */
-      findById: function(id) {
-        return this.idLookup[id];
-      }
-    };
-
-    __exports__["default"] = TypeSet;
-  });
-define("types/type",
-  ["../utils/string-utils","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var underscore = __dependency1__.underscore;
-
-    /**
-     * @class Type
-     * @constructor
-     * Contains meta info about a node type (id, name, tag, etc).
-     */
-    function Type(options) {
-      if (options) {
-        this.name = underscore(options.name || options.tag).toUpperCase();
-        if (options.id !== undefined) {
-          this.id = options.id;
-        }
-        if (options.tag) {
-          this.tag = options.tag.toLowerCase();
-          this.selfClosing = /^(br|img|hr|meta|link|embed)$/i.test(this.tag);
-        }
-        if (options.renderer) {
-          this.renderer = options.renderer;
-        }
-      }
-    }
-
-    __exports__["default"] = Type;
   });
 define("parsers/html-parser",
   ["../models/block","../models/markup","../types/default-types","../utils/object-utils","../utils/array-utils","../utils/string-utils","../utils/node-utils","exports"],
@@ -754,7 +422,7 @@ define("parsers/html-parser",
           index = 0,
           currentNode, markup;
 
-      // Clone the node since iteration is recursive
+      // Clone the node since it will be recursively torn down
       node = node.cloneNode(true);
 
       while (node.hasChildNodes()) {
@@ -811,6 +479,369 @@ define("parsers/html-parser",
     };
 
     __exports__["default"] = HTMLParser;
+  });
+define("renderers/html-element-renderer",
+  ["../utils/string-utils","../utils/array-utils","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var injectIntoString = __dependency1__.injectIntoString;
+    var sumSparseArray = __dependency2__.sumSparseArray;
+
+    /**
+     * Builds an opening html tag. i.e. '<a href="http://link.com/" rel="author">'
+     */
+    function createOpeningTag(tagName, attributes, selfClosing /*,blacklist*/) {
+      var tag = '<' + tagName;
+      for (var attr in attributes) {
+        if (attributes.hasOwnProperty(attr)) {
+          //if (blacklist && attr in blacklist) { continue; }
+          tag += ' ' + attr + '="' + attributes[attr] + '"';
+        }
+      }
+      if (selfClosing) { tag += '/'; }
+      tag += '>';
+      return tag;
+    }
+
+    /**
+     * Builds a closing html tag. i.e. '</p>'
+     */
+    function createCloseTag(tagName) {
+      return '</' + tagName + '>';
+    }
+
+    /**
+     * @class HTMLElementRenderer
+     * @constructor
+     */
+    function HTMLElementRenderer(options) {
+      options = options || {};
+      this.type = options.type;
+      this.markupTypes = options.markupTypes;
+    }
+
+    /**
+     * @method render
+     * @param model a block model
+     * @return String html
+     * Renders a block model into a HTML string.
+     */
+    HTMLElementRenderer.prototype.render = function(model) {
+      var html = '';
+      var type = this.type;
+      var tagName = type.tag;
+      var selfClosing = type.selfClosing;
+
+      if (tagName) {
+        html += createOpeningTag(tagName, model.attributes, selfClosing);
+      }
+      if (!selfClosing) {
+        html += this.renderMarkup(model.value, model.markup);
+        if (tagName) {
+          html += createCloseTag(tagName);
+        }
+      }
+      return html;
+    };
+
+    /**
+     * @method renderMarkup
+     * @param text plain text to apply markup to
+     * @param markup an array of markup models
+     * @return String html
+     * Renders a markup model into a HTML string.
+     */
+    HTMLElementRenderer.prototype.renderMarkup = function(text, markups) {
+      var parsedTagsIndexes = [],
+          len = markups && markups.length, i;
+
+      for (i = 0; i < len; i++) {
+        var markup = markups[i],
+            markupMeta = this.markupTypes.findById(markup.type),
+            tagName = markupMeta.tag,
+            selfClosing = markupMeta.selfClosing,
+            start = markup.start,
+            end = markup.end,
+            openTag = createOpeningTag(tagName, markup.attributes, selfClosing),
+            parsedTagLengthAtIndex = parsedTagsIndexes[start] || 0,
+            parsedTagLengthBeforeIndex = sumSparseArray(parsedTagsIndexes.slice(0, start + 1));
+
+        text = injectIntoString(text, openTag, start + parsedTagLengthBeforeIndex);
+        parsedTagsIndexes[start] = parsedTagLengthAtIndex + openTag.length;
+
+        if (!selfClosing) {
+          var closeTag = createCloseTag(tagName);
+          parsedTagLengthAtIndex = parsedTagsIndexes[end] || 0;
+          parsedTagLengthBeforeIndex = sumSparseArray(parsedTagsIndexes.slice(0, end));
+          text = injectIntoString(text, closeTag, end + parsedTagLengthBeforeIndex);
+          parsedTagsIndexes[end]  = parsedTagLengthAtIndex + closeTag.length;
+        }
+      }
+
+      return text;
+    };
+
+    __exports__["default"] = HTMLElementRenderer;
+  });
+define("renderers/html-embed-renderer",
+  ["./embeds/youtube","./embeds/twitter","./embeds/instagram","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var YouTubeRenderer = __dependency1__["default"];
+    var TwitterRenderer = __dependency2__["default"];
+    var InstagramRenderer = __dependency3__["default"];
+
+    /**
+     * A dictionary of supported embed services
+     */
+    var services = {
+      YOUTUBE : {
+        id: 1,
+        renderer: new YouTubeRenderer()
+      },
+      TWITTER : {
+        id: 2,
+        renderer: new TwitterRenderer()
+      },
+      INSTAGRAM : {
+        id: 3,
+        renderer: new InstagramRenderer()
+      }
+    };
+
+    /**
+     * @class EmbedRenderer
+     * @constructor
+     */
+    function EmbedRenderer() {}
+
+    /**
+     * @method render
+     * @param model
+     * @return String html
+     */
+    EmbedRenderer.prototype.render = function(model) {
+      var renderer = this.rendererFor(model);
+      if (renderer) {
+        return renderer.render(model);
+      }
+      var attrs = model.attributes;
+      return attrs && attrs.html || '';
+    };
+
+    /**
+     * @method rendererFor
+     * @param model
+     * @return service renderer
+     */
+    EmbedRenderer.prototype.rendererFor = function(model) {
+      var provider = model.attributes.provider_name;
+      var providerKey = provider && provider.toUpperCase();
+      var service = services[providerKey];
+      return service && service.renderer;
+    };
+
+    __exports__["default"] = EmbedRenderer;
+  });
+define("renderers/html-renderer",
+  ["../types/type","./html-element-renderer","./html-embed-renderer","../types/default-types","../utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
+    "use strict";
+    var Type = __dependency1__["default"];
+    var HTMLElementRenderer = __dependency2__["default"];
+    var HTMLEmbedRenderer = __dependency3__["default"];
+    var DefaultBlockTypeSet = __dependency4__.DefaultBlockTypeSet;
+    var DefaultMarkupTypeSet = __dependency4__.DefaultMarkupTypeSet;
+    var merge = __dependency5__.merge;
+
+    /**
+     * @class HTMLRenderer
+     * @constructor
+     */
+    function HTMLRenderer(options) {
+      var defaults = {
+        blockTypes    : DefaultBlockTypeSet,
+        markupTypes   : DefaultMarkupTypeSet
+      };
+      merge(this, defaults, options);
+    }
+
+    /**
+     * @method willRenderType
+     * @param type {Number|Type}
+     * @param renderer the rendering function that returns a string of html
+     * Registers custom rendering hooks for a type
+     */
+    var renderHooks = {};
+    HTMLRenderer.prototype.willRenderType = function(type, renderer) {
+      if ('number' !== typeof type) {
+        type = type.id;
+      }
+      renderHooks[type] = renderer;
+    };
+
+    /**
+     * @method rendererFor
+     * @param model
+     * @returns renderer
+     * Returns an instance of a renderer for supplied model
+     */
+    HTMLRenderer.prototype.rendererFor = function(model) {
+      var type = this.blockTypes.findById(model.type);
+      if (type === Type.EMBED) {
+        return new HTMLEmbedRenderer();
+      }
+      return new HTMLElementRenderer({ type: type, markupTypes: this.markupTypes });
+    };
+
+    /**
+     * @method render
+     * @param model
+     * @return String html
+     */
+    HTMLRenderer.prototype.render = function(model) {
+      var html = '';
+      var len = model && model.length;
+      var i, item, renderer, renderHook, itemHtml;
+
+      for (i = 0; i < len; i++) {
+        item = model[i];
+        renderer = this.rendererFor(item);
+        renderHook = renderHooks[item.type];
+        itemHtml = renderHook ? renderHook.call(renderer, item) : renderer.render(item);
+        if (itemHtml) { html += itemHtml; }
+      }
+      return html;
+    };
+
+    __exports__["default"] = HTMLRenderer;
+  });
+define("types/default-types",
+  ["./type-set","./type","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var TypeSet = __dependency1__["default"];
+    var Type = __dependency2__["default"];
+
+    /**
+     * Default supported block types
+     */
+    var DefaultBlockTypeSet = new TypeSet([
+      new Type({ tag: 'p', name: 'text' }),
+      new Type({ tag: 'h2', name: 'heading' }),
+      new Type({ tag: 'h3', name: 'subheading' }),
+      new Type({ tag: 'img', name: 'image' }),
+      new Type({ tag: 'blockquote', name: 'quote' }),
+      new Type({ tag: 'ul', name: 'list' }),
+      new Type({ tag: 'ol', name: 'ordered list' }),
+      new Type({ name: 'embed' })
+    ]);
+
+    /**
+     * Default supported markup types
+     */
+    var DefaultMarkupTypeSet = new TypeSet([
+      new Type({ tag: 'b', name: 'bold' }),
+      new Type({ tag: 'i', name: 'italic' }),
+      new Type({ tag: 'u', name: 'underline' }),
+      new Type({ tag: 'a', name: 'link' }),
+      new Type({ tag: 'br', name: 'break' }),
+      new Type({ tag: 'li', name: 'list item' }),
+      new Type({ tag: 'sub', name: 'subscript' }),
+      new Type({ tag: 'sup', name: 'superscript' })
+    ]);
+
+    __exports__.DefaultBlockTypeSet = DefaultBlockTypeSet;
+    __exports__.DefaultMarkupTypeSet = DefaultMarkupTypeSet;
+  });
+define("types/type-set",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /**
+     * @class TypeSet
+     * @private
+     * @constructor
+     * A Set of Types
+     */
+    function TypeSet(types) {
+      var len = types && types.length, i;
+
+      this._autoId    = 1;  // Auto-increment id counter
+      this.idLookup   = {}; // Hash cache for finding by id
+      this.tagLookup  = {}; // Hash cache for finding by tag
+
+      for (i = 0; i < len; i++) {
+        this.addType(types[i]);
+      }
+    }
+
+    TypeSet.prototype = {
+      /**
+       * Adds a type to the set
+       */
+      addType: function(type) {
+        this[type.name] = type;
+        if (type.id === undefined) {
+          type.id = this._autoId++;
+        }
+        this.idLookup[type.id] = type;
+        if (type.tag) {
+          this.tagLookup[type.tag] = type;
+        }
+        return type;
+      },
+
+      /**
+       * Returns type info for a given Node
+       */
+      findByNode: function(node) {
+        return this.findByTag(node.tagName);
+      },
+      /**
+       * Returns type info for a given tag
+       */
+      findByTag: function(tag) {
+        return this.tagLookup[tag.toLowerCase()];
+      },
+      /**
+       * Returns type info for a given id
+       */
+      findById: function(id) {
+        return this.idLookup[id];
+      }
+    };
+
+    __exports__["default"] = TypeSet;
+  });
+define("types/type",
+  ["../utils/string-utils","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var underscore = __dependency1__.underscore;
+
+    /**
+     * @class Type
+     * @constructor
+     * Contains meta info about a node type (id, name, tag, etc).
+     */
+    function Type(options) {
+      if (options) {
+        this.name = underscore(options.name || options.tag).toUpperCase();
+        if (options.id !== undefined) {
+          this.id = options.id;
+        }
+        if (options.tag) {
+          this.tag = options.tag.toLowerCase();
+          this.selfClosing = /^(br|img|hr|meta|link|embed)$/i.test(this.tag);
+        }
+
+        // Register the type as constant
+        Type[this.name] = this;
+      }
+    }
+
+    __exports__["default"] = Type;
   });
 define("utils/array-utils",
   ["exports"],
@@ -1006,5 +1037,53 @@ define("utils/string-utils",
     __exports__.underscore = underscore;
     __exports__.sanitizeWhitespace = sanitizeWhitespace;
     __exports__.injectIntoString = injectIntoString;
+  });
+define("renderers/embeds/instagram",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+
+    function InstagramRenderer() {}
+    InstagramRenderer.prototype.render = function(model) {
+      return '<img src="' + model.attributes.url + '"/>';
+    };
+
+    __exports__["default"] = InstagramRenderer;
+  });
+define("renderers/embeds/twitter",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+
+    function TwitterRenderer() {}
+    TwitterRenderer.prototype.render = function(model) {
+      return '<blockquote class="twitter-tweet"><a href="' + model.attributes.url + '"></a></blockquote>';
+    };
+
+    __exports__["default"] = TwitterRenderer;
+  });
+define("renderers/embeds/youtube",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+
+    var RegExVideoId = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
+
+    function getVideoIdFromUrl(url) {
+      var match = url.match(RegExVideoId);
+      if (match && match[1].length === 11){
+        return match[1];
+      }
+      return null;
+    }
+
+    function YouTubeRenderer() {}
+    YouTubeRenderer.prototype.render = function(model) {
+      var videoId = getVideoIdFromUrl(model.attributes.url);
+      var embedUrl = 'http://www.youtube.com/embed/' + videoId + '?controls=2&showinfo=0&color=white&theme=light';
+      return '<iframe width="100%" height="400" frameborder="0" allowfullscreen src="' + embedUrl + '"></iframe>';
+    };
+
+    __exports__["default"] = YouTubeRenderer;
   });
 }(this, document, define));

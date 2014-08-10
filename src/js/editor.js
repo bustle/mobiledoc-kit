@@ -86,6 +86,11 @@ ContentKit.Editor = (function() {
           commands: editor.embedCommands,
           rootElement: element
         });
+
+        if (editor.imageServiceUrl) {
+          // TODO: lookup by name
+          editor.embedCommands[0].uploader.url = editor.imageServiceUrl;
+        }
       }
       
       if(editor.autofocus) { element.focus(); }
@@ -103,10 +108,12 @@ ContentKit.Editor = (function() {
   };
 
   Editor.prototype.syncVisualAt = function(index) {
-    var block = this.model[index];
-    var html = this.compiler.render([block]);
+    var blockModel = this.model[index];
+    var html = this.compiler.render([blockModel]);
     var blockElements = toArray(this.element.children);
-    blockElements[index].innerHTML = html;
+    var element = blockElements[index];
+    element.innerHTML = html;
+    runAfterRenderHooks(element, blockModel);
   };
 
   Editor.prototype.getCurrentBlockIndex = function() {
@@ -192,6 +199,19 @@ ContentKit.Editor = (function() {
         }
       }
     });
+  }
+
+  var afterRenderHooks = [];
+  Editor.prototype.afterRender = function(callback) {
+    if ('function' === typeof callback) {
+      afterRenderHooks.push(callback);
+    }
+  };
+
+  function runAfterRenderHooks(element, blockModel) {
+    for (var i = 0, len = afterRenderHooks.length; i < len; i++) {
+      afterRenderHooks[i].call(null, element, blockModel);
+    }
   }
 
   function bindPasteEvents(editor) {

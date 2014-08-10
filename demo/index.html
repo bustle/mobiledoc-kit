@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>ContentKit Editor</title>
 
-  <!-- Include Editor CSS (editor.css) -->
+  <!-- Include ContentKit Editor CSS -->
   <link href="../dist/content-kit-editor.css" rel="stylesheet">
 
   <!-- CSS just for the demo page -->
@@ -66,13 +66,12 @@
     </div>
   </div>
 
+  <!-- Include if you want image embeds to upload to Amazon S3 -->
+  <script src="../ext/xhr-file-uploader.js"></script>
   <!-- Include JS Module Loader -->
   <script src="../ext/loader.js"></script>
   <!-- Include Editor JS (content-kit-editor.js) -->
   <script src="../dist/content-kit-editor.js"></script>
-
-  <!-- JS just for the demo page -->
-  <script src="demo.js"></script>
 
   <script>
     // Load the ContentKit Module
@@ -80,6 +79,7 @@
 
     // Initializes a new Editor
     var editor = new ContentKit.Editor('.editor', {
+      imageServiceUrl: 'http://localhost:5000/upload',
       compiler: new ContentKit.Compiler({
         includeTypeNames: true // outputs type names for easier debugging
       })
@@ -101,7 +101,7 @@
       var isVideo = embedAttrs.embed_type === 'video';
       return '<div class="ck-embed" contenteditable="false">' +
                 '<figure>' + 
-                  (isVideo ? '<div class="ck-video-container">' : '') + this.renderer.render(model) + (isVideo ? '</div>' : '') + 
+                  (isVideo ? '<div class="ck-video-container">' : '') + this.render(model) + (isVideo ? '</div>' : '') + 
                   '<figcaption>' + embedAttrs.provider_name + ': ' + 
                     '<a target="_blank" href="' + embedAttrs.url + '">' + embedAttrs.title + '</a>' + 
                   '</figcaption>' +
@@ -109,7 +109,30 @@
               '</div>';
     });
 
+    editor.willRenderType(ContentKit.Type.IMAGE, function(model) {
+      return '<div class="ck-embed" contenteditable="false">' +
+                '<figure>' + this.render(model) + '</figure>' +
+              '</div>';
+    });
+
+    // Add an after render hook to load Twitter's Javascript SDK
+    editor.afterRender(function(element, model) {
+      var embedProvider = model.attributes && model.attributes.provider_name;
+      if (embedProvider && embedProvider.toLowerCase() === 'twitter') {
+        if (window.twttr) {
+          twttr.widgets.load(element);
+        } else {
+          var script = document.createElement('script');
+          script.async = true;
+          script.src = 'http://platform.twitter.com/widgets.js';
+          document.head.appendChild(script);
+        }
+      }
+    });
   </script>
+
+  <!-- JS just for the demo page -->
+  <script src="demo.js"></script>
 
 </body>
 </html>
