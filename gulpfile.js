@@ -8,23 +8,16 @@ var util   = require('gulp-util');
 var open   = require('gulp-open');
 var rimraf = require('gulp-rimraf');
 var insert = require('gulp-insert');
-var runSequence = require('run-sequence');
+var es6ModuleTranspiler = require('gulp-es6-module-transpiler');
 
 // ------------------------------------------- 
 
 var pkg = require('./package.json');
 
 var jsSrc = [
-  './src/js/index.js',
-  './src/js/constants.js',
-  './src/js/utils/*.js',
-  './src/js/views/view.js',
-  './src/js/views/*.js',
-  './src/js/commands.js',
-  './src/js/editor.js'
+  './src/js/content-kit.js',
+  './src/js/**/*.js'
 ];
-
-var jsExtSrc = './src/js/ext/*';
 
 var cssSrc = [
   './src/css/variables.less',
@@ -72,25 +65,13 @@ gulp.task('lint', function() {
              .pipe(jshint.reporter('default'));
 });
 
-// Concatenates and builds javascript source code
-gulp.task('build-js-src', function() {
+gulp.task('build-js', ['lint'], function() {
   return gulp.src(jsSrc)
+             .pipe(es6ModuleTranspiler({ type: 'amd' }))
              .pipe(concat(jsDistName))
              .pipe(insert.wrap(iifeHeader, iifeFooter))
              .pipe(header(banner, { pkg : pkg } ))
-            . pipe(gulp.dest(distDest));
-});
-
-// Concatenates external js dependencies with built js source
-gulp.task('build-js-ext', ['build-js-src'], function() {
-  return gulp.src([jsDistPath, jsExtSrc])
-             .pipe(concat(jsDistName))
              .pipe(gulp.dest(distDest));
-});
-
-// Builds final js output in sequence (tasks are order dependent)
-gulp.task('build-js', ['lint', 'build-js-src', 'build-js-ext'], function() {
-  return runSequence('build-js-src', 'build-js-ext');
 });
 
 // Compiles LESS and concatenates css

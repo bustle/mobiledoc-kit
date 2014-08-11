@@ -3,1379 +3,16 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 10, 2014
+ * Last modified: Aug 11, 2014
  */
 
 (function(exports, document) {
 
 'use strict';
 
-/**
- * @namespace ContentKit
- */
-var ContentKit = exports.ContentKit || {};
-exports.ContentKit = ContentKit;
-
-var Keycodes = {
-  BKSP  : 8,
-  ENTER : 13,
-  ESC   : 27,
-  DEL   : 46
-};
-
-var Regex = {
-  NEWLINE       : /[\r\n]/g,
-  HTTP_PROTOCOL : /^https?:\/\//i,
-  HEADING_TAG   : /^(H1|H2|H3|H4|H5|H6)$/i,
-  UL_START      : /^[-*]\s/,
-  OL_START      : /^1\.\s/
-};
-
-var SelectionDirection = {
-  LEFT_TO_RIGHT : 1,
-  RIGHT_TO_LEFT : 2,
-  SAME_NODE     : 3
-};
-
-var ToolbarDirection = {
-  TOP   : 1,
-  RIGHT : 2
-};
-
-var Tags = {
-  PARAGRAPH    : 'P',
-  HEADING      : 'H2',
-  SUBHEADING   : 'H3',
-  QUOTE        : 'BLOCKQUOTE',
-  FIGURE       : 'FIGURE',
-  LIST         : 'UL',
-  ORDERED_LIST : 'OL',
-  LIST_ITEM    : 'LI',
-  LINK         : 'A',
-  BOLD         : 'B',
-  ITALIC       : 'I'
-};
-
-var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.FIGURE, Tags.LIST, Tags.ORDERED_LIST ];
-
-/**
- * Converts an array-like object (i.e. NodeList) to Array
- */
-function toArray(obj) {
-  var array = [],
-      i = obj.length >>> 0; // cast to Uint32
-  while (i--) {
-    array[i] = obj[i];
-  }
-  return array;
-}
-
-function createDiv(className) {
-  var div = document.createElement('div');
-  if (className) {
-    div.className = className;
-  }
-  return div;
-}
-
-function hideElement(element) {
-  element.style.display = 'none';
-}
-
-function showElement(element) {
-  element.style.display = 'block';
-}
-
-function swapElements(elementToShow, elementToHide) {
-  hideElement(elementToHide);
-  showElement(elementToShow);
-}
-
-function getEventTargetMatchingTag(tag, target, container) {
-  // Traverses up DOM from an event target to find the node matching specifed tag
-  while (target && target !== container) {
-    if (target.tagName === tag) {
-      return target;
-    }
-    target = target.parentNode;
-  }
-}
-
-function nodeIsDescendantOfElement(node, element) {
-  var parentNode = node.parentNode;
-  while(parentNode) {
-    if (parentNode === element) {
-      return true;
-    }
-    parentNode = parentNode.parentNode;
-  }
-  return false;
-}
-
-function getElementRelativeOffset(element) {
-  var offset = { left: 0, top: -window.pageYOffset };
-  var offsetParent = element.offsetParent;
-  var offsetParentPosition = window.getComputedStyle(offsetParent).position;
-  var offsetParentRect;
-
-  if (offsetParentPosition === 'relative') {
-    offsetParentRect = offsetParent.getBoundingClientRect();
-    offset.left = offsetParentRect.left;
-    offset.top  = offsetParentRect.top;
-  }
-  return offset;
-}
-
-function getElementComputedStyleNumericProp(element, prop) {
-  return parseFloat(window.getComputedStyle(element)[prop]);
-}
-
-function positionElementToRect(element, rect, topOffset, leftOffset) {
-  var relativeOffset = getElementRelativeOffset(element);
-  var style = element.style;
-  var round = Math.round;
-
-  topOffset = topOffset || 0;
-  leftOffset = leftOffset || 0;
-  style.left = round(rect.left - relativeOffset.left - leftOffset) + 'px';
-  style.top  = round(rect.top  - relativeOffset.top  - topOffset) + 'px';
-}
-
-function positionElementHorizontallyCenteredToRect(element, rect, topOffset) {
-  var horizontalCenter = (element.offsetWidth / 2) - (rect.width / 2);
-  positionElementToRect(element, rect, topOffset, horizontalCenter);
-}
-
-function positionElementCenteredAbove(element, aboveElement) {
-  var elementMargin = getElementComputedStyleNumericProp(element, 'marginBottom');
-  positionElementHorizontallyCenteredToRect(element, aboveElement.getBoundingClientRect(), element.offsetHeight + elementMargin);
-}
-
-function positionElementCenteredBelow(element, belowElement) {
-  var elementMargin = getElementComputedStyleNumericProp(element, 'marginTop');
-  positionElementHorizontallyCenteredToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
-}
-
-function positionElementCenteredIn(element, inElement) {
-  var verticalCenter = (inElement.offsetHeight / 2) - (element.offsetHeight / 2);
-  positionElementHorizontallyCenteredToRect(element, inElement.getBoundingClientRect(), -verticalCenter);
-}
-
-function positionElementToLeftOf(element, leftOfElement) {
-  var verticalCenter = (leftOfElement.offsetHeight / 2) - (element.offsetHeight / 2);
-  var elementMargin = getElementComputedStyleNumericProp(element, 'marginRight');
-  positionElementToRect(element, leftOfElement.getBoundingClientRect(), -verticalCenter, element.offsetWidth + elementMargin);
-}
-
-function positionElementToRightOf(element, rightOfElement) {
-  var verticalCenter = (rightOfElement.offsetHeight / 2) - (element.offsetHeight / 2);
-  var elementMargin = getElementComputedStyleNumericProp(element, 'marginLeft');
-  var rightOfElementRect = rightOfElement.getBoundingClientRect();
-  positionElementToRect(element, rightOfElementRect, -verticalCenter, -rightOfElement.offsetWidth - elementMargin);
-}
-
-var HTTP = (function() {
-
-  var head = document.head;
-  var uuid = 0;
-
-  return {
-    get: function(url, callback) {
-      var request = new XMLHttpRequest();
-      request.onload = function() {
-        callback(this.responseText);
-      };
-      request.onerror = function(error) {
-        callback(null, error);
-      };
-      request.open('GET', url);
-      request.send();
-    },
-
-    jsonp: function(url, callback) {
-      var script = document.createElement('script');
-      var name = '_jsonp_' + uuid++;
-      url += ( url.match(/\?/) ? '&' : '?' ) + 'callback=' + name;
-      script.src = url;
-      exports[name] = function(response) {
-        callback(JSON.parse(response));
-        head.removeChild(script);
-        delete exports[name];
-      };
-      head.appendChild(script);
-    }
-  };
-
-}());
-
-function merge(object, updates) {
-  updates = updates || {};
-  for(var o in updates) {
-    if (updates.hasOwnProperty(o)) {
-      object[o] = updates[o];
-    }
-  }
-  return object;
-}
-
-function inherits(Subclass, Superclass) {
-  Subclass._super = Superclass;
-  Subclass.prototype = Object.create(Superclass.prototype, {
-    constructor: {
-      value: Subclass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-}
-
-function getDirectionOfSelection(selection) {
-  var node = selection.anchorNode;
-  var position = node && node.compareDocumentPosition(selection.focusNode);
-  if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
-    return SelectionDirection.LEFT_TO_RIGHT;
-  } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
-    return SelectionDirection.RIGHT_TO_LEFT;
-  }
-  return SelectionDirection.SAME_NODE;
-}
-
-function getSelectionElement(selection) {
-  selection = selection || window.getSelection();
-  var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.anchorNode : selection.focusNode;
-  return node && (node.nodeType === 3 ? node.parentNode : node);
-}
-
-function getSelectionBlockElement(selection) {
-  selection = selection || window.getSelection();
-  var element = getSelectionElement();
-  var tag = element && element.tagName;
-  while (tag && RootTags.indexOf(tag) === -1) {
-    if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
-    element = element.parentNode;
-    tag = element.tagName;
-  }
-  return element;
-}
-
-function getSelectionTagName() {
-  var element = getSelectionElement();
-  return element ? element.tagName : null;
-}
-
-function getSelectionBlockTagName() {
-  var element = getSelectionBlockElement();
-  return element ? element.tagName : null;
-}
-
-function tagsInSelection(selection) {
-  var element = getSelectionElement(selection);
-  var tags = [];
-  if (!selection.isCollapsed) {
-    while(element) {
-      if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
-      if (element.tagName) {
-        tags.push(element.tagName);
-      }
-      element = element.parentNode;
-    }
-  }
-  return tags;
-}
-
-function selectionIsInElement(selection, element) {
-  var node = selection.anchorNode;
-  return node && nodeIsDescendantOfElement(node, element);
-}
-
-function selectionIsEditable(selection) {
-  var el = getSelectionBlockElement(selection);
-  return el.contentEditable !== 'false';
-}
-
-/*
-function saveSelection() {
-  var sel = window.getSelection();
-  var ranges = [], i;
-  if (sel.rangeCount) {
-    var rangeCount = sel.rangeCount;
-    for (i = 0; i < rangeCount; i++) {
-      ranges.push(sel.getRangeAt(i));
-    }
-  }
-  return ranges;
-}
-
-function restoreSelection(savedSelection) {
-  var sel = window.getSelection();
-  var len = savedSelection.length, i;
-  sel.removeAllRanges();
-  for (i = 0; i < len; i++) {
-    sel.addRange(savedSelection[i]);
-  }
-}
-*/
-
-function moveCursorToBeginningOfSelection(selection) {
-  var range = document.createRange();
-  var node  = selection.anchorNode;
-  range.setStart(node, 0);
-  range.setEnd(node, 0);
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-function restoreRange(range) {
-  var selection = window.getSelection();
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-function selectNode(node) {
-  var range = document.createRange();
-  var selection = window.getSelection();
-  range.setStart(node, 0);
-  range.setEnd(node, node.length);
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-function View(options) {
-  this.tagName = options.tagName || 'div';
-  this.classNames = options.classNames || [];
-  this.element = document.createElement(this.tagName);
-  this.element.className = this.classNames.join(' ');
-  this.container = options.container || document.body;
-  this.isShowing = false;
-}
-
-View.prototype = {
-  show: function() {
-    var view = this;
-    if(!view.isShowing) {
-      view.container.appendChild(view.element);
-      view.isShowing = true;
-      return true;
-    }
-  },
-  hide: function() {
-    var view = this;
-    if(view.isShowing) {
-      view.container.removeChild(view.element);
-      view.isShowing = false;
-      return true;
-    }
-  },
-  focus: function() {
-    this.element.focus();
-  },
-  addClass: function(className) {
-    this.classNames.push(className);
-    this.element.className = this.classNames.join(' ');
-  },
-  removeClass: function(className) {
-    this.classNames.splice(this.classNames.indexOf(className), 1);
-    this.element.className = this.classNames.join(' ');
-  }
-};
-
-var EmbedIntent = (function() {
-
-  function EmbedIntent(options) {
-    var embedIntent = this;
-    var rootElement = options.rootElement;
-    options.tagName = 'button';
-    options.classNames = ['ck-embed-intent-btn'];
-    View.call(embedIntent, options);
-
-    embedIntent.editorContext = options.editorContext;
-    embedIntent.element.title = 'Insert image or embed...';
-    embedIntent.element.addEventListener('mouseup', function(e) {
-      if (embedIntent.isActive) {
-        embedIntent.deactivate();
-      } else {
-        embedIntent.activate();
-      }
-      e.stopPropagation();
-    });
-
-    embedIntent.toolbar = new Toolbar({ embedIntent: embedIntent, editor: embedIntent.editorContext, commands: options.commands, direction: ToolbarDirection.RIGHT });
-    embedIntent.isActive = false;
-
-    function embedIntentHandler() {
-      var blockElement = getSelectionBlockElement();
-      var blockElementContent = blockElement && blockElement.innerHTML;
-      if (blockElementContent === '' || blockElementContent === '<br>') {
-        embedIntent.showAt(blockElement);
-      } else {
-        embedIntent.hide();
-      }
-    }
-
-    rootElement.addEventListener('keyup', embedIntentHandler);
-
-    document.addEventListener('mouseup', function(e) {
-      setTimeout(function() {
-        if (!nodeIsDescendantOfElement(e.target, embedIntent.toolbar.element)) {
-          embedIntentHandler();
-        }
-      });
-    });
-
-    document.addEventListener('keyup', function(e) {
-      if (e.keyCode === Keycodes.ESC) {
-        embedIntent.hide();
-      }
-    });
-
-    window.addEventListener('resize', function() {
-      if(embedIntent.isShowing) {
-        positionElementToLeftOf(embedIntent.element, embedIntent.atNode);
-        if (embedIntent.toolbar.isShowing) {
-          embedIntent.toolbar.positionToContent(embedIntent.element);
-        }
-      }
-    });
-  }
-  inherits(EmbedIntent, View);
-
-  EmbedIntent.prototype.hide = function() {
-    if (EmbedIntent._super.prototype.hide.call(this)) {
-      this.deactivate();
-    }
-  };
-
-  EmbedIntent.prototype.showAt = function(node) {
-    this.show();
-    this.deactivate();
-    this.atNode = node;
-    positionElementToLeftOf(this.element, node);
-  };
-
-  EmbedIntent.prototype.activate = function() {
-    if (!this.isActive) {
-      this.addClass('activated');
-      this.toolbar.show();
-      this.toolbar.positionToContent(this.element);
-      this.isActive = true;
-    }
-  };
-
-  EmbedIntent.prototype.deactivate = function() {
-    if (this.isActive) {
-      this.removeClass('activated');
-      this.toolbar.hide();
-      this.isActive = false;
-    }
-  };
-
-  var loading = createDiv('div');
-  loading.className = 'ck-embed-loading';
-  loading.innerHTML = 'LOADING';
-  EmbedIntent.prototype.showLoading = function() {
-    this.hide();
-    document.body.appendChild(loading);
-    positionElementCenteredIn(loading, this.atNode);
-  };
-
-  EmbedIntent.prototype.hideLoading = function() {
-    document.body.removeChild(loading);
-  };
-
-
-  return EmbedIntent;
-}());
-
-function Message(options) {
-  options = options || {};
-  options.classNames = ['ck-message'];
-  View.call(this, options);
-}
-inherits(Message, View);
-
-Message.prototype.show = function(message) {
-  var messageView = this;
-  messageView.element.innerHTML = message;
-  Message._super.prototype.show.call(messageView);
-  setTimeout(function() {
-    messageView.hide();
-  }, 3000);
-};
-
-var Prompt = (function() {
-
-  var container = document.body;
-  var hiliter = createDiv('ck-editor-hilite');
-
-  function Prompt(options) {
-    var prompt = this;
-    options.tagName = 'input';
-    View.call(prompt, options);
-
-    prompt.command = options.command;
-    prompt.element.placeholder = options.placeholder || '';
-    prompt.element.addEventListener('mouseup', function(e) { e.stopPropagation(); }); // prevents closing prompt when clicking input 
-    prompt.element.addEventListener('keyup', function(e) {
-      var entry = this.value;
-      if(entry && prompt.range && !e.shiftKey && e.which === Keycodes.ENTER) {
-        restoreRange(prompt.range);
-        prompt.command.exec(entry);
-        if (prompt.onComplete) { prompt.onComplete(); }
-      }
-    });
-
-    window.addEventListener('resize', function() {
-      var activeHilite = hiliter.parentNode;
-      var range = prompt.range;
-      if(activeHilite && range) {
-        positionHiliteRange(range);
-      }
-    });
-  }
-  inherits(Prompt, View);
-
-  Prompt.prototype.show = function(callback) {
-    var prompt = this;
-    var element = prompt.element;
-    var selection = window.getSelection();
-    var range = selection && selection.rangeCount && selection.getRangeAt(0);
-    element.value = null;
-    prompt.range = range || null;
-    if (range) {
-      container.appendChild(hiliter);
-      positionHiliteRange(prompt.range);
-      setTimeout(function(){ element.focus(); }); // defer focus (disrupts mouseup events)
-      if (callback) { prompt.onComplete = callback; }
-    }
-  };
-
-  Prompt.prototype.hide = function() {
-    if (hiliter.parentNode) {
-      container.removeChild(hiliter);
-    }
-  };
-
-  function positionHiliteRange(range) {
-    var rect = range.getBoundingClientRect();
-    var style = hiliter.style;
-    style.width  = rect.width  + 'px';
-    style.height = rect.height + 'px';
-    positionElementToRect(hiliter, rect);
-  }
-
-  return Prompt;
-}());
-
-var ToolbarButton = (function() {
-
-  var buttonClassName = 'ck-toolbar-btn';
-
-  function ToolbarButton(options) {
-    var button = this;
-    var toolbar = options.toolbar;
-    var command = options.command;
-    var prompt = command.prompt;
-    var element = document.createElement('button');
-
-    if(typeof command === 'string') {
-      command = Command.index[command];
-    }
-
-    button.element = element;
-    button.command = command;
-    button.isActive = false;
-
-    element.title = command.name;
-    element.className = buttonClassName;
-    element.innerHTML = command.button;
-    element.addEventListener('click', function(e) {
-      if (!button.isActive && prompt) {
-        toolbar.displayPrompt(prompt);
-      } else {
-        command.exec();
-      }
-    });
-  }
-
-  ToolbarButton.prototype = {
-    setActive: function() {
-      var button = this;
-      if (!button.isActive) {
-        button.element.className = buttonClassName + ' active';
-        button.isActive = true;
-      }
-    },
-    setInactive: function() {
-      var button = this;
-      if (button.isActive) {
-        button.element.className = buttonClassName;
-        button.isActive = false;
-      }
-    }
-  };
-
-  return ToolbarButton;
-}());
-
-var Toolbar = (function() {
-
-  function Toolbar(options) {
-    var toolbar = this;
-    var commands = options.commands;
-    var commandCount = commands && commands.length;
-    var i, button, command;
-    toolbar.editor = options.editor || null;
-    toolbar.embedIntent = options.embedIntent || null;
-    toolbar.direction = options.direction || ToolbarDirection.TOP;
-    options.classNames = ['ck-toolbar'];
-    if (toolbar.direction === ToolbarDirection.RIGHT) {
-      options.classNames.push('right');
-    }
-
-    View.call(toolbar, options);
-
-    toolbar.activePrompt = null;
-    toolbar.buttons = [];
-
-    toolbar.promptContainerElement = createDiv('ck-toolbar-prompt');
-    toolbar.buttonContainerElement = createDiv('ck-toolbar-buttons');
-    toolbar.element.appendChild(toolbar.promptContainerElement);
-    toolbar.element.appendChild(toolbar.buttonContainerElement);
-
-    for(i = 0; i < commandCount; i++) {
-      this.addCommand(commands[i]);
-    }
-
-    // Closes prompt if displayed when changing selection
-    document.addEventListener('mouseup', function() {
-      toolbar.dismissPrompt();
-    });
-  }
-  inherits(Toolbar, View);
-
-  Toolbar.prototype.hide = function() {
-    if (Toolbar._super.prototype.hide.call(this)) {
-      var style = this.element.style;
-      style.left = '';
-      style.top = '';
-      this.dismissPrompt();
-    }
-  };
-
-  Toolbar.prototype.addCommand = function(command) {
-    command.editorContext = this.editor;
-    command.embedIntent = this.embedIntent;
-    var button = new ToolbarButton({ command: command, toolbar: this });
-    this.buttons.push(button);
-    this.buttonContainerElement.appendChild(button.element);
-  };
-
-  Toolbar.prototype.displayPrompt = function(prompt) {
-    var toolbar = this;
-    swapElements(toolbar.promptContainerElement, toolbar.buttonContainerElement);
-    toolbar.promptContainerElement.appendChild(prompt.element);
-    prompt.show(function() {
-      toolbar.dismissPrompt();
-      toolbar.updateForSelection(window.getSelection());
-    });
-    toolbar.activePrompt = prompt;
-  };
-
-  Toolbar.prototype.dismissPrompt = function() {
-    var toolbar = this;
-    var activePrompt = toolbar.activePrompt;
-    if (activePrompt) {
-      activePrompt.hide();
-      swapElements(toolbar.buttonContainerElement, toolbar.promptContainerElement);
-      toolbar.activePrompt = null;
-    }
-  };
-  
-  Toolbar.prototype.updateForSelection = function(selection) {
-    var toolbar = this;
-    if (selection.isCollapsed) {
-      toolbar.hide();
-    } else {
-      toolbar.show();
-      toolbar.positionToContent(selection.getRangeAt(0));
-      updateButtonsForSelection(toolbar.buttons, selection);
-    }
-  };
-
-  Toolbar.prototype.positionToContent = function(content) {
-    var directions = ToolbarDirection;
-    var positioningMethod;
-    switch(this.direction) {
-      case directions.RIGHT:
-        positioningMethod = positionElementToRightOf;
-        break;
-      default:
-        positioningMethod = positionElementCenteredAbove;
-    }
-    positioningMethod(this.element, content);
-  };
-
-  function updateButtonsForSelection(buttons, selection) {
-    var selectedTags = tagsInSelection(selection),
-        len = buttons.length,
-        i, button;
-
-    for (i = 0; i < len; i++) {
-      button = buttons[i];
-      if (selectedTags.indexOf(button.command.tag) > -1) {
-        button.setActive();
-      } else {
-        button.setInactive();
-      }
-    }
-  }
-
-  return Toolbar;
-}());
-
-
-var TextFormatToolbar = (function() {
-
-  function TextFormatToolbar(options) {
-    var toolbar = this;
-    Toolbar.call(this, options);
-    toolbar.rootElement = options.rootElement;
-    toolbar.rootElement.addEventListener('keyup', function() { toolbar.handleTextSelection(); });
-
-    document.addEventListener('keyup', function(e) {
-      if (e.keyCode === Keycodes.ESC) {
-        toolbar.hide();
-      }
-    });
-
-    document.addEventListener('mouseup', function() {
-      setTimeout(function() { toolbar.handleTextSelection(); });
-    });
-
-    window.addEventListener('resize', function() {
-      if(toolbar.isShowing) {
-        var activePromptRange = toolbar.activePrompt && toolbar.activePrompt.range;
-        toolbar.positionToContent(activePromptRange ? activePromptRange : window.getSelection().getRangeAt(0));
-      }
-    });
-  }
-  inherits(TextFormatToolbar, Toolbar);
-
-  TextFormatToolbar.prototype.handleTextSelection = function() {
-    var toolbar = this;
-    var selection = window.getSelection();
-    if (selection.isCollapsed || !selectionIsEditable(selection) || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
-      toolbar.hide();
-    } else {
-      toolbar.updateForSelection(selection);
-    }
-  };
-
-  return TextFormatToolbar;
-}());
-
-function Tooltip(options) {
-  var tooltip = this;
-  var rootElement = options.rootElement;
-  var delay = options.delay || 200;
-  var timeout;
-  options.classNames = ['ck-tooltip'];
-  View.call(tooltip, options);
-
-  rootElement.addEventListener('mouseover', function(e) {
-    var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
-    if (target) {
-      timeout = setTimeout(function() {
-        tooltip.showLink(target.href, target);
-      }, delay);
-    }
-  });
-  
-  rootElement.addEventListener('mouseout', function(e) {
-    clearTimeout(timeout);
-    var toElement = e.toElement || e.relatedTarget;
-    if (toElement && toElement.className !== tooltip.element.className) {
-      tooltip.hide();
-    }
-  });
-}
-inherits(Tooltip, View);
-
-Tooltip.prototype.showMessage = function(message, element) {
-  var tooltip = this;
-  var tooltipElement = tooltip.element;
-  tooltipElement.innerHTML = message;
-  tooltip.show();
-  positionElementCenteredBelow(tooltipElement, element);
-};
-
-Tooltip.prototype.showLink = function(link, element) {
-  var message = '<a href="' + link + '" target="_blank">' + link + '</a>';
-  this.showMessage(message, element);
-};
-
-function createCommandIndex(commands) {
-  var index = {};
-  var len = commands.length, i, command;
-  for(i = 0; i < len; i++) {
-    command = commands[i];
-    index[command.name] = command;
-  }
-  return index;
-}
-
-function Command(options) {
-  var command = this;
-  var name = options.name;
-  var prompt = options.prompt;
-  command.name = name;
-  command.button = options.button || name;
-  command.editorContext = null;
-  if (prompt) { command.prompt = prompt; }
-}
-Command.prototype.exec = function(){};
-
-function TextFormatCommand(options) {
-  Command.call(this, options);
-  this.tag = options.tag.toUpperCase();
-  this.action = options.action || this.name;
-  this.removeAction = options.removeAction || this.action;
-}
-inherits(TextFormatCommand, Command);
-
-TextFormatCommand.prototype = {
-  exec: function(value) {
-    document.execCommand(this.action, false, value || null);
-  },
-  unexec: function(value) {
-    document.execCommand(this.removeAction, false, value || null);
-  }
-};
-
-function BoldCommand() {
-  TextFormatCommand.call(this, {
-    name: 'bold',
-    tag: Tags.BOLD,
-    button: '<i class="ck-icon-bold"></i>'
-  });
-}
-inherits(BoldCommand, TextFormatCommand);
-BoldCommand.prototype.exec = function() {
-  // Don't allow executing bold command on heading tags
-  if (!Regex.HEADING_TAG.test(getSelectionBlockTagName())) {
-    BoldCommand._super.prototype.exec.call(this);
-  }
-};
-
-function ItalicCommand() {
-  TextFormatCommand.call(this, {
-    name: 'italic',
-    tag: Tags.ITALIC,
-    button: '<i class="ck-icon-italic"></i>'
-  });
-}
-inherits(ItalicCommand, TextFormatCommand);
-
-function LinkCommand() {
-  TextFormatCommand.call(this, {
-    name: 'link',
-    tag: Tags.LINK,
-    action: 'createLink',
-    removeAction: 'unlink',
-    button: '<i class="ck-icon-link"></i>',
-    prompt: new Prompt({
-      command: this,
-      placeholder: 'Enter a url, press return...'
-    })
-  });
-}
-inherits(LinkCommand, TextFormatCommand);
-LinkCommand.prototype.exec = function(url) {
-  if(this.tag === getSelectionTagName()) {
-    this.unexec();
-  } else {
-    if (!Regex.HTTP_PROTOCOL.test(url)) {
-      url = 'http://' + url;
-    }
-    LinkCommand._super.prototype.exec.call(this, url);
-  }
-};
-
-function FormatBlockCommand(options) {
-  options.action = 'formatBlock';
-  TextFormatCommand.call(this, options);
-}
-inherits(FormatBlockCommand, TextFormatCommand);
-FormatBlockCommand.prototype.exec = function() {
-  var tag = this.tag;
-  // Brackets neccessary for certain browsers
-  var value =  '<' + tag + '>';
-  var blockElement = getSelectionBlockElement();
-  // Allow block commands to be toggled back to a paragraph
-  if(tag === blockElement.tagName) {
-    value = Tags.PARAGRAPH;
-  } else {
-    // Flattens the selection before applying the block format.
-    // Otherwise, undesirable nested blocks can occur.
-    var flatNode = document.createTextNode(blockElement.textContent);
-    blockElement.parentNode.insertBefore(flatNode, blockElement);
-    blockElement.parentNode.removeChild(blockElement);
-    selectNode(flatNode);
-  }
-  
-  FormatBlockCommand._super.prototype.exec.call(this, value);
-};
-
-function QuoteCommand() {
-  FormatBlockCommand.call(this, {
-    name: 'quote',
-    tag: Tags.QUOTE,
-    button: '<i class="ck-icon-quote"></i>'
-  });
-}
-inherits(QuoteCommand, FormatBlockCommand);
-
-function HeadingCommand() {
-  FormatBlockCommand.call(this, {
-    name: 'heading',
-    tag: Tags.HEADING,
-    button: '<i class="ck-icon-heading"></i>1'
-  });
-}
-inherits(HeadingCommand, FormatBlockCommand);
-
-function SubheadingCommand() {
-  FormatBlockCommand.call(this, {
-    name: 'subheading',
-    tag: Tags.SUBHEADING,
-    button: '<i class="ck-icon-heading"></i>2'
-  });
-}
-inherits(SubheadingCommand, FormatBlockCommand);
-
-function ListCommand(options) {
-  TextFormatCommand.call(this, options);
-}
-inherits(ListCommand, TextFormatCommand);
-ListCommand.prototype.exec = function() {
-  ListCommand._super.prototype.exec.call(this);
-  
-  // After creation, lists need to be unwrapped from the default formatter P tag
-  var listElement = getSelectionBlockElement();
-  var wrapperNode = listElement.parentNode;
-  if (wrapperNode.firstChild === listElement) {
-    var editorNode = wrapperNode.parentNode;
-    editorNode.insertBefore(listElement, wrapperNode);
-    editorNode.removeChild(wrapperNode);
-    selectNode(listElement);
-  }
-};
-
-function UnorderedListCommand() {
-  ListCommand.call(this, {
-    name: 'list',
-    tag: Tags.LIST,
-    action: 'insertUnorderedList'
-  });
-}
-inherits(UnorderedListCommand, ListCommand);
-
-function OrderedListCommand() {
-  ListCommand.call(this, {
-    name: 'ordered list',
-    tag: Tags.ORDERED_LIST,
-    action: 'insertOrderedList'
-  });
-}
-inherits(OrderedListCommand, ListCommand);
-
-TextFormatCommand.all = [
-  new BoldCommand(),
-  new ItalicCommand(),
-  new LinkCommand(),
-  new QuoteCommand(),
-  new HeadingCommand(),
-  new SubheadingCommand()
-];
-
-TextFormatCommand.index = createCommandIndex(TextFormatCommand.all);
-
-
-function EmbedCommand(options) {
-  Command.call(this, options);
-}
-inherits(EmbedCommand, Command);
-
-function ImageEmbedCommand(options) {
-  EmbedCommand.call(this, {
-    name: 'image',
-    button: '<i class="ck-icon-image"></i>'
-  });
-  if (window.XHRFileUploader) {
-    this.uploader = new XHRFileUploader({ url: '/upload', maxFileSize: 5000000 });
-  }
-}
-inherits(ImageEmbedCommand, EmbedCommand);
-
-ImageEmbedCommand.prototype = {
-  exec: function() {
-    ImageEmbedCommand._super.prototype.exec.call(this);
-    var clickEvent = new MouseEvent('click', { bubbles: false });
-    if (!this.fileInput) {
-      var command = this;
-      var fileInput = this.fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = 'image/*';
-      fileInput.className = 'ck-file-input';
-      fileInput.addEventListener('change', function(e) {
-        command.handleFile(e);
-      });
-      document.body.appendChild(fileInput);
-    }
-    this.fileInput.dispatchEvent(clickEvent);
-  },
-  handleFile: function(e) {
-    var fileInput = e.target;
-    var editor = this.editorContext;
-    var embedIntent = this.embedIntent;
-
-    embedIntent.showLoading();
-    this.uploader.upload({
-      fileInput: fileInput,
-      complete: function(response, error) {
-        embedIntent.hideLoading();
-        if (error || !response || !response.url) {
-          return new Message().show(error.message || 'Error uploading image');
-        }
-        var imageModel = new ContentKit.ImageModel({ src: response.url });
-        var index = editor.getCurrentBlockIndex();
-        editor.insertBlockAt(imageModel, index);
-        editor.syncVisualAt(index);
-      }
-    });
-    fileInput.value = null; // reset file input
-    // TODO: client-side render while uploading
-  }
-};
-
-function OEmbedCommand(options) {
-  EmbedCommand.call(this, {
-    name: 'oEmbed',
-    button: '<i class="ck-icon-embed"></i>',
-    prompt: new Prompt({
-      command: this,
-      placeholder: 'Paste a YouTube or Twitter url...'
-    })
-  });
-}
-inherits(OEmbedCommand, EmbedCommand);
-
-OEmbedCommand.prototype.exec = function(url) {
-  var command = this;
-  var editorContext = command.editorContext;
-  var index = editorContext.getCurrentBlockIndex();
-  var oEmbedEndpoint = 'http://noembed.com/embed?url=';
-  
-  command.embedIntent.showLoading();
-  if (!Regex.HTTP_PROTOCOL.test(url)) {
-    url = 'http://' + url;
-  }
-
-  HTTP.get(oEmbedEndpoint + url, function(responseText, error) {
-    command.embedIntent.hideLoading();
-    if (error) {
-      new Message().show('Embed error: status code ' + error.currentTarget.status);
-    } else {
-      var json = JSON.parse(responseText);
-      if (json.error) {
-        new Message().show('Embed error: ' + json.error);
-      } else {
-        var embedModel = new ContentKit.EmbedModel(json);
-        //if (!embedModel.attributes.provider_id) {
-        //  new Message().show('Embed error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
-        //} else {
-          editorContext.insertBlockAt(embedModel, index);
-          editorContext.syncVisualAt(index);
-        //}
-      }
-    }
-  });
-};
-
-EmbedCommand.all = [
-  new ImageEmbedCommand(),
-  new OEmbedCommand()
-];
-
-EmbedCommand.index = createCommandIndex(EmbedCommand.all);
-
-ContentKit.Editor = (function() {
-
-  // Default `Editor` options
-  var defaults = {
-    defaultFormatter: Tags.PARAGRAPH,
-    placeholder: 'Write here...',
-    spellcheck: true,
-    autofocus: true,
-    textFormatCommands: TextFormatCommand.all,
-    embedCommands: EmbedCommand.all
-  };
-
-  var editorClassName = 'ck-editor';
-  var editorClassNameRegExp = new RegExp(editorClassName);
-
-  /**
-   * Publically expose this class which sets up indiviual `Editor` classes
-   * depending if user passes string selector, Node, or NodeList
-   */
-  function EditorFactory(element, options) {
-    var editors = [];
-    var elements, elementsLen, i;
-
-    if (typeof element === 'string') {
-      elements = document.querySelectorAll(element);
-    } else if (element && element.length) {
-      elements = element;
-    } else if (element) {
-      elements = [element];
-    }
-
-    if (elements) {
-      options = merge(defaults, options);
-      elementsLen = elements.length;
-      for (i = 0; i < elementsLen; i++) {
-        editors.push(new Editor(elements[i], options));
-      }
-    }
-
-    return editors.length > 1 ? editors : editors[0];
-  }
-
-  /**
-   * @class Editor
-   * An individual Editor
-   * @param element `Element` node
-   * @param options hash of options
-   */
-  function Editor(element, options) {
-    var editor = this;
-    merge(editor, options);
-
-    if (element) {
-      var className = element.className;
-      var dataset = element.dataset;
-
-      if (!editorClassNameRegExp.test(className)) {
-        className += (className ? ' ' : '') + editorClassName;
-      }
-      element.className = className;
-
-      if (!dataset.placeholder) {
-        dataset.placeholder = editor.placeholder;
-      }
-      if(!editor.spellcheck) {
-        element.spellcheck = false;
-      }
-
-      element.setAttribute('contentEditable', true);
-      editor.element = element;
-
-      var compiler = editor.compiler = options.compiler || new ContentKit.Compiler();
-      editor.syncModel();
-
-      bindTypingEvents(editor);
-      bindPasteEvents(editor);
-
-      editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
-      var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
-
-      if(editor.embedCommands) {
-        // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
-        // TODO: manage event listener order
-        var embedIntent = new EmbedIntent({
-          editorContext: editor,
-          commands: editor.embedCommands,
-          rootElement: element
-        });
-
-        if (editor.imageServiceUrl) {
-          // TODO: lookup by name
-          editor.embedCommands[0].uploader.url = editor.imageServiceUrl;
-        }
-      }
-      
-      if(editor.autofocus) { element.focus(); }
-    }
-  }
-
-  Editor.prototype.syncModel = function() {
-    this.model = this.compiler.parse(this.element.innerHTML);
-  };
-
-  Editor.prototype.syncModelAt = function(index) {
-    var blockElements = toArray(this.element.children);
-    var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
-    this.model[index] = parsedBlockModel;
-  };
-
-  Editor.prototype.syncVisualAt = function(index) {
-    var blockModel = this.model[index];
-    var html = this.compiler.render([blockModel]);
-    var blockElements = toArray(this.element.children);
-    var element = blockElements[index];
-    element.innerHTML = html;
-    runAfterRenderHooks(element, blockModel);
-  };
-
-  Editor.prototype.getCurrentBlockIndex = function() {
-    var selectionEl = getSelectionBlockElement();
-    var blockElements = toArray(this.element.children);
-    return blockElements.indexOf(selectionEl);
-  };
-
-  Editor.prototype.insertBlock = function(model) {
-    this.insertBlockAt(model, this.getCurrentBlockIndex());
-  };
-
-  Editor.prototype.insertBlockAt = function(model, index) {
-    model = model || new ContentKit.TextModel();
-    this.model.splice(index, 0, model);
-  };
-
-  Editor.prototype.addTextFormat = function(opts) {
-    var command = new TextFormatCommand(opts);
-    this.compiler.registerMarkupType(new ContentKit.Type({
-      name : opts.name,
-      tag  : opts.tag || opts.name
-    }));
-    this.textFormatCommands.push(command);
-    this.textFormatToolbar.addCommand(command);
-  };
-
-  Editor.prototype.willRenderType = function(type, renderer) {
-    this.compiler.renderer.willRenderType(type, renderer);
-  };
-
-  function bindTypingEvents(editor) {
-    var editorEl = editor.element;
-
-    // Breaks out of blockquotes when pressing enter.
-    editorEl.addEventListener('keyup', function(e) {
-      if(!e.shiftKey && e.which === Keycodes.ENTER) {
-        if(Tags.QUOTE === getSelectionBlockTagName()) {
-          document.execCommand('formatBlock', false, editor.defaultFormatter);
-          e.stopPropagation();
-        }
-      }
-    });
-
-    // Creates unordered list when block starts with '- ', or ordered if starts with '1. '
-    editorEl.addEventListener('keyup', function(e) {
-      var selectedText = window.getSelection().anchorNode.textContent,
-          selection, selectionNode, command, replaceRegex;
-
-      if (Tags.LIST_ITEM !== getSelectionTagName()) {
-        if (Regex.UL_START.test(selectedText)) {
-          command = new UnorderedListCommand();
-          replaceRegex = Regex.UL_START;
-        } else if (Regex.OL_START.test(selectedText)) {
-          command = new OrderedListCommand();
-          replaceRegex = Regex.OL_START;
-        }
-
-        if (command) {
-          command.exec();
-          selection = window.getSelection();
-          selectionNode = selection.anchorNode;
-          selectionNode.textContent = selectedText.replace(replaceRegex, '');
-          moveCursorToBeginningOfSelection(selection);
-          e.stopPropagation();
-        }
-      }
-    });
-
-    // Assure there is always a supported root tag, and not empty text nodes or divs.
-    editorEl.addEventListener('keyup', function() {
-      if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
-        document.execCommand('formatBlock', false, editor.defaultFormatter);
-      }
-    });
-
-    // Experimental: Live update - sync model with textual content as you type
-    editorEl.addEventListener('keyup', function(e) {
-      if (editor.model && editor.model.length) {
-        var index = editor.getCurrentBlockIndex();
-        if (editor.model[index].type === 1) {
-          editor.syncModelAt(index);
-        }
-      }
-    });
-  }
-
-  var afterRenderHooks = [];
-  Editor.prototype.afterRender = function(callback) {
-    if ('function' === typeof callback) {
-      afterRenderHooks.push(callback);
-    }
-  };
-
-  function runAfterRenderHooks(element, blockModel) {
-    for (var i = 0, len = afterRenderHooks.length; i < len; i++) {
-      afterRenderHooks[i].call(null, element, blockModel);
-    }
-  }
-
-  function bindPasteEvents(editor) {
-    editor.element.addEventListener('paste', function(e) {
-      var data = e.clipboardData, plainText;
-      e.preventDefault();
-      if(data && data.getData) {
-        plainText = data.getData('text/plain');
-        var formattedContent = plainTextToBlocks(plainText, editor.defaultFormatter);
-        document.execCommand('insertHTML', false, formattedContent);
-      }
-    });
-  }
-
-  function plainTextToBlocks(plainText, blockTag) {
-    var blocks = plainText.split(Regex.NEWLINE),
-        len = blocks.length,
-        block, openTag, closeTag, content, i;
-    if(len < 2) {
-      return plainText;
-    } else {
-      content = '';
-      openTag = '<' + blockTag + '>';
-      closeTag = '</' + blockTag + '>';
-      for(i=0; i<len; ++i) {
-        block = blocks[i];
-        if(block !== '') {
-          content += openTag + block + closeTag;
-        }
-      }
-      return content;
-    }
-  }
-
-  return EditorFactory;
-}());
-
-}(this, document));
-
-/*!
- * @overview ContentKit-Compiler: Parses HTML to ContentKit's JSON schema and renders back to HTML.
- * @version  0.1.0
- * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
- * @license  MIT
- * Last modified: Aug 9, 2014
- */
-
-(function(window, document, define, undefined) {
-
 define("content-kit",
-  ["./types/type","./models/block","./models/text","./models/image","./models/embed","./compiler","./parsers/html-parser","./renderers/html-renderer","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __exports__) {
+  ["./content-kit-compiler/types/type","./content-kit-compiler/models/block","./content-kit-compiler/models/text","./content-kit-compiler/models/image","./content-kit-compiler/models/embed","./content-kit-compiler/compiler","./content-kit-compiler/parsers/html-parser","./content-kit-compiler/renderers/html-renderer","./content-kit-editor/editor-factory","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __exports__) {
     "use strict";
     var Type = __dependency1__["default"];
     var BlockModel = __dependency2__["default"];
@@ -1385,6 +22,7 @@ define("content-kit",
     var Compiler = __dependency6__["default"];
     var HTMLParser = __dependency7__["default"];
     var HTMLRenderer = __dependency8__["default"];
+    var EditorFactory = __dependency9__["default"];
 
     /**
      * @namespace ContentKit
@@ -1400,11 +38,12 @@ define("content-kit",
     ContentKit.Compiler = Compiler;
     ContentKit.HTMLParser = HTMLParser;
     ContentKit.HTMLRenderer = HTMLRenderer;
+    ContentKit.Editor = EditorFactory;
 
     __exports__["default"] = ContentKit;
   });
-define("compiler",
-  ["./parsers/html-parser","./renderers/html-renderer","./types/type","./types/default-types","../utils/object-utils","exports"],
+define("content-kit-compiler/compiler",
+  ["./parsers/html-parser","./renderers/html-renderer","./types/type","./types/default-types","../../content-kit-utils/object-utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
     var HTMLParser = __dependency1__["default"];
@@ -1412,7 +51,7 @@ define("compiler",
     var Type = __dependency3__["default"];
     var DefaultBlockTypeSet = __dependency4__.DefaultBlockTypeSet;
     var DefaultMarkupTypeSet = __dependency4__.DefaultMarkupTypeSet;
-    var merge = __dependency5__.merge;
+    var mergeWithOptions = __dependency5__.mergeWithOptions;
 
     /**
      * @class Compiler
@@ -1429,7 +68,7 @@ define("compiler",
         markupTypes      : DefaultMarkupTypeSet,
         includeTypeNames : false // true will output type_name: 'TEXT' etc. when parsing for easier debugging
       };
-      merge(this, defaults, options);
+      mergeWithOptions(this, defaults, options);
 
       // Reference the compiler settings
       parser.blockTypes  = renderer.blockTypes  = this.blockTypes;
@@ -1477,8 +116,564 @@ define("compiler",
 
     __exports__["default"] = Compiler;
   });
-define("models/block",
-  ["./model","../utils/object-utils","exports"],
+define("content-kit-editor/constants",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var Keycodes = {
+      BKSP  : 8,
+      ENTER : 13,
+      ESC   : 27,
+      DEL   : 46
+    };
+
+    var RegEx = {
+      NEWLINE       : /[\r\n]/g,
+      HTTP_PROTOCOL : /^https?:\/\//i,
+      HEADING_TAG   : /^(H1|H2|H3|H4|H5|H6)$/i,
+      UL_START      : /^[-*]\s/,
+      OL_START      : /^1\.\s/
+    };
+
+    var SelectionDirection = {
+      LEFT_TO_RIGHT : 1,
+      RIGHT_TO_LEFT : 2,
+      SAME_NODE     : 3
+    };
+
+    var ToolbarDirection = {
+      TOP   : 1,
+      RIGHT : 2
+    };
+
+    var Tags = {
+      PARAGRAPH    : 'P',
+      HEADING      : 'H2',
+      SUBHEADING   : 'H3',
+      QUOTE        : 'BLOCKQUOTE',
+      FIGURE       : 'FIGURE',
+      LIST         : 'UL',
+      ORDERED_LIST : 'OL',
+      LIST_ITEM    : 'LI',
+      LINK         : 'A',
+      BOLD         : 'B',
+      ITALIC       : 'I'
+    };
+
+    var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.FIGURE, Tags.LIST, Tags.ORDERED_LIST ];
+
+    __exports__.Keycodes = Keycodes;
+    __exports__.RegEx = RegEx;
+    __exports__.SelectionDirection = SelectionDirection;
+    __exports__.ToolbarDirection = ToolbarDirection;
+    __exports__.Tags = Tags;
+    __exports__.RootTags = RootTags;
+  });
+define("content-kit-editor/editor-factory",
+  ["./editor","./commands/commands","./constants","../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var Editor = __dependency1__["default"];
+    var TextFormatCommands = __dependency2__.TextFormatCommands;
+    var EmbedCommands = __dependency2__.EmbedCommands;
+    var Tags = __dependency3__.Tags;
+    var merge = __dependency4__.merge;
+
+    var defaults = {
+      defaultFormatter: Tags.PARAGRAPH,
+      placeholder: 'Write here...',
+      spellcheck: true,
+      autofocus: true,
+      textFormatCommands: TextFormatCommands.all,
+      embedCommands: EmbedCommands.all
+    };
+
+    /**
+     * Publically expose this class which sets up indiviual `Editor` classes
+     * depending if user passes string selector, Node, or NodeList
+     */
+    function EditorFactory(element, options) {
+      var editors = [];
+      var elements, elementsLen, i;
+
+      if (typeof element === 'string') {
+        elements = document.querySelectorAll(element);
+      } else if (element && element.length) {
+        elements = element;
+      } else if (element) {
+        elements = [element];
+      }
+
+      if (elements) {
+        options = merge(defaults, options);
+        elementsLen = elements.length;
+        for (i = 0; i < elementsLen; i++) {
+          editors.push(new Editor(elements[i], options));
+        }
+      }
+
+      return editors.length > 1 ? editors : editors[0];
+    }
+
+    __exports__["default"] = EditorFactory;
+  });
+define("content-kit-editor/editor",
+  ["./views/text-format-toolbar","./views/tooltip","./views/embed-intent","./commands/unordered-list","./commands/ordered-list","./commands/text-format","./constants","./utils/selection-utils","../content-kit-compiler/compiler","../content-kit-compiler/models/text","../content-kit-compiler/types/type","../content-kit-utils/array-utils","../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __exports__) {
+    "use strict";
+    var TextFormatToolbar = __dependency1__["default"];
+    var Tooltip = __dependency2__["default"];
+    var EmbedIntent = __dependency3__["default"];
+    var UnorderedListCommand = __dependency4__["default"];
+    var OrderedListCommand = __dependency5__["default"];
+    var TextFormatCommand = __dependency6__["default"];
+    var Tags = __dependency7__.Tags;
+    var RootTags = __dependency7__.RootTags;
+    var Keycodes = __dependency7__.Keycodes;
+    var RegEx = __dependency7__.RegEx;
+    var moveCursorToBeginningOfSelection = __dependency8__.moveCursorToBeginningOfSelection;
+    var getSelectionTagName = __dependency8__.getSelectionTagName;
+    var getSelectionBlockElement = __dependency8__.getSelectionBlockElement;
+    var getSelectionBlockTagName = __dependency8__.getSelectionBlockTagName;
+    var Compiler = __dependency9__["default"];
+    var TextModel = __dependency10__["default"];
+    var Type = __dependency11__["default"];
+    var toArray = __dependency12__.toArray;
+    var merge = __dependency13__.merge;
+
+    var editorClassName = 'ck-editor';
+    var editorClassNameRegExp = new RegExp(editorClassName);
+    var afterRenderHooks = [];
+
+    function plainTextToBlocks(plainText, blockTag) {
+      var blocks = plainText.split(RegEx.NEWLINE),
+          len = blocks.length,
+          block, openTag, closeTag, content, i;
+      if(len < 2) {
+        return plainText;
+      } else {
+        content = '';
+        openTag = '<' + blockTag + '>';
+        closeTag = '</' + blockTag + '>';
+        for(i=0; i<len; ++i) {
+          block = blocks[i];
+          if(block !== '') {
+            content += openTag + block + closeTag;
+          }
+        }
+        return content;
+      }
+    }
+
+    function bindTypingEvents(editor) {
+      var editorEl = editor.element;
+
+      // Breaks out of blockquotes when pressing enter.
+      editorEl.addEventListener('keyup', function(e) {
+        if(!e.shiftKey && e.which === Keycodes.ENTER) {
+          if(Tags.QUOTE === getSelectionBlockTagName()) {
+            document.execCommand('formatBlock', false, editor.defaultFormatter);
+            e.stopPropagation();
+          }
+        }
+      });
+
+      // Creates unordered list when block starts with '- ', or ordered if starts with '1. '
+      editorEl.addEventListener('keyup', function(e) {
+        var selectedText = window.getSelection().anchorNode.textContent,
+            selection, selectionNode, command, replaceRegex;
+
+        if (Tags.LIST_ITEM !== getSelectionTagName()) {
+          if (RegEx.UL_START.test(selectedText)) {
+            command = new UnorderedListCommand();
+            replaceRegex = RegEx.UL_START;
+          } else if (RegEx.OL_START.test(selectedText)) {
+            command = new OrderedListCommand();
+            replaceRegex = RegEx.OL_START;
+          }
+
+          if (command) {
+            command.exec();
+            selection = window.getSelection();
+            selectionNode = selection.anchorNode;
+            selectionNode.textContent = selectedText.replace(replaceRegex, '');
+            moveCursorToBeginningOfSelection(selection);
+            e.stopPropagation();
+          }
+        }
+      });
+
+      // Assure there is always a supported root tag, and not empty text nodes or divs.
+      editorEl.addEventListener('keyup', function() {
+        if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
+          document.execCommand('formatBlock', false, editor.defaultFormatter);
+        }
+      });
+
+      // Experimental: Live update - sync model with textual content as you type
+      editorEl.addEventListener('keyup', function(e) {
+        if (editor.model && editor.model.length) {
+          var index = editor.getCurrentBlockIndex();
+          if (editor.model[index].type === 1) {
+            editor.syncModelAt(index);
+          }
+        }
+      });
+    }
+
+    function bindPasteEvents(editor) {
+      editor.element.addEventListener('paste', function(e) {
+        var data = e.clipboardData, plainText;
+        e.preventDefault();
+        if(data && data.getData) {
+          plainText = data.getData('text/plain');
+          var formattedContent = plainTextToBlocks(plainText, editor.defaultFormatter);
+          document.execCommand('insertHTML', false, formattedContent);
+        }
+      });
+    }
+
+    function runAfterRenderHooks(element, blockModel) {
+      for (var i = 0, len = afterRenderHooks.length; i < len; i++) {
+        afterRenderHooks[i].call(null, element, blockModel);
+      }
+    }
+
+    /**
+     * @class Editor
+     * An individual Editor
+     * @param element `Element` node
+     * @param options hash of options
+     */
+    function Editor(element, options) {
+      var editor = this;
+      merge(editor, options);
+
+      if (element) {
+        var className = element.className;
+        var dataset = element.dataset;
+
+        if (!editorClassNameRegExp.test(className)) {
+          className += (className ? ' ' : '') + editorClassName;
+        }
+        element.className = className;
+
+        if (!dataset.placeholder) {
+          dataset.placeholder = editor.placeholder;
+        }
+        if(!editor.spellcheck) {
+          element.spellcheck = false;
+        }
+
+        element.setAttribute('contentEditable', true);
+        editor.element = element;
+
+        var compiler = editor.compiler = options.compiler || new Compiler();
+        editor.syncModel();
+
+        bindTypingEvents(editor);
+        bindPasteEvents(editor);
+
+        editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
+        var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
+
+        if(editor.embedCommands) {
+          // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
+          // TODO: manage event listener order
+          var embedIntent = new EmbedIntent({
+            editorContext: editor,
+            commands: editor.embedCommands,
+            rootElement: element
+          });
+
+          if (editor.imageServiceUrl) {
+            // TODO: lookup by name
+            editor.embedCommands[0].uploader.url = editor.imageServiceUrl;
+          }
+        }
+        
+        if(editor.autofocus) { element.focus(); }
+      }
+    }
+
+    Editor.prototype.syncModel = function() {
+      this.model = this.compiler.parse(this.element.innerHTML);
+    };
+
+    Editor.prototype.syncModelAt = function(index) {
+      var blockElements = toArray(this.element.children);
+      var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
+      this.model[index] = parsedBlockModel;
+    };
+
+    Editor.prototype.syncVisualAt = function(index) {
+      var blockModel = this.model[index];
+      var html = this.compiler.render([blockModel]);
+      var blockElements = toArray(this.element.children);
+      var element = blockElements[index];
+      element.innerHTML = html;
+      runAfterRenderHooks(element, blockModel);
+    };
+
+    Editor.prototype.getCurrentBlockIndex = function() {
+      var selectionEl = getSelectionBlockElement();
+      var blockElements = toArray(this.element.children);
+      return blockElements.indexOf(selectionEl);
+    };
+
+    Editor.prototype.insertBlock = function(model) {
+      this.insertBlockAt(model, this.getCurrentBlockIndex());
+    };
+
+    Editor.prototype.insertBlockAt = function(model, index) {
+      model = model || new TextModel();
+      this.model.splice(index, 0, model);
+    };
+
+    Editor.prototype.addTextFormat = function(opts) {
+      var command = new TextFormatCommand(opts);
+      this.compiler.registerMarkupType(new Type({
+        name : opts.name,
+        tag  : opts.tag || opts.name
+      }));
+      this.textFormatCommands.push(command);
+      this.textFormatToolbar.addCommand(command);
+    };
+
+    Editor.prototype.willRenderType = function(type, renderer) {
+      this.compiler.renderer.willRenderType(type, renderer);
+    };
+
+    Editor.prototype.afterRender = function(callback) {
+      if ('function' === typeof callback) {
+        afterRenderHooks.push(callback);
+      }
+    };
+
+    __exports__["default"] = Editor;
+  });
+define("content-kit-utils/array-utils",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /**
+     * Converts an array-like object (i.e. NodeList) to Array
+     * Note: could just use Array.prototype.slice but does not work in IE <= 8
+     */
+    function toArray(obj) {
+      var array = [];
+      var i = obj && obj.length >>> 0; // cast to Uint32
+      while (i--) {
+        array[i] = obj[i];
+      }
+      return array;
+    }
+
+    /**
+     * Computes the sum of values in a (sparse) array
+     */
+    function sumSparseArray(array) {
+      var sum = 0, i;
+      for (i in array) { // 'for in' is better for sparse arrays
+        if (array.hasOwnProperty(i)) {
+          sum += array[i];
+        }
+      }
+      return sum;
+    }
+
+    __exports__.toArray = toArray;
+    __exports__.sumSparseArray = sumSparseArray;
+  });
+define("content-kit-utils/node-utils",
+  ["./string-utils","./array-utils","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var sanitizeWhitespace = __dependency1__.sanitizeWhitespace;
+    var toArray = __dependency2__.toArray;
+
+    /**
+     * A document instance separate from the page's document. (if browser supports it)
+     * Prevents images, scripts, and styles from executing while parsing nodes.
+     */
+    var standaloneDocument = (function() {
+      var implementation = document.implementation;
+      var createHTMLDocument = implementation.createHTMLDocument;
+
+      if (createHTMLDocument) {
+        return createHTMLDocument.call(implementation, '');
+      }
+      return document;
+    })();
+
+    /**
+     * document.createElement with our lean, standalone document
+     */
+    function createElement(type) {
+      return standaloneDocument.createElement(type);
+    }
+
+    /**
+     * A reusable DOM Node for parsing html content.
+     */
+    var DOMParsingNode = createElement('div');
+
+    /**
+     * Returns plain-text of a `Node`
+     */
+    function textOfNode(node) {
+      var text = node.textContent || node.innerText;
+      return text ? sanitizeWhitespace(text) : '';
+    }
+
+    /**
+     * Replaces a `Node` with its children
+     */
+    function unwrapNode(node) {
+      var children = toArray(node.childNodes);
+      var len = children.length;
+      var parent = node.parentNode, i;
+      for (i = 0; i < len; i++) {
+        parent.insertBefore(children[i], node);
+      }
+    }
+
+    /**
+     * Extracts attributes of a `Node` to a hash of key/value pairs
+     */
+    function attributesForNode(node /*,blacklist*/) {
+      var attrs = node.attributes;
+      var len = attrs && attrs.length;
+      var i, attr, name, hash;
+      
+      for (i = 0; i < len; i++) {
+        attr = attrs[i];
+        name = attr.name;
+        if (attr.specified) {
+          //if (blacklist && name in blacklist)) { continue; }
+          hash = hash || {};
+          hash[name] = attr.value;
+        }
+      }
+      return hash;
+    }
+
+    __exports__.createElement = createElement;
+    __exports__.DOMParsingNode = DOMParsingNode;
+    __exports__.textOfNode = textOfNode;
+    __exports__.unwrapNode = unwrapNode;
+    __exports__.attributesForNode = attributesForNode;
+  });
+define("content-kit-utils/object-utils",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /**
+     * Merges defaults/options into an Object
+     * Useful for constructors
+     */
+    function mergeWithOptions(original, updates, options) {
+      options = options || {};
+      for(var prop in updates) {
+        if (options.hasOwnProperty(prop)) {
+          original[prop] = options[prop];
+        } else if (updates.hasOwnProperty(prop)) {
+          original[prop] = updates[prop];
+        }
+      }
+      return original;
+    }
+
+    /**
+     * Merges properties of one object into another
+     */
+    function merge(original, updates) {
+      return mergeWithOptions(original, updates);
+    }
+
+    /**
+     * Prototype inheritance helper
+     */
+    function inherit(Subclass, Superclass) {
+      if (typeof Object.create === 'function') {
+        Subclass._super = Superclass;
+        Subclass.prototype = Object.create(Superclass.prototype, {
+          constructor: {
+            value: Subclass,
+            enumerable: false,
+            writable: true,
+            configurable: true
+          }
+        });
+      } else {
+        for (var key in Superclass) {
+          if (Superclass.hasOwnProperty(key)) {
+            Subclass[key] = Superclass[key];
+          }
+        }
+        Subclass.prototype = new Superclass();
+        Subclass.constructor = Subclass;
+      }
+    }
+
+    __exports__.mergeWithOptions = mergeWithOptions;
+    __exports__.merge = merge;
+    __exports__.inherit = inherit;
+  });
+define("content-kit-utils/string-utils",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var RegExpTrim        = /^\s+|\s+$/g;
+    var RegExpTrimLeft    = /^\s+/;
+    var RegExpWSChars     = /(\r\n|\n|\r|\t|\u00A0)/gm;
+    var RegExpMultiWS     = /\s+/g;
+
+    /**
+     * String.prototype.trim polyfill
+     * Removes whitespace at beginning and end of string
+     */
+    function trim(string) {
+      return string ? (string + '').replace(RegExpTrim, '') : '';
+    }
+
+    /**
+     * String.prototype.trimLeft polyfill
+     * Removes whitespace at beginning of string
+     */
+    function trimLeft(string) {
+      return string ? (string + '').replace(RegExpTrimLeft, '') : '';
+    }
+
+    /**
+     * Replaces non-alphanumeric chars with underscores
+     */
+    function underscore(string) {
+      return string ? (string + '').replace(/ /g, '_') : '';
+    }
+
+    /**
+     * Cleans line breaks, tabs, non-breaking spaces, then multiple occuring whitespaces.
+     */
+    function sanitizeWhitespace(string) {
+      return string ? (string + '').replace(RegExpWSChars, '').replace(RegExpMultiWS, ' ') : '';
+    }
+
+    /**
+     * Injects a string into another string at the index specified
+     */
+    function injectIntoString(string, injection, index) {
+      return string.substr(0, index) + injection + string.substr(index);
+    }
+
+    __exports__.trim = trim;
+    __exports__.trimLeft = trimLeft;
+    __exports__.underscore = underscore;
+    __exports__.sanitizeWhitespace = sanitizeWhitespace;
+    __exports__.injectIntoString = injectIntoString;
+  });
+define("content-kit-compiler/models/block",
+  ["./model","../../content-kit-utils/object-utils","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var Model = __dependency1__["default"];
@@ -1513,8 +708,8 @@ define("models/block",
 
     __exports__["default"] = BlockModel;
   });
-define("models/embed",
-  ["../utils/object-utils","../models/model","../types/type","exports"],
+define("content-kit-compiler/models/embed",
+  ["../../content-kit-utils/object-utils","../models/model","../types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var inherit = __dependency1__.inherit;
@@ -1563,8 +758,8 @@ define("models/embed",
 
     __exports__["default"] = EmbedModel;
   });
-define("models/image",
-  ["./block","../types/type","../utils/object-utils","exports"],
+define("content-kit-compiler/models/image",
+  ["./block","../types/type","../../content-kit-utils/object-utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var BlockModel = __dependency1__["default"];
@@ -1590,8 +785,8 @@ define("models/image",
 
     __exports__["default"] = ImageModel;
   });
-define("models/markup",
-  ["./model","../utils/object-utils","exports"],
+define("content-kit-compiler/models/markup",
+  ["./model","../../content-kit-utils/object-utils","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var Model = __dependency1__["default"];
@@ -1612,7 +807,7 @@ define("models/markup",
 
     __exports__["default"] = MarkupModel;
   });
-define("models/model",
+define("content-kit-compiler/models/model",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -1637,8 +832,8 @@ define("models/model",
 
     __exports__["default"] = Model;
   });
-define("models/text",
-  ["./block","../types/type","../utils/object-utils","exports"],
+define("content-kit-compiler/models/text",
+  ["./block","../types/type","../../content-kit-utils/object-utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var BlockModel = __dependency1__["default"];
@@ -1661,15 +856,15 @@ define("models/text",
 
     __exports__["default"] = TextModel;
   });
-define("parsers/html-parser",
-  ["../models/block","../models/markup","../types/default-types","../utils/object-utils","../utils/array-utils","../utils/string-utils","../utils/node-utils","exports"],
+define("content-kit-compiler/parsers/html-parser",
+  ["../models/block","../models/markup","../types/default-types","../../content-kit-utils/object-utils","../../content-kit-utils/array-utils","../../content-kit-utils/string-utils","../../content-kit-utils/node-utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
     "use strict";
     var BlockModel = __dependency1__["default"];
     var MarkupModel = __dependency2__["default"];
     var DefaultBlockTypeSet = __dependency3__.DefaultBlockTypeSet;
     var DefaultMarkupTypeSet = __dependency3__.DefaultMarkupTypeSet;
-    var merge = __dependency4__.merge;
+    var mergeWithOptions = __dependency4__.mergeWithOptions;
     var toArray = __dependency5__.toArray;
     var trim = __dependency6__.trim;
     var trimLeft = __dependency6__.trimLeft;
@@ -1716,7 +911,7 @@ define("parsers/html-parser",
         markupTypes      : DefaultMarkupTypeSet,
         includeTypeNames : false
       };
-      merge(this, defaults, options);
+      mergeWithOptions(this, defaults, options);
     }
 
     /**
@@ -1845,8 +1040,8 @@ define("parsers/html-parser",
 
     __exports__["default"] = HTMLParser;
   });
-define("renderers/html-element-renderer",
-  ["../utils/string-utils","../utils/array-utils","exports"],
+define("content-kit-compiler/renderers/html-element-renderer",
+  ["../../content-kit-utils/string-utils","../../content-kit-utils/array-utils","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var injectIntoString = __dependency1__.injectIntoString;
@@ -1948,7 +1143,7 @@ define("renderers/html-element-renderer",
 
     __exports__["default"] = HTMLElementRenderer;
   });
-define("renderers/html-embed-renderer",
+define("content-kit-compiler/renderers/html-embed-renderer",
   ["./embeds/youtube","./embeds/twitter","./embeds/instagram","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
@@ -2008,8 +1203,8 @@ define("renderers/html-embed-renderer",
 
     __exports__["default"] = EmbedRenderer;
   });
-define("renderers/html-renderer",
-  ["../types/type","./html-element-renderer","./html-embed-renderer","../types/default-types","../utils/object-utils","exports"],
+define("content-kit-compiler/renderers/html-renderer",
+  ["../types/type","./html-element-renderer","./html-embed-renderer","../types/default-types","../../content-kit-utils/object-utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
     var Type = __dependency1__["default"];
@@ -2017,7 +1212,7 @@ define("renderers/html-renderer",
     var HTMLEmbedRenderer = __dependency3__["default"];
     var DefaultBlockTypeSet = __dependency4__.DefaultBlockTypeSet;
     var DefaultMarkupTypeSet = __dependency4__.DefaultMarkupTypeSet;
-    var merge = __dependency5__.merge;
+    var mergeWithOptions = __dependency5__.mergeWithOptions;
 
     /**
      * @class HTMLRenderer
@@ -2028,18 +1223,21 @@ define("renderers/html-renderer",
         blockTypes    : DefaultBlockTypeSet,
         markupTypes   : DefaultMarkupTypeSet
       };
-      merge(this, defaults, options);
+      mergeWithOptions(this, defaults, options);
     }
 
     /**
      * @method willRenderType
-     * @param type instance of Type
+     * @param type {Number|Type}
      * @param renderer the rendering function that returns a string of html
      * Registers custom rendering hooks for a type
      */
     var renderHooks = {};
     HTMLRenderer.prototype.willRenderType = function(type, renderer) {
-      renderHooks[type.id] = renderer;
+      if ('number' !== typeof type) {
+        type = type.id;
+      }
+      renderHooks[type] = renderer;
     };
 
     /**
@@ -2078,7 +1276,7 @@ define("renderers/html-renderer",
 
     __exports__["default"] = HTMLRenderer;
   });
-define("types/default-types",
+define("content-kit-compiler/types/default-types",
   ["./type-set","./type","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
@@ -2116,7 +1314,7 @@ define("types/default-types",
     __exports__.DefaultBlockTypeSet = DefaultBlockTypeSet;
     __exports__.DefaultMarkupTypeSet = DefaultMarkupTypeSet;
   });
-define("types/type-set",
+define("content-kit-compiler/types/type-set",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -2176,8 +1374,8 @@ define("types/type-set",
 
     __exports__["default"] = TypeSet;
   });
-define("types/type",
-  ["../utils/string-utils","exports"],
+define("content-kit-compiler/types/type",
+  ["../../content-kit-utils/string-utils","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
     var underscore = __dependency1__.underscore;
@@ -2205,202 +1403,1283 @@ define("types/type",
 
     __exports__["default"] = Type;
   });
-define("utils/array-utils",
+define("content-kit-editor/commands/base",
   ["exports"],
   function(__exports__) {
     "use strict";
-    /**
-     * Converts an array-like object (i.e. NodeList) to Array
-     * Note: could just use Array.prototype.slice but does not work in IE <= 8
-     */
-    function toArray(obj) {
-      var array = [],
-          i = obj.length >>> 0; // cast to Uint32
-      while (i--) {
-        array[i] = obj[i];
-      }
-      return array;
+    function Command(options) {
+      var command = this;
+      var name = options.name;
+      var prompt = options.prompt;
+      command.name = name;
+      command.button = options.button || name;
+      command.editorContext = null;
+      if (prompt) { command.prompt = prompt; }
     }
 
-    /**
-     * Computes the sum of values in a (sparse) array
-     */
-    function sumSparseArray(array) {
-      var sum = 0, i;
-      for (i in array) { // 'for in' best for sparse arrays
-        if (array.hasOwnProperty(i)) {
-          sum += array[i];
-        }
-      }
-      return sum;
-    }
+    Command.prototype.exec = function(){};
 
-    __exports__.toArray = toArray;
-    __exports__.sumSparseArray = sumSparseArray;
+    __exports__["default"] = Command;
   });
-define("utils/node-utils",
-  ["./string-utils","./array-utils","exports"],
+define("content-kit-editor/commands/bold",
+  ["./text-format","../../content-kit-utils/object-utils","../constants","../utils/selection-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var TextFormatCommand = __dependency1__["default"];
+    var inherit = __dependency2__.inherit;
+    var Tags = __dependency3__.Tags;
+    var RegEx = __dependency3__.RegEx;
+    var getSelectionBlockTagName = __dependency4__.getSelectionBlockTagName;
+
+    function BoldCommand() {
+      TextFormatCommand.call(this, {
+        name: 'bold',
+        tag: Tags.BOLD,
+        button: '<i class="ck-icon-bold"></i>'
+      });
+    }
+    inherit(BoldCommand, TextFormatCommand);
+
+    BoldCommand.prototype.exec = function() {
+      // Don't allow executing bold command on heading tags
+      if (!RegEx.HEADING_TAG.test(getSelectionBlockTagName())) {
+        BoldCommand._super.prototype.exec.call(this);
+      }
+    };
+
+    __exports__["default"] = BoldCommand;
+  });
+define("content-kit-editor/commands/commands",
+  ["./bold","./italic","./link","./quote","./heading","./subheading","./image","./embed","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __exports__) {
+    "use strict";
+    // TODO: eliminate this file
+    var BoldCommand = __dependency1__["default"];
+    var ItalicCommand = __dependency2__["default"];
+    var LinkCommand = __dependency3__["default"];
+    var QuoteCommand = __dependency4__["default"];
+    var HeadingCommand = __dependency5__["default"];
+    var SubheadingCommand = __dependency6__["default"];
+    var ImageCommand = __dependency7__["default"];
+    var EmbedCommand = __dependency8__["default"];
+
+    function createCommandIndex(commands) {
+      var index = {};
+      var len = commands.length, i, command;
+      for(i = 0; i < len; i++) {
+        command = commands[i];
+        index[command.name] = command;
+      }
+      return index;
+    }
+
+    var TextFormatCommands = {};
+    TextFormatCommands.all = [
+      new BoldCommand(),
+      new ItalicCommand(),
+      new LinkCommand(),
+      new QuoteCommand(),
+      new HeadingCommand(),
+      new SubheadingCommand()
+    ];
+
+    TextFormatCommands.index = createCommandIndex(TextFormatCommands.all);
+
+    var EmbedCommands = {};
+    EmbedCommands.all = [
+      new ImageCommand(),
+      new EmbedCommand()
+    ];
+    EmbedCommands.index = createCommandIndex(EmbedCommands.all);
+
+    __exports__.TextFormatCommands = TextFormatCommands;
+    __exports__.EmbedCommands = EmbedCommands;
+  });
+define("content-kit-editor/commands/embed",
+  ["./base","../views/prompt","../views/message","../../content-kit-compiler/models/embed","../../content-kit-utils/object-utils","../utils/http-utils","../constants","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
+    "use strict";
+    var Command = __dependency1__["default"];
+    var Prompt = __dependency2__["default"];
+    var Message = __dependency3__["default"];
+    var EmbedModel = __dependency4__["default"];
+    var inherit = __dependency5__.inherit;
+    var xhrGet = __dependency6__.xhrGet;
+    var RegEx = __dependency7__.RegEx;
+
+    function EmbedCommand(options) {
+      Command.call(this, {
+        name: 'embed',
+        button: '<i class="ck-icon-embed"></i>',
+        prompt: new Prompt({
+          command: this,
+          placeholder: 'Paste a YouTube or Twitter url...'
+        })
+      });
+    }
+    inherit(EmbedCommand, Command);
+
+    EmbedCommand.prototype.exec = function(url) {
+      var command = this;
+      var editorContext = command.editorContext;
+      var index = editorContext.getCurrentBlockIndex();
+      var oEmbedEndpoint = 'http://noembed.com/embed?url=';
+      
+      command.embedIntent.showLoading();
+      if (!RegEx.HTTP_PROTOCOL.test(url)) {
+        url = 'http://' + url;
+      }
+
+      xhrGet(oEmbedEndpoint + url, function(responseText, error) {
+        command.embedIntent.hideLoading();
+        if (error) {
+          new Message().show('Embed error: status code ' + error.currentTarget.status);
+        } else {
+          var json = JSON.parse(responseText);
+          if (json.error) {
+            new Message().show('Embed error: ' + json.error);
+          } else {
+            var embedModel = new EmbedModel(json);
+            //if (!embedModel.attributes.provider_id) {
+            //  new Message().show('Embed error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
+            //} else {
+              editorContext.insertBlockAt(embedModel, index);
+              editorContext.syncVisualAt(index);
+            //}
+          }
+        }
+      });
+    };
+
+    __exports__["default"] = EmbedCommand;
+  });
+define("content-kit-editor/commands/format-block",
+  ["./text-format","../constants","../../content-kit-utils/object-utils","../utils/selection-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var TextFormatCommand = __dependency1__["default"];
+    var Tags = __dependency2__.Tags;
+    var inherit = __dependency3__.inherit;
+    var getSelectionBlockElement = __dependency4__.getSelectionBlockElement;
+    var selectNode = __dependency4__.selectNode;
+
+    function FormatBlockCommand(options) {
+      options.action = 'formatBlock';
+      TextFormatCommand.call(this, options);
+    }
+    inherit(FormatBlockCommand, TextFormatCommand);
+
+    FormatBlockCommand.prototype.exec = function() {
+      var tag = this.tag;
+      // Brackets neccessary for certain browsers
+      var value =  '<' + tag + '>';
+      var blockElement = getSelectionBlockElement();
+      // Allow block commands to be toggled back to a paragraph
+      if(tag === blockElement.tagName) {
+        value = Tags.PARAGRAPH;
+      } else {
+        // Flattens the selection before applying the block format.
+        // Otherwise, undesirable nested blocks can occur.
+        var flatNode = document.createTextNode(blockElement.textContent);
+        blockElement.parentNode.insertBefore(flatNode, blockElement);
+        blockElement.parentNode.removeChild(blockElement);
+        selectNode(flatNode);
+      }
+      
+      FormatBlockCommand._super.prototype.exec.call(this, value);
+    };
+
+    __exports__["default"] = FormatBlockCommand;
+  });
+define("content-kit-editor/commands/heading",
+  ["./format-block","../constants","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var FormatBlockCommand = __dependency1__["default"];
+    var Tags = __dependency2__.Tags;
+    var inherit = __dependency3__.inherit;
+
+    function HeadingCommand() {
+      FormatBlockCommand.call(this, {
+        name: 'heading',
+        tag: Tags.HEADING,
+        button: '<i class="ck-icon-heading"></i>1'
+      });
+    }
+    inherit(HeadingCommand, FormatBlockCommand);
+
+    __exports__["default"] = HeadingCommand;
+  });
+define("content-kit-editor/commands/image",
+  ["./base","../views/message","../../content-kit-compiler/models/image","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var Command = __dependency1__["default"];
+    var Message = __dependency2__["default"];
+    var ImageModel = __dependency3__["default"];
+    var inherit = __dependency4__.inherit;
+
+    function ImageCommand(options) {
+      Command.call(this, {
+        name: 'image',
+        button: '<i class="ck-icon-image"></i>'
+      });
+      if (window.XHRFileUploader) {
+        this.uploader = new window.XHRFileUploader({ url: '/upload', maxFileSize: 5000000 });
+      }
+    }
+    inherit(ImageCommand, Command);
+
+    ImageCommand.prototype = {
+      exec: function() {
+        ImageCommand._super.prototype.exec.call(this);
+        var clickEvent = new MouseEvent('click', { bubbles: false });
+        if (!this.fileInput) {
+          var command = this;
+          var fileInput = this.fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/*';
+          fileInput.className = 'ck-file-input';
+          fileInput.addEventListener('change', function(e) {
+            command.handleFile(e);
+          });
+          document.body.appendChild(fileInput);
+        }
+        this.fileInput.dispatchEvent(clickEvent);
+      },
+      handleFile: function(e) {
+        var fileInput = e.target;
+        var editor = this.editorContext;
+        var embedIntent = this.embedIntent;
+
+        embedIntent.showLoading();
+        this.uploader.upload({
+          fileInput: fileInput,
+          complete: function(response, error) {
+            embedIntent.hideLoading();
+            if (error || !response || !response.url) {
+              return new Message().show(error.message || 'Error uploading image');
+            }
+            var imageModel = new ImageModel({ src: response.url });
+            var index = editor.getCurrentBlockIndex();
+            editor.insertBlockAt(imageModel, index);
+            editor.syncVisualAt(index);
+          }
+        });
+        fileInput.value = null; // reset file input
+        // TODO: client-side render while uploading
+      }
+    };
+
+    __exports__["default"] = ImageCommand;
+  });
+define("content-kit-editor/commands/italic",
+  ["./text-format","../constants","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var TextFormatCommand = __dependency1__["default"];
+    var Tags = __dependency2__.Tags;
+    var inherit = __dependency3__.inherit;
+
+    function ItalicCommand() {
+      TextFormatCommand.call(this, {
+        name: 'italic',
+        tag: Tags.ITALIC,
+        button: '<i class="ck-icon-italic"></i>'
+      });
+    }
+    inherit(ItalicCommand, TextFormatCommand);
+
+    __exports__["default"] = ItalicCommand;
+  });
+define("content-kit-editor/commands/link",
+  ["./text-format","../views/prompt","../constants","../../content-kit-utils/object-utils","../utils/selection-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
+    "use strict";
+    var TextFormatCommand = __dependency1__["default"];
+    var Prompt = __dependency2__["default"];
+    var Tags = __dependency3__.Tags;
+    var RegEx = __dependency3__.RegEx;
+    var inherit = __dependency4__.inherit;
+    var getSelectionTagName = __dependency5__.getSelectionTagName;
+
+    function LinkCommand() {
+      TextFormatCommand.call(this, {
+        name: 'link',
+        tag: Tags.LINK,
+        action: 'createLink',
+        removeAction: 'unlink',
+        button: '<i class="ck-icon-link"></i>',
+        prompt: new Prompt({
+          command: this,
+          placeholder: 'Enter a url, press return...'
+        })
+      });
+    }
+    inherit(LinkCommand, TextFormatCommand);
+
+    LinkCommand.prototype.exec = function(url) {
+      if(this.tag === getSelectionTagName()) {
+        this.unexec();
+      } else {
+        if (!RegEx.HTTP_PROTOCOL.test(url)) {
+          url = 'http://' + url;
+        }
+        LinkCommand._super.prototype.exec.call(this, url);
+      }
+    };
+
+    __exports__["default"] = LinkCommand;
+  });
+define("content-kit-editor/commands/list",
+  ["./text-format","../../content-kit-utils/object-utils","../utils/selection-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var TextFormatCommand = __dependency1__["default"];
+    var inherit = __dependency2__.inherit;
+    var getSelectionBlockElement = __dependency3__.getSelectionBlockElement;
+    var selectNode = __dependency3__.selectNode;
+
+    function ListCommand(options) {
+      TextFormatCommand.call(this, options);
+    }
+    inherit(ListCommand, TextFormatCommand);
+
+    ListCommand.prototype.exec = function() {
+      ListCommand._super.prototype.exec.call(this);
+      
+      // After creation, lists need to be unwrapped from the default formatter P tag
+      var listElement = getSelectionBlockElement();
+      var wrapperNode = listElement.parentNode;
+      if (wrapperNode.firstChild === listElement) {
+        var editorNode = wrapperNode.parentNode;
+        editorNode.insertBefore(listElement, wrapperNode);
+        editorNode.removeChild(wrapperNode);
+        selectNode(listElement);
+      }
+    };
+
+    __exports__["default"] = ListCommand;
+  });
+define("content-kit-editor/commands/ordered-list",
+  ["./list","../constants","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var ListCommand = __dependency1__["default"];
+    var Tags = __dependency2__.Tags;
+    var inherit = __dependency3__.inherit;
+
+    function OrderedListCommand() {
+      ListCommand.call(this, {
+        name: 'ordered list',
+        tag: Tags.ORDERED_LIST,
+        action: 'insertOrderedList'
+      });
+    }
+    inherit(OrderedListCommand, ListCommand);
+
+    __exports__["default"] = OrderedListCommand;
+  });
+define("content-kit-editor/commands/quote",
+  ["./format-block","../constants","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var FormatBlockCommand = __dependency1__["default"];
+    var Tags = __dependency2__.Tags;
+    var inherit = __dependency3__.inherit;
+
+    function QuoteCommand() {
+      FormatBlockCommand.call(this, {
+        name: 'quote',
+        tag: Tags.QUOTE,
+        button: '<i class="ck-icon-quote"></i>'
+      });
+    }
+    inherit(QuoteCommand, FormatBlockCommand);
+
+    __exports__["default"] = QuoteCommand;
+  });
+define("content-kit-editor/commands/subheading",
+  ["./format-block","../constants","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var FormatBlockCommand = __dependency1__["default"];
+    var Tags = __dependency2__.Tags;
+    var inherit = __dependency3__.inherit;
+
+    function SubheadingCommand() {
+      FormatBlockCommand.call(this, {
+        name: 'subheading',
+        tag: Tags.SUBHEADING,
+        button: '<i class="ck-icon-heading"></i>2'
+      });
+    }
+    inherit(SubheadingCommand, FormatBlockCommand);
+
+    __exports__["default"] = SubheadingCommand;
+  });
+define("content-kit-editor/commands/text-format",
+  ["./base","../../content-kit-utils/object-utils","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
-    var sanitizeWhitespace = __dependency1__.sanitizeWhitespace;
-    var toArray = __dependency2__.toArray;
+    var Command = __dependency1__["default"];
+    var inherit = __dependency2__.inherit;
 
-    /**
-     * A document instance separate from the page's document. (if browser supports it)
-     * Prevents images, scripts, and styles from executing while parsing nodes.
-     */
-    var standaloneDocument = (function() {
-      var implementation = document.implementation,
-          createHTMLDocument = implementation.createHTMLDocument;
-      if (createHTMLDocument) {
-        return createHTMLDocument.call(implementation, '');
+    function TextFormatCommand(options) {
+      Command.call(this, options);
+      this.tag = options.tag.toUpperCase();
+      this.action = options.action || this.name;
+      this.removeAction = options.removeAction || this.action;
+    }
+    inherit(TextFormatCommand, Command);
+
+    TextFormatCommand.prototype = {
+      exec: function(value) {
+        document.execCommand(this.action, false, value || null);
+      },
+      unexec: function(value) {
+        document.execCommand(this.removeAction, false, value || null);
       }
-      return document;
-    })();
+    };
 
-    /**
-     * document.createElement with our lean, standalone document
-     */
-    function createElement(type) {
-      return standaloneDocument.createElement(type);
-    }
-
-    /**
-     * A reusable DOM Node for parsing html content.
-     */
-    var DOMParsingNode = createElement('div');
-
-    /**
-     * Returns plain-text of a `Node`
-     */
-    function textOfNode(node) {
-      var text = node.textContent || node.innerText;
-      return text ? sanitizeWhitespace(text) : '';
-    }
-
-    /**
-     * Replaces a `Node` with it with its children
-     */
-    function unwrapNode(node) {
-      var children = toArray(node.childNodes),
-          len = children.length,
-          parent = node.parentNode, i;
-      for (i = 0; i < len; i++) {
-        parent.insertBefore(children[i], node);
-      }
-    }
-
-    /**
-     * Extracts attributes of a `Node` to a hash of key/value pairs
-     */
-    function attributesForNode(node /*,blacklist*/) {
-      var attrs = node.attributes,
-          len = attrs && attrs.length,
-          i, attr, name, hash;
-      for (i = 0; i < len; i++) {
-        attr = attrs[i];
-        name = attr.name;
-        if (attr.specified) {
-          //if (blacklist && name in blacklist)) { continue; }
-          hash = hash || {};
-          hash[name] = attr.value;
-        }
-      }
-      return hash;
-    }
-
-    __exports__.createElement = createElement;
-    __exports__.DOMParsingNode = DOMParsingNode;
-    __exports__.textOfNode = textOfNode;
-    __exports__.unwrapNode = unwrapNode;
-    __exports__.attributesForNode = attributesForNode;
+    __exports__["default"] = TextFormatCommand;
   });
-define("utils/object-utils",
+define("content-kit-editor/commands/unordered-list",
+  ["./list","../constants","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var ListCommand = __dependency1__["default"];
+    var Tags = __dependency2__.Tags;
+    var inherit = __dependency3__.inherit;
+
+    function UnorderedListCommand() {
+      ListCommand.call(this, {
+        name: 'list',
+        tag: Tags.LIST,
+        action: 'insertUnorderedList'
+      });
+    }
+    inherit(UnorderedListCommand, ListCommand);
+
+    __exports__["default"] = UnorderedListCommand;
+  });
+define("content-kit-editor/utils/element-utils",
   ["exports"],
   function(__exports__) {
     "use strict";
-    /**
-     * Merges set of properties on a object
-     * Useful for constructor defaults/options
-     */
-    function merge(object, defaults, updates) {
-      updates = updates || {};
-      for(var o in defaults) {
-        if (defaults.hasOwnProperty(o)) {
-          object[o] = updates[o] || defaults[o];
+    function createDiv(className) {
+      var div = document.createElement('div');
+      if (className) {
+        div.className = className;
+      }
+      return div;
+    }
+
+    function hideElement(element) {
+      element.style.display = 'none';
+    }
+
+    function showElement(element) {
+      element.style.display = 'block';
+    }
+
+    function swapElements(elementToShow, elementToHide) {
+      hideElement(elementToHide);
+      showElement(elementToShow);
+    }
+
+    function getEventTargetMatchingTag(tag, target, container) {
+      // Traverses up DOM from an event target to find the node matching specifed tag
+      while (target && target !== container) {
+        if (target.tagName === tag) {
+          return target;
         }
+        target = target.parentNode;
       }
     }
 
-    /**
-     * Prototype inheritance helper
-     */
-    function inherit(Sub, Super) {
-      for (var key in Super) {
-        if (Super.hasOwnProperty(key)) {
-          Sub[key] = Super[key];
+    function nodeIsDescendantOfElement(node, element) {
+      var parentNode = node.parentNode;
+      while(parentNode) {
+        if (parentNode === element) {
+          return true;
         }
+        parentNode = parentNode.parentNode;
       }
-      Sub.prototype = new Super();
-      Sub.constructor = Sub;
+      return false;
     }
 
-    __exports__.merge = merge;
-    __exports__.inherit = inherit;
+    function getElementRelativeOffset(element) {
+      var offset = { left: 0, top: -window.pageYOffset };
+      var offsetParent = element.offsetParent;
+      var offsetParentPosition = window.getComputedStyle(offsetParent).position;
+      var offsetParentRect;
+
+      if (offsetParentPosition === 'relative') {
+        offsetParentRect = offsetParent.getBoundingClientRect();
+        offset.left = offsetParentRect.left;
+        offset.top  = offsetParentRect.top;
+      }
+      return offset;
+    }
+
+    function getElementComputedStyleNumericProp(element, prop) {
+      return parseFloat(window.getComputedStyle(element)[prop]);
+    }
+
+    function positionElementToRect(element, rect, topOffset, leftOffset) {
+      var relativeOffset = getElementRelativeOffset(element);
+      var style = element.style;
+      var round = Math.round;
+
+      topOffset = topOffset || 0;
+      leftOffset = leftOffset || 0;
+      style.left = round(rect.left - relativeOffset.left - leftOffset) + 'px';
+      style.top  = round(rect.top  - relativeOffset.top  - topOffset) + 'px';
+    }
+
+    function positionElementHorizontallyCenteredToRect(element, rect, topOffset) {
+      var horizontalCenter = (element.offsetWidth / 2) - (rect.width / 2);
+      positionElementToRect(element, rect, topOffset, horizontalCenter);
+    }
+
+    function positionElementCenteredAbove(element, aboveElement) {
+      var elementMargin = getElementComputedStyleNumericProp(element, 'marginBottom');
+      positionElementHorizontallyCenteredToRect(element, aboveElement.getBoundingClientRect(), element.offsetHeight + elementMargin);
+    }
+
+    function positionElementCenteredBelow(element, belowElement) {
+      var elementMargin = getElementComputedStyleNumericProp(element, 'marginTop');
+      positionElementHorizontallyCenteredToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
+    }
+
+    function positionElementCenteredIn(element, inElement) {
+      var verticalCenter = (inElement.offsetHeight / 2) - (element.offsetHeight / 2);
+      positionElementHorizontallyCenteredToRect(element, inElement.getBoundingClientRect(), -verticalCenter);
+    }
+
+    function positionElementToLeftOf(element, leftOfElement) {
+      var verticalCenter = (leftOfElement.offsetHeight / 2) - (element.offsetHeight / 2);
+      var elementMargin = getElementComputedStyleNumericProp(element, 'marginRight');
+      positionElementToRect(element, leftOfElement.getBoundingClientRect(), -verticalCenter, element.offsetWidth + elementMargin);
+    }
+
+    function positionElementToRightOf(element, rightOfElement) {
+      var verticalCenter = (rightOfElement.offsetHeight / 2) - (element.offsetHeight / 2);
+      var elementMargin = getElementComputedStyleNumericProp(element, 'marginLeft');
+      var rightOfElementRect = rightOfElement.getBoundingClientRect();
+      positionElementToRect(element, rightOfElementRect, -verticalCenter, -rightOfElement.offsetWidth - elementMargin);
+    }
+
+    __exports__.createDiv = createDiv;
+    __exports__.hideElement = hideElement;
+    __exports__.showElement = showElement;
+    __exports__.swapElements = swapElements;
+    __exports__.getEventTargetMatchingTag = getEventTargetMatchingTag;
+    __exports__.nodeIsDescendantOfElement = nodeIsDescendantOfElement;
+    __exports__.getElementRelativeOffset = getElementRelativeOffset;
+    __exports__.getElementComputedStyleNumericProp = getElementComputedStyleNumericProp;
+    __exports__.positionElementToRect = positionElementToRect;
+    __exports__.positionElementHorizontallyCenteredToRect = positionElementHorizontallyCenteredToRect;
+    __exports__.positionElementCenteredAbove = positionElementCenteredAbove;
+    __exports__.positionElementCenteredBelow = positionElementCenteredBelow;
+    __exports__.positionElementCenteredIn = positionElementCenteredIn;
+    __exports__.positionElementToLeftOf = positionElementToLeftOf;
+    __exports__.positionElementToRightOf = positionElementToRightOf;
   });
-define("utils/string-utils",
+define("content-kit-editor/utils/http-utils",
   ["exports"],
   function(__exports__) {
     "use strict";
-    var RegExpTrim        = /^\s+|\s+$/g;
-    var RegExpTrimLeft    = /^\s+/;
-    var RegExpWSChars     = /(\r\n|\n|\r|\t|\u00A0)/gm;
-    var RegExpMultiWS     = /\s+/g;
-
-    /**
-     * String.prototype.trim polyfill
-     * Removes whitespace at beginning and end of string
-     */
-    function trim(string) {
-      return string ? (string + '').replace(RegExpTrim, '') : '';
+    function xhrGet(url, callback) {
+      var request = new XMLHttpRequest();
+      request.onload = function() {
+        callback(this.responseText);
+      };
+      request.onerror = function(error) {
+        callback(null, error);
+      };
+      request.open('GET', url, true);
+      request.send();
     }
 
-    /**
-     * String.prototype.trimLeft polyfill
-     * Removes whitespace at beginning of string
-     */
-    function trimLeft(string) {
-      return string ? (string + '').replace(RegExpTrimLeft, '') : '';
-    }
-
-    /**
-     * Replaces non-alphanumeric chars with underscores
-     */
-    function underscore(string) {
-      return string ? (string + '').replace(/ /g, '_') : '';
-    }
-
-    /**
-     * Cleans line breaks, tabs, non-breaking spaces, then multiple occuring whitespaces.
-     */
-    function sanitizeWhitespace(string) {
-      return string ? (string + '').replace(RegExpWSChars, '').replace(RegExpMultiWS, ' ') : '';
-    }
-
-    /**
-     * Injects a string into another string at the index specified
-     */
-    function injectIntoString(string, injection, index) {
-      return string.substr(0, index) + injection + string.substr(index);
-    }
-
-    __exports__.trim = trim;
-    __exports__.trimLeft = trimLeft;
-    __exports__.underscore = underscore;
-    __exports__.sanitizeWhitespace = sanitizeWhitespace;
-    __exports__.injectIntoString = injectIntoString;
+    __exports__.xhrGet = xhrGet;
   });
-define("renderers/embeds/instagram",
+define("content-kit-editor/utils/selection-utils",
+  ["../constants","./element-utils","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var SelectionDirection = __dependency1__.SelectionDirection;
+    var RootTags = __dependency1__.RootTags;
+    var nodeIsDescendantOfElement = __dependency2__.nodeIsDescendantOfElement;
+
+    function getDirectionOfSelection(selection) {
+      var node = selection.anchorNode;
+      var position = node && node.compareDocumentPosition(selection.focusNode);
+      if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+        return SelectionDirection.LEFT_TO_RIGHT;
+      } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+        return SelectionDirection.RIGHT_TO_LEFT;
+      }
+      return SelectionDirection.SAME_NODE;
+    }
+
+    function getSelectionElement(selection) {
+      selection = selection || window.getSelection();
+      var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.anchorNode : selection.focusNode;
+      return node && (node.nodeType === 3 ? node.parentNode : node);
+    }
+
+    function getSelectionBlockElement(selection) {
+      selection = selection || window.getSelection();
+      var element = getSelectionElement();
+      var tag = element && element.tagName;
+      while (tag && RootTags.indexOf(tag) === -1) {
+        if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+        element = element.parentNode;
+        tag = element.tagName;
+      }
+      return element;
+    }
+
+    function getSelectionTagName() {
+      var element = getSelectionElement();
+      return element ? element.tagName : null;
+    }
+
+    function getSelectionBlockTagName() {
+      var element = getSelectionBlockElement();
+      return element ? element.tagName : null;
+    }
+
+    function tagsInSelection(selection) {
+      var element = getSelectionElement(selection);
+      var tags = [];
+      if (!selection.isCollapsed) {
+        while(element) {
+          if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+          if (element.tagName) {
+            tags.push(element.tagName);
+          }
+          element = element.parentNode;
+        }
+      }
+      return tags;
+    }
+
+    function selectionIsInElement(selection, element) {
+      var node = selection.anchorNode;
+      return node && nodeIsDescendantOfElement(node, element);
+    }
+
+    function selectionIsEditable(selection) {
+      var el = getSelectionBlockElement(selection);
+      return el.contentEditable !== 'false';
+    }
+
+    /*
+    function saveSelection() {
+      var sel = window.getSelection();
+      var ranges = [], i;
+      if (sel.rangeCount) {
+        var rangeCount = sel.rangeCount;
+        for (i = 0; i < rangeCount; i++) {
+          ranges.push(sel.getRangeAt(i));
+        }
+      }
+      return ranges;
+    }
+
+    function restoreSelection(savedSelection) {
+      var sel = window.getSelection();
+      var len = savedSelection.length, i;
+      sel.removeAllRanges();
+      for (i = 0; i < len; i++) {
+        sel.addRange(savedSelection[i]);
+      }
+    }
+    */
+
+    function moveCursorToBeginningOfSelection(selection) {
+      var range = document.createRange();
+      var node  = selection.anchorNode;
+      range.setStart(node, 0);
+      range.setEnd(node, 0);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    function restoreRange(range) {
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    function selectNode(node) {
+      var range = document.createRange();
+      var selection = window.getSelection();
+      range.setStart(node, 0);
+      range.setEnd(node, node.length);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    __exports__.getDirectionOfSelection = getDirectionOfSelection;
+    __exports__.getSelectionElement = getSelectionElement;
+    __exports__.getSelectionBlockElement = getSelectionBlockElement;
+    __exports__.getSelectionTagName = getSelectionTagName;
+    __exports__.getSelectionBlockTagName = getSelectionBlockTagName;
+    __exports__.tagsInSelection = tagsInSelection;
+    __exports__.selectionIsInElement = selectionIsInElement;
+    __exports__.selectionIsEditable = selectionIsEditable;
+    __exports__.moveCursorToBeginningOfSelection = moveCursorToBeginningOfSelection;
+    __exports__.restoreRange = restoreRange;
+    __exports__.selectNode = selectNode;
+  });
+define("content-kit-editor/views/embed-intent",
+  ["./view","./toolbar","../../content-kit-utils/object-utils","../utils/selection-utils","../utils/element-utils","../constants","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
+    "use strict";
+    var View = __dependency1__["default"];
+    var Toolbar = __dependency2__["default"];
+    var inherit = __dependency3__.inherit;
+    var getSelectionBlockElement = __dependency4__.getSelectionBlockElement;
+    var positionElementToLeftOf = __dependency5__.positionElementToLeftOf;
+    var positionElementCenteredIn = __dependency5__.positionElementCenteredIn;
+    var ToolbarDirection = __dependency6__.ToolbarDirection;
+    var Keycodes = __dependency6__.Keycodes;
+    var nodeIsDescendantOfElement = __dependency5__.nodeIsDescendantOfElement;
+    var createDiv = __dependency5__.createDiv;
+
+    function EmbedIntent(options) {
+      var embedIntent = this;
+      var rootElement = options.rootElement;
+      options.tagName = 'button';
+      options.classNames = ['ck-embed-intent-btn'];
+      View.call(embedIntent, options);
+
+      embedIntent.editorContext = options.editorContext;
+      embedIntent.element.title = 'Insert image or embed...';
+      embedIntent.element.addEventListener('mouseup', function(e) {
+        if (embedIntent.isActive) {
+          embedIntent.deactivate();
+        } else {
+          embedIntent.activate();
+        }
+        e.stopPropagation();
+      });
+
+      embedIntent.toolbar = new Toolbar({ embedIntent: embedIntent, editor: embedIntent.editorContext, commands: options.commands, direction: ToolbarDirection.RIGHT });
+      embedIntent.isActive = false;
+
+      function embedIntentHandler() {
+        var blockElement = getSelectionBlockElement();
+        var blockElementContent = blockElement && blockElement.innerHTML;
+        if (blockElementContent === '' || blockElementContent === '<br>') {
+          embedIntent.showAt(blockElement);
+        } else {
+          embedIntent.hide();
+        }
+      }
+
+      rootElement.addEventListener('keyup', embedIntentHandler);
+
+      document.addEventListener('mouseup', function(e) {
+        setTimeout(function() {
+          if (!nodeIsDescendantOfElement(e.target, embedIntent.toolbar.element)) {
+            embedIntentHandler();
+          }
+        });
+      });
+
+      document.addEventListener('keyup', function(e) {
+        if (e.keyCode === Keycodes.ESC) {
+          embedIntent.hide();
+        }
+      });
+
+      window.addEventListener('resize', function() {
+        if(embedIntent.isShowing) {
+          positionElementToLeftOf(embedIntent.element, embedIntent.atNode);
+          if (embedIntent.toolbar.isShowing) {
+            embedIntent.toolbar.positionToContent(embedIntent.element);
+          }
+        }
+      });
+    }
+    inherit(EmbedIntent, View);
+
+    EmbedIntent.prototype.hide = function() {
+      if (EmbedIntent._super.prototype.hide.call(this)) {
+        this.deactivate();
+      }
+    };
+
+    EmbedIntent.prototype.showAt = function(node) {
+      this.show();
+      this.deactivate();
+      this.atNode = node;
+      positionElementToLeftOf(this.element, node);
+    };
+
+    EmbedIntent.prototype.activate = function() {
+      if (!this.isActive) {
+        this.addClass('activated');
+        this.toolbar.show();
+        this.toolbar.positionToContent(this.element);
+        this.isActive = true;
+      }
+    };
+
+    EmbedIntent.prototype.deactivate = function() {
+      if (this.isActive) {
+        this.removeClass('activated');
+        this.toolbar.hide();
+        this.isActive = false;
+      }
+    };
+
+    // TODO: cleanup
+    var loading = createDiv('div');
+    loading.className = 'ck-embed-loading';
+    loading.innerHTML = 'LOADING';
+
+    EmbedIntent.prototype.showLoading = function() {
+      this.hide();
+      document.body.appendChild(loading);
+      positionElementCenteredIn(loading, this.atNode);
+    };
+
+    EmbedIntent.prototype.hideLoading = function() {
+      document.body.removeChild(loading);
+    };
+
+
+    __exports__["default"] = EmbedIntent;
+  });
+define("content-kit-editor/views/message",
+  ["./view","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var View = __dependency1__["default"];
+    var inherit = __dependency2__.inherit;
+
+    function Message(options) {
+      options = options || {};
+      options.classNames = ['ck-message'];
+      View.call(this, options);
+    }
+    inherit(Message, View);
+
+    Message.prototype.show = function(message) {
+      var messageView = this;
+      messageView.element.innerHTML = message;
+      Message._super.prototype.show.call(messageView);
+      setTimeout(function() {
+        messageView.hide();
+      }, 3000);
+    };
+
+    __exports__["default"] = Message;
+  });
+define("content-kit-editor/views/prompt",
+  ["./view","../../content-kit-utils/object-utils","../utils/selection-utils","../utils/element-utils","../constants","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
+    "use strict";
+    var View = __dependency1__["default"];
+    var inherit = __dependency2__.inherit;
+    var inherit = __dependency2__.inherit;
+    var restoreRange = __dependency3__.restoreRange;
+    var createDiv = __dependency4__.createDiv;
+    var positionElementToRect = __dependency4__.positionElementToRect;
+    var Keycodes = __dependency5__.Keycodes;
+
+    var container = document.body;
+    var hiliter = createDiv('ck-editor-hilite');
+
+    function positionHiliteRange(range) {
+      var rect = range.getBoundingClientRect();
+      var style = hiliter.style;
+      style.width  = rect.width  + 'px';
+      style.height = rect.height + 'px';
+      positionElementToRect(hiliter, rect);
+    }
+
+    function Prompt(options) {
+      var prompt = this;
+      options.tagName = 'input';
+      View.call(prompt, options);
+
+      prompt.command = options.command;
+      prompt.element.placeholder = options.placeholder || '';
+      prompt.element.addEventListener('mouseup', function(e) { e.stopPropagation(); }); // prevents closing prompt when clicking input 
+      prompt.element.addEventListener('keyup', function(e) {
+        var entry = this.value;
+        if(entry && prompt.range && !e.shiftKey && e.which === Keycodes.ENTER) {
+          restoreRange(prompt.range);
+          prompt.command.exec(entry);
+          if (prompt.onComplete) { prompt.onComplete(); }
+        }
+      });
+
+      window.addEventListener('resize', function() {
+        var activeHilite = hiliter.parentNode;
+        var range = prompt.range;
+        if(activeHilite && range) {
+          positionHiliteRange(range);
+        }
+      });
+    }
+    inherit(Prompt, View);
+
+    Prompt.prototype.show = function(callback) {
+      var prompt = this;
+      var element = prompt.element;
+      var selection = window.getSelection();
+      var range = selection && selection.rangeCount && selection.getRangeAt(0);
+      element.value = null;
+      prompt.range = range || null;
+      if (range) {
+        container.appendChild(hiliter);
+        positionHiliteRange(prompt.range);
+        setTimeout(function(){ element.focus(); }); // defer focus (disrupts mouseup events)
+        if (callback) { prompt.onComplete = callback; }
+      }
+    };
+
+    Prompt.prototype.hide = function() {
+      if (hiliter.parentNode) {
+        container.removeChild(hiliter);
+      }
+    };
+
+    __exports__["default"] = Prompt;
+  });
+define("content-kit-editor/views/text-format-toolbar",
+  ["./toolbar","../../content-kit-utils/object-utils","../utils/selection-utils","../constants","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var Toolbar = __dependency1__["default"];
+    var inherit = __dependency2__.inherit;
+    var selectionIsEditable = __dependency3__.selectionIsEditable;
+    var selectionIsInElement = __dependency3__.selectionIsInElement;
+    var Keycodes = __dependency4__.Keycodes;
+
+    function TextFormatToolbar(options) {
+      var toolbar = this;
+      Toolbar.call(this, options);
+      toolbar.rootElement = options.rootElement;
+      toolbar.rootElement.addEventListener('keyup', function() { toolbar.handleTextSelection(); });
+
+      document.addEventListener('keyup', function(e) {
+        if (e.keyCode === Keycodes.ESC) {
+          toolbar.hide();
+        }
+      });
+
+      document.addEventListener('mouseup', function() {
+        setTimeout(function() { toolbar.handleTextSelection(); });
+      });
+
+      window.addEventListener('resize', function() {
+        if(toolbar.isShowing) {
+          var activePromptRange = toolbar.activePrompt && toolbar.activePrompt.range;
+          toolbar.positionToContent(activePromptRange ? activePromptRange : window.getSelection().getRangeAt(0));
+        }
+      });
+    }
+    inherit(TextFormatToolbar, Toolbar);
+
+    TextFormatToolbar.prototype.handleTextSelection = function() {
+      var toolbar = this;
+      var selection = window.getSelection();
+      if (selection.isCollapsed || !selectionIsEditable(selection) || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
+        toolbar.hide();
+      } else {
+        toolbar.updateForSelection(selection);
+      }
+    };
+
+    __exports__["default"] = TextFormatToolbar;
+  });
+define("content-kit-editor/views/toolbar-button",
+  ["../commands/base","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Command = __dependency1__["default"];
+
+    var buttonClassName = 'ck-toolbar-btn';
+
+    function ToolbarButton(options) {
+      var button = this;
+      var toolbar = options.toolbar;
+      var command = options.command;
+      var prompt = command.prompt;
+      var element = document.createElement('button');
+
+      if(typeof command === 'string') {
+        command = Command.index[command];
+      }
+
+      button.element = element;
+      button.command = command;
+      button.isActive = false;
+
+      element.title = command.name;
+      element.className = buttonClassName;
+      element.innerHTML = command.button;
+      element.addEventListener('click', function(e) {
+        if (!button.isActive && prompt) {
+          toolbar.displayPrompt(prompt);
+        } else {
+          command.exec();
+        }
+      });
+    }
+
+    ToolbarButton.prototype = {
+      setActive: function() {
+        var button = this;
+        if (!button.isActive) {
+          button.element.className = buttonClassName + ' active';
+          button.isActive = true;
+        }
+      },
+      setInactive: function() {
+        var button = this;
+        if (button.isActive) {
+          button.element.className = buttonClassName;
+          button.isActive = false;
+        }
+      }
+    };
+
+    __exports__["default"] = ToolbarButton;
+  });
+define("content-kit-editor/views/toolbar",
+  ["./view","./toolbar-button","../../content-kit-utils/object-utils","../utils/selection-utils","../constants","../utils/element-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
+    "use strict";
+    var View = __dependency1__["default"];
+    var ToolbarButton = __dependency2__["default"];
+    var inherit = __dependency3__.inherit;
+    var tagsInSelection = __dependency4__.tagsInSelection;
+    var ToolbarDirection = __dependency5__.ToolbarDirection;
+    var createDiv = __dependency6__.createDiv;
+    var swapElements = __dependency6__.swapElements;
+    var positionElementToRightOf = __dependency6__.positionElementToRightOf;
+    var positionElementCenteredAbove = __dependency6__.positionElementCenteredAbove;
+
+    function updateButtonsForSelection(buttons, selection) {
+      var selectedTags = tagsInSelection(selection),
+          len = buttons.length,
+          i, button;
+
+      for (i = 0; i < len; i++) {
+        button = buttons[i];
+        if (selectedTags.indexOf(button.command.tag) > -1) {
+          button.setActive();
+        } else {
+          button.setInactive();
+        }
+      }
+    }
+
+    function Toolbar(options) {
+      var toolbar = this;
+      var commands = options.commands;
+      var commandCount = commands && commands.length;
+      var i, button, command;
+      toolbar.editor = options.editor || null;
+      toolbar.embedIntent = options.embedIntent || null;
+      toolbar.direction = options.direction || ToolbarDirection.TOP;
+      options.classNames = ['ck-toolbar'];
+      if (toolbar.direction === ToolbarDirection.RIGHT) {
+        options.classNames.push('right');
+      }
+
+      View.call(toolbar, options);
+
+      toolbar.activePrompt = null;
+      toolbar.buttons = [];
+
+      toolbar.promptContainerElement = createDiv('ck-toolbar-prompt');
+      toolbar.buttonContainerElement = createDiv('ck-toolbar-buttons');
+      toolbar.element.appendChild(toolbar.promptContainerElement);
+      toolbar.element.appendChild(toolbar.buttonContainerElement);
+
+      for(i = 0; i < commandCount; i++) {
+        this.addCommand(commands[i]);
+      }
+
+      // Closes prompt if displayed when changing selection
+      document.addEventListener('mouseup', function() {
+        toolbar.dismissPrompt();
+      });
+    }
+    inherit(Toolbar, View);
+
+    Toolbar.prototype.hide = function() {
+      if (Toolbar._super.prototype.hide.call(this)) {
+        var style = this.element.style;
+        style.left = '';
+        style.top = '';
+        this.dismissPrompt();
+      }
+    };
+
+    Toolbar.prototype.addCommand = function(command) {
+      command.editorContext = this.editor;
+      command.embedIntent = this.embedIntent;
+      var button = new ToolbarButton({ command: command, toolbar: this });
+      this.buttons.push(button);
+      this.buttonContainerElement.appendChild(button.element);
+    };
+
+    Toolbar.prototype.displayPrompt = function(prompt) {
+      var toolbar = this;
+      swapElements(toolbar.promptContainerElement, toolbar.buttonContainerElement);
+      toolbar.promptContainerElement.appendChild(prompt.element);
+      prompt.show(function() {
+        toolbar.dismissPrompt();
+        toolbar.updateForSelection(window.getSelection());
+      });
+      toolbar.activePrompt = prompt;
+    };
+
+    Toolbar.prototype.dismissPrompt = function() {
+      var toolbar = this;
+      var activePrompt = toolbar.activePrompt;
+      if (activePrompt) {
+        activePrompt.hide();
+        swapElements(toolbar.buttonContainerElement, toolbar.promptContainerElement);
+        toolbar.activePrompt = null;
+      }
+    };
+
+    Toolbar.prototype.updateForSelection = function(selection) {
+      var toolbar = this;
+      if (selection.isCollapsed) {
+        toolbar.hide();
+      } else {
+        toolbar.show();
+        toolbar.positionToContent(selection.getRangeAt(0));
+        updateButtonsForSelection(toolbar.buttons, selection);
+      }
+    };
+
+    Toolbar.prototype.positionToContent = function(content) {
+      var directions = ToolbarDirection;
+      var positioningMethod;
+      switch(this.direction) {
+        case directions.RIGHT:
+          positioningMethod = positionElementToRightOf;
+          break;
+        default:
+          positioningMethod = positionElementCenteredAbove;
+      }
+      positioningMethod(this.element, content);
+    };
+
+    __exports__["default"] = Toolbar;
+  });
+define("content-kit-editor/views/tooltip",
+  ["./view","../../content-kit-utils/object-utils","../utils/element-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var View = __dependency1__["default"];
+    var inherit = __dependency2__.inherit;
+    var positionElementCenteredBelow = __dependency3__.positionElementCenteredBelow;
+    var getEventTargetMatchingTag = __dependency3__.getEventTargetMatchingTag;
+
+    function Tooltip(options) {
+      var tooltip = this;
+      var rootElement = options.rootElement;
+      var delay = options.delay || 200;
+      var timeout;
+      options.classNames = ['ck-tooltip'];
+      View.call(tooltip, options);
+
+      rootElement.addEventListener('mouseover', function(e) {
+        var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
+        if (target) {
+          timeout = setTimeout(function() {
+            tooltip.showLink(target.href, target);
+          }, delay);
+        }
+      });
+      
+      rootElement.addEventListener('mouseout', function(e) {
+        clearTimeout(timeout);
+        var toElement = e.toElement || e.relatedTarget;
+        if (toElement && toElement.className !== tooltip.element.className) {
+          tooltip.hide();
+        }
+      });
+    }
+    inherit(Tooltip, View);
+
+    Tooltip.prototype.showMessage = function(message, element) {
+      var tooltip = this;
+      var tooltipElement = tooltip.element;
+      tooltipElement.innerHTML = message;
+      tooltip.show();
+      positionElementCenteredBelow(tooltipElement, element);
+    };
+
+    Tooltip.prototype.showLink = function(link, element) {
+      var message = '<a href="' + link + '" target="_blank">' + link + '</a>';
+      this.showMessage(message, element);
+    };
+
+    __exports__["default"] = Tooltip;
+  });
+define("content-kit-editor/views/view",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    function View(options) {
+      this.tagName = options.tagName || 'div';
+      this.classNames = options.classNames || [];
+      this.element = document.createElement(this.tagName);
+      this.element.className = this.classNames.join(' ');
+      this.container = options.container || document.body;
+      this.isShowing = false;
+    }
+
+    View.prototype = {
+      show: function() {
+        var view = this;
+        if(!view.isShowing) {
+          view.container.appendChild(view.element);
+          view.isShowing = true;
+          return true;
+        }
+      },
+      hide: function() {
+        var view = this;
+        if(view.isShowing) {
+          view.container.removeChild(view.element);
+          view.isShowing = false;
+          return true;
+        }
+      },
+      focus: function() {
+        this.element.focus();
+      },
+      addClass: function(className) {
+        this.classNames.push(className);
+        this.element.className = this.classNames.join(' ');
+      },
+      removeClass: function(className) {
+        this.classNames.splice(this.classNames.indexOf(className), 1);
+        this.element.className = this.classNames.join(' ');
+      }
+    };
+
+    __exports__["default"] = View;
+  });
+define("content-kit-compiler/renderers/embeds/instagram",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -2412,7 +2691,7 @@ define("renderers/embeds/instagram",
 
     __exports__["default"] = InstagramRenderer;
   });
-define("renderers/embeds/twitter",
+define("content-kit-compiler/renderers/embeds/twitter",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -2424,7 +2703,7 @@ define("renderers/embeds/twitter",
 
     __exports__["default"] = TwitterRenderer;
   });
-define("renderers/embeds/youtube",
+define("content-kit-compiler/renderers/embeds/youtube",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -2448,4 +2727,4 @@ define("renderers/embeds/youtube",
 
     __exports__["default"] = YouTubeRenderer;
   });
-}(this, document, define));
+}(this, document));

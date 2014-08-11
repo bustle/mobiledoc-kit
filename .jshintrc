@@ -28,10 +28,11 @@
   "noempty"       : true,     // Prohibit use of empty blocks.
   "nonew"         : true,     // Prohibit use of constructors for side-effects.
   "regexp"        : true,     // Prohibit `.` and `[^...]` in regular expressions.
-  //"undef"         : true,     // Require all non-global variables be declared before they are used.
+  "undef"         : true,     // Require all non-global variables be declared before they are used.
   //"unused"        : true,     // Warn when variables are created but not used.
   "trailing"      : true,     // Prohibit trailing whitespaces.
   "es3"           : true,     // Prohibit trailing commas for old IE 
+  "esnext"        : true,     // Allow ES.next specific features such as `const` and `let`.
   
   // == Relaxing Options ================================================
   //
@@ -47,7 +48,6 @@
   "debug"         : false,    // Allow debugger statements e.g. browser breakpoints.
   "eqnull"        : false,    // Tolerate use of `== null`.
   "es5"           : false,    // Allow EcmaScript 5 syntax.
-  "esnext"        : false,    // Allow ES.next specific features such as `const` and `let`.
   "evil"          : false,    // Tolerate use of `eval`.
   "expr"          : false,    // Tolerate `ExpressionStatement` as Programs.
   "funcscope"     : false,    // Tolerate declarations of variables inside of control structures while accessing them later from the outside.
