@@ -161,6 +161,10 @@ function Editor(element, options) {
         // TODO: lookup by name
         editor.embedCommands[0].uploader.url = editor.imageServiceUrl;
       }
+      if (editor.embedServiceUrl) {
+        // TODO: lookup by name
+        editor.embedCommands[1].embedService.url = editor.embedServiceUrl;
+      }
     }
     
     if(editor.autofocus) { element.focus(); }

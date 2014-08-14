@@ -2,15 +2,14 @@ import Command from './base';
 import Message from '../views/message';
 import ImageModel from '../../content-kit-compiler/models/image';
 import { inherit } from '../../content-kit-utils/object-utils';
+import { FileUploader } from '../../ext/content-kit-services';
 
 function ImageCommand(options) {
   Command.call(this, {
     name: 'image',
     button: '<i class="ck-icon-image"></i>'
   });
-  if (window.XHRFileUploader) {
-    this.uploader = new window.XHRFileUploader({ url: '/upload', maxFileSize: 5000000 });
-  }
+  this.uploader = new FileUploader({ url: '/upload', maxFileSize: 5000000 });
 }
 inherit(ImageCommand, Command);
 

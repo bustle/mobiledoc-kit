@@ -2,6 +2,7 @@ var RegExpTrim        = /^\s+|\s+$/g;
 var RegExpTrimLeft    = /^\s+/;
 var RegExpWSChars     = /(\r\n|\n|\r|\t|\u00A0)/gm;
 var RegExpMultiWS     = /\s+/g;
+var RegExpNonAlphaNum = /[^a-zA-Z\d]/g;
 
 /**
  * String.prototype.trim polyfill
@@ -23,7 +24,7 @@ function trimLeft(string) {
  * Replaces non-alphanumeric chars with underscores
  */
 function underscore(string) {
-  return string ? (string + '').replace(/ /g, '_') : '';
+  return string ? trim(string + '').replace(RegExpNonAlphaNum, '_') : '';
 }
 
 /**
@@ -40,4 +41,4 @@ function injectIntoString(string, injection, index) {
   return string.substr(0, index) + injection + string.substr(index);
 }
 
-export { trim, trimLeft, underscore, sanitizeWhitespace, injectIntoString};
+export { trim, trimLeft, underscore, sanitizeWhitespace, injectIntoString };

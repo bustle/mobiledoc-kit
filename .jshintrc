@@ -94,5 +94,7 @@
   // These options pre-define global variables specific 
   // to your app that hang off `window`.
 
-  "predef": []
+  "predef": [
+    "define" // amd loader
+  ]
 }

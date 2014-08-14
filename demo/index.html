@@ -66,20 +66,16 @@
     </div>
   </div>
 
-  <!-- Include if you want image embeds to upload to Amazon S3 -->
-  <script src="../ext/xhr-file-uploader.js"></script>
-  <!-- Include JS Module Loader -->
+  <!-- Include ContentKit JS -->
   <script src="../ext/loader.js"></script>
-  <!-- Include Editor JS (content-kit-editor.js) -->
   <script src="../dist/content-kit-editor.js"></script>
+  <script>window.ContentKit = require('content-kit')['default'];</script>
 
   <script>
-    // Load the ContentKit Module
-    window.ContentKit = require('content-kit')['default'];
-
     // Initializes a new Editor
     var editor = new ContentKit.Editor('.editor', {
       imageServiceUrl: 'http://localhost:5000/upload',
+      embedServiceUrl: 'http://localhost:5000/embed',
       compiler: new ContentKit.Compiler({
         includeTypeNames: true // outputs type names for easier debugging
       })

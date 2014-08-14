@@ -27,6 +27,7 @@
     "gulp-open": "^0.2.8",
     "gulp-qunit": "^0.3.3",
     "gulp-rimraf": "^0.1.0",
-    "gulp-util": "~2.2.12"
+    "gulp-util": "~2.2.12",
+    "qunitjs": "^1.15.0"
   }
 }

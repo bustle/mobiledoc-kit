@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 11, 2014
+ * Last modified: Aug 14, 2014
  */
 
 (function(exports, document) {
@@ -22,14 +22,10 @@ define("content-kit",
     var Compiler = __dependency6__["default"];
     var HTMLParser = __dependency7__["default"];
     var HTMLRenderer = __dependency8__["default"];
+
     var EditorFactory = __dependency9__["default"];
 
-    /**
-     * @namespace ContentKit
-     * Merge public modules into the common ContentKit namespace.
-     * Handy for working in the browser with globals.
-     */
-    var ContentKit = window.ContentKit || {};
+    var ContentKit = {};
     ContentKit.Type = Type;
     ContentKit.BlockModel = BlockModel;
     ContentKit.TextModel = TextModel;
@@ -38,6 +34,7 @@ define("content-kit",
     ContentKit.Compiler = Compiler;
     ContentKit.HTMLParser = HTMLParser;
     ContentKit.HTMLRenderer = HTMLRenderer;
+
     ContentKit.Editor = EditorFactory;
 
     __exports__["default"] = ContentKit;
@@ -390,6 +387,10 @@ define("content-kit-editor/editor",
             // TODO: lookup by name
             editor.embedCommands[0].uploader.url = editor.imageServiceUrl;
           }
+          if (editor.embedServiceUrl) {
+            // TODO: lookup by name
+            editor.embedCommands[1].embedService.url = editor.embedServiceUrl;
+          }
         }
         
         if(editor.autofocus) { element.focus(); }
@@ -628,6 +629,7 @@ define("content-kit-utils/string-utils",
     var RegExpTrimLeft    = /^\s+/;
     var RegExpWSChars     = /(\r\n|\n|\r|\t|\u00A0)/gm;
     var RegExpMultiWS     = /\s+/g;
+    var RegExpNonAlphaNum = /[^a-zA-Z\d]/g;
 
     /**
      * String.prototype.trim polyfill
@@ -649,7 +651,7 @@ define("content-kit-utils/string-utils",
      * Replaces non-alphanumeric chars with underscores
      */
     function underscore(string) {
-      return string ? (string + '').replace(/ /g, '_') : '';
+      return string ? trim(string + '').replace(RegExpNonAlphaNum, '_') : '';
     }
 
     /**
@@ -671,6 +673,259 @@ define("content-kit-utils/string-utils",
     __exports__.underscore = underscore;
     __exports__.sanitizeWhitespace = sanitizeWhitespace;
     __exports__.injectIntoString = injectIntoString;
+  });
+define("ext/content-kit-services",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+
+    function createXHR(options) {
+      var xhr = new XMLHttpRequest();
+      xhr.open(options.method, options.url);
+      xhr.onload = function () {
+        var response = xhr.responseText;
+        if (xhr.status === 200) {
+          return options.success.call(this, response);
+        }
+        options.error.call(this, response);
+      };
+      xhr.onerror = function (error) {
+        options.error.call(this, error);
+      };
+      return xhr;
+    }
+
+    function xhrGet(options) {
+      options.method = 'GET';
+      var xhr = createXHR(options);
+      xhr.send();
+    }
+
+    function xhrPost(options) {
+      options.method = 'POST';
+      var xhr = createXHR(options);
+      var formData = new FormData();
+      formData.append('file', options.data);
+      xhr.send(formData);
+    }
+
+    function responseJSON(jsonString) {
+      if (!jsonString) { return null; }
+      try {
+        return JSON.parse(jsonString);
+      } catch(e) {
+        return jsonString;
+      }
+    }
+
+    // --------------------------------------------
+
+    function FileUploader(options) {
+      options = options || {};
+      var url = options.url;
+      var maxFileSize = options.maxFileSize;
+      if (url) {
+        this.url = url;
+      } else {
+        throw new Error('FileUploader: setting the `url` to an upload service is required');
+      }
+      if (maxFileSize) {
+        this.maxFileSize = maxFileSize;
+      }
+    }
+
+    FileUploader.prototype.upload = function(options) {
+      if (!options) { return; }
+
+      var fileInput = options.fileInput;
+      var file = options.file || (fileInput && fileInput.files && fileInput.files[0]);
+      var callback = options.complete;
+      var maxFileSize = this.maxFileSize;
+      if (!file || !(file instanceof window.File)) { return; }
+
+      if (maxFileSize && file.size > maxFileSize) {
+        if (callback) { callback.call(this, null, { message: 'max file size is ' + maxFileSize + ' bytes' }); }
+        return;
+      }
+
+      xhrPost({
+        url: this.url,
+        data: file,
+        success: function(response) {
+          if (callback) { callback.call(this, responseJSON(response)); }
+        },
+        error: function(error) {
+          if (callback) { callback.call(this, null, responseJSON(error)); }
+        }
+      });
+    };
+
+    function OEmbedder(options) {
+      options = options || {};
+      var url = options.url;
+      if (url) {
+        this.url = url;
+      } else {
+        throw new Error('OEmbedder: setting the `url` to an embed service is required');
+      }
+    }
+
+    OEmbedder.prototype.fetch = function(options) {
+      var callback = options.complete;
+      xhrGet({
+        url: this.url + "?url=" + encodeURI(options.url),
+        success: function(response) {
+          if (callback) { callback.call(this, responseJSON(response)); }
+        },
+        error: function(error) {
+          if (callback) { callback.call(this, null, responseJSON(error)); }
+        }
+      });
+    };
+
+    __exports__.FileUploader = FileUploader;
+    __exports__.OEmbedder = OEmbedder;
+  });
+define("ext/loader",
+  [],
+  function() {
+    "use strict";
+    var define, requireModule, require, requirejs;
+
+    (function() {
+
+      var _isArray;
+      if (!Array.isArray) {
+        _isArray = function (x) {
+          return Object.prototype.toString.call(x) === "[object Array]";
+        };
+      } else {
+        _isArray = Array.isArray;
+      }
+
+      var registry = {}, seen = {};
+      var FAILED = false;
+
+      var uuid = 0;
+
+      function tryFinally(tryable, finalizer) {
+        try {
+          return tryable();
+        } finally {
+          finalizer();
+        }
+      }
+
+
+      function Module(name, deps, callback, exports) {
+        var defaultDeps = ['require', 'exports', 'module'];
+
+        this.id       = uuid++;
+        this.name     = name;
+        this.deps     = !deps.length && callback.length ? defaultDeps : deps;
+        this.exports  = exports || { };
+        this.callback = callback;
+        this.state    = undefined;
+      }
+
+      define = function(name, deps, callback) {
+        if (!_isArray(deps)) {
+          callback = deps;
+          deps     =  [];
+        }
+
+        registry[name] = new Module(name, deps, callback);
+      };
+
+      define.amd = {};
+
+      function reify(mod, name, seen) {
+        var deps = mod.deps;
+        var length = deps.length;
+        var reified = new Array(length);
+        var dep;
+        // TODO: new Module
+        // TODO: seen refactor
+        var module = { };
+
+        for (var i = 0, l = length; i < l; i++) {
+          dep = deps[i];
+          if (dep === 'exports') {
+            module.exports = reified[i] = seen;
+          } else if (dep === 'require') {
+            reified[i] = require;
+          } else if (dep === 'module') {
+            mod.exports = seen;
+            module = reified[i] = mod;
+          } else {
+            reified[i] = require(resolve(dep, name));
+          }
+        }
+
+        return {
+          deps: reified,
+          module: module
+        };
+      }
+
+      requirejs = require = requireModule = function(name) {
+        var mod = registry[name];
+        if (!mod) {
+          throw new Error('Could not find module ' + name);
+        }
+
+        if (mod.state !== FAILED &&
+            seen.hasOwnProperty(name)) {
+          return seen[name];
+        }
+
+        var reified;
+        var module;
+        var loaded = false;
+
+        seen[name] = { }; // placeholder for run-time cycles
+
+        tryFinally(function() {
+          reified = reify(mod, name, seen[name]);
+          module = mod.callback.apply(this, reified.deps);
+          loaded = true;
+        }, function() {
+          if (!loaded) {
+            mod.state = FAILED;
+          }
+        });
+
+        if (module === undefined && reified.module.exports) {
+          return (seen[name] = reified.module.exports);
+        } else {
+          return (seen[name] = module);
+        }
+      };
+
+      function resolve(child, name) {
+        if (child.charAt(0) !== '.') { return child; }
+
+        var parts = child.split('/');
+        var nameParts = name.split('/');
+        var parentBase = nameParts.slice(0, -1);
+
+        for (var i = 0, l = parts.length; i < l; i++) {
+          var part = parts[i];
+
+          if (part === '..') { parentBase.pop(); }
+          else if (part === '.') { continue; }
+          else { parentBase.push(part); }
+        }
+
+        return parentBase.join('/');
+      }
+
+      requirejs.entries = requirejs._eak_seen = registry;
+      requirejs.clear = function(){
+        requirejs.entries = requirejs._eak_seen = registry = {};
+        seen = state = {};
+      };
+    })();
   });
 define("content-kit-compiler/models/block",
   ["./model","../../content-kit-utils/object-utils","exports"],
@@ -1496,7 +1751,7 @@ define("content-kit-editor/commands/commands",
     __exports__.EmbedCommands = EmbedCommands;
   });
 define("content-kit-editor/commands/embed",
-  ["./base","../views/prompt","../views/message","../../content-kit-compiler/models/embed","../../content-kit-utils/object-utils","../utils/http-utils","../constants","exports"],
+  ["./base","../views/prompt","../views/message","../../content-kit-compiler/models/embed","../../content-kit-utils/object-utils","../constants","../../ext/content-kit-services","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
     "use strict";
     var Command = __dependency1__["default"];
@@ -1504,8 +1759,8 @@ define("content-kit-editor/commands/embed",
     var Message = __dependency3__["default"];
     var EmbedModel = __dependency4__["default"];
     var inherit = __dependency5__.inherit;
-    var xhrGet = __dependency6__.xhrGet;
-    var RegEx = __dependency7__.RegEx;
+    var RegEx = __dependency6__.RegEx;
+    var OEmbedder = __dependency7__.OEmbedder;
 
     function EmbedCommand(options) {
       Command.call(this, {
@@ -1516,6 +1771,8 @@ define("content-kit-editor/commands/embed",
           placeholder: 'Paste a YouTube or Twitter url...'
         })
       });
+
+      this.embedService = new OEmbedder({ url: '/embed' });
     }
     inherit(EmbedCommand, Command);
 
@@ -1523,29 +1780,20 @@ define("content-kit-editor/commands/embed",
       var command = this;
       var editorContext = command.editorContext;
       var index = editorContext.getCurrentBlockIndex();
-      var oEmbedEndpoint = 'http://noembed.com/embed?url=';
       
       command.embedIntent.showLoading();
-      if (!RegEx.HTTP_PROTOCOL.test(url)) {
-        url = 'http://' + url;
-      }
 
-      xhrGet(oEmbedEndpoint + url, function(responseText, error) {
-        command.embedIntent.hideLoading();
-        if (error) {
-          new Message().show('Embed error: status code ' + error.currentTarget.status);
-        } else {
-          var json = JSON.parse(responseText);
-          if (json.error) {
-            new Message().show('Embed error: ' + json.error);
+      this.embedService.fetch({
+        url: url,
+        complete: function(response, error) {
+          command.embedIntent.hideLoading();
+
+          if (error) {
+            new Message().show('Embed error');
           } else {
-            var embedModel = new EmbedModel(json);
-            //if (!embedModel.attributes.provider_id) {
-            //  new Message().show('Embed error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
-            //} else {
-              editorContext.insertBlockAt(embedModel, index);
-              editorContext.syncVisualAt(index);
-            //}
+            var embedModel = new EmbedModel(response);
+            editorContext.insertBlockAt(embedModel, index);
+            editorContext.syncVisualAt(index);
           }
         }
       });
@@ -1611,22 +1859,21 @@ define("content-kit-editor/commands/heading",
     __exports__["default"] = HeadingCommand;
   });
 define("content-kit-editor/commands/image",
-  ["./base","../views/message","../../content-kit-compiler/models/image","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+  ["./base","../views/message","../../content-kit-compiler/models/image","../../content-kit-utils/object-utils","../../ext/content-kit-services","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
     var Command = __dependency1__["default"];
     var Message = __dependency2__["default"];
     var ImageModel = __dependency3__["default"];
     var inherit = __dependency4__.inherit;
+    var FileUploader = __dependency5__.FileUploader;
 
     function ImageCommand(options) {
       Command.call(this, {
         name: 'image',
         button: '<i class="ck-icon-image"></i>'
       });
-      if (window.XHRFileUploader) {
-        this.uploader = new window.XHRFileUploader({ url: '/upload', maxFileSize: 5000000 });
-      }
+      this.uploader = new FileUploader({ url: '/upload', maxFileSize: 5000000 });
     }
     inherit(ImageCommand, Command);
 
@@ -1986,24 +2233,6 @@ define("content-kit-editor/utils/element-utils",
     __exports__.positionElementCenteredIn = positionElementCenteredIn;
     __exports__.positionElementToLeftOf = positionElementToLeftOf;
     __exports__.positionElementToRightOf = positionElementToRightOf;
-  });
-define("content-kit-editor/utils/http-utils",
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    function xhrGet(url, callback) {
-      var request = new XMLHttpRequest();
-      request.onload = function() {
-        callback(this.responseText);
-      };
-      request.onerror = function(error) {
-        callback(null, error);
-      };
-      request.open('GET', url, true);
-      request.send();
-    }
-
-    __exports__.xhrGet = xhrGet;
   });
 define("content-kit-editor/utils/selection-utils",
   ["../constants","./element-utils","exports"],

@@ -3,8 +3,8 @@ import Prompt from '../views/prompt';
 import Message from '../views/message';
 import EmbedModel from '../../content-kit-compiler/models/embed';
 import { inherit } from '../../content-kit-utils/object-utils';
-import { xhrGet } from '../utils/http-utils';
 import { RegEx } from '../constants';
+import { OEmbedder } from '../../ext/content-kit-services';
 
 function EmbedCommand(options) {
   Command.call(this, {
@@ -15,6 +15,8 @@ function EmbedCommand(options) {
       placeholder: 'Paste a YouTube or Twitter url...'
     })
   });
+
+  this.embedService = new OEmbedder({ url: '/embed' });
 }
 inherit(EmbedCommand, Command);
 
@@ -22,29 +24,20 @@ EmbedCommand.prototype.exec = function(url) {
   var command = this;
   var editorContext = command.editorContext;
   var index = editorContext.getCurrentBlockIndex();
-  var oEmbedEndpoint = 'http://noembed.com/embed?url=';
   
   command.embedIntent.showLoading();
-  if (!RegEx.HTTP_PROTOCOL.test(url)) {
-    url = 'http://' + url;
-  }
 
-  xhrGet(oEmbedEndpoint + url, function(responseText, error) {
-    command.embedIntent.hideLoading();
-    if (error) {
-      new Message().show('Embed error: status code ' + error.currentTarget.status);
-    } else {
-      var json = JSON.parse(responseText);
-      if (json.error) {
-        new Message().show('Embed error: ' + json.error);
+  this.embedService.fetch({
+    url: url,
+    complete: function(response, error) {
+      command.embedIntent.hideLoading();
+
+      if (error) {
+        new Message().show('Embed error');
       } else {
-        var embedModel = new EmbedModel(json);
-        //if (!embedModel.attributes.provider_id) {
-        //  new Message().show('Embed error: "' + embedModel.attributes.provider_name + '" embeds are not supported at this time');
-        //} else {
-          editorContext.insertBlockAt(embedModel, index);
-          editorContext.syncVisualAt(index);
-        //}
+        var embedModel = new EmbedModel(response);
+        editorContext.insertBlockAt(embedModel, index);
+        editorContext.syncVisualAt(index);
       }
     }
   });
