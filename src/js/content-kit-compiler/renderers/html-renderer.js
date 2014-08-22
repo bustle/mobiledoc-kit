@@ -11,7 +11,8 @@ import { mergeWithOptions } from '../../content-kit-utils/object-utils';
 function HTMLRenderer(options) {
   var defaults = {
     blockTypes    : DefaultBlockTypeSet,
-    markupTypes   : DefaultMarkupTypeSet
+    markupTypes   : DefaultMarkupTypeSet,
+    typeRenderers : {}
   };
   mergeWithOptions(this, defaults, options);
 }
@@ -22,12 +23,11 @@ function HTMLRenderer(options) {
  * @param renderer the rendering function that returns a string of html
  * Registers custom rendering hooks for a type
  */
-var renderHooks = {};
 HTMLRenderer.prototype.willRenderType = function(type, renderer) {
   if ('number' !== typeof type) {
     type = type.id;
   }
-  renderHooks[type] = renderer;
+  this.typeRenderers[type] = renderer;
 };
 
 /**
@@ -57,7 +57,7 @@ HTMLRenderer.prototype.render = function(model) {
   for (i = 0; i < len; i++) {
     item = model[i];
     renderer = this.rendererFor(item);
-    renderHook = renderHooks[item.type];
+    renderHook = this.typeRenderers[item.type];
     itemHtml = renderHook ? renderHook.call(renderer, item) : renderer.render(item);
     if (itemHtml) { html += itemHtml; }
   }

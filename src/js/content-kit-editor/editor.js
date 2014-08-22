@@ -11,10 +11,10 @@ import TextModel from '../content-kit-compiler/models/text';
 import Type from '../content-kit-compiler/types/type';
 import { toArray } from '../content-kit-utils/array-utils';
 import { merge } from '../content-kit-utils/object-utils';
+import EditorHTMLRenderer from './editor-html-renderer';
 
 var editorClassName = 'ck-editor';
 var editorClassNameRegExp = new RegExp(editorClassName);
-var afterRenderHooks = [];
 
 function plainTextToBlocks(plainText, blockTag) {
   var blocks = plainText.split(RegEx.NEWLINE),
@@ -104,12 +104,6 @@ function bindPasteEvents(editor) {
   });
 }
 
-function runAfterRenderHooks(element, blockModel) {
-  for (var i = 0, len = afterRenderHooks.length; i < len; i++) {
-    afterRenderHooks[i].call(null, element, blockModel);
-  }
-}
-
 /**
  * @class Editor
  * An individual Editor
@@ -139,7 +133,10 @@ function Editor(element, options) {
     element.setAttribute('contentEditable', true);
     editor.element = element;
 
-    var compiler = editor.compiler = options.compiler || new Compiler();
+    var compiler = editor.compiler = options.compiler || new Compiler({
+      includeTypeNames: true, // output type names for easier debugging
+      renderer: new EditorHTMLRenderer()
+    });
     editor.syncModel();
 
     bindTypingEvents(editor);
@@ -187,7 +184,6 @@ Editor.prototype.syncVisualAt = function(index) {
   var blockElements = toArray(this.element.children);
   var element = blockElements[index];
   element.innerHTML = html;
-  runAfterRenderHooks(element, blockModel);
 };
 
 Editor.prototype.getCurrentBlockIndex = function() {
@@ -213,16 +209,6 @@ Editor.prototype.addTextFormat = function(opts) {
   }));
   this.textFormatCommands.push(command);
   this.textFormatToolbar.addCommand(command);
-};
-
-Editor.prototype.willRenderType = function(type, renderer) {
-  this.compiler.renderer.willRenderType(type, renderer);
-};
-
-Editor.prototype.afterRender = function(callback) {
-  if ('function' === typeof callback) {
-    afterRenderHooks.push(callback);
-  }
 };
 
 export default Editor;

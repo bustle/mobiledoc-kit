@@ -62,7 +62,7 @@ function selectionIsInElement(selection, element) {
 
 function selectionIsEditable(selection) {
   var el = getSelectionBlockElement(selection);
-  return el.contentEditable !== 'false';
+  return el.isContentEditable;
 }
 
 /*

@@ -12,7 +12,7 @@ function Tooltip(options) {
 
   rootElement.addEventListener('mouseover', function(e) {
     var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
-    if (target) {
+    if (target && target.isContentEditable) {
       timeout = setTimeout(function() {
         tooltip.showLink(target.href, target);
       }, delay);

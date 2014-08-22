@@ -7,9 +7,8 @@
 body {
   font-family: "Helvetica Neue", Helvetica, sans-serif;
   color: #333;
-  margin: 0 1.45em 3em;
+  margin: 0;
   padding: 0;
-  overflow-y: scroll;
 }
 @media only screen and (max-width: 767px) {
   body {
@@ -17,9 +16,15 @@ body {
   }
 }
 
-.wrapper {
+.editor-pane {
   max-width: 50em;
-  margin: 6.7em auto 1em;
+  margin: 0 auto;
+  padding: 5.5em 1.45em 3em;
+  width: 100%;
+}
+.code-pane-open .editor-pane {
+  width: 50%;
+  margin: 0;
 }
 
 header {
@@ -74,23 +79,30 @@ header {
   outline: none;
 }
 
-#code-panes {
-  display: none;
-}
-.code-pane {
-  position: absolute;
+
+.code-panes {
+  position: fixed;
   top: 3.125em;
   bottom: 0;
+  right: -50%;
+  width: 0;
+}
+.code-pane-open .code-panes {
   right: 0;
   width: 50%;
-  border-left: 1px dotted #c0c5ce;
+}
+.code-pane {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   background-color: #2b303b;
   overflow: hidden;
 }
 .code-pane:first-child {
-  left: 0;
-  right: auto;
-  border-left: none;
+  display: block;
 }
 .code-pane code {
   white-space: pre-wrap;

@@ -16,11 +16,13 @@
   <header>
     <h1 class="demo-title">ContentKit Editor</h1>
     <div class="mode-buttons">
-      <button onclick="ContentKitDemo.toggleCode(event, this, editor)">Show Code</button>
+      <button onclick="ContentKitDemo.toggleCodePane(editor)">Toggle Code</button>
     </div>
   </header>
 
-  <div class="wrapper">
+  <div class="editor-pane">
+
+    <!-- This is the element we will target for the Editor -->
     <article class="editor" data-placeholder="Write your story here...">
       <p>A modern, minimalist text editor allowing you to write in a distraction free environment. Simply select any text you would like to format and a toolbar will appear where you can toggle options such as <b>bold</b> and <i>italic</i>, or create a <a href="https://github.com/ContentKit">link</a>.</p>
       <h2>Create headings by pressing "H1" on the toolbar</h2>
@@ -53,9 +55,10 @@
 
       <p>Enjoy focusing on your content and not worrying about formatting!</p>
     </article>
+    
   </div>
 
-  <div id="code-panes">
+  <div class="code-panes" id="code-panes">
     <div class="code-pane">
       <label>ContentKit JSON</label>
       <code id="code-json"></code>
@@ -72,58 +75,10 @@
   <script>window.ContentKit = require('content-kit')['default'];</script>
 
   <script>
-    // Initializes a new Editor
+    // Initialize a new Editor
     var editor = new ContentKit.Editor('.editor', {
       imageServiceUrl: 'http://localhost:5000/upload',
-      embedServiceUrl: 'http://localhost:5000/embed',
-      compiler: new ContentKit.Compiler({
-        includeTypeNames: true // outputs type names for easier debugging
-      })
-    });
-
-    /*
-    // Adding a custom text formatting button
-    editor.addTextFormat({
-      name: 'underline',
-      tag: 'u',
-      button: '<u>U</u>'
-    });
-    */
-
-    // Overriding what gets rendered for a Type
-    // Here, we are wrapping the default embed renderer with more info and controls
-    editor.willRenderType(ContentKit.Type.EMBED, function(model) {
-      var embedAttrs = model.attributes;
-      var isVideo = embedAttrs.embed_type === 'video';
-      return '<div class="ck-embed" contenteditable="false">' +
-                '<figure>' + 
-                  (isVideo ? '<div class="ck-video-container">' : '') + this.render(model) + (isVideo ? '</div>' : '') + 
-                  '<figcaption>' + embedAttrs.provider_name + ': ' + 
-                    '<a target="_blank" href="' + embedAttrs.url + '">' + embedAttrs.title + '</a>' + 
-                  '</figcaption>' +
-                '</figure>' +
-              '</div>';
-    });
-
-    editor.willRenderType(ContentKit.Type.IMAGE, function(model) {
-      return '<div class="ck-embed" contenteditable="false">' +
-                '<figure>' + this.render(model) + '</figure>' +
-              '</div>';
-    });
-
-    // Add an after render hook to load Twitter's Javascript SDK
-    editor.afterRender(function(element, model) {
-      var embedProvider = model.attributes && model.attributes.provider_name;
-      if (embedProvider && embedProvider.toLowerCase() === 'twitter') {
-        if (window.twttr) {
-          twttr.widgets.load(element);
-        } else {
-          var script = document.createElement('script');
-          script.async = true;
-          script.src = 'http://platform.twitter.com/widgets.js';
-          document.head.appendChild(script);
-        }
-      }
+      embedServiceUrl: 'http://localhost:5000/embed'
     });
   </script>
 

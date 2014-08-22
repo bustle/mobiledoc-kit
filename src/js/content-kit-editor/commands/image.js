@@ -4,6 +4,17 @@ import ImageModel from '../../content-kit-compiler/models/image';
 import { inherit } from '../../content-kit-utils/object-utils';
 import { FileUploader } from '../../ext/content-kit-services';
 
+function createFileInput(command) {
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.className = 'ck-file-input';
+  fileInput.addEventListener('change', function(e) {
+    command.handleFile(e);
+  });
+  return fileInput;
+}
+
 function ImageCommand(options) {
   Command.call(this, {
     name: 'image',
@@ -16,19 +27,12 @@ inherit(ImageCommand, Command);
 ImageCommand.prototype = {
   exec: function() {
     ImageCommand._super.prototype.exec.call(this);
-    var clickEvent = new MouseEvent('click', { bubbles: false });
-    if (!this.fileInput) {
-      var command = this;
-      var fileInput = this.fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = 'image/*';
-      fileInput.className = 'ck-file-input';
-      fileInput.addEventListener('change', function(e) {
-        command.handleFile(e);
-      });
+    var fileInput = this.fileInput;
+    if (!fileInput) {
+      fileInput = this.fileInput = createFileInput(this);
       document.body.appendChild(fileInput);
     }
-    this.fileInput.dispatchEvent(clickEvent);
+    fileInput.dispatchEvent(new MouseEvent('click', { bubbles: false }));
   },
   handleFile: function(e) {
     var fileInput = e.target;

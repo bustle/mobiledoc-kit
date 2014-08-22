@@ -1,4 +1,3 @@
-import { inherit } from '../../content-kit-utils/object-utils';
 import Model from '../models/model';
 import Type from '../types/type';
 
@@ -40,6 +39,5 @@ function EmbedModel(options) {
     attributes.html = embedHtml;
   }
 }
-inherit(Model, EmbedModel);
 
 export default EmbedModel;

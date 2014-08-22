@@ -1,6 +1,5 @@
 import BlockModel from './block';
 import Type from '../types/type';
-import { inherit } from '../../content-kit-utils/object-utils';
 
 /**
  * @class ImageModel
@@ -17,6 +16,5 @@ function ImageModel(options) {
   }
   BlockModel.call(this, options);
 }
-inherit(ImageModel, BlockModel);
 
 export default ImageModel;

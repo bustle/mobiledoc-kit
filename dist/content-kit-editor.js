@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 14, 2014
+ * Last modified: Aug 22, 2014
  */
 
 (function(exports, document) {
@@ -40,15 +40,14 @@ define("content-kit",
     __exports__["default"] = ContentKit;
   });
 define("content-kit-compiler/compiler",
-  ["./parsers/html-parser","./renderers/html-renderer","./types/type","./types/default-types","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
+  ["./parsers/html-parser","./renderers/html-renderer","./types/default-types","../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     var HTMLParser = __dependency1__["default"];
     var HTMLRenderer = __dependency2__["default"];
-    var Type = __dependency3__["default"];
-    var DefaultBlockTypeSet = __dependency4__.DefaultBlockTypeSet;
-    var DefaultMarkupTypeSet = __dependency4__.DefaultMarkupTypeSet;
-    var mergeWithOptions = __dependency5__.mergeWithOptions;
+    var DefaultBlockTypeSet = __dependency3__.DefaultBlockTypeSet;
+    var DefaultMarkupTypeSet = __dependency3__.DefaultMarkupTypeSet;
+    var mergeWithOptions = __dependency4__.mergeWithOptions;
 
     /**
      * @class Compiler
@@ -96,9 +95,7 @@ define("content-kit-compiler/compiler",
      * @param {Type} type
      */
     Compiler.prototype.registerBlockType = function(type) {
-      if (type instanceof Type) {
-        return this.blockTypes.addType(type);
-      }
+      return this.blockTypes.addType(type);
     };
 
     /**
@@ -106,9 +103,7 @@ define("content-kit-compiler/compiler",
      * @param {Type} type
      */
     Compiler.prototype.registerMarkupType = function(type) {
-      if (type instanceof Type) {
-        return this.markupTypes.addType(type);
-      }
+      return this.markupTypes.addType(type);
     };
 
     __exports__["default"] = Compiler;
@@ -214,9 +209,55 @@ define("content-kit-editor/editor-factory",
 
     __exports__["default"] = EditorFactory;
   });
+define("content-kit-editor/editor-html-renderer",
+  ["../content-kit-compiler/renderers/html-renderer","../content-kit-compiler/types/type","../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var HTMLRenderer = __dependency1__["default"];
+    var Type = __dependency2__["default"];
+    var inherit = __dependency3__.inherit;
+
+    function embedRenderer(model) {
+      var embedAttrs = model.attributes;
+      var isVideo = embedAttrs.embed_type === 'video';
+      return '<div class="ck-embed" contenteditable="false">' +
+                '<figure>' +
+                  (isVideo ? '<div class="ck-video-container">' : '') + this.render(model) + (isVideo ? '</div>' : '') +
+                  '<figcaption>' + embedAttrs.provider_name + ': ' +
+                    '<a target="_blank" href="' + embedAttrs.url + '">' + embedAttrs.title + '</a>' +
+                  '</figcaption>' +
+                '</figure>' +
+              '</div>';
+    }
+
+    function imageRenderer(model) {
+      return '<div class="ck-embed ck-image-embed" contenteditable="false">' +
+                '<figure>' + this.render(model) + '</figure>' +
+              '</div>';
+    }
+
+    var typeRenderers = {};
+    typeRenderers[Type.EMBED.id] = embedRenderer;
+    typeRenderers[Type.IMAGE.id] = imageRenderer;
+
+    /**
+     * @class EditorHTMLRenderer
+     * @constructor
+     * Subclass of HTMLRenderer specifically for the Editor
+     * Wraps interactive elements to add functionality
+     */
+    function EditorHTMLRenderer() {
+      HTMLRenderer.call(this, {
+        typeRenderers: typeRenderers
+      });
+    }
+    inherit(EditorHTMLRenderer, HTMLRenderer);
+
+    __exports__["default"] = EditorHTMLRenderer;
+  });
 define("content-kit-editor/editor",
-  ["./views/text-format-toolbar","./views/tooltip","./views/embed-intent","./commands/unordered-list","./commands/ordered-list","./commands/text-format","./constants","./utils/selection-utils","../content-kit-compiler/compiler","../content-kit-compiler/models/text","../content-kit-compiler/types/type","../content-kit-utils/array-utils","../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __exports__) {
+  ["./views/text-format-toolbar","./views/tooltip","./views/embed-intent","./commands/unordered-list","./commands/ordered-list","./commands/text-format","./constants","./utils/selection-utils","../content-kit-compiler/compiler","../content-kit-compiler/models/text","../content-kit-compiler/types/type","../content-kit-utils/array-utils","../content-kit-utils/object-utils","./editor-html-renderer","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __dependency14__, __exports__) {
     "use strict";
     var TextFormatToolbar = __dependency1__["default"];
     var Tooltip = __dependency2__["default"];
@@ -237,10 +278,10 @@ define("content-kit-editor/editor",
     var Type = __dependency11__["default"];
     var toArray = __dependency12__.toArray;
     var merge = __dependency13__.merge;
+    var EditorHTMLRenderer = __dependency14__["default"];
 
     var editorClassName = 'ck-editor';
     var editorClassNameRegExp = new RegExp(editorClassName);
-    var afterRenderHooks = [];
 
     function plainTextToBlocks(plainText, blockTag) {
       var blocks = plainText.split(RegEx.NEWLINE),
@@ -330,12 +371,6 @@ define("content-kit-editor/editor",
       });
     }
 
-    function runAfterRenderHooks(element, blockModel) {
-      for (var i = 0, len = afterRenderHooks.length; i < len; i++) {
-        afterRenderHooks[i].call(null, element, blockModel);
-      }
-    }
-
     /**
      * @class Editor
      * An individual Editor
@@ -365,7 +400,10 @@ define("content-kit-editor/editor",
         element.setAttribute('contentEditable', true);
         editor.element = element;
 
-        var compiler = editor.compiler = options.compiler || new Compiler();
+        var compiler = editor.compiler = options.compiler || new Compiler({
+          includeTypeNames: true, // output type names for easier debugging
+          renderer: new EditorHTMLRenderer()
+        });
         editor.syncModel();
 
         bindTypingEvents(editor);
@@ -413,7 +451,6 @@ define("content-kit-editor/editor",
       var blockElements = toArray(this.element.children);
       var element = blockElements[index];
       element.innerHTML = html;
-      runAfterRenderHooks(element, blockModel);
     };
 
     Editor.prototype.getCurrentBlockIndex = function() {
@@ -439,16 +476,6 @@ define("content-kit-editor/editor",
       }));
       this.textFormatCommands.push(command);
       this.textFormatToolbar.addCommand(command);
-    };
-
-    Editor.prototype.willRenderType = function(type, renderer) {
-      this.compiler.renderer.willRenderType(type, renderer);
-    };
-
-    Editor.prototype.afterRender = function(callback) {
-      if ('function' === typeof callback) {
-        afterRenderHooks.push(callback);
-      }
     };
 
     __exports__["default"] = Editor;
@@ -928,11 +955,10 @@ define("ext/loader",
     })();
   });
 define("content-kit-compiler/models/block",
-  ["./model","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
+  ["./model","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
     var Model = __dependency1__["default"];
-    var inherit = __dependency2__.inherit;
 
     /**
      * Ensures block markups at the same index are always in a specific order.
@@ -959,17 +985,15 @@ define("content-kit-compiler/models/block",
       this.value = options.value || '';
       this.markup = sortBlockMarkups(options.markup || []);
     }
-    inherit(BlockModel, Model);
 
     __exports__["default"] = BlockModel;
   });
 define("content-kit-compiler/models/embed",
-  ["../../content-kit-utils/object-utils","../models/model","../types/type","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["../models/model","../types/type","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
-    var inherit = __dependency1__.inherit;
-    var Model = __dependency2__["default"];
-    var Type = __dependency3__["default"];
+    var Model = __dependency1__["default"];
+    var Type = __dependency2__["default"];
 
     /**
      * @class EmbedModel
@@ -1009,17 +1033,15 @@ define("content-kit-compiler/models/embed",
         attributes.html = embedHtml;
       }
     }
-    inherit(Model, EmbedModel);
 
     __exports__["default"] = EmbedModel;
   });
 define("content-kit-compiler/models/image",
-  ["./block","../types/type","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["./block","../types/type","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var BlockModel = __dependency1__["default"];
     var Type = __dependency2__["default"];
-    var inherit = __dependency3__.inherit;
 
     /**
      * @class ImageModel
@@ -1036,16 +1058,14 @@ define("content-kit-compiler/models/image",
       }
       BlockModel.call(this, options);
     }
-    inherit(ImageModel, BlockModel);
 
     __exports__["default"] = ImageModel;
   });
 define("content-kit-compiler/models/markup",
-  ["./model","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
+  ["./model","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
     var Model = __dependency1__["default"];
-    var inherit = __dependency2__.inherit;
 
     /**
      * @class MarkupModel
@@ -1058,7 +1078,6 @@ define("content-kit-compiler/models/markup",
       this.start = options.start || 0;
       this.end = options.end || 0;
     }
-    inherit(MarkupModel, Model);
 
     __exports__["default"] = MarkupModel;
   });
@@ -1088,12 +1107,11 @@ define("content-kit-compiler/models/model",
     __exports__["default"] = Model;
   });
 define("content-kit-compiler/models/text",
-  ["./block","../types/type","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["./block","../types/type","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var BlockModel = __dependency1__["default"];
     var Type = __dependency2__["default"];
-    var inherit = __dependency3__.inherit;
 
     /**
      * @class TextModel
@@ -1107,7 +1125,6 @@ define("content-kit-compiler/models/text",
       options.type_name = Type.TEXT.name;
       BlockModel.call(this, options);
     }
-    inherit(TextModel, BlockModel);
 
     __exports__["default"] = TextModel;
   });
@@ -1476,7 +1493,8 @@ define("content-kit-compiler/renderers/html-renderer",
     function HTMLRenderer(options) {
       var defaults = {
         blockTypes    : DefaultBlockTypeSet,
-        markupTypes   : DefaultMarkupTypeSet
+        markupTypes   : DefaultMarkupTypeSet,
+        typeRenderers : {}
       };
       mergeWithOptions(this, defaults, options);
     }
@@ -1487,12 +1505,11 @@ define("content-kit-compiler/renderers/html-renderer",
      * @param renderer the rendering function that returns a string of html
      * Registers custom rendering hooks for a type
      */
-    var renderHooks = {};
     HTMLRenderer.prototype.willRenderType = function(type, renderer) {
       if ('number' !== typeof type) {
         type = type.id;
       }
-      renderHooks[type] = renderer;
+      this.typeRenderers[type] = renderer;
     };
 
     /**
@@ -1522,7 +1539,7 @@ define("content-kit-compiler/renderers/html-renderer",
       for (i = 0; i < len; i++) {
         item = model[i];
         renderer = this.rendererFor(item);
-        renderHook = renderHooks[item.type];
+        renderHook = this.typeRenderers[item.type];
         itemHtml = renderHook ? renderHook.call(renderer, item) : renderer.render(item);
         if (itemHtml) { html += itemHtml; }
       }
@@ -1570,9 +1587,11 @@ define("content-kit-compiler/types/default-types",
     __exports__.DefaultMarkupTypeSet = DefaultMarkupTypeSet;
   });
 define("content-kit-compiler/types/type-set",
-  ["exports"],
-  function(__exports__) {
+  ["./type","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
+    var Type = __dependency1__["default"];
+
     /**
      * @class TypeSet
      * @private
@@ -1596,15 +1615,17 @@ define("content-kit-compiler/types/type-set",
        * Adds a type to the set
        */
       addType: function(type) {
-        this[type.name] = type;
-        if (type.id === undefined) {
-          type.id = this._autoId++;
+        if (type instanceof Type) {
+          this[type.name] = type;
+          if (type.id === undefined) {
+            type.id = this._autoId++;
+          }
+          this.idLookup[type.id] = type;
+          if (type.tag) {
+            this.tagLookup[type.tag] = type;
+          }
+          return type;
         }
-        this.idLookup[type.id] = type;
-        if (type.tag) {
-          this.tagLookup[type.tag] = type;
-        }
-        return type;
       },
 
       /**
@@ -1762,6 +1783,17 @@ define("content-kit-editor/commands/embed",
     var RegEx = __dependency6__.RegEx;
     var OEmbedder = __dependency7__.OEmbedder;
 
+    function loadTwitterWidgets(element) {
+      if (window.twttr) {
+        window.twttr.widgets.load(element);
+      } else {
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'http://platform.twitter.com/widgets.js';
+        document.head.appendChild(script);
+      }
+    }
+
     function EmbedCommand(options) {
       Command.call(this, {
         name: 'embed',
@@ -1779,21 +1811,30 @@ define("content-kit-editor/commands/embed",
     EmbedCommand.prototype.exec = function(url) {
       var command = this;
       var editorContext = command.editorContext;
+      var embedIntent = command.embedIntent;
       var index = editorContext.getCurrentBlockIndex();
       
-      command.embedIntent.showLoading();
+      embedIntent.showLoading();
 
       this.embedService.fetch({
         url: url,
         complete: function(response, error) {
-          command.embedIntent.hideLoading();
-
+          embedIntent.hideLoading();
           if (error) {
-            new Message().show('Embed error');
+            var errorMsg = error;
+            if (error.target && error.target.status === 0) {
+              errorMsg = 'Could not connect to embed service';
+            } else if (typeof error !== 'string') {
+              errorMsg = 'Embed error';
+            }
+            new Message().show(errorMsg);
           } else {
             var embedModel = new EmbedModel(response);
             editorContext.insertBlockAt(embedModel, index);
             editorContext.syncVisualAt(index);
+            if (embedModel.attributes.provider_name.toLowerCase() === 'twitter') {
+              loadTwitterWidgets(editorContext.element);
+            }
           }
         }
       });
@@ -1868,6 +1909,17 @@ define("content-kit-editor/commands/image",
     var inherit = __dependency4__.inherit;
     var FileUploader = __dependency5__.FileUploader;
 
+    function createFileInput(command) {
+      var fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.className = 'ck-file-input';
+      fileInput.addEventListener('change', function(e) {
+        command.handleFile(e);
+      });
+      return fileInput;
+    }
+
     function ImageCommand(options) {
       Command.call(this, {
         name: 'image',
@@ -1880,19 +1932,12 @@ define("content-kit-editor/commands/image",
     ImageCommand.prototype = {
       exec: function() {
         ImageCommand._super.prototype.exec.call(this);
-        var clickEvent = new MouseEvent('click', { bubbles: false });
-        if (!this.fileInput) {
-          var command = this;
-          var fileInput = this.fileInput = document.createElement('input');
-          fileInput.type = 'file';
-          fileInput.accept = 'image/*';
-          fileInput.className = 'ck-file-input';
-          fileInput.addEventListener('change', function(e) {
-            command.handleFile(e);
-          });
+        var fileInput = this.fileInput;
+        if (!fileInput) {
+          fileInput = this.fileInput = createFileInput(this);
           document.body.appendChild(fileInput);
         }
-        this.fileInput.dispatchEvent(clickEvent);
+        fileInput.dispatchEvent(new MouseEvent('click', { bubbles: false }));
       },
       handleFile: function(e) {
         var fileInput = e.target;
@@ -2303,7 +2348,7 @@ define("content-kit-editor/utils/selection-utils",
 
     function selectionIsEditable(selection) {
       var el = getSelectionBlockElement(selection);
-      return el.contentEditable !== 'false';
+      return el.isContentEditable;
     }
 
     /*
@@ -2831,7 +2876,7 @@ define("content-kit-editor/views/tooltip",
 
       rootElement.addEventListener('mouseover', function(e) {
         var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
-        if (target) {
+        if (target && target.isContentEditable) {
           timeout = setTimeout(function() {
             tooltip.showLink(target.href, target);
           }, delay);
@@ -2920,6 +2965,30 @@ define("content-kit-compiler/renderers/embeds/instagram",
 
     __exports__["default"] = InstagramRenderer;
   });
+define("content-kit-compiler/renderers/embeds/link",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+
+    function LinkEmbedRenderer() {}
+    LinkEmbedRenderer.prototype.render = function(model) {
+      return '<a href="' + model.attributes.url + '" target="_blank"><img src="' + model.attributes.thumbnail_url + '"/></a>';
+    };
+
+    __exports__["default"] = LinkEmbedRenderer;
+  });
+define("content-kit-compiler/renderers/embeds/photo",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+
+    function PhotoEmbedRenderer() {}
+    PhotoEmbedRenderer.prototype.render = function(model) {
+      return '<img src="' + model.attributes.url + '"/>';
+    };
+
+    __exports__["default"] = PhotoEmbedRenderer;
+  });
 define("content-kit-compiler/renderers/embeds/twitter",
   ["exports"],
   function(__exports__) {
@@ -2940,7 +3009,7 @@ define("content-kit-compiler/renderers/embeds/youtube",
     var RegExVideoId = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
 
     function getVideoIdFromUrl(url) {
-      var match = url.match(RegExVideoId);
+      var match = url && url.match(RegExVideoId);
       if (match && match[1].length === 11){
         return match[1];
       }

@@ -1,3 +1,5 @@
+import Type from './type';
+
 /**
  * @class TypeSet
  * @private
@@ -21,15 +23,17 @@ TypeSet.prototype = {
    * Adds a type to the set
    */
   addType: function(type) {
-    this[type.name] = type;
-    if (type.id === undefined) {
-      type.id = this._autoId++;
+    if (type instanceof Type) {
+      this[type.name] = type;
+      if (type.id === undefined) {
+        type.id = this._autoId++;
+      }
+      this.idLookup[type.id] = type;
+      if (type.tag) {
+        this.tagLookup[type.tag] = type;
+      }
+      return type;
     }
-    this.idLookup[type.id] = type;
-    if (type.tag) {
-      this.tagLookup[type.tag] = type;
-    }
-    return type;
   },
 
   /**

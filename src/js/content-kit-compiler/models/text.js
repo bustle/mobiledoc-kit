@@ -1,6 +1,5 @@
 import BlockModel from './block';
 import Type from '../types/type';
-import { inherit } from '../../content-kit-utils/object-utils';
 
 /**
  * @class TextModel
@@ -14,6 +13,5 @@ function TextModel(options) {
   options.type_name = Type.TEXT.name;
   BlockModel.call(this, options);
 }
-inherit(TextModel, BlockModel);
 
 export default TextModel;

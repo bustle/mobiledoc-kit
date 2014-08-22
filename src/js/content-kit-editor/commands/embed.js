@@ -6,6 +6,17 @@ import { inherit } from '../../content-kit-utils/object-utils';
 import { RegEx } from '../constants';
 import { OEmbedder } from '../../ext/content-kit-services';
 
+function loadTwitterWidgets(element) {
+  if (window.twttr) {
+    window.twttr.widgets.load(element);
+  } else {
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = 'http://platform.twitter.com/widgets.js';
+    document.head.appendChild(script);
+  }
+}
+
 function EmbedCommand(options) {
   Command.call(this, {
     name: 'embed',
@@ -23,21 +34,30 @@ inherit(EmbedCommand, Command);
 EmbedCommand.prototype.exec = function(url) {
   var command = this;
   var editorContext = command.editorContext;
+  var embedIntent = command.embedIntent;
   var index = editorContext.getCurrentBlockIndex();
   
-  command.embedIntent.showLoading();
+  embedIntent.showLoading();
 
   this.embedService.fetch({
     url: url,
     complete: function(response, error) {
-      command.embedIntent.hideLoading();
-
+      embedIntent.hideLoading();
       if (error) {
-        new Message().show('Embed error');
+        var errorMsg = error;
+        if (error.target && error.target.status === 0) {
+          errorMsg = 'Could not connect to embed service';
+        } else if (typeof error !== 'string') {
+          errorMsg = 'Embed error';
+        }
+        new Message().show(errorMsg);
       } else {
         var embedModel = new EmbedModel(response);
         editorContext.insertBlockAt(embedModel, index);
         editorContext.syncVisualAt(index);
+        if (embedModel.attributes.provider_name.toLowerCase() === 'twitter') {
+          loadTwitterWidgets(editorContext.element);
+        }
       }
     }
   });

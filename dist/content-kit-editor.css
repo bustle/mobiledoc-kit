@@ -285,10 +285,11 @@
   .ck-embed figcaption {
     position: absolute;
     top: 0;
-    right: -140px;
-    width: 120px;
+    right: -130px;
+    width: 130px;
     text-align: left;
     margin: 0;
+    padding-left: 2em;
   }
 }
 .ck-video-container {

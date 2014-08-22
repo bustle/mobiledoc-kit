@@ -107,7 +107,7 @@ gulp.task('clean', function() {
 
 // Watches when js files change and automatically lints/builds
 gulp.task('watch-js', function() {
-  gulp.watch(jsSrc.concat(jsExtSrc), ['lint', 'build-js']);
+  gulp.watch(jsSrc, ['lint', 'build-js']);
 });
 
 // Watches when css files change and automatically builds

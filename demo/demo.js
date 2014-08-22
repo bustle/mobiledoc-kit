@@ -3,29 +3,33 @@
 'use strict';
 
 exports.ContentKitDemo = {
-  toggleCode: function(e, button, editor) {
-    var codeUI = document.getElementById('code-panes'),
-        editorUI = editor.element;
-        
-    if(codeUI.style.display === '') {
-      var codePaneJSON = document.getElementById('code-json'),
-          codePaneHTML = document.getElementById('code-html'),
-          json = editor.model,
-          html = editor.compiler.render(json);
-
-      codePaneJSON.innerHTML = this.syntaxHighlight(json);
-      codePaneHTML.textContent = this.formatXML(html);
-
-      window.getSelection().removeAllRanges();
-
-      codeUI.style.display = 'block';
-      editorUI.style.display = 'none';
-      button.textContent = 'Show Editor';
+  toggleCodePane: function(editor) {
+    if(document.body.className === 'code-pane-open') {
+      this.closeCodePane();
     } else {
-      codeUI.style.display = '';
-      editorUI.style.display = 'block';
-      button.textContent = 'Show Code';
+      this.openCodePane(editor);
     }
+  },
+
+  openCodePane: function(editor) {
+    this.syncCodePane(editor);
+    window.getSelection().removeAllRanges();
+    document.body.className = 'code-pane-open';
+  },
+
+  closeCodePane: function() {
+    window.getSelection().removeAllRanges();
+    document.body.className = '';
+  },
+
+  syncCodePane: function(editor) {
+    var codePaneJSON = document.getElementById('code-json');
+    var codePaneHTML = document.getElementById('code-html');
+    var json = editor.model;
+    var html = editor.compiler.render(json);
+
+    codePaneJSON.innerHTML = this.syntaxHighlight(json);
+    codePaneHTML.textContent = this.formatXML(html);
   },
 
   formatXML: function(xml) {

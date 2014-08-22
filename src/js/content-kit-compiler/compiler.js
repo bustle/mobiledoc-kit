@@ -1,8 +1,7 @@
 import HTMLParser from './parsers/html-parser';
 import HTMLRenderer from './renderers/html-renderer';
-import Type from './types/type';
 import { DefaultBlockTypeSet, DefaultMarkupTypeSet } from './types/default-types';
-import { mergeWithOptions } from '../../content-kit-utils/object-utils';
+import { mergeWithOptions } from '../content-kit-utils/object-utils';
 
 /**
  * @class Compiler
@@ -50,9 +49,7 @@ Compiler.prototype.render = function(data) {
  * @param {Type} type
  */
 Compiler.prototype.registerBlockType = function(type) {
-  if (type instanceof Type) {
-    return this.blockTypes.addType(type);
-  }
+  return this.blockTypes.addType(type);
 };
 
 /**
@@ -60,9 +57,7 @@ Compiler.prototype.registerBlockType = function(type) {
  * @param {Type} type
  */
 Compiler.prototype.registerMarkupType = function(type) {
-  if (type instanceof Type) {
-    return this.markupTypes.addType(type);
-  }
+  return this.markupTypes.addType(type);
 };
 
 export default Compiler;

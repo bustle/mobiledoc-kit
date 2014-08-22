@@ -2,7 +2,7 @@
 var RegExVideoId = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
 
 function getVideoIdFromUrl(url) {
-  var match = url.match(RegExVideoId);
+  var match = url && url.match(RegExVideoId);
   if (match && match[1].length === 11){
     return match[1];
   }
