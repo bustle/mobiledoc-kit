@@ -14,6 +14,7 @@ function EmbedIntent(options) {
   View.call(embedIntent, options);
 
   embedIntent.editorContext = options.editorContext;
+  embedIntent.loadingIndicator = createDiv('ck-embed-loading');
   embedIntent.element.title = 'Insert image or embed...';
   embedIntent.element.addEventListener('mouseup', function(e) {
     if (embedIntent.isActive) {
@@ -94,20 +95,16 @@ EmbedIntent.prototype.deactivate = function() {
   }
 };
 
-// TODO: cleanup
-var loading = createDiv('div');
-loading.className = 'ck-embed-loading';
-loading.innerHTML = 'LOADING';
-
 EmbedIntent.prototype.showLoading = function() {
-  this.hide();
-  document.body.appendChild(loading);
-  positionElementCenteredIn(loading, this.atNode);
+  var embedIntent = this;
+  var loadingIndicator = embedIntent.loadingIndicator;
+  embedIntent.hide();
+  embedIntent.container.appendChild(loadingIndicator);
+  positionElementCenteredIn(loadingIndicator, embedIntent.atNode);
 };
 
 EmbedIntent.prototype.hideLoading = function() {
-  document.body.removeChild(loading);
+  this.container.removeChild(this.loadingIndicator);
 };
-
 
 export default EmbedIntent;

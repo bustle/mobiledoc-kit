@@ -38,7 +38,6 @@ EmbedCommand.prototype.exec = function(url) {
   var index = editorContext.getCurrentBlockIndex();
   
   embedIntent.showLoading();
-
   this.embedService.fetch({
     url: url,
     complete: function(response, error) {

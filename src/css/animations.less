@@ -11,6 +11,13 @@
   100% { opacity: 1; }
 }
 
+@-webkit-keyframes spin {
+  to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @-webkit-keyframes shake {
   0%, 100% { -webkit-transform: translateX(0); }
   20%, 60% { -webkit-transform: translateX(-10px); }

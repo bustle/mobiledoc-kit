@@ -247,6 +247,13 @@
 }
 .ck-embed-loading {
   position: absolute;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  border-top-color: #3ea3ff;
+  animation: spin .5s linear infinite;
+  -webkit-animation: spin .5s linear infinite;
 }
 .ck-file-input {
   display: none;
@@ -387,6 +394,16 @@
   }
   100% {
     opacity: 1;
+  }
+}
+@-webkit-keyframes spin {
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 @-webkit-keyframes shake {
