@@ -2,8 +2,8 @@
 
 'use strict';
 
-exports.ContentKitDemo = {
-  toggleCodePane: function(editor) {
+var ContentKitDemo = exports.ContentKitDemo = {
+  toggleCodePane: function() {
     if(document.body.className === 'code-pane-open') {
       this.closeCodePane();
     } else {
@@ -11,25 +11,26 @@ exports.ContentKitDemo = {
     }
   },
 
-  openCodePane: function(editor) {
-    this.syncCodePane(editor);
+  openCodePane: function() {
     window.getSelection().removeAllRanges();
     document.body.className = 'code-pane-open';
+    location.hash = 'code';
   },
 
   closeCodePane: function() {
     window.getSelection().removeAllRanges();
     document.body.className = '';
+    location.hash = '';
   },
 
   syncCodePane: function(editor) {
     var codePaneJSON = document.getElementById('code-json');
     var codePaneHTML = document.getElementById('code-html');
     var json = editor.model;
-    var html = editor.compiler.render(json);
+    //var html = editor.compiler.render(json);
 
     codePaneJSON.innerHTML = this.syntaxHighlight(json);
-    codePaneHTML.textContent = this.formatXML(html);
+    //codePaneHTML.textContent = this.formatXML(html);
   },
 
   formatXML: function(xml) {
@@ -90,5 +91,13 @@ exports.ContentKitDemo = {
   }
 
 };
+
+// Initialize
+if (editor) {
+  ContentKitDemo.syncCodePane(editor);
+}
+if (location.hash === '#code') {
+  ContentKitDemo.openCodePane();
+}
 
 }(this, document));

@@ -1,40 +1,22 @@
-import TextFormatToolbar  from './views/text-format-toolbar';
-import Tooltip from './views/tooltip';
-import EmbedIntent from './views/embed-intent';
-import UnorderedListCommand from './commands/unordered-list';
-import OrderedListCommand from './commands/ordered-list';
-import TextFormatCommand from './commands/text-format';
-import { Tags, RootTags, Keycodes, RegEx } from './constants';
-import { moveCursorToBeginningOfSelection, getSelectionTagName, getSelectionBlockElement, getSelectionBlockTagName } from './utils/selection-utils';
-import Compiler from '../content-kit-compiler/compiler';
-import TextModel from '../content-kit-compiler/models/text';
-import Type from '../content-kit-compiler/types/type';
-import { toArray } from '../content-kit-utils/array-utils';
-import { merge } from '../content-kit-utils/object-utils';
 import EditorHTMLRenderer from './editor-html-renderer';
+import TextFormatToolbar  from '../views/text-format-toolbar';
+import Tooltip from '../views/tooltip';
+import EmbedIntent from '../views/embed-intent';
+import UnorderedListCommand from '../commands/unordered-list';
+import OrderedListCommand from '../commands/ordered-list';
+import TextFormatCommand from '../commands/text-format';
+import { Tags, RootTags, Keycodes, RegEx } from '../constants';
+import { moveCursorToBeginningOfSelection, getSelectionTagName, getSelectionBlockElement, getSelectionBlockTagName } from '../utils/selection-utils';
+import { cleanPastedContent } from '../utils/paste-utils';
+import Compiler from '../../content-kit-compiler/compiler';
+import TextModel from '../../content-kit-compiler/models/text';
+import Type from '../../content-kit-compiler/types/type';
+import { toArray } from '../../content-kit-utils/array-utils';
+import { merge } from '../../content-kit-utils/object-utils';
+
 
 var editorClassName = 'ck-editor';
 var editorClassNameRegExp = new RegExp(editorClassName);
-
-function plainTextToBlocks(plainText, blockTag) {
-  var blocks = plainText.split(RegEx.NEWLINE),
-      len = blocks.length,
-      block, openTag, closeTag, content, i;
-  if(len < 2) {
-    return plainText;
-  } else {
-    content = '';
-    openTag = '<' + blockTag + '>';
-    closeTag = '</' + blockTag + '>';
-    for(i=0; i<len; ++i) {
-      block = blocks[i];
-      if(block !== '') {
-        content += openTag + block + closeTag;
-      }
-    }
-    return content;
-  }
-}
 
 function bindTypingEvents(editor) {
   var editorEl = editor.element;
@@ -51,8 +33,12 @@ function bindTypingEvents(editor) {
 
   // Creates unordered list when block starts with '- ', or ordered if starts with '1. '
   editorEl.addEventListener('keyup', function(e) {
-    var selectedText = window.getSelection().anchorNode.textContent,
-        selection, selectionNode, command, replaceRegex;
+    var selection = window.getSelection();
+    var selectionNode = selection.anchorNode;
+    if (!selectionNode) { return; }
+
+    var selectedText = selectionNode.textContent;
+    var command, replaceRegex;
 
     if (Tags.LIST_ITEM !== getSelectionTagName()) {
       if (RegEx.UL_START.test(selectedText)) {
@@ -64,10 +50,10 @@ function bindTypingEvents(editor) {
       }
 
       if (command) {
+        command.editorContext = editor;
         command.exec();
         selection = window.getSelection();
-        selectionNode = selection.anchorNode;
-        selectionNode.textContent = selectedText.replace(replaceRegex, '');
+        selection.anchorNode.textContent = selectedText.replace(replaceRegex, '');
         moveCursorToBeginningOfSelection(selection);
         e.stopPropagation();
       }
@@ -82,25 +68,9 @@ function bindTypingEvents(editor) {
   });
 
   // Experimental: Live update - sync model with textual content as you type
-  editorEl.addEventListener('keyup', function(e) {
-    if (editor.model && editor.model.length) {
-      var index = editor.getCurrentBlockIndex();
-      if (editor.model[index].type === 1) {
-        editor.syncModelAt(index);
-      }
-    }
-  });
-}
-
-function bindPasteEvents(editor) {
-  editor.element.addEventListener('paste', function(e) {
-    var data = e.clipboardData, plainText;
-    e.preventDefault();
-    if(data && data.getData) {
-      plainText = data.getData('text/plain');
-      var formattedContent = plainTextToBlocks(plainText, editor.defaultFormatter);
-      document.execCommand('insertHTML', false, formattedContent);
-    }
+  editorEl.addEventListener('keyup', function() {
+    var index = editor.getCurrentBlockIndex();
+    editor.syncModelAt(index);
   });
 }
 
@@ -140,9 +110,15 @@ function Editor(element, options) {
     editor.syncModel();
 
     bindTypingEvents(editor);
-    bindPasteEvents(editor);
+    editor.element.addEventListener('paste', function(e) {
+      var cleanedContent = cleanPastedContent(e, editor.defaultFormatter);
+      if (cleanedContent) {
+        document.execCommand('insertHTML', false, cleanedContent);
+        editor.syncModel();  // TODO: can optimize to just sync to index range
+      }
+    });
 
-    editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
+    editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, editor: editor, commands: editor.textFormatCommands });
     var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
 
     if(editor.embedCommands) {
@@ -173,17 +149,24 @@ Editor.prototype.syncModel = function() {
 };
 
 Editor.prototype.syncModelAt = function(index) {
-  var blockElements = toArray(this.element.children);
-  var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
-  this.model[index] = parsedBlockModel;
+  if (index > -1) {
+    var blockElements = toArray(this.element.children);
+    var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
+    this.model[index] = parsedBlockModel;
+
+     // TODO: event subscription
+    ContentKitDemo.syncCodePane(this);
+  }
 };
 
 Editor.prototype.syncVisualAt = function(index) {
-  var blockModel = this.model[index];
-  var html = this.compiler.render([blockModel]);
-  var blockElements = toArray(this.element.children);
-  var element = blockElements[index];
-  element.innerHTML = html;
+  if (index > -1) {
+    var blockModel = this.model[index];
+    var html = this.compiler.render([blockModel]);
+    var blockElements = toArray(this.element.children);
+    var element = blockElements[index];
+    element.innerHTML = html;
+  }
 };
 
 Editor.prototype.getCurrentBlockIndex = function() {

@@ -12,6 +12,7 @@ inherit(TextFormatCommand, Command);
 TextFormatCommand.prototype = {
   exec: function(value) {
     document.execCommand(this.action, false, value || null);
+    this.editorContext.syncModelAt(this.editorContext.getCurrentBlockIndex());
   },
   unexec: function(value) {
     document.execCommand(this.removeAction, false, value || null);

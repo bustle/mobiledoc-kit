@@ -3,11 +3,20 @@ import { inherit } from '../../content-kit-utils/object-utils';
 import { selectionIsEditable, selectionIsInElement } from '../utils/selection-utils';
 import { Keycodes } from '../constants';
 
+function handleTextSelection(toolbar) {
+  var selection = window.getSelection();
+  if (selection.isCollapsed || !selectionIsEditable(selection) || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
+    toolbar.hide();
+  } else {
+    toolbar.updateForSelection(selection);
+  }
+}
+
 function TextFormatToolbar(options) {
   var toolbar = this;
   Toolbar.call(this, options);
   toolbar.rootElement = options.rootElement;
-  toolbar.rootElement.addEventListener('keyup', function() { toolbar.handleTextSelection(); });
+  toolbar.rootElement.addEventListener('keyup', function() { handleTextSelection(toolbar); });
 
   document.addEventListener('keyup', function(e) {
     if (e.keyCode === Keycodes.ESC) {
@@ -16,7 +25,7 @@ function TextFormatToolbar(options) {
   });
 
   document.addEventListener('mouseup', function() {
-    setTimeout(function() { toolbar.handleTextSelection(); });
+    setTimeout(function() { handleTextSelection(toolbar); });
   });
 
   window.addEventListener('resize', function() {
@@ -27,15 +36,5 @@ function TextFormatToolbar(options) {
   });
 }
 inherit(TextFormatToolbar, Toolbar);
-
-TextFormatToolbar.prototype.handleTextSelection = function() {
-  var toolbar = this;
-  var selection = window.getSelection();
-  if (selection.isCollapsed || !selectionIsEditable(selection) || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
-    toolbar.hide();
-  } else {
-    toolbar.updateForSelection(selection);
-  }
-};
 
 export default TextFormatToolbar;

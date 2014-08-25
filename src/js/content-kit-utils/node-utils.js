@@ -58,7 +58,7 @@ function attributesForNode(node /*,blacklist*/) {
   for (i = 0; i < len; i++) {
     attr = attrs[i];
     name = attr.name;
-    if (attr.specified) {
+    if (attr.specified && attr.value) {
       //if (blacklist && name in blacklist)) { continue; }
       hash = hash || {};
       hash[name] = attr.value;

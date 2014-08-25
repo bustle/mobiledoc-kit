@@ -7,7 +7,7 @@ import Compiler from './content-kit-compiler/compiler';
 import HTMLParser from './content-kit-compiler/parsers/html-parser';
 import HTMLRenderer from './content-kit-compiler/renderers/html-renderer';
 
-import EditorFactory from './content-kit-editor/editor-factory';
+import EditorFactory from './content-kit-editor/editor/editor-factory';
 
 var ContentKit = {};
 ContentKit.Type = Type;
