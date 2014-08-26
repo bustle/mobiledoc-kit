@@ -4,7 +4,6 @@ function Command(options) {
   var prompt = options.prompt;
   command.name = name;
   command.button = options.button || name;
-  command.editorContext = null;
   if (prompt) { command.prompt = prompt; }
 }
 

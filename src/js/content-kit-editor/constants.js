@@ -10,7 +10,7 @@ var Keycodes = {
 var RegEx = {
   NEWLINE       : /[\r\n]/g,
   HTTP_PROTOCOL : /^https?:\/\//i,
-  HEADING_TAG   : /^(H1|H2|H3|H4|H5|H6)$/i,
+  HEADING_TAG   : /^(h1|h2|h3|h4|h5|h6)$/i,
   UL_START      : /^[-*]\s/,
   OL_START      : /^1\.\s/
 };
@@ -26,6 +26,7 @@ var ToolbarDirection = {
   RIGHT : 2
 };
 
+// TODO: remove, get from Compiler DefaultBlockTypeSet
 var RootTags = [
   Type.TEXT.tag,
   Type.HEADING.tag,

@@ -124,7 +124,7 @@ define("content-kit-editor/constants",
     var RegEx = {
       NEWLINE       : /[\r\n]/g,
       HTTP_PROTOCOL : /^https?:\/\//i,
-      HEADING_TAG   : /^(H1|H2|H3|H4|H5|H6)$/i,
+      HEADING_TAG   : /^(h1|h2|h3|h4|h5|h6)$/i,
       UL_START      : /^[-*]\s/,
       OL_START      : /^1\.\s/
     };
@@ -140,6 +140,7 @@ define("content-kit-editor/constants",
       RIGHT : 2
     };
 
+    // TODO: remove, get from Compiler DefaultBlockTypeSet
     var RootTags = [
       Type.TEXT.tag,
       Type.HEADING.tag,
@@ -1364,7 +1365,6 @@ define("content-kit-editor/commands/base",
       var prompt = options.prompt;
       command.name = name;
       command.button = options.button || name;
-      command.editorContext = null;
       if (prompt) { command.prompt = prompt; }
     }
 
@@ -1399,52 +1399,6 @@ define("content-kit-editor/commands/bold",
     };
 
     __exports__["default"] = BoldCommand;
-  });
-define("content-kit-editor/commands/commands",
-  ["./bold","./italic","./link","./quote","./heading","./subheading","./image","./embed","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __exports__) {
-    "use strict";
-    // TODO: eliminate this file
-    var BoldCommand = __dependency1__["default"];
-    var ItalicCommand = __dependency2__["default"];
-    var LinkCommand = __dependency3__["default"];
-    var QuoteCommand = __dependency4__["default"];
-    var HeadingCommand = __dependency5__["default"];
-    var SubheadingCommand = __dependency6__["default"];
-    var ImageCommand = __dependency7__["default"];
-    var EmbedCommand = __dependency8__["default"];
-
-    function createCommandIndex(commands) {
-      var index = {};
-      var len = commands.length, i, command;
-      for(i = 0; i < len; i++) {
-        command = commands[i];
-        index[command.name] = command;
-      }
-      return index;
-    }
-
-    var TextFormatCommands = {};
-    TextFormatCommands.all = [
-      new BoldCommand(),
-      new ItalicCommand(),
-      new LinkCommand(),
-      new QuoteCommand(),
-      new HeadingCommand(),
-      new SubheadingCommand()
-    ];
-
-    TextFormatCommands.index = createCommandIndex(TextFormatCommands.all);
-
-    var EmbedCommands = {};
-    EmbedCommands.all = [
-      new ImageCommand(),
-      new EmbedCommand()
-    ];
-    EmbedCommands.index = createCommandIndex(EmbedCommands.all);
-
-    __exports__.TextFormatCommands = TextFormatCommands;
-    __exports__.EmbedCommands = EmbedCommands;
   });
 define("content-kit-editor/commands/embed",
   ["./base","../views/prompt","../views/message","../../content-kit-compiler/models/embed","../../content-kit-utils/object-utils","../constants","../../ext/content-kit-services","exports"],
@@ -1832,25 +1786,17 @@ define("content-kit-editor/commands/unordered-list",
     __exports__["default"] = UnorderedListCommand;
   });
 define("content-kit-editor/editor/editor-factory",
-  ["./editor","../commands/commands","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["./editor","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
     var Editor = __dependency1__["default"];
-    var TextFormatCommands = __dependency2__.TextFormatCommands;
-    var EmbedCommands = __dependency2__.EmbedCommands;
-    var merge = __dependency3__.merge;
-
-    var defaults = {
-      placeholder: 'Write here...',
-      spellcheck: true,
-      autofocus: true,
-      textFormatCommands: TextFormatCommands.all,
-      embedCommands: EmbedCommands.all
-    };
 
     /**
-     * Publically expose this class which sets up indiviual `Editor` classes
-     * depending if user passes string selector, Node, or NodeList
+     * @class EditorFactory
+     * @private
+     * `EditorFactory` is publically exposed as `Editor`
+     * It takes an `element` param which can be a css selector, Node, or NodeList
+     * and sets up indiviual `Editor` instances
      */
     function EditorFactory(element, options) {
       var editors = [];
@@ -1865,7 +1811,6 @@ define("content-kit-editor/editor/editor-factory",
       }
 
       if (elements) {
-        options = merge(defaults, options);
         elementsLen = elements.length;
         for (i = 0; i < elementsLen; i++) {
           editors.push(new Editor(elements[i], options));
@@ -1924,30 +1869,59 @@ define("content-kit-editor/editor/editor-html-renderer",
     __exports__["default"] = EditorHTMLRenderer;
   });
 define("content-kit-editor/editor/editor",
-  ["./editor-html-renderer","../views/text-format-toolbar","../views/tooltip","../views/embed-intent","../commands/unordered-list","../commands/ordered-list","../commands/text-format","../constants","../utils/selection-utils","../utils/paste-utils","../../content-kit-compiler/compiler","../../content-kit-compiler/models/text","../../content-kit-compiler/types/type","../../content-kit-utils/array-utils","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __dependency14__, __dependency15__, __exports__) {
+  ["./editor-html-renderer","../views/text-format-toolbar","../views/tooltip","../views/embed-intent","../commands/bold","../commands/italic","../commands/link","../commands/quote","../commands/heading","../commands/subheading","../commands/unordered-list","../commands/ordered-list","../commands/image","../commands/embed","../commands/text-format","../constants","../utils/selection-utils","../utils/paste-utils","../../content-kit-compiler/compiler","../../content-kit-compiler/models/text","../../content-kit-compiler/types/type","../../content-kit-utils/array-utils","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __dependency14__, __dependency15__, __dependency16__, __dependency17__, __dependency18__, __dependency19__, __dependency20__, __dependency21__, __dependency22__, __dependency23__, __exports__) {
     "use strict";
     var EditorHTMLRenderer = __dependency1__["default"];
     var TextFormatToolbar = __dependency2__["default"];
     var Tooltip = __dependency3__["default"];
     var EmbedIntent = __dependency4__["default"];
-    var UnorderedListCommand = __dependency5__["default"];
-    var OrderedListCommand = __dependency6__["default"];
-    var TextFormatCommand = __dependency7__["default"];
-    var RootTags = __dependency8__.RootTags;
-    var Keycodes = __dependency8__.Keycodes;
-    var RegEx = __dependency8__.RegEx;
-    var moveCursorToBeginningOfSelection = __dependency9__.moveCursorToBeginningOfSelection;
-    var getSelectionTagName = __dependency9__.getSelectionTagName;
-    var getSelectionBlockElement = __dependency9__.getSelectionBlockElement;
-    var getSelectionBlockTagName = __dependency9__.getSelectionBlockTagName;
-    var cleanPastedContent = __dependency10__.cleanPastedContent;
-    var Compiler = __dependency11__["default"];
-    var TextModel = __dependency12__["default"];
-    var Type = __dependency13__["default"];
-    var toArray = __dependency14__.toArray;
-    var merge = __dependency15__.merge;
+    var BoldCommand = __dependency5__["default"];
+    var ItalicCommand = __dependency6__["default"];
+    var LinkCommand = __dependency7__["default"];
+    var QuoteCommand = __dependency8__["default"];
+    var HeadingCommand = __dependency9__["default"];
+    var SubheadingCommand = __dependency10__["default"];
+    var UnorderedListCommand = __dependency11__["default"];
+    var OrderedListCommand = __dependency12__["default"];
+    var ImageCommand = __dependency13__["default"];
+    var EmbedCommand = __dependency14__["default"];
+    var TextFormatCommand = __dependency15__["default"];
+    var RootTags = __dependency16__.RootTags;
+    var Keycodes = __dependency16__.Keycodes;
+    var RegEx = __dependency16__.RegEx;
+    var moveCursorToBeginningOfSelection = __dependency17__.moveCursorToBeginningOfSelection;
+    var getSelectionTagName = __dependency17__.getSelectionTagName;
+    var getSelectionBlockElement = __dependency17__.getSelectionBlockElement;
+    var getSelectionBlockTagName = __dependency17__.getSelectionBlockTagName;
+    var cleanPastedContent = __dependency18__.cleanPastedContent;
+    var Compiler = __dependency19__["default"];
+    var TextModel = __dependency20__["default"];
+    var Type = __dependency21__["default"];
+    var toArray = __dependency22__.toArray;
+    var mergeWithOptions = __dependency23__.mergeWithOptions;
 
+    var defaults = {
+      placeholder: 'Write here...',
+      spellcheck: true,
+      autofocus: true,
+      textFormatCommands: [
+        new BoldCommand(),
+        new ItalicCommand(),
+        new LinkCommand(),
+        new QuoteCommand(),
+        new HeadingCommand(),
+        new SubheadingCommand()
+      ],
+      embedCommands: [
+        new ImageCommand(),
+        new EmbedCommand()
+      ],
+      compiler: new Compiler({
+        includeTypeNames: true, // output type names for easier debugging
+        renderer: new EditorHTMLRenderer()
+      })
+    };
 
     var editorClassName = 'ck-editor';
     var editorClassNameRegExp = new RegExp(editorClassName);
@@ -2016,7 +1990,7 @@ define("content-kit-editor/editor/editor",
      */
     function Editor(element, options) {
       var editor = this;
-      merge(editor, options);
+      mergeWithOptions(editor, defaults, options);
 
       if (element) {
         var className = element.className;
@@ -2037,10 +2011,6 @@ define("content-kit-editor/editor/editor",
         element.setAttribute('contentEditable', true);
         editor.element = element;
 
-        var compiler = editor.compiler = options.compiler || new Compiler({
-          includeTypeNames: true, // output type names for easier debugging
-          renderer: new EditorHTMLRenderer()
-        });
         editor.syncModel();
 
         bindTypingEvents(editor);

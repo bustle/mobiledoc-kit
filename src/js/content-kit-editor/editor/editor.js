@@ -2,8 +2,16 @@ import EditorHTMLRenderer from './editor-html-renderer';
 import TextFormatToolbar  from '../views/text-format-toolbar';
 import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
+import BoldCommand from '../commands/bold';
+import ItalicCommand from '../commands/italic';
+import LinkCommand from '../commands/link';
+import QuoteCommand from '../commands/quote';
+import HeadingCommand from '../commands/heading';
+import SubheadingCommand from '../commands/subheading';
 import UnorderedListCommand from '../commands/unordered-list';
 import OrderedListCommand from '../commands/ordered-list';
+import ImageCommand from '../commands/image';
+import EmbedCommand from '../commands/embed';
 import TextFormatCommand from '../commands/text-format';
 import { RootTags, Keycodes, RegEx } from '../constants';
 import { moveCursorToBeginningOfSelection, getSelectionTagName, getSelectionBlockElement, getSelectionBlockTagName } from '../utils/selection-utils';
@@ -12,8 +20,29 @@ import Compiler from '../../content-kit-compiler/compiler';
 import TextModel from '../../content-kit-compiler/models/text';
 import Type from '../../content-kit-compiler/types/type';
 import { toArray } from '../../content-kit-utils/array-utils';
-import { merge } from '../../content-kit-utils/object-utils';
+import { mergeWithOptions } from '../../content-kit-utils/object-utils';
 
+var defaults = {
+  placeholder: 'Write here...',
+  spellcheck: true,
+  autofocus: true,
+  textFormatCommands: [
+    new BoldCommand(),
+    new ItalicCommand(),
+    new LinkCommand(),
+    new QuoteCommand(),
+    new HeadingCommand(),
+    new SubheadingCommand()
+  ],
+  embedCommands: [
+    new ImageCommand(),
+    new EmbedCommand()
+  ],
+  compiler: new Compiler({
+    includeTypeNames: true, // output type names for easier debugging
+    renderer: new EditorHTMLRenderer()
+  })
+};
 
 var editorClassName = 'ck-editor';
 var editorClassNameRegExp = new RegExp(editorClassName);
@@ -82,7 +111,7 @@ function bindTypingEvents(editor) {
  */
 function Editor(element, options) {
   var editor = this;
-  merge(editor, options);
+  mergeWithOptions(editor, defaults, options);
 
   if (element) {
     var className = element.className;
@@ -103,10 +132,6 @@ function Editor(element, options) {
     element.setAttribute('contentEditable', true);
     editor.element = element;
 
-    var compiler = editor.compiler = options.compiler || new Compiler({
-      includeTypeNames: true, // output type names for easier debugging
-      renderer: new EditorHTMLRenderer()
-    });
     editor.syncModel();
 
     bindTypingEvents(editor);
