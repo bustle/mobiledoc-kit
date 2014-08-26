@@ -1,12 +1,13 @@
 import TextFormatCommand from './text-format';
-import { inherit } from '../../content-kit-utils/object-utils';
-import { Tags, RegEx } from '../constants';
+import { RegEx } from '../constants';
 import { getSelectionBlockTagName } from '../utils/selection-utils';
+import { inherit } from '../../content-kit-utils/object-utils';
+import Type from '../../content-kit-compiler/types/type';
 
 function BoldCommand() {
   TextFormatCommand.call(this, {
     name: 'bold',
-    tag: Tags.BOLD,
+    tag: Type.BOLD.tag,
     button: '<i class="ck-icon-bold"></i>'
   });
 }

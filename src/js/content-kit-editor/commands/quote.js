@@ -1,11 +1,11 @@
 import FormatBlockCommand from './format-block';
-import { Tags } from '../constants';
 import { inherit } from '../../content-kit-utils/object-utils';
+import Type from '../../content-kit-compiler/types/type';
 
 function QuoteCommand() {
   FormatBlockCommand.call(this, {
     name: 'quote',
-    tag: Tags.QUOTE,
+    tag: Type.QUOTE.tag,
     button: '<i class="ck-icon-quote"></i>'
   });
 }

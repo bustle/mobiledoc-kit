@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 25, 2014
+ * Last modified: Aug 26, 2014
  */
 
 (function(exports, document) {
@@ -109,9 +109,11 @@ define("content-kit-compiler/compiler",
     __exports__["default"] = Compiler;
   });
 define("content-kit-editor/constants",
-  ["exports"],
-  function(__exports__) {
+  ["../content-kit-compiler/types/type","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
+    var Type = __dependency1__["default"];
+
     var Keycodes = {
       BKSP  : 8,
       ENTER : 13,
@@ -138,27 +140,19 @@ define("content-kit-editor/constants",
       RIGHT : 2
     };
 
-    var Tags = {
-      PARAGRAPH    : 'P',
-      HEADING      : 'H2',
-      SUBHEADING   : 'H3',
-      QUOTE        : 'BLOCKQUOTE',
-      FIGURE       : 'FIGURE',
-      LIST         : 'UL',
-      ORDERED_LIST : 'OL',
-      LIST_ITEM    : 'LI',
-      LINK         : 'A',
-      BOLD         : 'B',
-      ITALIC       : 'I'
-    };
-
-    var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.FIGURE, Tags.LIST, Tags.ORDERED_LIST ];
+    var RootTags = [
+      Type.TEXT.tag,
+      Type.HEADING.tag,
+      Type.SUBHEADING.tag,
+      Type.QUOTE.tag,
+      Type.LIST.tag,
+      Type.ORDERED_LIST.tag
+    ];
 
     __exports__.Keycodes = Keycodes;
     __exports__.RegEx = RegEx;
     __exports__.SelectionDirection = SelectionDirection;
     __exports__.ToolbarDirection = ToolbarDirection;
-    __exports__.Tags = Tags;
     __exports__.RootTags = RootTags;
   });
 define("content-kit-utils/array-utils",
@@ -1379,19 +1373,19 @@ define("content-kit-editor/commands/base",
     __exports__["default"] = Command;
   });
 define("content-kit-editor/commands/bold",
-  ["./text-format","../../content-kit-utils/object-utils","../constants","../utils/selection-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+  ["./text-format","../constants","../utils/selection-utils","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
     var TextFormatCommand = __dependency1__["default"];
-    var inherit = __dependency2__.inherit;
-    var Tags = __dependency3__.Tags;
-    var RegEx = __dependency3__.RegEx;
-    var getSelectionBlockTagName = __dependency4__.getSelectionBlockTagName;
+    var RegEx = __dependency2__.RegEx;
+    var getSelectionBlockTagName = __dependency3__.getSelectionBlockTagName;
+    var inherit = __dependency4__.inherit;
+    var Type = __dependency5__["default"];
 
     function BoldCommand() {
       TextFormatCommand.call(this, {
         name: 'bold',
-        tag: Tags.BOLD,
+        tag: Type.BOLD.tag,
         button: '<i class="ck-icon-bold"></i>'
       });
     }
@@ -1523,14 +1517,14 @@ define("content-kit-editor/commands/embed",
     __exports__["default"] = EmbedCommand;
   });
 define("content-kit-editor/commands/format-block",
-  ["./text-format","../constants","../../content-kit-utils/object-utils","../utils/selection-utils","exports"],
+  ["./text-format","../utils/selection-utils","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     var TextFormatCommand = __dependency1__["default"];
-    var Tags = __dependency2__.Tags;
+    var getSelectionBlockElement = __dependency2__.getSelectionBlockElement;
+    var selectNode = __dependency2__.selectNode;
     var inherit = __dependency3__.inherit;
-    var getSelectionBlockElement = __dependency4__.getSelectionBlockElement;
-    var selectNode = __dependency4__.selectNode;
+    var Type = __dependency4__["default"];
 
     function FormatBlockCommand(options) {
       options.action = 'formatBlock';
@@ -1543,12 +1537,13 @@ define("content-kit-editor/commands/format-block",
       // Brackets neccessary for certain browsers
       var value =  '<' + tag + '>';
       var blockElement = getSelectionBlockElement();
-      // Allow block commands to be toggled back to a paragraph
-      if(tag === blockElement.tagName) {
-        value = Tags.PARAGRAPH;
+      // Allow block commands to be toggled back to a text block
+      if(tag === blockElement.tagName.toLowerCase()) {
+        value = Type.TEXT.tag;
       } else {
         // Flattens the selection before applying the block format.
         // Otherwise, undesirable nested blocks can occur.
+        // TODO: would love to be able to remove this
         var flatNode = document.createTextNode(blockElement.textContent);
         blockElement.parentNode.insertBefore(flatNode, blockElement);
         blockElement.parentNode.removeChild(blockElement);
@@ -1561,17 +1556,17 @@ define("content-kit-editor/commands/format-block",
     __exports__["default"] = FormatBlockCommand;
   });
 define("content-kit-editor/commands/heading",
-  ["./format-block","../constants","../../content-kit-utils/object-utils","exports"],
+  ["./format-block","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var FormatBlockCommand = __dependency1__["default"];
-    var Tags = __dependency2__.Tags;
-    var inherit = __dependency3__.inherit;
+    var inherit = __dependency2__.inherit;
+    var Type = __dependency3__["default"];
 
     function HeadingCommand() {
       FormatBlockCommand.call(this, {
         name: 'heading',
-        tag: Tags.HEADING,
+        tag: Type.HEADING.tag,
         button: '<i class="ck-icon-heading"></i>1'
       });
     }
@@ -1646,17 +1641,17 @@ define("content-kit-editor/commands/image",
     __exports__["default"] = ImageCommand;
   });
 define("content-kit-editor/commands/italic",
-  ["./text-format","../constants","../../content-kit-utils/object-utils","exports"],
+  ["./text-format","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var TextFormatCommand = __dependency1__["default"];
-    var Tags = __dependency2__.Tags;
-    var inherit = __dependency3__.inherit;
+    var inherit = __dependency2__.inherit;
+    var Type = __dependency3__["default"];
 
     function ItalicCommand() {
       TextFormatCommand.call(this, {
         name: 'italic',
-        tag: Tags.ITALIC,
+        tag: Type.ITALIC.tag,
         button: '<i class="ck-icon-italic"></i>'
       });
     }
@@ -1665,20 +1660,20 @@ define("content-kit-editor/commands/italic",
     __exports__["default"] = ItalicCommand;
   });
 define("content-kit-editor/commands/link",
-  ["./text-format","../views/prompt","../constants","../../content-kit-utils/object-utils","../utils/selection-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
+  ["./text-format","../views/prompt","../constants","../utils/selection-utils","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
     "use strict";
     var TextFormatCommand = __dependency1__["default"];
     var Prompt = __dependency2__["default"];
-    var Tags = __dependency3__.Tags;
     var RegEx = __dependency3__.RegEx;
-    var inherit = __dependency4__.inherit;
-    var getSelectionTagName = __dependency5__.getSelectionTagName;
+    var getSelectionTagName = __dependency4__.getSelectionTagName;
+    var inherit = __dependency5__.inherit;
+    var Type = __dependency6__["default"];
 
     function LinkCommand() {
       TextFormatCommand.call(this, {
         name: 'link',
-        tag: Tags.LINK,
+        tag: Type.LINK.tag,
         action: 'createLink',
         removeAction: 'unlink',
         button: '<i class="ck-icon-link"></i>',
@@ -1734,17 +1729,17 @@ define("content-kit-editor/commands/list",
     __exports__["default"] = ListCommand;
   });
 define("content-kit-editor/commands/ordered-list",
-  ["./list","../constants","../../content-kit-utils/object-utils","exports"],
+  ["./list","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var ListCommand = __dependency1__["default"];
-    var Tags = __dependency2__.Tags;
-    var inherit = __dependency3__.inherit;
+    var inherit = __dependency2__.inherit;
+    var Type = __dependency3__["default"];
 
     function OrderedListCommand() {
       ListCommand.call(this, {
         name: 'ordered list',
-        tag: Tags.ORDERED_LIST,
+        tag: Type.ORDERED_LIST.tag,
         action: 'insertOrderedList'
       });
     }
@@ -1753,17 +1748,17 @@ define("content-kit-editor/commands/ordered-list",
     __exports__["default"] = OrderedListCommand;
   });
 define("content-kit-editor/commands/quote",
-  ["./format-block","../constants","../../content-kit-utils/object-utils","exports"],
+  ["./format-block","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var FormatBlockCommand = __dependency1__["default"];
-    var Tags = __dependency2__.Tags;
-    var inherit = __dependency3__.inherit;
+    var inherit = __dependency2__.inherit;
+    var Type = __dependency3__["default"];
 
     function QuoteCommand() {
       FormatBlockCommand.call(this, {
         name: 'quote',
-        tag: Tags.QUOTE,
+        tag: Type.QUOTE.tag,
         button: '<i class="ck-icon-quote"></i>'
       });
     }
@@ -1772,17 +1767,17 @@ define("content-kit-editor/commands/quote",
     __exports__["default"] = QuoteCommand;
   });
 define("content-kit-editor/commands/subheading",
-  ["./format-block","../constants","../../content-kit-utils/object-utils","exports"],
+  ["./format-block","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var FormatBlockCommand = __dependency1__["default"];
-    var Tags = __dependency2__.Tags;
-    var inherit = __dependency3__.inherit;
+    var inherit = __dependency2__.inherit;
+    var Type = __dependency3__["default"];
 
     function SubheadingCommand() {
       FormatBlockCommand.call(this, {
         name: 'subheading',
-        tag: Tags.SUBHEADING,
+        tag: Type.SUBHEADING.tag,
         button: '<i class="ck-icon-heading"></i>2'
       });
     }
@@ -1799,7 +1794,7 @@ define("content-kit-editor/commands/text-format",
 
     function TextFormatCommand(options) {
       Command.call(this, options);
-      this.tag = options.tag.toUpperCase();
+      this.tag = options.tag;
       this.action = options.action || this.name;
       this.removeAction = options.removeAction || this.action;
     }
@@ -1818,17 +1813,17 @@ define("content-kit-editor/commands/text-format",
     __exports__["default"] = TextFormatCommand;
   });
 define("content-kit-editor/commands/unordered-list",
-  ["./list","../constants","../../content-kit-utils/object-utils","exports"],
+  ["./list","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var ListCommand = __dependency1__["default"];
-    var Tags = __dependency2__.Tags;
-    var inherit = __dependency3__.inherit;
+    var inherit = __dependency2__.inherit;
+    var Type = __dependency3__["default"];
 
     function UnorderedListCommand() {
       ListCommand.call(this, {
         name: 'list',
-        tag: Tags.LIST,
+        tag: Type.LIST.tag,
         action: 'insertUnorderedList'
       });
     }
@@ -1837,17 +1832,15 @@ define("content-kit-editor/commands/unordered-list",
     __exports__["default"] = UnorderedListCommand;
   });
 define("content-kit-editor/editor/editor-factory",
-  ["./editor","../commands/commands","../constants","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+  ["./editor","../commands/commands","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var Editor = __dependency1__["default"];
     var TextFormatCommands = __dependency2__.TextFormatCommands;
     var EmbedCommands = __dependency2__.EmbedCommands;
-    var Tags = __dependency3__.Tags;
-    var merge = __dependency4__.merge;
+    var merge = __dependency3__.merge;
 
     var defaults = {
-      defaultFormatter: Tags.PARAGRAPH,
       placeholder: 'Write here...',
       spellcheck: true,
       autofocus: true,
@@ -1941,7 +1934,6 @@ define("content-kit-editor/editor/editor",
     var UnorderedListCommand = __dependency5__["default"];
     var OrderedListCommand = __dependency6__["default"];
     var TextFormatCommand = __dependency7__["default"];
-    var Tags = __dependency8__.Tags;
     var RootTags = __dependency8__.RootTags;
     var Keycodes = __dependency8__.Keycodes;
     var RegEx = __dependency8__.RegEx;
@@ -1966,8 +1958,8 @@ define("content-kit-editor/editor/editor",
       // Breaks out of blockquotes when pressing enter.
       editorEl.addEventListener('keyup', function(e) {
         if(!e.shiftKey && e.which === Keycodes.ENTER) {
-          if(Tags.QUOTE === getSelectionBlockTagName()) {
-            document.execCommand('formatBlock', false, editor.defaultFormatter);
+          if(Type.QUOTE.tag === getSelectionBlockTagName()) {
+            document.execCommand('formatBlock', false, Type.TEXT.tag);
             e.stopPropagation();
           }
         }
@@ -1982,7 +1974,7 @@ define("content-kit-editor/editor/editor",
         var selectedText = selectionNode.textContent;
         var command, replaceRegex;
 
-        if (Tags.LIST_ITEM !== getSelectionTagName()) {
+        if (Type.LIST_ITEM.tag !== getSelectionTagName()) {
           if (RegEx.UL_START.test(selectedText)) {
             command = new UnorderedListCommand();
             replaceRegex = RegEx.UL_START;
@@ -2005,7 +1997,7 @@ define("content-kit-editor/editor/editor",
       // Assure there is always a supported root tag, and not empty text nodes or divs.
       editorEl.addEventListener('keyup', function() {
         if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
-          document.execCommand('formatBlock', false, editor.defaultFormatter);
+          document.execCommand('formatBlock', false, Type.TEXT.tag);
         }
       });
 
@@ -2053,7 +2045,7 @@ define("content-kit-editor/editor/editor",
 
         bindTypingEvents(editor);
         editor.element.addEventListener('paste', function(e) {
-          var cleanedContent = cleanPastedContent(e, editor.defaultFormatter);
+          var cleanedContent = cleanPastedContent(e, Type.TEXT.tag);
           if (cleanedContent) {
             document.execCommand('insertHTML', false, cleanedContent);
             editor.syncModel();  // TODO: can optimize to just sync to index range
@@ -2061,7 +2053,7 @@ define("content-kit-editor/editor/editor",
         });
 
         editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, editor: editor, commands: editor.textFormatCommands });
-        var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
+        var linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
 
         if(editor.embedCommands) {
           // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
@@ -2327,23 +2319,23 @@ define("content-kit-editor/utils/selection-utils",
     function getSelectionBlockElement(selection) {
       selection = selection || window.getSelection();
       var element = getSelectionElement();
-      var tag = element && element.tagName;
+      var tag = element && element.tagName.toLowerCase();
       while (tag && RootTags.indexOf(tag) === -1) {
         if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
         element = element.parentNode;
-        tag = element.tagName;
+        tag = element.tagName.toLowerCase();
       }
       return element;
     }
 
     function getSelectionTagName() {
       var element = getSelectionElement();
-      return element ? element.tagName : null;
+      return element ? element.tagName.toLowerCase() : null;
     }
 
     function getSelectionBlockTagName() {
       var element = getSelectionBlockElement();
-      return element ? element.tagName : null;
+      return element ? element.tagName.toLowerCase() : null;
     }
 
     function tagsInSelection(selection) {
@@ -2353,7 +2345,7 @@ define("content-kit-editor/utils/selection-utils",
         while(element) {
           if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
           if (element.tagName) {
-            tags.push(element.tagName);
+            tags.push(element.tagName.toLowerCase());
           }
           element = element.parentNode;
         }

@@ -3,7 +3,7 @@ import { inherit } from '../../content-kit-utils/object-utils';
 
 function TextFormatCommand(options) {
   Command.call(this, options);
-  this.tag = options.tag.toUpperCase();
+  this.tag = options.tag;
   this.action = options.action || this.name;
   this.removeAction = options.removeAction || this.action;
 }

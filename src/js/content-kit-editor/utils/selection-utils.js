@@ -21,23 +21,23 @@ function getSelectionElement(selection) {
 function getSelectionBlockElement(selection) {
   selection = selection || window.getSelection();
   var element = getSelectionElement();
-  var tag = element && element.tagName;
+  var tag = element && element.tagName.toLowerCase();
   while (tag && RootTags.indexOf(tag) === -1) {
     if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     element = element.parentNode;
-    tag = element.tagName;
+    tag = element.tagName.toLowerCase();
   }
   return element;
 }
 
 function getSelectionTagName() {
   var element = getSelectionElement();
-  return element ? element.tagName : null;
+  return element ? element.tagName.toLowerCase() : null;
 }
 
 function getSelectionBlockTagName() {
   var element = getSelectionBlockElement();
-  return element ? element.tagName : null;
+  return element ? element.tagName.toLowerCase() : null;
 }
 
 function tagsInSelection(selection) {
@@ -47,7 +47,7 @@ function tagsInSelection(selection) {
     while(element) {
       if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
       if (element.tagName) {
-        tags.push(element.tagName);
+        tags.push(element.tagName.toLowerCase());
       }
       element = element.parentNode;
     }

@@ -5,7 +5,7 @@ import EmbedIntent from '../views/embed-intent';
 import UnorderedListCommand from '../commands/unordered-list';
 import OrderedListCommand from '../commands/ordered-list';
 import TextFormatCommand from '../commands/text-format';
-import { Tags, RootTags, Keycodes, RegEx } from '../constants';
+import { RootTags, Keycodes, RegEx } from '../constants';
 import { moveCursorToBeginningOfSelection, getSelectionTagName, getSelectionBlockElement, getSelectionBlockTagName } from '../utils/selection-utils';
 import { cleanPastedContent } from '../utils/paste-utils';
 import Compiler from '../../content-kit-compiler/compiler';
@@ -24,8 +24,8 @@ function bindTypingEvents(editor) {
   // Breaks out of blockquotes when pressing enter.
   editorEl.addEventListener('keyup', function(e) {
     if(!e.shiftKey && e.which === Keycodes.ENTER) {
-      if(Tags.QUOTE === getSelectionBlockTagName()) {
-        document.execCommand('formatBlock', false, editor.defaultFormatter);
+      if(Type.QUOTE.tag === getSelectionBlockTagName()) {
+        document.execCommand('formatBlock', false, Type.TEXT.tag);
         e.stopPropagation();
       }
     }
@@ -40,7 +40,7 @@ function bindTypingEvents(editor) {
     var selectedText = selectionNode.textContent;
     var command, replaceRegex;
 
-    if (Tags.LIST_ITEM !== getSelectionTagName()) {
+    if (Type.LIST_ITEM.tag !== getSelectionTagName()) {
       if (RegEx.UL_START.test(selectedText)) {
         command = new UnorderedListCommand();
         replaceRegex = RegEx.UL_START;
@@ -63,7 +63,7 @@ function bindTypingEvents(editor) {
   // Assure there is always a supported root tag, and not empty text nodes or divs.
   editorEl.addEventListener('keyup', function() {
     if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
-      document.execCommand('formatBlock', false, editor.defaultFormatter);
+      document.execCommand('formatBlock', false, Type.TEXT.tag);
     }
   });
 
@@ -111,7 +111,7 @@ function Editor(element, options) {
 
     bindTypingEvents(editor);
     editor.element.addEventListener('paste', function(e) {
-      var cleanedContent = cleanPastedContent(e, editor.defaultFormatter);
+      var cleanedContent = cleanPastedContent(e, Type.TEXT.tag);
       if (cleanedContent) {
         document.execCommand('insertHTML', false, cleanedContent);
         editor.syncModel();  // TODO: can optimize to just sync to index range
@@ -119,7 +119,7 @@ function Editor(element, options) {
     });
 
     editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, editor: editor, commands: editor.textFormatCommands });
-    var linkTooltips = new Tooltip({ rootElement: element, showForTag: Tags.LINK });
+    var linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
 
     if(editor.embedCommands) {
       // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.

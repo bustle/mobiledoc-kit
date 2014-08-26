@@ -1,13 +1,14 @@
 import TextFormatCommand from './text-format';
 import Prompt from '../views/prompt';
-import { Tags, RegEx } from '../constants';
-import { inherit } from '../../content-kit-utils/object-utils';
+import { RegEx } from '../constants';
 import { getSelectionTagName } from '../utils/selection-utils';
+import { inherit } from '../../content-kit-utils/object-utils';
+import Type from '../../content-kit-compiler/types/type';
 
 function LinkCommand() {
   TextFormatCommand.call(this, {
     name: 'link',
-    tag: Tags.LINK,
+    tag: Type.LINK.tag,
     action: 'createLink',
     removeAction: 'unlink',
     button: '<i class="ck-icon-link"></i>',

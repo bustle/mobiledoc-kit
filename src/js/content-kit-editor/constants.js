@@ -1,3 +1,5 @@
+import Type from '../content-kit-compiler/types/type';
+
 var Keycodes = {
   BKSP  : 8,
   ENTER : 13,
@@ -24,20 +26,13 @@ var ToolbarDirection = {
   RIGHT : 2
 };
 
-var Tags = {
-  PARAGRAPH    : 'P',
-  HEADING      : 'H2',
-  SUBHEADING   : 'H3',
-  QUOTE        : 'BLOCKQUOTE',
-  FIGURE       : 'FIGURE',
-  LIST         : 'UL',
-  ORDERED_LIST : 'OL',
-  LIST_ITEM    : 'LI',
-  LINK         : 'A',
-  BOLD         : 'B',
-  ITALIC       : 'I'
-};
+var RootTags = [
+  Type.TEXT.tag,
+  Type.HEADING.tag,
+  Type.SUBHEADING.tag,
+  Type.QUOTE.tag,
+  Type.LIST.tag,
+  Type.ORDERED_LIST.tag
+];
 
-var RootTags = [ Tags.PARAGRAPH, Tags.HEADING, Tags.SUBHEADING, Tags.QUOTE, Tags.FIGURE, Tags.LIST, Tags.ORDERED_LIST ];
-
-export { Keycodes, RegEx, SelectionDirection, ToolbarDirection, Tags, RootTags };
+export { Keycodes, RegEx, SelectionDirection, ToolbarDirection, RootTags };

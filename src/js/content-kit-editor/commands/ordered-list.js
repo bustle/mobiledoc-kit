@@ -1,11 +1,11 @@
 import ListCommand from './list';
-import { Tags } from '../constants';
 import { inherit } from '../../content-kit-utils/object-utils';
+import Type from '../../content-kit-compiler/types/type';
 
 function OrderedListCommand() {
   ListCommand.call(this, {
     name: 'ordered list',
-    tag: Tags.ORDERED_LIST,
+    tag: Type.ORDERED_LIST.tag,
     action: 'insertOrderedList'
   });
 }

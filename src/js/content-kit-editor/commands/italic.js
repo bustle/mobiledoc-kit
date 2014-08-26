@@ -1,11 +1,11 @@
 import TextFormatCommand from './text-format';
-import { Tags } from '../constants';
 import { inherit } from '../../content-kit-utils/object-utils';
+import Type from '../../content-kit-compiler/types/type';
 
 function ItalicCommand() {
   TextFormatCommand.call(this, {
     name: 'italic',
-    tag: Tags.ITALIC,
+    tag: Type.ITALIC.tag,
     button: '<i class="ck-icon-italic"></i>'
   });
 }

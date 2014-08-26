@@ -1,10 +1,8 @@
 import Editor from './editor';
 import { TextFormatCommands, EmbedCommands } from '../commands/commands';
-import { Tags } from '../constants';
 import { merge } from '../../content-kit-utils/object-utils';
 
 var defaults = {
-  defaultFormatter: Tags.PARAGRAPH,
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
