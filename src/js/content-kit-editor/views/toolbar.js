@@ -23,8 +23,7 @@ function updateButtonsForSelection(buttons, selection) {
 function Toolbar(options) {
   var toolbar = this;
   var commands = options.commands;
-  var commandCount = commands && commands.length;
-  var i, button, command;
+  var commandCount = commands && commands.length, i;
   toolbar.editor = options.editor || null;
   toolbar.embedIntent = options.embedIntent || null;
   toolbar.direction = options.direction || ToolbarDirection.TOP;

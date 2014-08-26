@@ -11,4 +11,6 @@ function UnorderedListCommand() {
 }
 inherit(UnorderedListCommand, ListCommand);
 
+UnorderedListCommand.prototype.autoFormatRegex =  /^[-*]\s/;
+
 export default UnorderedListCommand;

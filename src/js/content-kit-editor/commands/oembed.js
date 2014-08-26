@@ -3,7 +3,6 @@ import Prompt from '../views/prompt';
 import Message from '../views/message';
 import EmbedModel from '../../content-kit-compiler/models/embed';
 import { inherit } from '../../content-kit-utils/object-utils';
-import { RegEx } from '../constants';
 import { OEmbedder } from '../../ext/content-kit-services';
 
 function loadTwitterWidgets(element) {
@@ -17,7 +16,7 @@ function loadTwitterWidgets(element) {
   }
 }
 
-function EmbedCommand(options) {
+function OEmbedCommand() {
   Command.call(this, {
     name: 'embed',
     button: '<i class="ck-icon-embed"></i>',
@@ -29,9 +28,9 @@ function EmbedCommand(options) {
 
   this.embedService = new OEmbedder({ url: '/embed' });
 }
-inherit(EmbedCommand, Command);
+inherit(OEmbedCommand, Command);
 
-EmbedCommand.prototype.exec = function(url) {
+OEmbedCommand.prototype.exec = function(url) {
   var command = this;
   var editorContext = command.editorContext;
   var embedIntent = command.embedIntent;
@@ -50,6 +49,7 @@ EmbedCommand.prototype.exec = function(url) {
           errorMsg = 'Embed error';
         }
         new Message().show(errorMsg);
+        embedIntent.show();
       } else {
         var embedModel = new EmbedModel(response);
         editorContext.insertBlockAt(embedModel, index);
@@ -62,4 +62,4 @@ EmbedCommand.prototype.exec = function(url) {
   });
 };
 
-export default EmbedCommand;
+export default OEmbedCommand;

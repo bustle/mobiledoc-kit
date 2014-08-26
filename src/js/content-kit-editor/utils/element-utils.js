@@ -22,7 +22,7 @@ function swapElements(elementToShow, elementToHide) {
 function getEventTargetMatchingTag(tag, target, container) {
   // Traverses up DOM from an event target to find the node matching specifed tag
   while (target && target !== container) {
-    if (target.tagName === tag) {
+    if (target.tagName.toLowerCase() === tag) {
       return target;
     }
     target = target.parentNode;

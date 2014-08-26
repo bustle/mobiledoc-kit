@@ -25,7 +25,7 @@ function getSelectionBlockElement(selection) {
   while (tag && RootTags.indexOf(tag) === -1) {
     if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     element = element.parentNode;
-    tag = element.tagName.toLowerCase();
+    tag = element.tagName && element.tagName.toLowerCase();
   }
   return element;
 }
@@ -37,7 +37,7 @@ function getSelectionTagName() {
 
 function getSelectionBlockTagName() {
   var element = getSelectionBlockElement();
-  return element ? element.tagName.toLowerCase() : null;
+  return element ? element.tagName && element.tagName.toLowerCase() : null;
 }
 
 function tagsInSelection(selection) {

@@ -10,9 +10,7 @@ var Keycodes = {
 var RegEx = {
   NEWLINE       : /[\r\n]/g,
   HTTP_PROTOCOL : /^https?:\/\//i,
-  HEADING_TAG   : /^(h1|h2|h3|h4|h5|h6)$/i,
-  UL_START      : /^[-*]\s/,
-  OL_START      : /^1\.\s/
+  HEADING_TAG   : /^(h1|h2|h3|h4|h5|h6)$/i
 };
 
 var SelectionDirection = {

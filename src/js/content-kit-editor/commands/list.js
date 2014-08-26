@@ -1,6 +1,7 @@
 import TextFormatCommand from './text-format';
+import { getSelectionBlockElement, selectNode, getSelectionTagName } from '../utils/selection-utils';
 import { inherit } from '../../content-kit-utils/object-utils';
-import { getSelectionBlockElement, selectNode } from '../utils/selection-utils';
+import Type from '../../content-kit-compiler/types/type';
 
 function ListCommand(options) {
   TextFormatCommand.call(this, options);
@@ -10,7 +11,8 @@ inherit(ListCommand, TextFormatCommand);
 ListCommand.prototype.exec = function() {
   ListCommand._super.prototype.exec.call(this);
   
-  // After creation, lists need to be unwrapped from the default formatter P tag
+  // After creation, lists need to be unwrapped
+  // TODO: eventually can remove this when direct model manipulation is ready
   var listElement = getSelectionBlockElement();
   var wrapperNode = listElement.parentNode;
   if (wrapperNode.firstChild === listElement) {
@@ -19,6 +21,21 @@ ListCommand.prototype.exec = function() {
     editorNode.removeChild(wrapperNode);
     selectNode(listElement);
   }
+};
+
+ListCommand.prototype.checkAutoFormat = function(node) {
+  // Creates unordered lists when node starts with '- '
+  // or ordered list if node starts with '1. '
+  var regex = this.autoFormatRegex, text;
+  if (node && regex) {
+    text = node.textContent;
+    if (Type.LIST_ITEM.tag !== getSelectionTagName() && regex.test(text)) {
+      this.exec();
+      window.getSelection().anchorNode.textContent = text.replace(regex, '');
+      return true;
+    }
+  }
+  return false;
 };
 
 export default ListCommand;

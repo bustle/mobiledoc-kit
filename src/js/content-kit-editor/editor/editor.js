@@ -11,10 +11,10 @@ import SubheadingCommand from '../commands/subheading';
 import UnorderedListCommand from '../commands/unordered-list';
 import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
-import EmbedCommand from '../commands/embed';
+import OEmbedCommand from '../commands/oembed';
 import TextFormatCommand from '../commands/text-format';
-import { RootTags, Keycodes, RegEx } from '../constants';
-import { moveCursorToBeginningOfSelection, getSelectionTagName, getSelectionBlockElement, getSelectionBlockTagName } from '../utils/selection-utils';
+import { RootTags, Keycodes } from '../constants';
+import { getSelectionBlockElement, getSelectionBlockTagName } from '../utils/selection-utils';
 import { cleanPastedContent } from '../utils/paste-utils';
 import Compiler from '../../content-kit-compiler/compiler';
 import TextModel from '../../content-kit-compiler/models/text';
@@ -36,11 +36,15 @@ var defaults = {
   ],
   embedCommands: [
     new ImageCommand(),
-    new EmbedCommand()
+    new OEmbedCommand()
+  ],
+  autoTypingCommands: [
+    new UnorderedListCommand(),
+    new OrderedListCommand()
   ],
   compiler: new Compiler({
-    includeTypeNames: true, // output type names for easier debugging
-    renderer: new EditorHTMLRenderer()
+    includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
+    renderer: new EditorHTMLRenderer() // subclassed HTML renderer that adds structure for editor interactivity
   })
 };
 
@@ -51,6 +55,7 @@ function bindTypingEvents(editor) {
   var editorEl = editor.element;
 
   // Breaks out of blockquotes when pressing enter.
+  // TODO: remove when direction model manip. complete
   editorEl.addEventListener('keyup', function(e) {
     if(!e.shiftKey && e.which === Keycodes.ENTER) {
       if(Type.QUOTE.tag === getSelectionBlockTagName()) {
@@ -60,46 +65,41 @@ function bindTypingEvents(editor) {
     }
   });
 
-  // Creates unordered list when block starts with '- ', or ordered if starts with '1. '
-  editorEl.addEventListener('keyup', function(e) {
-    var selection = window.getSelection();
-    var selectionNode = selection.anchorNode;
-    if (!selectionNode) { return; }
-
-    var selectedText = selectionNode.textContent;
-    var command, replaceRegex;
-
-    if (Type.LIST_ITEM.tag !== getSelectionTagName()) {
-      if (RegEx.UL_START.test(selectedText)) {
-        command = new UnorderedListCommand();
-        replaceRegex = RegEx.UL_START;
-      } else if (RegEx.OL_START.test(selectedText)) {
-        command = new OrderedListCommand();
-        replaceRegex = RegEx.OL_START;
-      }
-
-      if (command) {
-        command.editorContext = editor;
-        command.exec();
-        selection = window.getSelection();
-        selection.anchorNode.textContent = selectedText.replace(replaceRegex, '');
-        moveCursorToBeginningOfSelection(selection);
-        e.stopPropagation();
-      }
-    }
-  });
-
   // Assure there is always a supported root tag, and not empty text nodes or divs.
+  // TODO: remove when direction model manip. complete
   editorEl.addEventListener('keyup', function() {
     if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
       document.execCommand('formatBlock', false, Type.TEXT.tag);
     }
   });
 
-  // Experimental: Live update - sync model with textual content as you type
+  // Watch typing patterns for auto format commands (e.g. lists '- ', '1. ')
+  editorEl.addEventListener('keyup', function(e) {
+    var commands = editor.autoTypingCommands;
+    var count = commands && commands.length;
+    var selection, i;
+
+    if (count) {
+      selection = window.getSelection();
+      for (i = 0; i < count; i++) {
+        if (commands[i].checkAutoFormat(selection.anchorNode)) {
+          e.stopPropagation();
+          return;
+        }
+      }
+    }
+  });
+
+  // Experimental: Live update
   editorEl.addEventListener('keyup', function() {
     var index = editor.getCurrentBlockIndex();
     editor.syncModelAt(index);
+  });
+  document.addEventListener('mouseup', function() {
+    setTimeout(function() {
+      var index = editor.getCurrentBlockIndex();
+      editor.syncModelAt(index);
+    });
   });
 }
 
@@ -143,7 +143,7 @@ function Editor(element, options) {
       }
     });
 
-    editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, editor: editor, commands: editor.textFormatCommands });
+    editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
     var linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
 
     if(editor.embedCommands) {

@@ -11,4 +11,6 @@ function OrderedListCommand() {
 }
 inherit(OrderedListCommand, ListCommand);
 
+OrderedListCommand.prototype.autoFormatRegex = /^1\.\s/;
+
 export default OrderedListCommand;

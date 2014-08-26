@@ -15,7 +15,7 @@ function createFileInput(command) {
   return fileInput;
 }
 
-function ImageCommand(options) {
+function ImageCommand() {
   Command.call(this, {
     name: 'image',
     button: '<i class="ck-icon-image"></i>'

@@ -124,9 +124,7 @@ define("content-kit-editor/constants",
     var RegEx = {
       NEWLINE       : /[\r\n]/g,
       HTTP_PROTOCOL : /^https?:\/\//i,
-      HEADING_TAG   : /^(h1|h2|h3|h4|h5|h6)$/i,
-      UL_START      : /^[-*]\s/,
-      OL_START      : /^1\.\s/
+      HEADING_TAG   : /^(h1|h2|h3|h4|h5|h6)$/i
     };
 
     var SelectionDirection = {
@@ -1400,76 +1398,6 @@ define("content-kit-editor/commands/bold",
 
     __exports__["default"] = BoldCommand;
   });
-define("content-kit-editor/commands/embed",
-  ["./base","../views/prompt","../views/message","../../content-kit-compiler/models/embed","../../content-kit-utils/object-utils","../constants","../../ext/content-kit-services","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
-    "use strict";
-    var Command = __dependency1__["default"];
-    var Prompt = __dependency2__["default"];
-    var Message = __dependency3__["default"];
-    var EmbedModel = __dependency4__["default"];
-    var inherit = __dependency5__.inherit;
-    var RegEx = __dependency6__.RegEx;
-    var OEmbedder = __dependency7__.OEmbedder;
-
-    function loadTwitterWidgets(element) {
-      if (window.twttr) {
-        window.twttr.widgets.load(element);
-      } else {
-        var script = document.createElement('script');
-        script.async = true;
-        script.src = 'http://platform.twitter.com/widgets.js';
-        document.head.appendChild(script);
-      }
-    }
-
-    function EmbedCommand(options) {
-      Command.call(this, {
-        name: 'embed',
-        button: '<i class="ck-icon-embed"></i>',
-        prompt: new Prompt({
-          command: this,
-          placeholder: 'Paste a YouTube or Twitter url...'
-        })
-      });
-
-      this.embedService = new OEmbedder({ url: '/embed' });
-    }
-    inherit(EmbedCommand, Command);
-
-    EmbedCommand.prototype.exec = function(url) {
-      var command = this;
-      var editorContext = command.editorContext;
-      var embedIntent = command.embedIntent;
-      var index = editorContext.getCurrentBlockIndex();
-      
-      embedIntent.showLoading();
-      this.embedService.fetch({
-        url: url,
-        complete: function(response, error) {
-          embedIntent.hideLoading();
-          if (error) {
-            var errorMsg = error;
-            if (error.target && error.target.status === 0) {
-              errorMsg = 'Could not connect to embed service';
-            } else if (typeof error !== 'string') {
-              errorMsg = 'Embed error';
-            }
-            new Message().show(errorMsg);
-          } else {
-            var embedModel = new EmbedModel(response);
-            editorContext.insertBlockAt(embedModel, index);
-            editorContext.syncVisualAt(index);
-            if (embedModel.attributes.provider_name.toLowerCase() === 'twitter') {
-              loadTwitterWidgets(editorContext.element);
-            }
-          }
-        }
-      });
-    };
-
-    __exports__["default"] = EmbedCommand;
-  });
 define("content-kit-editor/commands/format-block",
   ["./text-format","../utils/selection-utils","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
@@ -1549,7 +1477,7 @@ define("content-kit-editor/commands/image",
       return fileInput;
     }
 
-    function ImageCommand(options) {
+    function ImageCommand() {
       Command.call(this, {
         name: 'image',
         button: '<i class="ck-icon-image"></i>'
@@ -1653,13 +1581,15 @@ define("content-kit-editor/commands/link",
     __exports__["default"] = LinkCommand;
   });
 define("content-kit-editor/commands/list",
-  ["./text-format","../../content-kit-utils/object-utils","../utils/selection-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["./text-format","../utils/selection-utils","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     var TextFormatCommand = __dependency1__["default"];
-    var inherit = __dependency2__.inherit;
-    var getSelectionBlockElement = __dependency3__.getSelectionBlockElement;
-    var selectNode = __dependency3__.selectNode;
+    var getSelectionBlockElement = __dependency2__.getSelectionBlockElement;
+    var selectNode = __dependency2__.selectNode;
+    var getSelectionTagName = __dependency2__.getSelectionTagName;
+    var inherit = __dependency3__.inherit;
+    var Type = __dependency4__["default"];
 
     function ListCommand(options) {
       TextFormatCommand.call(this, options);
@@ -1669,7 +1599,8 @@ define("content-kit-editor/commands/list",
     ListCommand.prototype.exec = function() {
       ListCommand._super.prototype.exec.call(this);
       
-      // After creation, lists need to be unwrapped from the default formatter P tag
+      // After creation, lists need to be unwrapped
+      // TODO: eventually can remove this when direct model manipulation is ready
       var listElement = getSelectionBlockElement();
       var wrapperNode = listElement.parentNode;
       if (wrapperNode.firstChild === listElement) {
@@ -1680,7 +1611,92 @@ define("content-kit-editor/commands/list",
       }
     };
 
+    ListCommand.prototype.checkAutoFormat = function(node) {
+      // Creates unordered lists when node starts with '- '
+      // or ordered list if node starts with '1. '
+      var regex = this.autoFormatRegex, text;
+      if (node && regex) {
+        text = node.textContent;
+        if (Type.LIST_ITEM.tag !== getSelectionTagName() && regex.test(text)) {
+          this.exec();
+          window.getSelection().anchorNode.textContent = text.replace(regex, '');
+          return true;
+        }
+      }
+      return false;
+    };
+
     __exports__["default"] = ListCommand;
+  });
+define("content-kit-editor/commands/oembed",
+  ["./base","../views/prompt","../views/message","../../content-kit-compiler/models/embed","../../content-kit-utils/object-utils","../../ext/content-kit-services","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
+    "use strict";
+    var Command = __dependency1__["default"];
+    var Prompt = __dependency2__["default"];
+    var Message = __dependency3__["default"];
+    var EmbedModel = __dependency4__["default"];
+    var inherit = __dependency5__.inherit;
+    var OEmbedder = __dependency6__.OEmbedder;
+
+    function loadTwitterWidgets(element) {
+      if (window.twttr) {
+        window.twttr.widgets.load(element);
+      } else {
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'http://platform.twitter.com/widgets.js';
+        document.head.appendChild(script);
+      }
+    }
+
+    function OEmbedCommand() {
+      Command.call(this, {
+        name: 'embed',
+        button: '<i class="ck-icon-embed"></i>',
+        prompt: new Prompt({
+          command: this,
+          placeholder: 'Paste a YouTube or Twitter url...'
+        })
+      });
+
+      this.embedService = new OEmbedder({ url: '/embed' });
+    }
+    inherit(OEmbedCommand, Command);
+
+    OEmbedCommand.prototype.exec = function(url) {
+      var command = this;
+      var editorContext = command.editorContext;
+      var embedIntent = command.embedIntent;
+      var index = editorContext.getCurrentBlockIndex();
+      
+      embedIntent.showLoading();
+      this.embedService.fetch({
+        url: url,
+        complete: function(response, error) {
+          embedIntent.hideLoading();
+          if (error) {
+            var errorMsg = error;
+            if (error.target && error.target.status === 0) {
+              errorMsg = 'Could not connect to embed service';
+            } else if (typeof error !== 'string') {
+              errorMsg = 'Embed error';
+            }
+            new Message().show(errorMsg);
+            embedIntent.show();
+          } else {
+            var embedModel = new EmbedModel(response);
+            editorContext.insertBlockAt(embedModel, index);
+            editorContext.syncVisualAt(index);
+            if (embedModel.attributes.provider_name.toLowerCase() === 'twitter') {
+              loadTwitterWidgets(editorContext.element);
+            }
+          }
+        }
+      });
+    };
+
+    __exports__["default"] = OEmbedCommand;
   });
 define("content-kit-editor/commands/ordered-list",
   ["./list","../../content-kit-utils/object-utils","../../content-kit-compiler/types/type","exports"],
@@ -1698,6 +1714,8 @@ define("content-kit-editor/commands/ordered-list",
       });
     }
     inherit(OrderedListCommand, ListCommand);
+
+    OrderedListCommand.prototype.autoFormatRegex = /^1\.\s/;
 
     __exports__["default"] = OrderedListCommand;
   });
@@ -1757,7 +1775,6 @@ define("content-kit-editor/commands/text-format",
     TextFormatCommand.prototype = {
       exec: function(value) {
         document.execCommand(this.action, false, value || null);
-        this.editorContext.syncModelAt(this.editorContext.getCurrentBlockIndex());
       },
       unexec: function(value) {
         document.execCommand(this.removeAction, false, value || null);
@@ -1782,6 +1799,8 @@ define("content-kit-editor/commands/unordered-list",
       });
     }
     inherit(UnorderedListCommand, ListCommand);
+
+    UnorderedListCommand.prototype.autoFormatRegex =  /^[-*]\s/;
 
     __exports__["default"] = UnorderedListCommand;
   });
@@ -1869,7 +1888,7 @@ define("content-kit-editor/editor/editor-html-renderer",
     __exports__["default"] = EditorHTMLRenderer;
   });
 define("content-kit-editor/editor/editor",
-  ["./editor-html-renderer","../views/text-format-toolbar","../views/tooltip","../views/embed-intent","../commands/bold","../commands/italic","../commands/link","../commands/quote","../commands/heading","../commands/subheading","../commands/unordered-list","../commands/ordered-list","../commands/image","../commands/embed","../commands/text-format","../constants","../utils/selection-utils","../utils/paste-utils","../../content-kit-compiler/compiler","../../content-kit-compiler/models/text","../../content-kit-compiler/types/type","../../content-kit-utils/array-utils","../../content-kit-utils/object-utils","exports"],
+  ["./editor-html-renderer","../views/text-format-toolbar","../views/tooltip","../views/embed-intent","../commands/bold","../commands/italic","../commands/link","../commands/quote","../commands/heading","../commands/subheading","../commands/unordered-list","../commands/ordered-list","../commands/image","../commands/oembed","../commands/text-format","../constants","../utils/selection-utils","../utils/paste-utils","../../content-kit-compiler/compiler","../../content-kit-compiler/models/text","../../content-kit-compiler/types/type","../../content-kit-utils/array-utils","../../content-kit-utils/object-utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __dependency14__, __dependency15__, __dependency16__, __dependency17__, __dependency18__, __dependency19__, __dependency20__, __dependency21__, __dependency22__, __dependency23__, __exports__) {
     "use strict";
     var EditorHTMLRenderer = __dependency1__["default"];
@@ -1885,13 +1904,10 @@ define("content-kit-editor/editor/editor",
     var UnorderedListCommand = __dependency11__["default"];
     var OrderedListCommand = __dependency12__["default"];
     var ImageCommand = __dependency13__["default"];
-    var EmbedCommand = __dependency14__["default"];
+    var OEmbedCommand = __dependency14__["default"];
     var TextFormatCommand = __dependency15__["default"];
     var RootTags = __dependency16__.RootTags;
     var Keycodes = __dependency16__.Keycodes;
-    var RegEx = __dependency16__.RegEx;
-    var moveCursorToBeginningOfSelection = __dependency17__.moveCursorToBeginningOfSelection;
-    var getSelectionTagName = __dependency17__.getSelectionTagName;
     var getSelectionBlockElement = __dependency17__.getSelectionBlockElement;
     var getSelectionBlockTagName = __dependency17__.getSelectionBlockTagName;
     var cleanPastedContent = __dependency18__.cleanPastedContent;
@@ -1915,11 +1931,15 @@ define("content-kit-editor/editor/editor",
       ],
       embedCommands: [
         new ImageCommand(),
-        new EmbedCommand()
+        new OEmbedCommand()
+      ],
+      autoTypingCommands: [
+        new UnorderedListCommand(),
+        new OrderedListCommand()
       ],
       compiler: new Compiler({
-        includeTypeNames: true, // output type names for easier debugging
-        renderer: new EditorHTMLRenderer()
+        includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
+        renderer: new EditorHTMLRenderer() // subclassed HTML renderer that adds structure for editor interactivity
       })
     };
 
@@ -1930,6 +1950,7 @@ define("content-kit-editor/editor/editor",
       var editorEl = editor.element;
 
       // Breaks out of blockquotes when pressing enter.
+      // TODO: remove when direction model manip. complete
       editorEl.addEventListener('keyup', function(e) {
         if(!e.shiftKey && e.which === Keycodes.ENTER) {
           if(Type.QUOTE.tag === getSelectionBlockTagName()) {
@@ -1939,46 +1960,41 @@ define("content-kit-editor/editor/editor",
         }
       });
 
-      // Creates unordered list when block starts with '- ', or ordered if starts with '1. '
-      editorEl.addEventListener('keyup', function(e) {
-        var selection = window.getSelection();
-        var selectionNode = selection.anchorNode;
-        if (!selectionNode) { return; }
-
-        var selectedText = selectionNode.textContent;
-        var command, replaceRegex;
-
-        if (Type.LIST_ITEM.tag !== getSelectionTagName()) {
-          if (RegEx.UL_START.test(selectedText)) {
-            command = new UnorderedListCommand();
-            replaceRegex = RegEx.UL_START;
-          } else if (RegEx.OL_START.test(selectedText)) {
-            command = new OrderedListCommand();
-            replaceRegex = RegEx.OL_START;
-          }
-
-          if (command) {
-            command.editorContext = editor;
-            command.exec();
-            selection = window.getSelection();
-            selection.anchorNode.textContent = selectedText.replace(replaceRegex, '');
-            moveCursorToBeginningOfSelection(selection);
-            e.stopPropagation();
-          }
-        }
-      });
-
       // Assure there is always a supported root tag, and not empty text nodes or divs.
+      // TODO: remove when direction model manip. complete
       editorEl.addEventListener('keyup', function() {
         if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
           document.execCommand('formatBlock', false, Type.TEXT.tag);
         }
       });
 
-      // Experimental: Live update - sync model with textual content as you type
+      // Watch typing patterns for auto format commands (e.g. lists '- ', '1. ')
+      editorEl.addEventListener('keyup', function(e) {
+        var commands = editor.autoTypingCommands;
+        var count = commands && commands.length;
+        var selection, i;
+
+        if (count) {
+          selection = window.getSelection();
+          for (i = 0; i < count; i++) {
+            if (commands[i].checkAutoFormat(selection.anchorNode)) {
+              e.stopPropagation();
+              return;
+            }
+          }
+        }
+      });
+
+      // Experimental: Live update
       editorEl.addEventListener('keyup', function() {
         var index = editor.getCurrentBlockIndex();
         editor.syncModelAt(index);
+      });
+      document.addEventListener('mouseup', function() {
+        setTimeout(function() {
+          var index = editor.getCurrentBlockIndex();
+          editor.syncModelAt(index);
+        });
       });
     }
 
@@ -2022,7 +2038,7 @@ define("content-kit-editor/editor/editor",
           }
         });
 
-        editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, editor: editor, commands: editor.textFormatCommands });
+        editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
         var linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
 
         if(editor.embedCommands) {
@@ -2128,7 +2144,7 @@ define("content-kit-editor/utils/element-utils",
     function getEventTargetMatchingTag(tag, target, container) {
       // Traverses up DOM from an event target to find the node matching specifed tag
       while (target && target !== container) {
-        if (target.tagName === tag) {
+        if (target.tagName.toLowerCase() === tag) {
           return target;
         }
         target = target.parentNode;
@@ -2293,7 +2309,7 @@ define("content-kit-editor/utils/selection-utils",
       while (tag && RootTags.indexOf(tag) === -1) {
         if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
         element = element.parentNode;
-        tag = element.tagName.toLowerCase();
+        tag = element.tagName && element.tagName.toLowerCase();
       }
       return element;
     }
@@ -2305,7 +2321,7 @@ define("content-kit-editor/utils/selection-utils",
 
     function getSelectionBlockTagName() {
       var element = getSelectionBlockElement();
-      return element ? element.tagName.toLowerCase() : null;
+      return element ? element.tagName && element.tagName.toLowerCase() : null;
     }
 
     function tagsInSelection(selection) {
@@ -2680,7 +2696,7 @@ define("content-kit-editor/views/toolbar-button",
       element.title = command.name;
       element.className = buttonClassName;
       element.innerHTML = command.button;
-      element.addEventListener('click', function(e) {
+      element.addEventListener('click', function() {
         if (!button.isActive && prompt) {
           toolbar.displayPrompt(prompt);
         } else {
@@ -2740,8 +2756,7 @@ define("content-kit-editor/views/toolbar",
     function Toolbar(options) {
       var toolbar = this;
       var commands = options.commands;
-      var commandCount = commands && commands.length;
-      var i, button, command;
+      var commandCount = commands && commands.length, i;
       toolbar.editor = options.editor || null;
       toolbar.embedIntent = options.embedIntent || null;
       toolbar.direction = options.direction || ToolbarDirection.TOP;
