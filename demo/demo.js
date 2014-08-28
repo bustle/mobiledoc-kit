@@ -97,7 +97,6 @@ if (editor) {
   ContentKitDemo.syncCodePane(editor);
   editor.on('update', function(data) {
     ContentKitDemo.syncCodePane(this);
-    console.log(data);
   });
 }
 if (location.hash === '#code') {
