@@ -33,4 +33,6 @@ function EditorFactory(element, options) {
   return editors.length > 1 ? editors : editors[0];
 }
 
+EditorFactory.prototype = Editor.prototype;
+
 export default EditorFactory;

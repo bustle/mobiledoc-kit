@@ -8,6 +8,7 @@ function handleTextSelection(toolbar) {
   if (selection.isCollapsed || !selectionIsEditable(selection) || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
     toolbar.hide();
   } else {
+    toolbar.show();
     toolbar.updateForSelection(selection);
   }
 }
@@ -18,14 +19,16 @@ function TextFormatToolbar(options) {
   toolbar.rootElement = options.rootElement;
   toolbar.rootElement.addEventListener('keyup', function() { handleTextSelection(toolbar); });
 
+  document.addEventListener('mouseup', function() {
+    setTimeout(function() {
+      handleTextSelection(toolbar);
+    });
+  });
+
   document.addEventListener('keyup', function(e) {
     if (e.keyCode === Keycodes.ESC) {
       toolbar.hide();
     }
-  });
-
-  document.addEventListener('mouseup', function() {
-    setTimeout(function() { handleTextSelection(toolbar); });
   });
 
   window.addEventListener('resize', function() {

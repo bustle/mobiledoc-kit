@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 27, 2014
+ * Last modified: Aug 29, 2014
  */
 
 (function(exports, document) {
@@ -1843,6 +1843,8 @@ define("content-kit-editor/editor/editor-factory",
       return editors.length > 1 ? editors : editors[0];
     }
 
+    EditorFactory.prototype = Editor.prototype;
+
     __exports__["default"] = EditorFactory;
   });
 define("content-kit-editor/editor/editor-html-renderer",
@@ -1949,15 +1951,10 @@ define("content-kit-editor/editor/editor",
       })
     };
 
-    var editorClassName = 'ck-editor';
-    var editorClassNameRegExp = new RegExp(editorClassName);
-
-    function bindTypingEvents(editor) {
-      var editorEl = editor.element;
-
+    // TODO: remove when direction model manip. complete
+    function bindContentEditableTypingCorrections(editor) {
       // Breaks out of blockquotes when pressing enter.
-      // TODO: remove when direction model manip. complete
-      editorEl.addEventListener('keyup', function(e) {
+      editor.element.addEventListener('keyup', function(e) {
         if(!e.shiftKey && e.which === Keycodes.ENTER) {
           if(Type.QUOTE.tag === getSelectionBlockTagName()) {
             document.execCommand('formatBlock', false, Type.TEXT.tag);
@@ -1967,15 +1964,26 @@ define("content-kit-editor/editor/editor",
       });
 
       // Assure there is always a supported root tag, and not empty text nodes or divs.
-      // TODO: remove when direction model manip. complete
-      editorEl.addEventListener('keyup', function() {
+      editor.element.addEventListener('keyup', function() {
         if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
           document.execCommand('formatBlock', false, Type.TEXT.tag);
         }
       });
+    }
 
+    function bindPasteListener(editor) {
+      editor.element.addEventListener('paste', function(e) {
+        var cleanedContent = cleanPastedContent(e, Type.TEXT.tag);
+        if (cleanedContent) {
+          document.execCommand('insertHTML', false, cleanedContent);
+          editor.syncModel();  // TODO: can optimize to just sync to paste index range
+        }
+      });
+    }
+
+    function bindAutoTypingListeners(editor) {
       // Watch typing patterns for auto format commands (e.g. lists '- ', '1. ')
-      editorEl.addEventListener('keyup', function(e) {
+      editor.element.addEventListener('keyup', function(e) {
         var commands = editor.autoTypingCommands;
         var count = commands && commands.length;
         var selection, i;
@@ -1990,11 +1998,49 @@ define("content-kit-editor/editor/editor",
           }
         }
       });
+    }
 
-      // Live update the model on contentEditable change
-      editorEl.addEventListener('input', function() {
+    function bindLiveUpdate(editor) {
+      editor.element.addEventListener('input', function() {
         editor.syncModelAtSelection();
       });
+    }
+
+    function initEmbedCommands(editor) {
+      if(editor.embedCommands) {
+        var embedIntent = new EmbedIntent({
+          editorContext: editor,
+          commands: editor.embedCommands,
+          rootElement: editor.element
+        });
+
+        if (editor.imageServiceUrl) {
+          // TODO: lookup by name
+          editor.embedCommands[0].uploader.url = editor.imageServiceUrl;
+        }
+        if (editor.embedServiceUrl) {
+          // TODO: lookup by name
+          editor.embedCommands[1].embedService.url = editor.embedServiceUrl;
+        }
+      }
+    }
+
+    function applyClassName(editorElement) {
+      var editorClassName = 'ck-editor';
+      var editorClassNameRegExp = new RegExp(editorClassName);
+      var existingClassName = editorElement.className;
+
+      if (!editorClassNameRegExp.test(existingClassName)) {
+        existingClassName += (existingClassName ? ' ' : '') + editorClassName;
+      }
+      editorElement.className = existingClassName;
+    }
+
+    function applyPlaceholder(editorElement, placeholder) {
+      var dataset = editorElement.dataset;
+      if (placeholder && !dataset.placeholder) {
+        dataset.placeholder = placeholder;
+      }
     }
 
     /**
@@ -2008,56 +2054,22 @@ define("content-kit-editor/editor/editor",
       mergeWithOptions(editor, defaults, options);
 
       if (element) {
-        var className = element.className;
-        var dataset = element.dataset;
-
-        if (!editorClassNameRegExp.test(className)) {
-          className += (className ? ' ' : '') + editorClassName;
-        }
-        element.className = className;
-
-        if (!dataset.placeholder) {
-          dataset.placeholder = editor.placeholder;
-        }
-        if(!editor.spellcheck) {
-          element.spellcheck = false;
-        }
-
+        applyClassName(element);
+        applyPlaceholder(element, editor.placeholder);
+        element.spellcheck = editor.spellcheck;
         element.setAttribute('contentEditable', true);
         editor.element = element;
 
-        editor.syncModel();
-
-        bindTypingEvents(editor);
-        editor.element.addEventListener('paste', function(e) {
-          var cleanedContent = cleanPastedContent(e, Type.TEXT.tag);
-          if (cleanedContent) {
-            document.execCommand('insertHTML', false, cleanedContent);
-            editor.syncModel();  // TODO: can optimize to just sync to index range
-          }
-        });
+        bindContentEditableTypingCorrections(editor);
+        bindPasteListener(editor);
+        bindAutoTypingListeners(editor);
+        bindLiveUpdate(editor);
+        initEmbedCommands(editor);
 
         editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
-        var linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
+        editor.linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
 
-        if(editor.embedCommands) {
-          // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
-          // TODO: make order independant
-          var embedIntent = new EmbedIntent({
-            editorContext: editor,
-            commands: editor.embedCommands,
-            rootElement: element
-          });
-
-          if (editor.imageServiceUrl) {
-            // TODO: lookup by name
-            editor.embedCommands[0].uploader.url = editor.imageServiceUrl;
-          }
-          if (editor.embedServiceUrl) {
-            // TODO: lookup by name
-            editor.embedCommands[1].embedService.url = editor.embedServiceUrl;
-          }
-        }
+        editor.syncModel();
         
         if(editor.autofocus) { element.focus(); }
       }
@@ -2677,6 +2689,7 @@ define("content-kit-editor/views/text-format-toolbar",
       if (selection.isCollapsed || !selectionIsEditable(selection) || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
         toolbar.hide();
       } else {
+        toolbar.show();
         toolbar.updateForSelection(selection);
       }
     }
@@ -2687,14 +2700,16 @@ define("content-kit-editor/views/text-format-toolbar",
       toolbar.rootElement = options.rootElement;
       toolbar.rootElement.addEventListener('keyup', function() { handleTextSelection(toolbar); });
 
+      document.addEventListener('mouseup', function() {
+        setTimeout(function() {
+          handleTextSelection(toolbar);
+        });
+      });
+
       document.addEventListener('keyup', function(e) {
         if (e.keyCode === Keycodes.ESC) {
           toolbar.hide();
         }
-      });
-
-      document.addEventListener('mouseup', function() {
-        setTimeout(function() { handleTextSelection(toolbar); });
       });
 
       window.addEventListener('resize', function() {
@@ -2734,12 +2749,14 @@ define("content-kit-editor/views/toolbar-button",
       element.title = command.name;
       element.className = buttonClassName;
       element.innerHTML = command.button;
-      element.addEventListener('click', function() {
+      element.addEventListener('mouseup', function(e) {
         if (!button.isActive && prompt) {
           toolbar.displayPrompt(prompt);
         } else {
           command.exec();
+          toolbar.updateForSelection();
         }
+        e.stopPropagation();
       });
     }
 
@@ -2847,7 +2864,7 @@ define("content-kit-editor/views/toolbar",
       toolbar.promptContainerElement.appendChild(prompt.element);
       prompt.show(function() {
         toolbar.dismissPrompt();
-        toolbar.updateForSelection(window.getSelection());
+        toolbar.updateForSelection();
       });
       toolbar.activePrompt = prompt;
     };
@@ -2864,10 +2881,8 @@ define("content-kit-editor/views/toolbar",
 
     Toolbar.prototype.updateForSelection = function(selection) {
       var toolbar = this;
-      if (selection.isCollapsed) {
-        toolbar.hide();
-      } else {
-        toolbar.show();
+      selection = selection || window.getSelection();
+      if (!selection.isCollapsed) {
         toolbar.positionToContent(selection.getRangeAt(0));
         updateButtonsForSelection(toolbar.buttons, selection);
       }

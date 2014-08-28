@@ -14,8 +14,7 @@ QUnit.module('Editor', {
 
 test('can create an editor', function() {
   var editor = new ContentKit.Editor();
-  ok(editor);
-  //ok(editor instanceof ContentKit.Editor); // TODO: fix
+  ok(editor instanceof ContentKit.Editor);
 });
 
 test('can create an editor via dom node reference', function() {

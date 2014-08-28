@@ -23,9 +23,6 @@
 .ck-editor a {
   color: #0b8bff;
 }
-.ck-editor p {
-  min-height: 1.6em;
-}
 .ck-editor blockquote {
   border-left: 4px solid #0b8bff;
   margin: 0 0 0 -1.2em;

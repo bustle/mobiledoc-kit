@@ -76,7 +76,7 @@ Toolbar.prototype.displayPrompt = function(prompt) {
   toolbar.promptContainerElement.appendChild(prompt.element);
   prompt.show(function() {
     toolbar.dismissPrompt();
-    toolbar.updateForSelection(window.getSelection());
+    toolbar.updateForSelection();
   });
   toolbar.activePrompt = prompt;
 };
@@ -93,10 +93,8 @@ Toolbar.prototype.dismissPrompt = function() {
 
 Toolbar.prototype.updateForSelection = function(selection) {
   var toolbar = this;
-  if (selection.isCollapsed) {
-    toolbar.hide();
-  } else {
-    toolbar.show();
+  selection = selection || window.getSelection();
+  if (!selection.isCollapsed) {
     toolbar.positionToContent(selection.getRangeAt(0));
     updateButtonsForSelection(toolbar.buttons, selection);
   }

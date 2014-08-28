@@ -20,12 +20,14 @@ function ToolbarButton(options) {
   element.title = command.name;
   element.className = buttonClassName;
   element.innerHTML = command.button;
-  element.addEventListener('click', function() {
+  element.addEventListener('mouseup', function(e) {
     if (!button.isActive && prompt) {
       toolbar.displayPrompt(prompt);
     } else {
       command.exec();
+      toolbar.updateForSelection();
     }
+    e.stopPropagation();
   });
 }
 
