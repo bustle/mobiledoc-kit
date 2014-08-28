@@ -36,6 +36,8 @@ var jsDistPath = distDest + jsDistName;
 var cssDistName = 'content-kit-editor.css';
 
 var testRunner = './tests/index.html';
+var testScripts = './tests/**/*.js';
+
 var demo       = './demo/index.html';
 
 var banner = ['/*!',
@@ -110,13 +112,18 @@ gulp.task('watch-js', function() {
   gulp.watch(jsSrc, ['lint', 'build-js']);
 });
 
+// Watches test files change and automatically tests
+gulp.task('watch-tests', function() {
+  gulp.watch(testScripts, ['test']);
+});
+
 // Watches when css files change and automatically builds
 gulp.task('watch-css', function() {
   gulp.watch(cssSrc, ['build-css']);
 });
 
-// Watches when any files change and automatically builds
-gulp.task('watch', ['watch-js', 'watch-css']);
+// Watches when any files change and automatically tests/builds
+gulp.task('watch', ['watch-js', 'watch-tests', 'watch-css']);
 
 // Default task
 gulp.task('default', ['lint', 'build', 'test']);

@@ -11,6 +11,10 @@ function EditorFactory(element, options) {
   var editors = [];
   var elements, elementsLen, i;
 
+  if (!element) {
+    return new Editor(element, options);
+  }
+
   if (typeof element === 'string') {
     elements = document.querySelectorAll(element);
   } else if (element && element.length) {

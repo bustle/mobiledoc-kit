@@ -7,6 +7,6 @@ function Command(options) {
   if (prompt) { command.prompt = prompt; }
 }
 
-Command.prototype.exec = function(){};
+Command.prototype.exec = function() {};
 
 export default Command;

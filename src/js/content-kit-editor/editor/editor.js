@@ -15,12 +15,13 @@ import OEmbedCommand from '../commands/oembed';
 import TextFormatCommand from '../commands/text-format';
 import { RootTags, Keycodes } from '../constants';
 import { getSelectionBlockElement, getSelectionBlockTagName } from '../utils/selection-utils';
+import EventEmitter from '../utils/event-emitter';
 import { cleanPastedContent } from '../utils/paste-utils';
 import Compiler from '../../content-kit-compiler/compiler';
 import TextModel from '../../content-kit-compiler/models/text';
 import Type from '../../content-kit-compiler/types/type';
 import { toArray } from '../../content-kit-utils/array-utils';
-import { mergeWithOptions } from '../../content-kit-utils/object-utils';
+import { merge, mergeWithOptions } from '../../content-kit-utils/object-utils';
 
 var defaults = {
   placeholder: 'Write here...',
@@ -44,7 +45,7 @@ var defaults = {
   ],
   compiler: new Compiler({
     includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
-    renderer: new EditorHTMLRenderer() // subclassed HTML renderer that adds structure for editor interactivity
+    renderer: new EditorHTMLRenderer() // subclassed HTML renderer that adds dom structure for additional editor interactivity
   })
 };
 
@@ -90,16 +91,9 @@ function bindTypingEvents(editor) {
     }
   });
 
-  // Experimental: Live update
-  editorEl.addEventListener('keyup', function() {
-    var index = editor.getCurrentBlockIndex();
-    editor.syncModelAt(index);
-  });
-  document.addEventListener('mouseup', function() {
-    setTimeout(function() {
-      var index = editor.getCurrentBlockIndex();
-      editor.syncModelAt(index);
-    });
+  // Live update the model on contentEditable change
+  editorEl.addEventListener('input', function() {
+    editor.syncModelAtSelection();
   });
 }
 
@@ -148,7 +142,7 @@ function Editor(element, options) {
 
     if(editor.embedCommands) {
       // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
-      // TODO: manage event listener order
+      // TODO: make order independant
       var embedIntent = new EmbedIntent({
         editorContext: editor,
         commands: editor.embedCommands,
@@ -169,8 +163,12 @@ function Editor(element, options) {
   }
 }
 
+// Add event emitter pub/sub functionality
+merge(Editor.prototype, EventEmitter);
+
 Editor.prototype.syncModel = function() {
   this.model = this.compiler.parse(this.element.innerHTML);
+  this.trigger('update');
 };
 
 Editor.prototype.syncModelAt = function(index) {
@@ -178,10 +176,13 @@ Editor.prototype.syncModelAt = function(index) {
     var blockElements = toArray(this.element.children);
     var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
     this.model[index] = parsedBlockModel;
-
-     // TODO: event subscription
-    ContentKitDemo.syncCodePane(this);
+    this.trigger('update', { index: index });
   }
+};
+
+Editor.prototype.syncModelAtSelection = function() {
+  var index = this.getCurrentBlockIndex();
+  this.syncModelAt(index);
 };
 
 Editor.prototype.syncVisualAt = function(index) {

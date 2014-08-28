@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 26, 2014
+ * Last modified: Aug 27, 2014
  */
 
 (function(exports, document) {
@@ -1366,7 +1366,7 @@ define("content-kit-editor/commands/base",
       if (prompt) { command.prompt = prompt; }
     }
 
-    Command.prototype.exec = function(){};
+    Command.prototype.exec = function() {};
 
     __exports__["default"] = Command;
   });
@@ -1821,6 +1821,10 @@ define("content-kit-editor/editor/editor-factory",
       var editors = [];
       var elements, elementsLen, i;
 
+      if (!element) {
+        return new Editor(element, options);
+      }
+
       if (typeof element === 'string') {
         elements = document.querySelectorAll(element);
       } else if (element && element.length) {
@@ -1888,8 +1892,8 @@ define("content-kit-editor/editor/editor-html-renderer",
     __exports__["default"] = EditorHTMLRenderer;
   });
 define("content-kit-editor/editor/editor",
-  ["./editor-html-renderer","../views/text-format-toolbar","../views/tooltip","../views/embed-intent","../commands/bold","../commands/italic","../commands/link","../commands/quote","../commands/heading","../commands/subheading","../commands/unordered-list","../commands/ordered-list","../commands/image","../commands/oembed","../commands/text-format","../constants","../utils/selection-utils","../utils/paste-utils","../../content-kit-compiler/compiler","../../content-kit-compiler/models/text","../../content-kit-compiler/types/type","../../content-kit-utils/array-utils","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __dependency14__, __dependency15__, __dependency16__, __dependency17__, __dependency18__, __dependency19__, __dependency20__, __dependency21__, __dependency22__, __dependency23__, __exports__) {
+  ["./editor-html-renderer","../views/text-format-toolbar","../views/tooltip","../views/embed-intent","../commands/bold","../commands/italic","../commands/link","../commands/quote","../commands/heading","../commands/subheading","../commands/unordered-list","../commands/ordered-list","../commands/image","../commands/oembed","../commands/text-format","../constants","../utils/selection-utils","../utils/event-emitter","../utils/paste-utils","../../content-kit-compiler/compiler","../../content-kit-compiler/models/text","../../content-kit-compiler/types/type","../../content-kit-utils/array-utils","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __dependency14__, __dependency15__, __dependency16__, __dependency17__, __dependency18__, __dependency19__, __dependency20__, __dependency21__, __dependency22__, __dependency23__, __dependency24__, __exports__) {
     "use strict";
     var EditorHTMLRenderer = __dependency1__["default"];
     var TextFormatToolbar = __dependency2__["default"];
@@ -1910,12 +1914,14 @@ define("content-kit-editor/editor/editor",
     var Keycodes = __dependency16__.Keycodes;
     var getSelectionBlockElement = __dependency17__.getSelectionBlockElement;
     var getSelectionBlockTagName = __dependency17__.getSelectionBlockTagName;
-    var cleanPastedContent = __dependency18__.cleanPastedContent;
-    var Compiler = __dependency19__["default"];
-    var TextModel = __dependency20__["default"];
-    var Type = __dependency21__["default"];
-    var toArray = __dependency22__.toArray;
-    var mergeWithOptions = __dependency23__.mergeWithOptions;
+    var EventEmitter = __dependency18__["default"];
+    var cleanPastedContent = __dependency19__.cleanPastedContent;
+    var Compiler = __dependency20__["default"];
+    var TextModel = __dependency21__["default"];
+    var Type = __dependency22__["default"];
+    var toArray = __dependency23__.toArray;
+    var merge = __dependency24__.merge;
+    var mergeWithOptions = __dependency24__.mergeWithOptions;
 
     var defaults = {
       placeholder: 'Write here...',
@@ -1939,7 +1945,7 @@ define("content-kit-editor/editor/editor",
       ],
       compiler: new Compiler({
         includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
-        renderer: new EditorHTMLRenderer() // subclassed HTML renderer that adds structure for editor interactivity
+        renderer: new EditorHTMLRenderer() // subclassed HTML renderer that adds dom structure for additional editor interactivity
       })
     };
 
@@ -1985,16 +1991,9 @@ define("content-kit-editor/editor/editor",
         }
       });
 
-      // Experimental: Live update
-      editorEl.addEventListener('keyup', function() {
-        var index = editor.getCurrentBlockIndex();
-        editor.syncModelAt(index);
-      });
-      document.addEventListener('mouseup', function() {
-        setTimeout(function() {
-          var index = editor.getCurrentBlockIndex();
-          editor.syncModelAt(index);
-        });
+      // Live update the model on contentEditable change
+      editorEl.addEventListener('input', function() {
+        editor.syncModelAtSelection();
       });
     }
 
@@ -2043,7 +2042,7 @@ define("content-kit-editor/editor/editor",
 
         if(editor.embedCommands) {
           // NOTE: must come after bindTypingEvents so those keyup handlers are executed first.
-          // TODO: manage event listener order
+          // TODO: make order independant
           var embedIntent = new EmbedIntent({
             editorContext: editor,
             commands: editor.embedCommands,
@@ -2064,8 +2063,12 @@ define("content-kit-editor/editor/editor",
       }
     }
 
+    // Add event emitter pub/sub functionality
+    merge(Editor.prototype, EventEmitter);
+
     Editor.prototype.syncModel = function() {
       this.model = this.compiler.parse(this.element.innerHTML);
+      this.trigger('update');
     };
 
     Editor.prototype.syncModelAt = function(index) {
@@ -2073,10 +2076,13 @@ define("content-kit-editor/editor/editor",
         var blockElements = toArray(this.element.children);
         var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
         this.model[index] = parsedBlockModel;
-
-         // TODO: event subscription
-        ContentKitDemo.syncCodePane(this);
+        this.trigger('update', { index: index });
       }
+    };
+
+    Editor.prototype.syncModelAtSelection = function() {
+      var index = this.getCurrentBlockIndex();
+      this.syncModelAt(index);
     };
 
     Editor.prototype.syncVisualAt = function(index) {
@@ -2239,6 +2245,38 @@ define("content-kit-editor/utils/element-utils",
     __exports__.positionElementCenteredIn = positionElementCenteredIn;
     __exports__.positionElementToLeftOf = positionElementToLeftOf;
     __exports__.positionElementToRightOf = positionElementToRightOf;
+  });
+define("content-kit-editor/utils/event-emitter",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    // Based on https://github.com/jeromeetienne/microevent.js/blob/master/microevent.js
+
+    var EventEmitter = {
+      on : function(type, handler){
+        var events = this.__events = this.__events || {};
+        events[type] = events[type] || [];
+        events[type].push(handler);
+      },
+      off : function(type, handler){
+        var events = this.__events = this.__events || {};
+        if (type in events) {
+          events[type].splice(events[type].indexOf(handler), 1);
+        }
+      },
+      trigger : function(type) {
+        var events = this.__events = this.__events || {};
+        var eventForTypeCount, i;
+        if (type in events) {
+          eventForTypeCount = events[type].length;
+          for(i = 0; i < eventForTypeCount; i++) {
+            events[type][i].apply(this, Array.prototype.slice.call(arguments, 1));
+          }
+        }
+      }
+    };
+
+    __exports__["default"] = EventEmitter;
   });
 define("content-kit-editor/utils/paste-utils",
   ["../constants","exports"],
