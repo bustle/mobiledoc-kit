@@ -1,3 +1,4 @@
+import { RegEx } from '../constants';
 import HTMLRenderer from '../../content-kit-compiler/renderers/html-renderer';
 import Type from '../../content-kit-compiler/types/type';
 import { inherit } from '../../content-kit-utils/object-utils';
@@ -16,7 +17,8 @@ function embedRenderer(model) {
 }
 
 function imageRenderer(model) {
-  return '<div class="ck-embed ck-image-embed" contenteditable="false">' +
+  var imagePersisted = RegEx.HTTP_PROTOCOL.test(model.attributes.src);
+  return '<div class="ck-embed ck-image-embed' + (imagePersisted ? '' : ' ck-image-local') + '" contenteditable="false">' +
             '<figure>' + this.render(model) + '</figure>' +
           '</div>';
 }

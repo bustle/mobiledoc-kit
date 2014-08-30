@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 29, 2014
+ * Last modified: Aug 30, 2014
  */
 
 (function(exports, document) {
@@ -399,7 +399,9 @@ define("ext/content-kit-services",
     function xhrGet(options) {
       options.method = 'GET';
       var xhr = createXHR(options);
-      xhr.send();
+      try {
+        xhr.send();
+      } catch(error) {}
     }
 
     function xhrPost(options) {
@@ -407,7 +409,9 @@ define("ext/content-kit-services",
       var xhr = createXHR(options);
       var formData = new FormData();
       formData.append('file', options.data);
-      xhr.send(formData);
+      try {
+        xhr.send(formData);
+      } catch(error) {}
     }
 
     function responseJSON(jsonString) {
@@ -1477,6 +1481,24 @@ define("content-kit-editor/commands/image",
       return fileInput;
     }
 
+    function insertImageWithSrc(src, editor) {
+      var imageModel = new ImageModel({ src: src });
+      var index = editor.getCurrentBlockIndex();
+      editor.replaceBlockAt(imageModel, index);
+      editor.syncVisualAt(index);
+    }
+
+    function renderFromFile(file, editor) {
+      if (file && window.FileReader) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var base64Src = e.target.result;
+          insertImageWithSrc(base64Src, editor);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
     function ImageCommand() {
       Command.call(this, {
         name: 'image',
@@ -1509,14 +1531,11 @@ define("content-kit-editor/commands/image",
             if (error || !response || !response.url) {
               return new Message().show(error.message || 'Error uploading image');
             }
-            var imageModel = new ImageModel({ src: response.url });
-            var index = editor.getCurrentBlockIndex();
-            editor.insertBlockAt(imageModel, index);
-            editor.syncVisualAt(index);
+            insertImageWithSrc(response.url, editor);
           }
         });
+        renderFromFile(fileInput.files && fileInput.files[0], editor); // render image immediately client-side
         fileInput.value = null; // reset file input
-        // TODO: client-side render while uploading
       }
     };
 
@@ -1848,12 +1867,13 @@ define("content-kit-editor/editor/editor-factory",
     __exports__["default"] = EditorFactory;
   });
 define("content-kit-editor/editor/editor-html-renderer",
-  ["../../content-kit-compiler/renderers/html-renderer","../../content-kit-compiler/types/type","../../content-kit-utils/object-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["../constants","../../content-kit-compiler/renderers/html-renderer","../../content-kit-compiler/types/type","../../content-kit-utils/object-utils","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
-    var HTMLRenderer = __dependency1__["default"];
-    var Type = __dependency2__["default"];
-    var inherit = __dependency3__.inherit;
+    var RegEx = __dependency1__.RegEx;
+    var HTMLRenderer = __dependency2__["default"];
+    var Type = __dependency3__["default"];
+    var inherit = __dependency4__.inherit;
 
     function embedRenderer(model) {
       var embedAttrs = model.attributes;
@@ -1869,7 +1889,8 @@ define("content-kit-editor/editor/editor-html-renderer",
     }
 
     function imageRenderer(model) {
-      return '<div class="ck-embed ck-image-embed" contenteditable="false">' +
+      var imagePersisted = RegEx.HTTP_PROTOCOL.test(model.attributes.src);
+      return '<div class="ck-embed ck-image-embed' + (imagePersisted ? '' : ' ck-image-local') + '" contenteditable="false">' +
                 '<figure>' + this.render(model) + '</figure>' +
               '</div>';
     }
@@ -2120,6 +2141,10 @@ define("content-kit-editor/editor/editor",
     Editor.prototype.insertBlockAt = function(model, index) {
       model = model || new TextModel();
       this.model.splice(index, 0, model);
+    };
+
+    Editor.prototype.replaceBlockAt = function(model, index) {
+      this.model[index] = model;
     };
 
     Editor.prototype.addTextFormat = function(opts) {

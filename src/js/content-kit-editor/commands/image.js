@@ -15,6 +15,24 @@ function createFileInput(command) {
   return fileInput;
 }
 
+function insertImageWithSrc(src, editor) {
+  var imageModel = new ImageModel({ src: src });
+  var index = editor.getCurrentBlockIndex();
+  editor.replaceBlockAt(imageModel, index);
+  editor.syncVisualAt(index);
+}
+
+function renderFromFile(file, editor) {
+  if (file && window.FileReader) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var base64Src = e.target.result;
+      insertImageWithSrc(base64Src, editor);
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
 function ImageCommand() {
   Command.call(this, {
     name: 'image',
@@ -47,14 +65,11 @@ ImageCommand.prototype = {
         if (error || !response || !response.url) {
           return new Message().show(error.message || 'Error uploading image');
         }
-        var imageModel = new ImageModel({ src: response.url });
-        var index = editor.getCurrentBlockIndex();
-        editor.insertBlockAt(imageModel, index);
-        editor.syncVisualAt(index);
+        insertImageWithSrc(response.url, editor);
       }
     });
+    renderFromFile(fileInput.files && fileInput.files[0], editor); // render image immediately client-side
     fileInput.value = null; // reset file input
-    // TODO: client-side render while uploading
   }
 };
 

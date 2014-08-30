@@ -18,7 +18,9 @@ function createXHR(options) {
 function xhrGet(options) {
   options.method = 'GET';
   var xhr = createXHR(options);
-  xhr.send();
+  try {
+    xhr.send();
+  } catch(error) {}
 }
 
 function xhrPost(options) {
@@ -26,7 +28,9 @@ function xhrPost(options) {
   var xhr = createXHR(options);
   var formData = new FormData();
   formData.append('file', options.data);
-  xhr.send(formData);
+  try {
+    xhr.send(formData);
+  } catch(error) {}
 }
 
 function responseJSON(jsonString) {

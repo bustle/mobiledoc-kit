@@ -220,6 +220,10 @@ Editor.prototype.insertBlockAt = function(model, index) {
   this.model.splice(index, 0, model);
 };
 
+Editor.prototype.replaceBlockAt = function(model, index) {
+  this.model[index] = model;
+};
+
 Editor.prototype.addTextFormat = function(opts) {
   var command = new TextFormatCommand(opts);
   this.compiler.registerMarkupType(new Type({
