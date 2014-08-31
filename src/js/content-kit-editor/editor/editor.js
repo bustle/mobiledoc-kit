@@ -36,8 +36,8 @@ var defaults = {
     new SubheadingCommand()
   ],
   embedCommands: [
-    new ImageCommand(),
-    new OEmbedCommand()
+    new ImageCommand({  serviceUrl: '/images' }),
+    new OEmbedCommand({ serviceUrl: '/embed'  })
   ],
   autoTypingCommands: [
     new UnorderedListCommand(),
@@ -105,21 +105,13 @@ function bindLiveUpdate(editor) {
 }
 
 function initEmbedCommands(editor) {
-  if(editor.embedCommands) {
-    var embedIntent = new EmbedIntent({
+  var commands = editor.embedCommands;
+  if(commands) {
+    return new EmbedIntent({
       editorContext: editor,
-      commands: editor.embedCommands,
+      commands: commands,
       rootElement: editor.element
     });
-
-    if (editor.imageServiceUrl) {
-      // TODO: lookup by name
-      editor.embedCommands[0].uploader.url = editor.imageServiceUrl;
-    }
-    if (editor.embedServiceUrl) {
-      // TODO: lookup by name
-      editor.embedCommands[1].embedService.url = editor.embedServiceUrl;
-    }
   }
 }
 

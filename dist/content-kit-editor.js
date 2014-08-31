@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 30, 2014
+ * Last modified: Aug 31, 2014
  */
 
 (function(exports, document) {
@@ -1499,12 +1499,12 @@ define("content-kit-editor/commands/image",
       }
     }
 
-    function ImageCommand() {
+    function ImageCommand(options) {
       Command.call(this, {
         name: 'image',
         button: '<i class="ck-icon-image"></i>'
       });
-      this.uploader = new FileUploader({ url: '/upload', maxFileSize: 5000000 });
+      this.uploader = new FileUploader({ url: options.serviceUrl, maxFileSize: 5000000 });
     }
     inherit(ImageCommand, Command);
 
@@ -1669,7 +1669,7 @@ define("content-kit-editor/commands/oembed",
       }
     }
 
-    function OEmbedCommand() {
+    function OEmbedCommand(options) {
       Command.call(this, {
         name: 'embed',
         button: '<i class="ck-icon-embed"></i>',
@@ -1679,7 +1679,7 @@ define("content-kit-editor/commands/oembed",
         })
       });
 
-      this.embedService = new OEmbedder({ url: '/embed' });
+      this.embedService = new OEmbedder({ url: options.serviceUrl });
     }
     inherit(OEmbedCommand, Command);
 
@@ -1959,8 +1959,8 @@ define("content-kit-editor/editor/editor",
         new SubheadingCommand()
       ],
       embedCommands: [
-        new ImageCommand(),
-        new OEmbedCommand()
+        new ImageCommand({  serviceUrl: '/images' }),
+        new OEmbedCommand({ serviceUrl: '/embed'  })
       ],
       autoTypingCommands: [
         new UnorderedListCommand(),
@@ -2028,21 +2028,13 @@ define("content-kit-editor/editor/editor",
     }
 
     function initEmbedCommands(editor) {
-      if(editor.embedCommands) {
-        var embedIntent = new EmbedIntent({
+      var commands = editor.embedCommands;
+      if(commands) {
+        return new EmbedIntent({
           editorContext: editor,
-          commands: editor.embedCommands,
+          commands: commands,
           rootElement: editor.element
         });
-
-        if (editor.imageServiceUrl) {
-          // TODO: lookup by name
-          editor.embedCommands[0].uploader.url = editor.imageServiceUrl;
-        }
-        if (editor.embedServiceUrl) {
-          // TODO: lookup by name
-          editor.embedCommands[1].embedService.url = editor.embedServiceUrl;
-        }
       }
     }
 
@@ -2288,6 +2280,7 @@ define("content-kit-editor/utils/event-emitter",
   function(__exports__) {
     "use strict";
     // Based on https://github.com/jeromeetienne/microevent.js/blob/master/microevent.js
+    // See also: https://github.com/allouis/minivents/blob/master/minivents.js
 
     var EventEmitter = {
       on : function(type, handler){

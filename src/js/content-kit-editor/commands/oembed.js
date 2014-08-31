@@ -16,7 +16,7 @@ function loadTwitterWidgets(element) {
   }
 }
 
-function OEmbedCommand() {
+function OEmbedCommand(options) {
   Command.call(this, {
     name: 'embed',
     button: '<i class="ck-icon-embed"></i>',
@@ -26,7 +26,7 @@ function OEmbedCommand() {
     })
   });
 
-  this.embedService = new OEmbedder({ url: '/embed' });
+  this.embedService = new OEmbedder({ url: options.serviceUrl });
 }
 inherit(OEmbedCommand, Command);
 

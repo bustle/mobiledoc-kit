@@ -1,4 +1,5 @@
 // Based on https://github.com/jeromeetienne/microevent.js/blob/master/microevent.js
+// See also: https://github.com/allouis/minivents/blob/master/minivents.js
 
 var EventEmitter = {
   on : function(type, handler){

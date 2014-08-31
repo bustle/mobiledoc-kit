@@ -33,12 +33,12 @@ function renderFromFile(file, editor) {
   }
 }
 
-function ImageCommand() {
+function ImageCommand(options) {
   Command.call(this, {
     name: 'image',
     button: '<i class="ck-icon-image"></i>'
   });
-  this.uploader = new FileUploader({ url: '/upload', maxFileSize: 5000000 });
+  this.uploader = new FileUploader({ url: options.serviceUrl, maxFileSize: 5000000 });
 }
 inherit(ImageCommand, Command);
 
