@@ -99,8 +99,21 @@ function bindAutoTypingListeners(editor) {
 }
 
 function bindLiveUpdate(editor) {
-  editor.element.addEventListener('input', function() {
+  editor.element.addEventListener('input', function(e) {
     editor.syncModelAtSelection();
+  });
+
+  // Handle special cases
+  editor.element.addEventListener('keyup', function(e) {
+    // When pressing enter: parse block before cursor too
+    if(!e.shiftKey && e.which === Keycodes.ENTER) {
+      editor.syncModelAt(editor.getCurrentBlockIndex()-1);
+    }
+    // When pressing backspace/del: parse block after cursor too
+    else if(e.which === Keycodes.BKSP || e.which === Keycodes.DEL) {
+      editor.syncModelAt(editor.getCurrentBlockIndex()+1);
+    }
+
   });
 }
 
@@ -177,7 +190,11 @@ Editor.prototype.syncModelAt = function(index) {
   if (index > -1) {
     var blockElements = toArray(this.element.children);
     var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
-    this.model[index] = parsedBlockModel;
+    if (parsedBlockModel) {
+      this.model[index] = parsedBlockModel;
+    } else {
+      this.model.splice(index, 1);
+    }
     this.trigger('update', { index: index });
   }
 };
@@ -225,5 +242,9 @@ Editor.prototype.addTextFormat = function(opts) {
   this.textFormatCommands.push(command);
   this.textFormatToolbar.addCommand(command);
 };
+
+Editor.prototype.text = function() {
+  getCursorIndexInSelectionBlockElement();
+}
 
 export default Editor;

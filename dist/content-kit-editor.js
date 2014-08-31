@@ -243,7 +243,7 @@ define("content-kit-utils/node-utils",
     /**
      * Extracts attributes of a `Node` to a hash of key/value pairs
      */
-    function attributesForNode(node /*,blacklist*/) {
+    function attributesForNode(node, blacklist) {
       var attrs = node.attributes;
       var len = attrs && attrs.length;
       var i, attr, name, hash;
@@ -252,7 +252,7 @@ define("content-kit-utils/node-utils",
         attr = attrs[i];
         name = attr.name;
         if (attr.specified && attr.value) {
-          //if (blacklist && name in blacklist)) { continue; }
+          if (blacklist && (name in blacklist)) { continue; }
           hash = hash || {};
           hash[name] = attr.value;
         }
@@ -982,7 +982,7 @@ define("content-kit-compiler/parsers/html-parser",
             type_name  : this.includeTypeNames && type.name,
             start      : startIndex,
             end        : endIndex,
-            attributes : attributesForNode(node)
+            attributes : attributesForNode(node, { style: 1 }) // filter out inline styles
           });
         }
       }
@@ -1310,13 +1310,17 @@ define("content-kit-compiler/types/type-set",
        * Returns type info for a given Node
        */
       findByNode: function(node) {
-        return this.findByTag(node.tagName);
+        if (node) {
+          return this.findByTag(node.tagName);
+        }
       },
       /**
        * Returns type info for a given tag
        */
       findByTag: function(tag) {
-        return this.tagLookup[tag.toLowerCase()];
+        if (tag) {
+          return this.tagLookup[tag.toLowerCase()];
+        }
       },
       /**
        * Returns type info for a given id
@@ -2022,8 +2026,21 @@ define("content-kit-editor/editor/editor",
     }
 
     function bindLiveUpdate(editor) {
-      editor.element.addEventListener('input', function() {
+      editor.element.addEventListener('input', function(e) {
         editor.syncModelAtSelection();
+      });
+
+      // Handle special cases
+      editor.element.addEventListener('keyup', function(e) {
+        // When pressing enter: parse block before cursor too
+        if(!e.shiftKey && e.which === Keycodes.ENTER) {
+          editor.syncModelAt(editor.getCurrentBlockIndex()-1);
+        }
+        // When pressing backspace/del: parse block after cursor too
+        else if(e.which === Keycodes.BKSP || e.which === Keycodes.DEL) {
+          editor.syncModelAt(editor.getCurrentBlockIndex()+1);
+        }
+
       });
     }
 
@@ -2100,7 +2117,11 @@ define("content-kit-editor/editor/editor",
       if (index > -1) {
         var blockElements = toArray(this.element.children);
         var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
-        this.model[index] = parsedBlockModel;
+        if (parsedBlockModel) {
+          this.model[index] = parsedBlockModel;
+        } else {
+          this.model.splice(index, 1);
+        }
         this.trigger('update', { index: index });
       }
     };
@@ -2148,6 +2169,10 @@ define("content-kit-editor/editor/editor",
       this.textFormatCommands.push(command);
       this.textFormatToolbar.addCommand(command);
     };
+
+    Editor.prototype.text = function() {
+      getCursorIndexInSelectionBlockElement();
+    }
 
     __exports__["default"] = Editor;
   });

@@ -40,13 +40,17 @@ TypeSet.prototype = {
    * Returns type info for a given Node
    */
   findByNode: function(node) {
-    return this.findByTag(node.tagName);
+    if (node) {
+      return this.findByTag(node.tagName);
+    }
   },
   /**
    * Returns type info for a given tag
    */
   findByTag: function(tag) {
-    return this.tagLookup[tag.toLowerCase()];
+    if (tag) {
+      return this.tagLookup[tag.toLowerCase()];
+    }
   },
   /**
    * Returns type info for a given id

@@ -163,7 +163,7 @@ HTMLParser.prototype.parseElementMarkup = function(node, startIndex) {
         type_name  : this.includeTypeNames && type.name,
         start      : startIndex,
         end        : endIndex,
-        attributes : attributesForNode(node)
+        attributes : attributesForNode(node, { style: 1 }) // filter out inline styles
       });
     }
   }
