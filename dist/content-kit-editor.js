@@ -1976,22 +1976,17 @@ define("content-kit-editor/editor/editor",
       })
     };
 
-    // TODO: remove when direction model manip. complete
     function bindContentEditableTypingCorrections(editor) {
-      // Breaks out of blockquotes when pressing enter.
       editor.element.addEventListener('keyup', function(e) {
         if(!e.shiftKey && e.which === Keycodes.ENTER) {
-          if(Type.QUOTE.tag === getSelectionBlockTagName()) {
+          var selectionTag = getSelectionBlockTagName();
+          if (!selectionTag || selectionTag === Type.QUOTE.tag) {
             document.execCommand('formatBlock', false, Type.TEXT.tag);
-            e.stopPropagation();
           }
-        }
-      });
-
-      // Assure there is always a supported root tag, and not empty text nodes or divs.
-      editor.element.addEventListener('keyup', function() {
-        if (this.innerHTML.length && RootTags.indexOf(getSelectionBlockTagName()) === -1) {
-          document.execCommand('formatBlock', false, Type.TEXT.tag);
+        } else if (e.which === Keycodes.BKSP) {
+          if(!editor.element.innerHTML) {
+            document.execCommand('formatBlock', false, Type.TEXT.tag);
+          }
         }
       });
     }
@@ -2001,7 +1996,7 @@ define("content-kit-editor/editor/editor",
         var cleanedContent = cleanPastedContent(e, Type.TEXT.tag);
         if (cleanedContent) {
           document.execCommand('insertHTML', false, cleanedContent);
-          editor.syncModel();  // TODO: can optimize to just sync to paste index range
+          editor.syncModel();
         }
       });
     }
@@ -2027,10 +2022,15 @@ define("content-kit-editor/editor/editor",
 
     function bindLiveUpdate(editor) {
       editor.element.addEventListener('input', function(e) {
-        editor.syncModelAtSelection();
+        editor.syncModel();
       });
 
-      // Handle special cases
+      // Experimental/buggy: parsing only the blocks where action took place
+      // Not sure if this is even more efficient. Compiler is probably faster than dom/selection checks
+      /*
+      editor.element.addEventListener('input', function(e) {
+        editor.syncModelAtSelection();
+      });
       editor.element.addEventListener('keyup', function(e) {
         // When pressing enter: parse block before cursor too
         if(!e.shiftKey && e.which === Keycodes.ENTER) {
@@ -2040,8 +2040,8 @@ define("content-kit-editor/editor/editor",
         else if(e.which === Keycodes.BKSP || e.which === Keycodes.DEL) {
           editor.syncModelAt(editor.getCurrentBlockIndex()+1);
         }
-
       });
+      */
     }
 
     function initEmbedCommands(editor) {
@@ -2129,6 +2129,11 @@ define("content-kit-editor/editor/editor",
     Editor.prototype.syncModelAtSelection = function() {
       var index = this.getCurrentBlockIndex();
       this.syncModelAt(index);
+    };
+
+    Editor.prototype.syncVisual = function() {
+      var html = this.compiler.render(this.model);
+      this.element.innerHTML = html;
     };
 
     Editor.prototype.syncVisualAt = function(index) {
@@ -2400,7 +2405,7 @@ define("content-kit-editor/utils/selection-utils",
       var element = getSelectionElement();
       var tag = element && element.tagName.toLowerCase();
       while (tag && RootTags.indexOf(tag) === -1) {
-        if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+        if (element.contentEditable === 'true') { return; } // Stop traversing up dom when hitting an editor element
         element = element.parentNode;
         tag = element.tagName && element.tagName.toLowerCase();
       }
