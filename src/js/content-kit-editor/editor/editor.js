@@ -93,6 +93,20 @@ function bindAutoTypingListeners(editor) {
   });
 }
 
+function bindDragAndDrop(editor) {
+  // Use these to add/remove classes
+  // window.addEventListener('dragenter', function(e) { });
+  // window.addEventListener('dragleave', function(e) { });
+
+  window.addEventListener('dragover', function(e) {
+    e.preventDefault(); // prevents showing cursor where to drop
+  });
+
+  window.addEventListener('drop', function(e) {
+    e.preventDefault(); // prevent page from redirecting
+  });
+}
+
 function bindLiveUpdate(editor) {
   editor.element.addEventListener('input', function(e) {
     editor.syncModel();
@@ -166,6 +180,7 @@ function Editor(element, options) {
     bindContentEditableTypingCorrections(editor);
     bindPasteListener(editor);
     bindAutoTypingListeners(editor);
+    bindDragAndDrop(editor);
     bindLiveUpdate(editor);
     initEmbedCommands(editor);
 
@@ -247,9 +262,5 @@ Editor.prototype.addTextFormat = function(opts) {
   this.textFormatCommands.push(command);
   this.textFormatToolbar.addCommand(command);
 };
-
-Editor.prototype.text = function() {
-  getCursorIndexInSelectionBlockElement();
-}
 
 export default Editor;
