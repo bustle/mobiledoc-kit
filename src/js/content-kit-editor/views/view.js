@@ -28,12 +28,18 @@ View.prototype = {
     this.element.focus();
   },
   addClass: function(className) {
-    this.classNames.push(className);
-    this.element.className = this.classNames.join(' ');
+    var index = this.classNames.indexOf(className);
+    if (index === -1) {
+      this.classNames.push(className);
+      this.element.className = this.classNames.join(' ');
+    }
   },
   removeClass: function(className) {
-    this.classNames.splice(this.classNames.indexOf(className), 1);
-    this.element.className = this.classNames.join(' ');
+    var index = this.classNames.indexOf(className);
+    if (index > -1) {
+      this.classNames.splice(index, 1);
+      this.element.className = this.classNames.join(' ');
+    }
   }
 };
 

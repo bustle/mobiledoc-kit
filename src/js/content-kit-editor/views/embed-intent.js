@@ -2,13 +2,25 @@ import View from './view';
 import Toolbar from './toolbar';
 import { inherit } from '../../content-kit-utils/object-utils';
 import { getSelectionBlockElement } from '../utils/selection-utils';
-import { positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
+import { elementContentIsEmpty, positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
 import { ToolbarDirection, Keycodes } from '../constants';
-import { nodeIsDescendantOfElement, createDiv } from '../utils/element-utils';
+import { createDiv } from '../utils/element-utils';
+
+var LayoutStyle = {
+  GUTTER   : 1,
+  CENTERED : 2
+};
+
+function computeLayoutStyle(rootElement) {
+  if (rootElement.getBoundingClientRect().left > 100) {
+    return LayoutStyle.GUTTER;
+  }
+  return LayoutStyle.CENTERED;
+}
 
 function EmbedIntent(options) {
   var embedIntent = this;
-  var rootElement = options.rootElement;
+  var rootElement = embedIntent.rootElement = options.rootElement;
   options.tagName = 'button';
   options.classNames = ['ck-embed-intent-btn'];
   View.call(embedIntent, options);
@@ -30,8 +42,7 @@ function EmbedIntent(options) {
 
   function embedIntentHandler() {
     var blockElement = getSelectionBlockElement();
-    var blockElementContent = blockElement && blockElement.innerHTML;
-    if (blockElementContent === '' || blockElementContent === '<br>') {
+    if (blockElement && elementContentIsEmpty(blockElement)) {
       embedIntent.showAt(blockElement);
     } else {
       embedIntent.hide();
@@ -39,13 +50,8 @@ function EmbedIntent(options) {
   }
 
   rootElement.addEventListener('keyup', embedIntentHandler);
-
-  document.addEventListener('mouseup', function(e) {
-    setTimeout(function() {
-      if (!nodeIsDescendantOfElement(e.target, embedIntent.toolbar.element)) {
-        embedIntentHandler();
-      }
-    });
+  document.addEventListener('mouseup', function() {
+    setTimeout(function() { embedIntentHandler(); });
   });
 
   document.addEventListener('keyup', function(e) {
@@ -56,7 +62,7 @@ function EmbedIntent(options) {
 
   window.addEventListener('resize', function() {
     if(embedIntent.isShowing) {
-      positionElementToLeftOf(embedIntent.element, embedIntent.atNode);
+      embedIntent.reposition();
       if (embedIntent.toolbar.isShowing) {
         embedIntent.toolbar.positionToContent(embedIntent.element);
       }
@@ -72,10 +78,18 @@ EmbedIntent.prototype.hide = function() {
 };
 
 EmbedIntent.prototype.showAt = function(node) {
+  this.atNode = node;
   this.show();
   this.deactivate();
-  this.atNode = node;
-  positionElementToLeftOf(this.element, node);
+  this.reposition();
+};
+
+EmbedIntent.prototype.reposition = function() {
+  if (computeLayoutStyle(this.rootElement) === LayoutStyle.GUTTER) {
+    positionElementToLeftOf(this.element, this.atNode);
+  } else {
+    positionElementCenteredIn(this.element, this.atNode);
+  }
 };
 
 EmbedIntent.prototype.activate = function() {

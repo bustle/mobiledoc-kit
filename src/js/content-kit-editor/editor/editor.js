@@ -13,7 +13,7 @@ import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
 import TextFormatCommand from '../commands/text-format';
-import { RootTags, Keycodes } from '../constants';
+import { Keycodes } from '../constants';
 import { getSelectionBlockElement, getSelectionBlockTagName } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
 import { cleanPastedContent } from '../utils/paste-utils';
@@ -69,7 +69,6 @@ function bindPasteListener(editor) {
     var cleanedContent = cleanPastedContent(e, Type.TEXT.tag);
     if (cleanedContent) {
       document.execCommand('insertHTML', false, cleanedContent);
-      editor.syncModel();
     }
   });
 }
@@ -93,7 +92,7 @@ function bindAutoTypingListeners(editor) {
   });
 }
 
-function bindDragAndDrop(editor) {
+function bindDragAndDrop() {
   // Use these to add/remove classes
   // window.addEventListener('dragenter', function(e) { });
   // window.addEventListener('dragleave', function(e) { });
@@ -108,7 +107,7 @@ function bindDragAndDrop(editor) {
 }
 
 function bindLiveUpdate(editor) {
-  editor.element.addEventListener('input', function(e) {
+  editor.element.addEventListener('input', function() {
     editor.syncModel();
   });
 

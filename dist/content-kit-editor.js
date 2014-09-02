@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Aug 31, 2014
+ * Last modified: Sep 4, 2014
  */
 
 (function(exports, document) {
@@ -75,7 +75,7 @@ define("content-kit-compiler/compiler",
     /**
      * @method parse
      * @param input
-     * @return Object
+     * @return Array
      */
     Compiler.prototype.parse = function(input) {
       return this.parser.parse(input);
@@ -84,10 +84,19 @@ define("content-kit-compiler/compiler",
     /**
      * @method render
      * @param data
-     * @return Object
+     * @return String
      */
     Compiler.prototype.render = function(data) {
       return this.renderer.render(data);
+    };
+
+    /**
+     * @method sanitize
+     * @param input
+     * @return String
+     */
+    Compiler.prototype.sanitize = function(input) {
+      return this.render(this.parse(input));
     };
 
     /**
@@ -825,6 +834,8 @@ define("content-kit-compiler/parsers/html-parser",
     var unwrapNode = __dependency7__.unwrapNode;
     var attributesForNode = __dependency7__.attributesForNode;
 
+    var attributeBlacklist = { 'style': 1, 'class': 1 }; // filter out inline styles and classes
+
     /**
      * Gets the last block in the set or creates and return a default block if none exist yet.
      */
@@ -914,7 +925,7 @@ define("content-kit-compiler/parsers/html-parser",
           type       : type.id,
           type_name  : this.includeTypeNames && type.name,
           value      : trim(textOfNode(node)),
-          attributes : attributesForNode(node),
+          attributes : attributesForNode(node, attributeBlacklist),
           markup     : this.parseBlockMarkup(node)
         });
       }
@@ -982,7 +993,7 @@ define("content-kit-compiler/parsers/html-parser",
             type_name  : this.includeTypeNames && type.name,
             start      : startIndex,
             end        : endIndex,
-            attributes : attributesForNode(node, { style: 1 }) // filter out inline styles
+            attributes : attributesForNode(node, attributeBlacklist)
           });
         }
       }
@@ -1937,7 +1948,6 @@ define("content-kit-editor/editor/editor",
     var ImageCommand = __dependency13__["default"];
     var OEmbedCommand = __dependency14__["default"];
     var TextFormatCommand = __dependency15__["default"];
-    var RootTags = __dependency16__.RootTags;
     var Keycodes = __dependency16__.Keycodes;
     var getSelectionBlockElement = __dependency17__.getSelectionBlockElement;
     var getSelectionBlockTagName = __dependency17__.getSelectionBlockTagName;
@@ -1996,7 +2006,6 @@ define("content-kit-editor/editor/editor",
         var cleanedContent = cleanPastedContent(e, Type.TEXT.tag);
         if (cleanedContent) {
           document.execCommand('insertHTML', false, cleanedContent);
-          editor.syncModel();
         }
       });
     }
@@ -2020,7 +2029,7 @@ define("content-kit-editor/editor/editor",
       });
     }
 
-    function bindDragAndDrop(editor) {
+    function bindDragAndDrop() {
       // Use these to add/remove classes
       // window.addEventListener('dragenter', function(e) { });
       // window.addEventListener('dragleave', function(e) { });
@@ -2035,7 +2044,7 @@ define("content-kit-editor/editor/editor",
     }
 
     function bindLiveUpdate(editor) {
-      editor.element.addEventListener('input', function(e) {
+      editor.element.addEventListener('input', function() {
         editor.syncModel();
       });
 
@@ -2238,6 +2247,14 @@ define("content-kit-editor/utils/element-utils",
       return false;
     }
 
+    function elementContentIsEmpty(element) {
+      var content = element && element.innerHTML;
+      if (content) {
+        return content === '' || content === '<br>';
+      }
+      return false;
+    }
+
     function getElementRelativeOffset(element) {
       var offset = { left: 0, top: -window.pageYOffset };
       var offsetParent = element.offsetParent;
@@ -2306,6 +2323,7 @@ define("content-kit-editor/utils/element-utils",
     __exports__.swapElements = swapElements;
     __exports__.getEventTargetMatchingTag = getEventTargetMatchingTag;
     __exports__.nodeIsDescendantOfElement = nodeIsDescendantOfElement;
+    __exports__.elementContentIsEmpty = elementContentIsEmpty;
     __exports__.getElementRelativeOffset = getElementRelativeOffset;
     __exports__.getElementComputedStyleNumericProp = getElementComputedStyleNumericProp;
     __exports__.positionElementToRect = positionElementToRect;
@@ -2525,16 +2543,28 @@ define("content-kit-editor/views/embed-intent",
     var Toolbar = __dependency2__["default"];
     var inherit = __dependency3__.inherit;
     var getSelectionBlockElement = __dependency4__.getSelectionBlockElement;
+    var elementContentIsEmpty = __dependency5__.elementContentIsEmpty;
     var positionElementToLeftOf = __dependency5__.positionElementToLeftOf;
     var positionElementCenteredIn = __dependency5__.positionElementCenteredIn;
     var ToolbarDirection = __dependency6__.ToolbarDirection;
     var Keycodes = __dependency6__.Keycodes;
-    var nodeIsDescendantOfElement = __dependency5__.nodeIsDescendantOfElement;
     var createDiv = __dependency5__.createDiv;
+
+    var LayoutStyle = {
+      GUTTER   : 1,
+      CENTERED : 2
+    };
+
+    function computeLayoutStyle(rootElement) {
+      if (rootElement.getBoundingClientRect().left > 100) {
+        return LayoutStyle.GUTTER;
+      }
+      return LayoutStyle.CENTERED;
+    }
 
     function EmbedIntent(options) {
       var embedIntent = this;
-      var rootElement = options.rootElement;
+      var rootElement = embedIntent.rootElement = options.rootElement;
       options.tagName = 'button';
       options.classNames = ['ck-embed-intent-btn'];
       View.call(embedIntent, options);
@@ -2556,8 +2586,7 @@ define("content-kit-editor/views/embed-intent",
 
       function embedIntentHandler() {
         var blockElement = getSelectionBlockElement();
-        var blockElementContent = blockElement && blockElement.innerHTML;
-        if (blockElementContent === '' || blockElementContent === '<br>') {
+        if (blockElement && elementContentIsEmpty(blockElement)) {
           embedIntent.showAt(blockElement);
         } else {
           embedIntent.hide();
@@ -2565,13 +2594,8 @@ define("content-kit-editor/views/embed-intent",
       }
 
       rootElement.addEventListener('keyup', embedIntentHandler);
-
-      document.addEventListener('mouseup', function(e) {
-        setTimeout(function() {
-          if (!nodeIsDescendantOfElement(e.target, embedIntent.toolbar.element)) {
-            embedIntentHandler();
-          }
-        });
+      document.addEventListener('mouseup', function() {
+        setTimeout(function() { embedIntentHandler(); });
       });
 
       document.addEventListener('keyup', function(e) {
@@ -2582,7 +2606,7 @@ define("content-kit-editor/views/embed-intent",
 
       window.addEventListener('resize', function() {
         if(embedIntent.isShowing) {
-          positionElementToLeftOf(embedIntent.element, embedIntent.atNode);
+          embedIntent.reposition();
           if (embedIntent.toolbar.isShowing) {
             embedIntent.toolbar.positionToContent(embedIntent.element);
           }
@@ -2598,10 +2622,18 @@ define("content-kit-editor/views/embed-intent",
     };
 
     EmbedIntent.prototype.showAt = function(node) {
+      this.atNode = node;
       this.show();
       this.deactivate();
-      this.atNode = node;
-      positionElementToLeftOf(this.element, node);
+      this.reposition();
+    };
+
+    EmbedIntent.prototype.reposition = function() {
+      if (computeLayoutStyle(this.rootElement) === LayoutStyle.GUTTER) {
+        positionElementToLeftOf(this.element, this.atNode);
+      } else {
+        positionElementCenteredIn(this.element, this.atNode);
+      }
     };
 
     EmbedIntent.prototype.activate = function() {
@@ -2871,18 +2903,14 @@ define("content-kit-editor/views/toolbar",
       var toolbar = this;
       var commands = options.commands;
       var commandCount = commands && commands.length, i;
-      toolbar.editor = options.editor || null;
-      toolbar.embedIntent = options.embedIntent || null;
-      toolbar.direction = options.direction || ToolbarDirection.TOP;
       options.classNames = ['ck-toolbar'];
-      if (toolbar.direction === ToolbarDirection.RIGHT) {
-        options.classNames.push('right');
-      }
-
       View.call(toolbar, options);
 
+      toolbar.editor = options.editor || null;
+      toolbar.embedIntent = options.embedIntent || null;
       toolbar.activePrompt = null;
       toolbar.buttons = [];
+      toolbar.setDirection(options.direction || ToolbarDirection.TOP);
 
       toolbar.promptContainerElement = createDiv('ck-toolbar-prompt');
       toolbar.buttonContainerElement = createDiv('ck-toolbar-buttons');
@@ -2958,6 +2986,15 @@ define("content-kit-editor/views/toolbar",
           positioningMethod = positionElementCenteredAbove;
       }
       positioningMethod(this.element, content);
+    };
+
+    Toolbar.prototype.setDirection = function(direction) {
+      this.direction = direction;
+      if (direction === ToolbarDirection.RIGHT) {
+        this.addClass('right');
+      } else {
+        this.removeClass('right');
+      }
     };
 
     __exports__["default"] = Toolbar;
@@ -3047,12 +3084,18 @@ define("content-kit-editor/views/view",
         this.element.focus();
       },
       addClass: function(className) {
-        this.classNames.push(className);
-        this.element.className = this.classNames.join(' ');
+        var index = this.classNames.indexOf(className);
+        if (index === -1) {
+          this.classNames.push(className);
+          this.element.className = this.classNames.join(' ');
+        }
       },
       removeClass: function(className) {
-        this.classNames.splice(this.classNames.indexOf(className), 1);
-        this.element.className = this.classNames.join(' ');
+        var index = this.classNames.indexOf(className);
+        if (index > -1) {
+          this.classNames.splice(index, 1);
+          this.element.className = this.classNames.join(' ');
+        }
       }
     };
 

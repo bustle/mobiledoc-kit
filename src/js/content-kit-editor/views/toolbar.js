@@ -24,18 +24,14 @@ function Toolbar(options) {
   var toolbar = this;
   var commands = options.commands;
   var commandCount = commands && commands.length, i;
-  toolbar.editor = options.editor || null;
-  toolbar.embedIntent = options.embedIntent || null;
-  toolbar.direction = options.direction || ToolbarDirection.TOP;
   options.classNames = ['ck-toolbar'];
-  if (toolbar.direction === ToolbarDirection.RIGHT) {
-    options.classNames.push('right');
-  }
-
   View.call(toolbar, options);
 
+  toolbar.editor = options.editor || null;
+  toolbar.embedIntent = options.embedIntent || null;
   toolbar.activePrompt = null;
   toolbar.buttons = [];
+  toolbar.setDirection(options.direction || ToolbarDirection.TOP);
 
   toolbar.promptContainerElement = createDiv('ck-toolbar-prompt');
   toolbar.buttonContainerElement = createDiv('ck-toolbar-buttons');
@@ -111,6 +107,15 @@ Toolbar.prototype.positionToContent = function(content) {
       positioningMethod = positionElementCenteredAbove;
   }
   positioningMethod(this.element, content);
+};
+
+Toolbar.prototype.setDirection = function(direction) {
+  this.direction = direction;
+  if (direction === ToolbarDirection.RIGHT) {
+    this.addClass('right');
+  } else {
+    this.removeClass('right');
+  }
 };
 
 export default Toolbar;

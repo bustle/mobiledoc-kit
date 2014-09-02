@@ -40,6 +40,14 @@ function nodeIsDescendantOfElement(node, element) {
   return false;
 }
 
+function elementContentIsEmpty(element) {
+  var content = element && element.innerHTML;
+  if (content) {
+    return content === '' || content === '<br>';
+  }
+  return false;
+}
+
 function getElementRelativeOffset(element) {
   var offset = { left: 0, top: -window.pageYOffset };
   var offsetParent = element.offsetParent;
@@ -103,6 +111,6 @@ function positionElementToRightOf(element, rightOfElement) {
 }
 
 export { createDiv, hideElement, showElement, swapElements, getEventTargetMatchingTag, nodeIsDescendantOfElement,
-getElementRelativeOffset, getElementComputedStyleNumericProp, positionElementToRect,
+elementContentIsEmpty, getElementRelativeOffset, getElementComputedStyleNumericProp, positionElementToRect,
 positionElementHorizontallyCenteredToRect, positionElementCenteredAbove, positionElementCenteredBelow,
 positionElementCenteredIn, positionElementToLeftOf, positionElementToRightOf };

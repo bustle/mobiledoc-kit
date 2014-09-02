@@ -6,6 +6,8 @@ import { toArray } from '../../content-kit-utils/array-utils';
 import { trim, trimLeft, sanitizeWhitespace } from '../../content-kit-utils/string-utils';
 import { createElement, DOMParsingNode, textOfNode, unwrapNode, attributesForNode } from '../../content-kit-utils/node-utils';
 
+var attributeBlacklist = { 'style': 1, 'class': 1 }; // filter out inline styles and classes
+
 /**
  * Gets the last block in the set or creates and return a default block if none exist yet.
  */
@@ -95,7 +97,7 @@ HTMLParser.prototype.parseBlock = function(node) {
       type       : type.id,
       type_name  : this.includeTypeNames && type.name,
       value      : trim(textOfNode(node)),
-      attributes : attributesForNode(node),
+      attributes : attributesForNode(node, attributeBlacklist),
       markup     : this.parseBlockMarkup(node)
     });
   }
@@ -163,7 +165,7 @@ HTMLParser.prototype.parseElementMarkup = function(node, startIndex) {
         type_name  : this.includeTypeNames && type.name,
         start      : startIndex,
         end        : endIndex,
-        attributes : attributesForNode(node, { style: 1 }) // filter out inline styles
+        attributes : attributesForNode(node, attributeBlacklist)
       });
     }
   }

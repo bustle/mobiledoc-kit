@@ -29,7 +29,7 @@
   "nonew"         : true,     // Prohibit use of constructors for side-effects.
   "regexp"        : true,     // Prohibit `.` and `[^...]` in regular expressions.
   "undef"         : true,     // Require all non-global variables be declared before they are used.
-  //"unused"        : true,     // Warn when variables are created but not used.
+  "unused"        : true,     // Warn when variables are created but not used.
   "trailing"      : true,     // Prohibit trailing whitespaces.
   "es3"           : true,     // Prohibit trailing commas for old IE 
   "esnext"        : true,     // Allow ES.next specific features such as `const` and `let`.

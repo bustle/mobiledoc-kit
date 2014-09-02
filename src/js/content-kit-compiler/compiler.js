@@ -29,7 +29,7 @@ function Compiler(options) {
 /**
  * @method parse
  * @param input
- * @return Object
+ * @return Array
  */
 Compiler.prototype.parse = function(input) {
   return this.parser.parse(input);
@@ -38,10 +38,19 @@ Compiler.prototype.parse = function(input) {
 /**
  * @method render
  * @param data
- * @return Object
+ * @return String
  */
 Compiler.prototype.render = function(data) {
   return this.renderer.render(data);
+};
+
+/**
+ * @method sanitize
+ * @param input
+ * @return String
+ */
+Compiler.prototype.sanitize = function(input) {
+  return this.render(this.parse(input));
 };
 
 /**
