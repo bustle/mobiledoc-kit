@@ -13,41 +13,48 @@
   background: -ms-linear-gradient(top,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
   background: linear-gradient(to bottom,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
   box-shadow: 0 1px 3px -1px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.12), inset 1px 1px 0 #282828, inset -1px -1px 0 #282828;
-  border-radius: 5px;
+  border-radius: 3px;
   transition: left @elementMoveSpeed, top @elementMoveSpeed;
-  margin-bottom: 0.6em; /* space for arrow */
+  margin-bottom: 0.45em; // space for arrow
 }
 
+// arrow
 .ck-toolbar:after {
   content: '';
   position: absolute;
   left: 50%;
   width: 0; 
   height: 0; 
-  border-left: 0.5em solid transparent;
-  border-right: 0.5em solid transparent;
-  border-top: 0.5em solid rgba(43,43,43,1);
-  bottom: -0.45em;
-  margin: 0 0 0 -0.5em;
+  border-left: 0.45em solid transparent;
+  border-right: 0.45em solid transparent;
+  border-top: 0.45em solid rgba(43,43,43,1);
+  bottom: -0.4em;
+  margin: 0 0 0 -0.45em;
 }
 
 .ck-toolbar.right {
   margin: 0 0 0 0.5em;
 }
 .ck-toolbar.right:after {
-  left: -0.95em;
+  left: -0.4em;
   top: 50%;
   bottom: auto;
-  margin: -0.5em 0 0 0;
-  border-top: 0.5em solid transparent;
-  border-bottom: 0.5em solid transparent;
-  border-right: 0.5em solid #393939;
+  margin: -0.45em 0 0 0;
+  border-top: 0.45em solid transparent;
+  border-bottom: 0.45em solid transparent;
+  border-right: 0.45em solid #3d3d3d;
+  border-left: none;
 }
 
 .ck-toolbar,
 .ck-toolbar-prompt {
-  -webkit-animation: pop 0.25s;
-          animation: pop 0.25s;
+  -webkit-animation: pop-up 0.25s;
+          animation: pop-up 0.25s;
+}
+.ck-toolbar.right,
+.ck-toolbar.right .ck-toolbar-prompt {
+  -webkit-animation: pop-right 0.25s;
+          animation: pop-right 0.25s;
 }
 
 .ck-toolbar-buttons {
@@ -68,17 +75,17 @@
   height: 44px;
   line-height: 42px;
   cursor: pointer;
-  transition: background-color @colorChangeSpeed;
-  text-shadow: 0 1px rgba(0,0,0,0.7);
+  transition: background-color @colorChangeSpeed linear;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.65);
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
 }
 .ck-toolbar-btn:hover {
-  background-color: rgba(43,43,43,0.5);
+  background-color: rgba(43,43,43,0.4);
 }
 .ck-toolbar-btn:active {
-  background-color: rgba(43,43,43,0.75);
+  background-color: rgba(43,43,43,0.65);
 }
 .ck-toolbar-btn:active,
 .ck-toolbar-btn.active {

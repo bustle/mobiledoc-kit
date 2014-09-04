@@ -4,7 +4,7 @@
 .ck-editor {
   font-family: Georgia, serif;
   margin: 1em 0;
-  color: #333;
+  color: #454545;
   /* 
     Chrome bug adds inline styles when backspacing to join 2 blocks. 
     Fix: Apply font styles to parent element, or use % for font-size, line-height.
@@ -52,10 +52,9 @@
   background: -ms-linear-gradient(top, rgba(74, 74, 74, 0.97) 0%, #2b2b2b 100%);
   background: linear-gradient(to bottom, rgba(74, 74, 74, 0.97) 0%, #2b2b2b 100%);
   box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.8), inset 0 2px 0 rgba(255, 255, 255, 0.12), inset 1px 1px 0 #282828, inset -1px -1px 0 #282828;
-  border-radius: 5px;
+  border-radius: 3px;
   transition: left 0.1s, top 0.1s;
-  margin-bottom: 0.6em;
-  /* space for arrow */
+  margin-bottom: 0.45em;
 }
 .ck-toolbar:after {
   content: '';
@@ -63,28 +62,34 @@
   left: 50%;
   width: 0;
   height: 0;
-  border-left: 0.5em solid transparent;
-  border-right: 0.5em solid transparent;
-  border-top: 0.5em solid #2b2b2b;
-  bottom: -0.45em;
-  margin: 0 0 0 -0.5em;
+  border-left: 0.45em solid transparent;
+  border-right: 0.45em solid transparent;
+  border-top: 0.45em solid #2b2b2b;
+  bottom: -0.4em;
+  margin: 0 0 0 -0.45em;
 }
 .ck-toolbar.right {
   margin: 0 0 0 0.5em;
 }
 .ck-toolbar.right:after {
-  left: -0.95em;
+  left: -0.4em;
   top: 50%;
   bottom: auto;
-  margin: -0.5em 0 0 0;
-  border-top: 0.5em solid transparent;
-  border-bottom: 0.5em solid transparent;
-  border-right: 0.5em solid #393939;
+  margin: -0.45em 0 0 0;
+  border-top: 0.45em solid transparent;
+  border-bottom: 0.45em solid transparent;
+  border-right: 0.45em solid #3d3d3d;
+  border-left: none;
 }
 .ck-toolbar,
 .ck-toolbar-prompt {
-  -webkit-animation: pop 0.25s;
-  animation: pop 0.25s;
+  -webkit-animation: pop-up 0.25s;
+  animation: pop-up 0.25s;
+}
+.ck-toolbar.right,
+.ck-toolbar.right .ck-toolbar-prompt {
+  -webkit-animation: pop-right 0.25s;
+  animation: pop-right 0.25s;
 }
 .ck-toolbar-buttons {
   border-radius: 5px;
@@ -103,17 +108,17 @@
   height: 44px;
   line-height: 42px;
   cursor: pointer;
-  transition: background-color 0.15s;
-  text-shadow: 0 1px rgba(0, 0, 0, 0.7);
+  transition: background-color 0.1s linear;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.65);
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
 }
 .ck-toolbar-btn:hover {
-  background-color: rgba(43, 43, 43, 0.5);
+  background-color: rgba(43, 43, 43, 0.4);
 }
 .ck-toolbar-btn:active {
-  background-color: rgba(43, 43, 43, 0.75);
+  background-color: rgba(43, 43, 43, 0.65);
 }
 .ck-toolbar-btn:active,
 .ck-toolbar-btn.active {
@@ -217,9 +222,9 @@
   font-size: 2em;
   line-height: 0.7em;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, transform 0.35s;
-  -webkit-animation: pop 0.25s;
-  animation: pop 0.25s;
+  transition: color 0.1s, border-color 0.1s, transform 0.35s;
+  -webkit-animation: pop-out 0.25s;
+  animation: pop-out 0.25s;
 }
 .ck-embed-intent-btn:hover {
   color: #999;
@@ -447,7 +452,27 @@
     background-position: 288px 0;
   }
 }
-@-webkit-keyframes pop {
+@-webkit-keyframes pop-out {
+  0% {
+    opacity: 0.8;
+    -webkit-transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    -webkit-transform: scale(1.1);
+  }
+}
+@keyframes pop-out {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+@-webkit-keyframes pop-up {
   0% {
     opacity: 0.8;
     -webkit-transform: scale(0.9) translateY(14px);
@@ -457,7 +482,7 @@
     -webkit-transform: scale(1.05) translateY(-4px);
   }
 }
-@keyframes pop {
+@keyframes pop-up {
   0% {
     opacity: 0.8;
     transform: scale(0.9) translateY(14px);
@@ -465,5 +490,25 @@
   50% {
     opacity: 1;
     transform: scale(1.05) translateY(-4px);
+  }
+}
+@-webkit-keyframes pop-right {
+  0% {
+    opacity: 0.8;
+    -webkit-transform: scale(0.9) translateX(-14px);
+  }
+  50% {
+    opacity: 1;
+    -webkit-transform: scale(1.05) translateX(4px);
+  }
+}
+@keyframes pop-right {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.9) translateX(-14px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) translateX(4px);
   }
 }
