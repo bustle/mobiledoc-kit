@@ -44,9 +44,9 @@ OEmbedCommand.prototype.exec = function(url) {
       if (error) {
         var errorMsg = error;
         if (error.target && error.target.status === 0) {
-          errorMsg = 'Could not connect to embed service';
+          errorMsg = 'Error: could not connect to embed service.';
         } else if (typeof error !== 'string') {
-          errorMsg = 'Embed error';
+          errorMsg = 'Error: embeds are broken :/';
         }
         new Message().show(errorMsg);
         embedIntent.show();

@@ -14,7 +14,7 @@ Message.prototype.show = function(message) {
   Message._super.prototype.show.call(messageView);
   setTimeout(function() {
     messageView.hide();
-  }, 3000);
+  }, 3200);
 };
 
 export default Message;

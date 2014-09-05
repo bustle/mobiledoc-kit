@@ -325,20 +325,41 @@
 }
 .ck-message {
   position: fixed;
-  top: 0.45em;
-  left: 50%;
-  z-index: 10;
-  padding: 0.5em 1em;
-  background-color: #a4d4ff;
-  border: 1px solid #0071d7;
-  color: #333;
-  text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.5);
-  border-radius: 2px;
-  box-shadow: 0px 2px 8px 3px rgba(0, 0, 0, 0.1);
-  -webkit-transform: translateX(-50%);
-  transform: translateX(-50%);
-  -webkit-animation: fadeIn 0.3s;
-  animation: fadeIn 0.3s;
+  left: 0;
+  right: 0;
+  height: 3.125em;
+  line-height: 3.125em;
+  top: -3.125em;
+  z-index: 2;
+  padding: 0 1em;
+  font-weight: 500;
+  text-align: center;
+  background-color: rgba(103, 182, 255, 0.98);
+  border-bottom: 1px solid #4daaff;
+  -webkit-animation: messageShowHide 3.2s;
+  animation: messageShowHide 3.2s;
+}
+@-webkit-keyframes messageShowHide {
+  8% {
+    top: 0;
+  }
+  92% {
+    top: 0;
+  }
+  100% {
+    top: -3.125em;
+  }
+}
+@keyframes messageShowHide {
+  8% {
+    top: 0;
+  }
+  92% {
+    top: 0;
+  }
+  100% {
+    top: -3.125em;
+  }
 }
 /**
  * Icons

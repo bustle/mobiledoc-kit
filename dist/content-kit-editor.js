@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Sep 4, 2014
+ * Last modified: Sep 5, 2014
  */
 
 (function(exports, document) {
@@ -1712,9 +1712,9 @@ define("content-kit-editor/commands/oembed",
           if (error) {
             var errorMsg = error;
             if (error.target && error.target.status === 0) {
-              errorMsg = 'Could not connect to embed service';
+              errorMsg = 'Error: could not connect to embed service.';
             } else if (typeof error !== 'string') {
-              errorMsg = 'Embed error';
+              errorMsg = 'Error: embeds are broken :/';
             }
             new Message().show(errorMsg);
             embedIntent.show();
@@ -2687,7 +2687,7 @@ define("content-kit-editor/views/message",
       Message._super.prototype.show.call(messageView);
       setTimeout(function() {
         messageView.hide();
-      }, 3000);
+      }, 3200);
     };
 
     __exports__["default"] = Message;

@@ -5,7 +5,7 @@
 .ck-toolbar {
   text-align: center;
   position: absolute;
-  z-index: 1;
+  z-index: @z-index--toolbar;
   background: -moz-linear-gradient(top,  rgba(74,74,74,0.97) 0%, rgba(43,43,43,1) 100%);
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(74,74,74,0.97)), color-stop(100%,rgba(43,43,43,1)));
   background: -webkit-linear-gradient(top,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
@@ -123,7 +123,7 @@
 
 .ck-editor-hilite {
   position: absolute;
-  z-index: -1;
+  z-index: @z-index--hilite;
   background-color: fadeout(@themeColor, 95%);
   border-bottom: 2px dotted @themeColor;
 }
