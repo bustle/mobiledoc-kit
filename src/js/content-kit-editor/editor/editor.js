@@ -241,15 +241,23 @@ Editor.prototype.getCurrentBlockIndex = function() {
 
 Editor.prototype.insertBlock = function(model) {
   this.insertBlockAt(model, this.getCurrentBlockIndex());
+  this.trigger('update');
 };
 
 Editor.prototype.insertBlockAt = function(model, index) {
   model = model || new TextModel();
   this.model.splice(index, 0, model);
+  this.trigger('update');
 };
 
 Editor.prototype.replaceBlockAt = function(model, index) {
   this.model[index] = model;
+  this.trigger('update');
+};
+
+Editor.prototype.removeBlockAt = function(index) {
+  this.model.splice(index, 1);
+  this.trigger('update');
 };
 
 Editor.prototype.addTextFormat = function(opts) {

@@ -58,17 +58,22 @@ ImageCommand.prototype = {
     var embedIntent = this.embedIntent;
 
     embedIntent.showLoading();
+    renderFromFile(fileInput.files && fileInput.files[0], editor); // render image immediately client-side
     this.uploader.upload({
       fileInput: fileInput,
       complete: function(response, error) {
         embedIntent.hideLoading();
         if (error || !response || !response.url) {
+          setTimeout(function() {
+            var failedIndex = editor.getCurrentBlockIndex();
+            editor.removeBlockAt(failedIndex);
+            editor.syncVisual();
+          }, 1000);
           return new Message().show(error.message || 'Error uploading image');
         }
         insertImageWithSrc(response.url, editor);
       }
     });
-    renderFromFile(fileInput.files && fileInput.files[0], editor); // render image immediately client-side
     fileInput.value = null; // reset file input
   }
 };

@@ -3,7 +3,7 @@
  * @version  0.1.0
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
- * Last modified: Sep 5, 2014
+ * Last modified: Sep 11, 2014
  */
 
 (function(exports, document) {
@@ -1539,17 +1539,22 @@ define("content-kit-editor/commands/image",
         var embedIntent = this.embedIntent;
 
         embedIntent.showLoading();
+        renderFromFile(fileInput.files && fileInput.files[0], editor); // render image immediately client-side
         this.uploader.upload({
           fileInput: fileInput,
           complete: function(response, error) {
             embedIntent.hideLoading();
             if (error || !response || !response.url) {
+              setTimeout(function() {
+                var failedIndex = editor.getCurrentBlockIndex();
+                editor.removeBlockAt(failedIndex);
+                editor.syncVisual();
+              }, 1000);
               return new Message().show(error.message || 'Error uploading image');
             }
             insertImageWithSrc(response.url, editor);
           }
         });
-        renderFromFile(fileInput.files && fileInput.files[0], editor); // render image immediately client-side
         fileInput.value = null; // reset file input
       }
     };
@@ -2178,15 +2183,23 @@ define("content-kit-editor/editor/editor",
 
     Editor.prototype.insertBlock = function(model) {
       this.insertBlockAt(model, this.getCurrentBlockIndex());
+      this.trigger('update');
     };
 
     Editor.prototype.insertBlockAt = function(model, index) {
       model = model || new TextModel();
       this.model.splice(index, 0, model);
+      this.trigger('update');
     };
 
     Editor.prototype.replaceBlockAt = function(model, index) {
       this.model[index] = model;
+      this.trigger('update');
+    };
+
+    Editor.prototype.removeBlockAt = function(index) {
+      this.model.splice(index, 1);
+      this.trigger('update');
     };
 
     Editor.prototype.addTextFormat = function(opts) {
