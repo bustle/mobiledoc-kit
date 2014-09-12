@@ -5,7 +5,8 @@
   "repository": "https://github.com/ContentKit/content-kit-editor",
   "main": "dist/content-kit-editor.js",
   "scripts": {
-    "test": "gulp test"
+    "start" : "node server/index.js",
+    "test"  : "gulp test"
   },
   "keywords": [
     "html",
@@ -16,6 +17,13 @@
   ],
   "author": "Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)",
   "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.0.17",
+    "busboy": "^0.2.8",
+    "cors": "^2.4.1",
+    "embedly": "^1.0.2",
+    "express": "^4.9.0"
+  },
   "devDependencies": {
     "gulp": "^3.8.1",
     "gulp-concat": "~2.1.7",
