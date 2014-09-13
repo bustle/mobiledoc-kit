@@ -1,12 +1,10 @@
 var express = require('express');
-var cors = require('cors');
 var config = require('./config');
 var S3UploadService = require('./services/s3-uploader');
 var EmbedService = require('./services/embed');
 
 // Express app
 var app = express();
-app.use(cors(config.cors));
 
 // Demo setup
 app.use(express.static('demo'));
