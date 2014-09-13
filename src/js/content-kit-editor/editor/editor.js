@@ -36,7 +36,7 @@ var defaults = {
     new SubheadingCommand()
   ],
   embedCommands: [
-    new ImageCommand({  serviceUrl: '/images' }),
+    new ImageCommand({  serviceUrl: '/upload' }),
     new OEmbedCommand({ serviceUrl: '/embed'  })
   ],
   autoTypingCommands: [

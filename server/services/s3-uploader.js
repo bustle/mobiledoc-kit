@@ -17,7 +17,7 @@ function readFileStream(req, res) {
   busboy.on('file', function(fieldname, stream, filename, encoding, mimeType) {
     if (!filename) {
       stream.resume();
-      return res.json(500, { message: 'invalid file', status: 500 });
+      return res.status(500).json({ message: 'invalid file', status: 500 });
     }
     req.files = req.files || {};
 
@@ -27,12 +27,12 @@ function readFileStream(req, res) {
     });
 
     stream.on('error', function(error) {
-      return res.json(500, { message: 'error reading file', status: 500 });
+      return res.status(500).json({ message: 'error reading file', status: 500 });
     });
 
     stream.on('end', function() {
       if (this.truncated) {
-        return res.json(500, { message: 'max file size is ' + maxFileSize + ' bytes', status: 500 });
+        return res.status(500).json({ message: 'max file size is ' + maxFileSize + ' bytes', status: 500 });
       }
       var finalBuffer = Buffer.concat(this.chunks);
       var file = req.files[fieldname] = {
@@ -68,17 +68,10 @@ function putFileBufferToS3(file, res) {
 
   var request = s3.putObject(params, function(error, data) {
     if (error) {
-      return res.json(500, { message: 'error uploading to S3', status: 500 });
+      return res.status(500).json({ message: error.message || 'Error uploading to S3', status: 500 });
     }
     res.json({ url: 'https://s3.amazonaws.com/' + uploadBucket + '/' + key });
   });
-
-  // Can we send this to the client?
-  /*
-  request.on('httpUploadProgress', function (progress) {
-    console.log('Uploaded', progress.loaded, 'of', progress.total, 'bytes');
-  });
-  */
 }
 
 module.exports = readFileStream;

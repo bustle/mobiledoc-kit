@@ -1,14 +1,14 @@
 { 
   "aws" : {
-    "accessKeyId" : null,
-    "secretAccessKey" : null,
+    "accessKeyId" : "XXXXXX",
+    "secretAccessKey" : "XXXXXX",
     "region" : "us-east-1"
   },
   "s3" : {
-    "bucketName" : null,
+    "bucketName" : "XXXXXX",
     "maxFileSize" : 5000000
   },
-  "embedlyKey" : null,
+  "embedlyKey" : "XXXXXX",
   "cors" : {
     "origin" : "*"
   }

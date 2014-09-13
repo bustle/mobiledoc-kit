@@ -1,6 +1,6 @@
 # ContentKit-Editor [![Build Status](https://travis-ci.org/ContentKit/content-kit-editor.svg?branch=master)](https://travis-ci.org/ContentKit/content-kit-editor)
 
-A modern, minimalist WYSIWYG editor.  (**[Demo](https://rawgit.com/ContentKit/content-kit-editor/master/demo/index.html)**)
+A modern, minimalist WYSIWYG editor.
 
 ![screenshot]
 (https://rawgit.com/ContentKit/content-kit-editor/master/screenshot.png)
@@ -13,8 +13,7 @@ A modern, minimalist WYSIWYG editor.  (**[Demo](https://rawgit.com/ContentKit/co
 
 ## Playing
 1. Start the server: `npm start`
-2. Navigate to the demo at (http://localhost:5000)
-```
+2. Navigate to the demo at [http://localhost:5000]
 
 ## Testing
 `gulp test`
