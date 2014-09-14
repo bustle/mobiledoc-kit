@@ -1,4 +1,3 @@
-import Command from '../commands/base';
 
 var buttonClassName = 'ck-toolbar-btn';
 
@@ -8,10 +7,6 @@ function ToolbarButton(options) {
   var command = options.command;
   var prompt = command.prompt;
   var element = document.createElement('button');
-
-  if(typeof command === 'string') {
-    command = Command.index[command];
-  }
 
   button.element = element;
   button.command = command;

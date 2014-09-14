@@ -78,39 +78,7 @@ function selectionIsInElement(selection, element) {
 
 function selectionIsEditable(selection) {
   var el = getSelectionBlockElement(selection);
-  return el.isContentEditable;
-}
-
-/*
-function saveSelection() {
-  var sel = window.getSelection();
-  var ranges = [], i;
-  if (sel.rangeCount) {
-    var rangeCount = sel.rangeCount;
-    for (i = 0; i < rangeCount; i++) {
-      ranges.push(sel.getRangeAt(i));
-    }
-  }
-  return ranges;
-}
-
-function restoreSelection(savedSelection) {
-  var sel = window.getSelection();
-  var len = savedSelection.length, i;
-  sel.removeAllRanges();
-  for (i = 0; i < len; i++) {
-    sel.addRange(savedSelection[i]);
-  }
-}
-*/
-
-function moveCursorToBeginningOfSelection(selection) {
-  var range = document.createRange();
-  var node  = selection.anchorNode;
-  range.setStart(node, 0);
-  range.setEnd(node, 0);
-  selection.removeAllRanges();
-  selection.addRange(range);
+  return el && el.isContentEditable;
 }
 
 function restoreRange(range) {
@@ -129,5 +97,4 @@ function selectNode(node) {
 }
 
 export { getDirectionOfSelection, getSelectionElement, getSelectionBlockElement, getSelectionTagName,
-         getSelectionBlockTagName, tagsInSelection, selectionIsInElement, selectionIsEditable,
-         moveCursorToBeginningOfSelection, restoreRange, selectNode };
+         getSelectionBlockTagName, tagsInSelection, selectionIsInElement, selectionIsEditable, restoreRange, selectNode };
