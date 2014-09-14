@@ -1,3 +1,8 @@
+function renderClasses(view) {
+  var classNames = view.classNames;
+  view.element.className = classNames && classNames.length ? classNames.join(' ') : '';
+}
+
 function View(options) {
   this.tagName = options.tagName || 'div';
   this.classNames = options.classNames || [];
@@ -31,15 +36,19 @@ View.prototype = {
     var index = this.classNames.indexOf(className);
     if (index === -1) {
       this.classNames.push(className);
-      this.element.className = this.classNames.join(' ');
+      renderClasses(this);
     }
   },
   removeClass: function(className) {
     var index = this.classNames.indexOf(className);
     if (index > -1) {
       this.classNames.splice(index, 1);
-      this.element.className = this.classNames.join(' ');
+      renderClasses(this);
     }
+  },
+  setClasses: function(classNameArr) {
+    this.classNames = classNameArr;
+    renderClasses(this);
   }
 };
 

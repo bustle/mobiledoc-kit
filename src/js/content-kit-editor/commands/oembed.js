@@ -48,7 +48,7 @@ OEmbedCommand.prototype.exec = function(url) {
         } else if (typeof error !== 'string') {
           errorMsg = 'Error: unexpected embed error.';
         }
-        new Message().show(errorMsg);
+        new Message().showError(errorMsg);
         embedIntent.show();
       } else {
         var embedModel = new EmbedModel(response);

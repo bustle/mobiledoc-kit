@@ -69,7 +69,7 @@ ImageCommand.prototype = {
             editor.removeBlockAt(failedIndex);
             editor.syncVisual();
           }, 1000);
-          return new Message().show(error.message || 'Error uploading image');
+          return new Message().showError(error.message || 'Error uploading image');
         }
         insertImageWithSrc(response.url, editor);
       }
