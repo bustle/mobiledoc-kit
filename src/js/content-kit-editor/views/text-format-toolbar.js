@@ -1,7 +1,7 @@
 import Toolbar from './toolbar';
 import { inherit } from '../../content-kit-utils/object-utils';
 import { selectionIsEditable, selectionIsInElement } from '../utils/selection-utils';
-import { Keycodes } from '../constants';
+import Keycodes from '../utils/keycodes';
 
 function handleTextSelection(toolbar) {
   var selection = window.getSelection();

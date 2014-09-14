@@ -1,5 +1,21 @@
-import { SelectionDirection, RootTags } from '../constants';
 import { nodeIsDescendantOfElement } from './element-utils';
+import Type from '../../content-kit-compiler/types/type';
+
+// TODO: remove, pass in Editor's current block set
+var RootTags = [
+  Type.TEXT.tag,
+  Type.HEADING.tag,
+  Type.SUBHEADING.tag,
+  Type.QUOTE.tag,
+  Type.LIST.tag,
+  Type.ORDERED_LIST.tag
+];
+
+var SelectionDirection = {
+  LEFT_TO_RIGHT : 1,
+  RIGHT_TO_LEFT : 2,
+  SAME_NODE     : 3
+};
 
 function getDirectionOfSelection(selection) {
   var node = selection.anchorNode;

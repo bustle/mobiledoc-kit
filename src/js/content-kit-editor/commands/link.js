@@ -1,9 +1,10 @@
 import TextFormatCommand from './text-format';
 import Prompt from '../views/prompt';
-import { RegEx } from '../constants';
 import { getSelectionTagName } from '../utils/selection-utils';
 import { inherit } from '../../content-kit-utils/object-utils';
 import Type from '../../content-kit-compiler/types/type';
+
+var RegExpHttp = /^https?:\/\//i;
 
 function LinkCommand() {
   TextFormatCommand.call(this, {
@@ -24,7 +25,7 @@ LinkCommand.prototype.exec = function(url) {
   if(this.tag === getSelectionTagName()) {
     this.unexec();
   } else {
-    if (!RegEx.HTTP_PROTOCOL.test(url)) {
+    if (!RegExpHttp.test(url)) {
       url = 'http://' + url;
     }
     LinkCommand._super.prototype.exec.call(this, url);

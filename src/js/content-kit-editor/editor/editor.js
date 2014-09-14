@@ -13,7 +13,7 @@ import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
 import TextFormatCommand from '../commands/text-format';
-import { Keycodes } from '../constants';
+import Keycodes from '../utils/keycodes';
 import { getSelectionBlockElement, getSelectionBlockTagName } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
 import { cleanPastedContent } from '../utils/paste-utils';

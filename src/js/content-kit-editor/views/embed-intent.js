@@ -3,7 +3,7 @@ import Toolbar from './toolbar';
 import { inherit } from '../../content-kit-utils/object-utils';
 import { getSelectionBlockElement } from '../utils/selection-utils';
 import { elementContentIsEmpty, positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
-import { ToolbarDirection, Keycodes } from '../constants';
+import Keycodes from '../utils/keycodes';
 import { createDiv } from '../utils/element-utils';
 
 var LayoutStyle = {
@@ -37,7 +37,7 @@ function EmbedIntent(options) {
     e.stopPropagation();
   });
 
-  embedIntent.toolbar = new Toolbar({ embedIntent: embedIntent, editor: embedIntent.editorContext, commands: options.commands, direction: ToolbarDirection.RIGHT });
+  embedIntent.toolbar = new Toolbar({ embedIntent: embedIntent, editor: embedIntent.editorContext, commands: options.commands, direction: Toolbar.Direction.RIGHT });
   embedIntent.isActive = false;
 
   function embedIntentHandler() {

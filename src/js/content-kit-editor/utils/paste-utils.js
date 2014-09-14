@@ -1,9 +1,11 @@
-import { RegEx } from '../constants';
+
+var RegExpNewLine = /[\r\n]/g;
 
 function plainTextToBlocks(plainText, tag) {
-  var blocks = plainText.split(RegEx.NEWLINE),
-      len = blocks.length,
-      block, openTag, closeTag, content, i;
+  var blocks = plainText.split(RegExpNewLine);
+  var len = blocks.length;
+  var block, openTag, closeTag, content, i;
+  
   if(len < 2) {
     return plainText;
   } else {

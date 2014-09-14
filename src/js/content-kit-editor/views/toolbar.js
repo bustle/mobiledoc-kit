@@ -2,8 +2,12 @@ import View from './view';
 import ToolbarButton from './toolbar-button';
 import { inherit } from '../../content-kit-utils/object-utils';
 import { tagsInSelection } from '../utils/selection-utils';
-import { ToolbarDirection } from '../constants';
 import { createDiv, swapElements, positionElementToRightOf, positionElementCenteredAbove } from '../utils/element-utils';
+
+var ToolbarDirection = {
+  TOP   : 1,
+  RIGHT : 2
+};
 
 function updateButtonsForSelection(buttons, selection) {
   var selectedTags = tagsInSelection(selection),
@@ -117,5 +121,7 @@ Toolbar.prototype.setDirection = function(direction) {
     this.removeClass('right');
   }
 };
+
+Toolbar.Direction = ToolbarDirection;
 
 export default Toolbar;

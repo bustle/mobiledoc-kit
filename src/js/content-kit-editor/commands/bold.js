@@ -1,8 +1,9 @@
 import TextFormatCommand from './text-format';
-import { RegEx } from '../constants';
 import { getSelectionBlockTagName } from '../utils/selection-utils';
 import { inherit } from '../../content-kit-utils/object-utils';
 import Type from '../../content-kit-compiler/types/type';
+
+var RegExpHeadingTag = /^(h1|h2|h3|h4|h5|h6)$/i;
 
 function BoldCommand() {
   TextFormatCommand.call(this, {
@@ -15,7 +16,7 @@ inherit(BoldCommand, TextFormatCommand);
 
 BoldCommand.prototype.exec = function() {
   // Don't allow executing bold command on heading tags
-  if (!RegEx.HEADING_TAG.test(getSelectionBlockTagName())) {
+  if (!RegExpHeadingTag.test(getSelectionBlockTagName())) {
     BoldCommand._super.prototype.exec.call(this);
   }
 };
