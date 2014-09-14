@@ -33,4 +33,5 @@ bower_components
 
 # Builds
 dist/
+server/config.json
 export.sh

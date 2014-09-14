@@ -13,7 +13,7 @@ A modern, minimalist WYSIWYG editor.
 
 ## Playing
 1. Build
-2. For image uploading and embedding, enter your credentials in `server/config.json`
+2. Copy or rename `server/config.example.json` to `server/config.json`. Then optionally add your credentials to the file for image uploading and embedding.
 3. Start the server: `npm start`
 4. Navigate to the demo at [http://localhost:5000](http://localhost:5000)
 
@@ -22,7 +22,5 @@ A modern, minimalist WYSIWYG editor.
 
 ## Dev tips
 - `gulp watch` to auto build/test as you save files
-- Running the server is only necessary if you want image uploads and embeds. You can just open demo/index.html
-
 
 ---
