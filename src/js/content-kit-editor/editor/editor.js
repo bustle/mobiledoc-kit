@@ -110,24 +110,6 @@ function bindLiveUpdate(editor) {
   editor.element.addEventListener('input', function() {
     editor.syncModel();
   });
-
-  // Experimental/buggy: parsing only the blocks where action took place
-  // Not sure if this is even more efficient. Compiler is probably faster than dom/selection checks
-  /*
-  editor.element.addEventListener('input', function(e) {
-    editor.syncModelAtSelection();
-  });
-  editor.element.addEventListener('keyup', function(e) {
-    // When pressing enter: parse block before cursor too
-    if(!e.shiftKey && e.which === Keycodes.ENTER) {
-      editor.syncModelAt(editor.getCurrentBlockIndex()-1);
-    }
-    // When pressing backspace/del: parse block after cursor too
-    else if(e.which === Keycodes.BKSP || e.which === Keycodes.DEL) {
-      editor.syncModelAt(editor.getCurrentBlockIndex()+1);
-    }
-  });
-  */
 }
 
 function initEmbedCommands(editor) {
@@ -198,6 +180,7 @@ merge(Editor.prototype, EventEmitter);
 Editor.prototype.syncModel = function() {
   this.model = this.compiler.parse(this.element.innerHTML);
   this.trigger('update');
+  return this;
 };
 
 Editor.prototype.syncModelAt = function(index) {

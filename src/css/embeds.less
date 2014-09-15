@@ -63,15 +63,20 @@
 .ck-embed {
   text-align: center;
   margin: 1em 0;
-  border: 2px solid transparent;
-  border-radius: 2px;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
-.ck-embed.selected {
-  border-color: @themeColor;
+.ck-embed.selected figure {
+  border: 4px solid @themeColor;
+  margin: -4px;
 }
 
 .ck-embed iframe {
   margin: 0 auto !important;
+  // Allows us to select embeds and show a toolbar when clicking instead of playing videos/executing links
+  pointer-events: none;
 }
 
 .ck-embed figure {

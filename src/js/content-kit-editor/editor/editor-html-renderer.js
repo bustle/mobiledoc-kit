@@ -7,7 +7,7 @@ var RegExpHttp = /^https?:\/\//i;
 function embedRenderer(model) {
   var embedAttrs = model.attributes;
   var isVideo = embedAttrs.embed_type === 'video';
-  return '<div class="ck-embed" contenteditable="false">' +
+  return '<div class="ck-embed" data-embed=1 contenteditable="false">' +
             '<figure>' +
               (isVideo ? '<div class="ck-video-container">' : '') + this.render(model) + (isVideo ? '</div>' : '') +
               '<figcaption>' + embedAttrs.provider_name + ': ' +
@@ -19,7 +19,7 @@ function embedRenderer(model) {
 
 function imageRenderer(model) {
   var imagePersisted = RegExpHttp.test(model.attributes.src);
-  return '<div class="ck-embed ck-image-embed' + (imagePersisted ? '' : ' ck-image-local') + '" contenteditable="false">' +
+  return '<div class="ck-embed ck-image-embed' + (imagePersisted ? '' : ' ck-image-local') + '" data-embed=1 contenteditable="false">' +
             '<figure>' + this.render(model) + '</figure>' +
           '</div>';
 }

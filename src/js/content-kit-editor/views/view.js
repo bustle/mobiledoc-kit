@@ -1,15 +1,19 @@
 function renderClasses(view) {
   var classNames = view.classNames;
-  view.element.className = classNames && classNames.length ? classNames.join(' ') : '';
+  if (classNames && classNames.length) {
+    view.element.className = classNames.join(' ');
+  } else if(view.element.className) {
+    view.element.removeAttribute('className');
+  }
 }
 
 function View(options) {
   this.tagName = options.tagName || 'div';
   this.classNames = options.classNames || [];
   this.element = document.createElement(this.tagName);
-  this.element.className = this.classNames.join(' ');
   this.container = options.container || document.body;
   this.isShowing = false;
+  renderClasses(this);
 }
 
 View.prototype = {
@@ -28,9 +32,6 @@ View.prototype = {
       view.isShowing = false;
       return true;
     }
-  },
-  focus: function() {
-    this.element.focus();
   },
   addClass: function(className) {
     var index = this.classNames.indexOf(className);

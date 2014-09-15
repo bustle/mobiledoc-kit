@@ -22,6 +22,10 @@ function LinkCommand() {
 inherit(LinkCommand, TextFormatCommand);
 
 LinkCommand.prototype.exec = function(url) {
+  if (!url) {
+    return LinkCommand._super.prototype.unexec.call(this);
+  }
+
   if(this.tag === getSelectionTagName()) {
     this.unexec();
   } else {

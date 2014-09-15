@@ -50,6 +50,9 @@ OEmbedCommand.prototype.exec = function(url) {
         }
         new Message().showError(errorMsg);
         embedIntent.show();
+      } else if (response.error_message) {
+        new Message().showError(response.error_message);
+        embedIntent.show();
       } else {
         var embedModel = new EmbedModel(response);
         editorContext.insertBlockAt(embedModel, index);
