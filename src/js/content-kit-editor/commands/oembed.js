@@ -3,7 +3,7 @@ import Prompt from '../views/prompt';
 import Message from '../views/message';
 import EmbedModel from '../../content-kit-compiler/models/embed';
 import { inherit } from '../../content-kit-utils/object-utils';
-import { OEmbedder } from '../../ext/content-kit-services';
+import { OEmbedder } from '../utils/http-utils';
 
 function loadTwitterWidgets(element) {
   if (window.twttr) {

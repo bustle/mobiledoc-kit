@@ -93,7 +93,7 @@ var ContentKitDemo = exports.ContentKitDemo = {
 };
 
 // Initialize
-if (editor) {
+if (window.editor) {
   ContentKitDemo.syncCodePane(editor);
   editor.on('update', function(data) {
     ContentKitDemo.syncCodePane(this);

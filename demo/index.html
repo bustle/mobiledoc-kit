@@ -9,7 +9,6 @@
 
   <!-- CSS just for the demo page -->
   <link href="demo.css" rel="stylesheet">
-
 </head>
 <body>
 
@@ -70,17 +69,12 @@
   </div>
 
   <!-- Include ContentKit JS -->
-  <script src="loader.js"></script>
   <script src="content-kit-editor.js"></script>
-  <script>window.ContentKit = require('content-kit')['default'];</script>
-
-  <script>
-    // Initialize a new Editor
-    var editor = new ContentKit.Editor('.editor');
-  </script>
+  <!-- Initialize a new Editor -->
+  <script>var editor = new ContentKit.Editor('.editor');</script>
 
   <!-- JS just for the demo page -->
   <script src="demo.js"></script>
-
+  
 </body>
 </html>

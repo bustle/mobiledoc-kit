@@ -2,7 +2,7 @@ import Command from './base';
 import Message from '../views/message';
 import ImageModel from '../../content-kit-compiler/models/image';
 import { inherit } from '../../content-kit-utils/object-utils';
-import { FileUploader } from '../../ext/content-kit-services';
+import { FileUploader } from '../utils/http-utils';
 
 function createFileInput(command) {
   var fileInput = document.createElement('input');
