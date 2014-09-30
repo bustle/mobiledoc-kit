@@ -3,13 +3,21 @@ import { inherit } from '../../content-kit-utils/object-utils';
 import { selectionIsEditable, selectionIsInElement } from '../utils/selection-utils';
 import Keycodes from '../utils/keycodes';
 
+function selectionIsEditableByToolbar(selection, toolbar) {
+  return selectionIsEditable(selection) && selectionIsInElement(selection, toolbar.rootElement);
+}
+
 function handleTextSelection(toolbar) {
   var selection = window.getSelection();
-  if (selection.isCollapsed || !selectionIsEditable(selection) || selection.toString().trim() === '' || !selectionIsInElement(selection, toolbar.rootElement)) {
-    toolbar.hide();
+  if (toolbar.sticky) {
+    toolbar.updateForSelection(selectionIsEditableByToolbar(selection, toolbar) ? selection : null);
   } else {
-    toolbar.show();
-    toolbar.updateForSelection(selection);
+    if (selection.isCollapsed || selection.toString().trim() === '' || !selectionIsEditableByToolbar(selection, toolbar)) {
+      toolbar.hide();
+    } else {
+      toolbar.show();
+      toolbar.updateForSelection(selection);
+    }
   }
 }
 
@@ -26,13 +34,13 @@ function TextFormatToolbar(options) {
   });
 
   document.addEventListener('keyup', function(e) {
-    if (e.keyCode === Keycodes.ESC) {
+    if (e.keyCode === Keycodes.ESC && !toolbar.sticky) {
       toolbar.hide();
     }
   });
 
   window.addEventListener('resize', function() {
-    if(toolbar.isShowing) {
+    if(!toolbar.sticky && toolbar.isShowing) {
       var activePromptRange = toolbar.activePrompt && toolbar.activePrompt.range;
       toolbar.positionToContent(activePromptRange ? activePromptRange : window.getSelection().getRangeAt(0));
     }

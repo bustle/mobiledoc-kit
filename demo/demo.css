@@ -115,6 +115,7 @@ header {
   color: #c0c5ce;
   padding: 1.5em 1em 1em;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   position: absolute;
   top: 0;
   right: 0;

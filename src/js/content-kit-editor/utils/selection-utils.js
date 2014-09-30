@@ -59,14 +59,12 @@ function getSelectionBlockTagName() {
 function tagsInSelection(selection) {
   var element = getSelectionElement(selection);
   var tags = [];
-  if (!selection.isCollapsed) {
-    while(element) {
-      if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
-      if (element.tagName) {
-        tags.push(element.tagName.toLowerCase());
-      }
-      element = element.parentNode;
+  while(element) {
+    if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
+    if (element.tagName) {
+      tags.push(element.tagName.toLowerCase());
     }
+    element = element.parentNode;
   }
   return tags;
 }

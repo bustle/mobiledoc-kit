@@ -57,6 +57,22 @@
           animation: pop-right 0.25s;
 }
 
+.ck-toolbar.sticky {
+  position: fixed;
+  top: 3.125em;
+  left: 0;
+  right: 0;
+  transition: none;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+  -webkit-animation: none;
+          animation: none;
+}
+.ck-toolbar.sticky:after {
+  content: none;
+}
+
 .ck-toolbar-buttons {
   border-radius: 5px;
   overflow: hidden;

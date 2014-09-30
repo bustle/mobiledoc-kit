@@ -27,6 +27,7 @@ var defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
+  stickyToolbar: !!('ontouchstart' in window),
   textFormatCommands: [
     new BoldCommand(),
     new ItalicCommand(),
@@ -165,7 +166,7 @@ function Editor(element, options) {
     bindLiveUpdate(editor);
     initEmbedCommands(editor);
 
-    editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands });
+    editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands, sticky: editor.stickyToolbar });
     editor.linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
 
     editor.syncModel();

@@ -31,11 +31,12 @@ function Toolbar(options) {
   options.classNames = ['ck-toolbar'];
   View.call(toolbar, options);
 
+  toolbar.setSticky(options.sticky || false);
+  toolbar.setDirection(options.direction || ToolbarDirection.TOP);
   toolbar.editor = options.editor || null;
   toolbar.embedIntent = options.embedIntent || null;
   toolbar.activePrompt = null;
   toolbar.buttons = [];
-  toolbar.setDirection(options.direction || ToolbarDirection.TOP);
 
   toolbar.promptContainerElement = createDiv('ck-toolbar-prompt');
   toolbar.buttonContainerElement = createDiv('ck-toolbar-buttons');
@@ -94,7 +95,9 @@ Toolbar.prototype.dismissPrompt = function() {
 Toolbar.prototype.updateForSelection = function(selection) {
   var toolbar = this;
   selection = selection || window.getSelection();
-  if (!selection.isCollapsed) {
+  if (toolbar.sticky) {
+    updateButtonsForSelection(toolbar.buttons, selection);
+  } else if (!selection.isCollapsed) {
     toolbar.positionToContent(selection.getRangeAt(0));
     updateButtonsForSelection(toolbar.buttons, selection);
   }
@@ -119,6 +122,18 @@ Toolbar.prototype.setDirection = function(direction) {
     this.addClass('right');
   } else {
     this.removeClass('right');
+  }
+};
+
+Toolbar.prototype.setSticky = function(sticky) {
+  this.sticky = sticky;
+  if (sticky) {
+    this.addClass('sticky');
+    this.element.removeAttribute('style'); // clears any prior positioning
+    this.show();
+  } else {
+    this.removeClass('sticky');
+    this.hide();
   }
 };
 

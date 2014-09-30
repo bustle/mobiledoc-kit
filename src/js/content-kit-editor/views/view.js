@@ -34,14 +34,14 @@ View.prototype = {
     }
   },
   addClass: function(className) {
-    var index = this.classNames.indexOf(className);
+    var index = this.classNames && this.classNames.indexOf(className);
     if (index === -1) {
       this.classNames.push(className);
       renderClasses(this);
     }
   },
   removeClass: function(className) {
-    var index = this.classNames.indexOf(className);
+    var index = this.classNames && this.classNames.indexOf(className);
     if (index > -1) {
       this.classNames.splice(index, 1);
       renderClasses(this);
