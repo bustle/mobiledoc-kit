@@ -8,8 +8,7 @@ var app = express();
 
 // Demo setup
 app.use(express.static('demo'));
-app.use(express.static('dist'));
-app.use(express.static('ext'));
+app.use('/dist', express.static('dist'));
 app.get('/', function(req, res) {
   res.sendFile('/');
 });
