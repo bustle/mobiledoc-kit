@@ -14,11 +14,10 @@ import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
 import TextFormatCommand from '../commands/text-format';
 import Keycodes from '../utils/keycodes';
-import { getSelectionBlockElement, getSelectionBlockTagName } from '../utils/selection-utils';
+import { getSelectionBlockElement, getSelectionBlockTagName, getCursorOffsetInElement } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
 import { cleanPastedContent } from '../utils/paste-utils';
 import Compiler from '../../content-kit-compiler/compiler';
-import TextModel from '../../content-kit-compiler/models/text';
 import Type from '../../content-kit-compiler/types/type';
 import { toArray } from '../../content-kit-utils/array-utils';
 import { merge, mergeWithOptions } from '../../content-kit-utils/object-utils';
@@ -94,14 +93,10 @@ function bindAutoTypingListeners(editor) {
 }
 
 function bindDragAndDrop() {
-  // Use these to add/remove classes
-  // window.addEventListener('dragenter', function(e) { });
-  // window.addEventListener('dragleave', function(e) { });
-
+  // TODO. For now, just prevent redirect when dropping something on the page
   window.addEventListener('dragover', function(e) {
     e.preventDefault(); // prevents showing cursor where to drop
   });
-
   window.addEventListener('drop', function(e) {
     e.preventDefault(); // prevent page from redirecting
   });
@@ -159,6 +154,8 @@ function Editor(element, options) {
     element.setAttribute('contentEditable', true);
     editor.element = element;
 
+    editor.sync();
+
     bindContentEditableTypingCorrections(editor);
     bindPasteListener(editor);
     bindAutoTypingListeners(editor);
@@ -169,7 +166,15 @@ function Editor(element, options) {
     editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands, sticky: editor.stickyToolbar });
     editor.linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
 
-    editor.syncModel();
+    // TESTING
+    /*
+    editor.element.addEventListener('mouseup', function() {
+      console.log(editor.getCurrentEditingIndex());
+    });
+    editor.element.addEventListener('keyup', function() {
+      console.log(editor.getCurrentEditingIndex());
+    });
+    */
     
     if(editor.autofocus) { element.focus(); }
   }
@@ -177,6 +182,11 @@ function Editor(element, options) {
 
 // Add event emitter pub/sub functionality
 merge(Editor.prototype, EventEmitter);
+
+Editor.prototype.sync = function() {
+  this.syncModel();
+  this.syncVisual();
+};
 
 Editor.prototype.syncModel = function() {
   this.model = this.compiler.parse(this.element.innerHTML);
@@ -203,8 +213,7 @@ Editor.prototype.syncModelAtSelection = function() {
 };
 
 Editor.prototype.syncVisual = function() {
-  var html = this.compiler.render(this.model);
-  this.element.innerHTML = html;
+  this.element.innerHTML = this.compiler.render(this.model);
 };
 
 Editor.prototype.syncVisualAt = function(index) {
@@ -223,13 +232,24 @@ Editor.prototype.getCurrentBlockIndex = function() {
   return blockElements.indexOf(selectionEl);
 };
 
+Editor.prototype.getCurrentCursorIndex = function() {
+  var currentBlock = getSelectionBlockElement();
+  if (currentBlock) {
+    return getCursorOffsetInElement(currentBlock);
+  }
+  return -1;
+};
+
+Editor.prototype.getCurrentEditingIndex = function() {
+  return [this.getCurrentBlockIndex(), this.getCurrentCursorIndex()];
+};
+
 Editor.prototype.insertBlock = function(model) {
   this.insertBlockAt(model, this.getCurrentBlockIndex());
   this.trigger('update');
 };
 
 Editor.prototype.insertBlockAt = function(model, index) {
-  model = model || new TextModel();
   this.model.splice(index, 0, model);
   this.trigger('update');
 };

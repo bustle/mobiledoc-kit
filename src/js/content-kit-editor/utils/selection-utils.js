@@ -94,5 +94,19 @@ function selectNode(node) {
   selection.addRange(range);
 }
 
+function getCursorOffsetInElement(element) {
+  // http://stackoverflow.com/questions/4811822/get-a-ranges-start-and-end-offsets-relative-to-its-parent-container/4812022#4812022
+  var caretOffset = 0;
+  var selection = window.getSelection();
+  if (selection.rangeCount > 0) {
+    var range = selection.getRangeAt(0);
+    var preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(element);
+    preCaretRange.setEnd(range.endContainer, range.endOffset);
+    caretOffset = preCaretRange.toString().length;
+  }
+  return caretOffset;
+}
+
 export { getDirectionOfSelection, getSelectionElement, getSelectionBlockElement, getSelectionTagName,
-         getSelectionBlockTagName, tagsInSelection, selectionIsInElement, selectionIsEditable, restoreRange, selectNode };
+         getSelectionBlockTagName, tagsInSelection, selectionIsInElement, selectionIsEditable, restoreRange, selectNode, getCursorOffsetInElement };
