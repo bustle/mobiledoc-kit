@@ -6,11 +6,6 @@
   text-align: center;
   position: absolute;
   z-index: @z-index--toolbar;
-  background: -moz-linear-gradient(top,  rgba(74,74,74,0.97) 0%, rgba(43,43,43,1) 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(74,74,74,0.97)), color-stop(100%,rgba(43,43,43,1)));
-  background: -webkit-linear-gradient(top,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
-  background: -o-linear-gradient(top,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
-  background: -ms-linear-gradient(top,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
   background: linear-gradient(to bottom,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
   box-shadow: 0 1px 3px -1px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.12), inset 1px 1px 0 #282828, inset -1px -1px 0 #282828;
   border-radius: 3px;
@@ -59,18 +54,29 @@
 
 .ck-toolbar.sticky {
   position: fixed;
-  top: 3.125em;
+  top: 0;
   left: 0;
   right: 0;
   transition: none;
   border-radius: 0;
   margin: 0;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 1px 2px rgba(0,0,0,.03);
+  background: linear-gradient(to bottom,  rgba(252,252,252,0.92) 0%,rgba(252,252,252,0.97) 100%);
   box-shadow: none;
-  -webkit-animation: none;
-          animation: none;
+  -webkit-animation: slide-down 0.25s;
+          animation: slide-down 0.25s;
 }
 .ck-toolbar.sticky:after {
   content: none;
+}
+.sticky .ck-toolbar-btn {
+  color: #454545;
+  text-shadow: none;
+}
+.sticky .ck-toolbar-btn:hover,
+.sticky .ck-toolbar-btn:active {
+  background-color: #eee;
 }
 
 .ck-toolbar-buttons {

@@ -137,6 +137,10 @@ Toolbar.prototype.setSticky = function(sticky) {
   }
 };
 
+Toolbar.prototype.toggleSticky = function() {
+  this.setSticky(!this.sticky);
+};
+
 Toolbar.Direction = ToolbarDirection;
 
 export default Toolbar;

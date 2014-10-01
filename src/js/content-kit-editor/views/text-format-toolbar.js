@@ -34,7 +34,11 @@ function TextFormatToolbar(options) {
   });
 
   document.addEventListener('keyup', function(e) {
-    if (e.keyCode === Keycodes.ESC && !toolbar.sticky) {
+    var key = e.keyCode;
+    if (key === 116) { //F5
+      toolbar.toggleSticky();
+      handleTextSelection(toolbar);
+    } else if (!toolbar.sticky && key === Keycodes.ESC) {
       toolbar.hide();
     }
   });

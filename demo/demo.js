@@ -98,6 +98,10 @@ if (window.editor) {
   editor.on('update', function(data) {
     ContentKitDemo.syncCodePane(this);
   });
+  var settingsBtn = document.getElementById('settings-btn');
+  settingsBtn.addEventListener('click', function() {
+    ContentKitDemo.toggleCodePane();
+  });
 }
 if (location.hash === '#code') {
   ContentKitDemo.openCodePane();
