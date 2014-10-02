@@ -10,7 +10,7 @@ function embedRenderer(model) {
   return '<div class="ck-embed" data-embed=1 contenteditable="false">' +
             '<figure>' +
               (isVideo ? '<div class="ck-video-container">' : '') + this.render(model) + (isVideo ? '</div>' : '') +
-              '<figcaption>' + embedAttrs.provider_name + ': ' +
+              '<figcaption>' +
                 '<a target="_blank" href="' + embedAttrs.url + '">' + embedAttrs.title + '</a>' +
               '</figcaption>' +
             '</figure>' +

@@ -26,6 +26,7 @@ var defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
+  model: null,
   stickyToolbar: !!('ontouchstart' in window),
   textFormatCommands: [
     new BoldCommand(),
@@ -154,7 +155,11 @@ function Editor(element, options) {
     element.setAttribute('contentEditable', true);
     editor.element = element;
 
-    editor.sync();
+    if (editor.model) {
+      editor.loadModel(editor.model);
+    } else {
+      editor.sync();
+    }
 
     bindContentEditableTypingCorrections(editor);
     bindPasteListener(editor);
@@ -183,6 +188,12 @@ function Editor(element, options) {
 // Add event emitter pub/sub functionality
 merge(Editor.prototype, EventEmitter);
 
+Editor.prototype.loadModel = function(model) {
+  this.model = model;
+  this.syncVisual();
+  this.trigger('update');
+};
+
 Editor.prototype.sync = function() {
   this.syncModel();
   this.syncVisual();
@@ -191,7 +202,6 @@ Editor.prototype.sync = function() {
 Editor.prototype.syncModel = function() {
   this.model = this.compiler.parse(this.element.innerHTML);
   this.trigger('update');
-  return this;
 };
 
 Editor.prototype.syncModelAt = function(index) {

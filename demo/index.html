@@ -34,7 +34,7 @@
         <li>Make the toolbar sticky by pressing <b>F5</b></li>
         <li>Double click a word to select it</li>
         <li>You only have to select a portion of a paragraph if you want to change it to a heading, subheading, or quote</li>
-        <li>To create a soft line break, press <b>shift</b> + <b>enter</b></li>
+        <li>To create a soft line break, press <b><i>shift</i></b> + <b>enter</b></li>
         <li>Press <b>enter</b> twice to exit a list</li>
       </ul>
 
@@ -70,8 +70,10 @@
   <!-- Include ContentKit JS -->
   <script src="../dist/content-kit-editor.js"></script>
 
-  <!-- Initialize a new Editor -->
-  <script>var editor = new ContentKit.Editor('.editor');</script>
+  <script>
+    // Initialize a new Editor
+    var editor = new ContentKit.Editor('.editor');
+  </script>
 
   <!-- JS just for the demo page -->
   <script src="demo.js"></script>
