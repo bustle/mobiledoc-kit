@@ -17,4 +17,17 @@ function Model(options) {
   }
 }
 
+/**
+ * @method createWithType
+ * @static
+ * @param type Type
+ * @param options Object
+ */
+Model.createWithType = function(type, options) {
+  options = options || {};
+  options.type = type.id;
+  options.type_name = type.name;
+  return new this(options);
+};
+
 export default Model;

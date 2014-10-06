@@ -55,8 +55,8 @@ OEmbedCommand.prototype.exec = function(url) {
         embedIntent.show();
       } else {
         var embedModel = new EmbedModel(response);
-        editorContext.insertBlockAt(embedModel, index);
-        editorContext.syncVisualAt(index);
+        editorContext.insertBlock(embedModel, index);
+        editorContext.renderBlockAt(index);
         if (embedModel.attributes.provider_name.toLowerCase() === 'twitter') {
           loadTwitterWidgets(editorContext.element);
         }

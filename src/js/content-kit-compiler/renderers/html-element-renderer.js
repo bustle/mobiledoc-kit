@@ -4,11 +4,10 @@ import { sumSparseArray } from '../../content-kit-utils/array-utils';
 /**
  * Builds an opening html tag. i.e. '<a href="http://link.com/" rel="author">'
  */
-function createOpeningTag(tagName, attributes, selfClosing /*,blacklist*/) {
+function createOpeningTag(tagName, attributes, selfClosing) {
   var tag = '<' + tagName;
   for (var attr in attributes) {
     if (attributes.hasOwnProperty(attr)) {
-      //if (blacklist && attr in blacklist) { continue; }
       tag += ' ' + attr + '="' + attributes[attr] + '"';
     }
   }
@@ -66,8 +65,8 @@ HTMLElementRenderer.prototype.render = function(model) {
  * Renders a markup model into a HTML string.
  */
 HTMLElementRenderer.prototype.renderMarkup = function(text, markups) {
-  var parsedTagsIndexes = [],
-      len = markups && markups.length, i;
+  var parsedTagsIndexes = [];
+  var len = markups && markups.length, i;
 
   for (i = 0; i < len; i++) {
     var markup = markups[i],

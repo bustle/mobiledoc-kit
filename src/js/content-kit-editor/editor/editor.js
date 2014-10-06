@@ -12,7 +12,6 @@ import UnorderedListCommand from '../commands/unordered-list';
 import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
-import TextFormatCommand from '../commands/text-format';
 import Keycodes from '../utils/keycodes';
 import { getSelectionBlockElement, getSelectionBlockTagName, getCursorOffsetInElement } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
@@ -50,27 +49,37 @@ var defaults = {
   })
 };
 
-function bindContentEditableTypingCorrections(editor) {
+function bindContentEditableTypingListeners(editor) {
+  // Correct some contentEditable woes before reparsing
   editor.element.addEventListener('keyup', function(e) {
-    if(!e.shiftKey && e.which === Keycodes.ENTER) {
+    if((!e.shiftKey && e.which === Keycodes.ENTER) || (e.ctrlKey && e.which === Keycodes.M)) {
+      // On a carrage return, make sure it always generates a 'p' tag
       var selectionTag = getSelectionBlockTagName();
       if (!selectionTag || selectionTag === Type.QUOTE.tag) {
-        document.execCommand('formatBlock', false, Type.TEXT.tag);
+        document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
       }
     } else if (e.which === Keycodes.BKSP) {
-      if(!editor.element.innerHTML) {
-        document.execCommand('formatBlock', false, Type.TEXT.tag);
-      }
+      if (!editor.element.innerHTML) {
+        // On backspace of the last letter, make sure to generate a 'p' tag
+        document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
+      } //else {
+        // TODO: need to rerender when backspacing 2 blocks together
+      //}
+    }
+  });
+
+  // On 'PASTE' convert content to blocks and insert
+  editor.element.addEventListener('paste', function(e) {
+    var cleanedContent = cleanPastedContent(e, Type.PARAGRAPH.tag);
+    if (cleanedContent) {
+      document.execCommand('insertHTML', false, cleanedContent);
     }
   });
 }
 
-function bindPasteListener(editor) {
-  editor.element.addEventListener('paste', function(e) {
-    var cleanedContent = cleanPastedContent(e, Type.TEXT.tag);
-    if (cleanedContent) {
-      document.execCommand('insertHTML', false, cleanedContent);
-    }
+function bindLiveUpdate(editor) {
+  editor.element.addEventListener('input', function() {
+    editor.syncContentEditableBlocks();
   });
 }
 
@@ -103,12 +112,6 @@ function bindDragAndDrop() {
   });
 }
 
-function bindLiveUpdate(editor) {
-  editor.element.addEventListener('input', function() {
-    editor.syncModel();
-  });
-}
-
 function initEmbedCommands(editor) {
   var commands = editor.embedCommands;
   if(commands) {
@@ -138,6 +141,20 @@ function applyPlaceholder(editorElement, placeholder) {
   }
 }
 
+function getNonTextBlocks(blockTypeSet, model) {
+  var blocks = [];
+  var len = model.length;
+  var i, block, type;
+  for (i = 0; i < len; i++) {
+    block = model[i];
+    type = blockTypeSet.findById(block && block.type);
+    if (type && !type.isTextType) {
+      blocks.push(block);
+    }
+  }
+  return blocks;
+}
+
 /**
  * @class Editor
  * An individual Editor
@@ -161,8 +178,7 @@ function Editor(element, options) {
       editor.sync();
     }
 
-    bindContentEditableTypingCorrections(editor);
-    bindPasteListener(editor);
+    bindContentEditableTypingListeners(editor);
     bindAutoTypingListeners(editor);
     bindDragAndDrop(editor);
     bindLiveUpdate(editor);
@@ -170,16 +186,6 @@ function Editor(element, options) {
 
     editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands, sticky: editor.stickyToolbar });
     editor.linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
-
-    // TESTING
-    /*
-    editor.element.addEventListener('mouseup', function() {
-      console.log(editor.getCurrentEditingIndex());
-    });
-    editor.element.addEventListener('keyup', function() {
-      console.log(editor.getCurrentEditingIndex());
-    });
-    */
     
     if(editor.autofocus) { element.focus(); }
   }
@@ -194,50 +200,22 @@ Editor.prototype.loadModel = function(model) {
   this.trigger('update');
 };
 
-Editor.prototype.sync = function() {
-  this.syncModel();
-  this.syncVisual();
-};
-
 Editor.prototype.syncModel = function() {
   this.model = this.compiler.parse(this.element.innerHTML);
   this.trigger('update');
-};
-
-Editor.prototype.syncModelAt = function(index) {
-  if (index > -1) {
-    var blockElements = toArray(this.element.children);
-    var parsedBlockModel = this.compiler.parser.parseBlock(blockElements[index]);
-    if (parsedBlockModel) {
-      this.model[index] = parsedBlockModel;
-    } else {
-      this.model.splice(index, 1);
-    }
-    this.trigger('update', { index: index });
-  }
-};
-
-Editor.prototype.syncModelAtSelection = function() {
-  var index = this.getCurrentBlockIndex();
-  this.syncModelAt(index);
 };
 
 Editor.prototype.syncVisual = function() {
   this.element.innerHTML = this.compiler.render(this.model);
 };
 
-Editor.prototype.syncVisualAt = function(index) {
-  if (index > -1) {
-    var blockModel = this.model[index];
-    var html = this.compiler.render([blockModel]);
-    var blockElements = toArray(this.element.children);
-    var element = blockElements[index];
-    element.innerHTML = html;
-  }
+Editor.prototype.sync = function() {
+  this.syncModel();
+  this.syncVisual();
 };
 
-Editor.prototype.getCurrentBlockIndex = function() {
-  var selectionEl = getSelectionBlockElement();
+Editor.prototype.getCurrentBlockIndex = function(element) {
+  var selectionEl = element || getSelectionBlockElement();
   var blockElements = toArray(this.element.children);
   return blockElements.indexOf(selectionEl);
 };
@@ -250,22 +228,8 @@ Editor.prototype.getCurrentCursorIndex = function() {
   return -1;
 };
 
-Editor.prototype.getCurrentEditingIndex = function() {
-  return [this.getCurrentBlockIndex(), this.getCurrentCursorIndex()];
-};
-
-Editor.prototype.insertBlock = function(model) {
-  this.insertBlockAt(model, this.getCurrentBlockIndex());
-  this.trigger('update');
-};
-
-Editor.prototype.insertBlockAt = function(model, index) {
-  this.model.splice(index, 0, model);
-  this.trigger('update');
-};
-
-Editor.prototype.replaceBlockAt = function(model, index) {
-  this.model[index] = model;
+Editor.prototype.insertBlock = function(block, index) {
+  this.model.splice(index, 0, block);
   this.trigger('update');
 };
 
@@ -274,14 +238,41 @@ Editor.prototype.removeBlockAt = function(index) {
   this.trigger('update');
 };
 
-Editor.prototype.addTextFormat = function(opts) {
-  var command = new TextFormatCommand(opts);
-  this.compiler.registerMarkupType(new Type({
-    name : opts.name,
-    tag  : opts.tag || opts.name
-  }));
-  this.textFormatCommands.push(command);
-  this.textFormatToolbar.addCommand(command);
+Editor.prototype.replaceBlock = function(block, index) {
+  this.model[index] = block;
+  this.trigger('update');
 };
+
+Editor.prototype.renderBlockAt = function(index, replace) {
+  var html = this.compiler.render([this.model[index]]);
+  var dom = document.createElement('div');
+  dom.innerHTML = html;
+  var newEl = dom.firstChild;
+  var sibling = this.element.children[index];
+  if (replace) {
+    this.element.replaceChild(newEl, sibling);
+  } else {
+    this.element.insertBefore(newEl, sibling);
+  }
+};
+
+Editor.prototype.syncContentEditableBlocks = function() {
+  var nonTextBlocks = getNonTextBlocks(this.compiler.blockTypes, this.model);
+  var blockElements = toArray(this.element.children);
+  var len = blockElements.length;
+  var updatedModel = [];
+  var i, blockEl;
+  for (i = 0; i < len; i++) {
+    blockEl = blockElements[i];
+    if(blockEl.isContentEditable) {
+      updatedModel.push(this.compiler.parser.serializeBlockNode(blockEl));
+    } else {
+      updatedModel.push(nonTextBlocks.shift());
+    }
+  }
+  this.model = updatedModel;
+  this.trigger('update');
+};
+
 
 export default Editor;

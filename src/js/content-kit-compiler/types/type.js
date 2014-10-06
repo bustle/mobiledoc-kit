@@ -8,12 +8,17 @@ import { underscore } from '../../content-kit-utils/string-utils';
 function Type(options) {
   if (options) {
     this.name = underscore(options.name || options.tag).toUpperCase();
+    this.isTextType = options.isTextType !== undefined ? options.isTextType : true;
+
     if (options.id !== undefined) {
       this.id = options.id;
     }
     if (options.tag) {
       this.tag = options.tag.toLowerCase();
       this.selfClosing = /^(br|img|hr|meta|link|embed)$/i.test(this.tag);
+      if (options.mappedTags) {
+        this.mappedTags = options.mappedTags;
+      }
     }
 
     // Register the type as constant

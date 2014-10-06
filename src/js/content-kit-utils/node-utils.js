@@ -39,11 +39,13 @@ function textOfNode(node) {
  * Replaces a `Node` with its children
  */
 function unwrapNode(node) {
-  var children = toArray(node.childNodes);
-  var len = children.length;
-  var parent = node.parentNode, i;
-  for (i = 0; i < len; i++) {
-    parent.insertBefore(children[i], node);
+  if (node.hasChildNodes()) {
+    var children = toArray(node.childNodes);
+    var len = children.length;
+    var parent = node.parentNode, i;
+    for (i = 0; i < len; i++) {
+      parent.insertBefore(children[i], node);
+    }
   }
 }
 

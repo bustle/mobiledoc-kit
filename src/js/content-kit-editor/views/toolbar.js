@@ -9,14 +9,20 @@ var ToolbarDirection = {
   RIGHT : 2
 };
 
+function selectionContainsButtonsTag(selectedTags, buttonsTags) {
+  return selectedTags.filter(function(tag) {
+    return buttonsTags.indexOf(tag) > -1;
+  }).length;
+}
+
 function updateButtonsForSelection(buttons, selection) {
-  var selectedTags = tagsInSelection(selection),
-      len = buttons.length,
-      i, button;
+  var selectedTags = tagsInSelection(selection);
+  var len = buttons.length;
+  var i, button;
 
   for (i = 0; i < len; i++) {
     button = buttons[i];
-    if (selectedTags.indexOf(button.command.tag) > -1) {
+    if (selectionContainsButtonsTag(selectedTags, button.command.mappedTags)) {
       button.setActive();
     } else {
       button.setInactive();
@@ -25,6 +31,7 @@ function updateButtonsForSelection(buttons, selection) {
 }
 
 function Toolbar(options) {
+  options = options || {};
   var toolbar = this;
   var commands = options.commands;
   var commandCount = commands && commands.length, i;

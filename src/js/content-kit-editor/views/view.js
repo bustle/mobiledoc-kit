@@ -8,6 +8,7 @@ function renderClasses(view) {
 }
 
 function View(options) {
+  options = options || {};
   this.tagName = options.tagName || 'div';
   this.classNames = options.classNames || [];
   this.element = document.createElement(this.tagName);

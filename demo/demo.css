@@ -32,7 +32,7 @@ body {
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 3;
+  z-index: 2;
 }
 .demo-buttons a {
   display: block;
@@ -49,7 +49,7 @@ body {
   bottom: 0;
   right: -50%;
   width: 0;
-  z-index: 2;
+  z-index: 1;
 }
 .code-pane-open .code-panes {
   right: 0;
@@ -71,11 +71,11 @@ body {
 .code-pane code {
   white-space: pre-wrap;
   font-family: Consolas, Menlo, Courier, monospace;
-  font-size: 0.8em;
-  line-height: 1.4em;
+  font-size: 0.75em;
+  line-height: 1.2em;
   background-color: transparent;
   color: #c0c5ce;
-  padding: 1.5em 1em 1em;
+  padding: 5em 1em 1em;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   position: absolute;

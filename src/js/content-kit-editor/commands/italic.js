@@ -6,6 +6,7 @@ function ItalicCommand() {
   TextFormatCommand.call(this, {
     name: 'italic',
     tag: Type.ITALIC.tag,
+    mappedTags: Type.ITALIC.mappedTags,
     button: '<i class="ck-icon-italic"></i>'
   });
 }

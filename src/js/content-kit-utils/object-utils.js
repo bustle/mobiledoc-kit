@@ -25,25 +25,14 @@ function merge(original, updates) {
  * Prototype inheritance helper
  */
 function inherit(Subclass, Superclass) {
-  if (typeof Object.create === 'function') {
-    Subclass._super = Superclass;
-    Subclass.prototype = Object.create(Superclass.prototype, {
-      constructor: {
-        value: Subclass,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  } else {
-    for (var key in Superclass) {
-      if (Superclass.hasOwnProperty(key)) {
-        Subclass[key] = Superclass[key];
-      }
+  for (var key in Superclass) {
+    if (Superclass.hasOwnProperty(key)) {
+      Subclass[key] = Superclass[key];
     }
-    Subclass.prototype = new Superclass();
-    Subclass.constructor = Subclass;
   }
+  Subclass.prototype = new Superclass();
+  Subclass.constructor = Subclass;
+  Subclass._super = Superclass;
 }
 
 export { mergeWithOptions, merge, inherit };

@@ -9,6 +9,7 @@ function BoldCommand() {
   TextFormatCommand.call(this, {
     name: 'bold',
     tag: Type.BOLD.tag,
+    mappedTags: Type.BOLD.mappedTags,
     button: '<i class="ck-icon-bold"></i>'
   });
 }

@@ -1,4 +1,5 @@
 function Command(options) {
+  options = options || {};
   var command = this;
   var name = options.name;
   var prompt = options.prompt;

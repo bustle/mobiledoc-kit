@@ -4,6 +4,7 @@ import { inherit } from '../../content-kit-utils/object-utils';
 import Type from '../../content-kit-compiler/types/type';
 
 function FormatBlockCommand(options) {
+  options = options || {};
   options.action = 'formatBlock';
   TextFormatCommand.call(this, options);
 }
@@ -16,7 +17,7 @@ FormatBlockCommand.prototype.exec = function() {
   var blockElement = getSelectionBlockElement();
   // Allow block commands to be toggled back to a text block
   if(tag === blockElement.tagName.toLowerCase()) {
-    value = Type.TEXT.tag;
+    value = Type.PARAGRAPH.tag;
   } else {
     // Flattens the selection before applying the block format.
     // Otherwise, undesirable nested blocks can occur.

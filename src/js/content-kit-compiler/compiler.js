@@ -16,7 +16,7 @@ function Compiler(options) {
     renderer         : renderer,
     blockTypes       : DefaultBlockTypeSet,
     markupTypes      : DefaultMarkupTypeSet,
-    includeTypeNames : false // true will output type_name: 'TEXT' etc. when parsing for easier debugging
+    includeTypeNames : false // Outputs `type_name:'HEADING'` etc. when parsing. Good for debugging.
   };
   mergeWithOptions(this, defaults, options);
 
@@ -37,20 +37,29 @@ Compiler.prototype.parse = function(input) {
 
 /**
  * @method render
- * @param data
+ * @param model
  * @return String
  */
-Compiler.prototype.render = function(data) {
-  return this.renderer.render(data);
+Compiler.prototype.render = function(model) {
+  return this.renderer.render(model);
 };
 
 /**
- * @method sanitize
+ * @method rerender
  * @param input
  * @return String
  */
-Compiler.prototype.sanitize = function(input) {
+Compiler.prototype.rerender = function(input) {
   return this.render(this.parse(input));
+};
+
+/**
+ * @method reparse
+ * @param model
+ * @return String
+ */
+Compiler.prototype.reparse = function(model) {
+  return this.parse(this.render(model));
 };
 
 /**

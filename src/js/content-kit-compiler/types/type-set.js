@@ -31,6 +31,11 @@ TypeSet.prototype = {
       this.idLookup[type.id] = type;
       if (type.tag) {
         this.tagLookup[type.tag] = type;
+        if (type.mappedTags) {
+          for (var i = 0, len = type.mappedTags.length; i < len; i++) {
+            this.tagLookup[type.mappedTags[i]] = type;
+          }
+        }
       }
       return type;
     }

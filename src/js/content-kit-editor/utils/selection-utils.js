@@ -3,7 +3,7 @@ import Type from '../../content-kit-compiler/types/type';
 
 // TODO: remove, pass in Editor's current block set
 var RootTags = [
-  Type.TEXT.tag,
+  Type.PARAGRAPH.tag,
   Type.HEADING.tag,
   Type.SUBHEADING.tag,
   Type.QUOTE.tag,
@@ -94,6 +94,19 @@ function selectNode(node) {
   selection.addRange(range);
 }
 
+function setCursorIndexInElement(element, index) {
+  var range = document.createRange();
+  var selection = window.getSelection();
+  range.setStart(element, index);
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function setCursorToStartOfElement(element) {
+  setCursorIndexInElement(element, 0);
+}
+
 function getCursorOffsetInElement(element) {
   // http://stackoverflow.com/questions/4811822/get-a-ranges-start-and-end-offsets-relative-to-its-parent-container/4812022#4812022
   var caretOffset = 0;
@@ -109,4 +122,4 @@ function getCursorOffsetInElement(element) {
 }
 
 export { getDirectionOfSelection, getSelectionElement, getSelectionBlockElement, getSelectionTagName,
-         getSelectionBlockTagName, tagsInSelection, selectionIsInElement, selectionIsEditable, restoreRange, selectNode, getCursorOffsetInElement };
+         getSelectionBlockTagName, tagsInSelection, selectionIsInElement, selectionIsEditable, restoreRange, selectNode, setCursorToStartOfElement, setCursorIndexInElement, getCursorOffsetInElement };
