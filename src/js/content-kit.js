@@ -16,4 +16,4 @@ ContentKit.HTMLParser = HTMLParser;
 ContentKit.HTMLRenderer = HTMLRenderer;
 ContentKit.Editor = EditorFactory;
 
-export default ContentKit;
+window.ContentKit = ContentKit;

@@ -1,6 +1,5 @@
 import View from './view';
 import { inherit } from '../../content-kit-utils/object-utils';
-import { inherit } from '../../content-kit-utils/object-utils';
 import { restoreRange } from '../utils/selection-utils';
 import { createDiv, positionElementToRect } from '../utils/element-utils';
 import Keycodes from '../utils/keycodes';

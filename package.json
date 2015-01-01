@@ -24,12 +24,10 @@
     "express": "^4.9.0"
   },
   "devDependencies": {
-    "gulp": "^3.8.1",
+    "gulp": "^3.8.10",
     "gulp-concat": "~2.1.7",
-    "gulp-es6-module-transpiler": "^0.1.3",
+    "gulp-es6-module-transpiler": "^0.2.0",
     "gulp-header": "~1.0.2",
-    "gulp-if": "^1.2.4",
-    "gulp-insert": "^0.4.0",
     "gulp-jshint": "~1.3.4",
     "gulp-less": "^1.3.1",
     "gulp-open": "^0.2.8",

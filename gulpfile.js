@@ -7,17 +7,13 @@ var header = require('gulp-header');
 var util   = require('gulp-util');
 var open   = require('gulp-open');
 var rimraf = require('gulp-rimraf');
-var insert = require('gulp-insert');
-var gulpif = require('gulp-if');
-var es6ModuleTranspiler = require('gulp-es6-module-transpiler');
+var transpile = require('gulp-es6-module-transpiler');
 
 // ------------------------------------------- 
 
 var pkg = require('./package.json');
 
 var jsSrc = [
-  './src/js/ext/loader.js',
-  './src/js/content-kit.js',
   './src/js/**/*.js'
 ];
 
@@ -35,7 +31,6 @@ var cssSrc = [
 var distDest = './dist/';
 var jsDistName = 'content-kit-editor.js';
 var jsDistPath = distDest + jsDistName;
-var pathIsES6File = /^((?!loader).)*$/;
 var cssDistName = 'content-kit-editor.css';
 
 var testRunner = './tests/index.html';
@@ -52,31 +47,17 @@ var banner = ['/*!',
               ' */',
               ''].join('\n'); 
 
-var iifeHeader = ['',
-                  '(function(exports, document) {',
-                  '',
-                  '\'use strict\';',
-                  '',
-                  ''].join('\n'); 
-var iifeFooter = ['',
-                  '}(this, document));',
-                  ''].join('\n');
-
-var AMDInvoke =  "if (typeof window !== 'undefined') { window.ContentKit = require('content-kit')['default']; }"
-
 // JSHint javascript code linting
 gulp.task('lint', function() {
   return gulp.src(jsSrc)
-             .pipe(gulpif(pathIsES6File, jshint('.jshintrc')))
+             .pipe(jshint('.jshintrc'))
              .pipe(jshint.reporter('default'));
 });
 
 gulp.task('build-js', ['lint'], function() {
   return gulp.src(jsSrc)
-             .pipe(gulpif(pathIsES6File, es6ModuleTranspiler({ type: 'amd' })))
+             .pipe(transpile({ formatter: 'bundle' }))
              .pipe(concat(jsDistName))
-             .pipe(insert.append(AMDInvoke))
-             .pipe(insert.wrap(iifeHeader, iifeFooter))
              .pipe(header(banner, { pkg : pkg } ))
              .pipe(gulp.dest(distDest));
 });
