@@ -1,4 +1,4 @@
-# ContentKit-Editor [![Build Status](https://travis-ci.org/ContentKit/content-kit-editor.svg?branch=master)](https://travis-ci.org/ContentKit/content-kit-editor)
+# ContentKit-Editor [![Build Status](https://travis-ci.org/bustlelabs/content-kit-editor.svg?branch=master)](https://travis-ci.org/bustlelabs/content-kit-editor)
 ### A modern, minimalist WYSIWYG editor.
 
 *Currently under heavy active development.  API subject to change.*

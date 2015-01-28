@@ -1,12 +1,16 @@
-var gulp   = require('gulp');
-var jshint = require('gulp-jshint');
-var qunit  = require('gulp-qunit');
-var less   = require('gulp-less');
-var concat = require('gulp-concat');
-var header = require('gulp-header');
-var util   = require('gulp-util');
-var open   = require('gulp-open');
-var rimraf = require('gulp-rimraf');
+var del       = require('del');
+var gulp      = require('gulp');
+var jshint    = require('gulp-jshint');
+var qunit     = require('gulp-qunit');
+var less      = require('gulp-less');
+var concat    = require('gulp-concat');
+var header    = require('gulp-header');
+var footer    = require('gulp-footer');
+var util      = require('gulp-util');
+var open      = require('gulp-open');
+var replace   = require('gulp-replace');
+var uglify    = require('gulp-uglify');
+var cssmin    = require('gulp-cssmin');
 var transpile = require('gulp-es6-module-transpiler');
 
 // ------------------------------------------- 
@@ -28,17 +32,17 @@ var cssSrc = [
   './src/css/animations.less'
 ];
 
-var distDest = './dist/';
-var jsDistName = 'content-kit-editor.js';
-var jsDistPath = distDest + jsDistName;
+var distDest    = './dist/';
+var jsDistName  = 'content-kit-editor.js';
 var cssDistName = 'content-kit-editor.css';
+var jsDistPath  = distDest + jsDistName;
+var cssDistPath = distDest + cssDistName;
 
-var testRunner = './tests/index.html';
+var testRunner  = './tests/index.html';
 var testScripts = './tests/**/*.js';
+var demo        = './demo/index.html';
 
-var demo       = './demo/index.html';
-
-var banner = ['/*!',
+var banner = ['/**',
               ' * @overview <%= pkg.name %>: <%= pkg.description %>',
               ' * @version  <%= pkg.version %>',
               ' * @author   <%= pkg.author %>',
@@ -46,6 +50,9 @@ var banner = ['/*!',
               ' * Last modified: ' + util.date('mmm d, yyyy'),
               ' */',
               ''].join('\n'); 
+
+var iifeHeader = '\n(function(window, document, undefined) {\n\n';
+var iifeFooter = '\n}(this, document));\n';
 
 // JSHint javascript code linting
 gulp.task('lint', function() {
@@ -58,6 +65,13 @@ gulp.task('build-js', function() {
   return gulp.src(jsSrc)
              .pipe(transpile({ formatter: 'bundle' }))
              .pipe(concat(jsDistName))
+             // Remove gulp-es6-module-transpiler's IIFE so we can add our own
+             .pipe(replace(/^\(function\(\) {\n/g, ''))
+             .pipe(replace(/\}\)\.call\(this\);\n/g, ''))
+             .pipe(replace(/\n\/\/# sourceMappingURL\=bundle\.map/g, ''))
+             // end IFFE removal
+             .pipe(header(iifeHeader))
+             .pipe(footer(iifeFooter))
              .pipe(header(banner, { pkg : pkg } ))
              .pipe(gulp.dest(distDest));
 });
@@ -90,7 +104,7 @@ gulp.task('demo', function(){
 
 // Removes built output files
 gulp.task('clean', function() {
-  return gulp.src(distDest + '*', { read: false }).pipe(rimraf());
+  return del([distDest + '*']);
 });
 
 // Watches when js files change and automatically lints/builds
@@ -115,4 +129,12 @@ gulp.task('watch', ['watch-js', 'watch-tests', 'watch-css']);
 gulp.task('default', ['lint', 'build', 'test']);
 
 // Deploy task
-gulp.task('heroku:production', ['build']); // TODO: minify assets etc...
+gulp.task('heroku:production', ['clean', 'build'], function() {
+  gulp.src(jsDistPath)
+      .pipe(uglify())
+      .pipe(gulp.dest(distDest));
+
+  gulp.src(cssDistPath)
+      .pipe(cssmin())
+      .pipe(gulp.dest(distDest));
+});
