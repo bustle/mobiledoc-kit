@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "test": "gulp test"
+    "test": "gulp test",
+    "postinstall": "gulp deploy"
   },
   "keywords": [
     "html",
@@ -24,9 +25,7 @@
     "aws-sdk": "^2.1.7",
     "busboy": "^0.2.9",
     "embedly": "^1.0.2",
-    "express": "^4.11.1"
-  },
-  "devDependencies": {
+    "express": "^4.11.1",
     "del": "^1.1.1",
     "gulp": "^3.8.10",
     "gulp-concat": "~2.1.7",

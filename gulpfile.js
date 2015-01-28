@@ -129,7 +129,7 @@ gulp.task('watch', ['watch-js', 'watch-tests', 'watch-css']);
 gulp.task('default', ['lint', 'build', 'test']);
 
 // Deploy task
-gulp.task('heroku:production', ['clean', 'build'], function() {
+gulp.task('deploy', ['clean', 'build'], function() {
   gulp.src(jsDistPath)
       .pipe(uglify())
       .pipe(gulp.dest(distDest));
