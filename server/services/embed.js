@@ -1,5 +1,4 @@
 var embedly = require('embedly');
-var config = require('../config');
 
 module.exports = function(req, res) {
 
@@ -8,7 +7,7 @@ module.exports = function(req, res) {
     url = 'http://' + url;
   }
 
-  new embedly({key: config.embedlyKey}, function(err, api) {
+  new embedly({key: process.env.EMBEDLY_KEY}, function(err, api) {
     if (err) {
       return res.status(500).json(err);
     }

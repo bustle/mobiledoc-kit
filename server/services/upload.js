@@ -3,7 +3,6 @@ var Busboy = require('busboy');
 var AWS = require('aws-sdk');
 var config = require('../config');
 
-AWS.config = config.aws;
 var maxFileSize = config.s3.maxFileSize || 5000000;
 var uploadBucket = config.s3.bucketName;
 var s3 = new AWS.S3({ params: { Bucket: uploadBucket } });

@@ -4,6 +4,9 @@
   "description": "A modern, minimalist WYSIWYG editor.",
   "repository": "https://github.com/ContentKit/content-kit-editor",
   "main": "dist/content-kit-editor.js",
+  "engines": {
+    "node": "0.10.x"
+  },
   "scripts": {
     "start": "node server/index.js",
     "test": "gulp test"

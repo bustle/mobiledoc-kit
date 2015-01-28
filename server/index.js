@@ -13,7 +13,7 @@ app.get('/', function(req, res) {
 app.post('/upload', UploadService);
 app.get('/embed', EmbedService);
 
-app.listen(5000, function() {
+app.listen(process.env.PORT || 5000, function() {
   console.log('content-kit-server: listening on port %d', this.address().port);
 });
 

@@ -1,0 +1,5 @@
+{ 
+  "s3" : {
+    "bucketName"      : "content-kit"
+  }
+}

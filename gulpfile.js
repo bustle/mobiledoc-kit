@@ -54,7 +54,7 @@ gulp.task('lint', function() {
              .pipe(jshint.reporter('default'));
 });
 
-gulp.task('build-js', ['lint'], function() {
+gulp.task('build-js', function() {
   return gulp.src(jsSrc)
              .pipe(transpile({ formatter: 'bundle' }))
              .pipe(concat(jsDistName))
@@ -113,3 +113,6 @@ gulp.task('watch', ['watch-js', 'watch-tests', 'watch-css']);
 
 // Default task
 gulp.task('default', ['lint', 'build', 'test']);
+
+// Deploy task
+gulp.task('heroku:production', ['build']); // TODO: minify assets etc...

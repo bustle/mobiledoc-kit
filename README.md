@@ -3,12 +3,20 @@
 
 *Currently under heavy active development.  API subject to change.*
 
+## Live Demo
+[http://content-kit.herokuapp.com/](http://content-kit.herokuapp.com/)
+
 ## Prerequisites
 * [node.js](http://nodejs.org/) ([install package](http://nodejs.org/download/)) or `brew install node`
 
 ## Server Configuration (optional)
-For embeds and image uploads, you will have to configure the built-in server:  
-Rename `server/config.example.json` to `server/config.json` and enter your AWS/Embedly credentials in the file.
+For uploads and embeds to work, you will have to configure AWS and Embedly keys as environment variables:
+```bash
+export AWS_ACCESS_KEY_ID=XXXXXX
+export AWS_SECRET_ACCESS_KEY=XXXXXX
+export EMBEDLY_KEY=XXXXXX
+```
+Also, set the `bucketName` in `server/config.json` with the name of your AWS S3 bucket for uploading files. 
 
 ## Playing
 1. Install dependencies: `npm install`
@@ -19,4 +27,4 @@ Rename `server/config.example.json` to `server/config.json` and enter your AWS/E
 `gulp test`
 
 ## Dev tips
-- `gulp watch` to auto build/test as you save files
+`gulp watch` to auto build/test as you save files
