@@ -26,7 +26,7 @@ var defaults = {
   spellcheck: true,
   autofocus: true,
   model: null,
-  serverUrl: '',
+  serverHost: '',
   stickyToolbar: !!('ontouchstart' in window),
   textFormatCommands: [
     new BoldCommand(),
@@ -166,10 +166,10 @@ function Editor(element, options) {
   var editor = this;
   mergeWithOptions(editor, defaults, options);
 
-  // Update embed commands by prepending the serverUrl
+  // Update embed commands by prepending the serverHost
   editor.embedCommands = [
-    new ImageCommand({  serviceUrl: editor.serverUrl + '/upload' }),
-    new OEmbedCommand({ serviceUrl: editor.serverUrl + '/embed'  })
+    new ImageCommand({  serviceUrl: editor.serverHost + '/upload' }),
+    new OEmbedCommand({ serviceUrl: editor.serverHost + '/embed'  })
   ];
 
   if (element) {
