@@ -58,13 +58,13 @@ function bindContentEditableTypingListeners(editor) {
       if (!selectionTag || selectionTag === Type.QUOTE.tag) {
         document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
       }
-    } else if (e.which === Keycodes.BKSP) {
-      if (!editor.element.innerHTML) {
-        // On backspace of the last letter, make sure to generate a 'p' tag
-        document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
-      } //else {
-        // TODO: need to rerender when backspacing 2 blocks together
-      //}
+    }// else if (e.which === Keycodes.BKSP) {
+      // TODO: need to rerender when backspacing 2 blocks together
+    //}
+
+    // Assure there is always a supported block tag, and not empty text nodes or divs.
+    if (!getSelectionBlockElement()) {
+      document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
     }
   });
 
