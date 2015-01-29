@@ -26,6 +26,7 @@ var defaults = {
   spellcheck: true,
   autofocus: true,
   model: null,
+  serverHost: '',
   stickyToolbar: !!('ontouchstart' in window),
   textFormatCommands: [
     new BoldCommand(),
@@ -165,6 +166,12 @@ function Editor(element, options) {
   var editor = this;
   mergeWithOptions(editor, defaults, options);
 
+  // Update embed commands by prepending the serverHost
+  editor.embedCommands = [
+    new ImageCommand({  serviceUrl: editor.serverHost + '/upload' }),
+    new OEmbedCommand({ serviceUrl: editor.serverHost + '/embed'  })
+  ];
+
   if (element) {
     applyClassName(element);
     applyPlaceholder(element, editor.placeholder);
@@ -186,7 +193,7 @@ function Editor(element, options) {
 
     editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands, sticky: editor.stickyToolbar });
     editor.linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
-    
+
     if(editor.autofocus) { element.focus(); }
   }
 }
