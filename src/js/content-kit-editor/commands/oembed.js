@@ -2,7 +2,7 @@ import Command from './base';
 import Prompt from '../views/prompt';
 import Message from '../views/message';
 import EmbedModel from '../../content-kit-compiler/models/embed';
-import { inherit } from '../../content-kit-utils/object-utils';
+import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 import { OEmbedder } from '../utils/http-utils';
 
 function loadTwitterWidgets(element) {

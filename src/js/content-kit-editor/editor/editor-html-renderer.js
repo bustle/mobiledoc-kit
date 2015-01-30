@@ -1,6 +1,6 @@
 import HTMLRenderer from '../../content-kit-compiler/renderers/html-renderer';
 import Type from '../../content-kit-compiler/types/type';
-import { inherit } from '../../content-kit-utils/object-utils';
+import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 
 function embedRenderer(model) {
   var embedAttrs = model.attributes;

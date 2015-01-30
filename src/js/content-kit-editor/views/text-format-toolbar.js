@@ -1,5 +1,5 @@
 import Toolbar from './toolbar';
-import { inherit } from '../../content-kit-utils/object-utils';
+import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 import { selectionIsEditable, selectionIsInElement } from '../utils/selection-utils';
 import Keycodes from '../utils/keycodes';
 

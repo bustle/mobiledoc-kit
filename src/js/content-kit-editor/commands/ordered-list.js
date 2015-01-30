@@ -1,5 +1,5 @@
 import ListCommand from './list';
-import { inherit } from '../../content-kit-utils/object-utils';
+import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 import Type from '../../content-kit-compiler/types/type';
 
 function OrderedListCommand() {

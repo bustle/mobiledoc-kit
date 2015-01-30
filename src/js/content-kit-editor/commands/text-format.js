@@ -1,5 +1,5 @@
 import Command from './base';
-import { inherit } from '../../content-kit-utils/object-utils';
+import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 
 function TextFormatCommand(options) {
   options = options || {};

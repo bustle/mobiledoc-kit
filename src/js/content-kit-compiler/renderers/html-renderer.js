@@ -2,7 +2,7 @@ import Type from '../types/type';
 import HTMLElementRenderer from './html-element-renderer';
 import HTMLEmbedRenderer from './html-embed-renderer';
 import { DefaultBlockTypeSet, DefaultMarkupTypeSet } from '../types/default-types';
-import { mergeWithOptions } from '../../content-kit-utils/object-utils';
+import { mergeWithOptions } from 'node_modules/content-kit-utils/src/object-utils';
 
 /**
  * @class HTMLRenderer

@@ -1,6 +1,6 @@
 import View from './view';
 import Toolbar from './toolbar';
-import { inherit } from '../../content-kit-utils/object-utils';
+import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 import { getSelectionBlockElement } from '../utils/selection-utils';
 import { elementContentIsEmpty, positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
 import Keycodes from '../utils/keycodes';

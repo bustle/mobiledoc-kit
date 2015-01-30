@@ -2,10 +2,10 @@ import BlockModel from '../models/block';
 import MarkupModel from '../models/markup';
 import Type from '../types/type';
 import { DefaultBlockTypeSet, DefaultMarkupTypeSet } from '../types/default-types';
-import { mergeWithOptions } from '../../content-kit-utils/object-utils';
-import { toArray } from '../../content-kit-utils/array-utils';
-import { trim, trimLeft, sanitizeWhitespace } from '../../content-kit-utils/string-utils';
-import { DOMParsingNode, textOfNode, unwrapNode, attributesForNode } from '../../content-kit-utils/node-utils';
+import { mergeWithOptions } from 'node_modules/content-kit-utils/src/object-utils';
+import { toArray } from 'node_modules/content-kit-utils/src/array-utils';
+import { trim, trimLeft, sanitizeWhitespace } from 'node_modules/content-kit-utils/src/string-utils';
+import { DOMParsingNode, textOfNode, unwrapNode, attributesForNode } from 'node_modules/content-kit-utils/src/node-utils';
 
 var ELEMENT_NODE = window.Node && Node.ELEMENT_NODE || 1;
 var TEXT_NODE    = window.Node && Node.TEXT_NODE    || 3;

@@ -1,4 +1,4 @@
-import { underscore } from '../../content-kit-utils/string-utils';
+import { underscore } from 'node_modules/content-kit-utils/src/string-utils';
 
 /**
  * @class Type

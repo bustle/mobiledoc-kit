@@ -18,8 +18,8 @@ import EventEmitter from '../utils/event-emitter';
 import { cleanPastedContent } from '../utils/paste-utils';
 import Compiler from '../../content-kit-compiler/compiler';
 import Type from '../../content-kit-compiler/types/type';
-import { toArray } from '../../content-kit-utils/array-utils';
-import { merge, mergeWithOptions } from '../../content-kit-utils/object-utils';
+import { toArray } from 'node_modules/content-kit-utils/src/array-utils';
+import { merge, mergeWithOptions } from 'node_modules/content-kit-utils/src/object-utils';
 
 var defaults = {
   placeholder: 'Write here...',
