@@ -9,8 +9,7 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "test": "gulp test",
-    "postinstall": "gulp deploy"
+    "test": "gulp test"
   },
   "keywords": [
     "html",
