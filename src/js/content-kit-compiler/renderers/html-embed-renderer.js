@@ -1,6 +1,7 @@
 import YouTubeRenderer from './embeds/youtube';
 import TwitterRenderer from './embeds/twitter';
 import InstagramRenderer from './embeds/instagram';
+import LinkImageRenderer from './embeds/link-image-renderer';
 
 /**
  * A dictionary of supported embed services
@@ -17,6 +18,10 @@ var services = {
   INSTAGRAM : {
     id: 3,
     renderer: new InstagramRenderer()
+  },
+  LINK_IMAGE: {
+    id: 4,
+    renderer: new LinkImageRenderer()
   }
 };
 
@@ -49,6 +54,9 @@ EmbedRenderer.prototype.rendererFor = function(model) {
   var provider = model.attributes.provider_name;
   var providerKey = provider && provider.toUpperCase();
   var service = services[providerKey];
+  if (!service && model.attributes.thumbnail) {
+    service = services["LINK_IMAGE"];
+  }
   return service && service.renderer;
 };
 
