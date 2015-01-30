@@ -1,7 +1,7 @@
 import TextFormatCommand from './text-format';
 import { getSelectionBlockTagName } from '../utils/selection-utils';
 import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
-import Type from '../../content-kit-compiler/types/type';
+import Type from 'node_modules/content-kit-compiler/src/types/type';
 
 var RegExpHeadingTag = /^(h1|h2|h3|h4|h5|h6)$/i;
 

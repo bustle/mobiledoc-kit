@@ -42,6 +42,7 @@
     "qunitjs": "^1.15.0"
   },
   "devDependencies": {
-    "content-kit-utils": "git://github.com/bustlelabs/content-kit-utils#master"
+    "content-kit-utils": "git://github.com/bustlelabs/content-kit-utils#master",
+    "content-kit-compiler": "git://github.com/bustlelabs/content-kit-compiler#master"
   }
 }

@@ -16,8 +16,8 @@ import Keycodes from '../utils/keycodes';
 import { getSelectionBlockElement, getSelectionBlockTagName, getCursorOffsetInElement } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
 import { cleanPastedContent } from '../utils/paste-utils';
-import Compiler from '../../content-kit-compiler/compiler';
-import Type from '../../content-kit-compiler/types/type';
+import Compiler from 'node_modules/content-kit-compiler/src/compiler';
+import Type from 'node_modules/content-kit-compiler/src/types/type';
 import { toArray } from 'node_modules/content-kit-utils/src/array-utils';
 import { merge, mergeWithOptions } from 'node_modules/content-kit-utils/src/object-utils';
 

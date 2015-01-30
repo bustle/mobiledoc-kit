@@ -1,5 +1,5 @@
-import HTMLRenderer from '../../content-kit-compiler/renderers/html-renderer';
-import Type from '../../content-kit-compiler/types/type';
+import HTMLRenderer from 'node_modules/content-kit-compiler/src/renderers/html-renderer';
+import Type from 'node_modules/content-kit-compiler/src/types/type';
 import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 
 function embedRenderer(model) {

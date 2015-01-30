@@ -1,7 +1,7 @@
 import TextFormatCommand from './text-format';
 import { getSelectionBlockElement, selectNode } from '../utils/selection-utils';
 import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
-import Type from '../../content-kit-compiler/types/type';
+import Type from 'node_modules/content-kit-compiler/src/types/type';
 
 function FormatBlockCommand(options) {
   options = options || {};

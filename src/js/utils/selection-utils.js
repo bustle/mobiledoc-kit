@@ -1,5 +1,5 @@
 import { nodeIsDescendantOfElement } from './element-utils';
-import Type from '../../content-kit-compiler/types/type';
+import Type from 'node_modules/content-kit-compiler/src/types/type';
 
 // TODO: remove, pass in Editor's current block set
 var RootTags = [

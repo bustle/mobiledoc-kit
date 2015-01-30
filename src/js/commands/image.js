@@ -1,7 +1,7 @@
 import Command from './base';
 import Message from '../views/message';
-import Type from '../../content-kit-compiler/types/type';
-import BlockModel from '../../content-kit-compiler/models/block';
+import Type from 'node_modules/content-kit-compiler/src/types/type';
+import BlockModel from 'node_modules/content-kit-compiler/src/models/block';
 import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 import { FileUploader } from '../utils/http-utils';
 
