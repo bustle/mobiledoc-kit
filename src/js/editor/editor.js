@@ -1,4 +1,4 @@
-import EditorHTMLRenderer from './editor-html-renderer';
+import EditorHTMLRenderer from '../renderers/editor-html-renderer';
 import TextFormatToolbar  from '../views/text-format-toolbar';
 import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
@@ -251,7 +251,8 @@ Editor.prototype.replaceBlock = function(block, index) {
 };
 
 Editor.prototype.renderBlockAt = function(index, replace) {
-  var html = this.compiler.render([this.model[index]]);
+  var modelAtIndex = this.model[index];
+  var html = this.compiler.render([modelAtIndex]);
   var dom = document.createElement('div');
   dom.innerHTML = html;
   var newEl = dom.firstChild;
