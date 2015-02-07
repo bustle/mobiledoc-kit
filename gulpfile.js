@@ -18,7 +18,7 @@ var transpile = require('gulp-es6-module-transpiler');
 var pkg = require('./package.json');
 
 var jsSrc = [
-  './src/js/**/*.js'
+  './src/js/*.js'
 ];
 
 var cssSrc = [
@@ -67,7 +67,7 @@ gulp.task('build-js', function() {
              .pipe(concat(jsDistName))
              // Remove gulp-es6-module-transpiler's IIFE so we can add our own
              .pipe(replace(/^\(function\(\) {\n/g, ''))
-             .pipe(replace(/\}\)\.call\(this\);\n/g, ''))
+             .pipe(replace(/\}\)\.call\(this\);/g, ''))
              .pipe(replace(/\n\/\/# sourceMappingURL\=bundle\.map/g, ''))
              // end IFFE removal
              .pipe(header(iifeHeader))
