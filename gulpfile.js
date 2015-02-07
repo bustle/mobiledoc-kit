@@ -18,8 +18,10 @@ var transpile = require('gulp-es6-module-transpiler');
 var pkg = require('./package.json');
 
 var jsSrc = [
-  './src/js/*.js'
+  './src/js/**/*.js'
 ];
+
+var jsEntry = './src/js/index.js';
 
 var cssSrc = [
   './src/css/variables.less',
@@ -62,7 +64,7 @@ gulp.task('lint', function() {
 });
 
 gulp.task('build-js', function() {
-  return gulp.src(jsSrc)
+  return gulp.src(jsEntry)
              .pipe(transpile({ formatter: 'bundle' }))
              .pipe(concat(jsDistName))
              // Remove gulp-es6-module-transpiler's IIFE so we can add our own

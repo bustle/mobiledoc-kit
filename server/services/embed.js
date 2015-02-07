@@ -2,11 +2,6 @@ var embedly = require('embedly');
 
 module.exports = function(req, res) {
 
-  var url = req.query.url;
-  if (!(/^https?:\/\//i).test(url)) {
-    url = 'http://' + url;
-  }
-
   new embedly({key: process.env.EMBEDLY_KEY}, function(err, api) {
     if (err) {
       return res.status(500).json(err);

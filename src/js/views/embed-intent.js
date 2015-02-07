@@ -3,8 +3,8 @@ import Toolbar from './toolbar';
 import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 import { getSelectionBlockElement } from '../utils/selection-utils';
 import { elementContentIsEmpty, positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
-import Keycodes from '../utils/keycodes';
 import { createDiv } from '../utils/element-utils';
+import Keycodes from '../utils/keycodes';
 
 var LayoutStyle = {
   GUTTER   : 1,
@@ -21,14 +21,17 @@ function computeLayoutStyle(rootElement) {
 function EmbedIntent(options) {
   var embedIntent = this;
   var rootElement = embedIntent.rootElement = options.rootElement;
-  options.tagName = 'button';
-  options.classNames = ['ck-embed-intent-btn'];
+  options.classNames = ['ck-embed-intent'];
   View.call(embedIntent, options);
 
+  embedIntent.isActive = false;
   embedIntent.editorContext = options.editorContext;
   embedIntent.loadingIndicator = createDiv('ck-embed-loading');
-  embedIntent.element.title = 'Insert image or embed...';
-  embedIntent.element.addEventListener('mouseup', function(e) {
+  embedIntent.button = document.createElement('button');
+  embedIntent.button.className = 'ck-embed-intent-btn';
+  embedIntent.button.title = 'Insert image or embed...';
+  embedIntent.element.appendChild(embedIntent.button);
+  embedIntent.button.addEventListener('mouseup', function(e) {
     if (embedIntent.isActive) {
       embedIntent.deactivate();
     } else {
@@ -37,8 +40,13 @@ function EmbedIntent(options) {
     e.stopPropagation();
   });
 
-  embedIntent.toolbar = new Toolbar({ embedIntent: embedIntent, editor: embedIntent.editorContext, commands: options.commands, direction: Toolbar.Direction.RIGHT });
-  embedIntent.isActive = false;
+  embedIntent.toolbar = new Toolbar({
+    container: embedIntent.element,
+    embedIntent: embedIntent,
+    editor: embedIntent.editorContext,
+    commands: options.commands,
+    direction: Toolbar.Direction.RIGHT
+  });
 
   function embedIntentHandler() {
     var blockElement = getSelectionBlockElement();
@@ -63,9 +71,6 @@ function EmbedIntent(options) {
   window.addEventListener('resize', function() {
     if(embedIntent.isShowing) {
       embedIntent.reposition();
-      if (embedIntent.toolbar.isShowing) {
-        embedIntent.toolbar.positionToContent(embedIntent.element);
-      }
     }
   });
 }
@@ -96,7 +101,6 @@ EmbedIntent.prototype.activate = function() {
   if (!this.isActive) {
     this.addClass('activated');
     this.toolbar.show();
-    this.toolbar.positionToContent(this.element);
     this.isActive = true;
   }
 };
@@ -113,12 +117,11 @@ EmbedIntent.prototype.showLoading = function() {
   var embedIntent = this;
   var loadingIndicator = embedIntent.loadingIndicator;
   embedIntent.hide();
-  embedIntent.container.appendChild(loadingIndicator);
-  positionElementCenteredIn(loadingIndicator, embedIntent.atNode);
+  embedIntent.atNode.appendChild(loadingIndicator);
 };
 
 EmbedIntent.prototype.hideLoading = function() {
-  this.container.removeChild(this.loadingIndicator);
+  this.atNode.removeChild(this.loadingIndicator);
 };
 
 export default EmbedIntent;

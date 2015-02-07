@@ -25,7 +25,7 @@ function embedRenderer(model) {
   var customRendererId = providerName && providerName.toUpperCase();
   var customRenderer = embedRenderers[customRendererId];
   if (!customRenderer && embedType === 'link' && embedAttrs.thumbnail) {
-    customRenderer = embedRenderers['LINK_IMAGE'];
+    customRenderer = embedRenderers.LINK_IMAGE;
   }
   var renderer = customRenderer ? customRenderer : this;
 

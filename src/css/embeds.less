@@ -2,8 +2,20 @@
  * Embeds
  */
 
-.ck-embed-intent-btn {
+.ck-embed-intent {
   position: absolute;
+}
+
+.ck-embed-intent .ck-toolbar {
+  min-width: 100px;
+  left: 40px;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+}
+
+.ck-embed-intent-btn {
+  position: relative;
   display: block;
   background: none;
   border: none;
@@ -40,13 +52,16 @@
   right: 0;
   bottom: 0;
 }
-.ck-embed-intent-btn.activated {
+.activated .ck-embed-intent-btn {
   -webkit-transform: rotate(-135deg);
           transform: rotate(-135deg);
 }
 
 .ck-embed-loading {
   position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: -0.75em;
   width: 1.5em;
   height: 1.5em;
   border-radius: 50%;
