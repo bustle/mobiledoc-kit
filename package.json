@@ -27,8 +27,8 @@
     "express": "^4.11.1"
   },
   "devDependencies": {
-    "content-kit-utils": "0.1.0",
-    "content-kit-compiler": "0.1.1",
+    "content-kit-utils": "0.1.1",
+    "content-kit-compiler": "0.1.2",
     "del": "^1.1.1",
     "gulp": "^3.8.10",
     "gulp-concat": "~2.1.7",

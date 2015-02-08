@@ -13,9 +13,8 @@ import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
 import Keycodes from '../utils/keycodes';
-import { getSelectionBlockElement, getSelectionBlockTagName, getCursorOffsetInElement } from '../utils/selection-utils';
+import { getSelectionBlockElement, getCursorOffsetInElement } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
-import { cleanPastedContent } from '../utils/paste-utils';
 import Compiler from 'node_modules/content-kit-compiler/src/compiler';
 import Type from 'node_modules/content-kit-compiler/src/types/type';
 import { toArray } from 'node_modules/content-kit-utils/src/array-utils';
@@ -53,28 +52,32 @@ var defaults = {
 function bindContentEditableTypingListeners(editor) {
   // Correct some contentEditable woes before reparsing
   editor.element.addEventListener('keyup', function(e) {
-    if((!e.shiftKey && e.which === Keycodes.ENTER) || (e.ctrlKey && e.which === Keycodes.M)) {
-      // On a carrage return, make sure it always generates a 'p' tag
-      var selectionTag = getSelectionBlockTagName();
-      if (!selectionTag || selectionTag === Type.QUOTE.tag) {
-        document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
-      }
-    }// else if (e.which === Keycodes.BKSP) {
-      // TODO: need to rerender when backspacing 2 blocks together
-    //}
-
     // Assure there is always a supported block tag, and not empty text nodes or divs.
-    if (!getSelectionBlockElement()) {
+    // On a carrage return, make sure to always generate a 'p' tag
+    if (!getSelectionBlockElement() ||
+        !editor.element.textContent ||
+       (!e.shiftKey && e.which === Keycodes.ENTER) || (e.ctrlKey && e.which === Keycodes.M)) {
       document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
-    }
+    } //else if (e.which === Keycodes.BKSP) {
+      // TODO: Need to rerender when backspacing 2 blocks together
+      //var cursorIndex = editor.getCursorIndexInCurrentBlock();
+      //var currentBlockElement = getSelectionBlockElement();
+      //editor.renderBlockAt(editor.getCurrentBlockIndex(), true);
+      //setCursorIndexInElement(currentBlockElement, cursorIndex);
+    //}
   });
 
-  // On 'PASTE' convert content to blocks and insert
+  // On 'PASTE' sanitize and insert
   editor.element.addEventListener('paste', function(e) {
-    var cleanedContent = cleanPastedContent(e, Type.PARAGRAPH.tag);
-    if (cleanedContent) {
-      document.execCommand('insertHTML', false, cleanedContent);
+    var data = e.clipboardData;
+    var pastedHTML = data && data.getData && data.getData('text/html');
+    var sanitizedHTML = pastedHTML && editor.compiler.rerender(pastedHTML);
+    if (sanitizedHTML) {
+      document.execCommand('insertHTML', false, sanitizedHTML);
+      editor.syncVisual();
     }
+    e.preventDefault();
+    return false;
   });
 }
 
@@ -227,7 +230,7 @@ Editor.prototype.getCurrentBlockIndex = function(element) {
   return blockElements.indexOf(selectionEl);
 };
 
-Editor.prototype.getCurrentCursorIndex = function() {
+Editor.prototype.getCursorIndexInCurrentBlock = function() {
   var currentBlock = getSelectionBlockElement();
   if (currentBlock) {
     return getCursorOffsetInElement(currentBlock);
