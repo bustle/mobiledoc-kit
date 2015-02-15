@@ -45,10 +45,12 @@ function Toolbar(options) {
   toolbar.activePrompt = null;
   toolbar.buttons = [];
 
+  toolbar.contentElement = createDiv('ck-toolbar-content');
   toolbar.promptContainerElement = createDiv('ck-toolbar-prompt');
   toolbar.buttonContainerElement = createDiv('ck-toolbar-buttons');
-  toolbar.element.appendChild(toolbar.promptContainerElement);
-  toolbar.element.appendChild(toolbar.buttonContainerElement);
+  toolbar.contentElement.appendChild(toolbar.promptContainerElement);
+  toolbar.contentElement.appendChild(toolbar.buttonContainerElement);
+  toolbar.element.appendChild(toolbar.contentElement);
 
   for(i = 0; i < commandCount; i++) {
     this.addCommand(commands[i]);
@@ -112,7 +114,7 @@ Toolbar.prototype.updateForSelection = function(selection) {
 
 Toolbar.prototype.positionToContent = function(content) {
   var directions = ToolbarDirection;
-  var positioningMethod;
+  var positioningMethod, position, sideEdgeOffset;
   switch(this.direction) {
     case directions.RIGHT:
       positioningMethod = positionElementToRightOf;
@@ -120,7 +122,9 @@ Toolbar.prototype.positionToContent = function(content) {
     default:
       positioningMethod = positionElementCenteredAbove;
   }
-  positioningMethod(this.element, content);
+  position = positioningMethod(this.element, content);
+  sideEdgeOffset = Math.min(Math.max(10, position.left), document.body.clientWidth - this.element.offsetWidth - 10);
+  this.contentElement.style.transform = 'translateX(' + (sideEdgeOffset - position.left) + 'px)';
 };
 
 Toolbar.prototype.setDirection = function(direction) {

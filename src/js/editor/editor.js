@@ -49,22 +49,18 @@ var defaults = {
   })
 };
 
+function isNaughtyKeystroke(e) {
+  return (!e.shiftKey && e.which === Keycodes.ENTER) ||
+         (e.ctrlKey && e.which === Keycodes.M) ||
+         (e.which === Keycodes.BKSP);
+}
+
 function bindContentEditableTypingListeners(editor) {
-  // Correct some contentEditable woes before reparsing
-  editor.element.addEventListener('keyup', function(e) {
-    // Assure there is always a supported block tag, and not empty text nodes or divs.
-    // On a carrage return, make sure to always generate a 'p' tag
-    if (!getSelectionBlockElement() ||
-        !editor.element.textContent ||
-       (!e.shiftKey && e.which === Keycodes.ENTER) || (e.ctrlKey && e.which === Keycodes.M)) {
-      document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
-    } //else if (e.which === Keycodes.BKSP) {
-      // TODO: Need to rerender when backspacing 2 blocks together
-      //var cursorIndex = editor.getCursorIndexInCurrentBlock();
-      //var currentBlockElement = getSelectionBlockElement();
-      //editor.renderBlockAt(editor.getCurrentBlockIndex(), true);
-      //setCursorIndexInElement(currentBlockElement, cursorIndex);
-    //}
+
+  editor.element.addEventListener('keydown', function(e) {
+    if (isNaughtyKeystroke(e)) {
+      e.preventDefault();
+    }
   });
 
   // On 'PASTE' sanitize and insert

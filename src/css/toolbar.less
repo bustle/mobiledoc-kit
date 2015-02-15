@@ -6,9 +6,6 @@
   text-align: center;
   position: absolute;
   z-index: @z-index--toolbar;
-  background: linear-gradient(to bottom,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
-  box-shadow: 0 1px 3px -1px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.12), inset 1px 1px 0 #282828, inset -1px -1px 0 #282828;
-  border-radius: 3px;
   transition: left @elementMoveSpeed, top @elementMoveSpeed;
   margin-bottom: 0.45em; // space for arrow
 }
@@ -78,9 +75,16 @@
   background-color: #eee;
 }
 
+.ck-toolbar-content {
+  border-radius: 3px;
+  background: linear-gradient(to bottom,  rgba(74,74,74,0.97) 0%,rgba(43,43,43,1) 100%);
+  box-shadow: 0 1px 3px -1px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.12), inset 1px 1px 0 #282828, inset -1px -1px 0 #282828;
+}
+
 .ck-toolbar-buttons {
   border-radius: 5px;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 .ck-toolbar-btn {
