@@ -32,6 +32,5 @@ bower_components
 .DS_Store
 
 # Builds
-dist/
 keys.txt
 export.sh
