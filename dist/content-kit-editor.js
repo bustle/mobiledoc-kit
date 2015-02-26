@@ -1,6 +1,6 @@
 /**
  * @overview content-kit-editor: A modern, minimalist WYSIWYG editor.
- * @version  0.1.1
+ * @version  0.1.2
  * @author   Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)
  * @license  MIT
  * Last modified: Feb 26, 2015
@@ -2257,18 +2257,23 @@
       })
     };
 
-    function $$editor$$isNaughtyKeystroke(e) {
-      return (!e.shiftKey && e.which === $$$utils$keycodes$$default.ENTER) ||
-             (e.ctrlKey && e.which === $$$utils$keycodes$$default.M) ||
-             (e.which === $$$utils$keycodes$$default.BKSP);
-    }
-
     function $$editor$$bindContentEditableTypingListeners(editor) {
 
-      editor.element.addEventListener('keydown', function(e) {
-        if ($$editor$$isNaughtyKeystroke(e)) {
-          e.preventDefault();
-        }
+
+      editor.element.addEventListener('keyup', function(e) {
+        // Assure there is always a supported block tag, and not empty text nodes or divs.
+        // On a carrage return, make sure to always generate a 'p' tag
+        if (!$$$utils$selection$utils$$getSelectionBlockElement() ||
+            !editor.element.textContent ||
+           (!e.shiftKey && e.which === $$$utils$keycodes$$default.ENTER) || (e.ctrlKey && e.which === $$$utils$keycodes$$default.M)) {
+          document.execCommand('formatBlock', false, node_modules$content$kit$compiler$src$types$type$$default.PARAGRAPH.tag);
+        } //else if (e.which === Keycodes.BKSP) {
+          // TODO: Need to rerender when backspacing 2 blocks together
+          //var cursorIndex = editor.getCursorIndexInCurrentBlock();
+          //var currentBlockElement = getSelectionBlockElement();
+          //editor.renderBlockAt(editor.getCurrentBlockIndex(), true);
+          //setCursorIndexInElement(currentBlockElement, cursorIndex);
+        //}
       });
 
       // On 'PASTE' sanitize and insert
