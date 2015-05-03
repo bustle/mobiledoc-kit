@@ -5,13 +5,11 @@ var qunit     = require('gulp-qunit');
 var less      = require('gulp-less');
 var concat    = require('gulp-concat');
 var header    = require('gulp-header');
-var footer    = require('gulp-footer');
-var util      = require('gulp-util');
 var open      = require('gulp-open');
-var replace   = require('gulp-replace');
 var uglify    = require('gulp-uglify');
 var cssmin    = require('gulp-cssmin');
-var transpile = require('gulp-es6-module-transpiler');
+var file      = require('gulp-file');
+var transpile = require('esperanto');
 
 // ------------------------------------------- 
 
@@ -37,7 +35,6 @@ var cssSrc = [
 var distDest    = './dist/';
 var jsDistName  = 'content-kit-editor.js';
 var cssDistName = 'content-kit-editor.css';
-var jsDistPath  = distDest + jsDistName;
 var cssDistPath = distDest + cssDistName;
 
 var testRunner  = './tests/index.html';
@@ -49,7 +46,6 @@ var banner = ['/**',
               ' * @version  <%= pkg.version %>',
               ' * @author   <%= pkg.author %>',
               ' * @license  <%= pkg.license %>',
-              ' * Last modified: ' + util.date('mmm d, yyyy'),
               ' */',
               ''].join('\n'); 
 
@@ -64,18 +60,20 @@ gulp.task('lint', function() {
 });
 
 gulp.task('build-js', function() {
-  return gulp.src(jsEntry)
-             .pipe(transpile({ formatter: 'bundle' }))
-             .pipe(concat(jsDistName))
-             // Remove gulp-es6-module-transpiler's IIFE so we can add our own
-             .pipe(replace(/^\(function\(\) {\n/g, ''))
-             .pipe(replace(/\}\)\.call\(this\);/g, ''))
-             .pipe(replace(/\n\/\/# sourceMappingURL\=bundle\.map/g, ''))
-             // end IFFE removal
-             .pipe(header(iifeHeader))
-             .pipe(footer(iifeFooter))
-             .pipe(header(banner, { pkg : pkg } ))
-             .pipe(gulp.dest(distDest));
+  return transpile.bundle({
+    entry: jsEntry,
+    resolvePath: function (importee, importer) {
+      return 'node_modules/' + importee + '.js';
+    }
+  }).then(function(bundle) {
+    var transpiled = bundle.concat({
+      intro: iifeHeader,
+      outro: iifeFooter
+    });
+    return file(jsDistName, transpiled.code, { src: true })
+               .pipe(header(banner, { pkg : pkg } ))
+               .pipe(gulp.dest(distDest));
+  });
 });
 
 // Compiles LESS and concatenates css
