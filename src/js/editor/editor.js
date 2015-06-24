@@ -12,6 +12,7 @@ import UnorderedListCommand from '../commands/unordered-list';
 import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
+import CardCommand from '../commands/card';
 import Keycodes from '../utils/keycodes';
 import { getSelectionBlockElement, getCursorOffsetInElement } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
@@ -36,17 +37,16 @@ var defaults = {
     new SubheadingCommand()
   ],
   embedCommands: [
-    new ImageCommand({  serviceUrl: '/upload' }),
-    new OEmbedCommand({ serviceUrl: '/embed'  })
+    new ImageCommand({ serviceUrl: '/upload' }),
+    new OEmbedCommand({ serviceUrl: '/embed'  }),
+    new CardCommand()
   ],
   autoTypingCommands: [
     new UnorderedListCommand(),
     new OrderedListCommand()
   ],
-  compiler: new Compiler({
-    includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
-    renderer: new EditorHTMLRenderer() // subclassed HTML renderer that adds dom structure for additional editor interactivity
-  })
+  compiler: null,
+  cards: {}
 };
 
 function bindContentEditableTypingListeners(editor) {
@@ -169,12 +169,14 @@ function getNonTextBlocks(blockTypeSet, model) {
 function Editor(element, options) {
   var editor = this;
   mergeWithOptions(editor, defaults, options);
-
-  // Update embed commands by prepending the serverHost
-  editor.embedCommands = [
-    new ImageCommand({  serviceUrl: editor.serverHost + '/upload' }),
-    new OEmbedCommand({ serviceUrl: editor.serverHost + '/embed'  })
-  ];
+  if (!editor.compiler) {
+    editor.compiler = new Compiler({
+      includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
+      renderer: new EditorHTMLRenderer({
+        cards: editor.cards
+      }) // subclassed HTML renderer that adds dom structure for additional editor interactivity
+    });
+  }
 
   if (element) {
     applyClassName(element);
