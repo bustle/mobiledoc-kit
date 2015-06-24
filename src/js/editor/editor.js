@@ -262,6 +262,7 @@ Editor.prototype.renderBlockAt = function(index, replace) {
   var dom = document.createElement('div');
   dom.innerHTML = html;
   var newEl = dom.firstChild;
+  newEl.dataset.modelIndex = index;
   var sibling = this.element.children[index];
   if (replace) {
     this.element.replaceChild(newEl, sibling);
@@ -275,13 +276,18 @@ Editor.prototype.syncContentEditableBlocks = function() {
   var blockElements = toArray(this.element.children);
   var len = blockElements.length;
   var updatedModel = [];
-  var i, blockEl;
+  var i, block, blockEl;
   for (i = 0; i < len; i++) {
     blockEl = blockElements[i];
     if(blockEl.isContentEditable) {
       updatedModel.push(this.compiler.parser.serializeBlockNode(blockEl));
     } else {
-      updatedModel.push(nonTextBlocks.shift());
+      if (blockEl.dataset.modelIndex) {
+        block = this.model[blockEl.dataset.modelIndex];
+        updatedModel.push(block);
+      } else {
+        updatedModel.push(nonTextBlocks.shift());
+      }
     }
   }
   this.model = updatedModel;
