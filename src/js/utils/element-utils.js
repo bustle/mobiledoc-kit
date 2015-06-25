@@ -114,7 +114,21 @@ function positionElementToRightOf(element, rightOfElement) {
   return positionElementToRect(element, rightOfElementRect, -verticalCenter, -rightOfElement.offsetWidth - elementMargin);
 }
 
-export { createDiv, hideElement, showElement, swapElements, getEventTargetMatchingTag, nodeIsDescendantOfElement,
-elementContentIsEmpty, getElementRelativeOffset, getElementComputedStyleNumericProp, positionElementToRect,
-positionElementHorizontallyCenteredToRect, positionElementCenteredAbove, positionElementCenteredBelow,
-positionElementCenteredIn, positionElementToLeftOf, positionElementToRightOf };
+export {
+  createDiv,
+  hideElement,
+  showElement,
+  swapElements,
+  getEventTargetMatchingTag,
+  nodeIsDescendantOfElement,
+  elementContentIsEmpty,
+  getElementRelativeOffset,
+  getElementComputedStyleNumericProp,
+  positionElementToRect,
+  positionElementHorizontallyCenteredToRect,
+  positionElementCenteredAbove,
+  positionElementCenteredBelow,
+  positionElementCenteredIn,
+  positionElementToLeftOf,
+  positionElementToRightOf
+};
