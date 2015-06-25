@@ -5,6 +5,7 @@ import YouTubeRenderer from './youtube';
 import TwitterRenderer from './twitter';
 import InstagramRenderer from './instagram';
 import LinkImageRenderer from './link-image-renderer';
+import { merge } from 'node_modules/content-kit-utils/src/object-utils';
 
 /**
  * A dictionary of supported embeds types that we'll custom render
@@ -55,10 +56,12 @@ typeRenderers[Type.IMAGE.id] = imageRenderer;
  * Subclass of HTMLRenderer specifically for the Editor
  * Wraps interactive elements to add functionality
  */
-function EditorHTMLRenderer() {
-  HTMLRenderer.call(this, {
+function EditorHTMLRenderer(options) {
+  var rendererOptions = {
     typeRenderers: typeRenderers
-  });
+  };
+  merge(rendererOptions, options);
+  HTMLRenderer.call(this, rendererOptions);
 }
 inherit(EditorHTMLRenderer, HTMLRenderer);
 
