@@ -1,11 +1,13 @@
-import HTMLRenderer from 'node_modules/content-kit-compiler/src/renderers/html-renderer';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
+import { HTMLRenderer } from 'content-kit-compiler';
+import { Type } from 'content-kit-compiler';
+import {
+  inherit,
+  merge
+} from 'content-kit-utils';
 import YouTubeRenderer from './youtube';
 import TwitterRenderer from './twitter';
 import InstagramRenderer from './instagram';
 import LinkImageRenderer from './link-image-renderer';
-import { merge } from 'node_modules/content-kit-utils/src/object-utils';
 
 /**
  * A dictionary of supported embeds types that we'll custom render

@@ -1,3 +1,4 @@
+import { doc } from 'content-kit-compiler';
 
 var buttonClassName = 'ck-toolbar-btn';
 
@@ -6,7 +7,7 @@ function ToolbarButton(options) {
   var toolbar = options.toolbar;
   var command = options.command;
   var prompt = command.prompt;
-  var element = document.createElement('button');
+  var element = doc.createElement('button');
 
   button.element = element;
   button.command = command;

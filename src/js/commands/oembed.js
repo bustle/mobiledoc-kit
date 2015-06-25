@@ -1,18 +1,22 @@
 import Command from './base';
 import Prompt from '../views/prompt';
 import Message from '../views/message';
-import EmbedModel from 'node_modules/content-kit-compiler/src/models/embed';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
+import {
+  EmbedModel,
+  doc
+} from 'content-kit-compiler';
+import { inherit } from 'content-kit-utils';
 import { OEmbedder } from '../utils/http-utils';
+import win from '../utils/win';
 
 function loadTwitterWidgets(element) {
-  if (window.twttr) {
-    window.twttr.widgets.load(element);
+  if (win.twttr) {
+    win.twttr.widgets.load(element);
   } else {
-    var script = document.createElement('script');
+    var script = doc.createElement('script');
     script.async = true;
     script.src = 'http://platform.twitter.com/widgets.js';
-    document.head.appendChild(script);
+    doc.head.appendChild(script);
   }
 }
 

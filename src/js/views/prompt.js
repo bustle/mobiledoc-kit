@@ -1,10 +1,12 @@
 import View from './view';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
+import { inherit } from 'content-kit-utils';
 import { restoreRange } from '../utils/selection-utils';
 import { createDiv, positionElementToRect } from '../utils/element-utils';
 import Keycodes from '../utils/keycodes';
+import { doc } from 'content-kit-compiler';
+import win from '../utils/win';
 
-var container = document.body;
+var container = doc.body;
 var hiliter = createDiv('ck-editor-hilite');
 
 function positionHiliteRange(range) {
@@ -32,7 +34,7 @@ function Prompt(options) {
     }
   });
 
-  window.addEventListener('resize', function() {
+  win.addEventListener('resize', function() {
     var activeHilite = hiliter.parentNode;
     var range = prompt.range;
     if(activeHilite && range) {
@@ -45,7 +47,7 @@ inherit(Prompt, View);
 Prompt.prototype.show = function(callback) {
   var prompt = this;
   var element = prompt.element;
-  var selection = window.getSelection();
+  var selection = win.getSelection();
   var range = selection && selection.rangeCount && selection.getRangeAt(0);
   element.value = null;
   prompt.range = range || null;

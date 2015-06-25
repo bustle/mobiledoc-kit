@@ -1,7 +1,9 @@
 import Command from './base';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
-import BlockModel from 'node_modules/content-kit-compiler/src/models/block';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
+import { inherit } from 'content-kit-utils';
+import {
+  BlockModel,
+  Type
+} from 'content-kit-compiler';
 
 function injectCardBlock(cardName, cardPayload, editor, index) {
   // FIXME: Do we change the block model internal representation here?

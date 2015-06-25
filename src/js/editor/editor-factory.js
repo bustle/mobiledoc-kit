@@ -1,4 +1,5 @@
 import Editor from './editor';
+import { doc } from 'content-kit-compiler';
 
 /**
  * @class EditorFactory
@@ -16,7 +17,7 @@ function EditorFactory(element, options) {
   }
 
   if (typeof element === 'string') {
-    elements = document.querySelectorAll(element);
+    elements = doc.querySelectorAll(element);
   } else if (element && element.length) {
     elements = element;
   } else if (element) {

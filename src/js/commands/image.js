@@ -1,12 +1,16 @@
 import Command from './base';
 import Message from '../views/message';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
-import BlockModel from 'node_modules/content-kit-compiler/src/models/block';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
+import {
+  Type,
+  BlockModel,
+  doc,
+} from 'content-kit-compiler';
+import win from '../utils/win';
+import { inherit } from 'content-kit-utils';
 import { FileUploader } from '../utils/http-utils';
 
 function createFileInput(command) {
-  var fileInput = document.createElement('input');
+  var fileInput = doc.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = 'image/*';
   fileInput.className = 'ck-file-input';
@@ -22,7 +26,7 @@ function injectImageBlock(src, editor, index) {
 }
 
 function renderFromFile(file, editor, index) {
-  if (file && window.FileReader) {
+  if (file && win.FileReader) {
     var reader = new FileReader();
     reader.onload = function(e) {
       var base64Src = e.target.result;
@@ -48,7 +52,7 @@ ImageCommand.prototype = {
     var fileInput = this.fileInput;
     if (!fileInput) {
       fileInput = this.fileInput = createFileInput(this);
-      document.body.appendChild(fileInput);
+      doc.body.appendChild(fileInput);
     }
     fileInput.dispatchEvent(new MouseEvent('click', { bubbles: false }));
   },

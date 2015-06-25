@@ -1,9 +1,12 @@
-import Type from 'node_modules/content-kit-compiler/src/types/type';
-import BlockModel from 'node_modules/content-kit-compiler/src/models/block';
-import EmbedModel from 'node_modules/content-kit-compiler/src/models/embed';
-import Compiler from 'node_modules/content-kit-compiler/src/compiler';
-import HTMLParser from 'node_modules/content-kit-compiler/src/parsers/html-parser';
-import HTMLRenderer from 'node_modules/content-kit-compiler/src/renderers/html-renderer';
+import {
+  Type,
+  BlockModel,
+  EmbedModel,
+  Compiler,
+  HTMLParser,
+  HTMLRenderer
+} from 'content-kit-compiler';
+
 import EditorFactory from './editor/editor-factory';
 
 // Create a namespace and selectivly expose public modules
@@ -16,4 +19,8 @@ ContentKit.HTMLParser = HTMLParser;
 ContentKit.HTMLRenderer = HTMLRenderer;
 ContentKit.Editor = EditorFactory;
 
-window.ContentKit = ContentKit;
+export function registerGlobal(global) {
+  global.ContentKit = ContentKit;
+}
+
+export default ContentKit;

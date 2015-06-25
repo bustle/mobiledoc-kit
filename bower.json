@@ -1,0 +1,21 @@
+{
+  "name": "content-kit-editor",
+  "version": "0.0.0",
+  "homepage": "https://github.com/bustlelabs/content-kit-editor",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "loader.js": "~3.2.1"
+  }
+}
