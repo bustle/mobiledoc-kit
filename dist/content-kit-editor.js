@@ -308,7 +308,8 @@
     new types_type({ tag: 'blockquote', name: 'quote' }),
     new types_type({ tag: 'ul', name: 'list' }),
     new types_type({ tag: 'ol', name: 'ordered list' }),
-    new types_type({ name: 'embed', isTextType: false })
+    new types_type({ name: 'embed', isTextType: false }),
+    new types_type({ name: 'card' })
   ]);
 
   /**
@@ -666,11 +667,32 @@
 
   var html_embed_renderer = HTMLEmbedRenderer;
 
+  /**
+   * @class CardRenderer
+   * @constructor
+   */
+  function CardRenderer(cards) {
+    this.cards = cards;
+  }
+
+  /**
+   * @method render
+   * @param model a card model
+   * @return String html
+   */
+  CardRenderer.prototype.render = function(model) {
+    var render = this.cards[model.attributes.name];
+    return '<div contenteditable="false">'+render(model.attributes.payload)+'</div>';
+  };
+
+  var card_renderer = CardRenderer;
+
   function HTMLRenderer(options) {
     var defaults = {
       blockTypes    : DefaultBlockTypeSet,
       markupTypes   : DefaultMarkupTypeSet,
-      typeRenderers : {}
+      typeRenderers : {},
+      cards         : {}
     };
     mergeWithOptions(this, defaults, options);
   }
@@ -686,6 +708,9 @@
     if (type === types_type.EMBED) {
       return new html_embed_renderer();
     }
+    if (type === types_type.CARD) {
+      return new card_renderer(this.cards);
+    }
     return new html_element_renderer({ type: type, markupTypes: this.markupTypes });
   };
 
@@ -700,8 +725,9 @@
     var i, blockHtml;
 
     for (i = 0; i < len; i++) {
+      // this is renderModel, not only blocks!!
       blockHtml = this.renderBlock(model[i]);
-      if (blockHtml) { 
+      if (blockHtml) {
         html += blockHtml;
       }
     }
@@ -879,10 +905,12 @@
    * Subclass of HTMLRenderer specifically for the Editor
    * Wraps interactive elements to add functionality
    */
-  function EditorHTMLRenderer() {
-    html_renderer.call(this, {
+  function EditorHTMLRenderer(options) {
+    var rendererOptions = {
       typeRenderers: typeRenderers
-    });
+    };
+    merge(rendererOptions, options);
+    html_renderer.call(this, rendererOptions);
   }
   inherit(EditorHTMLRenderer, html_renderer);
 
@@ -2135,7 +2163,7 @@
     var editorContext = command.editorContext;
     var embedIntent = command.embedIntent;
     var index = editorContext.getCurrentBlockIndex();
-    
+
     embedIntent.showLoading();
     this.embedService.fetch({
       url: url,
@@ -2166,6 +2194,40 @@
   };
 
   var oembed = OEmbedCommand;
+
+  function injectCardBlock(cardName, cardPayload, editor, index) {
+    // FIXME: Do we change the block model internal representation here?
+    var cardBlock = models_block.createWithType(types_type.CARD, {
+      attributes: {
+        name: cardName,
+        payload: cardPayload
+      }
+    });
+    editor.replaceBlock(cardBlock, index);
+  }
+
+  function CardCommand() {
+    base.call(this, {
+      name: 'card',
+      button: '<i>CA</i>'
+    });
+  }
+  inherit(CardCommand, base);
+
+  CardCommand.prototype = {
+    exec: function() {
+      CardCommand._super.prototype.exec.call(this);
+      var editor = this.editorContext;
+      var currentEditingIndex = editor.getCurrentBlockIndex();
+
+      var cardName = 'pick-color';
+      var cardPayload = { options: ['red', 'blue'] };
+      injectCardBlock(cardName, cardPayload, editor, currentEditingIndex);
+      editor.renderBlockAt(currentEditingIndex, true);
+    }
+  };
+
+  var card = CardCommand;
 
   // Based on https://github.com/jeromeetienne/microevent.js/blob/master/microevent.js
   // See also: https://github.com/allouis/minivents/blob/master/minivents.js
@@ -2212,17 +2274,16 @@
       new subheading()
     ],
     embedCommands: [
-      new image({  serviceUrl: '/upload' }),
-      new oembed({ serviceUrl: '/embed'  })
+      new image({ serviceUrl: '/upload' }),
+      new oembed({ serviceUrl: '/embed'  }),
+      new card()
     ],
     autoTypingCommands: [
       new unordered_list(),
       new ordered_list()
     ],
-    compiler: new compiler({
-      includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
-      renderer: new editor_html_renderer() // subclassed HTML renderer that adds dom structure for additional editor interactivity
-    })
+    compiler: null,
+    cards: {}
   };
 
   function bindContentEditableTypingListeners(editor) {
@@ -2345,12 +2406,14 @@
   function Editor(element, options) {
     var editor = this;
     mergeWithOptions(editor, defaults, options);
-
-    // Update embed commands by prepending the serverHost
-    editor.embedCommands = [
-      new image({  serviceUrl: editor.serverHost + '/upload' }),
-      new oembed({ serviceUrl: editor.serverHost + '/embed'  })
-    ];
+    if (!editor.compiler) {
+      editor.compiler = new compiler({
+        includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
+        renderer: new editor_html_renderer({
+          cards: editor.cards
+        }) // subclassed HTML renderer that adds dom structure for additional editor interactivity
+      });
+    }
 
     if (element) {
       applyClassName(element);
@@ -2436,6 +2499,7 @@
     var dom = document.createElement('div');
     dom.innerHTML = html;
     var newEl = dom.firstChild;
+    newEl.dataset.modelIndex = index;
     var sibling = this.element.children[index];
     if (replace) {
       this.element.replaceChild(newEl, sibling);
@@ -2449,13 +2513,18 @@
     var blockElements = toArray(this.element.children);
     var len = blockElements.length;
     var updatedModel = [];
-    var i, blockEl;
+    var i, block, blockEl;
     for (i = 0; i < len; i++) {
       blockEl = blockElements[i];
       if(blockEl.isContentEditable) {
         updatedModel.push(this.compiler.parser.serializeBlockNode(blockEl));
       } else {
-        updatedModel.push(nonTextBlocks.shift());
+        if (blockEl.dataset.modelIndex) {
+          block = this.model[blockEl.dataset.modelIndex];
+          updatedModel.push(block);
+        } else {
+          updatedModel.push(nonTextBlocks.shift());
+        }
       }
     }
     this.model = updatedModel;
