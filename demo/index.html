@@ -72,7 +72,13 @@
 
   <script>
     // Initialize a new Editor
-    var editor = new ContentKit.Editor('.editor');
+    var editor = new ContentKit.Editor('.editor', {
+      cards: {
+        'pick-color': function renderPickColor(payload) {
+          return 'PICK A COLOR: '+payload.options.join(', ');
+        }
+      }
+    });
   </script>
 
   <!-- JS just for the demo page -->
