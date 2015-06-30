@@ -2,6 +2,7 @@
 
 var multiBuilder = require('broccoli-multi-builder');
 var mergeTrees = require('broccoli-merge-trees');
+var testTreeBuilder = require('./broccoli/test-tree-builder');
 
 var jsSrc = './src/js';
 var vendoredModules = ['content-kit-compiler', 'content-kit-utils'];
@@ -27,4 +28,9 @@ var cjsTree = multiBuilder.buildCJS({
   packageName: packageName
 });
 
-module.exports = mergeTrees([ amdTree, globalTree, cjsTree ]);
+module.exports = mergeTrees([
+  amdTree,
+  globalTree,
+  cjsTree,
+  testTreeBuilder.build()
+]);

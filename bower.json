@@ -16,6 +16,6 @@
     "tests"
   ],
   "dependencies": {
-    "loader.js": "~3.2.1"
+    "ember-cli-test-loader": "~0.1.3"
   }
 }
