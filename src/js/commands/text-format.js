@@ -1,5 +1,6 @@
 import Command from './base';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
+import { inherit } from 'content-kit-utils';
+import { doc } from 'content-kit-compiler';
 
 function TextFormatCommand(options) {
   options = options || {};
@@ -14,10 +15,10 @@ inherit(TextFormatCommand, Command);
 
 TextFormatCommand.prototype = {
   exec: function(value) {
-    document.execCommand(this.action, false, value || null);
+    doc.execCommand(this.action, false, value || null);
   },
   unexec: function(value) {
-    document.execCommand(this.removeAction, false, value || null);
+    doc.execCommand(this.removeAction, false, value || null);
   }
 };
 

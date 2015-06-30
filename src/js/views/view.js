@@ -1,3 +1,5 @@
+import { doc } from 'content-kit-compiler';
+
 function renderClasses(view) {
   var classNames = view.classNames;
   if (classNames && classNames.length) {
@@ -11,8 +13,8 @@ function View(options) {
   options = options || {};
   this.tagName = options.tagName || 'div';
   this.classNames = options.classNames || [];
-  this.element = document.createElement(this.tagName);
-  this.container = options.container || document.body;
+  this.element = doc.createElement(this.tagName);
+  this.container = options.container || doc.body;
   this.isShowing = false;
   renderClasses(this);
 }

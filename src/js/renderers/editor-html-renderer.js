@@ -1,6 +1,9 @@
-import HTMLRenderer from 'node_modules/content-kit-compiler/src/renderers/html-renderer';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
+import { HTMLRenderer } from 'content-kit-compiler';
+import { Type } from 'content-kit-compiler';
+import {
+  inherit,
+  merge
+} from 'content-kit-utils';
 import YouTubeRenderer from './youtube';
 import TwitterRenderer from './twitter';
 import InstagramRenderer from './instagram';
@@ -55,10 +58,12 @@ typeRenderers[Type.IMAGE.id] = imageRenderer;
  * Subclass of HTMLRenderer specifically for the Editor
  * Wraps interactive elements to add functionality
  */
-function EditorHTMLRenderer() {
-  HTMLRenderer.call(this, {
+function EditorHTMLRenderer(options) {
+  var rendererOptions = {
     typeRenderers: typeRenderers
-  });
+  };
+  merge(rendererOptions, options);
+  HTMLRenderer.call(this, rendererOptions);
 }
 inherit(EditorHTMLRenderer, HTMLRenderer);
 

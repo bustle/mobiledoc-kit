@@ -12,13 +12,17 @@ import UnorderedListCommand from '../commands/unordered-list';
 import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
+import CardCommand from '../commands/card';
 import Keycodes from '../utils/keycodes';
 import { getSelectionBlockElement, getCursorOffsetInElement } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
-import Compiler from 'node_modules/content-kit-compiler/src/compiler';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
-import { toArray } from 'node_modules/content-kit-utils/src/array-utils';
-import { merge, mergeWithOptions } from 'node_modules/content-kit-utils/src/object-utils';
+import {
+  Type,
+  Compiler,
+  doc
+} from 'content-kit-compiler';
+import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
+import win from '../utils/win';
 
 var defaults = {
   placeholder: 'Write here...',
@@ -26,7 +30,7 @@ var defaults = {
   autofocus: true,
   model: null,
   serverHost: '',
-  stickyToolbar: !!('ontouchstart' in window),
+  stickyToolbar: !!('ontouchstart' in win),
   textFormatCommands: [
     new BoldCommand(),
     new ItalicCommand(),
@@ -36,17 +40,16 @@ var defaults = {
     new SubheadingCommand()
   ],
   embedCommands: [
-    new ImageCommand({  serviceUrl: '/upload' }),
-    new OEmbedCommand({ serviceUrl: '/embed'  })
+    new ImageCommand({ serviceUrl: '/upload' }),
+    new OEmbedCommand({ serviceUrl: '/embed'  }),
+    new CardCommand()
   ],
   autoTypingCommands: [
     new UnorderedListCommand(),
     new OrderedListCommand()
   ],
-  compiler: new Compiler({
-    includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
-    renderer: new EditorHTMLRenderer() // subclassed HTML renderer that adds dom structure for additional editor interactivity
-  })
+  compiler: null,
+  cards: {}
 };
 
 function bindContentEditableTypingListeners(editor) {
@@ -58,7 +61,7 @@ function bindContentEditableTypingListeners(editor) {
     if (!getSelectionBlockElement() ||
         !editor.element.textContent ||
        (!e.shiftKey && e.which === Keycodes.ENTER) || (e.ctrlKey && e.which === Keycodes.M)) {
-      document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
+      doc.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
     } //else if (e.which === Keycodes.BKSP) {
       // TODO: Need to rerender when backspacing 2 blocks together
       //var cursorIndex = editor.getCursorIndexInCurrentBlock();
@@ -74,7 +77,7 @@ function bindContentEditableTypingListeners(editor) {
     var pastedHTML = data && data.getData && data.getData('text/html');
     var sanitizedHTML = pastedHTML && editor.compiler.rerender(pastedHTML);
     if (sanitizedHTML) {
-      document.execCommand('insertHTML', false, sanitizedHTML);
+      doc.execCommand('insertHTML', false, sanitizedHTML);
       editor.syncVisual();
     }
     e.preventDefault();
@@ -96,7 +99,7 @@ function bindAutoTypingListeners(editor) {
     var selection, i;
 
     if (count) {
-      selection = window.getSelection();
+      selection = win.getSelection();
       for (i = 0; i < count; i++) {
         if (commands[i].checkAutoFormat(selection.anchorNode)) {
           e.stopPropagation();
@@ -109,10 +112,10 @@ function bindAutoTypingListeners(editor) {
 
 function bindDragAndDrop() {
   // TODO. For now, just prevent redirect when dropping something on the page
-  window.addEventListener('dragover', function(e) {
+  win.addEventListener('dragover', function(e) {
     e.preventDefault(); // prevents showing cursor where to drop
   });
-  window.addEventListener('drop', function(e) {
+  win.addEventListener('drop', function(e) {
     e.preventDefault(); // prevent page from redirecting
   });
 }
@@ -169,12 +172,14 @@ function getNonTextBlocks(blockTypeSet, model) {
 function Editor(element, options) {
   var editor = this;
   mergeWithOptions(editor, defaults, options);
-
-  // Update embed commands by prepending the serverHost
-  editor.embedCommands = [
-    new ImageCommand({  serviceUrl: editor.serverHost + '/upload' }),
-    new OEmbedCommand({ serviceUrl: editor.serverHost + '/embed'  })
-  ];
+  if (!editor.compiler) {
+    editor.compiler = new Compiler({
+      includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
+      renderer: new EditorHTMLRenderer({
+        cards: editor.cards
+      }) // subclassed HTML renderer that adds dom structure for additional editor interactivity
+    });
+  }
 
   if (element) {
     applyClassName(element);
@@ -257,9 +262,10 @@ Editor.prototype.replaceBlock = function(block, index) {
 Editor.prototype.renderBlockAt = function(index, replace) {
   var modelAtIndex = this.model[index];
   var html = this.compiler.render([modelAtIndex]);
-  var dom = document.createElement('div');
+  var dom = doc.createElement('div');
   dom.innerHTML = html;
   var newEl = dom.firstChild;
+  newEl.dataset.modelIndex = index;
   var sibling = this.element.children[index];
   if (replace) {
     this.element.replaceChild(newEl, sibling);
@@ -273,13 +279,18 @@ Editor.prototype.syncContentEditableBlocks = function() {
   var blockElements = toArray(this.element.children);
   var len = blockElements.length;
   var updatedModel = [];
-  var i, blockEl;
+  var i, block, blockEl;
   for (i = 0; i < len; i++) {
     blockEl = blockElements[i];
     if(blockEl.isContentEditable) {
       updatedModel.push(this.compiler.parser.serializeBlockNode(blockEl));
     } else {
-      updatedModel.push(nonTextBlocks.shift());
+      if (blockEl.dataset.modelIndex) {
+        block = this.model[blockEl.dataset.modelIndex];
+        updatedModel.push(block);
+      } else {
+        updatedModel.push(nonTextBlocks.shift());
+      }
     }
   }
   this.model = updatedModel;

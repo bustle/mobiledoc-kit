@@ -1,7 +1,8 @@
 import TextFormatCommand from './text-format';
 import { getSelectionBlockElement, selectNode } from '../utils/selection-utils';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
+import { inherit } from 'content-kit-utils';
+import { Type } from 'content-kit-compiler';
+import { doc } from 'content-kit-compiler';
 
 function FormatBlockCommand(options) {
   options = options || {};
@@ -22,7 +23,7 @@ FormatBlockCommand.prototype.exec = function() {
     // Flattens the selection before applying the block format.
     // Otherwise, undesirable nested blocks can occur.
     // TODO: would love to be able to remove this
-    var flatNode = document.createTextNode(blockElement.textContent);
+    var flatNode = doc.createTextNode(blockElement.textContent);
     blockElement.parentNode.insertBefore(flatNode, blockElement);
     blockElement.parentNode.removeChild(blockElement);
     selectNode(flatNode);

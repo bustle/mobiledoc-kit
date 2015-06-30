@@ -1,7 +1,8 @@
 import TextFormatCommand from './text-format';
 import { getSelectionBlockElement, selectNode, getSelectionTagName } from '../utils/selection-utils';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
+import { inherit } from 'content-kit-utils';
+import { Type } from 'content-kit-compiler';
+import win from '../utils/win';
 
 function ListCommand(options) {
   TextFormatCommand.call(this, options);
@@ -31,7 +32,7 @@ ListCommand.prototype.checkAutoFormat = function(node) {
     text = node.textContent;
     if (Type.LIST_ITEM.tag !== getSelectionTagName() && regex.test(text)) {
       this.exec();
-      window.getSelection().anchorNode.textContent = text.replace(regex, '');
+      win.getSelection().anchorNode.textContent = text.replace(regex, '');
       return true;
     }
   }
