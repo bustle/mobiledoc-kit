@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "test": "gulp test",
+    "test": "testem ci",
     "build": "rm -rf dist && broccoli build dist",
     "prepublish": "npm run build"
   },
@@ -30,6 +30,9 @@
   },
   "devDependencies": {
     "broccoli": "^0.16.3",
+    "broccoli-babel-transpiler": "^5.2.3",
+    "broccoli-concat": "0.0.13",
+    "broccoli-funnel": "^0.2.3",
     "broccoli-merge-trees": "^0.2.1",
     "broccoli-multi-builder": "^0.1.0",
     "content-kit-compiler": "0.2.3",
@@ -46,6 +49,7 @@
     "gulp-open": "^0.2.8",
     "gulp-qunit": "^1.2.1",
     "gulp-uglify": "^1.1.0",
-    "qunitjs": "^1.17.1"
+    "qunitjs": "^1.17.1",
+    "testem": "^0.8.4"
   }
 }

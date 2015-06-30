@@ -2,17 +2,23 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>QUnit</title>
-  <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+  <title>Content-Kit-Editor tests</title>
+  <link rel="stylesheet" href="./qunitjs/qunit/qunit.css">
 </head>
 <body>
 
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
 
-  <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
-  <script src="../dist/content-kit-editor.js"></script>
-  <script src="tests.js"></script>
-
+  <script src="./qunitjs/qunit/qunit.js"></script>
+  <script src="/testem.js"></script>
+  <script src="../content-kit-editor.amd.js"></script>
+  <script src="./content-kit-editor-tests.amd.js"></script>
+  <script src="./ember-cli-test-loader/test-loader.js"></script>
+  <script>
+    var TestLoader = require('ember-cli/test-loader')['default'];
+    var testLoader = new TestLoader();
+    testLoader.loadModules();
+  </script>
 </body>
 </html>

@@ -77,11 +77,20 @@ Running ContentKit tests and demo server locally requires the following dependen
 * [node.js](http://nodejs.org/) ([install package](http://nodejs.org/download/)) or `brew install node`
 * `gulp`, via `npm install -g gulp`
 
-To run tests:
+### Tests
 
-```
-gulp test
-```
+Install npm and bower:
+
+  * `bower i i`
+  * `npm i`
+
+Run tests via the built-in broccoli server:
+
+  * `npm run serve && open http://localhost:4200/tests`
+
+Or run tests via testem:
+
+  * `npm test`
 
 To run the demo server:
 
