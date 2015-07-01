@@ -1,36 +1,24 @@
 /* jshint node:true */
 
-var multiBuilder = require('broccoli-multi-builder');
+var builder = require('broccoli-multi-builder');
 var mergeTrees = require('broccoli-merge-trees');
 var testTreeBuilder = require('./broccoli/test-tree-builder');
 
-var jsSrc = './src/js';
-var vendoredModules = ['content-kit-compiler', 'content-kit-utils'];
+var vendoredModules = [
+    {name: 'content-kit-compiler', options: {libDirName: 'src'}},
+    {name: 'content-kit-utils', options: {libDirName: 'src'}}
+];
 var packageName = require('./package.json').name;
 
-var amdTree = multiBuilder.buildAMD({
-  isGlobal: false,
-  src: jsSrc,
+var buildOptions = {
+  libDirName: 'src/js',
   vendoredModules: vendoredModules,
   packageName: packageName
-});
-
-var globalTree = multiBuilder.buildAMD({
-  isGlobal: true,
-  src: jsSrc,
-  vendoredModules: vendoredModules,
-  packageName: packageName
-});
-
-var cjsTree = multiBuilder.buildCJS({
-  src: jsSrc,
-  vendoredModules: vendoredModules,
-  packageName: packageName
-});
+};
 
 module.exports = mergeTrees([
-  amdTree,
-  globalTree,
-  cjsTree,
+  builder.build('amd', buildOptions),
+  builder.build('global', buildOptions),
+  builder.build('commonjs', buildOptions),
   testTreeBuilder.build()
 ]);
