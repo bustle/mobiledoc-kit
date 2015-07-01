@@ -34,3 +34,4 @@ bower_components
 # Builds
 keys.txt
 export.sh
+dist/

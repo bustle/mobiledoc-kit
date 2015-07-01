@@ -1,5 +1,5 @@
 import View from './view';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
+import { inherit } from 'content-kit-utils';
 
 var defaultClassNames = ['ck-message'];
 

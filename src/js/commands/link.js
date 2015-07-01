@@ -1,8 +1,8 @@
 import TextFormatCommand from './text-format';
 import Prompt from '../views/prompt';
 import { getSelectionTagName } from '../utils/selection-utils';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
+import { inherit } from 'content-kit-utils';
+import { Type } from 'content-kit-compiler';
 
 var RegExpHttp = /^https?:\/\//i;
 
