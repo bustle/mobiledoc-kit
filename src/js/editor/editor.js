@@ -216,7 +216,7 @@ Editor.prototype.loadModel = function(model) {
 };
 
 Editor.prototype.syncModel = function() {
-  this.model = this.compiler.parse(this.element.innerHTML);
+  this.model = this.compiler.parse(this.element);
   this.trigger('update');
 };
 
