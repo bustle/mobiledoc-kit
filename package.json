@@ -8,7 +8,7 @@
     "node": "0.10.x"
   },
   "scripts": {
-    "start": "node server/index.js",
+    "start": "broccoli serve",
     "test": "testem ci",
     "build": "rm -rf dist && broccoli build dist"
   },
