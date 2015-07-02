@@ -1,3 +1,4 @@
+/* global JSON */
 import win from '../utils/win';
 
 function createXHR(options) {

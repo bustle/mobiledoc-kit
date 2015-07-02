@@ -2,7 +2,7 @@
 
 var builder = require('broccoli-multi-builder');
 var mergeTrees = require('broccoli-merge-trees');
-var testTreeBuilder = require('./broccoli/test-tree-builder');
+var testTreeBuilder = require('broccoli-test-builder');
 
 var vendoredModules = [
     {name: 'content-kit-compiler', options: {libDirName: 'src'}},

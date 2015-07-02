@@ -1,4 +1,4 @@
-/* global QUnit, test, asyncTest, ok, equal */
+/* global QUnit, test, asyncTest, ok, equal, expect, start */
 
 var fixture = document.getElementById('qunit-fixture');
 var editorElement = document.createElement('div');
