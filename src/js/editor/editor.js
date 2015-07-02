@@ -1,4 +1,4 @@
-import EditorHTMLRenderer from '../renderers/editor-html-renderer';
+import NewDOMRenderer from '../renderers/new-dom-renderer';
 import TextFormatToolbar  from '../views/text-format-toolbar';
 import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
@@ -174,9 +174,7 @@ function Editor(element, options) {
   if (!editor.compiler) {
     editor.compiler = new Compiler({
       includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
-      renderer: new EditorHTMLRenderer({
-        cards: editor.cards
-      }) // subclassed HTML renderer that adds dom structure for additional editor interactivity
+      renderer: new NewDOMRenderer(window.document, editor.cards)
     });
   }
 
@@ -221,7 +219,7 @@ Editor.prototype.syncModel = function() {
 };
 
 Editor.prototype.syncVisual = function() {
-  this.element.innerHTML = this.compiler.render(this.model);
+  this.compiler.render(this.model, this.element);
 };
 
 Editor.prototype.sync = function() {
