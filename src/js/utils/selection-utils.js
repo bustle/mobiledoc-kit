@@ -3,6 +3,7 @@ import {
   Type,
   doc
 } from 'content-kit-compiler';
+import win from './win';
 
 // TODO: remove, pass in Editor's current block set
 var RootTags = [

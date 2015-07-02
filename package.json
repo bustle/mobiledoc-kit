@@ -29,11 +29,9 @@
   },
   "devDependencies": {
     "broccoli": "^0.16.3",
-    "broccoli-babel-transpiler": "^5.2.3",
-    "broccoli-concat": "0.0.13",
-    "broccoli-funnel": "^0.2.3",
     "broccoli-merge-trees": "^0.2.1",
-    "broccoli-multi-builder": "^0.2.2",
+    "broccoli-multi-builder": "^0.2.5",
+    "broccoli-test-builder": "^0.1.0",
     "content-kit-compiler": "^0.3.1",
     "content-kit-utils": "^0.2.0",
     "del": "^1.1.1",
@@ -48,8 +46,6 @@
     "gulp-open": "^0.2.8",
     "gulp-qunit": "^1.2.1",
     "gulp-uglify": "^1.1.0",
-    "loader.js": "^3.2.0",
-    "qunitjs": "^1.17.1",
     "testem": "^0.8.4"
   }
 }

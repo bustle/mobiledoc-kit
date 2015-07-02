@@ -4,6 +4,7 @@ import { inherit } from 'content-kit-utils';
 import { tagsInSelection } from '../utils/selection-utils';
 import { createDiv, swapElements, positionElementToRightOf, positionElementCenteredAbove } from '../utils/element-utils';
 import { doc } from 'content-kit-compiler';
+import win from '../utils/win';
 
 var ToolbarDirection = {
   TOP   : 1,

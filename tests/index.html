@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <title>Content-Kit-Editor tests</title>
-  <link rel="stylesheet" href="./qunitjs/qunit/qunit.css">
+  <link rel="stylesheet" href="./qunit/qunit.css">
 </head>
 <body>
 
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
 
-  <script src="./qunitjs/qunit/qunit.js"></script>
+  <script src="./qunit/qunit.js"></script>
   <script src="/testem.js"></script>
   <script src="./loader.js/loader.js"></script>
   <script src="../amd/content-kit-editor.js"></script>
-  <script src="./content-kit-editor-tests.amd.js"></script>
-  <script src="./ember-cli-test-loader/test-loader.js"></script>
+  <script src="./built-amd-tests.js"></script>
+  <script src="./test-loader/test-loader.js"></script>
   <script>
     var TestLoader = require('ember-cli/test-loader')['default'];
     var testLoader = new TestLoader();
