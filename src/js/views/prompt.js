@@ -3,8 +3,7 @@ import { inherit } from 'content-kit-utils';
 import { restoreRange } from '../utils/selection-utils';
 import { createDiv, positionElementToRect } from '../utils/element-utils';
 import Keycodes from '../utils/keycodes';
-import { doc } from 'content-kit-compiler';
-import win from '../utils/win';
+import { win, doc } from 'content-kit-editor/utils/compat';
 
 var container = doc.body;
 var hiliter = createDiv('ck-editor-hilite');

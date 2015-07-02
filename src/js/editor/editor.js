@@ -19,10 +19,9 @@ import EventEmitter from '../utils/event-emitter';
 import {
   Type,
   Compiler,
-  doc
 } from 'content-kit-compiler';
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
-import win from '../utils/win';
+import { win, doc } from 'content-kit-editor/utils/compat';
 
 var defaults = {
   placeholder: 'Write here...',

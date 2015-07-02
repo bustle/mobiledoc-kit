@@ -1,4 +1,4 @@
-import { doc } from 'content-kit-compiler';
+import { doc } from 'content-kit-editor/utils/compat';
 
 function renderClasses(view) {
   var classNames = view.classNames;

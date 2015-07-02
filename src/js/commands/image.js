@@ -3,9 +3,8 @@ import Message from '../views/message';
 import {
   Type,
   BlockModel,
-  doc,
 } from 'content-kit-compiler';
-import win from '../utils/win';
+import { win, doc } from 'content-kit-editor/utils/compat';
 import { inherit } from 'content-kit-utils';
 import { FileUploader } from '../utils/http-utils';
 

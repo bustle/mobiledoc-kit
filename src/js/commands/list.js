@@ -2,7 +2,7 @@ import TextFormatCommand from './text-format';
 import { getSelectionBlockElement, selectNode, getSelectionTagName } from '../utils/selection-utils';
 import { inherit } from 'content-kit-utils';
 import { Type } from 'content-kit-compiler';
-import win from '../utils/win';
+import { win } from 'content-kit-editor/utils/compat';
 
 function ListCommand(options) {
   TextFormatCommand.call(this, options);

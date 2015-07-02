@@ -1,5 +1,4 @@
-import { doc } from 'content-kit-compiler';
-import win from '../utils/win';
+import { win, doc } from 'content-kit-editor/utils/compat';
 
 function createDiv(className) {
   var div = doc.createElement('div');

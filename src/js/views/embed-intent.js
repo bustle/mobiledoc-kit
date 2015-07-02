@@ -5,8 +5,7 @@ import { getSelectionBlockElement } from '../utils/selection-utils';
 import { elementContentIsEmpty, positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
 import { createDiv } from '../utils/element-utils';
 import Keycodes from '../utils/keycodes';
-import { doc } from 'content-kit-compiler';
-import win from '../utils/win';
+import { win, doc } from 'content-kit-editor/utils/compat';
 
 var LayoutStyle = {
   GUTTER   : 1,

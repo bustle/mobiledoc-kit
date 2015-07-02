@@ -7,7 +7,7 @@ import {
 } from 'content-kit-compiler';
 import { inherit } from 'content-kit-utils';
 import { OEmbedder } from '../utils/http-utils';
-import win from '../utils/win';
+import { win } from 'content-kit-editor/utils/compat';
 
 function loadTwitterWidgets(element) {
   if (win.twttr) {
