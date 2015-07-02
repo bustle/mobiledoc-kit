@@ -35,3 +35,4 @@ bower_components
 keys.txt
 export.sh
 dist/
+tmp/
