@@ -1,5 +1,5 @@
 /* global JSON */
-import win from '../utils/win';
+import { win } from 'content-kit-editor/utils/compat';
 
 function createXHR(options) {
   var xhr = new XMLHttpRequest();

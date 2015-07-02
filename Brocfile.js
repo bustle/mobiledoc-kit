@@ -3,6 +3,8 @@
 var builder = require('broccoli-multi-builder');
 var mergeTrees = require('broccoli-merge-trees');
 var testTreeBuilder = require('broccoli-test-builder');
+var styles = require('./broccoli/styles');
+var demo = require('./broccoli/demo');
 
 var vendoredModules = [
     {name: 'content-kit-compiler', options: {libDirName: 'src'}},
@@ -19,6 +21,9 @@ var buildOptions = {
 module.exports = mergeTrees([
   builder.build('amd', buildOptions),
   builder.build('global', buildOptions),
-  builder.build('commonjs', buildOptions),
+  // FIXME Later we may want to bring back the commonjs build
+  // builder.build('commonjs', buildOptions),
+  styles(),
+  demo(),
   testTreeBuilder.build()
 ]);

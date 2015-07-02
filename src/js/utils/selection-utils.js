@@ -1,9 +1,8 @@
 import { nodeIsDescendantOfElement } from './element-utils';
 import {
-  Type,
-  doc
+  Type
 } from 'content-kit-compiler';
-import win from './win';
+import { win, doc } from 'content-kit-editor/utils/compat';
 
 // TODO: remove, pass in Editor's current block set
 var RootTags = [

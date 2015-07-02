@@ -19,6 +19,13 @@
     "editor",
     "contenteditable"
   ],
+  "files": [
+    "src",
+    "dist/amd",
+    "dist/commonjs",
+    "dist/global",
+    "dist/css"
+  ],
   "author": "Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)",
   "license": "MIT",
   "dependencies": {
@@ -29,6 +36,8 @@
   },
   "devDependencies": {
     "broccoli": "^0.16.3",
+    "broccoli-funnel": "^0.2.3",
+    "broccoli-less-single": "^0.4.0",
     "broccoli-merge-trees": "^0.2.1",
     "broccoli-multi-builder": "^0.2.5",
     "broccoli-test-builder": "^0.1.0",

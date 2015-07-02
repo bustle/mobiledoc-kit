@@ -92,6 +92,13 @@ Or run tests via testem:
 
   * `npm test`
 
+To view the demo:
+
+  * `broccoli serve`
+  * open http://localhost:4200/demo
+  * (Note that image uploads and embeds require the demo server to be running)
+
+
 To run the demo server:
 
 ```

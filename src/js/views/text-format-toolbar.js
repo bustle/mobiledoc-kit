@@ -2,8 +2,7 @@ import Toolbar from './toolbar';
 import { inherit } from 'content-kit-utils';
 import { selectionIsEditable, selectionIsInElement } from '../utils/selection-utils';
 import Keycodes from '../utils/keycodes';
-import { doc } from 'content-kit-compiler';
-import win from '../utils/win';
+import { win, doc } from 'content-kit-editor/utils/compat';
 
 function selectionIsEditableByToolbar(selection, toolbar) {
   return selectionIsEditable(selection) && selectionIsInElement(selection, toolbar.rootElement);
