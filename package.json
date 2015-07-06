@@ -55,6 +55,7 @@
     "gulp-open": "^0.2.8",
     "gulp-qunit": "^1.2.1",
     "gulp-uglify": "^1.1.0",
+    "jquery": "^2.1.4",
     "testem": "^0.8.4"
   }
 }
