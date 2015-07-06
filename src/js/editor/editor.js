@@ -117,13 +117,14 @@ function bindLiveUpdate(editor) {
           throw new Error('There is not section element for the previous edit');
         }
 
-        var previousSectionElement;
+        var previousSectionElement, previousSection;
         if (sectionElement && sectionElement.previousSibling) {
           previousSectionElement = sectionElement.previousSibling;
+          previousSection = previousSectionElement.dataset.section;
         }
 
         var newSection = editor.compiler.parseSection(
-          previousSectionElement.dataset.section,
+          previousSection,
           sectionElement.firstChild
         );
 
