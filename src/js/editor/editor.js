@@ -22,6 +22,7 @@ import {
 } from 'content-kit-compiler';
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
 import { win, doc } from 'content-kit-editor/utils/compat';
+import ElementMap from "../utils/element-map";
 
 var defaults = {
   placeholder: 'Write here...',
@@ -50,6 +51,17 @@ var defaults = {
   compiler: null,
   cards: {}
 };
+
+function replaceInArray(array, original, replacement) {
+  var i, l, possibleOriginal;
+  for (i=0,l=array.length;i<l;i++) {
+    possibleOriginal = array[i];
+    if (possibleOriginal === original) {
+      array[i] = replacement;
+      return;
+    }
+  }
+}
 
 function bindContentEditableTypingListeners(editor) {
 
@@ -85,7 +97,43 @@ function bindContentEditableTypingListeners(editor) {
 }
 
 function bindLiveUpdate(editor) {
-  editor.element.addEventListener('input', function() {
+  editor.element.addEventListener('input', () => {
+    var selection = document.getSelection();
+    if (selection.rangeCount) {
+      var range = selection.getRangeAt(0);
+      if (range.collapsed) {
+        var element = range.startContainer;
+        var sectionElement, section;
+        while (element) {
+          section = editor.sectionElementMap.get(element);
+          if (section) {
+            sectionElement = element;
+            break;
+          }
+          element = element.parentNode;
+        }
+
+        if (!sectionElement) {
+          throw new Error('There is not section element for the previous edit');
+        }
+
+        var previousSectionElement;
+        if (sectionElement && sectionElement.previousSibling) {
+          previousSectionElement = sectionElement.previousSibling;
+        }
+
+        var newSection = editor.compiler.parseSection(
+          previousSectionElement.dataset.section,
+          sectionElement.firstChild
+        );
+
+        // FIXME: This would benefit from post being a linked-list of sections
+        replaceInArray(editor.model.sections, section, newSection);
+        editor.sectionElementMap.set(sectionElement, newSection);
+        editor.trigger('update');
+        return;
+      }
+    }
     editor.syncContentEditableBlocks();
   });
 }
@@ -178,6 +226,8 @@ function Editor(element, options) {
     });
   }
 
+  this.sectionElementMap = new ElementMap();
+
   if (element) {
     applyClassName(element);
     applyPlaceholder(element, editor.placeholder);
@@ -188,7 +238,11 @@ function Editor(element, options) {
     if (editor.model) {
       editor.loadModel(editor.model);
     } else {
-      editor.sync();
+      this.syncModel();
+      while (element.childNodes.length) {
+        element.childNodes[0].remove();
+      }
+      this.syncVisual();
     }
 
     bindContentEditableTypingListeners(editor);
@@ -219,12 +273,7 @@ Editor.prototype.syncModel = function() {
 };
 
 Editor.prototype.syncVisual = function() {
-  this.compiler.render(this.model, this.element);
-};
-
-Editor.prototype.sync = function() {
-  this.syncModel();
-  this.syncVisual();
+  this.compiler.render(this.model, this.sectionElementMap, this.element);
 };
 
 Editor.prototype.getCurrentBlockIndex = function(element) {
