@@ -22,7 +22,6 @@ import {
 } from 'content-kit-compiler';
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
 import { win, doc } from 'content-kit-editor/utils/compat';
-import ElementMap from "../utils/element-map";
 
 var defaults = {
   placeholder: 'Write here...',
@@ -51,6 +50,13 @@ var defaults = {
   compiler: null,
   cards: {}
 };
+
+function forEachChildNode(parentNode, callback) {
+  let i, l;
+  for (i=0, l=parentNode.childNodes.length;i<l;i++) {
+    callback(parentNode.childNodes[i]);
+  }
+}
 
 function replaceInArray(array, original, replacement) {
   var i, l, possibleOriginal;
@@ -96,49 +102,6 @@ function bindContentEditableTypingListeners(editor) {
   });
 }
 
-function bindLiveUpdate(editor) {
-  editor.element.addEventListener('input', () => {
-    var selection = document.getSelection();
-    if (selection.rangeCount) {
-      var range = selection.getRangeAt(0);
-      if (range.collapsed) {
-        var element = range.startContainer;
-        var sectionElement, section;
-        while (element) {
-          section = editor.sectionElementMap.get(element);
-          if (section) {
-            sectionElement = element;
-            break;
-          }
-          element = element.parentNode;
-        }
-
-        if (!sectionElement) {
-          throw new Error('There is not section element for the previous edit');
-        }
-
-        var previousSectionElement, previousSection;
-        if (sectionElement && sectionElement.previousSibling) {
-          previousSectionElement = sectionElement.previousSibling;
-          previousSection = previousSectionElement.dataset.section;
-        }
-
-        var newSection = editor.compiler.parseSection(
-          previousSection,
-          sectionElement.firstChild
-        );
-
-        // FIXME: This would benefit from post being a linked-list of sections
-        replaceInArray(editor.model.sections, section, newSection);
-        editor.sectionElementMap.set(sectionElement, newSection);
-        editor.trigger('update');
-        return;
-      }
-    }
-    editor.syncContentEditableBlocks();
-  });
-}
-
 function bindAutoTypingListeners(editor) {
   // Watch typing patterns for auto format commands (e.g. lists '- ', '1. ')
   editor.element.addEventListener('keyup', function(e) {
@@ -179,24 +142,6 @@ function initEmbedCommands(editor) {
   }
 }
 
-function applyClassName(editorElement) {
-  var editorClassName = 'ck-editor';
-  var editorClassNameRegExp = new RegExp(editorClassName);
-  var existingClassName = editorElement.className;
-
-  if (!editorClassNameRegExp.test(existingClassName)) {
-    existingClassName += (existingClassName ? ' ' : '') + editorClassName;
-  }
-  editorElement.className = existingClassName;
-}
-
-function applyPlaceholder(editorElement, placeholder) {
-  var dataset = editorElement.dataset;
-  if (placeholder && !dataset.placeholder) {
-    dataset.placeholder = placeholder;
-  }
-}
-
 function getNonTextBlocks(blockTypeSet, model) {
   var blocks = [];
   var len = model.length;
@@ -211,6 +156,13 @@ function getNonTextBlocks(blockTypeSet, model) {
   return blocks;
 }
 
+function clearChildNodes(element) {
+  while (element.childNodes.length) {
+    element.childNodes[0].remove();
+  }
+}
+
+
 /**
  * @class Editor
  * An individual Editor
@@ -218,131 +170,230 @@ function getNonTextBlocks(blockTypeSet, model) {
  * @param options hash of options
  */
 function Editor(element, options) {
-  var editor = this;
-  mergeWithOptions(editor, defaults, options);
-  if (!editor.compiler) {
-    editor.compiler = new Compiler({
-      includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
-      renderer: new NewDOMRenderer(window.document, editor.cards)
+  if (!element) {
+    throw new Error('Editor requires an element as the first argument');
+  }
+
+  this.element = element;
+
+  // FIXME: This should merge onto this.options
+  mergeWithOptions(this, defaults, options);
+
+  if (!this.compiler) {
+    this.compiler = new Compiler({
+      // outputs models with type names, i.e. 'BOLD', for easier debugging
+      includeTypeNames: true,
+      renderer: new NewDOMRenderer(window.document, this.cards)
     });
   }
 
-  this.sectionElementMap = new ElementMap();
+  this.applyClassName();
+  this.applyPlaceholder();
 
-  if (element) {
-    applyClassName(element);
-    applyPlaceholder(element, editor.placeholder);
-    element.spellcheck = editor.spellcheck;
-    element.setAttribute('contentEditable', true);
-    editor.element = element;
+  element.spellcheck = this.spellcheck;
+  element.setAttribute('contentEditable', true);
 
-    if (editor.model) {
-      editor.loadModel(editor.model);
-    } else {
-      this.syncModel();
-      while (element.childNodes.length) {
-        element.childNodes[0].remove();
-      }
-      this.syncVisual();
-    }
+  // FIXME: We should be able to pass a serialized payload and disregard
+  // whatever is in DOM
+  this.syncModel();
+  clearChildNodes(element);
+  this.syncVisual();
 
-    bindContentEditableTypingListeners(editor);
-    bindAutoTypingListeners(editor);
-    bindDragAndDrop(editor);
-    bindLiveUpdate(editor);
-    initEmbedCommands(editor);
+  bindContentEditableTypingListeners(this);
+  bindAutoTypingListeners(this);
+  bindDragAndDrop(this);
+  element.addEventListener('input', () => this.handleInput(...arguments));
+  initEmbedCommands(this);
 
-    editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands, sticky: editor.stickyToolbar });
-    editor.linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
+  this.textFormatToolbar = new TextFormatToolbar({
+    rootElement: element,
+    commands: this.textFormatCommands,
+    sticky: this.stickyToolbar
+  });
 
-    if(editor.autofocus) { element.focus(); }
+  this.linkTooltips = new Tooltip({
+    rootElement: element,
+    showForTag: Type.LINK.tag
+  });
+
+  if (this.autofocus) {
+    element.focus();
   }
 }
 
 // Add event emitter pub/sub functionality
 merge(Editor.prototype, EventEmitter);
 
-Editor.prototype.loadModel = function(model) {
-  this.model = model;
-  this.syncVisual();
-  this.trigger('update');
-};
+merge(Editor.prototype, {
 
-Editor.prototype.syncModel = function() {
-  this.model = this.compiler.parse(this.element);
-  this.trigger('update');
-};
+  loadModel(model) {
+    this.model = model;
+    this.syncVisual();
+    this.trigger('update');
+  },
 
-Editor.prototype.syncVisual = function() {
-  this.compiler.render(this.model, this.sectionElementMap, this.element);
-};
+  syncModel() {
+    this.model = this.compiler.parse(this.element);
+    this.trigger('update');
+  },
 
-Editor.prototype.getCurrentBlockIndex = function(element) {
-  var selectionEl = element || getSelectionBlockElement();
-  var blockElements = toArray(this.element.children);
-  return blockElements.indexOf(selectionEl);
-};
+  syncVisual() {
+    this.compiler.render(this.model, this.element);
+  },
 
-Editor.prototype.getCursorIndexInCurrentBlock = function() {
-  var currentBlock = getSelectionBlockElement();
-  if (currentBlock) {
-    return getCursorOffsetInElement(currentBlock);
-  }
-  return -1;
-};
+  getCurrentBlockIndex() {
+    var selectionEl = element || getSelectionBlockElement();
+    var blockElements = toArray(this.element.children);
+    return blockElements.indexOf(selectionEl);
+  },
 
-Editor.prototype.insertBlock = function(block, index) {
-  this.model.splice(index, 0, block);
-  this.trigger('update');
-};
+  getCursorIndexInCurrentBlock() {
+    var currentBlock = getSelectionBlockElement();
+    if (currentBlock) {
+      return getCursorOffsetInElement(currentBlock);
+    }
+    return -1;
+  },
 
-Editor.prototype.removeBlockAt = function(index) {
-  this.model.splice(index, 1);
-  this.trigger('update');
-};
+  insertBlock(block, index) {
+    this.model.splice(index, 0, block);
+    this.trigger('update');
+  },
 
-Editor.prototype.replaceBlock = function(block, index) {
-  this.model[index] = block;
-  this.trigger('update');
-};
+  removeBlockAt(index) {
+    this.model.splice(index, 1);
+    this.trigger('update');
+  },
 
-Editor.prototype.renderBlockAt = function(index, replace) {
-  var modelAtIndex = this.model[index];
-  var html = this.compiler.render([modelAtIndex]);
-  var dom = doc.createElement('div');
-  dom.innerHTML = html;
-  var newEl = dom.firstChild;
-  newEl.dataset.modelIndex = index;
-  var sibling = this.element.children[index];
-  if (replace) {
-    this.element.replaceChild(newEl, sibling);
-  } else {
-    this.element.insertBefore(newEl, sibling);
-  }
-};
+  replaceBlock(block, index) {
+    this.model[index] = block;
+    this.trigger('update');
+  },
 
-Editor.prototype.syncContentEditableBlocks = function() {
-  var nonTextBlocks = getNonTextBlocks(this.compiler.blockTypes, this.model);
-  var blockElements = toArray(this.element.children);
-  var len = blockElements.length;
-  var updatedModel = [];
-  var i, block, blockEl;
-  for (i = 0; i < len; i++) {
-    blockEl = blockElements[i];
-    if(blockEl.isContentEditable) {
-      updatedModel.push(this.compiler.parser.serializeBlockNode(blockEl));
+  renderBlockAt(index, replace) {
+    var modelAtIndex = this.model[index];
+    var html = this.compiler.render([modelAtIndex]);
+    var dom = doc.createElement('div');
+    dom.innerHTML = html;
+    var newEl = dom.firstChild;
+    newEl.dataset.modelIndex = index;
+    var sibling = this.element.children[index];
+    if (replace) {
+      this.element.replaceChild(newEl, sibling);
     } else {
-      if (blockEl.dataset.modelIndex) {
-        block = this.model[blockEl.dataset.modelIndex];
-        updatedModel.push(block);
+      this.element.insertBefore(newEl, sibling);
+    }
+  },
+
+  syncContentEditableBlocks() {
+    var nonTextBlocks = getNonTextBlocks(this.compiler.blockTypes, this.model);
+    var blockElements = toArray(this.element.children);
+    var len = blockElements.length;
+    var updatedModel = [];
+    var i, block, blockEl;
+    for (i = 0; i < len; i++) {
+      blockEl = blockElements[i];
+      if(blockEl.isContentEditable) {
+        updatedModel.push(this.compiler.parser.serializeBlockNode(blockEl));
       } else {
-        updatedModel.push(nonTextBlocks.shift());
+        if (blockEl.dataset.modelIndex) {
+          block = this.model[blockEl.dataset.modelIndex];
+          updatedModel.push(block);
+        } else {
+          updatedModel.push(nonTextBlocks.shift());
+        }
       }
     }
-  }
-  this.model = updatedModel;
-  this.trigger('update');
-};
+    this.model = updatedModel;
+    this.trigger('update');
+  },
 
+  applyClassName() {
+    var editorClassName = 'ck-editor';
+    var editorClassNameRegExp = new RegExp(editorClassName);
+    var existingClassName = this.element.className;
+
+    if (!editorClassNameRegExp.test(existingClassName)) {
+      existingClassName += (existingClassName ? ' ' : '') + editorClassName;
+    }
+    this.element.className = existingClassName;
+  },
+
+  applyPlaceholder() {
+    var dataset = this.element.dataset;
+    const placeholder = this.placeholder;
+    if (placeholder && !dataset.placeholder) {
+      dataset.placeholder = placeholder;
+    }
+  },
+
+  handleInput() {
+    let newSections = [];
+    let previousSection;
+    forEachChildNode(this.element, (node) => {
+      let section = this.model.getElementSection(node);
+      if (!section) {
+        section = this.compiler.parseSection(
+          previousSection,
+          node
+        );
+        this.model.setSectionElement(section, node);
+        newSections.push(section);
+        if (previousSection) {
+          this.model.insertSectionAfter(section, previousSection);
+        } else {
+          this.model.prependSection(section);
+        }
+      }
+      previousSection = section;
+    });
+
+    let sectionWithCursor = this.getSectionWithCursor();
+    if (newSections.indexOf(sectionWithCursor) === -1) {
+      this.reparseSection(sectionWithCursor);
+    }
+  },
+
+  getSectionWithCursor() {
+    var selection = document.getSelection();
+    if (selection.rangeCount === 0) {
+      return null;
+    }
+
+    var range = selection.getRangeAt(0);
+
+    if (!range.collapsed) {
+      throw new Error('getSelectionWithCursor does not suppor fetching sections for a range of characters');
+    }
+
+    let element = range.startContainer;
+    let section = null;
+    while (element) {
+      section = this.model.getElementSection(element);
+      if (section) {
+        break;
+      }
+      element = element.parentNode;
+    }
+
+    return section;
+  },
+
+  reparseSection(section) {
+    let sectionElement = this.model.getSectionElement(section);
+    let previousSection = this.model.getPreviousSection(section);
+    let previousSectionElement = this.model.getSectionElement(previousSection);
+
+    var newSection = this.compiler.parseSection(
+      previousSection,
+      sectionElement
+    );
+    this.model.replaceSection(section, newSection);
+    this.model.setSectionElement(newSection, sectionElement);
+
+    this.trigger('update');
+  }
+
+});
 
 export default Editor;

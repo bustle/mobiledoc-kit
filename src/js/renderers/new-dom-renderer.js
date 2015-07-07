@@ -52,24 +52,22 @@ function NewDOMRenderer(doc, cards) {
   this.cards = cards;
 };
 
-NewDOMRenderer.prototype.render = function NewDOMRenderer_render(data, elementMap, target) {
-  var sections = data.sections;
+NewDOMRenderer.prototype.render = function NewDOMRenderer_render(post, target) {
+  var sections = post.sections;
   var i, l, section, node;
   for (i=0, l=sections.length;i<l;i++) {
-    // FIXME: We should not create a section element
-    node = this.document.createElement('section');
     section = sections[i];
-    elementMap.set(node, section);
     switch (section.type) {
     case 1:
-      node.appendChild(renderMarkupSection(this.document, section, section.markups));
+      node = renderMarkupSection(this.document, section, section.markups);
       break;
     case 5:
       throw new Error('unimplemented');
       var componentFn = this.cards[section[1]];
-      node.appendChild(componentFn(this.document, section.markups));
+      node = componentFn(this.document, section.markups);
       break;
     }
+    post.setSectionElement(section, node);
     target.appendChild(node);
   }
 };
