@@ -22,6 +22,7 @@ import {
 } from 'content-kit-compiler';
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
 import { win, doc } from 'content-kit-editor/utils/compat';
+import { detectParentNode } from '../utils/dom-utils';
 
 var defaults = {
   placeholder: 'Write here...',
@@ -328,6 +329,8 @@ merge(Editor.prototype, {
   },
 
   handleInput() {
+    // find added sections
+    let sectionsInDOM = [];
     let newSections = [];
     let previousSection;
     forEachChildNode(this.element, (node) => {
@@ -345,44 +348,52 @@ merge(Editor.prototype, {
           this.model.prependSection(section);
         }
       }
+      // may cause duplicates to be included
+      sectionsInDOM.push(section);
       previousSection = section;
     });
 
-    let sectionWithCursor = this.getSectionWithCursor();
-    if (newSections.indexOf(sectionWithCursor) === -1) {
-      this.reparseSection(sectionWithCursor);
+    // remove deleted nodes
+    let i;
+    for (i=this.model.sections.length-1;i>=0;i--) {
+      let section = this.model.sections[i];
+      if (sectionsInDOM.indexOf(section) === -1) {
+        this.model.removeSection(section);
+      }
     }
+
+    // reparse the section(s) with the cursor
+    const sectionsWithCursor = this.getSectionsWithCursor();
+    sectionsWithCursor.forEach((section) => {
+      if (newSections.indexOf(section) === -1) {
+        this.reparseSection(section);
+      }
+    });
   },
 
-  getSectionWithCursor() {
-    var selection = document.getSelection();
+  getSectionsWithCursor() {
+    const selection = document.getSelection();
     if (selection.rangeCount === 0) {
       return null;
     }
 
-    var range = selection.getRangeAt(0);
+    const range = selection.getRangeAt(0);
 
-    if (!range.collapsed) {
-      throw new Error('getSelectionWithCursor does not suppor fetching sections for a range of characters');
-    }
+    let { startContainer:startElement, endContainer:endElement } = range;
 
-    let element = range.startContainer;
-    let section = null;
-    while (element) {
-      section = this.model.getElementSection(element);
-      if (section) {
-        break;
-      }
-      element = element.parentNode;
-    }
+    let getElementSection = (e) => this.model.getElementSection(e);
+    let { result:startSection } = detectParentNode(startElement, getElementSection);
+    let { result:endSection } = detectParentNode(endElement, getElementSection);
 
-    return section;
+    let startIndex = this.model.sections.indexOf(startSection),
+        endIndex = this.model.sections.indexOf(endSection);
+
+    return this.model.sections.slice(startIndex, endIndex+1);
   },
 
   reparseSection(section) {
     let sectionElement = this.model.getSectionElement(section);
     let previousSection = this.model.getPreviousSection(section);
-    let previousSectionElement = this.model.getSectionElement(previousSection);
 
     var newSection = this.compiler.parseSection(
       previousSection,
