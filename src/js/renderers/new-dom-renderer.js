@@ -56,6 +56,7 @@ NewDOMRenderer.prototype.render = function NewDOMRenderer_render(data, elementMa
   var sections = data.sections;
   var i, l, section, node;
   for (i=0, l=sections.length;i<l;i++) {
+    // FIXME: We should not create a section element
     node = this.document.createElement('section');
     section = sections[i];
     elementMap.set(node, section);
