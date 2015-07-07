@@ -26,11 +26,8 @@ var ContentKitDemo = exports.ContentKitDemo = {
   syncCodePane: function(editor) {
     var codePaneJSON = document.getElementById('code-json');
     var codePaneHTML = document.getElementById('code-html');
-    var json = editor.model;
-    //var html = editor.compiler.render(json);
-
+    var json = editor.serialize();
     codePaneJSON.innerHTML = this.syntaxHighlight(json);
-    //codePaneHTML.textContent = this.formatXML(html);
   },
 
   formatXML: function(xml) {
@@ -95,7 +92,7 @@ var ContentKitDemo = exports.ContentKitDemo = {
 // Initialize
 if (window.editor) {
   ContentKitDemo.syncCodePane(editor);
-  editor.on('update', function(data) {
+  editor.on('update', function() {
     ContentKitDemo.syncCodePane(this);
   });
   var settingsBtn = document.getElementById('settings-btn');

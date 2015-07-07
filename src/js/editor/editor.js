@@ -23,6 +23,7 @@ import {
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
 import { win, doc } from 'content-kit-editor/utils/compat';
 import { detectParentNode } from '../utils/dom-utils';
+import Serializer from '../renderers/new-serializer';
 
 var defaults = {
   placeholder: 'Write here...',
@@ -364,6 +365,15 @@ merge(Editor.prototype, {
 
     // reparse the section(s) with the cursor
     const sectionsWithCursor = this.getSectionsWithCursor();
+    // FIXME: This is a hack to ensure a previous section is parsed when the
+    // user presses enter (or pastes a newline)
+    let firstSection = sectionsWithCursor[0];
+    if (firstSection) {
+      let previousSection = this.model.getPreviousSection(firstSection);
+      if (previousSection) {
+        sectionsWithCursor.unshift(previousSection);
+      }
+    }
     sectionsWithCursor.forEach((section) => {
       if (newSections.indexOf(section) === -1) {
         this.reparseSection(section);
@@ -403,6 +413,10 @@ merge(Editor.prototype, {
     this.model.setSectionElement(newSection, sectionElement);
 
     this.trigger('update');
+  },
+
+  serialize() {
+    return Serializer.serialize(this.model);
   }
 
 });

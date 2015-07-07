@@ -58,13 +58,13 @@ NewDOMRenderer.prototype.render = function NewDOMRenderer_render(post, target) {
   for (i=0, l=sections.length;i<l;i++) {
     section = sections[i];
     switch (section.type) {
-    case 1:
-      node = renderMarkupSection(this.document, section, section.markups);
+    case 'markupSection':
+      node = renderMarkupSection(this.document, section, section.markers);
       break;
     case 5:
       throw new Error('unimplemented');
       var componentFn = this.cards[section[1]];
-      node = componentFn(this.document, section.markups);
+      node = componentFn(this.document, section.markers);
       break;
     }
     post.setSectionElement(section, node);
