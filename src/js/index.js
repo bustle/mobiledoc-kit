@@ -7,7 +7,7 @@ import {
   HTMLRenderer
 } from 'content-kit-compiler';
 
-import Editor from './editor/editor-factory';
+import Editor from './editor/editor';
 
 const ContentKit = {
   Type,

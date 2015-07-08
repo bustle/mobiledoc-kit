@@ -3,65 +3,10 @@
 'use strict';
 
 var ContentKitDemo = exports.ContentKitDemo = {
-  toggleCodePane: function() {
-    if(document.body.className === 'code-pane-open') {
-      this.closeCodePane();
-    } else {
-      this.openCodePane(editor);
-    }
-  },
-
-  openCodePane: function() {
-    window.getSelection().removeAllRanges();
-    document.body.className = 'code-pane-open';
-    location.hash = 'code';
-  },
-
-  closeCodePane: function() {
-    window.getSelection().removeAllRanges();
-    document.body.className = '';
-    location.hash = '';
-  },
-
   syncCodePane: function(editor) {
-    var codePaneJSON = document.getElementById('code-json');
-    var codePaneHTML = document.getElementById('code-html');
+    var codePaneJSON = document.getElementById('serialized-mobiledoc');
     var json = editor.serialize();
     codePaneJSON.innerHTML = this.syntaxHighlight(json);
-  },
-
-  formatXML: function(xml) {
-    // https://gist.github.com/sente/1083506
-    xml = xml.replace(/(>)(<)(\/*)/g, '$1\r\n$2$3');
-    var formatted = '';
-    var pad = 0;
-    var nodes = xml.split('\r\n');
-    var nodeLen = nodes.length;
-    var node, indent, padding, i, j;
-    for(i = 0; i < nodeLen; i++) {
-      node = nodes[i];
-      if (node.match( /.+<\/\w[^>]*>$/ )) {
-        indent = 0;
-      } else if (node.match( /^<\/\w/ )) {
-        if (pad != 0) {
-          pad -= 1;
-        }
-      } else if (node.match( /^<\w[^>]*[^\/]>.*$/ )) {
-        indent = 1;
-      } else {
-        indent = 0;
-      }
-
-      padding = '';
-      for (j = 0; j < pad; j++) {
-        padding += '  ';
-      }
-
-      formatted += padding + node + '\r\n';
-      pad += indent;
-    }
- 
-    return formatted;
   },
 
   syntaxHighlight: function(json) {
@@ -89,19 +34,22 @@ var ContentKitDemo = exports.ContentKitDemo = {
 
 };
 
-// Initialize
-if (window.editor) {
-  ContentKitDemo.syncCodePane(editor);
-  editor.on('update', function() {
-    ContentKitDemo.syncCodePane(this);
+$(function() {
+  var textarea = $('#mobiledoc-to-load textarea');
+  var textPayload = textarea.val();
+  var payload = JSON.parse(textPayload);
+  var editorF = new ContentKit.Editor($('#editor')[0], {
+    mobiledoc: payload,
+    cards: {
+      'pick-color': function renderPickColor(payload) {
+        return 'PICK A COLOR: '+payload.options.join(', ');
+      }
+    }
   });
-  var settingsBtn = document.getElementById('settings-btn');
-  settingsBtn.addEventListener('click', function() {
-    ContentKitDemo.toggleCodePane();
+
+  editorF.on('update', function(editor) {
+    ContentKitDemo.syncCodePane(editor);
   });
-}
-if (location.hash === '#code') {
-  ContentKitDemo.openCodePane();
-}
+});
 
 }(this, document));

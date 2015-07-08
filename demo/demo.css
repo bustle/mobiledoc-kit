@@ -16,6 +16,14 @@ body {
   }
 }
 
+.container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.pane {
+}
+
 .editor-pane {
   max-width: 50em;
   margin: 0 auto;
@@ -55,13 +63,7 @@ body {
   right: 0;
   width: 50%;
 }
-.code-pane {
-  display: none;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+#serialized-mobiledoc, #mobiledoc-to-load {
   background-color: #2b303b;
   overflow: hidden;
 }
