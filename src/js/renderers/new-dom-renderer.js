@@ -1,10 +1,20 @@
+function createElementFromMarkerType(doc, markerType) {
+  var element = doc.createElement(markerType.tagName);
+  if (markerType.attributes) {
+    for (var i=0, l=markerType.attributes.length;i<l;i=i+2) {
+      element.setAttribute(markerType.attributes[i], markerType.attributes[i+1]);
+    }
+  }
+  return element;
+}
+
 function renderMarkupSection(doc, section, markers) {
   var element = doc.createElement(section.tagName);
   var elements = [element];
   var currentElement = element;
   var i, l, j, m, marker, openTypes, closeTypes, text;
-  var markerType, markerTypeAttrs;
-  var openedElement, openedTagName;
+  var markerType;
+  var openedElement;
   for (i=0, l=markers.length;i<l;i++) {
     marker = markers[i];
     openTypes = marker.open;
@@ -31,16 +41,6 @@ function renderMarkupSection(doc, section, markers) {
   return element;
 }
 
-function createElementFromMarkerType(doc, markerType) {
-  var element = doc.createElement(markerType.tagName);
-  if (markerType.attributes) {
-    for (var i=0, l=markerType.attributes.length;i<l;i=i+2) {
-      element.setAttribute(markerType.attributes[i], markerType.attributes[i+1]);
-    }
-  }
-  return element;
-}
-
 function NewDOMRenderer(doc, cards) {
   if (!doc) {
     throw new Error('renderer must be created with a document');
@@ -50,7 +50,7 @@ function NewDOMRenderer(doc, cards) {
     throw new Error('renderer must be created with cards');
   }
   this.cards = cards;
-};
+}
 
 NewDOMRenderer.prototype.render = function NewDOMRenderer_render(post, target) {
   var sections = post.sections;
@@ -63,9 +63,11 @@ NewDOMRenderer.prototype.render = function NewDOMRenderer_render(post, target) {
       break;
     case 5:
       throw new Error('unimplemented');
-      var componentFn = this.cards[section[1]];
-      node = componentFn(this.document, section.markers);
-      break;
+      //var componentFn = this.cards[section[1]];
+      //node = componentFn(this.document, section.markers);
+      //break;
+    default:
+      throw new Error('attempt to render unknown type:' +section.type);
     }
     post.setSectionElement(section, node);
     target.appendChild(node);

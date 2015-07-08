@@ -19,6 +19,7 @@ import EventEmitter from '../utils/event-emitter';
 import {
   Type,
   Compiler,
+  MobiledocParser
 } from 'content-kit-compiler';
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
 import { win, doc } from 'content-kit-editor/utils/compat';
@@ -50,7 +51,8 @@ var defaults = {
     new OrderedListCommand()
   ],
   compiler: null,
-  cards: {}
+  cards: {},
+  mobiledoc: null
 };
 
 function forEachChildNode(parentNode, callback) {
@@ -60,20 +62,7 @@ function forEachChildNode(parentNode, callback) {
   }
 }
 
-function replaceInArray(array, original, replacement) {
-  var i, l, possibleOriginal;
-  for (i=0,l=array.length;i<l;i++) {
-    possibleOriginal = array[i];
-    if (possibleOriginal === original) {
-      array[i] = replacement;
-      return;
-    }
-  }
-}
-
 function bindContentEditableTypingListeners(editor) {
-
-
   editor.element.addEventListener('keyup', function(e) {
     // Assure there is always a supported block tag, and not empty text nodes or divs.
     // On a carrage return, make sure to always generate a 'p' tag
@@ -197,7 +186,12 @@ function Editor(element, options) {
 
   // FIXME: We should be able to pass a serialized payload and disregard
   // whatever is in DOM
-  this.syncModel();
+  if (this.mobiledoc) {
+    this.parseModelFromMobiledoc(this.mobiledoc);
+  } else {
+    this.parseModelFromDOM(this.element);
+  }
+
   clearChildNodes(element);
   this.syncVisual();
 
@@ -234,8 +228,13 @@ merge(Editor.prototype, {
     this.trigger('update');
   },
 
-  syncModel() {
-    this.model = this.compiler.parse(this.element);
+  parseModelFromDOM(element) {
+    this.model = this.compiler.parse(element);
+    this.trigger('update');
+  },
+
+  parseModelFromMobiledoc(mobiledoc) {
+    this.model = new MobiledocParser().parse(mobiledoc);
     this.trigger('update');
   },
 
@@ -244,7 +243,7 @@ merge(Editor.prototype, {
   },
 
   getCurrentBlockIndex() {
-    var selectionEl = element || getSelectionBlockElement();
+    var selectionEl = this.element || getSelectionBlockElement();
     var blockElements = toArray(this.element.children);
     return blockElements.indexOf(selectionEl);
   },

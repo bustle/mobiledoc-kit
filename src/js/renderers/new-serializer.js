@@ -63,4 +63,4 @@ export default {
     compile(compiler, opcodes);
     return compiler.result;
   }
-}
+};

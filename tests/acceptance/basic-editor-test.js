@@ -26,8 +26,8 @@ test('sets element as contenteditable', (assert) => {
   assert.equal(editorElement.getAttribute('contenteditable'),
                'true',
                'element is contenteditable');
-  assert.equal(editorElement.firstChild.tagName, 'SECTION',
-               `editor element has a section as its first child`);
+  assert.equal(editorElement.firstChild.tagName, 'P',
+               `editor element has a P as its first child`);
 });
 
 test('editing element changes editor post model', (assert) => {
