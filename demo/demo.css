@@ -22,6 +22,11 @@ body {
 }
 
 .pane {
+  max-width: 25%;
+}
+
+.pane textarea {
+  width: 100%;
 }
 
 .editor-pane {

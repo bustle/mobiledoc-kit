@@ -63,7 +63,7 @@ function forEachChildNode(parentNode, callback) {
 }
 
 function bindContentEditableTypingListeners(editor) {
-  editor.element.addEventListener('keyup', function(e) {
+  editor.addEventListener(editor.element, 'keyup', function(e) {
     // Assure there is always a supported block tag, and not empty text nodes or divs.
     // On a carrage return, make sure to always generate a 'p' tag
     if (!getSelectionBlockElement() ||
@@ -80,7 +80,7 @@ function bindContentEditableTypingListeners(editor) {
   });
 
   // On 'PASTE' sanitize and insert
-  editor.element.addEventListener('paste', function(e) {
+  editor.addEventListener(editor.element, 'paste', function(e) {
     var data = e.clipboardData;
     var pastedHTML = data && data.getData && data.getData('text/html');
     var sanitizedHTML = pastedHTML && editor.compiler.rerender(pastedHTML);
@@ -95,7 +95,7 @@ function bindContentEditableTypingListeners(editor) {
 
 function bindAutoTypingListeners(editor) {
   // Watch typing patterns for auto format commands (e.g. lists '- ', '1. ')
-  editor.element.addEventListener('keyup', function(e) {
+  editor.addEventListener(editor.element, 'keyup', function(e) {
     var commands = editor.autoTypingCommands;
     var count = commands && commands.length;
     var selection, i;
@@ -112,12 +112,12 @@ function bindAutoTypingListeners(editor) {
   });
 }
 
-function bindDragAndDrop() {
+function bindDragAndDrop(editor) {
   // TODO. For now, just prevent redirect when dropping something on the page
-  win.addEventListener('dragover', function(e) {
+  editor.addEventListener(win, 'dragover', function(e) {
     e.preventDefault(); // prevents showing cursor where to drop
   });
-  win.addEventListener('drop', function(e) {
+  editor.addEventListener(win, 'drop', function(e) {
     e.preventDefault(); // prevent page from redirecting
   });
 }
@@ -165,6 +165,7 @@ function Editor(element, options) {
     throw new Error('Editor requires an element as the first argument');
   }
 
+  this._elementListeners = [];
   this.element = element;
 
   // FIXME: This should merge onto this.options
@@ -198,7 +199,7 @@ function Editor(element, options) {
   bindContentEditableTypingListeners(this);
   bindAutoTypingListeners(this);
   bindDragAndDrop(this);
-  element.addEventListener('input', () => this.handleInput(...arguments));
+  this.addEventListener(element, 'input', () => this.handleInput(...arguments));
   initEmbedCommands(this);
 
   this.textFormatToolbar = new TextFormatToolbar({
@@ -221,6 +222,11 @@ function Editor(element, options) {
 merge(Editor.prototype, EventEmitter);
 
 merge(Editor.prototype, {
+
+  addEventListener(context, eventName, callback) {
+    context.addEventListener(eventName, callback);
+    this._elementListeners.push([context, eventName, callback]);
+  },
 
   loadModel(model) {
     this.model = model;
@@ -416,6 +422,16 @@ merge(Editor.prototype, {
 
   serialize() {
     return Serializer.serialize(this.model);
+  },
+
+  removeAllEventListeners() {
+    this._elementListeners.forEach(([context, ...args]) => {
+      context.removeEventListener(...args);
+    })
+  },
+
+  destroy() {
+    this.removeAllEventListeners();
   }
 
 });

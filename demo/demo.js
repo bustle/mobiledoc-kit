@@ -34,11 +34,8 @@ var ContentKitDemo = exports.ContentKitDemo = {
 
 };
 
-$(function() {
-  var textarea = $('#mobiledoc-to-load textarea');
-  var textPayload = textarea.val();
-  var payload = JSON.parse(textPayload);
-  var editorF = new ContentKit.Editor($('#editor')[0], {
+function bootEditor(element, payload) {
+  var editor = new ContentKit.Editor(element, {
     mobiledoc: payload,
     cards: {
       'pick-color': function renderPickColor(payload) {
@@ -47,9 +44,27 @@ $(function() {
     }
   });
 
-  editorF.on('update', function(editor) {
+  editor.on('update', function() {
     ContentKitDemo.syncCodePane(editor);
   });
+}
+
+function readPayload(textarea) {
+  var jqueryTextarea = $(textarea);
+  var textPayload = jqueryTextarea.val();
+  return JSON.parse(textPayload);
+}
+
+$(function() {
+  var textarea = $('#mobiledoc-to-load textarea');
+  var editor;
+  textarea.on('input', function() {
+    if (editor) {
+      editor.destroy();
+    }
+    editor = bootEditor($('#editor')[0], readPayload(textarea));
+  });
+  editor = bootEditor($('#editor')[0], readPayload(textarea));
 });
 
 }(this, document));
