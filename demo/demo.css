@@ -9,6 +9,7 @@ body {
   color: #454545;
   margin: 0;
   padding: 0;
+  background-color: #EFEFEF;
 }
 @media only screen and (max-width: 767px) {
   body {
@@ -23,10 +24,6 @@ body {
 
 .pane {
   max-width: 25%;
-}
-
-.pane textarea {
-  width: 100%;
 }
 
 .editor-pane {
@@ -69,9 +66,19 @@ body {
   width: 50%;
 }
 #serialized-mobiledoc, #mobiledoc-to-load {
-  background-color: #2b303b;
   overflow: hidden;
+  padding: 0.25em;
 }
+#serialized-mobiledoc {
+  white-space: pre;
+  background-color: #080808;
+}
+#mobiledoc-to-load {
+}
+#mobiledoc-to-load textarea {
+  height: 300px;
+}
+
 .code-pane:first-child {
   display: block;
 }
