@@ -427,7 +427,7 @@ merge(Editor.prototype, {
   removeAllEventListeners() {
     this._elementListeners.forEach(([context, ...args]) => {
       context.removeEventListener(...args);
-    })
+    });
   },
 
   destroy() {
