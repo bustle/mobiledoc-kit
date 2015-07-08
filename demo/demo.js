@@ -7,6 +7,12 @@ var ContentKitDemo = exports.ContentKitDemo = {
     var codePaneJSON = document.getElementById('serialized-mobiledoc');
     var json = editor.serialize();
     codePaneJSON.innerHTML = this.syntaxHighlight(json);
+
+    var renderer = new ContentKit.Runtime.DOMRenderer();
+    var rendered = renderer.render(json);
+
+    $('#rendered-mobiledoc').empty();
+    $('#rendered-mobiledoc')[0].appendChild(rendered);
   },
 
   syntaxHighlight: function(json) {

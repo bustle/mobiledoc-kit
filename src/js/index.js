@@ -4,7 +4,8 @@ import {
   EmbedModel,
   Compiler,
   HTMLParser,
-  HTMLRenderer
+  HTMLRenderer,
+  Runtime
 } from 'content-kit-compiler';
 
 import Editor from './editor/editor';
@@ -16,6 +17,7 @@ const ContentKit = {
   Compiler,
   HTMLParser,
   HTMLRenderer,
+  Runtime,
   Editor
 };
 
