@@ -24,6 +24,12 @@ body {
 
 .pane {
   max-width: 25%;
+  padding: 0 1em;
+}
+
+.pane p.desc {
+  height: 150px;
+  overflow: scroll;
 }
 
 .editor-pane {
@@ -76,7 +82,8 @@ body {
 #mobiledoc-to-load {
 }
 #mobiledoc-to-load textarea {
-  height: 300px;
+  height: 500px;
+  width: 100%;
 }
 
 .code-pane:first-child {

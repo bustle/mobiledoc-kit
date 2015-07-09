@@ -49,7 +49,7 @@ export default class MobiledocParser {
     const attributes = null;
     const isGenerated = false;
     const section = this.builder.generateSection(tagName, attributes, isGenerated);
-    
+
     post.appendSection(section);
     this.parseMarkers(markers, section);
   }
