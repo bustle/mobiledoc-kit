@@ -3,19 +3,28 @@
 'use strict';
 
 var ContentKit = exports.ContentKit,
-    $ = exports.$;
+    $ = exports.$,
+    MobiledocHTMLRenderer = exports.MobiledocHTMLRenderer,
+    MobiledocDOMRenderer = exports.MobiledocDOMRenderer;
 
 var ContentKitDemo = exports.ContentKitDemo = {
   syncCodePane: function(editor) {
     var codePaneJSON = document.getElementById('serialized-mobiledoc');
-    var json = editor.serialize();
-    codePaneJSON.innerHTML = this.syntaxHighlight(json);
+    var mobiledoc = editor.serialize();
+    codePaneJSON.innerHTML = this.syntaxHighlight(mobiledoc);
 
     var renderer = new MobiledocDOMRenderer();
-    var rendered = renderer.render(json);
+    var rendered = renderer.render(mobiledoc);
 
     $('#rendered-mobiledoc').empty();
     $('#rendered-mobiledoc')[0].appendChild(rendered);
+
+    var htmlRenderer = new MobiledocHTMLRenderer();
+    var html = htmlRenderer.render(mobiledoc);
+
+    html = html.replace(/&/g,'&amp;').replace(/</g, '&lt;').replace(/>/g,'&gt;');
+
+    $('#rendered-mobiledoc-html').html(html);
   },
 
   syntaxHighlight: function(json) {

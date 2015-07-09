@@ -12,6 +12,13 @@ module.exports = function() {
       require.resolve('mobiledoc-dom-renderer')
     )
   );
+  // find the global build relative to the commonjs `main` entrypoint
+  var htmlrendererDir = path.join(
+    path.dirname(
+      require.resolve('mobiledoc-html-renderer')
+    ),
+    '..', '..', 'global'
+  );
   return mergeTrees([
     funnel(demoDir, {
       include: [
@@ -25,6 +32,12 @@ module.exports = function() {
     funnel(rendererDir, {
       include: [
         'mobiledoc-dom-renderer.js'
+      ],
+      destDir: '/demo'
+    }),
+    funnel(htmlrendererDir, {
+      include: [
+        'mobiledoc-html-renderer.js'
       ],
       destDir: '/demo'
     })
