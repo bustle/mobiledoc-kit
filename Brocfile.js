@@ -19,7 +19,7 @@ var buildOptions = {
 };
 
 var jqueryTree = jquery.build('/demo/jquery');
-var testTree = testTreeBuilder.build();
+var testTree = testTreeBuilder.build({libDirName: 'src'});
 var demoTree = demo();
 demoTree = mergeTrees([demoTree, jqueryTree]);
 
