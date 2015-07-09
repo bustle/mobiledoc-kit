@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>Content Kit Editor Demo 0.2.0</title>
@@ -14,42 +15,58 @@
   <!-- CSS just for the demo page -->
   <link href="demo.css" rel="stylesheet">
 </head>
+
 <body>
   <div class="container">
 
     <div class="pane">
       <h2>mobiledoc to load</h2>
+      <p class='desc'>
+        This mobiledoc will be loaded into the editor.
+        You can change it and see the editor reload with the new contents.
+        (If there is a JSON syntax error it will be ignored; if there is a parser
+         error the editor may stop responding.)
+         <br>
+         Select a preloaded mobiledoc here:
+         <select id='select-mobiledoc'>
+           <option disabled>Choose a mobiledoc...</option>
+           <option value='simpleMobiledoc'>Simple mobiledoc</option>
+           <option value='mobileDocWithMarker'>mobiledoc with simple marker</option>
+           <option value='mobileDocWithMultipleMarkers'>mobiledoc with multiple markers</option>
+           <option value='mobileDocWithAttributeMarker'>mobiledoc with attributed marker</option>
+         </select>
+      </p>
       <div id="mobiledoc-to-load">
-        <textarea>
-[
-  [],
-  [
-    [1, "H2", [
-      [[], 0, "hello world"]
-    ]],
-    [1, "P", [
-      [[], 0, "hello world"]
-    ]]
-  ]
-]
-        </textarea>
+        <textarea></textarea>
       </div>
     </div>
 
     <div class="pane">
       <h2>editor</h2>
+      <p class='desc'>
+        The live-editing surface. Changes here are serialized to mobiledoc
+        format and displayed to the right.
+      </p>
       <div id="editor">
       </div>
     </div>
 
     <div class="pane">
       <h2>serialized mobiledoc</h2>
+      <p class='desc'>
+        When the editor updates, it prints its serialized mobiledoc here.
+      </p>
       <div id="serialized-mobiledoc">
       </div>
     </div>
 
     <div class="pane">
       <h2>rendered mobiledoc</h2>
+      <p class='desc'>
+        This is the output of using the runtime (client-side)
+        <a href='http://github.com/bustlelabs/mobiledoc-dom-render'>mobiledoc-dom-renderer</a>
+        on the serialized mobiledoc.
+      </p>
       <div id="rendered-mobiledoc"></div>
     </div>
 

@@ -2,6 +2,9 @@
 
 'use strict';
 
+var ContentKit = exports.ContentKit,
+    $ = exports.$;
+
 var ContentKitDemo = exports.ContentKitDemo = {
   syncCodePane: function(editor) {
     var codePaneJSON = document.getElementById('serialized-mobiledoc');
@@ -40,9 +43,10 @@ var ContentKitDemo = exports.ContentKitDemo = {
 
 };
 
-function bootEditor(element, payload) {
+function bootEditor(element, mobiledoc) {
   var editor = new ContentKit.Editor(element, {
-    mobiledoc: payload,
+    autofocus: false,
+    mobiledoc: mobiledoc,
     cards: {
       'pick-color': function renderPickColor(payload) {
         return 'PICK A COLOR: '+payload.options.join(', ');
@@ -55,22 +59,106 @@ function bootEditor(element, payload) {
   });
 }
 
-function readPayload(textarea) {
-  var jqueryTextarea = $(textarea);
-  var textPayload = jqueryTextarea.val();
-  return JSON.parse(textPayload);
+function readMobiledoc(string) {
+  return JSON.parse(string);
 }
 
-$(function() {
-  var textarea = $('#mobiledoc-to-load textarea');
-  var editor;
-  textarea.on('input', function() {
+function isValidJSON(string) {
+  try {
+    JSON.parse(string);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+function attemptEditorReboot(editor, textarea) {
+  var textPayload = $(textarea).val();
+  if (isValidJSON(textPayload)) {
+    var mobiledoc = readMobiledoc(textPayload);
     if (editor) {
       editor.destroy();
     }
-    editor = bootEditor($('#editor')[0], readPayload(textarea));
+    bootEditor($('#editor')[0], mobiledoc);
+  }
+}
+
+var sampleMobiledocs = {
+  simpleMobiledoc: [
+    [],
+    [
+      [1, "H2", [
+        [[], 0, "headline h2"]
+      ]],
+      [1, "P", [
+        [[], 0, "hello world"]
+      ]]
+    ]
+  ],
+
+  mobileDocWithMarker: [
+    [['B']],
+    [
+      [1, "H2", [
+        [[], 0, "headline h2"]
+      ]],
+      [1, "P", [
+        [[0], 1, "bold world"]
+      ]]
+    ]
+  ],
+
+  mobileDocWithMultipleMarkers: [
+    [['B'], ['I']],
+    [
+      [1, "H2", [
+        [[], 0, "headline h2"]
+      ]],
+      [1, "P", [
+        [[], 0, "hello "],
+        [[0], 1, "bold, "],
+        [[1], 1, "italic "],
+        [[], 0, "world."]
+      ]]
+    ]
+  ],
+
+  mobileDocWithAttributeMarker: [
+    [['A', ['href', 'http://github.com/bustlelabs/content-kit-editor']]],
+    [
+      [1, "H2", [
+        [[], 0, "headline h2"]
+      ]],
+      [1, "P", [
+        [[], 0, "see it "],
+        [[0], 1, "on github."]
+      ]]
+    ]
+  ]
+};
+
+
+$(function() {
+  var editor;
+  var editorEl = $('#editor')[0];
+  var mobiledoc = sampleMobiledocs.simpleMobiledoc;
+
+  var textarea = $('#mobiledoc-to-load textarea');
+  textarea.val(JSON.stringify(mobiledoc, false, 2));
+
+  textarea.on('input', function() {
+    attemptEditorReboot(editor, textarea);
   });
-  editor = bootEditor($('#editor')[0], readPayload(textarea));
+
+  $('#select-mobiledoc').on('change', function() {
+    var mobiledocName = $(this).val();
+    var mobiledoc = sampleMobiledocs[mobiledocName];
+    textarea.val(JSON.stringify(mobiledoc, false, 2));
+    textarea.trigger('input');
+  });
+
+  bootEditor(editorEl, mobiledoc);
+  $(editorEl).focus();
 });
 
 }(this, document));
