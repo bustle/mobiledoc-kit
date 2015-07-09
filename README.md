@@ -70,6 +70,13 @@ var editor = new ContentKit.Editor(this.element, options);
 * `editor.loadPost(post)` - render the editor with a post. **[FIXME Implement]**
 * `editor.serializePost()` - serialize the current post for persistence. **[FIXME Implement]**
 
+### Deploy the demo website
+
+The demo website is hosted at github pages.
+To build the website, run `npm run build-website`.
+To deploy it to the gh-pages branch run `npm run deploy-website`.
+Visit [http://bustlelabs.github.io/content-kit-editor/demo](http://bustlelabs.github.io/content-kit-editor/demo).
+
 ### Contributing
 
 Running ContentKit tests and demo server locally requires the following dependencies:
