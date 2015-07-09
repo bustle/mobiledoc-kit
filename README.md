@@ -73,8 +73,11 @@ var editor = new ContentKit.Editor(this.element, options);
 ### Deploy the demo website
 
 The demo website is hosted at github pages.
-To build the website, run `npm run build-website`.
-To deploy it to the gh-pages branch run `npm run deploy-website`.
+To publish a new version do:
+
+  * `npm run build-website`. This builds the website into `website/` and commits it
+  * `npm run deploy-website`. Pushes the `website/` subtree to the `gh-pages` branch at github
+
 Visit [http://bustlelabs.github.io/content-kit-editor/demo](http://bustlelabs.github.io/content-kit-editor/demo).
 
 ### Contributing
