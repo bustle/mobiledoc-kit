@@ -7,7 +7,7 @@ const { test, module } = QUnit;
 
 let fixture, editor, editorElement;
 
-module('acceptance: basic editor', {
+module('Acceptance: basic editor', {
   beforeEach() {
     fixture = document.getElementById('qunit-fixture');
     editorElement = document.createElement('div');
@@ -21,7 +21,7 @@ module('acceptance: basic editor', {
 test('sets element as contenteditable', (assert) => {
   let innerHTML = `<p>Hello</p>`;
   editorElement.innerHTML = innerHTML;
-  editor = new Editor('#editor');
+  editor = new Editor(document.getElementById('editor'));
 
   assert.equal(editorElement.getAttribute('contenteditable'),
                'true',
@@ -33,7 +33,7 @@ test('sets element as contenteditable', (assert) => {
 test('editing element changes editor post model', (assert) => {
   let innerHTML = `<p>Hello</p>`;
   editorElement.innerHTML = innerHTML;
-  editor = new Editor('#editor');
+  editor = new Editor(document.getElementById('editor'));
 
   let p = editorElement.querySelector('p');
   let textElement = p.firstChild;

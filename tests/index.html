@@ -18,6 +18,7 @@
   <script src="./built-amd-tests.js"></script>
   <script src="./test-loader/test-loader.js"></script>
   <script>
+    window.QUnit.dump.maxDepth = 15;
     var TestLoader = require('ember-cli/test-loader')['default'];
     var testLoader = new TestLoader();
     testLoader.loadModules();

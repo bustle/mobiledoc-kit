@@ -1,15 +1,13 @@
-/* global QUnit, asyncTest, ok, equal, expect, start */
-
 var fixture = document.getElementById('qunit-fixture');
 var editorElement = document.createElement('div');
 editorElement.id = 'editor1';
 editorElement.className = 'editor';
 
-import { Editor } from 'content-kit-editor';
+import Editor from 'content-kit-editor/editor/editor';
 
-const { test } = QUnit;
+const { module, test, asyncTest } = window.QUnit;
 
-QUnit.module('Editor', {
+module('Unit: Editor', {
   setup: function() {
     fixture.appendChild(editorElement);
   },
@@ -26,32 +24,6 @@ test('can create an editor via dom node reference', function() {
 test('can create an editor via dom node reference from getElementById', function() {
   var editor = new Editor(document.getElementById('editor1'));
   equal(editor.element, editorElement);
-});
-
-test('can create an editor via id selector', function() {
-  var editor = new Editor('#editor1');
-  equal(editor.element, editorElement);
-});
-
-test('can create an editor via class selector', function() {
-  var editor = new Editor('.editor');
-  equal(editor.element, editorElement);
-});
-
-test('can recreate an editor on the same element', function() {
-  var editor = new Editor('#editor1');
-  ok(editor.element === editorElement);
-
-  editor = new Editor('.editor');
-  equal(editor.element, editorElement);
-  equal(editor.element.className, 'editor ck-editor');
-});
-
-test('creating an editor doesn\'t trash existing class names', function() {
-  editorElement.className = 'some-class';
-
-  var editor = new Editor('.some-class');
-  equal(editor.element.className, 'some-class ck-editor');
 });
 
 test('creating an editor without a class name adds appropriate class', function() {
