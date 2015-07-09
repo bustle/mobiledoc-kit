@@ -11,7 +11,7 @@ var ContentKitDemo = exports.ContentKitDemo = {
     var json = editor.serialize();
     codePaneJSON.innerHTML = this.syntaxHighlight(json);
 
-    var renderer = new ContentKit.Runtime.DOMRenderer();
+    var renderer = new MobiledocDOMRenderer();
     var rendered = renderer.render(json);
 
     $('#rendered-mobiledoc').empty();

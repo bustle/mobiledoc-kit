@@ -1,12 +1,7 @@
 import Editor from './editor/editor';
-import DOMRenderer from './runtime/renderers/mobiledoc-dom';
-
-const Runtime = {
-  DOMRenderer
-}
 
 const ContentKit = {
-  Editor, Runtime
+  Editor
 };
 
 export function registerGlobal(global) {

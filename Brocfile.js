@@ -8,8 +8,7 @@ var demo = require('./broccoli/demo');
 var jquery = require('./broccoli/jquery');
 
 var vendoredModules = [
-  {name: 'content-kit-utils', options: {libDirName: 'src'}},
-  {name: 'mobiledoc-dom-renderer'}
+  {name: 'content-kit-utils', options: {libDirName: 'src'}}
 ];
 var packageName = require('./package.json').name;
 
