@@ -1,7 +1,7 @@
-import NewDOMRenderer from '../renderers/new-dom-renderer';
 import TextFormatToolbar  from '../views/text-format-toolbar';
 import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
+
 import BoldCommand from '../commands/bold';
 import ItalicCommand from '../commands/italic';
 import LinkCommand from '../commands/link';
@@ -13,26 +13,26 @@ import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
 import CardCommand from '../commands/card';
+
 import Keycodes from '../utils/keycodes';
 import { getSelectionBlockElement, getCursorOffsetInElement } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
-import {
-  Type,
-  Compiler,
-  MobiledocParser
-} from 'content-kit-compiler';
+
+import MobiledocParser from "../parsers/mobiledoc";
+import DOMParser from "../parsers/dom";
+import EditorDOMRenderer from "../renderers/editor-dom";
+import MobiledocRenderer from '../renderers/mobiledoc';
+
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
-import { win, doc } from 'content-kit-editor/utils/compat';
 import { detectParentNode } from '../utils/dom-utils';
-import Serializer from '../renderers/new-serializer';
 
 var defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
-  model: null,
+  post: null,
   serverHost: '',
-  stickyToolbar: !!('ontouchstart' in win),
+  stickyToolbar: !!('ontouchstart' in window),
   textFormatCommands: [
     new BoldCommand(),
     new ItalicCommand(),
@@ -50,7 +50,6 @@ var defaults = {
     new UnorderedListCommand(),
     new OrderedListCommand()
   ],
-  compiler: null,
   cards: {},
   mobiledoc: null
 };
@@ -69,7 +68,7 @@ function bindContentEditableTypingListeners(editor) {
     if (!getSelectionBlockElement() ||
         !editor.element.textContent ||
        (!e.shiftKey && e.which === Keycodes.ENTER) || (e.ctrlKey && e.which === Keycodes.M)) {
-      doc.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
+      document.execCommand('formatBlock', false, 'p');
     } //else if (e.which === Keycodes.BKSP) {
       // TODO: Need to rerender when backspacing 2 blocks together
       //var cursorIndex = editor.getCursorIndexInCurrentBlock();
@@ -83,9 +82,9 @@ function bindContentEditableTypingListeners(editor) {
   editor.addEventListener(editor.element, 'paste', function(e) {
     var data = e.clipboardData;
     var pastedHTML = data && data.getData && data.getData('text/html');
-    var sanitizedHTML = pastedHTML && editor.compiler.rerender(pastedHTML);
+    var sanitizedHTML = pastedHTML && editor._renderer.rerender(pastedHTML);
     if (sanitizedHTML) {
-      doc.execCommand('insertHTML', false, sanitizedHTML);
+      document.execCommand('insertHTML', false, sanitizedHTML);
       editor.syncVisual();
     }
     e.preventDefault();
@@ -101,7 +100,7 @@ function bindAutoTypingListeners(editor) {
     var selection, i;
 
     if (count) {
-      selection = win.getSelection();
+      selection = window.getSelection();
       for (i = 0; i < count; i++) {
         if (commands[i].checkAutoFormat(selection.anchorNode)) {
           e.stopPropagation();
@@ -114,10 +113,10 @@ function bindAutoTypingListeners(editor) {
 
 function bindDragAndDrop(editor) {
   // TODO. For now, just prevent redirect when dropping something on the page
-  editor.addEventListener(win, 'dragover', function(e) {
+  editor.addEventListener(window, 'dragover', function(e) {
     e.preventDefault(); // prevents showing cursor where to drop
   });
-  editor.addEventListener(win, 'drop', function(e) {
+  editor.addEventListener(window, 'drop', function(e) {
     e.preventDefault(); // prevent page from redirecting
   });
 }
@@ -133,12 +132,12 @@ function initEmbedCommands(editor) {
   }
 }
 
-function getNonTextBlocks(blockTypeSet, model) {
+function getNonTextBlocks(blockTypeSet, post) {
   var blocks = [];
-  var len = model.length;
+  var len = post.length;
   var i, block, type;
   for (i = 0; i < len; i++) {
-    block = model[i];
+    block = post[i];
     type = blockTypeSet.findById(block && block.type);
     if (type && !type.isTextType) {
       blocks.push(block);
@@ -171,13 +170,8 @@ function Editor(element, options) {
   // FIXME: This should merge onto this.options
   mergeWithOptions(this, defaults, options);
 
-  if (!this.compiler) {
-    this.compiler = new Compiler({
-      // outputs models with type names, i.e. 'BOLD', for easier debugging
-      includeTypeNames: true,
-      renderer: new NewDOMRenderer(window.document, this.cards)
-    });
-  }
+  this._renderer = new EditorDOMRenderer(window.document, this.cards)
+  this._parser   = new DOMParser();
 
   this.applyClassName();
   this.applyPlaceholder();
@@ -210,7 +204,7 @@ function Editor(element, options) {
 
   this.linkTooltips = new Tooltip({
     rootElement: element,
-    showForTag: Type.LINK.tag
+    showForTag: 'a'
   });
 
   if (this.autofocus) {
@@ -228,24 +222,24 @@ merge(Editor.prototype, {
     this._elementListeners.push([context, eventName, callback]);
   },
 
-  loadModel(model) {
-    this.model = model;
+  loadModel(post) {
+    this.post = post;
     this.syncVisual();
     this.trigger('update');
   },
 
   parseModelFromDOM(element) {
-    this.model = this.compiler.parse(element);
+    this.post = this._parser.parse(element);
     this.trigger('update');
   },
 
   parseModelFromMobiledoc(mobiledoc) {
-    this.model = new MobiledocParser().parse(mobiledoc);
+    this.post = new MobiledocParser().parse(mobiledoc);
     this.trigger('update');
   },
 
   syncVisual() {
-    this.compiler.render(this.model, this.element);
+    this._renderer.render(this.post, this.element);
   },
 
   getCurrentBlockIndex() {
@@ -263,24 +257,25 @@ merge(Editor.prototype, {
   },
 
   insertBlock(block, index) {
-    this.model.splice(index, 0, block);
+    this.post.splice(index, 0, block);
     this.trigger('update');
   },
 
   removeBlockAt(index) {
-    this.model.splice(index, 1);
+    this.post.splice(index, 1);
     this.trigger('update');
   },
 
   replaceBlock(block, index) {
-    this.model[index] = block;
+    this.post[index] = block;
     this.trigger('update');
   },
 
   renderBlockAt(index, replace) {
-    var modelAtIndex = this.model[index];
+    throw new Error('Unimplemented');
+    var modelAtIndex = this.post[index];
     var html = this.compiler.render([modelAtIndex]);
-    var dom = doc.createElement('div');
+    var dom = document.createElement('div');
     dom.innerHTML = html;
     var newEl = dom.firstChild;
     newEl.dataset.modelIndex = index;
@@ -293,7 +288,8 @@ merge(Editor.prototype, {
   },
 
   syncContentEditableBlocks() {
-    var nonTextBlocks = getNonTextBlocks(this.compiler.blockTypes, this.model);
+    throw new Error('Unimplemented');
+    var nonTextBlocks = getNonTextBlocks(this.compiler.blockTypes, this.post);
     var blockElements = toArray(this.element.children);
     var len = blockElements.length;
     var updatedModel = [];
@@ -301,7 +297,7 @@ merge(Editor.prototype, {
     for (i = 0; i < len; i++) {
       blockEl = blockElements[i];
       if(blockEl.isContentEditable) {
-        updatedModel.push(this.compiler.parser.serializeBlockNode(blockEl));
+        updatedModel.push(this._parser.serializeBlockNode(blockEl));
       } else {
         if (blockEl.dataset.modelIndex) {
           block = this.model[blockEl.dataset.modelIndex];
@@ -311,7 +307,7 @@ merge(Editor.prototype, {
         }
       }
     }
-    this.model = updatedModel;
+    this.post = updatedModel;
     this.trigger('update');
   },
 
@@ -340,18 +336,18 @@ merge(Editor.prototype, {
     let newSections = [];
     let previousSection;
     forEachChildNode(this.element, (node) => {
-      let section = this.model.getElementSection(node);
+      let section = this.post.getElementSection(node);
       if (!section) {
-        section = this.compiler.parseSection(
+        section = this._parser.parseSection(
           previousSection,
           node
         );
-        this.model.setSectionElement(section, node);
+        this.post.setSectionElement(section, node);
         newSections.push(section);
         if (previousSection) {
-          this.model.insertSectionAfter(section, previousSection);
+          this.post.insertSectionAfter(section, previousSection);
         } else {
-          this.model.prependSection(section);
+          this.post.prependSection(section);
         }
       }
       // may cause duplicates to be included
@@ -361,10 +357,10 @@ merge(Editor.prototype, {
 
     // remove deleted nodes
     let i;
-    for (i=this.model.sections.length-1;i>=0;i--) {
-      let section = this.model.sections[i];
+    for (i=this.post.sections.length-1;i>=0;i--) {
+      let section = this.post.sections[i];
       if (sectionsInDOM.indexOf(section) === -1) {
-        this.model.removeSection(section);
+        this.post.removeSection(section);
       }
     }
 
@@ -374,7 +370,7 @@ merge(Editor.prototype, {
     // user presses enter (or pastes a newline)
     let firstSection = sectionsWithCursor[0];
     if (firstSection) {
-      let previousSection = this.model.getPreviousSection(firstSection);
+      let previousSection = this.post.getPreviousSection(firstSection);
       if (previousSection) {
         sectionsWithCursor.unshift(previousSection);
       }
@@ -396,32 +392,32 @@ merge(Editor.prototype, {
 
     let { startContainer:startElement, endContainer:endElement } = range;
 
-    let getElementSection = (e) => this.model.getElementSection(e);
+    let getElementSection = (e) => this.post.getElementSection(e);
     let { result:startSection } = detectParentNode(startElement, getElementSection);
     let { result:endSection } = detectParentNode(endElement, getElementSection);
 
-    let startIndex = this.model.sections.indexOf(startSection),
-        endIndex = this.model.sections.indexOf(endSection);
+    let startIndex = this.post.sections.indexOf(startSection),
+        endIndex = this.post.sections.indexOf(endSection);
 
-    return this.model.sections.slice(startIndex, endIndex+1);
+    return this.post.sections.slice(startIndex, endIndex+1);
   },
 
   reparseSection(section) {
-    let sectionElement = this.model.getSectionElement(section);
-    let previousSection = this.model.getPreviousSection(section);
+    let sectionElement = this.post.getSectionElement(section);
+    let previousSection = this.post.getPreviousSection(section);
 
-    var newSection = this.compiler.parseSection(
+    var newSection = this._parser.parseSection(
       previousSection,
       sectionElement
     );
-    this.model.replaceSection(section, newSection);
-    this.model.setSectionElement(newSection, sectionElement);
+    this.post.replaceSection(section, newSection);
+    this.post.setSectionElement(newSection, sectionElement);
 
     this.trigger('update');
   },
 
   serialize() {
-    return Serializer.serialize(this.model);
+    return MobiledocRenderer.render(this.post);
   },
 
   removeAllEventListeners() {

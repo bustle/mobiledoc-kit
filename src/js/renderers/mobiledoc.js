@@ -56,7 +56,7 @@ let postOpcodeCompiler = {
 };
 
 export default {
-  serialize(post) {
+  render(post) {
     let opcodes = [];
     visit(visitor, post, opcodes);
     let compiler = Object.create(postOpcodeCompiler);

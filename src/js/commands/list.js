@@ -1,8 +1,6 @@
 import TextFormatCommand from './text-format';
 import { getSelectionBlockElement, selectNode, getSelectionTagName } from '../utils/selection-utils';
 import { inherit } from 'content-kit-utils';
-import { Type } from 'content-kit-compiler';
-import { win } from 'content-kit-editor/utils/compat';
 
 function ListCommand(options) {
   TextFormatCommand.call(this, options);
@@ -11,7 +9,7 @@ inherit(ListCommand, TextFormatCommand);
 
 ListCommand.prototype.exec = function() {
   ListCommand._super.prototype.exec.call(this);
-  
+
   // After creation, lists need to be unwrapped
   // TODO: eventually can remove this when direct model manipulation is ready
   var listElement = getSelectionBlockElement();
@@ -30,9 +28,9 @@ ListCommand.prototype.checkAutoFormat = function(node) {
   var regex = this.autoFormatRegex, text;
   if (node && regex) {
     text = node.textContent;
-    if (Type.LIST_ITEM.tag !== getSelectionTagName() && regex.test(text)) {
+    if ('li' !== getSelectionTagName() && regex.test(text)) {
       this.exec();
-      win.getSelection().anchorNode.textContent = text.replace(regex, '');
+      window.getSelection().anchorNode.textContent = text.replace(regex, '');
       return true;
     }
   }

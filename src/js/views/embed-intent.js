@@ -5,7 +5,6 @@ import { getSelectionBlockElement } from '../utils/selection-utils';
 import { elementContentIsEmpty, positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
 import { createDiv } from '../utils/element-utils';
 import Keycodes from '../utils/keycodes';
-import { win, doc } from 'content-kit-editor/utils/compat';
 
 var LayoutStyle = {
   GUTTER   : 1,
@@ -28,7 +27,7 @@ function EmbedIntent(options) {
   embedIntent.isActive = false;
   embedIntent.editorContext = options.editorContext;
   embedIntent.loadingIndicator = createDiv('ck-embed-loading');
-  embedIntent.button = doc.createElement('button');
+  embedIntent.button = document.createElement('button');
   embedIntent.button.className = 'ck-embed-intent-btn';
   embedIntent.button.title = 'Insert image or embed...';
   embedIntent.element.appendChild(embedIntent.button);
@@ -59,17 +58,17 @@ function EmbedIntent(options) {
   }
 
   rootElement.addEventListener('keyup', embedIntentHandler);
-  doc.addEventListener('mouseup', function() {
+  document.addEventListener('mouseup', function() {
     setTimeout(function() { embedIntentHandler(); });
   });
 
-  doc.addEventListener('keyup', function(e) {
+  document.addEventListener('keyup', function(e) {
     if (e.keyCode === Keycodes.ESC) {
       embedIntent.hide();
     }
   });
 
-  win.addEventListener('resize', function() {
+  window.addEventListener('resize', function() {
     if(embedIntent.isShowing) {
       embedIntent.reposition();
     }

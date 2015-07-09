@@ -1,6 +1,3 @@
-/* global JSON */
-import { win } from 'content-kit-editor/utils/compat';
-
 function createXHR(options) {
   var xhr = new XMLHttpRequest();
   xhr.open(options.method, options.url);
@@ -67,7 +64,7 @@ FileUploader.prototype.upload = function(options) {
   var file = options.file || (fileInput && fileInput.files && fileInput.files[0]);
   var callback = options.complete;
   var maxFileSize = this.maxFileSize;
-  if (!file || !(file instanceof win.File)) { return; }
+  if (!file || !(file instanceof window.File)) { return; }
 
   if (maxFileSize && file.size > maxFileSize) {
     if (callback) { callback.call(this, null, { message: 'max file size is ' + maxFileSize + ' bytes' }); }
