@@ -3,19 +3,28 @@
 'use strict';
 
 var ContentKit = exports.ContentKit,
-    $ = exports.$;
+    $ = exports.$,
+    MobiledocHTMLRenderer = exports.MobiledocHTMLRenderer,
+    MobiledocDOMRenderer = exports.MobiledocDOMRenderer;
 
 var ContentKitDemo = exports.ContentKitDemo = {
   syncCodePane: function(editor) {
     var codePaneJSON = document.getElementById('serialized-mobiledoc');
-    var json = editor.serialize();
-    codePaneJSON.innerHTML = this.syntaxHighlight(json);
+    var mobiledoc = editor.serialize();
+    codePaneJSON.innerHTML = this.syntaxHighlight(mobiledoc);
 
-    var renderer = new ContentKit.Runtime.DOMRenderer();
-    var rendered = renderer.render(json);
+    var renderer = new MobiledocDOMRenderer();
+    var rendered = renderer.render(mobiledoc);
 
     $('#rendered-mobiledoc').empty();
     $('#rendered-mobiledoc')[0].appendChild(rendered);
+
+    var htmlRenderer = new MobiledocHTMLRenderer();
+    var html = htmlRenderer.render(mobiledoc);
+
+    html = html.replace(/&/g,'&amp;').replace(/</g, '&lt;').replace(/>/g,'&gt;');
+
+    $('#rendered-mobiledoc-html').html(html);
   },
 
   syntaxHighlight: function(json) {
@@ -65,7 +74,7 @@ function readMobiledoc(string) {
 
 function isValidJSON(string) {
   try {
-    JSON.parse(string);
+    window.JSON.parse(string);
     return true;
   } catch(e) {
     return false;
@@ -144,7 +153,7 @@ $(function() {
   var mobiledoc = sampleMobiledocs.simpleMobiledoc;
 
   var textarea = $('#mobiledoc-to-load textarea');
-  textarea.val(JSON.stringify(mobiledoc, false, 2));
+  textarea.val(window.JSON.stringify(mobiledoc, false, 2));
 
   textarea.on('input', function() {
     attemptEditorReboot(editor, textarea);
@@ -153,7 +162,7 @@ $(function() {
   $('#select-mobiledoc').on('change', function() {
     var mobiledocName = $(this).val();
     var mobiledoc = sampleMobiledocs[mobiledocName];
-    textarea.val(JSON.stringify(mobiledoc, false, 2));
+    textarea.val(window.JSON.stringify(mobiledoc, false, 2));
     textarea.trigger('input');
   });
 

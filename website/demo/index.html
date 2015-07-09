@@ -61,13 +61,23 @@
     </div>
 
     <div class="pane">
-      <h2>rendered mobiledoc</h2>
+      <h2>rendered mobiledoc (dom)</h2>
       <p class='desc'>
         This is the output of using the runtime (client-side)
-        <a href='http://github.com/bustlelabs/mobiledoc-dom-render'>mobiledoc-dom-renderer</a>
+        <a href='http://github.com/bustlelabs/mobiledoc-dom-renderer'>mobiledoc-dom-renderer</a>
         on the serialized mobiledoc.
       </p>
       <div id="rendered-mobiledoc"></div>
+    </div>
+
+    <div class="pane">
+      <h2>rendered mobiledoc (html)</h2>
+      <p class='desc'>
+        This is the output of using the server-side
+        <a href='http://github.com/bustlelabs/mobiledoc-html-renderer'>mobiledoc-html-renderer</a>
+        on the serialized mobiledoc.
+      </p>
+      <div id="rendered-mobiledoc-html"></div>
     </div>
 
   </div>
@@ -75,6 +85,8 @@
   <!-- Include ContentKit JS -->
   <script src="../global/content-kit-editor.js"></script>
   <!-- JS just for the demo page -->
+  <script src="./mobiledoc-dom-renderer.js"></script>
+  <script src="./mobiledoc-html-renderer.js"></script>
   <script src="./jquery/jquery.js"></script>
   <script src="demo.js"></script>
 </body>

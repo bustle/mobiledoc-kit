@@ -1063,17 +1063,13 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
   exports['default'] = Editor;
 });
-define('content-kit-editor', ['exports', 'content-kit-editor/editor/editor', 'content-kit-editor/runtime/renderers/mobiledoc-dom'], function (exports, _contentKitEditorEditorEditor, _contentKitEditorRuntimeRenderersMobiledocDom) {
+define('content-kit-editor', ['exports', 'content-kit-editor/editor/editor'], function (exports, _contentKitEditorEditorEditor) {
   'use strict';
 
   exports.registerGlobal = registerGlobal;
 
-  var Runtime = {
-    DOMRenderer: _contentKitEditorRuntimeRenderersMobiledocDom['default']
-  };
-
   var ContentKit = {
-    Editor: _contentKitEditorEditorEditor['default'], Runtime: Runtime
+    Editor: _contentKitEditorEditorEditor['default']
   };
 
   function registerGlobal(global) {
@@ -1611,11 +1607,6 @@ define('content-kit-editor/renderers/mobiledoc', ['exports', 'content-kit-editor
     }
   };
 });
-define('content-kit-editor/runtime/renderers/mobiledoc-dom', ['exports', 'mobiledoc-dom-renderer'], function (exports, _mobiledocDomRenderer) {
-  'use strict';
-
-  exports['default'] = _mobiledocDomRenderer['default'];
-});
 define('content-kit-editor/utils/compat', ['exports', 'content-kit-editor/utils/doc', 'content-kit-editor/utils/win'], function (exports, _contentKitEditorUtilsDoc, _contentKitEditorUtilsWin) {
   'use strict';
 
@@ -1942,7 +1933,7 @@ define('content-kit-editor/utils/http-utils', ['exports'], function (exports) {
       return null;
     }
     try {
-      return JSON.parse(jsonString);
+      return window.JSON.parse(jsonString);
     } catch (e) {
       return jsonString;
     }
@@ -3037,160 +3028,6 @@ define('content-kit-utils/string-utils', ['exports'], function (exports) {
   exports.underscore = underscore;
   exports.sanitizeWhitespace = sanitizeWhitespace;
   exports.injectIntoString = injectIntoString;
-});
-define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
-  /**
-   * runtime DOM renderer
-   * renders a mobiledoc to DOM
-   *
-   * input: mobiledoc
-   * output: DOM
-   */
-
-  'use strict';
-
-  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
-
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-  var utils = {
-    createElement: function createElement(tagName) {
-      return document.createElement(tagName);
-    },
-    appendChild: function appendChild(target, child) {
-      target.appendChild(child);
-    },
-    createTextNode: function createTextNode(text) {
-      return document.createTextNode(text);
-    }
-  };
-
-  function createElementFromMarkerType() {
-    var _ref = arguments[0] === undefined ? ['', []] : arguments[0];
-
-    var _ref2 = _slicedToArray(_ref, 2);
-
-    var tagName = _ref2[0];
-    var attributes = _ref2[1];
-
-    var element = utils.createElement(tagName);
-    attributes = attributes || [];
-
-    for (var i = 0, l = attributes.length; i < l; i = i + 2) {
-      var propName = attributes[i],
-          propValue = attributes[i + 1];
-      element.setAttribute(propName, propValue);
-    }
-    return element;
-  }
-
-  var DOMRenderer = (function () {
-    function DOMRenderer() {
-      _classCallCheck(this, DOMRenderer);
-    }
-
-    _createClass(DOMRenderer, [{
-      key: 'render',
-
-      /**
-       * @param mobiledoc
-       * @param rootElement optional, defaults to an empty div
-       * @return DOMNode
-       */
-      value: function render(mobiledoc) {
-        var _this = this;
-
-        var rootElement = arguments[1] === undefined ? utils.createElement('div') : arguments[1];
-
-        var _mobiledoc = _slicedToArray(mobiledoc, 2);
-
-        var markerTypes = _mobiledoc[0];
-        var sections = _mobiledoc[1];
-
-        this.root = rootElement;
-        this.markerTypes = markerTypes;
-
-        sections.forEach(function (section) {
-          return _this.renderSection(section);
-        });
-
-        return this.root;
-      }
-    }, {
-      key: 'renderSection',
-      value: function renderSection(section) {
-        var _section = _slicedToArray(section, 1);
-
-        var type = _section[0];
-
-        switch (type) {
-          case 1:
-            var rendered = this.renderParagraphSection(section);
-            utils.appendChild(this.root, rendered);
-            break;
-          default:
-            throw new Error('Unimplement renderer for type ' + type);
-        }
-      }
-    }, {
-      key: 'renderParagraphSection',
-      value: function renderParagraphSection(_ref3) {
-        var _ref32 = _slicedToArray(_ref3, 3);
-
-        var type = _ref32[0];
-        var tagName = _ref32[1];
-        var markers = _ref32[2];
-
-        var element = utils.createElement(tagName);
-        var elements = [element];
-        var currentElement = element;
-
-        for (var i = 0, l = markers.length; i < l; i++) {
-          var marker = markers[i];
-
-          var _marker = _slicedToArray(marker, 3);
-
-          var openTypes = _marker[0];
-          var closeTypes = _marker[1];
-          var text = _marker[2];
-
-          for (var j = 0, m = openTypes.length; j < m; j++) {
-            var markerType = this.markerTypes[openTypes[j]];
-            var openedElement = createElementFromMarkerType(markerType);
-            utils.appendChild(currentElement, openedElement);
-            elements.push(openedElement);
-            currentElement = openedElement;
-          }
-
-          utils.appendChild(currentElement, utils.createTextNode(text));
-
-          for (var j = 0, m = closeTypes; j < m; j++) {
-            elements.pop();
-            currentElement = elements[elements.length - 1];
-          }
-        }
-
-        return element;
-      }
-    }]);
-
-    return DOMRenderer;
-  })();
-
-  exports['default'] = DOMRenderer;
-});
-define('mobiledoc-dom-renderer', ['exports', 'mobiledoc-dom-renderer/dom-renderer'], function (exports, _mobiledocDomRendererDomRenderer) {
-  'use strict';
-
-  exports.registerGlobal = registerGlobal;
-
-  function registerGlobal(window) {
-    window.MobiledocDOMRenderer = _mobiledocDomRendererDomRenderer['default'];
-  }
-
-  exports['default'] = _mobiledocDomRendererDomRenderer['default'];
 });
 require("content-kit-editor")["registerGlobal"](window, document);
 })();
