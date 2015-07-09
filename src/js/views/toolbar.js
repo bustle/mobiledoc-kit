@@ -3,7 +3,6 @@ import ToolbarButton from './toolbar-button';
 import { inherit } from 'content-kit-utils';
 import { tagsInSelection } from '../utils/selection-utils';
 import { createDiv, swapElements, positionElementToRightOf, positionElementCenteredAbove } from '../utils/element-utils';
-import { win, doc } from 'content-kit-editor/utils/compat';
 
 var ToolbarDirection = {
   TOP   : 1,
@@ -58,7 +57,7 @@ function Toolbar(options) {
   }
 
   // Closes prompt if displayed when changing selection
-  doc.addEventListener('mouseup', function() {
+  document.addEventListener('mouseup', function() {
     toolbar.dismissPrompt();
   });
 }
@@ -104,7 +103,7 @@ Toolbar.prototype.dismissPrompt = function() {
 
 Toolbar.prototype.updateForSelection = function(selection) {
   var toolbar = this;
-  selection = selection || win.getSelection();
+  selection = selection || window.getSelection();
   if (toolbar.sticky) {
     updateButtonsForSelection(toolbar.buttons, selection);
   } else if (!selection.isCollapsed) {
@@ -124,7 +123,7 @@ Toolbar.prototype.positionToContent = function(content) {
       positioningMethod = positionElementCenteredAbove;
   }
   position = positioningMethod(this.element, content);
-  sideEdgeOffset = Math.min(Math.max(10, position.left), doc.body.clientWidth - this.element.offsetWidth - 10);
+  sideEdgeOffset = Math.min(Math.max(10, position.left), document.body.clientWidth - this.element.offsetWidth - 10);
   this.contentElement.style.transform = 'translateX(' + (sideEdgeOffset - position.left) + 'px)';
 };
 

@@ -1,7 +1,5 @@
-import { win, doc } from 'content-kit-editor/utils/compat';
-
 function createDiv(className) {
-  var div = doc.createElement('div');
+  var div = document.createElement('div');
   if (className) {
     div.className = className;
   }
@@ -51,9 +49,9 @@ function elementContentIsEmpty(element) {
 }
 
 function getElementRelativeOffset(element) {
-  var offset = { left: 0, top: -win.pageYOffset };
+  var offset = { left: 0, top: -window.pageYOffset };
   var offsetParent = element.offsetParent;
-  var offsetParentPosition = win.getComputedStyle(offsetParent).position;
+  var offsetParentPosition = window.getComputedStyle(offsetParent).position;
   var offsetParentRect;
 
   if (offsetParentPosition === 'relative') {
@@ -65,7 +63,7 @@ function getElementRelativeOffset(element) {
 }
 
 function getElementComputedStyleNumericProp(element, prop) {
-  return parseFloat(win.getComputedStyle(element)[prop]);
+  return parseFloat(window.getComputedStyle(element)[prop]);
 }
 
 function positionElementToRect(element, rect, topOffset, leftOffset) {

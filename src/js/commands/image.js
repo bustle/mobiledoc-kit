@@ -1,15 +1,10 @@
 import Command from './base';
 import Message from '../views/message';
-import {
-  Type,
-  BlockModel,
-} from 'content-kit-compiler';
-import { win, doc } from 'content-kit-editor/utils/compat';
 import { inherit } from 'content-kit-utils';
 import { FileUploader } from '../utils/http-utils';
 
 function createFileInput(command) {
-  var fileInput = doc.createElement('input');
+  var fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = 'image/*';
   fileInput.className = 'ck-file-input';
@@ -20,12 +15,13 @@ function createFileInput(command) {
 }
 
 function injectImageBlock(src, editor, index) {
+  throw new Error('Unimplemented: BlockModel and Type.IMAGE are no longer things');
   var imageModel = BlockModel.createWithType(Type.IMAGE, { attributes: { src: src } });
   editor.replaceBlock(imageModel, index);
 }
 
 function renderFromFile(file, editor, index) {
-  if (file && win.FileReader) {
+  if (file && window.FileReader) {
     var reader = new FileReader();
     reader.onload = function(e) {
       var base64Src = e.target.result;
@@ -51,7 +47,7 @@ ImageCommand.prototype = {
     var fileInput = this.fileInput;
     if (!fileInput) {
       fileInput = this.fileInput = createFileInput(this);
-      doc.body.appendChild(fileInput);
+      document.body.appendChild(fileInput);
     }
     fileInput.dispatchEvent(new MouseEvent('click', { bubbles: false }));
   },

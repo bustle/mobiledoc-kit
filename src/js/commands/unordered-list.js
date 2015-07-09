@@ -1,11 +1,10 @@
 import ListCommand from './list';
 import { inherit } from 'content-kit-utils';
-import { Type } from 'content-kit-compiler';
 
 function UnorderedListCommand() {
   ListCommand.call(this, {
     name: 'list',
-    tag: Type.LIST.tag,
+    tag: 'ul',
     action: 'insertUnorderedList'
   });
 }

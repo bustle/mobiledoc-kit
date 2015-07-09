@@ -1,24 +1,12 @@
-import {
-  Type,
-  BlockModel,
-  EmbedModel,
-  Compiler,
-  HTMLParser,
-  HTMLRenderer,
-  Runtime
-} from 'content-kit-compiler';
-
 import Editor from './editor/editor';
+import DOMRenderer from './runtime/renderers/mobiledoc-dom';
+
+const Runtime = {
+  DOMRenderer
+}
 
 const ContentKit = {
-  Type,
-  BlockModel,
-  EmbedModel,
-  Compiler,
-  HTMLParser,
-  HTMLRenderer,
-  Runtime,
-  Editor
+  Editor, Runtime
 };
 
 export function registerGlobal(global) {

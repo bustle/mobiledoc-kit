@@ -1,22 +1,17 @@
 import Command from './base';
 import Prompt from '../views/prompt';
 import Message from '../views/message';
-import {
-  EmbedModel,
-  doc
-} from 'content-kit-compiler';
 import { inherit } from 'content-kit-utils';
 import { OEmbedder } from '../utils/http-utils';
-import { win } from 'content-kit-editor/utils/compat';
 
 function loadTwitterWidgets(element) {
-  if (win.twttr) {
-    win.twttr.widgets.load(element);
+  if (window.twttr) {
+    window.twttr.widgets.load(element);
   } else {
-    var script = doc.createElement('script');
+    var script = document.createElement('script');
     script.async = true;
     script.src = 'http://platform.twitter.com/widgets.js';
-    doc.head.appendChild(script);
+    document.head.appendChild(script);
   }
 }
 
@@ -58,6 +53,7 @@ OEmbedCommand.prototype.exec = function(url) {
         new Message().showError(response.error_message);
         embedIntent.show();
       } else {
+        throw new Error('Unimplemented EmbedModel is not a thing');
         var embedModel = new EmbedModel(response);
         editorContext.insertBlock(embedModel, index);
         editorContext.renderBlockAt(index);

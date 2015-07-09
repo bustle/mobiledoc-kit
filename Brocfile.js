@@ -8,8 +8,7 @@ var demo = require('./broccoli/demo');
 var jquery = require('./broccoli/jquery');
 
 var vendoredModules = [
-    {name: 'content-kit-compiler', options: {libDirName: 'src'}},
-    {name: 'content-kit-utils', options: {libDirName: 'src'}}
+  {name: 'content-kit-utils', options: {libDirName: 'src'}}
 ];
 var packageName = require('./package.json').name;
 

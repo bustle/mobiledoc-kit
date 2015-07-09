@@ -2,14 +2,13 @@ import TextFormatCommand from './text-format';
 import Prompt from '../views/prompt';
 import { getSelectionTagName } from '../utils/selection-utils';
 import { inherit } from 'content-kit-utils';
-import { Type } from 'content-kit-compiler';
 
 var RegExpHttp = /^https?:\/\//i;
 
 function LinkCommand() {
   TextFormatCommand.call(this, {
     name: 'link',
-    tag: Type.LINK.tag,
+    tag: 'a',
     action: 'createLink',
     removeAction: 'unlink',
     button: '<i class="ck-icon-link"></i>',

@@ -1,5 +1,3 @@
-import { doc } from 'content-kit-editor/utils/compat';
-
 function renderClasses(view) {
   var classNames = view.classNames;
   if (classNames && classNames.length) {
@@ -13,8 +11,8 @@ function View(options) {
   options = options || {};
   this.tagName = options.tagName || 'div';
   this.classNames = options.classNames || [];
-  this.element = doc.createElement(this.tagName);
-  this.container = options.container || doc.body;
+  this.element = document.createElement(this.tagName);
+  this.container = options.container || document.body;
   this.isShowing = false;
   renderClasses(this);
 }

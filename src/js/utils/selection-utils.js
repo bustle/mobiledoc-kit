@@ -1,17 +1,8 @@
 import { nodeIsDescendantOfElement } from './element-utils';
-import {
-  Type
-} from 'content-kit-compiler';
-import { win, doc } from 'content-kit-editor/utils/compat';
 
 // TODO: remove, pass in Editor's current block set
 var RootTags = [
-  Type.PARAGRAPH.tag,
-  Type.HEADING.tag,
-  Type.SUBHEADING.tag,
-  Type.QUOTE.tag,
-  Type.LIST.tag,
-  Type.ORDERED_LIST.tag
+  'p', 'h2', 'h3', 'blockquote', 'ul', 'ol'
 ];
 
 var SelectionDirection = {
@@ -32,13 +23,13 @@ function getDirectionOfSelection(selection) {
 }
 
 function getSelectionElement(selection) {
-  selection = selection || win.getSelection();
+  selection = selection || window.getSelection();
   var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.anchorNode : selection.focusNode;
   return node && (node.nodeType === 3 ? node.parentNode : node);
 }
 
 function getSelectionBlockElement(selection) {
-  selection = selection || win.getSelection();
+  selection = selection || window.getSelection();
   var element = getSelectionElement();
   var tag = element && element.tagName.toLowerCase();
   while (tag && RootTags.indexOf(tag) === -1) {
@@ -85,14 +76,14 @@ function selectionIsEditable(selection) {
 }
 
 function restoreRange(range) {
-  var selection = win.getSelection();
+  var selection = window.getSelection();
   selection.removeAllRanges();
   selection.addRange(range);
 }
 
 function selectNode(node) {
-  var range = doc.createRange();
-  var selection = win.getSelection();
+  var range = document.createRange();
+  var selection = window.getSelection();
   range.setStart(node, 0);
   range.setEnd(node, node.length);
   selection.removeAllRanges();
@@ -100,8 +91,8 @@ function selectNode(node) {
 }
 
 function setCursorIndexInElement(element, index) {
-  var range = doc.createRange();
-  var selection = win.getSelection();
+  var range = document.createRange();
+  var selection = window.getSelection();
   range.setStart(element, index);
   range.collapse(true);
   selection.removeAllRanges();
@@ -115,7 +106,7 @@ function setCursorToStartOfElement(element) {
 function getCursorOffsetInElement(element) {
   // http://stackoverflow.com/questions/4811822/get-a-ranges-start-and-end-offsets-relative-to-its-parent-container/4812022#4812022
   var caretOffset = 0;
-  var selection = win.getSelection();
+  var selection = window.getSelection();
   if (selection.rangeCount > 0) {
     var range = selection.getRangeAt(0);
     var preCaretRange = range.cloneRange();
