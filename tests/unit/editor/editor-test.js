@@ -5,7 +5,7 @@ editorElement.className = 'editor';
 
 import Editor from 'content-kit-editor/editor/editor';
 
-const { module, test, asyncTest } = window.QUnit;
+const { module, test } = window.QUnit;
 
 module('Unit: Editor', {
   setup: function() {
@@ -16,31 +16,32 @@ module('Unit: Editor', {
   }
 });
 
-test('can create an editor via dom node reference', function() {
+test('can create an editor via dom node reference', (assert) => {
   var editor = new Editor(editorElement);
-  equal(editor.element, editorElement);
+  assert.equal(editor.element, editorElement);
 });
 
-test('can create an editor via dom node reference from getElementById', function() {
+test('can create an editor via dom node reference from getElementById', (assert) => {
   var editor = new Editor(document.getElementById('editor1'));
-  equal(editor.element, editorElement);
+  assert.equal(editor.element, editorElement);
 });
 
-test('creating an editor without a class name adds appropriate class', function() {
+test('creating an editor without a class name adds appropriate class', (assert) => {
   editorElement.className = '';
 
   var editor = new Editor(document.getElementById('editor1'));
-  equal(editor.element.className, 'ck-editor');
+  assert.equal(editor.element.className, 'ck-editor');
 });
 
-asyncTest('editor fires update event', function() {
-  expect(2);
+test('editor fires update event', (assert) => {
+  assert.expect(2);
+  let done = assert.async();
 
   var editor = new Editor(editorElement);
   editor.on('update', function(data) {
-    equal (this, editor);
-    equal (data.index, 99);
-    start();
+    assert.equal(this, editor);
+    assert.equal(data.index, 99);
+    done();
   });
   editor.trigger('update', { index: 99 });
 });

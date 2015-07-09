@@ -6,7 +6,7 @@ const render = MobiledocRenderer.render;
 let builder;
 
 
-QUnit.module('Unit: Mobiledoc Renderer', {
+module('Unit: Mobiledoc Renderer', {
   beforeEach() {
     builder = generateBuilder();
   }

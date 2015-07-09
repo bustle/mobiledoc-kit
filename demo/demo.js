@@ -65,7 +65,7 @@ function readMobiledoc(string) {
 
 function isValidJSON(string) {
   try {
-    JSON.parse(string);
+    window.JSON.parse(string);
     return true;
   } catch(e) {
     return false;
@@ -144,7 +144,7 @@ $(function() {
   var mobiledoc = sampleMobiledocs.simpleMobiledoc;
 
   var textarea = $('#mobiledoc-to-load textarea');
-  textarea.val(JSON.stringify(mobiledoc, false, 2));
+  textarea.val(window.JSON.stringify(mobiledoc, false, 2));
 
   textarea.on('input', function() {
     attemptEditorReboot(editor, textarea);
@@ -153,7 +153,7 @@ $(function() {
   $('#select-mobiledoc').on('change', function() {
     var mobiledocName = $(this).val();
     var mobiledoc = sampleMobiledocs[mobiledocName];
-    textarea.val(JSON.stringify(mobiledoc, false, 2));
+    textarea.val(window.JSON.stringify(mobiledoc, false, 2));
     textarea.trigger('input');
   });
 
