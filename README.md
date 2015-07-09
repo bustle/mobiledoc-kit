@@ -8,6 +8,7 @@ be authored) are built from models. Models represent rows of content, and can
 be static or dynamic.
 
 For example, the teardown of an article might look like:
+**FIXME** this needs to be updated:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -82,7 +83,7 @@ Visit [http://bustlelabs.github.io/content-kit-editor/demo](http://bustlelabs.gi
 Running ContentKit tests and demo server locally requires the following dependencies:
 
 * [node.js](http://nodejs.org/) ([install package](http://nodejs.org/download/)) or `brew install node`
-* `gulp`, via `npm install -g gulp`
+* `broccoli`, via `npm install -g broccoli-cli`
 
 ### Tests
 
@@ -93,7 +94,8 @@ Install npm and bower:
 
 Run tests via the built-in broccoli server:
 
-  * `npm run serve && open http://localhost:4200/tests`
+  * `npm run serve`
+  * `open http://localhost:4200/tests`
 
 Or run tests via testem:
 
@@ -103,20 +105,11 @@ To view the demo:
 
   * `broccoli serve`
   * open http://localhost:4200/demo
-  * (Note that image uploads and embeds require the demo server to be running)
+  * (Note that image uploads and embeds are not currently working)
 
+#### To Do
 
-To run the demo server:
-
-```
-npm start && open http://localhost:5000
-```
-
-To ensure ContentKit rebuilds while you work with it:
-
-```
-gulp watch
-```
+Bring back image uploads and embed. Notes below:
 
 For uploads and embeds to work, you will have to configure AWS and
 Embedly keys as environment variables:
