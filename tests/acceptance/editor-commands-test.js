@@ -39,6 +39,7 @@ test('when text is highlighted, shows toolbar', (assert) => {
     assert.hasElement('.ck-toolbar-btn', 'displays toolbar buttons');
     let boldBtnSelector = '.ck-toolbar-btn[title="bold"]';
     assert.hasElement(boldBtnSelector, 'has bold button');
+
     done();
   }, 10);
 });
@@ -102,6 +103,15 @@ test('highlight text, click "link" button shows input for URL, makes link', (ass
   let done = assert.async();
 
   setTimeout(() => {
+    // FIXME PhantomJS doesn't create keyboard events properly (they have no keyCode or which)
+    // see https://bugs.webkit.org/show_bug.cgi?id=36423
+    let skippable = navigator.userAgent.indexOf('PhantomJS') !== -1;
+    if (skippable) {
+      assert.ok(true, 'Skipping test in phantomjs');
+      done();
+      return;
+    }
+
     clickToolbarButton('link', assert);
     let input = assert.hasElement('.ck-toolbar-prompt input');
     let url = 'http://google.com';

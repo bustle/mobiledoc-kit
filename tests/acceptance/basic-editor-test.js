@@ -1,5 +1,3 @@
-/* global QUnit */
-
 import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
 
@@ -15,6 +13,7 @@ module('Acceptance: basic editor', {
     fixture.appendChild(editorElement);
   },
   afterEach() {
+    editor.destroy();
   }
 });
 

@@ -26,7 +26,6 @@ test('removes toolbar from DOM', (assert) => {
     assert.hasElement('.ck-toolbar', 'toolbar is shown');
     editor.destroy();
     assert.hasNoElement('.ck-toolbar', 'toolbar is removed');
-
     done();
   });
 });

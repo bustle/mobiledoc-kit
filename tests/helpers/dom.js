@@ -1,4 +1,5 @@
 const TEXT_NODE = 3;
+const ENTER_KEY_CODE = 13;
 
 function moveCursorTo(element, offset) {
   let range = document.createRange();
@@ -60,42 +61,34 @@ function triggerEvent(node, eventType) {
   node.dispatchEvent(clickEvent);
 }
 
-// see https://gist.github.com/ejoubaud/7d7c57cda1c10a4fae8c
-function createKeyEvent(eventType, key) {
-  var oEvent = document.createEvent('KeyboardEvent');
-
-  // Chromium Hack
-  Object.defineProperty(oEvent, 'keyCode', {
-              get : function() {
-                  return this.keyCodeVal;
-              }
-  });     
-  Object.defineProperty(oEvent, 'which', {
-              get : function() {
-                  return this.keyCodeVal;
-              }
-  });     
-
+function createKeyEvent(eventType, keyCode=ENTER_KEY_CODE) {
+  let oEvent = document.createEvent('KeyboardEvent');
   if (oEvent.initKeyboardEvent) {
-      oEvent.initKeyboardEvent(eventType, true, true, document.defaultView, key, key, "", "", false, "");
-  } else {
-      oEvent.initKeyEvent(eventType, true, true, document.defaultView, false, false, false, false, key, 0);
+    oEvent.initKeyboardEvent(eventType, true, true, window, 0, 0, 0, 0, 0, keyCode);
+  } else if (oEvent.initKeyEvent) {
+    oEvent.initKeyEvent(eventType, true, true, window, 0, 0, 0, 0, 0, keyCode);
   }
 
-  oEvent.keyCodeVal = key;
+  // Hack for Chrome to force keyCode/which value
+  try {
+    Object.defineProperty(oEvent, 'keyCode', {get: function() { return keyCode; }});     
+    Object.defineProperty(oEvent, 'which', {get: function() { return keyCode; }});     
+  } catch(e) {
+    // FIXME
+    // PhantomJS/webkit will throw an error "ERROR: Attempting to change access mechanism for an unconfigurable property"
+    // see https://bugs.webkit.org/show_bug.cgi?id=36423
+  }
 
-  if (oEvent.keyCode !== key) {
-    throw new Error("keyCode mismatch " + oEvent.keyCode + "(" + oEvent.which + ")");
+  if (oEvent.keyCode !== keyCode || oEvent.which !== keyCode) {
+    throw new Error(`Failed to create key event with keyCode ${keyCode}. \`keyCode\`: ${oEvent.keyCode}, \`which\`: ${oEvent.which}`);
   }
 
   return oEvent;
 }
 
-const ENTER_KEY_CODE = 13;
 function triggerKeyEvent(node, eventType, keyCode=ENTER_KEY_CODE) {
-  let event = createKeyEvent('keyup', keyCode);
-
-  node.dispatchEvent(event);
+  let oEvent = createKeyEvent(eventType, keyCode);
+  node.dispatchEvent(oEvent);
 }
 
 export default {
