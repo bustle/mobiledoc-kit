@@ -51,6 +51,10 @@ View.prototype = {
   setClasses: function(classNameArr) {
     this.classNames = classNameArr;
     renderClasses(this);
+  },
+  destroy() {
+    // FIXME should also clean up event listeners
+    this.hide();
   }
 };
 

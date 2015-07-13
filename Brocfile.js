@@ -18,10 +18,10 @@ var buildOptions = {
   packageName: packageName
 };
 
-var jqueryTree = jquery.build('/demo/jquery');
 var testTree = testTreeBuilder.build({libDirName: 'src'});
+testTree = jquery.build(testTree, '/tests/jquery');
 var demoTree = demo();
-demoTree = mergeTrees([demoTree, jqueryTree]);
+demoTree = jquery.build(demoTree, '/demo/jquery');
 
 module.exports = mergeTrees([
   builder.build('amd', buildOptions),

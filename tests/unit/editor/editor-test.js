@@ -1,5 +1,6 @@
-var fixture = document.getElementById('qunit-fixture');
-var editorElement = document.createElement('div');
+let fixture = document.getElementById('qunit-fixture');
+let editorElement = document.createElement('div');
+let editor;
 editorElement.id = 'editor1';
 editorElement.className = 'editor';
 
@@ -8,21 +9,22 @@ import Editor from 'content-kit-editor/editor/editor';
 const { module, test } = window.QUnit;
 
 module('Unit: Editor', {
-  setup: function() {
+  beforeEach: function() {
     fixture.appendChild(editorElement);
   },
-  teardown: function() {
+  afterEach: function() {
+    editor.destroy();
     fixture.removeChild(editorElement);
   }
 });
 
 test('can create an editor via dom node reference', (assert) => {
-  var editor = new Editor(editorElement);
+  editor = new Editor(editorElement);
   assert.equal(editor.element, editorElement);
 });
 
 test('can create an editor via dom node reference from getElementById', (assert) => {
-  var editor = new Editor(document.getElementById('editor1'));
+  editor = new Editor(document.getElementById('editor1'));
   assert.equal(editor.element, editorElement);
 });
 

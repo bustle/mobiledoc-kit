@@ -1,7 +1,7 @@
 /* global QUnit */
 
 import { Editor } from 'content-kit-editor';
-import { moveCursorTo } from '../test-helpers';
+import Helpers from '../test-helpers';
 
 const { test, module } = QUnit;
 
@@ -38,7 +38,7 @@ test('editing element changes editor post model', (assert) => {
   let p = editorElement.querySelector('p');
   let textElement = p.firstChild;
 
-  moveCursorTo(textElement, 0);
+  Helpers.dom.moveCursorTo(textElement, 0);
 
   document.execCommand('insertText', false, 'A');
   assert.equal(p.textContent, 'AHello');
