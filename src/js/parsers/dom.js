@@ -4,7 +4,7 @@ import { trim } from 'content-kit-utils';
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
 
-const MARKUP_SECTION_TAG_NAMES = ['P', 'H3', 'H2', 'H1', 'BLOCKQUOTE', 'UL', 'IMG', 'OL'];
+const MARKUP_SECTION_TAG_NAMES = ['P', 'H3', 'H2', 'H1', 'BLOCKQUOTE', 'UL', 'OL'];
 
 const ALLOWED_ATTRIBUTES = ['href', 'rel', 'src'];
 
@@ -36,7 +36,8 @@ const VALID_MARKER_ELEMENTS = [
   'I',
   'STRONG',
   'EM',
-  'A'
+  'A',
+  'LI'
 ];
 
 function isValidMarkerElement(element) {
