@@ -1,9 +1,10 @@
 import Command from './base';
 import { inherit } from 'content-kit-utils';
 
-function injectCardBlock(cardName, cardPayload, editor, index) {
+function injectCardBlock(/* cardName, cardPayload, editor, index */) {
   throw new Error('Unimplemented: BlockModel and Type.CARD are no longer things');
   // FIXME: Do we change the block model internal representation here?
+  /*
   var cardBlock = BlockModel.createWithType(Type.CARD, {
     attributes: {
       name: cardName,
@@ -11,6 +12,7 @@ function injectCardBlock(cardName, cardPayload, editor, index) {
     }
   });
   editor.replaceBlock(cardBlock, index);
+  */
 }
 
 function CardCommand() {

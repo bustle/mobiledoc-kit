@@ -1,17 +1,22 @@
 /* jshint node:true */
 var funnel = require('broccoli-funnel');
+var mergeTrees = require('broccoli-merge-trees');
 
 module.exports = {
-  build: function(destDir) {
+  /**
+   * @param {Tree} tree existing tree to mix jquery into
+   * @param {String} destDir the destination directory for 'jquery.js' to go into
+   * @return {Tree} A tree with jquery mixed into it at the location requested
+   */
+  build: function(tree, destDir) {
     var path = require('path');
     var jqueryPath = path.dirname(
       require.resolve('jquery')
     );
-    var tree = funnel(jqueryPath, {
+    var jqueryTree = funnel(jqueryPath, {
       include: ['jquery.js'],
       destDir: destDir
     });
-
-    return tree;
+    return mergeTrees([tree, jqueryTree]);
   }
 };

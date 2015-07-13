@@ -124,14 +124,15 @@ function bindDragAndDrop(editor) {
 function initEmbedCommands(editor) {
   var commands = editor.embedCommands;
   if(commands) {
-    return new EmbedIntent({
+    editor.addView(new EmbedIntent({
       editorContext: editor,
       commands: commands,
       rootElement: editor.element
-    });
+    }));
   }
 }
 
+/* unused
 function getNonTextBlocks(blockTypeSet, post) {
   var blocks = [];
   var len = post.length;
@@ -145,6 +146,7 @@ function getNonTextBlocks(blockTypeSet, post) {
   }
   return blocks;
 }
+*/
 
 function clearChildNodes(element) {
   while (element.childNodes.length) {
@@ -165,12 +167,13 @@ function Editor(element, options) {
   }
 
   this._elementListeners = [];
+  this._views = [];
   this.element = element;
 
   // FIXME: This should merge onto this.options
   mergeWithOptions(this, defaults, options);
 
-  this._renderer = new EditorDOMRenderer(window.document, this.cards)
+  this._renderer = new EditorDOMRenderer(window.document, this.cards);
   this._parser   = new DOMParser();
 
   this.applyClassName();
@@ -196,16 +199,16 @@ function Editor(element, options) {
   this.addEventListener(element, 'input', () => this.handleInput(...arguments));
   initEmbedCommands(this);
 
-  this.textFormatToolbar = new TextFormatToolbar({
+  this.addView(new TextFormatToolbar({
     rootElement: element,
     commands: this.textFormatCommands,
     sticky: this.stickyToolbar
-  });
+  }));
 
-  this.linkTooltips = new Tooltip({
+  this.addView(new Tooltip({
     rootElement: element,
     showForTag: 'a'
-  });
+  }));
 
   if (this.autofocus) {
     element.focus();
@@ -216,6 +219,9 @@ function Editor(element, options) {
 merge(Editor.prototype, EventEmitter);
 
 merge(Editor.prototype, {
+  addView(view) {
+    this._views.push(view);
+  },
 
   addEventListener(context, eventName, callback) {
     context.addEventListener(eventName, callback);
@@ -271,8 +277,9 @@ merge(Editor.prototype, {
     this.trigger('update');
   },
 
-  renderBlockAt(index, replace) {
+  renderBlockAt(/* index, replace */) {
     throw new Error('Unimplemented');
+    /*
     var modelAtIndex = this.post[index];
     var html = this.compiler.render([modelAtIndex]);
     var dom = document.createElement('div');
@@ -285,10 +292,12 @@ merge(Editor.prototype, {
     } else {
       this.element.insertBefore(newEl, sibling);
     }
+    */
   },
 
   syncContentEditableBlocks() {
     throw new Error('Unimplemented');
+    /*
     var nonTextBlocks = getNonTextBlocks(this.compiler.blockTypes, this.post);
     var blockElements = toArray(this.element.children);
     var len = blockElements.length;
@@ -309,6 +318,7 @@ merge(Editor.prototype, {
     }
     this.post = updatedModel;
     this.trigger('update');
+    */
   },
 
   applyClassName() {
@@ -426,8 +436,14 @@ merge(Editor.prototype, {
     });
   },
 
+  removeAllViews() {
+    this._views.forEach((v) => v.destroy());
+    this._views = [];
+  },
+
   destroy() {
     this.removeAllEventListeners();
+    this.removeAllViews();
   }
 
 });

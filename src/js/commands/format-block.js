@@ -17,7 +17,9 @@ FormatBlockCommand.prototype.exec = function() {
   // Allow block commands to be toggled back to a text block
   if(tag === blockElement.tagName.toLowerCase()) {
     throw new Error('Unimplemented: Type.BOLD.paragraph must be replaced');
+    /*
     value = Type.PARAGRAPH.tag;
+    */
   } else {
     // Flattens the selection before applying the block format.
     // Otherwise, undesirable nested blocks can occur.
@@ -27,7 +29,7 @@ FormatBlockCommand.prototype.exec = function() {
     blockElement.parentNode.removeChild(blockElement);
     selectNode(flatNode);
   }
-  
+
   FormatBlockCommand._super.prototype.exec.call(this, value);
 };
 

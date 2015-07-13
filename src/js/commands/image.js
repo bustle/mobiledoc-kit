@@ -14,10 +14,12 @@ function createFileInput(command) {
   return fileInput;
 }
 
-function injectImageBlock(src, editor, index) {
+function injectImageBlock(/* src, editor, index */) {
   throw new Error('Unimplemented: BlockModel and Type.IMAGE are no longer things');
+  /*
   var imageModel = BlockModel.createWithType(Type.IMAGE, { attributes: { src: src } });
   editor.replaceBlock(imageModel, index);
+  */
 }
 
 function renderFromFile(file, editor, index) {
