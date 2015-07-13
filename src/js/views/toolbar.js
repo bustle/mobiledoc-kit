@@ -57,7 +57,7 @@ function Toolbar(options) {
   }
 
   // Closes prompt if displayed when changing selection
-  document.addEventListener('mouseup', function() {
+  this.addEventListener(document, 'mouseup', () => {
     toolbar.dismissPrompt();
   });
 }

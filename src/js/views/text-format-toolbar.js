@@ -25,15 +25,17 @@ function TextFormatToolbar(options) {
   var toolbar = this;
   Toolbar.call(this, options);
   toolbar.rootElement = options.rootElement;
-  toolbar.rootElement.addEventListener('keyup', function() { handleTextSelection(toolbar); });
+  this.addEventListener(toolbar.rootElement, 'keyup', () => {
+    handleTextSelection(toolbar);
+  });
 
-  document.addEventListener('mouseup', function() {
+  this.addEventListener(document, 'mouseup', () => {
     setTimeout(function() {
       handleTextSelection(toolbar);
     });
   });
 
-  document.addEventListener('keyup', function(e) {
+  this.addEventListener(document, 'keyup', (e) => {
     var key = e.keyCode;
     if (key === 116) { //F5
       toolbar.toggleSticky();
@@ -43,7 +45,7 @@ function TextFormatToolbar(options) {
     }
   });
 
-  window.addEventListener('resize', function() {
+  this.addEventListener(window, 'resize', () => {
     if(!toolbar.sticky && toolbar.isShowing) {
       var activePromptRange = toolbar.activePrompt && toolbar.activePrompt.range;
       toolbar.positionToContent(activePromptRange ? activePromptRange : window.getSelection().getRangeAt(0));
