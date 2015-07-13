@@ -39,3 +39,48 @@ test('renders a post with marker', (assert) => {
     ]
   ]);
 });
+
+test('renders a post with image', (assert) => {
+  let url = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
+  let post = builder.generatePost();
+  let section = builder.generateImageSection(url);
+  post.appendSection(section);
+
+  let mobiledoc = render(post);
+  assert.deepEqual(mobiledoc, [
+    [],
+    [
+      [2, url]
+    ]
+  ]);
+});
+
+test('renders a post with image and null src', (assert) => {
+  let post = builder.generatePost();
+  let section = builder.generateImageSection();
+  post.appendSection(section);
+
+  let mobiledoc = render(post);
+  assert.deepEqual(mobiledoc, [
+    [],
+    [
+      [2, null]
+    ]
+  ]);
+});
+
+test('renders a post with card', (assert) => {
+  let cardName = 'super-card';
+  let payload = { bar: 'baz' };
+  let post = builder.generatePost();
+  let section = builder.generateCardSection(cardName, payload);
+  post.appendSection(section);
+
+  let mobiledoc = render(post);
+  assert.deepEqual(mobiledoc, [
+    [],
+    [
+      [10, cardName, payload]
+    ]
+  ]);
+});

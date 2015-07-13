@@ -1,4 +1,5 @@
 import Post from "../models/post";
+import ImageSection from "../models/image";
 
 var builder = {
   generatePost() {
@@ -17,6 +18,17 @@ var builder = {
       section.isGenerated = !!isGenerated;
     }
     return section;
+  },
+  generateImageSection(url) {
+    let section = new ImageSection();
+    if (url) {
+      section.src = url;
+    }
+    return section;
+  },
+  generateCardSection(name, payload={}) {
+    const type = 'card';
+    return { name, payload, type };
   },
   // open: Array
   // close: Integer

@@ -9,6 +9,12 @@ let visitor = {
     opcodes.push(['openMarkupSection', node.tagName]);
     visitArray(visitor, node.markers, opcodes);
   },
+  imageSection(node, opcodes) {
+    opcodes.push(['openImageSection', node.src]);
+  },
+  card(node, opcodes) {
+    opcodes.push(['openCardSection', node.name, node.payload]);
+  },
   marker(node, opcodes) {
     opcodes.push(['openMarker', node.close, node.value]);
     visitArray(visitor, node.open, opcodes);
@@ -24,12 +30,18 @@ let postOpcodeCompiler = {
     this.markers.push([
       this.markupMarkerIds,
       closeCount,
-      value
+      value || ''
     ]);
   },
   openMarkupSection(tagName) {
     this.markers = [];
     this.sections.push([1, tagName, this.markers]);
+  },
+  openImageSection(url) {
+    this.sections.push([2, url]);
+  },
+  openCardSection(name, payload) {
+    this.sections.push([10, name, payload]);
   },
   openPost() {
     this.markerTypes = [];

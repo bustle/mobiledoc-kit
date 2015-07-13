@@ -4,7 +4,6 @@ var EmbedService = require('./services/embed');
 
 // Express app
 var app = express();
-app.use(express.static('demo'));
 app.use('/dist', express.static('dist'));
 
 // Enable cors

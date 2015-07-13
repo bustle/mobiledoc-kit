@@ -13,7 +13,9 @@ module('Unit: Editor', {
     fixture.appendChild(editorElement);
   },
   afterEach: function() {
-    editor.destroy();
+    if (editor) {
+      editor.destroy();
+    }
     fixture.removeChild(editorElement);
   }
 });

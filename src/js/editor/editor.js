@@ -20,7 +20,8 @@ import EventEmitter from '../utils/event-emitter';
 
 import MobiledocParser from "../parsers/mobiledoc";
 import DOMParser from "../parsers/dom";
-import EditorDOMRenderer from "../renderers/editor-dom";
+import Renderer from 'content-kit-editor/renderers/editor-dom';
+import RenderTree from 'content-kit-editor/models/render-tree';
 import MobiledocRenderer from '../renderers/mobiledoc';
 
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
@@ -53,7 +54,9 @@ var defaults = {
     new UnorderedListCommand(),
     new OrderedListCommand()
   ],
-  cards: {},
+  cards: [],
+  cardOptions: {},
+  unknownCardHandler: () => { throw new Error('Unknown card encountered'); },
   mobiledoc: null
 };
 
@@ -88,7 +91,7 @@ function bindContentEditableTypingListeners(editor) {
     var sanitizedHTML = pastedHTML && editor._renderer.rerender(pastedHTML);
     if (sanitizedHTML) {
       document.execCommand('insertHTML', false, sanitizedHTML);
-      editor.syncVisual();
+      editor.rerender();
     }
     e.preventDefault();
     return false;
@@ -175,8 +178,8 @@ function Editor(element, options) {
   // FIXME: This should merge onto this.options
   mergeWithOptions(this, defaults, options);
 
-  this._renderer = new EditorDOMRenderer(window.document, this.cards);
   this._parser   = new DOMParser();
+  this._renderer = new Renderer(this.cards, this.unknownCardHandler, this.cardOptions);
 
   this.applyClassName();
   this.applyPlaceholder();
@@ -193,12 +196,12 @@ function Editor(element, options) {
   }
 
   clearChildNodes(element);
-  this.syncVisual();
+  this.rerender();
 
   bindContentEditableTypingListeners(this);
   bindAutoTypingListeners(this);
   bindDragAndDrop(this);
-  this.addEventListener(element, 'input', () => this.handleInput(...arguments));
+  this.addEventListener(element, 'input', () => this.handleInput());
   initEmbedCommands(this);
 
   this.addView(new TextFormatToolbar({
@@ -227,22 +230,34 @@ merge(Editor.prototype, {
 
   loadModel(post) {
     this.post = post;
-    this.syncVisual();
+    this.rerender();
     this.trigger('update');
   },
 
   parseModelFromDOM(element) {
     this.post = this._parser.parse(element);
+    this._renderTree = new RenderTree();
+    let node = this._renderTree.buildRenderNode(this.post);
+    this._renderTree.node = node;
     this.trigger('update');
   },
 
   parseModelFromMobiledoc(mobiledoc) {
     this.post = new MobiledocParser().parse(mobiledoc);
+    this._renderTree = new RenderTree();
+    let node = this._renderTree.buildRenderNode(this.post);
+    this._renderTree.node = node;
     this.trigger('update');
   },
 
-  syncVisual() {
-    this._renderer.render(this.post, this.element);
+  rerender() {
+    let postRenderNode = this.post.renderNode;
+    if (!postRenderNode.element) {
+      postRenderNode.element = this.element;
+      postRenderNode.markDirty();
+    }
+
+    this._renderer.render(this._renderTree);
   },
 
   getCurrentBlockIndex() {
@@ -344,21 +359,28 @@ merge(Editor.prototype, {
     let newSections = [];
     let previousSection;
     forEachChildNode(this.element, (node) => {
-      let section = this.post.getElementSection(node);
-      if (!section) {
-        section = this._parser.parseSection(
+      let sectionRenderNode = this._renderTree.getElementRenderNode(node);
+      if (!sectionRenderNode) {
+        let section = this._parser.parseSection(
           previousSection,
           node
         );
-        this.post.setSectionElement(section, node);
         newSections.push(section);
+
+        sectionRenderNode = this._renderTree.buildRenderNode(section);
+        sectionRenderNode.element = node;
+        sectionRenderNode.markClean();
+
         if (previousSection) {
           this.post.insertSectionAfter(section, previousSection);
+          this._renderTree.node.insertAfter(sectionRenderNode, previousSection.renderNode);
         } else {
           this.post.prependSection(section);
+          this._renderTree.node.insertAfter(sectionRenderNode, null);
         }
       }
       // may cause duplicates to be included
+      let section = sectionRenderNode.postNode;
       sectionsInDOM.push(section);
       previousSection = section;
     });
@@ -368,7 +390,11 @@ merge(Editor.prototype, {
     for (i=this.post.sections.length-1;i>=0;i--) {
       let section = this.post.sections[i];
       if (sectionsInDOM.indexOf(section) === -1) {
-        this.post.removeSection(section);
+        if (section.renderNode) {
+          section.renderNode.scheduleForRemoval();
+        } else {
+          throw new Error('All sections are expected to have a renderNode');
+        }
       }
     }
 
@@ -388,9 +414,18 @@ merge(Editor.prototype, {
         this.reparseSection(section);
       }
     });
+
+    this.rerender();
+    this.trigger('update');
   },
 
   getSectionsWithCursor() {
+    return this.getRenderNodesWithCursor().map( renderNode => {
+      return renderNode.postNode;
+    });
+  },
+
+  getRenderNodesWithCursor() {
     const selection = document.getSelection();
     if (selection.rangeCount === 0) {
       return null;
@@ -400,26 +435,32 @@ merge(Editor.prototype, {
 
     let { startContainer:startElement, endContainer:endElement } = range;
 
-    let getElementSection = (e) => this.post.getElementSection(e);
-    let { result:startSection } = detectParentNode(startElement, getElementSection);
-    let { result:endSection } = detectParentNode(endElement, getElementSection);
+    let getElementRenderNode = (e) => {
+      return this._renderTree.getElementRenderNode(e);
+    };
+    let { result:startRenderNode } = detectParentNode(startElement, getElementRenderNode);
+    let { result:endRenderNode } = detectParentNode(endElement, getElementRenderNode);
 
-    let startIndex = this.post.sections.indexOf(startSection),
-        endIndex = this.post.sections.indexOf(endSection);
+    let nodes = [];
+    let node = startRenderNode;
+    while (node && (!endRenderNode.nextSibling || endRenderNode.nextSibling !== node)) {
+      nodes.push(node);
+      node = node.nextSibling;
+    }
 
-    return this.post.sections.slice(startIndex, endIndex+1);
+    return nodes;
   },
 
   reparseSection(section) {
-    let sectionElement = this.post.getSectionElement(section);
+    let sectionRenderNode = section.renderNode;
+    let sectionElement = sectionRenderNode.element;
     let previousSection = this.post.getPreviousSection(section);
 
     var newSection = this._parser.parseSection(
       previousSection,
       sectionElement
     );
-    this.post.replaceSection(section, newSection);
-    this.post.setSectionElement(newSection, sectionElement);
+    section.markers = newSection.markers;
 
     this.trigger('update');
   },
@@ -431,6 +472,20 @@ merge(Editor.prototype, {
   removeAllViews() {
     this._views.forEach((v) => v.destroy());
     this._views = [];
+  },
+
+  insertSectionAtCursor(newSection) {
+    let newRenderNode = this._renderTree.buildRenderNode(newSection);
+    let renderNodes = this.getRenderNodesWithCursor();
+    let lastRenderNode = renderNodes[renderNodes.length-1];
+    lastRenderNode.parentNode.insertAfter(newRenderNode, lastRenderNode);
+    this.post.insertSectionAfter(newSection, lastRenderNode.postNode);
+    renderNodes.forEach(renderNode => renderNode.scheduleForRemoval());
+    this.trigger('update');
+  },
+
+  removeSection(section) {
+    this.post.removeSection(section);
   },
 
   destroy() {
