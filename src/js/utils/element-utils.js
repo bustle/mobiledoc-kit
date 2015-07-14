@@ -1,3 +1,5 @@
+import { dasherize } from 'content-kit-editor/utils/string-utils';
+
 function createDiv(className) {
   var div = document.createElement('div');
   if (className) {
@@ -114,7 +116,27 @@ function positionElementToRightOf(element, rightOfElement) {
   return positionElementToRect(element, rightOfElementRect, -verticalCenter, -rightOfElement.offsetWidth - elementMargin);
 }
 
+function getData(element, name) {
+  if (element.dataset) {
+    return element.dataset[name];
+  } else {
+    const dataName = dasherize(name);
+    return element.getAttribute(dataName);
+  }
+}
+
+function setData(element, name, value) {
+  if (element.dataset) {
+    element.dataset[name] = value;
+  } else {
+    const dataName = dasherize(name);
+    return element.setAttribute(dataName, value);
+  }
+}
+
 export {
+  getData,
+  setData,
   createDiv,
   hideElement,
   showElement,

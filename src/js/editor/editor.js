@@ -25,6 +25,7 @@ import MobiledocRenderer from '../renderers/mobiledoc';
 
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
 import { detectParentNode } from '../utils/dom-utils';
+import { getData, setData } from '../utils/element-utils';
 
 var defaults = {
   placeholder: 'Write here...',
@@ -150,10 +151,9 @@ function getNonTextBlocks(blockTypeSet, post) {
 
 function clearChildNodes(element) {
   while (element.childNodes.length) {
-    element.childNodes[0].remove();
+    element.removeChild(element.childNodes[0]);
   }
 }
-
 
 /**
  * @class Editor
@@ -333,10 +333,11 @@ merge(Editor.prototype, {
   },
 
   applyPlaceholder() {
-    var dataset = this.element.dataset;
     const placeholder = this.placeholder;
-    if (placeholder && !dataset.placeholder) {
-      dataset.placeholder = placeholder;
+    const existingPlaceholder = getData(this.element, 'placeholder');
+
+    if (placeholder && !existingPlaceholder) {
+      setData(this.element, 'placeholder', placeholder);
     }
   },
 
