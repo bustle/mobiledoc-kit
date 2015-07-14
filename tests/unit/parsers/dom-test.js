@@ -332,9 +332,9 @@ test('markup: consistent order', (assert) => {
 */
 
 test('attributes', (assert) => {
-  var href = 'http://google.com';
-  var rel = 'nofollow';
-  const post = parser.parse(buildDOM('<p><a href="'+href+'" rel="'+rel+'">Link to google.com</a></p>'));
+  const href = 'http://google.com';
+  const rel = 'nofollow';
+  const post = parser.parse(buildDOM(`<p><a href="${href}" rel="${rel}">Link to google.com</a></p>`));
 
   let expectedFirst = builder.generateSection('P');
   expectedFirst.markers.push(builder.generateMarker([

@@ -12,6 +12,29 @@ function isEmptyTextNode(node) {
   return node.nodeType === TEXT_NODE && trim(node.textContent) === '';
 }
 
+// FIXME we need sorted attributes for deterministic tests. This is not
+// a particularly elegant method, since it loops at least 3 times.
+function sortAttributes(attributes) {
+  let keyValueAttributes = [];
+  let currentKey;
+  attributes.forEach((keyOrValue, index) => {
+    if (index % 2 === 0) {
+      currentKey = keyOrValue;
+    } else {
+      keyValueAttributes.push({key:currentKey, value:keyOrValue});
+    }
+  });
+  keyValueAttributes.sort((a,b) => {
+    return a.key === b.key ? 0 :
+      a.key > b.key ? 1 : - 1;
+  });
+  let sortedAttributes = [];
+  keyValueAttributes.forEach(({key, value}) => {
+    sortedAttributes.push(key, value);
+  });
+  return sortedAttributes;
+}
+
 // FIXME: should probably always return an array
 function readAttributes(node) {
   var attributes = null;
@@ -26,9 +49,12 @@ function readAttributes(node) {
     }
     if (attributes.length === 0) {
       return null;
+    } else {
+      return sortAttributes(attributes);
     }
   }
-  return attributes;
+
+  return null;
 }
 
 const VALID_MARKER_ELEMENTS = [
