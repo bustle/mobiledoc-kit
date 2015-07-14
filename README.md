@@ -125,3 +125,11 @@ export EMBEDLY_KEY=XXXXXX
 
 Also, set the `bucketName` in `server/config.json` with the name of your AWS
 S3 bucket for uploading files.
+
+Then to boot the server:
+
+```
+node server/index.js
+```
+
+And visit http://localhost:5000/dist/demo/index.html
