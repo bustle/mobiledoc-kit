@@ -24,7 +24,10 @@ function getDirectionOfSelection(selection) {
 
 function getSelectionElement(selection) {
   selection = selection || window.getSelection();
-  var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.anchorNode : selection.focusNode;
+  // FIXME it used to return `anchorNode` when selection direction is `LEFT_TO_RIGHT`,
+  // but I think that was a bug. In Safari and Chrome the selection usually had the
+  // same anchorNode and focusNode when selecting text, so it didn't matter.
+  var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.focusNode : selection.anchorNode;
   return node && (node.nodeType === 3 ? node.parentNode : node);
 }
 

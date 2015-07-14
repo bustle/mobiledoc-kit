@@ -1,7 +1,12 @@
 const TEXT_NODE = 3;
-const ENTER_KEY_CODE = 13;
+const ENTER_KEY = 13;
+const LEFT_ARROW = 37;
+const KEY_CODES = {
+  ENTER_KEY,
+  LEFT_ARROW
+};
 
-function moveCursorTo(element, offset) {
+function moveCursorTo(element, offset=0) {
   let range = document.createRange();
   range.setStart(element, offset);
   range.setEnd(element, offset);
@@ -11,6 +16,9 @@ function moveCursorTo(element, offset) {
   selection.addRange(range);
 }
 
+function clearSelection() {
+  window.getSelection().removeAllRanges();
+}
 
 function walkDOMUntil(topNode, conditionFn=() => {}) {
   let stack = [topNode];
@@ -26,31 +34,39 @@ function walkDOMUntil(topNode, conditionFn=() => {}) {
     for (let i=0; i < currentElement.childNodes.length; i++) {
       stack.push(currentElement.childNodes[i]);
     }
-    if (currentElement.nextSibling) {
-      stack.push(currentElement.nextSibling);
-    }
   }
 }
 
+function selectRange(startNode, startOffset, endNode, endOffset) {
+  const range = document.createRange();
+  range.setStart(startNode, startOffset);
+  range.setEnd(endNode, endOffset);
 
-function selectText(text, containingElement) {
-  let textNode = walkDOMUntil(containingElement, (el) => {
-    if (el.nodeType !== TEXT_NODE) { return; }
-
-    return el.textContent.indexOf(text) !== -1;
-  });
-  if (!textNode) {
-    throw new Error(`Could not find a textNode containing "${text}"`);
-  }
-  let range = document.createRange();
-  let startOffset = textNode.textContent.indexOf(text),
-      endOffset   = startOffset + text.length;
-  range.setStart(textNode, startOffset);
-  range.setEnd(textNode, endOffset);
-
-  let selection = window.getSelection();
+  const selection = window.getSelection();
   if (selection.rangeCount > 0) { selection.removeAllRanges(); }
   selection.addRange(range);
+}
+
+function selectText(startText,
+                    startContainingElement,
+                    endText=startText,
+                    endContainingElement=startContainingElement) {
+  const findTextNode = (text) => {
+    return (el) => el.nodeType === TEXT_NODE && el.textContent.indexOf(text) !== -1;
+  };
+  const startTextNode = walkDOMUntil(startContainingElement, findTextNode(startText));
+  const endTextNode   = walkDOMUntil(endContainingElement,   findTextNode(endText));
+
+  if (!startTextNode) {
+    throw new Error(`Could not find a starting textNode containing "${startText}"`);
+  }
+  if (!endTextNode) {
+    throw new Error(`Could not find an ending textNode containing "${endText}"`);
+  }
+
+  const startOffset = startTextNode.textContent.indexOf(startText),
+        endOffset   = endTextNode.textContent.indexOf(endText) + endText.length;
+  selectRange(startTextNode, startOffset, endTextNode, endOffset);
 }
 
 function triggerEvent(node, eventType) {
@@ -61,7 +77,7 @@ function triggerEvent(node, eventType) {
   node.dispatchEvent(clickEvent);
 }
 
-function createKeyEvent(eventType, keyCode=ENTER_KEY_CODE) {
+function createKeyEvent(eventType, keyCode) {
   let oEvent = document.createEvent('KeyboardEvent');
   if (oEvent.initKeyboardEvent) {
     oEvent.initKeyboardEvent(eventType, true, true, window, 0, 0, 0, 0, 0, keyCode);
@@ -71,8 +87,8 @@ function createKeyEvent(eventType, keyCode=ENTER_KEY_CODE) {
 
   // Hack for Chrome to force keyCode/which value
   try {
-    Object.defineProperty(oEvent, 'keyCode', {get: function() { return keyCode; }});     
-    Object.defineProperty(oEvent, 'which', {get: function() { return keyCode; }});     
+    Object.defineProperty(oEvent, 'keyCode', {get: function() { return keyCode; }});
+    Object.defineProperty(oEvent, 'which', {get: function() { return keyCode; }});
   } catch(e) {
     // FIXME
     // PhantomJS/webkit will throw an error "ERROR: Attempting to change access mechanism for an unconfigurable property"
@@ -86,7 +102,7 @@ function createKeyEvent(eventType, keyCode=ENTER_KEY_CODE) {
   return oEvent;
 }
 
-function triggerKeyEvent(node, eventType, keyCode=ENTER_KEY_CODE) {
+function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER_KEY) {
   let oEvent = createKeyEvent(eventType, keyCode);
   node.dispatchEvent(oEvent);
 }
@@ -94,6 +110,8 @@ function triggerKeyEvent(node, eventType, keyCode=ENTER_KEY_CODE) {
 export default {
   moveCursorTo,
   selectText,
+  clearSelection,
   triggerEvent,
-  triggerKeyEvent
+  triggerKeyEvent,
+  KEY_CODES
 };

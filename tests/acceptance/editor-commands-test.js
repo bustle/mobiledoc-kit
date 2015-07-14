@@ -32,94 +32,67 @@ function clickToolbarButton(name, assert) {
 }
 
 test('when text is highlighted, shows toolbar', (assert) => {
-  let done = assert.async();
-
-  setTimeout(() => {
-    assert.hasElement('.ck-toolbar', 'displays toolbar');
-    assert.hasElement('.ck-toolbar-btn', 'displays toolbar buttons');
-    let boldBtnSelector = '.ck-toolbar-btn[title="bold"]';
-    assert.hasElement(boldBtnSelector, 'has bold button');
-
-    done();
-  }, 10);
+  assert.hasElement('.ck-toolbar', 'displays toolbar');
+  assert.hasElement('.ck-toolbar-btn', 'displays toolbar buttons');
+  let boldBtnSelector = '.ck-toolbar-btn[title="bold"]';
+  assert.hasElement(boldBtnSelector, 'has bold button');
 });
 
 test('highlight text, click "bold" button bolds text', (assert) => {
-  let done = assert.async();
-
-  setTimeout(() => {
-    clickToolbarButton('bold', assert);
-    assert.hasElement('#editor b:contains(IS A)');
-
-    done();
-  }, 10);
+  clickToolbarButton('bold', assert);
+  assert.hasElement('#editor b:contains(IS A)');
 });
 
 test('highlight text, click "italic" button italicizes text', (assert) => {
-  let done = assert.async();
-
-  setTimeout(() => {
-    clickToolbarButton('italic', assert);
-    assert.hasElement('#editor i:contains(IS A)');
-
-    done();
-  }, 10);
+  clickToolbarButton('italic', assert);
+  assert.hasElement('#editor i:contains(IS A)');
 });
 
 test('highlight text, click "heading" button turns text into h2 header', (assert) => {
-  let done = assert.async();
-
-  setTimeout(() => {
-    clickToolbarButton('heading', assert);
-    assert.hasElement('#editor h2:contains(THIS IS A TEST)');
-
-    done();
-  }, 10);
+  clickToolbarButton('heading', assert);
+  assert.hasElement('#editor h2:contains(THIS IS A TEST)');
 });
 
 test('highlight text, click "subheading" button turns text into h3 header', (assert) => {
-  let done = assert.async();
-
-  setTimeout(() => {
-    clickToolbarButton('subheading', assert);
-    assert.hasElement('#editor h3:contains(THIS IS A TEST)');
-
-    done();
-  }, 10);
+  clickToolbarButton('subheading', assert);
+  assert.hasElement('#editor h3:contains(THIS IS A TEST)');
 });
 
 test('highlight text, click "quote" button turns text into blockquote', (assert) => {
-  let done = assert.async();
-
-  setTimeout(() => {
-    clickToolbarButton('quote', assert);
-    assert.hasElement('#editor blockquote:contains(THIS IS A TEST)');
-
-    done();
-  }, 10);
+  clickToolbarButton('quote', assert);
+  assert.hasElement('#editor blockquote:contains(THIS IS A TEST)');
 });
 
-test('highlight text, click "link" button shows input for URL, makes link', (assert) => {
-  let done = assert.async();
+// FIXME PhantomJS doesn't create keyboard events properly (they have no keyCode or which)
+// see https://bugs.webkit.org/show_bug.cgi?id=36423
+Helpers.skipInPhantom('highlight text, click "link" button shows input for URL, makes link', (assert) => {
+  clickToolbarButton('link', assert);
+  let input = assert.hasElement('.ck-toolbar-prompt input');
+  let url = 'http://google.com';
+  $(input).val(url);
+  Helpers.dom.triggerKeyEvent(input[0], 'keyup');
 
-  setTimeout(() => {
-    // FIXME PhantomJS doesn't create keyboard events properly (they have no keyCode or which)
-    // see https://bugs.webkit.org/show_bug.cgi?id=36423
-    let skippable = navigator.userAgent.indexOf('PhantomJS') !== -1;
-    if (skippable) {
-      assert.ok(true, 'Skipping test in phantomjs');
-      done();
-      return;
-    }
+  assert.hasElement(`#editor a[href="${url}"]:contains(${selectedText})`);
+});
 
-    clickToolbarButton('link', assert);
-    let input = assert.hasElement('.ck-toolbar-prompt input');
-    let url = 'http://google.com';
-    $(input).val(url);
-    Helpers.dom.triggerKeyEvent(input[0], 'keyup');
+test('highlighting bold text shows bold button as active', (assert) => {
+  assert.hasNoElement(`.ck-toolbar-btn.active[title="bold"]`,
+                      'precond - bold button is not active');
+  clickToolbarButton('bold', assert);
 
-    assert.hasElement(`#editor a[href="${url}"]:contains(${selectedText})`);
+  assert.hasElement(`.ck-toolbar-btn.active[title="bold"]`,
+                    'bold button is active after clicking it');
 
-    done();
-  }, 10);
+  Helpers.dom.clearSelection();
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  assert.hasNoElement('.ck-toolbar', 'toolbar is hidden');
+
+  Helpers.dom.selectText(selectedText, editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  assert.hasElement('.ck-toolbar', 'toolbar is shown again');
+
+  assert.hasElement(`.ck-toolbar-btn.active[title="bold"]`,
+                    'bold button is active when selecting bold text');
 });

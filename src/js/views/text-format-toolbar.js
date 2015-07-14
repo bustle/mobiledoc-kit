@@ -30,9 +30,7 @@ function TextFormatToolbar(options) {
   });
 
   this.addEventListener(document, 'mouseup', () => {
-    setTimeout(function() {
-      handleTextSelection(toolbar);
-    });
+    handleTextSelection(toolbar);
   });
 
   this.addEventListener(document, 'keyup', (e) => {
