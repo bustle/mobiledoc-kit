@@ -1,3 +1,6 @@
+import mixin from '../utils/mixin';
+import EventListenerMixin from '../utils/event-listener';
+
 function renderClasses(view) {
   var classNames = view.classNames;
   if (classNames && classNames.length) {
@@ -7,55 +10,61 @@ function renderClasses(view) {
   }
 }
 
-function View(options) {
-  options = options || {};
-  this.tagName = options.tagName || 'div';
-  this.classNames = options.classNames || [];
-  this.element = document.createElement(this.tagName);
-  this.container = options.container || document.body;
-  this.isShowing = false;
-  renderClasses(this);
-}
+class View {
+  constructor(options={}) {
+    this.tagName = options.tagName || 'div';
+    this.classNames = options.classNames || [];
+    this.element = document.createElement(this.tagName);
+    this.container = options.container || document.body;
+    this.isShowing = false;
+    renderClasses(this);
+  }
 
-View.prototype = {
-  show: function() {
+  show() {
     var view = this;
     if(!view.isShowing) {
       view.container.appendChild(view.element);
       view.isShowing = true;
       return true;
     }
-  },
-  hide: function() {
+  }
+
+  hide() {
     var view = this;
     if(view.isShowing) {
       view.container.removeChild(view.element);
       view.isShowing = false;
       return true;
     }
-  },
-  addClass: function(className) {
+  }
+
+  addClass(className) {
     var index = this.classNames && this.classNames.indexOf(className);
     if (index === -1) {
       this.classNames.push(className);
       renderClasses(this);
     }
-  },
-  removeClass: function(className) {
+  }
+
+  removeClass(className) {
     var index = this.classNames && this.classNames.indexOf(className);
     if (index > -1) {
       this.classNames.splice(index, 1);
       renderClasses(this);
     }
-  },
-  setClasses: function(classNameArr) {
+  }
+
+  setClasses(classNameArr) {
     this.classNames = classNameArr;
     renderClasses(this);
-  },
+  }
+
   destroy() {
-    // FIXME should also clean up event listeners
+    this.removeAllEventListeners();
     this.hide();
   }
-};
+}
+
+mixin(View, EventListenerMixin);
 
 export default View;

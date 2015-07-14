@@ -10,7 +10,7 @@ function Tooltip(options) {
   options.classNames = ['ck-tooltip'];
   View.call(tooltip, options);
 
-  rootElement.addEventListener('mouseover', function(e) {
+  this.addEventListener(rootElement, 'mouseover', (e) => {
     var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
     if (target && target.isContentEditable) {
       timeout = setTimeout(function() {
@@ -19,7 +19,7 @@ function Tooltip(options) {
     }
   });
   
-  rootElement.addEventListener('mouseout', function(e) {
+  this.addEventListener(rootElement, 'mouseout', (e) => {
     clearTimeout(timeout);
     var toElement = e.toElement || e.relatedTarget;
     if (toElement && toElement.className !== tooltip.element.className) {

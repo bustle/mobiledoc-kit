@@ -8,6 +8,7 @@ function createFileInput(command) {
   fileInput.type = 'file';
   fileInput.accept = 'image/*';
   fileInput.className = 'ck-file-input';
+  // FIXME should this listener be torn down when the ImageCommand is not active?
   fileInput.addEventListener('change', function(e) {
     command.handleFile(e);
   });

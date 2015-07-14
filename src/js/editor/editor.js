@@ -26,6 +26,8 @@ import MobiledocRenderer from '../renderers/mobiledoc';
 import { toArray, merge, mergeWithOptions } from 'content-kit-utils';
 import { detectParentNode } from '../utils/dom-utils';
 import { getData, setData } from '../utils/element-utils';
+import mixin from '../utils/mixin';
+import EventListenerMixin from '../utils/event-listener';
 
 var defaults = {
   placeholder: 'Write here...',
@@ -221,11 +223,6 @@ merge(Editor.prototype, EventEmitter);
 merge(Editor.prototype, {
   addView(view) {
     this._views.push(view);
-  },
-
-  addEventListener(context, eventName, callback) {
-    context.addEventListener(eventName, callback);
-    this._elementListeners.push([context, eventName, callback]);
   },
 
   loadModel(post) {
@@ -431,12 +428,6 @@ merge(Editor.prototype, {
     return MobiledocRenderer.render(this.post);
   },
 
-  removeAllEventListeners() {
-    this._elementListeners.forEach(([context, ...args]) => {
-      context.removeEventListener(...args);
-    });
-  },
-
   removeAllViews() {
     this._views.forEach((v) => v.destroy());
     this._views = [];
@@ -446,7 +437,8 @@ merge(Editor.prototype, {
     this.removeAllEventListeners();
     this.removeAllViews();
   }
-
 });
+
+mixin(Editor, EventListenerMixin);
 
 export default Editor;
