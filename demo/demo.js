@@ -1,6 +1,98 @@
 (function(exports, document, undefined) {
-
 'use strict';
+
+function removeChildren(element) {
+  for (var i=0; i < element.childNodes.length; i++) {
+    element.removeChild(element.childNodes[i]);
+  }
+}
+
+var simpleCard = {
+  name: 'simple-card',
+  display: {
+    setup: function(element) {
+      let card = document.createElement('span');
+      card.innerHTML = 'Hello, world';
+      element.appendChild(card);
+    }
+  }
+};
+
+var cardWithEditMode = {
+  name: 'edit-card',
+  display: {
+    setup: function(element, options, env) {
+      removeChildren(element);
+      let card = document.createElement('div');
+      card.innerHTML = 'I am in display mode';
+
+      let button = document.createElement('button');
+      button.innerText = 'Change to edit';
+      button.onclick = env.edit;
+
+      card.appendChild(button);
+      element.appendChild(card);
+    }
+  },
+  edit: {
+    setup: function(element, options, env) {
+      removeChildren(element);
+      let card = document.createElement('div');
+      card.innerHTML = 'I am in edit mode';
+
+      let button = document.createElement('button');
+      button.innerText = 'Change to display';
+      button.onclick = env.save;
+
+      card.appendChild(button);
+      element.appendChild(card);
+    }
+  }
+};
+
+var cardWithInput = {
+  name: 'input-card',
+  display: {
+    setup: function(element, options, env, payload) {
+      removeChildren(element);
+
+      var text = 'I am in display mode';
+      if (payload.name) {
+        text = 'Hello, ' + payload.name + '!';
+      }
+      let card = document.createElement('div');
+      card.innerText = text;
+
+      let button = document.createElement('button');
+      button.innerText = 'Edit';
+      button.onclick = env.edit;
+
+      card.appendChild(button);
+      element.appendChild(card);
+    }
+  },
+  edit: {
+    setup: function(element, options, env) {
+      removeChildren(element);
+      let card = document.createElement('div');
+      card.innerHTML = 'What is your name?';
+
+      let input = document.createElement('input');
+      input.placeholder = 'Enter your name...';
+
+      let button = document.createElement('button');
+      button.innerText = 'Save';
+      button.onclick = function() {
+        var name = input.value;
+        env.save({name:name});
+      };
+
+      card.appendChild(input);
+      card.appendChild(button);
+      element.appendChild(card);
+    }
+  }
+};
 
 var ContentKit = exports.ContentKit,
     $ = exports.$,
@@ -58,11 +150,7 @@ function bootEditor(element, mobiledoc) {
   var editor = new ContentKit.Editor(element, {
     autofocus: false,
     mobiledoc: mobiledoc,
-    cards: {
-      'pick-color': function renderPickColor(payload) {
-        return 'PICK A COLOR: '+payload.options.join(', ');
-      }
-    }
+    cards: [simpleCard, cardWithEditMode, cardWithInput]
   });
 
   editor.on('update', function() {
@@ -144,6 +232,36 @@ var sampleMobiledocs = {
         [[], 0, "see it "],
         [[0], 1, "on github."]
       ]]
+    ]
+  ],
+
+  mobileDocWithSimpleCard: [
+    [],
+    [
+      [1, "H2", [
+        [[], 0, "Simple Card"]
+      ]],
+      [10, "simple-card"]
+    ]
+  ],
+
+  mobileDocWithEditCard: [
+    [],
+    [
+      [1, "H2", [
+        [[], 0, "Edit Card"]
+      ]],
+      [10, "edit-card"]
+    ]
+  ],
+
+  mobileDocWithInputCard: [
+    [],
+    [
+      [1, "H2", [
+        [[], 0, "Input Card"]
+      ]],
+      [10, "input-card"]
     ]
   ]
 };
