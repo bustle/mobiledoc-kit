@@ -7,6 +7,73 @@ function removeChildren(element) {
   }
 }
 
+var selfieCard = {
+  name: 'selfie-card',
+  display: {
+    setup(element, options, env, payload) {
+      removeChildren(element);
+
+      if (payload.imageSrc) {
+        element.appendChild(
+          $(`
+              <div>
+                <img src="${payload.imageSrc}"><br>
+                <div>You look nice today.</div>
+                <div><button id='go-edit'>Take a better picture</button></div>
+              </div>
+            `)[0]
+        );
+      } else {
+        element.appendChild($(`
+          <div>
+            Hello there!
+            <button id='go-edit'>Click here to take a picture</button>
+          </div>`)[0]
+        );
+      }
+
+      $('#go-edit').click(function() {
+        env.edit();
+      });
+    }
+  },
+  edit: {
+    setup(element, options, env) {
+      removeChildren(element);
+
+      const vid = $(`
+        <div>
+          <video id="video" width="160" height="120" autoplay></video>
+          <button id="snap">Snap Photo</button>
+          <canvas id="canvas" width="160" height="120"></canvas>
+        </div>
+      `);
+      element.appendChild(vid[0]);
+
+      var canvas = document.getElementById("canvas"),
+          context = canvas.getContext("2d"),
+          video = document.getElementById("video"),
+          videoObj = { "video": true },
+          errBack = function(error) {
+            alert('error getting video feed');
+          };
+      if (!navigator.webkitGetUserMedia) {
+        alert('Cannot get your video because no navigator.webkitGetUserMedia');
+      }
+      navigator.webkitGetUserMedia(videoObj, function(stream) {
+        video.src = window.webkitURL.createObjectURL(stream);
+        video.play();
+
+        $('#snap').click(function() {
+          context.drawImage(video, 0, 0, 160, 120);
+          let imageSrc = canvas.toDataURL('image/png');
+          env.save({imageSrc: imageSrc});
+        });
+      }, errBack);
+    }
+  }
+};
+
 var simpleCard = {
   name: 'simple-card',
   display: {
@@ -150,7 +217,7 @@ function bootEditor(element, mobiledoc) {
   var editor = new ContentKit.Editor(element, {
     autofocus: false,
     mobiledoc: mobiledoc,
-    cards: [simpleCard, cardWithEditMode, cardWithInput]
+    cards: [simpleCard, cardWithEditMode, cardWithInput, selfieCard]
   });
 
   editor.on('update', function() {
@@ -262,6 +329,16 @@ var sampleMobiledocs = {
         [[], 0, "Input Card"]
       ]],
       [10, "input-card"]
+    ]
+  ],
+
+  mobileDocWithSelfieCard: [
+    [],
+    [
+      [1, "H2", [
+        [[], 0, "SelfieCard"]
+      ]],
+      [10, "selfie-card"]
     ]
   ]
 };
