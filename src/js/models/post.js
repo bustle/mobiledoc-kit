@@ -1,11 +1,8 @@
-import ElementMap from "../utils/element-map";
-
 // FIXME: making sections a linked-list would greatly improve this
 export default class Post {
   constructor() {
     this.type = 'post';
     this.sections = [];
-    this.sectionElementMap = new ElementMap();
   }
   appendSection(section) {
     this.sections.push(section);
@@ -27,18 +24,7 @@ export default class Post {
     }
     throw new Error('Previous section was not found in post.sections');
   }
-  setSectionElement(section, element) {
-    section.element = element;
-    this.sectionElementMap.set(element, section);
-  }
-  getSectionElement(section) {
-    return section && section.element;
-  }
-  getElementSection(element) {
-    return this.sectionElementMap.get(element);
-  }
   removeSection(section) {
-    this.sectionElementMap.remove(section.element);
     var i, l;
     for (i=0,l=this.sections.length;i<l;i++) {
       if (this.sections[i] === section) {

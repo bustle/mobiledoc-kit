@@ -1,3 +1,7 @@
+import RenderNode from "content-kit-editor/models/render-node";
+import CardNode from "content-kit-editor/models/card-node";
+import { detect } from 'content-kit-editor/utils/array-utils';
+
 function createElementFromMarkerType(doc, markerType) {
   var element = doc.createElement(markerType.tagName);
   if (markerType.attributes) {
@@ -41,37 +45,156 @@ function renderMarkupSection(doc, section, markers) {
   return element;
 }
 
-function NewDOMRenderer(doc, cards) {
-  if (!doc) {
-    throw new Error('renderer must be created with a document');
+class Visitor {
+  constructor(cards, unknownCardHandler, options) {
+    this.cards = cards;
+    this.unknownCardHandler = unknownCardHandler;
+    this.options = options;
   }
-  this.document = doc;
-  if (!cards) {
-    throw new Error('renderer must be created with cards');
+
+  post(renderNode, post, visit) {
+    if (!renderNode.element) {
+      let element = document.createElement('div');
+      renderNode.element = element;
+    }
+    visit(renderNode, post.sections);
   }
-  this.cards = cards;
+
+  markupSection(renderNode, section) {
+    if (!renderNode.element) {
+      let element = renderMarkupSection(window.document, section, section.markers);
+      if (renderNode.previousSibling) {
+        let previousElement = renderNode.previousSibling.element;
+        let nextElement = previousElement.nextSibling;
+        if (nextElement) {
+          nextElement.parentNode.insertBefore(element, nextElement);
+        }
+      }
+      if (!element.parentNode) {
+        renderNode.parentNode.element.appendChild(element);
+      }
+      renderNode.element = element;
+    }
+  } 
+
+  imageSection(renderNode, section) {
+    if (renderNode.element) {
+      if (renderNode.element.src !== section.src) {
+        renderNode.element.src = section.src;
+      }
+    } else {
+      let element = document.createElement('img');
+      element.src = section.src;
+      if (renderNode.previousSibling) {
+        let previousElement = renderNode.previousSibling.element;
+        let nextElement = previousElement.nextSibling;
+        if (nextElement) {
+          nextElement.parentNode.insertBefore(element, nextElement);
+        }
+      }
+      if (!element.parentNode) {
+        renderNode.parentNode.element.appendChild(element);
+      }
+      renderNode.element = element;
+    }
+  }
+
+  card(renderNode, section) {
+    const card = detect(this.cards, card => card.name === section.name);
+
+    const env = { name: section.name };
+    renderNode.element = document.createElement('div');
+    renderNode.parentNode.element.appendChild(renderNode.element);
+
+    if (card) {
+      let cardNode = new CardNode(card, section, renderNode.element, this.options);
+      renderNode.cardNode = cardNode;
+      cardNode.display();
+    } else {
+      this.unknownCardHandler(renderNode.element, this.options, env, section.payload);
+    }
+  }
 }
 
-NewDOMRenderer.prototype.render = function NewDOMRenderer_render(post, target) {
-  var sections = post.sections;
-  var i, l, section, node;
-  for (i=0, l=sections.length;i<l;i++) {
-    section = sections[i];
-    switch (section.type) {
-    case 'markupSection':
-      node = renderMarkupSection(this.document, section, section.markers);
-      break;
-    case 5:
-      throw new Error('unimplemented');
-      //var componentFn = this.cards[section[1]];
-      //node = componentFn(this.document, section.markers);
-      //break;
-    default:
-      throw new Error('attempt to render unknown type:' +section.type);
+let destroyHooks = {
+  post(/*renderNode, post*/) {
+    throw new Error('post destruction is not supported by the renderer');
+  },
+  markupSection(renderNode, section) {
+    let post = renderNode.parentNode.postNode;
+    post.removeSection(section);
+    // Some formatting commands remove the element from the DOM during
+    // formatting. Do not error if this is the case.
+    if (renderNode.element.parentNode) {
+      renderNode.element.parentNode.removeChild(renderNode.element);
     }
-    post.setSectionElement(section, node);
-    target.appendChild(node);
+  },
+  imageSection(renderNode, section) {
+    let post = renderNode.parentNode.postNode;
+    post.removeSection(section);
+    renderNode.element.parentNode.removeChild(renderNode.element);
+  },
+  card(renderNode, section) {
+    if (renderNode.cardNode) {
+      renderNode.cardNode.teardown();
+    }
+    let post = renderNode.parentNode.postNode;
+    post.removeSection(section);
+    renderNode.element.parentNode.removeChild(renderNode.element);
   }
 };
 
-export default NewDOMRenderer;
+function removeChildren(parentNode) {
+  let child = parentNode.firstChild;
+  while (child) {
+    let nextChild = child.nextSibling;
+    if (child.isRemoved) {
+      destroyHooks[child.postNode.type](child, child.postNode);
+      parentNode.removeChild(child);
+    }
+    child = nextChild;
+  }
+}
+
+function lookupNode(renderTree, parentNode, section, previousNode) {
+  if (section.renderNode) {
+    return section.renderNode;
+  } else {
+    let renderNode = new RenderNode(section);
+    renderNode.renderTree = renderTree;
+    parentNode.insertAfter(renderNode, previousNode);
+    section.renderNode = renderNode;
+    return renderNode;
+  }
+}
+
+function renderInternal(renderTree, visitor) {
+  let nodes = [renderTree.node];
+  function visit(parentNode, sections) {
+    let previousNode;
+    sections.forEach(section => {
+      let node = lookupNode(renderTree, parentNode, section, previousNode);
+      if (node.isDirty) {
+        nodes.push(node);
+      }
+      previousNode = node;
+    });
+  }
+  let node = nodes.shift();
+  while (node) {
+    removeChildren(node);
+    visitor[node.postNode.type](node, node.postNode, visit);
+    node.markClean();
+    node = nodes.shift();
+  }
+}
+
+export default class Render {
+  constructor(cards, unknownCardHandler, options) {
+    this.visitor = new Visitor(cards, unknownCardHandler, options);
+  }
+
+  render(renderTree) {
+    renderInternal(renderTree, this.visitor);
+  }
+}

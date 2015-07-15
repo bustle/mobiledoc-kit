@@ -1,6 +1,7 @@
 import MobiledocParser from 'content-kit-editor/parsers/mobiledoc';
 import { generateBuilder } from 'content-kit-editor/utils/post-builder';
 
+const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
 const { module, test } = window.QUnit;
 
 let parser, builder, post;
@@ -77,3 +78,38 @@ test('#parse doc with marker type', (assert) => {
   );
 });
 
+test('#parse doc with image section', (assert) => {
+  const mobiledoc = [
+    [],
+    [
+      [2, DATA_URL]
+    ]
+  ];
+
+  const parsed = parser.parse(mobiledoc);
+
+  let section = builder.generateImageSection(DATA_URL);
+  post.appendSection(section);
+  assert.deepEqual(
+    parsed,
+    post
+  );
+});
+
+test('#parse doc with custom card type', (assert) => {
+  const mobiledoc = [
+    [],
+    [
+      [10, 'custom-card', {}]
+    ]
+  ];
+
+  const parsed = parser.parse(mobiledoc);
+
+  let section = builder.generateCardSection('custom-card');
+  post.appendSection(section);
+  assert.deepEqual(
+    parsed,
+    post
+  );
+});

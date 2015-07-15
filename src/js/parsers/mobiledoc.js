@@ -1,4 +1,6 @@
 import { generateBuilder } from '../utils/post-builder';
+const CARD_SECTION_TYPE = 10;
+const IMAGE_SECTION_TYPE = 2;
 
 /*
  * input mobiledoc: [ markers, elements ]
@@ -40,9 +42,25 @@ export default class MobiledocParser {
       case 1: // markup section
         this.parseMarkupSection(section, post);
         break;
+      case IMAGE_SECTION_TYPE:
+        this.parseImageSection(section, post);
+        break;
+      case CARD_SECTION_TYPE:
+        this.parseCardSection(section, post);
+        break;
       default:
         throw new Error(`Unexpected section type ${type}`);
     }
+  }
+
+  parseCardSection([type, name, payload], post) {
+    const section = this.builder.generateCardSection(name, payload);
+    post.appendSection(section);
+  }
+
+  parseImageSection([type, src], post) {
+    const section = this.builder.generateImageSection(src);
+    post.appendSection(section);
   }
 
   parseMarkupSection([type, tagName, markers], post) {
