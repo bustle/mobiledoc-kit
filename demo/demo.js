@@ -14,7 +14,9 @@ var ContentKitDemo = exports.ContentKitDemo = {
     codePaneJSON.innerHTML = this.syntaxHighlight(mobiledoc);
 
     var renderer = new MobiledocDOMRenderer();
-    var rendered = renderer.render(mobiledoc);
+    var rendered = renderer.render(mobiledoc, document.createElement('div'), {
+      /* cards */
+    });
 
     $('#rendered-mobiledoc').empty();
     $('#rendered-mobiledoc')[0].appendChild(rendered);
