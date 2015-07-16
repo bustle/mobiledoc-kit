@@ -189,7 +189,7 @@ function renderInternal(renderTree, visitor) {
   }
 }
 
-export default class Render {
+export default class Renderer {
   constructor(cards, unknownCardHandler, options) {
     this.visitor = new Visitor(cards, unknownCardHandler, options);
   }

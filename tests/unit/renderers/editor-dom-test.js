@@ -1,6 +1,6 @@
 import { generateBuilder } from 'content-kit-editor/utils/post-builder';
 const { module, test } = window.QUnit;
-import Renderer from 'content-kit-editor/renderers/render';
+import Renderer from 'content-kit-editor/renderers/editor-dom';
 import RenderNode from 'content-kit-editor/models/render-node';
 import RenderTree from 'content-kit-editor/models/render-tree';
 
