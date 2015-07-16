@@ -36,7 +36,10 @@ var defaults = {
   autofocus: true,
   post: null,
   serverHost: '',
-  stickyToolbar: !!('ontouchstart' in window),
+  // FIXME PhantomJS has 'ontouchstart' in window,
+  // causing the stickyToolbar to accidentally be auto-activated
+  // in tests
+  stickyToolbar: false, // !!('ontouchstart' in window),
   textFormatCommands: [
     new BoldCommand(),
     new ItalicCommand(),
