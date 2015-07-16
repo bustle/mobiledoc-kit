@@ -103,7 +103,9 @@ class Visitor {
     const card = detect(this.cards, card => card.name === section.name);
 
     const env = { name: section.name };
-    renderNode.element = document.createElement('div');
+    const element = document.createElement('div');
+    element.contentEditable = 'false';
+    renderNode.element = element;
     renderNode.parentNode.element.appendChild(renderNode.element);
 
     if (card) {

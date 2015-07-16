@@ -7,8 +7,8 @@ import RenderTree from 'content-kit-editor/models/render-tree';
 const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
 let builder;
 
-function render(renderTree) {
-  let renderer = new Renderer([]);
+function render(renderTree, cards=[]) {
+  let renderer = new Renderer(cards);
   return renderer.render(renderTree);
 }
 
@@ -138,6 +138,55 @@ test('renders a post with image', (assert) => {
   render(renderTree);
   assert.equal(node.element.innerHTML, `<img src="${url}">`);
 });
+
+test('renders a card section', (assert) => {
+  let post = builder.generatePost();
+  let cardSection = builder.generateCardSection('my-card');
+  let card = {
+    name: 'my-card',
+    display: {
+      setup(element) {
+        element.innerHTML = 'I am a card';
+      }
+    }
+  };
+  post.appendSection(cardSection);
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree, [card]);
+
+  assert.equal(node.element.firstChild.innerHTML, 'I am a card',
+              'card is rendered');
+});
+
+test('renders a card section into a non-contenteditable element', (assert) => {
+  assert.expect(2);
+
+  let post = builder.generatePost();
+  let cardSection = builder.generateCardSection('my-card');
+  let card = {
+    name: 'my-card',
+    display: {
+      setup(element) {
+        element.setAttribute('id', 'my-card-div');
+      }
+    }
+  };
+  post.appendSection(cardSection);
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree, [card]);
+
+  let element = node.element.firstChild;
+  assert.equal(element.getAttribute('id'), 'my-card-div',
+               'precond - correct element selected');
+  assert.equal(element.contentEditable, 'false', 'is not contenteditable');
+});
+
 
 /*
 test("It renders a renderTree with rendered dirty section", (assert) => {

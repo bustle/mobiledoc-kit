@@ -39,7 +39,7 @@ import { getData, setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
 
-var defaults = {
+const defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
