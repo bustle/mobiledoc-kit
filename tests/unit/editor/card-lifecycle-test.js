@@ -2,6 +2,7 @@ const { module, test } = QUnit;
 
 import Helpers from '../../test-helpers';
 import { Editor } from 'content-kit-editor';
+import { containsNode } from 'content-kit-editor/utils/dom-utils';
 let editorElement, editor;
 
 module('Unit: Editor: Card Lifecycle', {
@@ -28,7 +29,7 @@ test('rendering a mobiledoc for editing calls card#setup', (assert) => {
     name: 'test-card',
     display: {
       setup(element, options, env, setupPayload) {
-        assert.ok(editorElement.contains(element),
+        assert.ok(containsNode(editorElement, element),
                   'card element is part of the editor element');
         assert.deepEqual(payload, setupPayload,
                          'the payload is passed to the card');
@@ -101,7 +102,7 @@ test('rendered card can fire edit hook to enter editing mode', (assert) => {
     },
     edit: {
       setup(element, options, env, setupPayload) {
-        assert.ok(editorElement.contains(element),
+        assert.ok(containsNode(editorElement, element),
                   'card element is part of the editor element');
         assert.deepEqual(payload, setupPayload,
                          'the payload is passed to the card');

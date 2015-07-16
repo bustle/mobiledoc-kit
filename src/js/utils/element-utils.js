@@ -31,17 +31,6 @@ function getEventTargetMatchingTag(tag, target, container) {
   }
 }
 
-function nodeIsDescendantOfElement(node, element) {
-  var parentNode = node.parentNode;
-  while(parentNode) {
-    if (parentNode === element) {
-      return true;
-    }
-    parentNode = parentNode.parentNode;
-  }
-  return false;
-}
-
 function elementContentIsEmpty(element) {
   var content = element && element.innerHTML;
   if (content) {
@@ -142,7 +131,6 @@ export {
   showElement,
   swapElements,
   getEventTargetMatchingTag,
-  nodeIsDescendantOfElement,
   elementContentIsEmpty,
   getElementRelativeOffset,
   getElementComputedStyleNumericProp,
