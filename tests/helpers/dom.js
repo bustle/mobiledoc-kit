@@ -1,26 +1,10 @@
 const TEXT_NODE = 3;
-const ENTER_KEY = 13;
-const LEFT_ARROW = 37;
-const KEY_CODES = {
-  ENTER_KEY,
-  LEFT_ARROW
-};
 
-function moveCursorTo(element, offset=0) {
-  let range = document.createRange();
-  range.setStart(element, offset);
-  range.setEnd(element, offset);
-
-  let selection = window.getSelection();
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-function clearSelection() {
-  window.getSelection().removeAllRanges();
-}
+import { clearSelection } from 'content-kit-editor/utils/selection-utils';
+import KEY_CODES from 'content-kit-editor/utils/keycodes';
 
 function walkDOMUntil(topNode, conditionFn=() => {}) {
+  if (!topNode) { throw new Error('Cannot call walkDOMUntil without a node'); }
   let stack = [topNode];
   let currentElement;
 
@@ -38,12 +22,13 @@ function walkDOMUntil(topNode, conditionFn=() => {}) {
 }
 
 function selectRange(startNode, startOffset, endNode, endOffset) {
+  clearSelection();
+
   const range = document.createRange();
   range.setStart(startNode, startOffset);
   range.setEnd(endNode, endOffset);
 
   const selection = window.getSelection();
-  if (selection.rangeCount > 0) { selection.removeAllRanges(); }
   selection.addRange(range);
 }
 
@@ -67,6 +52,10 @@ function selectText(startText,
   const startOffset = startTextNode.textContent.indexOf(startText),
         endOffset   = endTextNode.textContent.indexOf(endText) + endText.length;
   selectRange(startTextNode, startOffset, endTextNode, endOffset);
+}
+
+function moveCursorTo(element, offset=0) {
+  selectRange(element, offset, element, offset);
 }
 
 function triggerEvent(node, eventType) {
@@ -102,7 +91,7 @@ function createKeyEvent(eventType, keyCode) {
   return oEvent;
 }
 
-function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER_KEY) {
+function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER) {
   let oEvent = createKeyEvent(eventType, keyCode);
   node.dispatchEvent(oEvent);
 }
@@ -112,6 +101,5 @@ export default {
   selectText,
   clearSelection,
   triggerEvent,
-  triggerKeyEvent,
-  KEY_CODES
+  triggerKeyEvent
 };

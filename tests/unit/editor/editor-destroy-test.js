@@ -4,22 +4,27 @@ import Helpers from '../../test-helpers';
 import { Editor } from 'content-kit-editor';
 
 let editor;
-let fixture;
+let editorElement;
 
 module('Unit: Editor #destroy', {
   beforeEach() {
-    fixture = $('#qunit-fixture');
-    fixture.html('the editor');
-    editor = new Editor(fixture[0]);
+    let fixture = $('#qunit-fixture')[0];
+    editorElement = document.createElement('div');
+    editorElement.innerHTML = 'HELLO';
+    fixture.appendChild(editorElement);
+    editor = new Editor(editorElement);
   },
   afterEach() {
+    if (editor) {
+      editor.destroy();
+    }
   }
 });
 
 test('removes toolbar from DOM', (assert) => {
   let done = assert.async();
 
-  Helpers.dom.selectText('the editor', fixture[0]);
+  Helpers.dom.selectText('HELLO', editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
   setTimeout(() => {
