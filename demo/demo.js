@@ -7,6 +7,8 @@ function removeChildren(element) {
   }
 }
 
+var editor;
+
 var selfieCard = {
   name: 'selfie-card',
   display: {
@@ -214,7 +216,10 @@ var ContentKitDemo = exports.ContentKitDemo = {
 };
 
 function bootEditor(element, mobiledoc) {
-  var editor = new ContentKit.Editor(element, {
+  if (editor) {
+    editor.destroy();
+  }
+  editor = new ContentKit.Editor(element, {
     autofocus: false,
     mobiledoc: mobiledoc,
     cards: [simpleCard, cardWithEditMode, cardWithInput, selfieCard]
@@ -345,7 +350,6 @@ var sampleMobiledocs = {
 
 
 $(function() {
-  var editor;
   var editorEl = $('#editor')[0];
   var mobiledoc = sampleMobiledocs.simpleMobiledoc;
 
