@@ -96,10 +96,28 @@ function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER) {
   node.dispatchEvent(oEvent);
 }
 
+function makeTextNode(text) {
+  return document.createTextNode(text);
+}
+
+/**
+ * to create a text node use tagName='text', {value:'the text'}
+ */
+function makeDOM(tagName, attributes={}, children=[]) {
+  if (tagName === 'text') { return makeTextNode(attributes.value); }
+
+  let el = document.createElement(tagName);
+  Object.keys(attributes).forEach(k => el.setAttribute(k, attributes[k]));
+  children.forEach(child => el.appendChild(makeDOM(...child)));
+
+  return el;
+}
+
 export default {
   moveCursorTo,
   selectText,
   clearSelection,
   triggerEvent,
-  triggerKeyEvent
+  triggerKeyEvent,
+  makeDOM
 };
