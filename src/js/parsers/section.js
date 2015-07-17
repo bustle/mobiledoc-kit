@@ -3,8 +3,8 @@ const ELEMENT_NODE = 1;
 
 import Section from 'content-kit-editor/models/section';
 import {
-  DEFAULT_TYPE,
-  SECTION_TYPES
+  DEFAULT_TAG_NAME,
+  SECTION_TAG_NAMES
 } from 'content-kit-editor/models/section';
 
 import Marker from 'content-kit-editor/models/marker';
@@ -16,8 +16,8 @@ export default {
       element = this.wrapInSectionElement(element);
     }
 
-    const type = this.typeFromTagName(element.tagName);
-    const section = new Section(type);
+    const tagName = this.tagNameFromElement(element);
+    const section = new Section(tagName);
     const state = {section, markups:[], text:''};
 
     this.toArray(element.childNodes).forEach(el => {
@@ -34,7 +34,7 @@ export default {
   },
 
   wrapInSectionElement(element) {
-    const parent = document.createElement(DEFAULT_TYPE);
+    const parent = document.createElement(DEFAULT_TAG_NAME);
     parent.appendChild(element);
     return parent;
   },
@@ -82,7 +82,7 @@ export default {
   },
 
   isSectionElement(element) {
-    return SECTION_TYPES.indexOf(element.tagName) !== -1;
+    return SECTION_TAG_NAMES.indexOf(element.tagName) !== -1;
   },
 
   markupFromElement(element) {
@@ -117,9 +117,9 @@ export default {
     return arr;
   },
 
-  typeFromTagName(tagName) {
-    let type = tagName.toLowerCase();
-    if (SECTION_TYPES.indexOf(tagName) === -1) { type = DEFAULT_TYPE; }
-    return type;
+  tagNameFromElement(element) {
+    let tagName = element.tagName.toLowerCase();
+    if (SECTION_TAG_NAMES.indexOf(tagName) === -1) { tagName = DEFAULT_TAG_NAME; }
+    return tagName;
   }
 };

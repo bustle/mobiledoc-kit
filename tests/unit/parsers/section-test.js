@@ -16,7 +16,7 @@ test('#parse parses simple dom', (assert) => {
   );
 
   const section = SectionParser.parse(element);
-  assert.equal(section.type, 'p');
+  assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 2, 'has 2 markers');
   const [m1, m2] = section.markers;
 
@@ -61,7 +61,7 @@ test('#parse ignores non-markup elements like spans', (assert) => {
   );
 
   const section = SectionParser.parse(element);
-  assert.equal(section.type, 'p');
+  assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 markers');
   const [m1] = section.markers;
 
@@ -97,7 +97,7 @@ test('#parse joins contiguous text nodes separated by non-markup elements', (ass
   );
 
   const section = SectionParser.parse(element);
-  assert.equal(section.type, 'p');
+  assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 markers');
   const [m1] = section.markers;
 
@@ -109,7 +109,7 @@ test('#parse parses a single text node', (assert) => {
     'text', {value: 'raw text'}
   );
   const section = SectionParser.parse(element);
-  assert.equal(section.type, 'p');
+  assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 marker');
   assert.equal(section.markers[0].value, 'raw text');
 });

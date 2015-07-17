@@ -1,12 +1,15 @@
-export const DEFAULT_TYPE = 'p';
-export const SECTION_TYPES = [
+export const DEFAULT_TAG_NAME = 'p';
+export const SECTION_TAG_NAMES = [
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div'
 ];
+const SECTION_TYPE = 'section';
 
 const Section = class Section {
-  constructor(type=DEFAULT_TYPE, markers=[]) {
+  constructor(tagName=DEFAULT_TAG_NAME, markers=[]) {
     this.markers = [];
-    this.type = type;
+    this.tagName = tagName;
+    this.type = SECTION_TYPE;
+
     markers.forEach(m => this.appendMarker(m));
   }
 
@@ -36,8 +39,8 @@ const Section = class Section {
     right.push(rightMiddle);
 
     return [
-      new Section(this.type, left),
-      new Section(this.type, right)
+      new Section(this.tagName, left),
+      new Section(this.tagName, right)
     ];
   }
 
