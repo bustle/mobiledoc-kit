@@ -1,9 +1,14 @@
 export const MARKUP_TYPES = ['b', 'a', 'i', 'em', 'strong'];
+const MARKER_TYPE = 'marker';
 
-export default class Marker {
+import { detect } from 'content-kit-editor/utils/array-utils';
+
+const Marker = class Marker {
   constructor(value='', markups=[]) {
     this.value = value;
     this.markups = [];
+    this.type = MARKER_TYPE;
+
     markups.forEach(m => this.addMarkup(m));
   }
 
@@ -39,11 +44,7 @@ export default class Marker {
   }
 
   hasMarkup(type) {
-    for (let i=0; i<this.markups.length; i++) {
-      if (this.markups[i].type === type) {
-        return this.markups[i];
-      }
-    }
+    return detect(this.markups, markup => markup.type === type);
   }
 
   getMarkup(type) {
@@ -67,4 +68,6 @@ export default class Marker {
 
     return [m1, m2];
   }
-}
+};
+
+export default Marker;

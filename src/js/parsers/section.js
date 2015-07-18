@@ -12,6 +12,11 @@ import { MARKUP_TYPES } from 'content-kit-editor/models/marker';
 import { getAttributes } from 'content-kit-editor/utils/dom-utils';
 import { forEach } from 'content-kit-editor/utils/array-utils';
 
+/**
+ * parses an element into a section, ignoring any non-markup
+ * elements contained within
+ * @return {Section}
+ */
 export default {
   parse(element) {
     if (!this.isSectionElement(element)) {
