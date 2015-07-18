@@ -9,6 +9,8 @@ import {
 
 import Marker from 'content-kit-editor/models/marker';
 import { MARKUP_TYPES } from 'content-kit-editor/models/marker';
+import { getAttributes } from 'content-kit-editor/utils/dom-utils';
+import { forEach } from 'content-kit-editor/utils/array-utils';
 
 export default {
   parse(element) {
@@ -16,11 +18,11 @@ export default {
       element = this.wrapInSectionElement(element);
     }
 
-    const tagName = this.tagNameFromElement(element);
+    const tagName = this.sectionTagNameFromElement(element);
     const section = new Section(tagName);
     const state = {section, markups:[], text:''};
 
-    this.toArray(element.childNodes).forEach(el => {
+    forEach(element.childNodes, (el) => {
       this.parseNode(el, state);
     });
 
@@ -39,7 +41,7 @@ export default {
     return parent;
   },
 
-  parseNode(node, state={text:'', markups:[], section:new Section()}) {
+  parseNode(node, state) {
     switch (node.nodeType) {
       case TEXT_NODE:
         this.parseTextNode(node, state);
@@ -65,11 +67,13 @@ export default {
       state.markups.push(markup);
     }
 
-    this.toArray(element.childNodes).forEach(node => {
+    forEach(element.childNodes, (node) => {
       this.parseNode(node, state);
     });
 
     if (markup) {
+      // close the marker started for this node and pop
+      // its markup from the stack
       let marker = new Marker(state.text, state.markups);
       state.section.appendMarker(marker);
       state.markups.pop();
@@ -82,7 +86,8 @@ export default {
   },
 
   isSectionElement(element) {
-    return SECTION_TAG_NAMES.indexOf(element.tagName) !== -1;
+    return element.nodeType === ELEMENT_NODE &&
+      SECTION_TAG_NAMES.indexOf(element.tagName.toLowerCase()) !== -1;
   },
 
   markupFromElement(element) {
@@ -91,33 +96,11 @@ export default {
 
     return {
       type: tagName,
-      attributes: this.attributesToObject(element.attributes)
+      attributes: getAttributes(element)
     };
   },
 
-  // convert a NamedNodeMap (`element.attributes`) to a real object with
-  // key-value pairs
-  attributesToObject(attributes=[]) {
-    let result = {};
-
-    for (let i=0; i<attributes.length; i++) {
-      let {name, value} = attributes[i];
-      result[name] = value;
-    }
-
-    return result;
-  },
-
-  toArray(nodeList) {
-    let arr = [];
-    for (let i=0; i<nodeList.length; i++) {
-      arr.push(nodeList[i]);
-    }
-
-    return arr;
-  },
-
-  tagNameFromElement(element) {
+  sectionTagNameFromElement(element) {
     let tagName = element.tagName.toLowerCase();
     if (SECTION_TAG_NAMES.indexOf(tagName) === -1) { tagName = DEFAULT_TAG_NAME; }
     return tagName;

@@ -96,21 +96,29 @@ function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER) {
   node.dispatchEvent(oEvent);
 }
 
-function makeTextNode(text) {
-  return document.createTextNode(text);
+function _buildDOM(tagName, attributes={}, children=[]) {
+  const el = document.createElement(tagName);
+  Object.keys(attributes).forEach(k => el.setAttribute(k, attributes[k]));
+  children.forEach(child => el.appendChild(child));
+  return el;
 }
 
+_buildDOM.text = (string) => {
+  return document.createTextNode(string);
+};
+
 /**
- * to create a text node use tagName='text', {value:'the text'}
+ * Usage:
+ * makeDOM(t =>
+ *   t('div', attributes={}, children=[
+ *     t('b', {}, [
+ *       t.text('I am a bold text node')
+ *     ])
+ *   ])
+ * );
  */
-function makeDOM(tagName, attributes={}, children=[]) {
-  if (tagName === 'text') { return makeTextNode(attributes.value); }
-
-  let el = document.createElement(tagName);
-  Object.keys(attributes).forEach(k => el.setAttribute(k, attributes[k]));
-  children.forEach(child => el.appendChild(makeDOM(...child)));
-
-  return el;
+function makeDOM(tree) {
+  return tree(_buildDOM);
 }
 
 export default {
