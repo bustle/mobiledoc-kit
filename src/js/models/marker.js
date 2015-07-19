@@ -25,18 +25,11 @@ const Marker = class Marker {
   }
 
   addMarkup(markup) {
-    // simple markup, no attributes
-    if (typeof markup === 'string') {
-      markup = {tagName: markup};
-    }
-    let {tagName, attributes} = markup;
-    tagName = tagName.toLowerCase();
+    const {tagName} = markup;
 
     if (MARKUP_TAG_NAMES.indexOf(tagName) === -1) {
       throw new Error(`Cannot add markup of tagName ${tagName}`);
     }
-
-    markup = {tagName, attributes};
 
     if (!this.hasMarkup(tagName)) {
       this.markups.push(markup);

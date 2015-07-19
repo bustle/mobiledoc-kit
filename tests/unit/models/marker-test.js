@@ -1,6 +1,7 @@
 const {module, test} = QUnit;
 
 import Marker from 'content-kit-editor/models/marker';
+import Markup from 'content-kit-editor/models/markup';
 
 module('Unit: Marker');
 
@@ -28,22 +29,22 @@ test('a marker can truncated to an offset', (assert) => {
 
 test('a marker can have a markup applied to it', (assert) => {
   const m1 = new Marker('hi there!');
-  m1.addMarkup('b');
+  m1.addMarkup(new Markup('b'));
 
   assert.ok(m1.hasMarkup('b'));
 });
 
 test('a marker cannot have the same markup tagName applied twice', (assert) => {
   const m1 = new Marker('hi there!');
-  m1.addMarkup('b');
-  m1.addMarkup('b');
+  m1.addMarkup(new Markup('b'));
+  m1.addMarkup(new Markup('b'));
 
   assert.equal(m1.markups.length, 1, 'markup only applied once');
 });
 
 test('a marker can have a complex markup applied to it', (assert) => {
   const m1 = new Marker('hi there!');
-  const markup = {tagName: 'a', attributes:{href:'blah'}};
+  const markup = new Markup('a', {href:'blah'});
   m1.addMarkup(markup);
 
   assert.ok(m1.hasMarkup('a'));
@@ -52,8 +53,8 @@ test('a marker can have a complex markup applied to it', (assert) => {
 
 test('a marker cannot have the same complex markup tagName applied twice, even with different attributes', (assert) => {
   const m1 = new Marker('hi there!');
-  const markup1 = {tagName: 'a', attributes:{href:'blah'}};
-  const markup2 = {tagName: 'a', attributes:{href:'blah2'}};
+  const markup1 = new Markup('a', {href:'blah'});
+  const markup2 = new Markup('a', {href:'blah2'});
   m1.addMarkup(markup1);
   m1.addMarkup(markup2);
 
@@ -64,9 +65,9 @@ test('a marker cannot have the same complex markup tagName applied twice, even w
 
 test('a marker can be joined to another', (assert) => {
   const m1 = new Marker('hi');
-  m1.addMarkup('b');
+  m1.addMarkup(new Markup('b'));
   const m2 = new Marker(' there!');
-  m2.addMarkup('i');
+  m2.addMarkup(new Markup('i'));
 
   const m3 = m1.join(m2);
   assert.equal(m3.value, 'hi there!');
@@ -76,7 +77,7 @@ test('a marker can be joined to another', (assert) => {
 
 test('a marker can be split into two', (assert) => {
   const m1 = new Marker('hi there!');
-  m1.addMarkup('b');
+  m1.addMarkup(new Markup('b'));
 
   const [_m1, m2] = m1.split(5);
   assert.ok(_m1.hasMarkup('b') && m2.hasMarkup('b'),

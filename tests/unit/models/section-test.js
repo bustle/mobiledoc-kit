@@ -2,6 +2,7 @@ const {module, test} = QUnit;
 
 import Section from 'content-kit-editor/models/section';
 import Marker from 'content-kit-editor/models/marker';
+import Markup from 'content-kit-editor/models/markup';
 
 module('Unit: Section');
 
@@ -78,7 +79,7 @@ test('#markerContaining finds the marker at the given offset when multiple marke
 });
 
 test('a section can be split, splitting its markers', (assert) => {
-  const m = new Marker('hi there!', ['b']);
+  const m = new Marker('hi there!', [new Markup('b')]);
   const s = new Section('p', [m]);
 
   const [s1, s2] = s.split(5);
