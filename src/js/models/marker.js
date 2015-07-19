@@ -1,4 +1,4 @@
-export const MARKUP_TYPES = ['b', 'a', 'i', 'em', 'strong'];
+export const MARKUP_TAG_NAMES = ['b', 'a', 'i', 'em', 'strong'];
 const MARKER_TYPE = 'marker';
 
 import { detect } from 'content-kit-editor/utils/array-utils';
@@ -27,28 +27,29 @@ const Marker = class Marker {
   addMarkup(markup) {
     // simple markup, no attributes
     if (typeof markup === 'string') {
-      markup = {type: markup};
+      markup = {tagName: markup};
     }
-    let {type, attributes} = markup;
-    type = type.toLowerCase();
+    let {tagName, attributes} = markup;
+    tagName = tagName.toLowerCase();
 
-    if (MARKUP_TYPES.indexOf(type) === -1) {
-      throw new Error(`Cannot add markup of type ${type}`);
+    if (MARKUP_TAG_NAMES.indexOf(tagName) === -1) {
+      throw new Error(`Cannot add markup of tagName ${tagName}`);
     }
 
-    markup = {type, attributes};
+    markup = {tagName, attributes};
 
-    if (!this.hasMarkup(type)) {
+    if (!this.hasMarkup(tagName)) {
       this.markups.push(markup);
     }
   }
 
-  hasMarkup(type) {
-    return detect(this.markups, markup => markup.type === type);
+  hasMarkup(tagName) {
+    tagName = tagName.toLowerCase();
+    return detect(this.markups, markup => markup.tagName === tagName);
   }
 
-  getMarkup(type) {
-    return this.hasMarkup(type);
+  getMarkup(tagName) {
+    return this.hasMarkup(tagName);
   }
 
   join(other) {

@@ -77,6 +77,10 @@ class Visitor {
     }
   } 
 
+  section(renderNode, section) {
+    this.markupSection(renderNode, section);
+  }
+
   imageSection(renderNode, section) {
     if (renderNode.element) {
       if (renderNode.element.src !== section.src) {

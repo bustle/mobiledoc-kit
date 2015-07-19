@@ -8,7 +8,7 @@ import {
 } from 'content-kit-editor/models/section';
 
 import Marker from 'content-kit-editor/models/marker';
-import { MARKUP_TYPES } from 'content-kit-editor/models/marker';
+import { MARKUP_TAG_NAMES } from 'content-kit-editor/models/marker';
 import { getAttributes } from 'content-kit-editor/utils/dom-utils';
 import { forEach } from 'content-kit-editor/utils/array-utils';
 
@@ -97,10 +97,10 @@ export default {
 
   markupFromElement(element) {
     const tagName = element.tagName.toLowerCase();
-    if (MARKUP_TYPES.indexOf(tagName) === -1) { return null; }
+    if (MARKUP_TAG_NAMES.indexOf(tagName) === -1) { return null; }
 
     return {
-      type: tagName,
+      tagName: tagName,
       attributes: getAttributes(element)
     };
   },

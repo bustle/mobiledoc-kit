@@ -5,6 +5,10 @@ let visitor = {
     opcodes.push(['openPost']);
     visitArray(visitor, node.sections, opcodes);
   },
+  section(node, opcodes) {
+    opcodes.push(['openMarkupSection', node.tagName]);
+    visitArray(visitor, node.markers, opcodes);
+  },
   markupSection(node, opcodes) {
     opcodes.push(['openMarkupSection', node.tagName]);
     visitArray(visitor, node.markers, opcodes);

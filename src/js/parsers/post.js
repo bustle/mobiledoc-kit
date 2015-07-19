@@ -11,5 +11,9 @@ export default {
     });
 
     return post;
+  },
+
+  parseSection(element) {
+    return SectionParser.parse(element);
   }
 };
