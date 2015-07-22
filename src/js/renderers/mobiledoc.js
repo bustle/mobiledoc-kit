@@ -1,15 +1,13 @@
 import {visit, visitArray, compile} from "../utils/compiler";
+import { POST_TYPE } from "../models/post";
+import { SECTION_TYPE } from "../models/section";
 
 let visitor = {
-  post(node, opcodes) {
+  [POST_TYPE](node, opcodes) {
     opcodes.push(['openPost']);
     visitArray(visitor, node.sections, opcodes);
   },
-  section(node, opcodes) {
-    opcodes.push(['openMarkupSection', node.tagName]);
-    visitArray(visitor, node.markers, opcodes);
-  },
-  markupSection(node, opcodes) {
+  [SECTION_TYPE](node, opcodes) {
     opcodes.push(['openMarkupSection', node.tagName]);
     visitArray(visitor, node.markers, opcodes);
   },

@@ -1,19 +1,13 @@
 import Post from "../models/post";
+import MarkupSection from "../models/markup-section";
 import ImageSection from "../models/image";
 
 var builder = {
   generatePost() {
     return new Post();
   },
-  generateSection(tagName, attributes, isGenerated) {
-    var section = {
-      type: 'markupSection',
-      tagName: tagName,
-      markers: []
-    };
-    if (attributes && attributes.length) {
-      section.attributes = attributes;
-    }
+  generateMarkupSection(tagName, attributes, isGenerated) {
+    let section = new MarkupSection(tagName);
     if (isGenerated) {
       section.isGenerated = !!isGenerated;
     }

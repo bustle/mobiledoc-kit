@@ -1,6 +1,8 @@
 import RenderNode from "content-kit-editor/models/render-node";
 import CardNode from "content-kit-editor/models/card-node";
 import { detect } from 'content-kit-editor/utils/array-utils';
+import { POST_TYPE } from "../models/post";
+import { MARKUP_SECTION_TYPE } from "../models/section";
 
 function createElementFromMarkerType(doc, markerType) {
   var element = doc.createElement(markerType.tagName);
@@ -52,7 +54,7 @@ class Visitor {
     this.options = options;
   }
 
-  post(renderNode, post, visit) {
+  [POST_TYPE](renderNode, post, visit) {
     if (!renderNode.element) {
       let element = document.createElement('div');
       renderNode.element = element;
@@ -60,7 +62,7 @@ class Visitor {
     visit(renderNode, post.sections);
   }
 
-  markupSection(renderNode, section) {
+  [MARKUP_SECTION_TYPE](renderNode, section) {
     if (!renderNode.element) {
       let element = renderMarkupSection(window.document, section, section.markers);
       if (renderNode.previousSibling) {
@@ -123,10 +125,10 @@ class Visitor {
 }
 
 let destroyHooks = {
-  post(/*renderNode, post*/) {
+  [POST_TYPE](/*renderNode, post*/) {
     throw new Error('post destruction is not supported by the renderer');
   },
-  markupSection(renderNode, section) {
+  [MARKUP_SECTION_TYPE](renderNode, section) {
     let post = renderNode.parentNode.postNode;
     post.removeSection(section);
     // Some formatting commands remove the element from the DOM during

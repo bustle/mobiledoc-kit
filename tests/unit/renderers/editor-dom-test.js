@@ -38,9 +38,9 @@ test("It renders a dirty post", (assert) => {
 
 test("It renders a dirty post with un-rendered sections", (assert) => {
   let post = builder.generatePost();
-  let sectionA = builder.generateSection('P');
+  let sectionA = builder.generateMarkupSection('P');
   post.appendSection(sectionA);
-  let sectionB = builder.generateSection('P');
+  let sectionB = builder.generateMarkupSection('P');
   post.appendSection(sectionB);
 
   let renderNode = new RenderNode(post);
@@ -65,7 +65,7 @@ test("It renders a dirty post with un-rendered sections", (assert) => {
 [
   {
     name: 'markup',
-    section: (builder) => builder.generateSection('P')
+    section: (builder) => builder.generateMarkupSection('P')
   },
   {
     name: 'image',
@@ -111,7 +111,7 @@ test("It renders a dirty post with un-rendered sections", (assert) => {
 
 test('renders a post with marker', (assert) => {
   let post = builder.generatePost();
-  let section = builder.generateSection('P');
+  let section = builder.generateMarkupSection('P');
   post.appendSection(section);
   section.markers.push(
     builder.generateMarker([

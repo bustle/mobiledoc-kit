@@ -33,7 +33,7 @@ test('#parse doc without marker types', (assert) => {
   ];
   const parsed = parser.parse(mobiledoc);
 
-  let section = builder.generateSection('P', [], false);
+  let section = builder.generateMarkupSection('P', [], false);
   let marker  = builder.generateMarker([], 0, 'hello world');
   section.markers.push(marker);
   post.appendSection(section);
@@ -60,7 +60,7 @@ test('#parse doc with marker type', (assert) => {
   ];
   const parsed = parser.parse(mobiledoc);
 
-  let section = builder.generateSection('P', [], false);
+  let section = builder.generateMarkupSection('P', [], false);
   let aMarkerType = builder.generateMarkerType('A', ['href', 'google.com']);
   let bMarkerType = builder.generateMarkerType('B');
 

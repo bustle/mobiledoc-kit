@@ -143,7 +143,7 @@ NewHTMLParser.prototype = {
       var tagName = sectionElement.tagName;
       // <p> <h2>, etc
       if (MARKUP_SECTION_TAG_NAMES.indexOf(tagName) !== -1) {
-        section = postBuilder.generateSection(tagName, readAttributes(sectionElement));
+        section = postBuilder.generateMarkupSection(tagName, readAttributes(sectionElement));
         var node = sectionElement.firstChild;
         while (node) {
           parseMarkers(section, postBuilder, node);
@@ -154,7 +154,7 @@ NewHTMLParser.prototype = {
         if (previousSection && previousSection.isGenerated) {
           section = previousSection;
         } else {
-          section = postBuilder.generateSection('P', {}, true);
+          section = postBuilder.generateMarkupSection('P', {}, true);
         }
         parseMarkers(section, postBuilder, sectionElement);
       }
@@ -163,7 +163,7 @@ NewHTMLParser.prototype = {
       if (previousSection && previousSection.isGenerated) {
         section = previousSection;
       } else {
-        section = postBuilder.generateSection('P', {}, true);
+        section = postBuilder.generateMarkupSection('P', {}, true);
       }
       parseMarkers(section, postBuilder, sectionElement);
       break;

@@ -1,7 +1,7 @@
 const TEXT_NODE = 3;
 const ELEMENT_NODE = 1;
 
-import Section from 'content-kit-editor/models/section';
+import MarkupSection from 'content-kit-editor/models/markup-section';
 import {
   DEFAULT_TAG_NAME,
   SECTION_TAG_NAMES
@@ -25,7 +25,7 @@ export default {
     }
 
     const tagName = this.sectionTagNameFromElement(element);
-    const section = new Section(tagName);
+    const section = new MarkupSection(tagName);
     const state = {section, markups:[], text:''};
 
     forEach(element.childNodes, (el) => {

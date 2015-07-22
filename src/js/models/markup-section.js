@@ -2,13 +2,13 @@ export const DEFAULT_TAG_NAME = 'p';
 export const SECTION_TAG_NAMES = [
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div'
 ];
-const SECTION_TYPE = 'section';
+export const MARKUP_SECTION_TYPE = 'markup-section';
 
-const Section = class Section {
-  constructor(tagName=DEFAULT_TAG_NAME, markers=[]) {
-    this.markers = [];
-    this.tagName = tagName;
-    this.type = SECTION_TYPE;
+export default class Section {
+  constructor(tagName, markers=[]) {
+    this.markers = markers;
+    this.tagName = tagName || DEFAULT_TAG_NAME;
+    this.type = MARKUP_SECTION_TYPE;
 
     markers.forEach(m => this.appendMarker(m));
   }
@@ -39,8 +39,8 @@ const Section = class Section {
     right.push(rightMiddle);
 
     return [
-      new Section(this.tagName, left),
-      new Section(this.tagName, right)
+      new this.constructor(this.tagName, left),
+      new this.constructor(this.tagName, right)
     ];
   }
 
@@ -64,6 +64,4 @@ const Section = class Section {
     }
     return this.markers[i-1];
   }
-};
-
-export default Section;
+}

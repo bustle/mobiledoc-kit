@@ -66,7 +66,7 @@ export default class MobiledocParser {
   parseMarkupSection([type, tagName, markers], post) {
     const attributes = null;
     const isGenerated = false;
-    const section = this.builder.generateSection(tagName, attributes, isGenerated);
+    const section = this.builder.generateMarkupSection(tagName, attributes, isGenerated);
 
     post.appendSection(section);
     this.parseMarkers(markers, section);

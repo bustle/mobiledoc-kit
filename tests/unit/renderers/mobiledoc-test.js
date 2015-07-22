@@ -20,7 +20,7 @@ test('renders a blank post', (assert) => {
 
 test('renders a post with marker', (assert) => {
   let post = builder.generatePost();
-  let section = builder.generateSection('P');
+  let section = builder.generateMarkupSection('P');
   post.appendSection(section);
   section.markers.push(
     builder.generateMarker([
