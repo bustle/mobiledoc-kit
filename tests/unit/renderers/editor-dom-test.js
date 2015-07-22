@@ -115,8 +115,8 @@ test('renders a post with marker', (assert) => {
   post.appendSection(section);
   section.markers.push(
     builder.generateMarker([
-      builder.generateMarkerType('STRONG')
-    ], 1, 'Hi')
+      builder.generateMarkup('STRONG')
+    ], 'Hi')
   );
 
   let node = new RenderNode(post);

@@ -1,5 +1,4 @@
-export const MARKUP_TAG_NAMES = ['b', 'a', 'i', 'em', 'strong'];
-const MARKER_TYPE = 'marker';
+export const MARKER_TYPE = 'marker';
 
 import { detect } from 'content-kit-editor/utils/array-utils';
 
@@ -9,7 +8,9 @@ const Marker = class Marker {
     this.markups = [];
     this.type = MARKER_TYPE;
 
-    markups.forEach(m => this.addMarkup(m));
+    if (markups && markups.length) {
+      markups.forEach(m => this.addMarkup(m));
+    }
   }
 
   get length() {
@@ -25,15 +26,7 @@ const Marker = class Marker {
   }
 
   addMarkup(markup) {
-    const {tagName} = markup;
-
-    if (MARKUP_TAG_NAMES.indexOf(tagName) === -1) {
-      throw new Error(`Cannot add markup of tagName ${tagName}`);
-    }
-
-    if (!this.hasMarkup(tagName)) {
-      this.markups.push(markup);
-    }
+    this.markups.push(markup);
   }
 
   hasMarkup(tagName) {
@@ -61,6 +54,32 @@ const Marker = class Marker {
     this.markups.forEach(m => {m1.addMarkup(m); m2.addMarkup(m);});
 
     return [m1, m2];
+  }
+
+  get openedMarkups() {
+    if (!this.previousSibling) {
+      return this.markups.slice();
+    }
+    let i;
+    for (i=0; i<this.markups.length; i++) {
+      if (this.markups[i] !== this.previousSibling.markups[i]) {
+        return this.markups.slice(i);
+      }
+    }
+    return [];
+  }
+
+  get closedMarkups() {
+    if (!this.nextSibling) {
+      return this.markups.slice();
+    }
+    let i;
+    for (i=0; i<this.markups.length; i++) {
+      if (this.markups[i] !== this.nextSibling.markups[i]) {
+        return this.markups.slice(i);
+      }
+    }
+    return [];
   }
 };
 

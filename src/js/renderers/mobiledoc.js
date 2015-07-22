@@ -1,28 +1,31 @@
 import {visit, visitArray, compile} from "../utils/compiler";
 import { POST_TYPE } from "../models/post";
-import { SECTION_TYPE } from "../models/section";
+import { MARKUP_SECTION_TYPE } from "../models/markup-section";
+import { IMAGE_SECTION_TYPE } from "../models/image";
+import { MARKER_TYPE } from "../models/marker";
+import { MARKUP_TYPE } from "../models/markup";
 
 let visitor = {
   [POST_TYPE](node, opcodes) {
     opcodes.push(['openPost']);
     visitArray(visitor, node.sections, opcodes);
   },
-  [SECTION_TYPE](node, opcodes) {
+  [MARKUP_SECTION_TYPE](node, opcodes) {
     opcodes.push(['openMarkupSection', node.tagName]);
     visitArray(visitor, node.markers, opcodes);
   },
-  imageSection(node, opcodes) {
+  [IMAGE_SECTION_TYPE](node, opcodes) {
     opcodes.push(['openImageSection', node.src]);
   },
   card(node, opcodes) {
     opcodes.push(['openCardSection', node.name, node.payload]);
   },
-  marker(node, opcodes) {
-    opcodes.push(['openMarker', node.close, node.value]);
-    visitArray(visitor, node.open, opcodes);
+  [MARKER_TYPE](node, opcodes) {
+    opcodes.push(['openMarker', node.closedMarkups.length, node.value]);
+    visitArray(visitor, node.openedMarkups, opcodes);
   },
-  markerType(node, opcodes) {
-    opcodes.push(['openMarkerType', node.tagName, node.attributes]);
+  [MARKUP_TYPE](node, opcodes) {
+    opcodes.push(['openMarkup', node.tagName, node.attributes]);
   }
 };
 
@@ -50,12 +53,12 @@ let postOpcodeCompiler = {
     this.sections = [];
     this.result = [this.markerTypes, this.sections];
   },
-  openMarkerType(tagName, attributes) {
+  openMarkup(tagName, attributes) {
     if (!this._seenMarkerTypes) {
       this._seenMarkerTypes = {};
     }
     let index;
-    if (attributes) {
+    if (attributes.length) {
       this.markerTypes.push([tagName, attributes]);
       index = this.markerTypes.length - 1;
     } else {

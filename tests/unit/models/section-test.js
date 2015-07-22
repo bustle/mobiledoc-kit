@@ -1,6 +1,6 @@
 const {module, test} = QUnit;
 
-import Section from 'content-kit-editor/models/section';
+import Section from 'content-kit-editor/models/markup-section';
 import Marker from 'content-kit-editor/models/marker';
 import Markup from 'content-kit-editor/models/markup';
 

@@ -34,12 +34,12 @@ test('a marker can have a markup applied to it', (assert) => {
   assert.ok(m1.hasMarkup('b'));
 });
 
-test('a marker cannot have the same markup tagName applied twice', (assert) => {
+test('a marker can have the same markup tagName applied twice', (assert) => {
   const m1 = new Marker('hi there!');
   m1.addMarkup(new Markup('b'));
   m1.addMarkup(new Markup('b'));
 
-  assert.equal(m1.markups.length, 1, 'markup only applied once');
+  assert.equal(m1.markups.length, 2, 'markup only applied once');
 });
 
 test('a marker can have a complex markup applied to it', (assert) => {
@@ -51,14 +51,14 @@ test('a marker can have a complex markup applied to it', (assert) => {
   assert.equal(m1.getMarkup('a').attributes.href, 'blah');
 });
 
-test('a marker cannot have the same complex markup tagName applied twice, even with different attributes', (assert) => {
+test('a marker can have the same complex markup tagName applied twice, even with different attributes', (assert) => {
   const m1 = new Marker('hi there!');
   const markup1 = new Markup('a', {href:'blah'});
   const markup2 = new Markup('a', {href:'blah2'});
   m1.addMarkup(markup1);
   m1.addMarkup(markup2);
 
-  assert.equal(m1.markups.length, 1, 'only one markup');
+  assert.equal(m1.markups.length, 2, 'only one markup');
   assert.equal(m1.getMarkup('a').attributes.href, 'blah',
                'first markup is applied');
 });

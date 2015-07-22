@@ -1,10 +1,10 @@
 import { generateBuilder } from '../utils/post-builder';
 import { trim } from 'content-kit-utils';
+import { VALID_MARKUP_SECTION_TAGNAMES } from '../models/markup-section';
+import { VALID_MARKUP_TAGNAMES } from '../models/markup';
 
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
-
-const MARKUP_SECTION_TAG_NAMES = ['P', 'H3', 'H2', 'H1', 'BLOCKQUOTE', 'UL', 'OL'];
 
 const ALLOWED_ATTRIBUTES = ['href', 'rel', 'src'];
 
@@ -57,28 +57,19 @@ function readAttributes(node) {
   return null;
 }
 
-const VALID_MARKER_ELEMENTS = [
-  'B',
-  'I',
-  'STRONG',
-  'EM',
-  'A',
-  'LI'
-];
-
 function isValidMarkerElement(element) {
-  return VALID_MARKER_ELEMENTS.indexOf(element.tagName) !== -1;
+  return VALID_MARKUP_TAGNAMES.indexOf(element.tagName.toLowerCase()) !== -1;
 }
 
 function parseMarkers(section, postBuilder, topNode) {
-  var markerTypes = [];
+  var markups = [];
   var text = null;
   var currentNode = topNode;
   while (currentNode) {
     switch(currentNode.nodeType) {
     case ELEMENT_NODE:
       if (isValidMarkerElement(currentNode)) {
-        markerTypes.push(postBuilder.generateMarkerType(currentNode.tagName, readAttributes(currentNode)));
+        markups.push(postBuilder.generateMarkup(currentNode.tagName, readAttributes(currentNode)));
       }
       break;
     case TEXT_NODE:
@@ -88,34 +79,31 @@ function parseMarkers(section, postBuilder, topNode) {
 
     if (currentNode.firstChild) {
       if (isValidMarkerElement(currentNode) && text !== null) {
-        section.markers.push(postBuilder.generateMarker(markerTypes, 0, text));
-        markerTypes = [];
+        section.markers.push(postBuilder.generateMarker(markups.slice(), text));
         text = null;
       }
       currentNode = currentNode.firstChild;
     } else if (currentNode.nextSibling) {
       if (currentNode === topNode) {
-        section.markers.push(postBuilder.generateMarker(markerTypes, markerTypes.length, text));
+        section.markers.push(postBuilder.generateMarker(markups.slice(), text));
         break;
       } else {
         currentNode = currentNode.nextSibling;
         if (currentNode.nodeType === ELEMENT_NODE && isValidMarkerElement(currentNode) && text !== null) {
-          section.markers.push(postBuilder.generateMarker(markerTypes, 0, text));
-          markerTypes = [];
+          section.markers.push(postBuilder.generateMarker(markups.slice(), text));
           text = null;
         }
       }
     } else {
-      var toClose = 0;
+      section.markers.push(postBuilder.generateMarker(markups.slice(), text));
+
       while (currentNode && !currentNode.nextSibling && currentNode !== topNode) {
         currentNode = currentNode.parentNode;
         if (isValidMarkerElement(currentNode)) {
-          toClose++;
+          markups.pop();
         }
       }
 
-      section.markers.push(postBuilder.generateMarker(markerTypes, toClose, text));
-      markerTypes = [];
       text = null;
 
       if (currentNode === topNode) {
@@ -142,7 +130,7 @@ NewHTMLParser.prototype = {
     case ELEMENT_NODE:
       var tagName = sectionElement.tagName;
       // <p> <h2>, etc
-      if (MARKUP_SECTION_TAG_NAMES.indexOf(tagName) !== -1) {
+      if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName.toLowerCase()) !== -1) {
         section = postBuilder.generateMarkupSection(tagName, readAttributes(sectionElement));
         var node = sectionElement.firstChild;
         while (node) {

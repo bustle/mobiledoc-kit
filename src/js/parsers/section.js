@@ -4,12 +4,12 @@ const ELEMENT_NODE = 1;
 import MarkupSection from 'content-kit-editor/models/markup-section';
 import {
   DEFAULT_TAG_NAME,
-  SECTION_TAG_NAMES
-} from 'content-kit-editor/models/section';
+  VALID_MARKUP_SECTION_TAGNAMES
+} from 'content-kit-editor/models/markup-section';
 
 import Marker from 'content-kit-editor/models/marker';
 import Markup from 'content-kit-editor/models/markup';
-import { MARKUP_TAG_NAMES } from 'content-kit-editor/models/marker';
+import { VALID_MARKUP_TAGNAMES } from 'content-kit-editor/models/markup';
 import { getAttributes } from 'content-kit-editor/utils/dom-utils';
 import { forEach } from 'content-kit-editor/utils/array-utils';
 
@@ -93,19 +93,19 @@ export default {
 
   isSectionElement(element) {
     return element.nodeType === ELEMENT_NODE &&
-      SECTION_TAG_NAMES.indexOf(element.tagName.toLowerCase()) !== -1;
+      VALID_MARKUP_SECTION_TAGNAMES.indexOf(element.tagName.toLowerCase()) !== -1;
   },
 
   markupFromElement(element) {
     const tagName = element.tagName.toLowerCase();
-    if (MARKUP_TAG_NAMES.indexOf(tagName) === -1) { return null; }
+    if (VALID_MARKUP_TAGNAMES.indexOf(tagName) === -1) { return null; }
 
     return new Markup(tagName, getAttributes(element));
   },
 
   sectionTagNameFromElement(element) {
     let tagName = element.tagName.toLowerCase();
-    if (SECTION_TAG_NAMES.indexOf(tagName) === -1) { tagName = DEFAULT_TAG_NAME; }
+    if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName) === -1) { tagName = DEFAULT_TAG_NAME; }
     return tagName;
   }
 };

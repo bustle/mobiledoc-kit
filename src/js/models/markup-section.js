@@ -1,12 +1,12 @@
 export const DEFAULT_TAG_NAME = 'p';
-export const SECTION_TAG_NAMES = [
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div'
+export const VALID_MARKUP_SECTION_TAGNAMES = [
+  'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'
 ];
 export const MARKUP_SECTION_TYPE = 'markup-section';
 
 export default class Section {
   constructor(tagName, markers=[]) {
-    this.markers = markers;
+    this.markers = [];
     this.tagName = tagName || DEFAULT_TAG_NAME;
     this.type = MARKUP_SECTION_TYPE;
 

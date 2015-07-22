@@ -1,6 +1,8 @@
 import Post from "../models/post";
 import MarkupSection from "../models/markup-section";
 import ImageSection from "../models/image";
+import Marker from "../models/marker";
+import Markup from "../models/markup";
 
 var builder = {
   generatePost() {
@@ -24,32 +26,17 @@ var builder = {
     const type = 'card';
     return { name, payload, type };
   },
-  // open: Array
-  // close: Integer
-  // value: String
-  generateMarker: function(open, close, value) {
-    return {
-      type: 'marker',
-      open: open,
-      close: close,
-      value: value
-    };
+  generateMarker: function(markers, value) {
+    return new Marker(value, markers);
   },
-  generateMarkerType: function(tagName, attributes) {
+  generateMarkup: function(tagName, attributes) {
     if (attributes) {
       // FIXME: This could also be cached
-      return {
-        type: 'markerType',
-        tagName: tagName,
-        attributes: attributes
-      };
+      return new Markup(tagName, attributes);
     }
     var markerType = this._markerTypeCache[tagName];
     if (!markerType) {
-      this._markerTypeCache[tagName] = markerType = {
-        type: 'markerType',
-        tagName: tagName
-      };
+      this._markerTypeCache[tagName] = markerType = new Markup(tagName);
     }
     return markerType;
   }

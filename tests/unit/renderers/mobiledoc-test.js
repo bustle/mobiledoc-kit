@@ -24,13 +24,13 @@ test('renders a post with marker', (assert) => {
   post.appendSection(section);
   section.markers.push(
     builder.generateMarker([
-      builder.generateMarkerType('STRONG')
-    ], 1, 'Hi')
+      builder.generateMarkup('STRONG')
+    ], 'Hi')
   );
   let mobiledoc = render(post);
   assert.deepEqual(mobiledoc, [
     [
-      ['STRONG']
+      ['strong']
     ],
     [
       [1, 'P', [

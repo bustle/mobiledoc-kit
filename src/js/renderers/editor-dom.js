@@ -2,7 +2,8 @@ import RenderNode from "content-kit-editor/models/render-node";
 import CardNode from "content-kit-editor/models/card-node";
 import { detect } from 'content-kit-editor/utils/array-utils';
 import { POST_TYPE } from "../models/post";
-import { MARKUP_SECTION_TYPE } from "../models/section";
+import { MARKUP_SECTION_TYPE } from "../models/markup-section";
+import { IMAGE_SECTION_TYPE } from "../models/image";
 
 function createElementFromMarkerType(doc, markerType) {
   var element = doc.createElement(markerType.tagName);
@@ -23,7 +24,7 @@ function renderMarkupSection(doc, section, markers) {
   var openedElement;
   for (i=0, l=markers.length;i<l;i++) {
     marker = markers[i];
-    openTypes = marker.open;
+    openTypes = marker.markups;
     closeTypes = marker.close;
     text = marker.value;
 
@@ -77,13 +78,9 @@ class Visitor {
       }
       renderNode.element = element;
     }
-  } 
-
-  section(renderNode, section) {
-    this.markupSection(renderNode, section);
   }
 
-  imageSection(renderNode, section) {
+  [IMAGE_SECTION_TYPE](renderNode, section) {
     if (renderNode.element) {
       if (renderNode.element.src !== section.src) {
         renderNode.element.src = section.src;
@@ -137,7 +134,7 @@ let destroyHooks = {
       renderNode.element.parentNode.removeChild(renderNode.element);
     }
   },
-  imageSection(renderNode, section) {
+  [IMAGE_SECTION_TYPE](renderNode, section) {
     let post = renderNode.parentNode.postNode;
     post.removeSection(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
