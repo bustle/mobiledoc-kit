@@ -79,23 +79,23 @@ function parseMarkers(section, postBuilder, topNode) {
 
     if (currentNode.firstChild) {
       if (isValidMarkerElement(currentNode) && text !== null) {
-        section.markers.push(postBuilder.generateMarker(markups.slice(), text));
+        section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
         text = null;
       }
       currentNode = currentNode.firstChild;
     } else if (currentNode.nextSibling) {
       if (currentNode === topNode) {
-        section.markers.push(postBuilder.generateMarker(markups.slice(), text));
+        section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
         break;
       } else {
         currentNode = currentNode.nextSibling;
         if (currentNode.nodeType === ELEMENT_NODE && isValidMarkerElement(currentNode) && text !== null) {
-          section.markers.push(postBuilder.generateMarker(markups.slice(), text));
+          section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
           text = null;
         }
       }
     } else {
-      section.markers.push(postBuilder.generateMarker(markups.slice(), text));
+      section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
 
       while (currentNode && !currentNode.nextSibling && currentNode !== topNode) {
         currentNode = currentNode.parentNode;

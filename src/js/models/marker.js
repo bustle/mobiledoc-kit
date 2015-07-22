@@ -81,6 +81,21 @@ const Marker = class Marker {
     }
     return [];
   }
+
+  // FIXME this should be implemented as a linked list
+  get nextSibling() {
+    let index = this.section.markers.indexOf(this);
+    if (index > -1 && index < this.section.markers.length-1) {
+      return this.section.markers[index + 1];
+    }
+  }
+
+  get previousSibling() {
+    let index = this.section.markers.indexOf(this);
+    if (index > 0) {
+      return this.section.markers[index - 1];
+    }
+  }
 };
 
 export default Marker;

@@ -14,6 +14,7 @@ export default class Section {
   }
 
   appendMarker(marker) {
+    marker.section = this;
     this.markers.push(marker);
   }
 

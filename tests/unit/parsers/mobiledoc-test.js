@@ -35,7 +35,7 @@ test('#parse doc without marker types', (assert) => {
 
   let section = builder.generateMarkupSection('P', [], false);
   let marker  = builder.generateMarker([], 'hello world');
-  section.markers.push(marker);
+  section.appendMarker(marker);
   post.appendSection(section);
 
   assert.deepEqual(
@@ -69,7 +69,7 @@ test('#parse doc with marker type', (assert) => {
     builder.generateMarker([aMarkerType, bMarkerType], 'brave new'),
     builder.generateMarker([aMarkerType], 'world')
   ];
-  section.markers = markers;
+  markers.forEach(marker => section.appendMarker(marker));
   post.appendSection(section);
 
   assert.deepEqual(

@@ -113,7 +113,7 @@ test('renders a post with marker', (assert) => {
   let post = builder.generatePost();
   let section = builder.generateMarkupSection('P');
   post.appendSection(section);
-  section.markers.push(
+  section.appendMarker(
     builder.generateMarker([
       builder.generateMarkup('STRONG')
     ], 'Hi')

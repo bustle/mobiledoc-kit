@@ -82,7 +82,7 @@ export default class MobiledocParser {
       this.markups.push(this.markerTypes[index]);
     });
     const marker = this.builder.generateMarker(this.markups.slice(), value);
-    section.markers.push(marker);
+    section.appendMarker(marker);
     this.markups = this.markups.slice(0, this.markups.length-closeCount);
   }
 }

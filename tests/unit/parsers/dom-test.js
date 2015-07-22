@@ -33,10 +33,10 @@ test('blank textnodes are ignored', (assert) => {
   let post = parser.parse(buildDOM('<p>first line</p>\n<p>second line</p>'));
 
   let expectedFirst = builder.generateMarkupSection('P');
-  expectedFirst.markers.push(builder.generateMarker([], 'first line'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'first line'));
   expectedPost.appendSection(expectedFirst);
   let expectedSecond = builder.generateMarkupSection('P');
-  expectedSecond.markers.push(builder.generateMarker([], 'second line'));
+  expectedSecond.appendMarker(builder.generateMarker([], 'second line'));
   expectedPost.appendSection(expectedSecond);
 
   assert.deepEqual(post, expectedPost);
@@ -46,10 +46,10 @@ test('textnode adjacent to p tag becomes section', (assert) => {
   const post = parser.parse(buildDOM('<p>first line</p>second line'));
 
   let expectedFirst = builder.generateMarkupSection('P');
-  expectedFirst.markers.push(builder.generateMarker([], 'first line'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'first line'));
   expectedPost.appendSection(expectedFirst);
   let expectedSecond = builder.generateMarkupSection('P', {}, true);
-  expectedSecond.markers.push(builder.generateMarker([], 'second line'));
+  expectedSecond.appendMarker(builder.generateMarker([], 'second line'));
   expectedPost.appendSection(expectedSecond);
 
   assert.deepEqual(post, expectedPost);
@@ -59,7 +59,7 @@ test('p tag (section markup) should create a block', (assert) => {
   const post = parser.parse(buildDOM('<p>text</p>'));
 
   let expectedFirst = builder.generateMarkupSection('P');
-  expectedFirst.markers.push(builder.generateMarker([], 'text'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'text'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -69,7 +69,7 @@ test('strong tag (stray markup) without a block should create a block', (assert)
   const post = parser.parse(buildDOM('<strong>text</strong>'));
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('STRONG')
   ], 'text'));
   expectedPost.appendSection(expectedFirst);
@@ -82,12 +82,12 @@ test('strong tag with inner em (stray markup) without a block should create a bl
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
   let strong = builder.generateMarkup('STRONG');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     strong,
     builder.generateMarkup('EM')
   ], 'stray'));
-  expectedFirst.markers.push(builder.generateMarker([strong], ' markup tags'));
-  expectedFirst.markers.push(builder.generateMarker([], '.'));
+  expectedFirst.appendMarker(builder.generateMarker([strong], ' markup tags'));
+  expectedFirst.appendMarker(builder.generateMarker([], '.'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -97,7 +97,7 @@ test('stray text (stray markup) should create a block', (assert) => {
   const post = parser.parse(buildDOM('text'));
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
-  expectedFirst.markers.push(builder.generateMarker([], 'text'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'text'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -107,11 +107,11 @@ test('text node, strong tag, text node (stray markup) without a block should cre
   const post = parser.parse(buildDOM('start <strong>bold</strong> end'));
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
-  expectedFirst.markers.push(builder.generateMarker([], 'start '));
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([], 'start '));
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('STRONG')
   ], 'bold'));
-  expectedFirst.markers.push(builder.generateMarker([], ' end'));
+  expectedFirst.appendMarker(builder.generateMarker([], ' end'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -121,7 +121,7 @@ test('italic tag (stray markup) without a block should create a block', (assert)
   const post = parser.parse(buildDOM('<em>text</em>'));
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('EM')
   ], 'text'));
   expectedPost.appendSection(expectedFirst);
@@ -133,7 +133,7 @@ test('u tag (stray markup) without a block should strip U and create a block', (
   const post = parser.parse(buildDOM('<u>text</u>'));
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
-  expectedFirst.markers.push(builder.generateMarker([], 'text'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'text'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -144,7 +144,7 @@ test('a tag (stray markup) without a block should create a block', (assert) => {
   const post = parser.parse(buildDOM('<a href="'+url+'">text</a>'));
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('A', ['href', url])
   ], 'text'));
   expectedPost.appendSection(expectedFirst);
@@ -157,8 +157,8 @@ test('markup: break', (assert) => {
   const post = parser.parse(buildDOM('line <br/>break'));
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
-  expectedFirst.markers.push(builder.generateMarker([], 0, 'line '));
-  expectedFirst.markers.push(builder.generateMarker([], 0, 'break'));
+  expectedFirst.appendMarker(builder.generateMarker([], 0, 'line '));
+  expectedFirst.appendMarker(builder.generateMarker([], 0, 'break'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -169,8 +169,8 @@ test('sub tag (stray markup) without a block should filter SUB and create a bloc
   const post = parser.parse(buildDOM('footnote<sub>1</sub>'));
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
-  expectedFirst.markers.push(builder.generateMarker([], 'footnote'));
-  expectedFirst.markers.push(builder.generateMarker([], '1'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'footnote'));
+  expectedFirst.appendMarker(builder.generateMarker([], '1'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -180,8 +180,8 @@ test('sup tag (stray markup) without a block should filter SUP and create a bloc
   const post = parser.parse(buildDOM('e=mc<sup>2</sup>'));
 
   let expectedFirst = builder.generateMarkupSection('P', {}, true);
-  expectedFirst.markers.push(builder.generateMarker([], 'e=mc'));
-  expectedFirst.markers.push(builder.generateMarker([], '2'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'e=mc'));
+  expectedFirst.appendMarker(builder.generateMarker([], '2'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -191,10 +191,10 @@ test('list (stray markup) without a block should create a block', (assert) => {
   const post = parser.parse(buildDOM('<ul><li>Item 1</li><li>Item 2</li></ul>'));
 
   let expectedFirst = builder.generateMarkupSection('UL');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('LI')
   ], 'Item 1'));
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('LI')
   ], 'Item 2'));
   expectedPost.appendSection(expectedFirst);
@@ -206,39 +206,41 @@ test('nested tags (section markup) should create a block', (assert) => {
   const post = parser.parse(buildDOM('<p><em><strong>Double.</strong></em> <strong><em>Double staggered</em> start.</strong> <strong>Double <em>staggered end.</em></strong> <strong>Double <em>staggered</em> middle.</strong></p>'));
 
   let expectedFirst = builder.generateMarkupSection('P');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('EM'),
     builder.generateMarkup('STRONG')
   ], 'Double.'));
-  expectedFirst.markers.push(builder.generateMarker([], ' '));
+  expectedFirst.appendMarker(builder.generateMarker([], ' '));
   let firstStrong = builder.generateMarkup('STRONG');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     firstStrong,
     builder.generateMarkup('EM')
   ], 'Double staggered'));
-  expectedFirst.markers.push(builder.generateMarker([firstStrong], ' start.'));
-  expectedFirst.markers.push(builder.generateMarker([], ' '));
+  expectedFirst.appendMarker(builder.generateMarker([firstStrong], ' start.'));
+  expectedFirst.appendMarker(builder.generateMarker([], ' '));
   let secondStrong = builder.generateMarkup('STRONG');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     secondStrong
   ], 'Double '));
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     secondStrong,
     builder.generateMarkup('EM')
   ], 'staggered end.'));
-  expectedFirst.markers.push(builder.generateMarker([], ' '));
+  expectedFirst.appendMarker(builder.generateMarker([], ' '));
   let thirdStrong = builder.generateMarkup('STRONG');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     thirdStrong
   ], 'Double '));
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     thirdStrong,
     builder.generateMarkup('EM')
   ], 'staggered'));
-  expectedFirst.markers.push(builder.generateMarker([thirdStrong], ' middle.'));
+  expectedFirst.appendMarker(builder.generateMarker([thirdStrong], ' middle.'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
+  let sectionMarkers = post.sections[0].markers;
+  assert.equal(sectionMarkers[2].markups[0], sectionMarkers[3].markups[0]);
 });
 
 /*
@@ -343,7 +345,7 @@ test('attributes', (assert) => {
   const post = parser.parse(buildDOM(`<p><a href="${href}" rel="${rel}">Link to google.com</a></p>`));
 
   let expectedFirst = builder.generateMarkupSection('P');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('A', ['href', href, 'rel', rel])
   ], 'Link to google.com'));
   expectedPost.appendSection(expectedFirst);
@@ -355,7 +357,7 @@ test('attributes filters out inline styles and classes', (assert) => {
   const post = parser.parse(buildDOM('<p class="test" style="color:red;"><b style="line-height:11px">test</b></p>'));
 
   let expectedFirst = builder.generateMarkupSection('P');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('B')
   ], 'test'));
   expectedPost.appendSection(expectedFirst);
@@ -367,7 +369,7 @@ test('blocks: paragraph', (assert) => {
   const post = parser.parse(buildDOM('<p>TEXT</p>'));
 
   let expectedFirst = builder.generateMarkupSection('P');
-  expectedFirst.markers.push(builder.generateMarker([], 'TEXT'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'TEXT'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -377,7 +379,7 @@ test('blocks: heading', (assert) => {
   const post = parser.parse(buildDOM('<h2>TEXT</h2>'));
 
   let expectedFirst = builder.generateMarkupSection('H2');
-  expectedFirst.markers.push(builder.generateMarker([], 'TEXT'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'TEXT'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -387,7 +389,7 @@ test('blocks: subheading', (assert) => {
   const post = parser.parse(buildDOM('<h3>TEXT</h3>'));
 
   let expectedFirst = builder.generateMarkupSection('H3');
-  expectedFirst.markers.push(builder.generateMarker([], 'TEXT'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'TEXT'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -412,7 +414,7 @@ test('blocks: quote', (assert) => {
   const post = parser.parse(buildDOM('<blockquote>quote</blockquote>'));
 
   let expectedFirst = builder.generateMarkupSection('BLOCKQUOTE');
-  expectedFirst.markers.push(builder.generateMarker([], 'quote'));
+  expectedFirst.appendMarker(builder.generateMarker([], 'quote'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
@@ -422,11 +424,11 @@ test('blocks: list', (assert) => {
   const post = parser.parse(buildDOM('<ul><li>Item 1</li> <li>Item 2</li></ul>'));
 
   let expectedFirst = builder.generateMarkupSection('UL');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('LI')
   ], 'Item 1'));
-  expectedFirst.markers.push(builder.generateMarker([], ' '));
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([], ' '));
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('LI')
   ], 'Item 2'));
   expectedPost.appendSection(expectedFirst);
@@ -438,11 +440,11 @@ test('blocks: ordered list', (assert) => {
   const post = parser.parse(buildDOM('<ol><li>Item 1</li> <li>Item 2</li></ol>'));
 
   let expectedFirst = builder.generateMarkupSection('OL');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('LI')
   ], 'Item 1'));
-  expectedFirst.markers.push(builder.generateMarker([], ' '));
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([], ' '));
+  expectedFirst.appendMarker(builder.generateMarker([
     builder.generateMarkup('LI')
   ], 'Item 2'));
   expectedPost.appendSection(expectedFirst);
@@ -505,12 +507,12 @@ test('converts tags to mapped values', (assert) => {
 
   let expectedFirst = builder.generateMarkupSection('P');
   let bold = builder.generateMarkup('B');
-  expectedFirst.markers.push(builder.generateMarker([
+  expectedFirst.appendMarker(builder.generateMarker([
     bold,
     builder.generateMarkup('I')
   ], 'Converts'));
-  expectedFirst.markers.push(builder.generateMarker([bold], ' tags'));
-  expectedFirst.markers.push(builder.generateMarker([], '.'));
+  expectedFirst.appendMarker(builder.generateMarker([bold], ' tags'));
+  expectedFirst.appendMarker(builder.generateMarker([], '.'));
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);

@@ -22,7 +22,7 @@ test('renders a post with marker', (assert) => {
   let post = builder.generatePost();
   let section = builder.generateMarkupSection('P');
   post.appendSection(section);
-  section.markers.push(
+  section.appendMarker(
     builder.generateMarker([
       builder.generateMarkup('STRONG')
     ], 'Hi')
@@ -35,6 +35,35 @@ test('renders a post with marker', (assert) => {
     [
       [1, 'P', [
         [[0], 1, 'Hi']
+      ]]
+    ]
+  ]);
+});
+
+test('renders a post section with markers sharing a markup', (assert) => {
+  let post = builder.generatePost();
+  let section = builder.generateMarkupSection('P');
+  post.appendSection(section);
+  let markup = builder.generateMarkup('STRONG');
+  section.appendMarker(
+    builder.generateMarker([
+      markup
+    ], 'Hi')
+  );
+  section.appendMarker(
+    builder.generateMarker([
+      markup
+    ], ' Guy')
+  );
+  let mobiledoc = render(post);
+  assert.deepEqual(mobiledoc, [
+    [
+      ['strong']
+    ],
+    [
+      [1, 'P', [
+        [[0], 0, 'Hi'],
+        [[], 1, ' Guy']
       ]]
     ]
   ]);
