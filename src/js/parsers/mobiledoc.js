@@ -18,6 +18,7 @@ export default class MobiledocParser {
 
     const post = this.builder.generatePost();
 
+    this.markups = [];
     this.markerTypes = this.parseMarkerTypes(markerTypes);
     this.parseSections(sections, post);
 
@@ -29,7 +30,7 @@ export default class MobiledocParser {
   }
 
   parseMarkerType([tagName, attributes]) {
-    return this.builder.generateMarkerType(tagName, attributes);
+    return this.builder.generateMarkup(tagName, attributes);
   }
 
   parseSections(sections, post) {
@@ -66,7 +67,7 @@ export default class MobiledocParser {
   parseMarkupSection([type, tagName, markers], post) {
     const attributes = null;
     const isGenerated = false;
-    const section = this.builder.generateSection(tagName, attributes, isGenerated);
+    const section = this.builder.generateMarkupSection(tagName, attributes, isGenerated);
 
     post.appendSection(section);
     this.parseMarkers(markers, section);
@@ -77,8 +78,11 @@ export default class MobiledocParser {
   }
 
   parseMarker([markerTypeIndexes, closeCount, value], section) {
-    const markerTypes = markerTypeIndexes.map(index => this.markerTypes[index]);
-    const marker = this.builder.generateMarker(markerTypes, closeCount, value);
-    section.markers.push(marker);
+    markerTypeIndexes.forEach(index => {
+      this.markups.push(this.markerTypes[index]);
+    });
+    const marker = this.builder.generateMarker(this.markups.slice(), value);
+    section.appendMarker(marker);
+    this.markups = this.markups.slice(0, this.markups.length-closeCount);
   }
 }

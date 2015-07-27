@@ -96,10 +96,36 @@ function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER) {
   node.dispatchEvent(oEvent);
 }
 
+function _buildDOM(tagName, attributes={}, children=[]) {
+  const el = document.createElement(tagName);
+  Object.keys(attributes).forEach(k => el.setAttribute(k, attributes[k]));
+  children.forEach(child => el.appendChild(child));
+  return el;
+}
+
+_buildDOM.text = (string) => {
+  return document.createTextNode(string);
+};
+
+/**
+ * Usage:
+ * makeDOM(t =>
+ *   t('div', attributes={}, children=[
+ *     t('b', {}, [
+ *       t.text('I am a bold text node')
+ *     ])
+ *   ])
+ * );
+ */
+function makeDOM(tree) {
+  return tree(_buildDOM);
+}
+
 export default {
   moveCursorTo,
   selectText,
   clearSelection,
   triggerEvent,
-  triggerKeyEvent
+  triggerKeyEvent,
+  makeDOM
 };

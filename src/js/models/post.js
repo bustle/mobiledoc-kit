@@ -1,7 +1,9 @@
+export const POST_TYPE = 'post';
+
 // FIXME: making sections a linked-list would greatly improve this
 export default class Post {
   constructor() {
-    this.type = 'post';
+    this.type = POST_TYPE;
     this.sections = [];
   }
   appendSection(section) {

@@ -38,9 +38,27 @@ function forEachChildNode(element, callback) {
   }
 }
 
+/**
+ * converts the element's NamedNodeMap of attrs into
+ * an object with key-value pairs
+ */
+function getAttributes(element) {
+  let result = {};
+  if (element.hasAttributes()) {
+    let attributes = element.attributes;
+
+    for (let i=0; i<attributes.length; i++) {
+      let {name, value} = attributes[i];
+      result[name] = value;
+    }
+  }
+  return result;
+}
+
 export {
   detectParentNode,
   containsNode,
   clearChildNodes,
-  forEachChildNode
+  forEachChildNode,
+  getAttributes
 };

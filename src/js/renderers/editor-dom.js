@@ -1,6 +1,9 @@
 import RenderNode from "content-kit-editor/models/render-node";
 import CardNode from "content-kit-editor/models/card-node";
 import { detect } from 'content-kit-editor/utils/array-utils';
+import { POST_TYPE } from "../models/post";
+import { MARKUP_SECTION_TYPE } from "../models/markup-section";
+import { IMAGE_SECTION_TYPE } from "../models/image";
 
 function createElementFromMarkerType(doc, markerType) {
   var element = doc.createElement(markerType.tagName);
@@ -21,7 +24,7 @@ function renderMarkupSection(doc, section, markers) {
   var openedElement;
   for (i=0, l=markers.length;i<l;i++) {
     marker = markers[i];
-    openTypes = marker.open;
+    openTypes = marker.markups;
     closeTypes = marker.close;
     text = marker.value;
 
@@ -52,7 +55,7 @@ class Visitor {
     this.options = options;
   }
 
-  post(renderNode, post, visit) {
+  [POST_TYPE](renderNode, post, visit) {
     if (!renderNode.element) {
       let element = document.createElement('div');
       renderNode.element = element;
@@ -60,7 +63,7 @@ class Visitor {
     visit(renderNode, post.sections);
   }
 
-  markupSection(renderNode, section) {
+  [MARKUP_SECTION_TYPE](renderNode, section) {
     if (!renderNode.element) {
       let element = renderMarkupSection(window.document, section, section.markers);
       if (renderNode.previousSibling) {
@@ -75,9 +78,9 @@ class Visitor {
       }
       renderNode.element = element;
     }
-  } 
+  }
 
-  imageSection(renderNode, section) {
+  [IMAGE_SECTION_TYPE](renderNode, section) {
     if (renderNode.element) {
       if (renderNode.element.src !== section.src) {
         renderNode.element.src = section.src;
@@ -119,10 +122,10 @@ class Visitor {
 }
 
 let destroyHooks = {
-  post(/*renderNode, post*/) {
+  [POST_TYPE](/*renderNode, post*/) {
     throw new Error('post destruction is not supported by the renderer');
   },
-  markupSection(renderNode, section) {
+  [MARKUP_SECTION_TYPE](renderNode, section) {
     let post = renderNode.parentNode.postNode;
     post.removeSection(section);
     // Some formatting commands remove the element from the DOM during
@@ -131,7 +134,7 @@ let destroyHooks = {
       renderNode.element.parentNode.removeChild(renderNode.element);
     }
   },
-  imageSection(renderNode, section) {
+  [IMAGE_SECTION_TYPE](renderNode, section) {
     let post = renderNode.parentNode.postNode;
     post.removeSection(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
