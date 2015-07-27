@@ -258,6 +258,7 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
         var _this = this;
 
         var rootElement = arguments.length <= 1 || arguments[1] === undefined ? utils.createElement('div') : arguments[1];
+        var cards = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
         var _mobiledoc = _slicedToArray(mobiledoc, 2);
 
@@ -266,6 +267,7 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
 
         this.root = rootElement;
         this.markerTypes = markerTypes;
+        this.cards = cards;
 
         sections.forEach(function (section) {
           return _this.renderSection(section);
@@ -280,9 +282,18 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
 
         var type = _section[0];
 
+        var rendered = undefined;
         switch (type) {
           case 1:
-            var rendered = this.renderParagraphSection(section);
+            rendered = this.renderMarkupSection(section);
+            utils.appendChild(this.root, rendered);
+            break;
+          case 2:
+            rendered = this.renderImageSection(section);
+            utils.appendChild(this.root, rendered);
+            break;
+          case 10:
+            rendered = this.renderCardSection(section);
             utils.appendChild(this.root, rendered);
             break;
           default:
@@ -290,13 +301,42 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
         }
       }
     }, {
-      key: 'renderParagraphSection',
-      value: function renderParagraphSection(_ref3) {
-        var _ref32 = _slicedToArray(_ref3, 3);
+      key: 'renderImageSection',
+      value: function renderImageSection(_ref3) {
+        var _ref32 = _slicedToArray(_ref3, 2);
 
         var type = _ref32[0];
-        var tagName = _ref32[1];
-        var markers = _ref32[2];
+        var src = _ref32[1];
+
+        var element = utils.createElement('img');
+        element.src = src;
+        return element;
+      }
+    }, {
+      key: 'renderCardSection',
+      value: function renderCardSection(_ref4) {
+        var _ref42 = _slicedToArray(_ref4, 3);
+
+        var type = _ref42[0];
+        var name = _ref42[1];
+        var payload = _ref42[2];
+
+        var card = this.cards[name];
+        if (!card) {
+          throw new Error('Cannot render unknown card named ' + name);
+        }
+        var element = utils.createElement('div');
+        card.display.setup(element, {}, { name: name }, payload);
+        return element;
+      }
+    }, {
+      key: 'renderMarkupSection',
+      value: function renderMarkupSection(_ref5) {
+        var _ref52 = _slicedToArray(_ref5, 3);
+
+        var type = _ref52[0];
+        var tagName = _ref52[1];
+        var markers = _ref52[2];
 
         var element = utils.createElement(tagName);
         var elements = [element];

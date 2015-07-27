@@ -211,7 +211,7 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   function createElementFromMarkerType() {
-    var _ref = arguments[0] === undefined ? ['', []] : arguments[0];
+    var _ref = arguments.length <= 0 || arguments[0] === undefined ? ['', []] : arguments[0];
 
     var _ref2 = _slicedToArray(_ref, 2);
 
@@ -245,7 +245,7 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
       value: function render(mobiledoc) {
         var _this = this;
 
-        var rootElement = arguments[1] === undefined ? _mobiledocHtmlRendererUtilsDom['default'].createElement('div') : arguments[1];
+        var rootElement = arguments.length <= 1 || arguments[1] === undefined ? _mobiledocHtmlRendererUtilsDom['default'].createElement('div') : arguments[1];
 
         var _mobiledoc = _slicedToArray(mobiledoc, 2);
 
@@ -268,9 +268,18 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
 
         var type = _section[0];
 
+        var rendered = undefined;
         switch (type) {
           case 1:
-            var rendered = this.renderParagraphSection(section);
+            rendered = this.renderMarkupSection(section);
+            _mobiledocHtmlRendererUtilsDom['default'].appendChild(this.root, rendered);
+            break;
+          case 2:
+            rendered = this.renderImageSection(section);
+            _mobiledocHtmlRendererUtilsDom['default'].appendChild(this.root, rendered);
+            break;
+          case 10:
+            rendered = this.renderCardSection(section);
             _mobiledocHtmlRendererUtilsDom['default'].appendChild(this.root, rendered);
             break;
           default:
@@ -278,13 +287,43 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
         }
       }
     }, {
-      key: 'renderParagraphSection',
-      value: function renderParagraphSection(_ref3) {
-        var _ref32 = _slicedToArray(_ref3, 3);
+      key: 'renderImageSection',
+      value: function renderImageSection(_ref3) {
+        var _ref32 = _slicedToArray(_ref3, 2);
 
         var type = _ref32[0];
-        var tagName = _ref32[1];
-        var markers = _ref32[2];
+        var url = _ref32[1];
+
+        var element = _mobiledocHtmlRendererUtilsDom['default'].createElement('img');
+        _mobiledocHtmlRendererUtilsDom['default'].setAttribute(element, 'src', url);
+        return element;
+      }
+    }, {
+      key: 'renderCardSection',
+      value: function renderCardSection(_ref4) {
+        var _ref42 = _slicedToArray(_ref4, 3);
+
+        var type = _ref42[0];
+        var name = _ref42[1];
+        var payload = _ref42[2];
+
+        var element = undefined;
+        if (payload.src) {
+          element = _mobiledocHtmlRendererUtilsDom['default'].createElement('img');
+          _mobiledocHtmlRendererUtilsDom['default'].setAttribute(element, 'src', payload.src);
+        } else {
+          element = _mobiledocHtmlRendererUtilsDom['default'].createElement('p');
+        }
+        return element;
+      }
+    }, {
+      key: 'renderMarkupSection',
+      value: function renderMarkupSection(_ref5) {
+        var _ref52 = _slicedToArray(_ref5, 3);
+
+        var type = _ref52[0];
+        var tagName = _ref52[1];
+        var markers = _ref52[2];
 
         var element = _mobiledocHtmlRendererUtilsDom['default'].createElement(tagName);
         var elements = [element];
@@ -342,11 +381,14 @@ define("mobiledoc-html-renderer/utils/dom", ["exports"], function (exports) {
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+  var VOID_TAGS = "area base br col command embed hr img input keygen link meta param source track wbr".split(" ");
+
   var Element = (function () {
     function Element(tagName) {
       _classCallCheck(this, Element);
 
       this.tagName = tagName.toLowerCase();
+      this.isVoid = VOID_TAGS.indexOf(this.tagName) !== -1;
       this.childNodes = [];
       this.attributes = [];
     }
@@ -375,10 +417,13 @@ define("mobiledoc-html-renderer/utils/dom", ["exports"], function (exports) {
         }
         html += ">";
 
-        for (var i = 0; i < this.childNodes.length; i++) {
-          html += this.childNodes[i].toString();
+        if (!this.isVoid) {
+          for (var i = 0; i < this.childNodes.length; i++) {
+            html += this.childNodes[i].toString();
+          }
+          html += "</" + this.tagName + ">";
         }
-        html += "</" + this.tagName + ">";
+
         return html;
       }
     }]);
