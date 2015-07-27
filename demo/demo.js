@@ -12,25 +12,25 @@ var editor;
 var selfieCard = {
   name: 'selfie-card',
   display: {
-    setup(element, options, env, payload) {
+    setup: function(element, options, env, payload) {
       removeChildren(element);
 
       if (payload.imageSrc) {
         element.appendChild(
-          $(`
-              <div>
-                <img src="${payload.imageSrc}"><br>
-                <div>You look nice today.</div>
-                <div><button id='go-edit'>Take a better picture</button></div>
-              </div>
-            `)[0]
+          $('' +
+              '<div>' +
+                '<img src="' + payload.imageSrc + '"><br>' +
+                '<div>You look nice today.</div>' +
+                '<div><button id="go-edit">Take a better picture</button></div>' +
+              '</div>' +
+            '')[0]
         );
       } else {
-        element.appendChild($(`
-          <div>
-            Hello there!
-            <button id='go-edit'>Click here to take a picture</button>
-          </div>`)[0]
+        element.appendChild($('' +
+          '<div>' +
+            'Hello there!' +
+            '<button id="go-edit">Click here to take a picture</button>' +
+          '</div>')[0]
         );
       }
 
@@ -40,16 +40,16 @@ var selfieCard = {
     }
   },
   edit: {
-    setup(element, options, env) {
+    setup: function(element, options, env) {
       removeChildren(element);
 
-      const vid = $(`
-        <div>
-          <video id="video" width="160" height="120" autoplay></video>
-          <button id="snap">Snap Photo</button>
-          <canvas id="canvas" width="160" height="120"></canvas>
-        </div>
-      `);
+      var vid = $('' +
+        '<div>' +
+          '<video id="video" width="160" height="120" autoplay></video>' +
+          '<button id="snap">Snap Photo</button>' +
+          '<canvas id="canvas" width="160" height="120"></canvas>' +
+        '</div>' +
+      '');
       element.appendChild(vid[0]);
 
       var canvas = document.getElementById("canvas"),
@@ -68,7 +68,7 @@ var selfieCard = {
 
         $('#snap').click(function() {
           context.drawImage(video, 0, 0, 160, 120);
-          let imageSrc = canvas.toDataURL('image/png');
+          var imageSrc = canvas.toDataURL('image/png');
           env.save({imageSrc: imageSrc});
         });
       }, errBack);
@@ -80,7 +80,7 @@ var simpleCard = {
   name: 'simple-card',
   display: {
     setup: function(element) {
-      let card = document.createElement('span');
+      var card = document.createElement('span');
       card.innerHTML = 'Hello, world';
       element.appendChild(card);
     }
@@ -92,10 +92,10 @@ var cardWithEditMode = {
   display: {
     setup: function(element, options, env) {
       removeChildren(element);
-      let card = document.createElement('div');
+      var card = document.createElement('div');
       card.innerHTML = 'I am in display mode';
 
-      let button = document.createElement('button');
+      var button = document.createElement('button');
       button.innerText = 'Change to edit';
       button.onclick = env.edit;
 
@@ -106,10 +106,10 @@ var cardWithEditMode = {
   edit: {
     setup: function(element, options, env) {
       removeChildren(element);
-      let card = document.createElement('div');
+      var card = document.createElement('div');
       card.innerHTML = 'I am in edit mode';
 
-      let button = document.createElement('button');
+      var button = document.createElement('button');
       button.innerText = 'Change to display';
       button.onclick = env.save;
 
@@ -129,10 +129,10 @@ var cardWithInput = {
       if (payload.name) {
         text = 'Hello, ' + payload.name + '!';
       }
-      let card = document.createElement('div');
+      var card = document.createElement('div');
       card.innerText = text;
 
-      let button = document.createElement('button');
+      var button = document.createElement('button');
       button.innerText = 'Edit';
       button.onclick = env.edit;
 
@@ -143,13 +143,13 @@ var cardWithInput = {
   edit: {
     setup: function(element, options, env) {
       removeChildren(element);
-      let card = document.createElement('div');
+      var card = document.createElement('div');
       card.innerHTML = 'What is your name?';
 
-      let input = document.createElement('input');
+      var input = document.createElement('input');
       input.placeholder = 'Enter your name...';
 
-      let button = document.createElement('button');
+      var button = document.createElement('button');
       button.innerText = 'Save';
       button.onclick = function() {
         var name = input.value;

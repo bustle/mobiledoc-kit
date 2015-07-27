@@ -19,6 +19,7 @@ body {
 
 .container {
   display: -ms-flexbox;
+  display: -webkit-flex;
   display: flex;
 
   -ms-flex-pack: justify;
