@@ -20,10 +20,10 @@ var demoCard = {
 ```
 
 In this minimally viable demo, a `display` hook is defined showing some text.
-Given a mobiledoc referencing `demo` as a card this text would render for that
+Given a Mobiledoc referencing `demo` as a card this text would render for that
 name.
 
-Cards are executated at runtime by Content-Kit and the renderers. This means
+Cards are executed at runtime by Content-Kit and the renderers. This means
 you must pass any cards you want available to an editor or renderer. See the
 documentation for each project on how to do this.
 
@@ -76,7 +76,7 @@ var exampleCard = {
 * `payload` is the payload for this card instance. It was either loaded from
   a Mobiledoc or generated and passed into an `env.save` call.
 
-Additonally, *renderers may offer the ability to configure a non-standard
+Additionally, *renderers may offer the ability to configure a non-standard
 hook name at runtime*. An example would be having the DOM renderer called with
 an option specifying the hook name `mobile-placeholder`. This allows for
 variants of a card in different situations.
