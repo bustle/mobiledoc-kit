@@ -105,8 +105,9 @@ And visit [localhost:5000/dist/demo/index.html](http://localhost:5000/dist/demo/
 The demo website is hosted at github pages. To publish a new version:
 
   * `npm run build-website` - This builds the website into `website/` and commits it
-  * `npm run deploy-website` - Pushes the `website/` subtree to the `gh-pages` branch at github
+  * `npm run deploy-website` - Pushes the `website/` subtree to the `gh-pages`
+     branch of your `origin` at github
 
 Visit [bustlelabs.github.io/content-kit-editor/demo](http://bustlelabs.github.io/content-kit-editor/demo).
 
-*Initial development of Content-Kit was generously funded by [Bustle Labs](http://www.bustle.com/labs). Bustle Labs is the tech team behind the editorial staff at [Bustle](http://www.bustle.com), a fantastic and successful feminist and women’s interest site based in NYC.*
+*Development of Content-Kit was generously funded by [Bustle Labs](http://www.bustle.com/labs). Bustle Labs is the tech team behind the editorial staff at [Bustle](http://www.bustle.com), a fantastic and successful feminist and women’s interest site based in NYC.*
