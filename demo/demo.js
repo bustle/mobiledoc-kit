@@ -21,6 +21,7 @@ var selfieCard = {
               '<div>' +
                 '<img src="' + payload.imageSrc + '"><br>' +
                 '<div>You look nice today.</div>' +
+                (env.edit ? "<div><button id='go-edit'>Take a better picture</button></div>" : "") +
                 '<div><button id="go-edit">Take a better picture</button></div>' +
               '</div>' +
             '')[0]
@@ -29,7 +30,7 @@ var selfieCard = {
         element.appendChild($('' +
           '<div>' +
             'Hello there!' +
-            '<button id="go-edit">Click here to take a picture</button>' +
+            (env.edit ? "<button id='go-edit'>Click here to take a picture</button>" : "")
           '</div>')[0]
         );
       }
@@ -174,10 +175,14 @@ var ContentKitDemo = exports.ContentKitDemo = {
     var mobiledoc = editor.serialize();
     codePaneJSON.innerHTML = this.syntaxHighlight(mobiledoc);
 
+    var cards = {
+      'simple-card': simpleCard,
+      'edit-card': cardWithEditMode,
+      'input-card': cardWithInput,
+      'selfie-card': selfieCard
+    };
     var renderer = new MobiledocDOMRenderer();
-    var rendered = renderer.render(mobiledoc, document.createElement('div'), {
-      /* cards */
-    });
+    var rendered = renderer.render(mobiledoc, document.createElement('div'), cards);
 
     $('#rendered-mobiledoc').empty();
     $('#rendered-mobiledoc')[0].appendChild(rendered);
