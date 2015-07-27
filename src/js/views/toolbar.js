@@ -1,6 +1,5 @@
 import View from './view';
 import ToolbarButton from './toolbar-button';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 import { tagsInSelection } from '../utils/selection-utils';
 import { createDiv, swapElements, positionElementToRightOf, positionElementCenteredAbove } from '../utils/element-utils';
 
@@ -30,127 +29,104 @@ function updateButtonsForSelection(buttons, selection) {
   }
 }
 
-function Toolbar(options) {
-  options = options || {};
-  var toolbar = this;
-  var commands = options.commands;
-  var commandCount = commands && commands.length, i;
-  options.classNames = ['ck-toolbar'];
-  View.call(toolbar, options);
+class Toolbar extends View {
+  constructor(options={}) {
+    options.classNames = ['ck-toolbar'];
+    super(options);
 
-  toolbar.setSticky(options.sticky || false);
-  toolbar.setDirection(options.direction || ToolbarDirection.TOP);
-  toolbar.editor = options.editor || null;
-  toolbar.embedIntent = options.embedIntent || null;
-  toolbar.activePrompt = null;
-  toolbar.buttons = [];
+    let commands = options.commands;
+    let commandCount = commands && commands.length;
 
-  toolbar.contentElement = createDiv('ck-toolbar-content');
-  toolbar.promptContainerElement = createDiv('ck-toolbar-prompt');
-  toolbar.buttonContainerElement = createDiv('ck-toolbar-buttons');
-  toolbar.contentElement.appendChild(toolbar.promptContainerElement);
-  toolbar.contentElement.appendChild(toolbar.buttonContainerElement);
-  toolbar.element.appendChild(toolbar.contentElement);
+    this.setDirection(options.direction || ToolbarDirection.TOP);
+    this.editor = options.editor || null;
+    this.embedIntent = options.embedIntent || null;
+    this.activePrompt = null;
+    this.buttons = [];
 
-  for(i = 0; i < commandCount; i++) {
-    this.addCommand(commands[i]);
+    this.contentElement = createDiv('ck-toolbar-content');
+    this.promptContainerElement = createDiv('ck-toolbar-prompt');
+    this.buttonContainerElement = createDiv('ck-toolbar-buttons');
+    this.contentElement.appendChild(this.promptContainerElement);
+    this.contentElement.appendChild(this.buttonContainerElement);
+    this.element.appendChild(this.contentElement);
+
+    for(let i = 0; i < commandCount; i++) {
+      this.addCommand(commands[i]);
+    }
+
+    // Closes prompt if displayed when changing selection
+    this.addEventListener(document, 'mouseup', () => {
+      this.dismissPrompt();
+    });
   }
 
-  // Closes prompt if displayed when changing selection
-  document.addEventListener('mouseup', function() {
-    toolbar.dismissPrompt();
-  });
+  hide() {
+    if (super.hide()) {
+      let style = this.element.style;
+      style.left = '';
+      style.top = '';
+      this.dismissPrompt();
+    }
+  }
+
+  addCommand(command) {
+    command.editorContext = this.editor;
+    command.embedIntent = this.embedIntent;
+    let button = new ToolbarButton({command: command, toolbar: this});
+    this.buttons.push(button);
+    this.buttonContainerElement.appendChild(button.element);
+  }
+
+  displayPrompt(prompt) {
+    swapElements(this.promptContainerElement, this.buttonContainerElement);
+    this.promptContainerElement.appendChild(prompt.element);
+    prompt.show(() => {
+      this.dismissPrompt();
+      this.updateForSelection();
+    });
+    this.activePrompt = prompt;
+  }
+
+  dismissPrompt() {
+    let activePrompt = this.activePrompt;
+    if (activePrompt) {
+      activePrompt.hide();
+      swapElements(this.buttonContainerElement, this.promptContainerElement);
+      this.activePrompt = null;
+    }
+  }
+
+  updateForSelection(selection=window.getSelection()) {
+    if (!selection.isCollapsed) {
+      this.positionToContent(selection.getRangeAt(0));
+      updateButtonsForSelection(this.buttons, selection);
+    }
+  }
+
+  positionToContent(content) {
+    var directions = ToolbarDirection;
+    var positioningMethod, position, sideEdgeOffset;
+    switch(this.direction) {
+      case directions.RIGHT:
+        positioningMethod = positionElementToRightOf;
+        break;
+      default:
+        positioningMethod = positionElementCenteredAbove;
+    }
+    position = positioningMethod(this.element, content);
+    sideEdgeOffset = Math.min(Math.max(10, position.left), document.body.clientWidth - this.element.offsetWidth - 10);
+    this.contentElement.style.transform = 'translateX(' + (sideEdgeOffset - position.left) + 'px)';
+  }
+
+  setDirection(direction) {
+    this.direction = direction;
+    if (direction === ToolbarDirection.RIGHT) {
+      this.addClass('right');
+    } else {
+      this.removeClass('right');
+    }
+  }
 }
-inherit(Toolbar, View);
-
-Toolbar.prototype.hide = function() {
-  if (Toolbar._super.prototype.hide.call(this)) {
-    var style = this.element.style;
-    style.left = '';
-    style.top = '';
-    this.dismissPrompt();
-  }
-};
-
-Toolbar.prototype.addCommand = function(command) {
-  command.editorContext = this.editor;
-  command.embedIntent = this.embedIntent;
-  var button = new ToolbarButton({ command: command, toolbar: this });
-  this.buttons.push(button);
-  this.buttonContainerElement.appendChild(button.element);
-};
-
-Toolbar.prototype.displayPrompt = function(prompt) {
-  var toolbar = this;
-  swapElements(toolbar.promptContainerElement, toolbar.buttonContainerElement);
-  toolbar.promptContainerElement.appendChild(prompt.element);
-  prompt.show(function() {
-    toolbar.dismissPrompt();
-    toolbar.updateForSelection();
-  });
-  toolbar.activePrompt = prompt;
-};
-
-Toolbar.prototype.dismissPrompt = function() {
-  var toolbar = this;
-  var activePrompt = toolbar.activePrompt;
-  if (activePrompt) {
-    activePrompt.hide();
-    swapElements(toolbar.buttonContainerElement, toolbar.promptContainerElement);
-    toolbar.activePrompt = null;
-  }
-};
-
-Toolbar.prototype.updateForSelection = function(selection) {
-  var toolbar = this;
-  selection = selection || window.getSelection();
-  if (toolbar.sticky) {
-    updateButtonsForSelection(toolbar.buttons, selection);
-  } else if (!selection.isCollapsed) {
-    toolbar.positionToContent(selection.getRangeAt(0));
-    updateButtonsForSelection(toolbar.buttons, selection);
-  }
-};
-
-Toolbar.prototype.positionToContent = function(content) {
-  var directions = ToolbarDirection;
-  var positioningMethod, position, sideEdgeOffset;
-  switch(this.direction) {
-    case directions.RIGHT:
-      positioningMethod = positionElementToRightOf;
-      break;
-    default:
-      positioningMethod = positionElementCenteredAbove;
-  }
-  position = positioningMethod(this.element, content);
-  sideEdgeOffset = Math.min(Math.max(10, position.left), document.body.clientWidth - this.element.offsetWidth - 10);
-  this.contentElement.style.transform = 'translateX(' + (sideEdgeOffset - position.left) + 'px)';
-};
-
-Toolbar.prototype.setDirection = function(direction) {
-  this.direction = direction;
-  if (direction === ToolbarDirection.RIGHT) {
-    this.addClass('right');
-  } else {
-    this.removeClass('right');
-  }
-};
-
-Toolbar.prototype.setSticky = function(sticky) {
-  this.sticky = sticky;
-  if (sticky) {
-    this.addClass('sticky');
-    this.element.removeAttribute('style'); // clears any prior positioning
-    this.show();
-  } else {
-    this.removeClass('sticky');
-    this.hide();
-  }
-};
-
-Toolbar.prototype.toggleSticky = function() {
-  this.setSticky(!this.sticky);
-};
 
 Toolbar.Direction = ToolbarDirection;
 

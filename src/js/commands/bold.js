@@ -1,15 +1,14 @@
 import TextFormatCommand from './text-format';
 import { getSelectionBlockTagName } from '../utils/selection-utils';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
+import { inherit } from 'content-kit-utils';
 
 var RegExpHeadingTag = /^(h1|h2|h3|h4|h5|h6)$/i;
 
 function BoldCommand() {
   TextFormatCommand.call(this, {
     name: 'bold',
-    tag: Type.BOLD.tag,
-    mappedTags: Type.BOLD.mappedTags,
+    tag: 'strong',
+    mappedTags: ['b'],
     button: '<i class="ck-icon-bold"></i>'
   });
 }

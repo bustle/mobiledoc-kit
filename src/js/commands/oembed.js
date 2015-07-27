@@ -1,10 +1,10 @@
 import Command from './base';
 import Prompt from '../views/prompt';
 import Message from '../views/message';
-import EmbedModel from 'node_modules/content-kit-compiler/src/models/embed';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
+import { inherit } from 'content-kit-utils';
 import { OEmbedder } from '../utils/http-utils';
 
+/*
 function loadTwitterWidgets(element) {
   if (window.twttr) {
     window.twttr.widgets.load(element);
@@ -15,6 +15,7 @@ function loadTwitterWidgets(element) {
     document.head.appendChild(script);
   }
 }
+*/
 
 function OEmbedCommand(options) {
   Command.call(this, {
@@ -32,10 +33,10 @@ inherit(OEmbedCommand, Command);
 
 OEmbedCommand.prototype.exec = function(url) {
   var command = this;
-  var editorContext = command.editorContext;
+  // var editorContext = command.editorContext;
   var embedIntent = command.embedIntent;
-  var index = editorContext.getCurrentBlockIndex();
-  
+  // var index = editorContext.getCurrentBlockIndex();
+
   embedIntent.showLoading();
   this.embedService.fetch({
     url: url,
@@ -54,12 +55,15 @@ OEmbedCommand.prototype.exec = function(url) {
         new Message().showError(response.error_message);
         embedIntent.show();
       } else {
+        throw new Error('Unimplemented EmbedModel is not a thing');
+        /*
         var embedModel = new EmbedModel(response);
         editorContext.insertBlock(embedModel, index);
         editorContext.renderBlockAt(index);
         if (embedModel.attributes.provider_name.toLowerCase() === 'twitter') {
           loadTwitterWidgets(editorContext.element);
         }
+        */
       }
     }
   });

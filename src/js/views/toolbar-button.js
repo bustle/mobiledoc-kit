@@ -1,5 +1,6 @@
-
 var buttonClassName = 'ck-toolbar-btn';
+import mixin from '../utils/mixin';
+import EventListenerMixin from '../utils/event-listener';
 
 function ToolbarButton(options) {
   var button = this;
@@ -15,7 +16,7 @@ function ToolbarButton(options) {
   element.title = command.name;
   element.className = buttonClassName;
   element.innerHTML = command.button;
-  element.addEventListener('mouseup', function(e) {
+  this.addEventListener(element, 'mouseup', (e) => {
     if (!button.isActive && prompt) {
       toolbar.displayPrompt(prompt);
     } else {
@@ -42,5 +43,7 @@ ToolbarButton.prototype = {
     }
   }
 };
+
+mixin(ToolbarButton, EventListenerMixin);
 
 export default ToolbarButton;

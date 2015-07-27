@@ -95,6 +95,8 @@
   // to your app that hang off `window`.
 
   "predef": [
-    "define" // amd loader
+    "define", // amd loader
+    "$",
+    "QUnit"
   ]
 }

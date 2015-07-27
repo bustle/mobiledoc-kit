@@ -14,7 +14,7 @@ module.exports = function(req, res) {
 
     api.oembed({url: url}, function(err, objs) {
       if (err) {
-        var message = JSON.parse(objs).error_message;
+        var message = window.JSON.parse(objs).error_message;
         return res.status(500).json(message);
       }
 

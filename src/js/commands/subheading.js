@@ -1,11 +1,10 @@
 import FormatBlockCommand from './format-block';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
+import { inherit } from 'content-kit-utils';
 
 function SubheadingCommand() {
   FormatBlockCommand.call(this, {
     name: 'subheading',
-    tag: Type.SUBHEADING.tag,
+    tag: 'h3',
     button: '<i class="ck-icon-heading"></i>2'
   });
 }

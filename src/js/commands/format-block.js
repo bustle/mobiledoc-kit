@@ -1,7 +1,6 @@
 import TextFormatCommand from './text-format';
 import { getSelectionBlockElement, selectNode } from '../utils/selection-utils';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
+import { inherit } from 'content-kit-utils';
 
 function FormatBlockCommand(options) {
   options = options || {};
@@ -17,7 +16,10 @@ FormatBlockCommand.prototype.exec = function() {
   var blockElement = getSelectionBlockElement();
   // Allow block commands to be toggled back to a text block
   if(tag === blockElement.tagName.toLowerCase()) {
+    throw new Error('Unimplemented: Type.BOLD.paragraph must be replaced');
+    /*
     value = Type.PARAGRAPH.tag;
+    */
   } else {
     // Flattens the selection before applying the block format.
     // Otherwise, undesirable nested blocks can occur.
@@ -27,7 +29,7 @@ FormatBlockCommand.prototype.exec = function() {
     blockElement.parentNode.removeChild(blockElement);
     selectNode(flatNode);
   }
-  
+
   FormatBlockCommand._super.prototype.exec.call(this, value);
 };
 

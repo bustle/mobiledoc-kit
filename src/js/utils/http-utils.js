@@ -1,4 +1,3 @@
-
 function createXHR(options) {
   var xhr = new XMLHttpRequest();
   xhr.open(options.method, options.url);
@@ -36,7 +35,7 @@ function xhrPost(options) {
 function responseJSON(jsonString) {
   if (!jsonString) { return null; }
   try {
-    return JSON.parse(jsonString);
+    return window.JSON.parse(jsonString);
   } catch(e) {
     return jsonString;
   }

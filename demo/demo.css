@@ -9,11 +9,30 @@ body {
   color: #454545;
   margin: 0;
   padding: 0;
+  background-color: #EFEFEF;
 }
 @media only screen and (max-width: 767px) {
   body {
     font-size: 0.88em;
   }
+}
+
+.container {
+  display: -ms-flexbox;
+  display: flex;
+
+  -ms-flex-pack: justify;
+  justify-content: space-around;
+}
+
+.pane {
+  max-width: 20%;
+  padding: 0 1em;
+}
+
+.pane p.desc {
+  height: 150px;
+  overflow: scroll;
 }
 
 .editor-pane {
@@ -55,16 +74,21 @@ body {
   right: 0;
   width: 50%;
 }
-.code-pane {
-  display: none;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #2b303b;
+#serialized-mobiledoc, #mobiledoc-to-load {
   overflow: hidden;
+  padding: 0.25em;
 }
+#serialized-mobiledoc {
+  white-space: pre;
+  background-color: #080808;
+}
+#mobiledoc-to-load {
+}
+#mobiledoc-to-load textarea {
+  height: 500px;
+  width: 100%;
+}
+
 .code-pane:first-child {
   display: block;
 }

@@ -1,5 +1,4 @@
 import View from './view';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
 import { restoreRange } from '../utils/selection-utils';
 import { createDiv, positionElementToRect } from '../utils/element-utils';
 import Keycodes from '../utils/keycodes';
@@ -15,52 +14,63 @@ function positionHiliteRange(range) {
   positionElementToRect(hiliter, rect);
 }
 
-function Prompt(options) {
-  var prompt = this;
-  options.tagName = 'input';
-  View.call(prompt, options);
+class Prompt extends View {
+  constructor(options) {
+    options.tagName = 'input';
+    super(options);
 
-  prompt.command = options.command;
-  prompt.element.placeholder = options.placeholder || '';
-  prompt.element.addEventListener('mouseup', function(e) { e.stopPropagation(); }); // prevents closing prompt when clicking input 
-  prompt.element.addEventListener('keyup', function(e) {
-    var entry = this.value;
-    if(entry && prompt.range && !e.shiftKey && e.which === Keycodes.ENTER) {
-      restoreRange(prompt.range);
-      prompt.command.exec(entry);
-      if (prompt.onComplete) { prompt.onComplete(); }
-    }
-  });
+    var prompt = this;
 
-  window.addEventListener('resize', function() {
-    var activeHilite = hiliter.parentNode;
-    var range = prompt.range;
-    if(activeHilite && range) {
-      positionHiliteRange(range);
+    prompt.command = options.command;
+    prompt.element.placeholder = options.placeholder || '';
+    this.addEventListener(prompt.element, 'mouseup', (e) => {
+      // prevents closing prompt when clicking input
+      e.stopPropagation();
+    });
+    this.addEventListener(prompt.element, 'keyup', (e) => {
+      const entry = prompt.element.value;
+
+      if (entry && prompt.range && !e.shiftKey && e.which === Keycodes.ENTER) {
+        restoreRange(prompt.range);
+        this.command.exec(entry);
+        if (this.onComplete) { this.onComplete(); }
+      }
+    });
+
+    this.addEventListener(window, 'resize', () => {
+      var activeHilite = hiliter.parentNode;
+      var range = prompt.range;
+      if(activeHilite && range) {
+        positionHiliteRange(range);
+      }
+    });
+  }
+
+  show(callback) {
+    var element = this.element;
+    var selection = window.getSelection();
+    var range = selection && selection.rangeCount && selection.getRangeAt(0);
+    element.value = null;
+    this.range = range || null;
+
+    if (range) {
+      container.appendChild(hiliter);
+      positionHiliteRange(this.range);
+      setTimeout(() => {
+        // defer focus (disrupts mouseup events)
+        element.focus();
+      });
+      if (callback) {
+        this.onComplete = callback;
+      }
     }
-  });
+  }
+
+  hide() {
+    if (hiliter.parentNode) {
+      container.removeChild(hiliter);
+    }
+  }
 }
-inherit(Prompt, View);
-
-Prompt.prototype.show = function(callback) {
-  var prompt = this;
-  var element = prompt.element;
-  var selection = window.getSelection();
-  var range = selection && selection.rangeCount && selection.getRangeAt(0);
-  element.value = null;
-  prompt.range = range || null;
-  if (range) {
-    container.appendChild(hiliter);
-    positionHiliteRange(prompt.range);
-    setTimeout(function(){ element.focus(); }); // defer focus (disrupts mouseup events)
-    if (callback) { prompt.onComplete = callback; }
-  }
-};
-
-Prompt.prototype.hide = function() {
-  if (hiliter.parentNode) {
-    container.removeChild(hiliter);
-  }
-};
 
 export default Prompt;

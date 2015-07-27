@@ -1,7 +1,7 @@
-import EditorHTMLRenderer from '../renderers/editor-html-renderer';
 import TextFormatToolbar  from '../views/text-format-toolbar';
 import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
+
 import BoldCommand from '../commands/bold';
 import ItalicCommand from '../commands/italic';
 import LinkCommand from '../commands/link';
@@ -12,21 +12,43 @@ import UnorderedListCommand from '../commands/unordered-list';
 import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
-import Keycodes from '../utils/keycodes';
-import { getSelectionBlockElement, getCursorOffsetInElement } from '../utils/selection-utils';
-import EventEmitter from '../utils/event-emitter';
-import Compiler from 'node_modules/content-kit-compiler/src/compiler';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
-import { toArray } from 'node_modules/content-kit-utils/src/array-utils';
-import { merge, mergeWithOptions } from 'node_modules/content-kit-utils/src/object-utils';
+import CardCommand from '../commands/card';
 
-var defaults = {
+import Keycodes from '../utils/keycodes';
+import {
+  getSelectionBlockElement,
+  getCursorOffsetInElement,
+  clearSelection,
+  isSelectionInElement
+} from '../utils/selection-utils';
+import EventEmitter from '../utils/event-emitter';
+
+import MobiledocParser from "../parsers/mobiledoc";
+import DOMParser from "../parsers/dom";
+import Renderer from 'content-kit-editor/renderers/editor-dom';
+import RenderTree from 'content-kit-editor/models/render-tree';
+import MobiledocRenderer from '../renderers/mobiledoc';
+
+import { toArray, mergeWithOptions } from 'content-kit-utils';
+import {
+  detectParentNode,
+  clearChildNodes,
+  forEachChildNode
+} from '../utils/dom-utils';
+import { getData, setData } from '../utils/element-utils';
+import mixin from '../utils/mixin';
+import EventListenerMixin from '../utils/event-listener';
+
+const defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
-  model: null,
+  post: null,
   serverHost: '',
-  stickyToolbar: !!('ontouchstart' in window),
+  // FIXME PhantomJS has 'ontouchstart' in window,
+  // causing the stickyToolbar to accidentally be auto-activated
+  // in tests
+  stickyToolbar: false, // !!('ontouchstart' in window),
   textFormatCommands: [
     new BoldCommand(),
     new ItalicCommand(),
@@ -36,61 +58,49 @@ var defaults = {
     new SubheadingCommand()
   ],
   embedCommands: [
-    new ImageCommand({  serviceUrl: '/upload' }),
-    new OEmbedCommand({ serviceUrl: '/embed'  })
+    new ImageCommand({ serviceUrl: '/upload' }),
+    new OEmbedCommand({ serviceUrl: '/embed'  }),
+    new CardCommand()
   ],
   autoTypingCommands: [
     new UnorderedListCommand(),
     new OrderedListCommand()
   ],
-  compiler: new Compiler({
-    includeTypeNames: true, // outputs models with type names, i.e. 'BOLD', for easier debugging
-    renderer: new EditorHTMLRenderer() // subclassed HTML renderer that adds dom structure for additional editor interactivity
-  })
+  cards: [],
+  cardOptions: {},
+  unknownCardHandler: () => { throw new Error('Unknown card encountered'); },
+  mobiledoc: null
 };
 
 function bindContentEditableTypingListeners(editor) {
-
-
-  editor.element.addEventListener('keyup', function(e) {
+  editor.addEventListener(editor.element, 'keyup', function(e) {
     // Assure there is always a supported block tag, and not empty text nodes or divs.
     // On a carrage return, make sure to always generate a 'p' tag
     if (!getSelectionBlockElement() ||
         !editor.element.textContent ||
        (!e.shiftKey && e.which === Keycodes.ENTER) || (e.ctrlKey && e.which === Keycodes.M)) {
-      document.execCommand('formatBlock', false, Type.PARAGRAPH.tag);
-    } //else if (e.which === Keycodes.BKSP) {
-      // TODO: Need to rerender when backspacing 2 blocks together
-      //var cursorIndex = editor.getCursorIndexInCurrentBlock();
-      //var currentBlockElement = getSelectionBlockElement();
-      //editor.renderBlockAt(editor.getCurrentBlockIndex(), true);
-      //setCursorIndexInElement(currentBlockElement, cursorIndex);
-    //}
+      // FIXME-IE 'p' tag doesn't work for formatBlock in IE see https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand
+      document.execCommand('formatBlock', false, 'p');
+    }
   });
 
   // On 'PASTE' sanitize and insert
-  editor.element.addEventListener('paste', function(e) {
+  editor.addEventListener(editor.element, 'paste', function(e) {
     var data = e.clipboardData;
     var pastedHTML = data && data.getData && data.getData('text/html');
-    var sanitizedHTML = pastedHTML && editor.compiler.rerender(pastedHTML);
+    var sanitizedHTML = pastedHTML && editor._renderer.rerender(pastedHTML);
     if (sanitizedHTML) {
       document.execCommand('insertHTML', false, sanitizedHTML);
-      editor.syncVisual();
+      editor.rerender();
     }
     e.preventDefault();
     return false;
   });
 }
 
-function bindLiveUpdate(editor) {
-  editor.element.addEventListener('input', function() {
-    editor.syncContentEditableBlocks();
-  });
-}
-
 function bindAutoTypingListeners(editor) {
   // Watch typing patterns for auto format commands (e.g. lists '- ', '1. ')
-  editor.element.addEventListener('keyup', function(e) {
+  editor.addEventListener(editor.element, 'keyup', function(e) {
     var commands = editor.autoTypingCommands;
     var count = commands && commands.length;
     var selection, i;
@@ -107,12 +117,50 @@ function bindAutoTypingListeners(editor) {
   });
 }
 
-function bindDragAndDrop() {
+function handleSelection(editor) {
+  return () => {
+    if (isSelectionInElement(editor.element)) {
+      editor.hasSelection();
+    } else {
+      editor.hasNoSelection();
+    }
+  };
+}
+
+function bindSelectionEvent(editor) {
+  /**
+   * The following events/sequences can create a selection and are handled:
+   *  * mouseup -- can happen anywhere in document, must wait until next tick to read selection
+   *  * keyup when key is a movement key and shift is pressed -- in editor element
+   *  * keyup when key combo was cmd-A (alt-A) aka "select all"
+   *  * keyup when key combo was cmd-Z (browser restores selection if there was one)
+   *
+   * These cases can create a selection and are not handled:
+   *  * ctrl-click -> context menu -> click "select all"
+   */
+
+  // mouseup will not properly report a selection until the next tick, so add a timeout:
+  const mouseupHandler = () => setTimeout(handleSelection(editor));
+  editor.addEventListener(document, 'mouseup', mouseupHandler);
+
+  const keyupHandler = handleSelection(editor);
+  editor.addEventListener(editor.element, 'keyup', keyupHandler);
+}
+
+function bindKeyListeners(editor) {
+  editor.addEventListener(document, 'keyup', (event) => {
+    if (event.keyCode === Keycodes.ESC) {
+      editor.trigger('escapeKey');
+    }
+  });
+}
+
+function bindDragAndDrop(editor) {
   // TODO. For now, just prevent redirect when dropping something on the page
-  window.addEventListener('dragover', function(e) {
+  editor.addEventListener(window, 'dragover', function(e) {
     e.preventDefault(); // prevents showing cursor where to drop
   });
-  window.addEventListener('drop', function(e) {
+  editor.addEventListener(window, 'drop', function(e) {
     e.preventDefault(); // prevent page from redirecting
   });
 }
@@ -120,44 +168,12 @@ function bindDragAndDrop() {
 function initEmbedCommands(editor) {
   var commands = editor.embedCommands;
   if(commands) {
-    return new EmbedIntent({
+    editor.addView(new EmbedIntent({
       editorContext: editor,
       commands: commands,
       rootElement: editor.element
-    });
+    }));
   }
-}
-
-function applyClassName(editorElement) {
-  var editorClassName = 'ck-editor';
-  var editorClassNameRegExp = new RegExp(editorClassName);
-  var existingClassName = editorElement.className;
-
-  if (!editorClassNameRegExp.test(existingClassName)) {
-    existingClassName += (existingClassName ? ' ' : '') + editorClassName;
-  }
-  editorElement.className = existingClassName;
-}
-
-function applyPlaceholder(editorElement, placeholder) {
-  var dataset = editorElement.dataset;
-  if (placeholder && !dataset.placeholder) {
-    dataset.placeholder = placeholder;
-  }
-}
-
-function getNonTextBlocks(blockTypeSet, model) {
-  var blocks = [];
-  var len = model.length;
-  var i, block, type;
-  for (i = 0; i < len; i++) {
-    block = model[i];
-    type = blockTypeSet.findById(block && block.type);
-    if (type && !type.isTextType) {
-      blocks.push(block);
-    }
-  }
-  return blocks;
 }
 
 /**
@@ -166,125 +182,321 @@ function getNonTextBlocks(blockTypeSet, model) {
  * @param element `Element` node
  * @param options hash of options
  */
-function Editor(element, options) {
-  var editor = this;
-  mergeWithOptions(editor, defaults, options);
-
-  // Update embed commands by prepending the serverHost
-  editor.embedCommands = [
-    new ImageCommand({  serviceUrl: editor.serverHost + '/upload' }),
-    new OEmbedCommand({ serviceUrl: editor.serverHost + '/embed'  })
-  ];
-
-  if (element) {
-    applyClassName(element);
-    applyPlaceholder(element, editor.placeholder);
-    element.spellcheck = editor.spellcheck;
-    element.setAttribute('contentEditable', true);
-    editor.element = element;
-
-    if (editor.model) {
-      editor.loadModel(editor.model);
-    } else {
-      editor.sync();
+class Editor {
+  constructor(element, options) {
+    if (!element) {
+      throw new Error('Editor requires an element as the first argument');
     }
 
-    bindContentEditableTypingListeners(editor);
-    bindAutoTypingListeners(editor);
-    bindDragAndDrop(editor);
-    bindLiveUpdate(editor);
-    initEmbedCommands(editor);
+    this._elementListeners = [];
+    this._views = [];
+    this.element = element;
 
-    editor.textFormatToolbar = new TextFormatToolbar({ rootElement: element, commands: editor.textFormatCommands, sticky: editor.stickyToolbar });
-    editor.linkTooltips = new Tooltip({ rootElement: element, showForTag: Type.LINK.tag });
+    // FIXME: This should merge onto this.options
+    mergeWithOptions(this, defaults, options);
 
-    if(editor.autofocus) { element.focus(); }
+    this._parser   = new DOMParser();
+    this._renderer = new Renderer(this.cards, this.unknownCardHandler, this.cardOptions);
+
+    this.applyClassName();
+    this.applyPlaceholder();
+
+    element.spellcheck = this.spellcheck;
+    element.setAttribute('contentEditable', true);
+
+    if (this.mobiledoc) {
+      this.parseModelFromMobiledoc(this.mobiledoc);
+    } else {
+      this.parseModelFromDOM(this.element);
+    }
+
+    clearChildNodes(element);
+    this.rerender();
+
+    bindContentEditableTypingListeners(this);
+    bindAutoTypingListeners(this);
+    bindDragAndDrop(this);
+    bindSelectionEvent(this);
+    bindKeyListeners(this);
+    this.addEventListener(element, 'input', () => this.handleInput());
+    initEmbedCommands(this);
+
+    this.addView(new TextFormatToolbar({
+      editor: this,
+      rootElement: element,
+      commands: this.textFormatCommands,
+      sticky: this.stickyToolbar
+    }));
+
+    this.addView(new Tooltip({
+      rootElement: element,
+      showForTag: 'a'
+    }));
+
+    if (this.autofocus) {
+      element.focus();
+    }
+  }
+
+  addView(view) {
+    this._views.push(view);
+  }
+
+  loadModel(post) {
+    this.post = post;
+    this.rerender();
+    this.trigger('update');
+  }
+
+  parseModelFromDOM(element) {
+    this.post = this._parser.parse(element);
+    this._renderTree = new RenderTree();
+    let node = this._renderTree.buildRenderNode(this.post);
+    this._renderTree.node = node;
+    this.trigger('update');
+  }
+
+  parseModelFromMobiledoc(mobiledoc) {
+    this.post = new MobiledocParser().parse(mobiledoc);
+    this._renderTree = new RenderTree();
+    let node = this._renderTree.buildRenderNode(this.post);
+    this._renderTree.node = node;
+    this.trigger('update');
+  }
+
+  rerender() {
+    let postRenderNode = this.post.renderNode;
+    if (!postRenderNode.element) {
+      postRenderNode.element = this.element;
+      postRenderNode.markDirty();
+    }
+
+    this._renderer.render(this._renderTree);
+  }
+
+  hasSelection() {
+    if (!this._hasSelection) {
+      this.trigger('selection');
+    } else {
+      this.trigger('selectionUpdated');
+    }
+    this._hasSelection = true;
+  }
+
+  hasNoSelection() {
+    if (this._hasSelection) {
+      this.trigger('selectionEnded');
+    }
+    this._hasSelection = false;
+  }
+
+  cancelSelection() {
+    if (this._hasSelection) {
+      // FIXME perhaps restore cursor position to end of the selection?
+      clearSelection();
+      this.hasNoSelection();
+    }
+  }
+
+  getCurrentBlockIndex() {
+    var selectionEl = this.element || getSelectionBlockElement();
+    var blockElements = toArray(this.element.children);
+    return blockElements.indexOf(selectionEl);
+  }
+
+  getCursorIndexInCurrentBlock() {
+    var currentBlock = getSelectionBlockElement();
+    if (currentBlock) {
+      return getCursorOffsetInElement(currentBlock);
+    }
+    return -1;
+  }
+
+  insertBlock(block, index) {
+    this.post.splice(index, 0, block);
+    this.trigger('update');
+  }
+
+  removeBlockAt(index) {
+    this.post.splice(index, 1);
+    this.trigger('update');
+  }
+
+  replaceBlock(block, index) {
+    this.post[index] = block;
+    this.trigger('update');
+  }
+
+  renderBlockAt(/* index, replace */) {
+    throw new Error('Unimplemented');
+  }
+
+  syncContentEditableBlocks() {
+    throw new Error('Unimplemented');
+  }
+
+  applyClassName() {
+    var editorClassName = 'ck-editor';
+    var editorClassNameRegExp = new RegExp(editorClassName);
+    var existingClassName = this.element.className;
+
+    if (!editorClassNameRegExp.test(existingClassName)) {
+      existingClassName += (existingClassName ? ' ' : '') + editorClassName;
+    }
+    this.element.className = existingClassName;
+  }
+
+  applyPlaceholder() {
+    const placeholder = this.placeholder;
+    const existingPlaceholder = getData(this.element, 'placeholder');
+
+    if (placeholder && !existingPlaceholder) {
+      setData(this.element, 'placeholder', placeholder);
+    }
+  }
+
+  handleInput() {
+    // find added sections
+    let sectionsInDOM = [];
+    let newSections = [];
+    let previousSection;
+    forEachChildNode(this.element, (node) => {
+      let sectionRenderNode = this._renderTree.getElementRenderNode(node);
+      if (!sectionRenderNode) {
+        let section = this._parser.parseSection(
+          previousSection,
+          node
+        );
+        newSections.push(section);
+
+        sectionRenderNode = this._renderTree.buildRenderNode(section);
+        sectionRenderNode.element = node;
+        sectionRenderNode.markClean();
+
+        if (previousSection) {
+          this.post.insertSectionAfter(section, previousSection);
+          this._renderTree.node.insertAfter(sectionRenderNode, previousSection.renderNode);
+        } else {
+          this.post.prependSection(section);
+          this._renderTree.node.insertAfter(sectionRenderNode, null);
+        }
+      }
+      // may cause duplicates to be included
+      let section = sectionRenderNode.postNode;
+      sectionsInDOM.push(section);
+      previousSection = section;
+    });
+
+    // remove deleted nodes
+    let i;
+    for (i=this.post.sections.length-1;i>=0;i--) {
+      let section = this.post.sections[i];
+      if (sectionsInDOM.indexOf(section) === -1) {
+        if (section.renderNode) {
+          section.renderNode.scheduleForRemoval();
+        } else {
+          throw new Error('All sections are expected to have a renderNode');
+        }
+      }
+    }
+
+    // reparse the section(s) with the cursor
+    const sectionsWithCursor = this.getSectionsWithCursor();
+    // FIXME: This is a hack to ensure a previous section is parsed when the
+    // user presses enter (or pastes a newline)
+    let firstSection = sectionsWithCursor[0];
+    if (firstSection) {
+      let previousSection = this.post.getPreviousSection(firstSection);
+      if (previousSection) {
+        sectionsWithCursor.unshift(previousSection);
+      }
+    }
+    sectionsWithCursor.forEach((section) => {
+      if (newSections.indexOf(section) === -1) {
+        this.reparseSection(section);
+      }
+    });
+
+    this.rerender();
+    this.trigger('update');
+  }
+
+  getSectionsWithCursor() {
+    return this.getRenderNodesWithCursor().map( renderNode => {
+      return renderNode.postNode;
+    });
+  }
+
+  getRenderNodesWithCursor() {
+    const selection = document.getSelection();
+    if (selection.rangeCount === 0) {
+      return null;
+    }
+
+    const range = selection.getRangeAt(0);
+
+    let { startContainer:startElement, endContainer:endElement } = range;
+
+    let getElementRenderNode = (e) => {
+      return this._renderTree.getElementRenderNode(e);
+    };
+    let { result:startRenderNode } = detectParentNode(startElement, getElementRenderNode);
+    let { result:endRenderNode } = detectParentNode(endElement, getElementRenderNode);
+
+    let nodes = [];
+    let node = startRenderNode;
+    while (node && (!endRenderNode.nextSibling || endRenderNode.nextSibling !== node)) {
+      nodes.push(node);
+      node = node.nextSibling;
+    }
+
+    return nodes;
+  }
+
+  reparseSection(section) {
+    let sectionRenderNode = section.renderNode;
+    let sectionElement = sectionRenderNode.element;
+    let previousSection = this.post.getPreviousSection(section);
+
+    var newSection = this._parser.parseSection(
+      previousSection,
+      sectionElement
+    );
+    section.markers = newSection.markers;
+
+    this.trigger('update');
+  }
+
+  serialize() {
+    return MobiledocRenderer.render(this.post);
+  }
+
+  removeAllViews() {
+    this._views.forEach((v) => v.destroy());
+    this._views = [];
+  }
+
+  insertSectionAtCursor(newSection) {
+    let newRenderNode = this._renderTree.buildRenderNode(newSection);
+    let renderNodes = this.getRenderNodesWithCursor();
+    let lastRenderNode = renderNodes[renderNodes.length-1];
+    lastRenderNode.parentNode.insertAfter(newRenderNode, lastRenderNode);
+    this.post.insertSectionAfter(newSection, lastRenderNode.postNode);
+    renderNodes.forEach(renderNode => renderNode.scheduleForRemoval());
+    this.trigger('update');
+  }
+
+  removeSection(section) {
+    this.post.removeSection(section);
+  }
+
+  destroy() {
+    this.removeAllEventListeners();
+    this.removeAllViews();
   }
 }
 
-// Add event emitter pub/sub functionality
-merge(Editor.prototype, EventEmitter);
-
-Editor.prototype.loadModel = function(model) {
-  this.model = model;
-  this.syncVisual();
-  this.trigger('update');
-};
-
-Editor.prototype.syncModel = function() {
-  this.model = this.compiler.parse(this.element.innerHTML);
-  this.trigger('update');
-};
-
-Editor.prototype.syncVisual = function() {
-  this.element.innerHTML = this.compiler.render(this.model);
-};
-
-Editor.prototype.sync = function() {
-  this.syncModel();
-  this.syncVisual();
-};
-
-Editor.prototype.getCurrentBlockIndex = function(element) {
-  var selectionEl = element || getSelectionBlockElement();
-  var blockElements = toArray(this.element.children);
-  return blockElements.indexOf(selectionEl);
-};
-
-Editor.prototype.getCursorIndexInCurrentBlock = function() {
-  var currentBlock = getSelectionBlockElement();
-  if (currentBlock) {
-    return getCursorOffsetInElement(currentBlock);
-  }
-  return -1;
-};
-
-Editor.prototype.insertBlock = function(block, index) {
-  this.model.splice(index, 0, block);
-  this.trigger('update');
-};
-
-Editor.prototype.removeBlockAt = function(index) {
-  this.model.splice(index, 1);
-  this.trigger('update');
-};
-
-Editor.prototype.replaceBlock = function(block, index) {
-  this.model[index] = block;
-  this.trigger('update');
-};
-
-Editor.prototype.renderBlockAt = function(index, replace) {
-  var modelAtIndex = this.model[index];
-  var html = this.compiler.render([modelAtIndex]);
-  var dom = document.createElement('div');
-  dom.innerHTML = html;
-  var newEl = dom.firstChild;
-  var sibling = this.element.children[index];
-  if (replace) {
-    this.element.replaceChild(newEl, sibling);
-  } else {
-    this.element.insertBefore(newEl, sibling);
-  }
-};
-
-Editor.prototype.syncContentEditableBlocks = function() {
-  var nonTextBlocks = getNonTextBlocks(this.compiler.blockTypes, this.model);
-  var blockElements = toArray(this.element.children);
-  var len = blockElements.length;
-  var updatedModel = [];
-  var i, blockEl;
-  for (i = 0; i < len; i++) {
-    blockEl = blockElements[i];
-    if(blockEl.isContentEditable) {
-      updatedModel.push(this.compiler.parser.serializeBlockNode(blockEl));
-    } else {
-      updatedModel.push(nonTextBlocks.shift());
-    }
-  }
-  this.model = updatedModel;
-  this.trigger('update');
-};
-
+mixin(Editor, EventEmitter);
+mixin(Editor, EventListenerMixin);
 
 export default Editor;

@@ -1,3 +1,5 @@
+import { dasherize } from 'content-kit-editor/utils/string-utils';
+
 function createDiv(className) {
   var div = document.createElement('div');
   if (className) {
@@ -27,17 +29,6 @@ function getEventTargetMatchingTag(tag, target, container) {
     }
     target = target.parentNode;
   }
-}
-
-function nodeIsDescendantOfElement(node, element) {
-  var parentNode = node.parentNode;
-  while(parentNode) {
-    if (parentNode === element) {
-      return true;
-    }
-    parentNode = parentNode.parentNode;
-  }
-  return false;
 }
 
 function elementContentIsEmpty(element) {
@@ -114,7 +105,40 @@ function positionElementToRightOf(element, rightOfElement) {
   return positionElementToRect(element, rightOfElementRect, -verticalCenter, -rightOfElement.offsetWidth - elementMargin);
 }
 
-export { createDiv, hideElement, showElement, swapElements, getEventTargetMatchingTag, nodeIsDescendantOfElement,
-elementContentIsEmpty, getElementRelativeOffset, getElementComputedStyleNumericProp, positionElementToRect,
-positionElementHorizontallyCenteredToRect, positionElementCenteredAbove, positionElementCenteredBelow,
-positionElementCenteredIn, positionElementToLeftOf, positionElementToRightOf };
+function getData(element, name) {
+  if (element.dataset) {
+    return element.dataset[name];
+  } else {
+    const dataName = dasherize(name);
+    return element.getAttribute(dataName);
+  }
+}
+
+function setData(element, name, value) {
+  if (element.dataset) {
+    element.dataset[name] = value;
+  } else {
+    const dataName = dasherize(name);
+    return element.setAttribute(dataName, value);
+  }
+}
+
+export {
+  getData,
+  setData,
+  createDiv,
+  hideElement,
+  showElement,
+  swapElements,
+  getEventTargetMatchingTag,
+  elementContentIsEmpty,
+  getElementRelativeOffset,
+  getElementComputedStyleNumericProp,
+  positionElementToRect,
+  positionElementHorizontallyCenteredToRect,
+  positionElementCenteredAbove,
+  positionElementCenteredBelow,
+  positionElementCenteredIn,
+  positionElementToLeftOf,
+  positionElementToRightOf
+};

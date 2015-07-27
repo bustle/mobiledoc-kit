@@ -1,14 +1,8 @@
-import { nodeIsDescendantOfElement } from './element-utils';
-import Type from 'node_modules/content-kit-compiler/src/types/type';
+import { containsNode } from './dom-utils';
 
 // TODO: remove, pass in Editor's current block set
 var RootTags = [
-  Type.PARAGRAPH.tag,
-  Type.HEADING.tag,
-  Type.SUBHEADING.tag,
-  Type.QUOTE.tag,
-  Type.LIST.tag,
-  Type.ORDERED_LIST.tag
+  'p', 'h2', 'h3', 'blockquote', 'ul', 'ol'
 ];
 
 var SelectionDirection = {
@@ -16,6 +10,11 @@ var SelectionDirection = {
   RIGHT_TO_LEFT : 2,
   SAME_NODE     : 3
 };
+
+function clearSelection() {
+  // FIXME-IE ensure this works on IE 9. It works on IE10.
+  window.getSelection().removeAllRanges();
+}
 
 function getDirectionOfSelection(selection) {
   var node = selection.anchorNode;
@@ -30,8 +29,26 @@ function getDirectionOfSelection(selection) {
 
 function getSelectionElement(selection) {
   selection = selection || window.getSelection();
-  var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.anchorNode : selection.focusNode;
+  // FIXME it used to return `anchorNode` when selection direction is `LEFT_TO_RIGHT`,
+  // but I think that was a bug. In Safari and Chrome the selection usually had the
+  // same anchorNode and focusNode when selecting text, so it didn't matter.
+  var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.focusNode : selection.anchorNode;
   return node && (node.nodeType === 3 ? node.parentNode : node);
+}
+
+function isSelectionInElement(element) {
+  const selection = window.getSelection();
+  const { rangeCount, anchorNode, focusNode } = selection;
+
+  const range = (rangeCount > 0) && selection.getRangeAt(0);
+  const hasSelection = range && !range.collapsed;
+
+  if (hasSelection) {
+    return containsNode(element, anchorNode) &&
+      containsNode(element, focusNode);
+  } else {
+    return false;
+  }
 }
 
 function getSelectionBlockElement(selection) {
@@ -71,42 +88,21 @@ function tagsInSelection(selection) {
   return tags;
 }
 
-function selectionIsInElement(selection, element) {
-  var node = selection.anchorNode;
-  return node && nodeIsDescendantOfElement(node, element);
-}
-
-function selectionIsEditable(selection) {
-  var el = getSelectionBlockElement(selection);
-  return el && el.isContentEditable;
-}
-
 function restoreRange(range) {
+  clearSelection();
   var selection = window.getSelection();
-  selection.removeAllRanges();
   selection.addRange(range);
 }
 
 function selectNode(node) {
+  clearSelection();
+
   var range = document.createRange();
-  var selection = window.getSelection();
   range.setStart(node, 0);
   range.setEnd(node, node.length);
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
 
-function setCursorIndexInElement(element, index) {
-  var range = document.createRange();
   var selection = window.getSelection();
-  range.setStart(element, index);
-  range.collapse(true);
-  selection.removeAllRanges();
   selection.addRange(range);
-}
-
-function setCursorToStartOfElement(element) {
-  setCursorIndexInElement(element, 0);
 }
 
 function getCursorOffsetInElement(element) {
@@ -123,5 +119,16 @@ function getCursorOffsetInElement(element) {
   return caretOffset;
 }
 
-export { getDirectionOfSelection, getSelectionElement, getSelectionBlockElement, getSelectionTagName,
-         getSelectionBlockTagName, tagsInSelection, selectionIsInElement, selectionIsEditable, restoreRange, selectNode, setCursorToStartOfElement, setCursorIndexInElement, getCursorOffsetInElement };
+export {
+  getDirectionOfSelection,
+  getSelectionElement,
+  getSelectionBlockElement,
+  getSelectionTagName,
+  getSelectionBlockTagName,
+  tagsInSelection,
+  restoreRange,
+  selectNode,
+  getCursorOffsetInElement,
+  clearSelection,
+  isSelectionInElement
+};

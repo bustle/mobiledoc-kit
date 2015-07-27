@@ -1,5 +1,5 @@
-{ 
+{
   "s3" : {
-    "bucketName"      : "content-kit"
+    "bucketName"      : "201-bustle-demo"
   }
 }

@@ -1,6 +1,6 @@
 import View from './view';
 import Toolbar from './toolbar';
-import { inherit } from 'node_modules/content-kit-utils/src/object-utils';
+import { inherit } from 'content-kit-utils';
 import { getSelectionBlockElement } from '../utils/selection-utils';
 import { elementContentIsEmpty, positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
 import { createDiv } from '../utils/element-utils';
@@ -31,7 +31,8 @@ function EmbedIntent(options) {
   embedIntent.button.className = 'ck-embed-intent-btn';
   embedIntent.button.title = 'Insert image or embed...';
   embedIntent.element.appendChild(embedIntent.button);
-  embedIntent.button.addEventListener('mouseup', function(e) {
+
+  this.addEventListener(embedIntent.button, 'mouseup', (e) => {
     if (embedIntent.isActive) {
       embedIntent.deactivate();
     } else {
@@ -57,18 +58,20 @@ function EmbedIntent(options) {
     }
   }
 
-  rootElement.addEventListener('keyup', embedIntentHandler);
-  document.addEventListener('mouseup', function() {
-    setTimeout(function() { embedIntentHandler(); });
+  this.addEventListener(rootElement, 'keyup', embedIntentHandler);
+  this.addEventListener(document, 'mouseup', () => {
+    setTimeout(() => {
+      embedIntentHandler();
+    });
   });
 
-  document.addEventListener('keyup', function(e) {
+  this.addEventListener(document, 'keyup', (e) => {
     if (e.keyCode === Keycodes.ESC) {
       embedIntent.hide();
     }
   });
 
-  window.addEventListener('resize', function() {
+  this.addEventListener(window, 'resize', () => {
     if(embedIntent.isShowing) {
       embedIntent.reposition();
     }
