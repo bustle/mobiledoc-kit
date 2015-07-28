@@ -219,6 +219,150 @@ test('renders a card section into a non-contenteditable element', (assert) => {
   assert.equal(element.contentEditable, 'false', 'is not contenteditable');
 });
 
+/*
+ * renderTree:
+ *
+ *     post
+ *       |
+ *    section
+ *       |
+ *       |----------------|
+ *       |                |
+ *     marker1 [b]      marker2 []
+ *       |                |
+ *     <text1>           <text2>
+ *
+ *  add "b" markup to marker2, new tree should be:
+ *
+ *     post
+ *       |
+ *    section
+ *       |
+ *       |
+ *       |      
+ *     marker1 [b]
+ *       |       
+ *     <text1> + <text2>
+ */
+
+test('rerender a marker after adding a markup to it', (assert) => {
+  const post = builder.generatePost();
+  const section = builder.generateMarkupSection();
+  const bMarkup = builder.generateMarkup('B');
+  const marker1 = builder.generateMarker([
+    bMarkup
+  ], 'text1');
+  const marker2 = builder.generateMarker([], 'text2');
+
+  section.appendMarker(marker1);
+  section.appendMarker(marker2);
+  post.appendSection(section);
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p><b>text1</b>text2</p>');
+
+  marker2.addMarkup(bMarkup);
+  marker2.renderNode.markDirty();
+
+  // rerender
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p><b>text1text2</b></p>');
+});
+
+test('rerender a marker after removing a markup from it', (assert) => {
+  const post = builder.generatePost();
+  const section = builder.generateMarkupSection();
+  const bMarkup = builder.generateMarkup('B');
+  const marker1 = builder.generateMarker([], 'text1');
+  const marker2 = builder.generateMarker([bMarkup], 'text2');
+
+  section.appendMarker(marker1);
+  section.appendMarker(marker2);
+  post.appendSection(section);
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p>text1<b>text2</b></p>');
+
+  marker2.removeMarkup(bMarkup);
+  marker2.renderNode.markDirty();
+
+  // rerender
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p>text1text2</p>');
+});
+
+test('rerender a marker after removing a markup from it (when changed marker is first marker)', (assert) => {
+  const post = builder.generatePost();
+  const section = builder.generateMarkupSection();
+  const bMarkup = builder.generateMarkup('B');
+  const marker1 = builder.generateMarker([bMarkup], 'text1');
+  const marker2 = builder.generateMarker([], 'text2');
+
+  section.appendMarker(marker1);
+  section.appendMarker(marker2);
+  post.appendSection(section);
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p><b>text1</b>text2</p>');
+
+  marker1.removeMarkup(bMarkup);
+  marker1.renderNode.markDirty();
+
+  // rerender
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p>text1text2</p>');
+});
+
+test('rerender a marker after removing a markup from it (when both markers have same markup)', (assert) => {
+  const post = builder.generatePost();
+  const section = builder.generateMarkupSection();
+  const bMarkup = builder.generateMarkup('B');
+  const marker1 = builder.generateMarker([bMarkup], 'text1');
+  const marker2 = builder.generateMarker([bMarkup], 'text2');
+
+  section.appendMarker(marker1);
+  section.appendMarker(marker2);
+  post.appendSection(section);
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p><b>text1text2</b></p>');
+
+  marker1.removeMarkup(bMarkup);
+  marker1.renderNode.markDirty();
+
+  // rerender
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p>text1<b>text2</b></p>');
+});
+
 
 /*
 test("It renders a renderTree with rendered dirty section", (assert) => {

@@ -11,9 +11,15 @@ export default class RenderNode {
   }
   scheduleForRemoval() {
     this.isRemoved = true;
+    if (this.parentNode) {
+      this.parentNode.markDirty();
+    }
   }
   markDirty() {
     this.isDirty = true;
+    if (this.parentNode) {
+      this.parentNode.markDirty();
+    }
   }
   markClean() {
     this.isDirty = false;

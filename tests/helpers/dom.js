@@ -1,25 +1,8 @@
 const TEXT_NODE = 3;
 
 import { clearSelection } from 'content-kit-editor/utils/selection-utils';
+import { walkDOMUntil } from 'content-kit-editor/utils/dom-utils';
 import KEY_CODES from 'content-kit-editor/utils/keycodes';
-
-function walkDOMUntil(topNode, conditionFn=() => {}) {
-  if (!topNode) { throw new Error('Cannot call walkDOMUntil without a node'); }
-  let stack = [topNode];
-  let currentElement;
-
-  while (stack.length) {
-    currentElement = stack.pop();
-
-    if (conditionFn(currentElement)) {
-      return currentElement;
-    }
-
-    for (let i=0; i < currentElement.childNodes.length; i++) {
-      stack.push(currentElement.childNodes[i]);
-    }
-  }
-}
 
 function selectRange(startNode, startOffset, endNode, endOffset) {
   clearSelection();
@@ -63,7 +46,7 @@ function triggerEvent(node, eventType) {
 
   let clickEvent = document.createEvent('MouseEvents');
   clickEvent.initEvent(eventType, true, true);
-  node.dispatchEvent(clickEvent);
+  return node.dispatchEvent(clickEvent);
 }
 
 function createKeyEvent(eventType, keyCode) {
@@ -93,7 +76,7 @@ function createKeyEvent(eventType, keyCode) {
 
 function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER) {
   let oEvent = createKeyEvent(eventType, keyCode);
-  node.dispatchEvent(oEvent);
+  return node.dispatchEvent(oEvent);
 }
 
 function _buildDOM(tagName, attributes={}, children=[]) {
@@ -121,11 +104,22 @@ function makeDOM(tree) {
   return tree(_buildDOM);
 }
 
+// returns the node and the offset that the cursor is on
+function getCursorPosition() {
+  const selection = window.getSelection();
+  return {
+    node:   selection.anchorNode,
+    offset: selection.anchorOffset
+  };
+}
+
 export default {
   moveCursorTo,
   selectText,
   clearSelection,
   triggerEvent,
   triggerKeyEvent,
-  makeDOM
+  makeDOM,
+  KEY_CODES,
+  getCursorPosition
 };

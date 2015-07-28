@@ -34,17 +34,18 @@ test('#markerContaining finds the marker at the given offset when 2 markers', (a
 
   assert.equal(s.markerContaining(0), m1,
                'first marker is always found at offset 0');
-  assert.equal(s.markerContaining(m1.length + m2.length), m2,
-               'last marker is always found at offset === length');
-  assert.equal(s.markerContaining(m1.length + m2.length + 1), m2,
-               'last marker is always found at offset > length');
+  assert.equal(s.markerContaining(m1.length + m2.length, false), m2,
+               'last marker is found at offset === length when right-inclusive');
+  assert.ok(!s.markerContaining(m1.length + m2.length + 1),
+            'when offset > length && left-inclusive, no marker is found');
+  assert.ok(!s.markerContaining(m1.length + m2.length + 1, false),
+            'when offset > length && right-inclusive, no marker is found');
 
   for (let i=1; i<m1.length; i++) {
     assert.equal(s.markerContaining(i), m1, `finds marker 1 at offset ${i}`);
   }
-  assert.equal(s.markerContaining(m1.length),
-               m1,
-               `markers are right-inclusive`);
+  assert.equal(s.markerContaining(m1.length), m2, `finds marker m2 (left-inclusive)`);
+  assert.equal(s.markerContaining(m1.length, false), m1, `finds marker m1 (right-inclusive)`);
 
   for (let i=m1.length+1; i<(m1.length+m2.length); i++) {
     assert.equal(s.markerContaining(i), m2, `finds marker 2 at offset ${i}`);
@@ -60,19 +61,26 @@ test('#markerContaining finds the marker at the given offset when multiple marke
 
   assert.equal(s.markerContaining(0), m1,
                'first marker is always found at offset 0');
-  assert.equal(s.markerContaining(markerLength), m3,
-               'last marker is always found at offset === length');
-  assert.equal(s.markerContaining(markerLength + 1), m3,
-               'last marker is always found at offset > length');
+  assert.ok(!s.markerContaining(markerLength),
+            'last marker is undefined at offset === length (left-inclusive)');
+  assert.equal(s.markerContaining(markerLength, false), m3,
+               'last marker is found at offset === length (right-inclusive)');
+  assert.ok(!s.markerContaining(markerLength + 1),
+               'no marker is found at offset > length');
 
   for (let i=1; i<m1.length; i++) {
     assert.equal(s.markerContaining(i), m1, `finds marker 1 at offset ${i}`);
   }
-  assert.equal(s.markerContaining(m1.length), m1, `markers are right-inclusive`);
+  assert.equal(s.markerContaining(m1.length), m2, `finds m2 (left-inclusive)`);
+  assert.equal(s.markerContaining(m1.length, false), m1, `finds m1 (right-inclusive)`);
+
   for (let i=m1.length+1; i<(m1.length+m2.length); i++) {
     assert.equal(s.markerContaining(i), m2, `finds marker 2 at offset ${i}`);
   }
-  assert.equal(s.markerContaining(m1.length+m2.length), m2, `markers are right-inclusive v2`);
+
+  assert.equal(s.markerContaining(m1.length+m2.length), m3, `finds m3 (left-inclusive)`);
+  assert.equal(s.markerContaining(m1.length+m2.length, false), m2, `finds m2 (right-inclusive)`);
+
   for (let i=m1.length+m2.length+1; i<markerLength; i++) {
     assert.equal(s.markerContaining(i), m3, `finds marker 3 at offset ${i}`);
   }

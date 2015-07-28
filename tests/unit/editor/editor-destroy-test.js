@@ -1,18 +1,29 @@
 const { module, test } = window.QUnit;
 import Helpers from '../../test-helpers';
+import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
 import { Editor } from 'content-kit-editor';
 
 let editor;
 let editorElement;
 
+const mobiledoc = {
+  version: MOBILEDOC_VERSION,
+  sections: [
+    [],
+    [[
+      1, 'P', [[[], 0, 'HELLO']]
+    ]]
+  ]
+};
+
+
 module('Unit: Editor #destroy', {
   beforeEach() {
     let fixture = $('#qunit-fixture')[0];
     editorElement = document.createElement('div');
-    editorElement.innerHTML = 'HELLO';
     fixture.appendChild(editorElement);
-    editor = new Editor(editorElement);
+    editor = new Editor(editorElement, {mobiledoc});
   },
   afterEach() {
     if (editor) {

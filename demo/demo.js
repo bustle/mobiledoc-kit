@@ -202,16 +202,21 @@ var ContentKitDemo = exports.ContentKitDemo = {
         }
       }
 
-      function addPipeBetweenAdjacentTextNodes(textNode) {
+      function markAdjacentTextNodes(textNode) {
+        var boxChar = '\u2591',
+            emptySquareChar = '\u25A2',
+            invisibleChar = '\u200C';
         var nextSibling = textNode.nextSibling;
         if (nextSibling && nextSibling.nodeType === Node.TEXT_NODE) {
-          textNode.textContent = textNode.textContent + '|';
+          textNode.textContent = textNode.textContent + boxChar;
         }
+        textNode.textContent = textNode.textContent.replace(new RegExp(invisibleChar, 'g'),
+                                                            emptySquareChar);
       }
 
       var deep = true;
       var cloned = node.cloneNode(deep);
-      convertTextNodes(cloned, addPipeBetweenAdjacentTextNodes);
+      convertTextNodes(cloned, markAdjacentTextNodes);
       return displayHTML(cloned.innerHTML);
     };
 
