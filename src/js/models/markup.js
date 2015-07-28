@@ -9,6 +9,9 @@ export const VALID_MARKUP_TAGNAMES = [
 ];
 
 export default class Markup {
+  /*
+   * @param {attributes} array flat array of key1,value1,key2,value2,...
+   */
   constructor(tagName, attributes=[]) {
     this.tagName = tagName.toLowerCase();
     this.attributes = attributes;

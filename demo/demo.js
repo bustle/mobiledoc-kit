@@ -302,7 +302,8 @@ var sampleMobiledocs = {
       ]],
       [1, "P", [
         [[], 0, "see it "],
-        [[0], 1, "on github."]
+        [[0], 1, "on github"],
+        [[], 0, "."]
       ]]
     ]
   ],
