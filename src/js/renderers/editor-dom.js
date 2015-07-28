@@ -5,11 +5,11 @@ import { POST_TYPE } from "../models/post";
 import { MARKUP_SECTION_TYPE } from "../models/markup-section";
 import { IMAGE_SECTION_TYPE } from "../models/image";
 
-function createElementFromMarkerType(doc, markerType) {
-  var element = doc.createElement(markerType.tagName);
-  if (markerType.attributes) {
-    for (var i=0, l=markerType.attributes.length;i<l;i=i+2) {
-      element.setAttribute(markerType.attributes[i], markerType.attributes[i+1]);
+function createElementFromMarkup(doc, markup) {
+  var element = doc.createElement(markup.tagName);
+  if (markup.attributes) {
+    for (var i=0, l=markup.attributes.length;i<l;i=i+2) {
+      element.setAttribute(markup.attributes[i], markup.attributes[i+1]);
     }
   }
   return element;
@@ -20,17 +20,17 @@ function renderMarkupSection(doc, section, markers) {
   var elements = [element];
   var currentElement = element;
   var i, l, j, m, marker, openTypes, closeTypes, text;
-  var markerType;
+  var markup;
   var openedElement;
   for (i=0, l=markers.length;i<l;i++) {
     marker = markers[i];
-    openTypes = marker.markups;
-    closeTypes = marker.close;
+    openTypes = marker.openedMarkups;
+    closeTypes = marker.closedMarkups;
     text = marker.value;
 
     for (j=0, m=openTypes.length;j<m;j++) {
-      markerType = openTypes[j];
-      openedElement = createElementFromMarkerType(doc, markerType);
+      markup = openTypes[j];
+      openedElement = createElementFromMarkup(doc, markup);
       currentElement.appendChild(openedElement);
       elements.push(openedElement);
       currentElement = openedElement;
@@ -38,7 +38,7 @@ function renderMarkupSection(doc, section, markers) {
 
     currentElement.appendChild(doc.createTextNode(text));
 
-    for (j=0, m=closeTypes;j<m;j++) {
+    for (j=0, m=closeTypes.length;j<m;j++) {
       elements.pop();
       currentElement = elements[elements.length-1];
     }

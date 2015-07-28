@@ -126,6 +126,38 @@ test('renders a post with marker', (assert) => {
   assert.equal(node.element.innerHTML, '<p><strong>Hi</strong></p>');
 });
 
+test('renders a post with multiple markers', (assert) => {
+  let post = builder.generatePost();
+  let section = builder.generateMarkupSection('P');
+  post.appendSection(section);
+
+  let bMarkup = builder.generateMarkup('B');
+  let iMarkup = builder.generateMarkup('I');
+
+  section.appendMarker(builder.generateMarker([], 'hello '));
+  section.appendMarker(
+    builder.generateMarker([
+      bMarkup
+    ], 'bold, ')
+  );
+  section.appendMarker(
+    builder.generateMarker([
+      bMarkup,
+      iMarkup
+    ], 'italic,')
+  );
+  section.appendMarker(
+    builder.generateMarker([], ' world.')
+  );
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+  assert.equal(node.element.innerHTML, '<p>hello <b>bold, <i>italic,</i></b> world.</p>');
+});
+
+
 test('renders a post with image', (assert) => {
   let url = DATA_URL;
   let post = builder.generatePost();
