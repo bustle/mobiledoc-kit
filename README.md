@@ -25,11 +25,14 @@ The `ContentKit.Editor` class is invoked with an element to render into and
 optionally a Mobiledoc to load. For example:
 
 ```js
-var simpleMobiledoc = [[], [
-  [1, "p", [
-    [[], 0, "Welcome to Content-Kit"]
-  ]]
-];
+var simpleMobiledoc = {
+  version: "0.1",
+  sections: [[], [
+    [1, "p", [
+      [[], 0, "Welcome to Content-Kit"]
+    ]]
+  ]
+};
 var element = $('#editor')[0];
 var options = { mobiledoc: simpleMobiledoc };
 var editor = new ContentKit.Editor(element, options);
