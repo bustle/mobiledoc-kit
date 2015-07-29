@@ -1,5 +1,6 @@
 import MobiledocParser from 'content-kit-editor/parsers/mobiledoc';
 import { generateBuilder } from 'content-kit-editor/utils/post-builder';
+import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
 const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
 const { module, test } = window.QUnit;
@@ -20,17 +21,24 @@ module('Unit: Parsers: Mobiledoc', {
 });
 
 test('#parse empty doc returns an empty post', (assert) => {
-  assert.deepEqual(parser.parse([[], []]),
+  let mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [[], []]
+  };
+  assert.deepEqual(parser.parse(mobiledoc),
                    post);
 });
 
 test('#parse doc without marker types', (assert) => {
-  const mobiledoc = [
-    [],
-    [[
-      1,'P', [[[], 0, 'hello world']]
-    ]]
-  ];
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [[
+        1,'P', [[[], 0, 'hello world']]
+      ]]
+    ]
+  };
   const parsed = parser.parse(mobiledoc);
 
   let section = builder.generateMarkupSection('P', [], false);
@@ -45,19 +53,22 @@ test('#parse doc without marker types', (assert) => {
 });
 
 test('#parse doc with marker type', (assert) => {
-  const mobiledoc = [
-    [
-      ['B'],
-      ['A', ['href', 'google.com']]
-    ],
-    [[
-      1,'P', [
-        [[1], 0, 'hello'],     // a tag open
-        [[0], 1, 'brave new'], // b tag open/close
-        [[], 1, 'world']       // a tag close
-      ]
-    ]]
-  ];
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [
+        ['B'],
+        ['A', ['href', 'google.com']]
+      ],
+      [[
+        1,'P', [
+          [[1], 0, 'hello'],     // a tag open
+          [[0], 1, 'brave new'], // b tag open/close
+          [[], 1, 'world']       // a tag close
+        ]
+      ]]
+    ]
+  };
   const parsed = parser.parse(mobiledoc);
 
   let section = builder.generateMarkupSection('P', [], false);
@@ -79,12 +90,15 @@ test('#parse doc with marker type', (assert) => {
 });
 
 test('#parse doc with image section', (assert) => {
-  const mobiledoc = [
-    [],
-    [
-      [2, DATA_URL]
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [2, DATA_URL]
+      ]
     ]
-  ];
+  };
 
   const parsed = parser.parse(mobiledoc);
 
@@ -97,12 +111,15 @@ test('#parse doc with image section', (assert) => {
 });
 
 test('#parse doc with custom card type', (assert) => {
-  const mobiledoc = [
-    [],
-    [
-      [10, 'custom-card', {}]
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [10, 'custom-card', {}]
+      ]
     ]
-  ];
+  };
 
   const parsed = parser.parse(mobiledoc);
 

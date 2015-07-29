@@ -289,99 +289,140 @@ function attemptEditorReboot(editor, textarea) {
   }
 }
 
+var MOBILEDOC_VERSION = "0.1";
 var sampleMobiledocs = {
-  simpleMobiledoc: [
-    [],
-    [
-      [1, "H2", [
-        [[], 0, "headline h2"]
-      ]],
-      [1, "P", [
-        [[], 0, "hello world"]
-      ]]
+  simpleMobiledoc: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, "H2", [
+          [[], 0, "headline h2"]
+        ]],
+        [1, "P", [
+          [[], 0, "hello world"]
+        ]]
+      ]
     ]
-  ],
+  },
 
-  mobileDocWithMarker: [
-    [['B']],
-    [
-      [1, "H2", [
-        [[], 0, "headline h2"]
-      ]],
-      [1, "P", [
-        [[0], 1, "bold world"]
-      ]]
+  mobileDocWithMarker: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [['B']],
+      [
+        [1, "H2", [
+          [[], 0, "headline h2"]
+        ]],
+        [1, "P", [
+          [[0], 1, "bold world"]
+        ]]
+      ]
     ]
-  ],
+  },
 
-  mobileDocWithMultipleMarkers: [
-    [['B'], ['I']],
-    [
-      [1, "H2", [
-        [[], 0, "headline h2"]
-      ]],
-      [1, "P", [
-        [[], 0, "hello "],
-        [[0], 1, "bold, "],
-        [[1], 1, "italic "],
-        [[], 0, "world."]
-      ]]
+  mobileDocWithMultipleMarkers: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [['B'], ['I']],
+      [
+        [1, "H2", [
+          [[], 0, "headline h2"]
+        ]],
+        [1, "P", [
+          [[], 0, "hello "],
+          [[0], 1, "bold, "],
+          [[1], 1, "italic "],
+          [[], 0, "world."]
+        ]]
+      ]
     ]
-  ],
+  },
 
-  mobileDocWithAttributeMarker: [
-    [['A', ['href', 'http://github.com/bustlelabs/content-kit-editor']]],
-    [
-      [1, "H2", [
-        [[], 0, "headline h2"]
-      ]],
-      [1, "P", [
-        [[], 0, "see it "],
-        [[0], 1, "on github"],
-        [[], 0, "."]
-      ]]
+  mobileDocWithAttributeMarker: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [['A', ['href', 'http://github.com/bustlelabs/content-kit-editor']]],
+      [
+        [1, "H2", [
+          [[], 0, "headline h2"]
+        ]],
+        [1, "P", [
+          [[], 0, "see it "],
+          [[0], 1, "on github"],
+          [[], 0, "."]
+        ]]
+      ]
     ]
-  ],
+  },
 
-  mobileDocWithSimpleCard: [
-    [],
-    [
-      [1, "H2", [
-        [[], 0, "Simple Card"]
-      ]],
-      [10, "simple-card"]
+  mobileDocWithAttributeMarker: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [['A', ['href', 'http://github.com/bustlelabs/content-kit-editor']]],
+      [
+        [1, "H2", [
+          [[], 0, "headline h2"]
+        ]],
+        [1, "P", [
+          [[], 0, "see it "],
+          [[0], 1, "on github."]
+        ]]
+      ]
     ]
-  ],
+  },
 
-  mobileDocWithEditCard: [
-    [],
-    [
-      [1, "H2", [
-        [[], 0, "Edit Card"]
-      ]],
-      [10, "edit-card"]
+  mobileDocWithSimpleCard: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, "H2", [
+          [[], 0, "Simple Card"]
+        ]],
+        [10, "simple-card"]
+      ]
     ]
-  ],
+  },
 
-  mobileDocWithInputCard: [
-    [],
-    [
-      [1, "H2", [
-        [[], 0, "Input Card"]
-      ]],
-      [10, "input-card"]
+  mobileDocWithEditCard: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, "H2", [
+          [[], 0, "Edit Card"]
+        ]],
+        [10, "edit-card"]
+      ]
     ]
-  ],
+  },
 
-  mobileDocWithSelfieCard: [
-    [],
-    [
-      [1, "H2", [
-        [[], 0, "SelfieCard"]
-      ]],
-      [10, "selfie-card"]
+  mobileDocWithInputCard: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, "H2", [
+          [[], 0, "Input Card"]
+        ]],
+        [10, "input-card"]
+      ]
     ]
-  ]
+  },
+
+  mobileDocWithSelfieCard: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, "H2", [
+          [[], 0, "SelfieCard"]
+        ]],
+        [10, "selfie-card"]
+      ]
+    ]
+  }
 };
 
 

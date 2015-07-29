@@ -1,44 +1,54 @@
 import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
+import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
 const { test, module } = QUnit;
 
 const newline = '\r\n';
 
 let fixture, editor, editorElement;
-const mobileDocWith1Section = [
-  [],
-  [
-    [1, "P", [
-      [[], 0, "only section"]
-    ]]
+const mobileDocWith1Section = {
+  version: MOBILEDOC_VERSION,
+  sections: [
+    [],
+    [
+      [1, "P", [
+        [[], 0, "only section"]
+      ]]
+    ]
   ]
-];
-const mobileDocWith2Sections = [
-  [],
-  [
-    [1, "P", [
-      [[], 0, "first section"]
-    ]],
-    [1, "P", [
-      [[], 0, "second section"]
-    ]]
+};
+const mobileDocWith2Sections = {
+  version: MOBILEDOC_VERSION,
+  sections: [
+    [],
+    [
+      [1, "P", [
+        [[], 0, "first section"]
+      ]],
+      [1, "P", [
+        [[], 0, "second section"]
+      ]]
+    ]
   ]
-];
-const mobileDocWith3Sections = [
-  [],
-  [
-    [1, "P", [
-      [[], 0, "first section"]
-    ]],
-    [1, "P", [
-      [[], 0, "second section"]
-    ]],
-    [1, "P", [
-      [[], 0, "third section"]
-    ]]
+};
+const mobileDocWith3Sections = {
+  version: MOBILEDOC_VERSION,
+  sections: [
+    [],
+    [
+      [1, "P", [
+        [[], 0, "first section"]
+      ]],
+      [1, "P", [
+        [[], 0, "second section"]
+      ]],
+      [1, "P", [
+        [[], 0, "third section"]
+      ]]
+    ]
   ]
-];
+};
 
 module('Acceptance: Editor sections', {
   beforeEach() {

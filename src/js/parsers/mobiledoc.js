@@ -12,9 +12,9 @@ export default class MobiledocParser {
     this.builder = generateBuilder();
   }
 
-  parse(mobiledoc) {
-    const markerTypes = mobiledoc[0];
-    const sections    = mobiledoc[1];
+  parse({version, sections: sectionData}) {
+    const markerTypes = sectionData[0];
+    const sections    = sectionData[1];
 
     const post = this.builder.generatePost();
 

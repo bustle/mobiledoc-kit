@@ -5,6 +5,8 @@ import { IMAGE_SECTION_TYPE } from "../models/image";
 import { MARKER_TYPE } from "../models/marker";
 import { MARKUP_TYPE } from "../models/markup";
 
+export const MOBILEDOC_VERSION = '0.1';
+
 let visitor = {
   [POST_TYPE](node, opcodes) {
     opcodes.push(['openPost']);
@@ -51,7 +53,10 @@ let postOpcodeCompiler = {
   openPost() {
     this.markerTypes = [];
     this.sections = [];
-    this.result = [this.markerTypes, this.sections];
+    this.result = {
+      version: MOBILEDOC_VERSION,
+      sections: [this.markerTypes, this.sections]
+    };
   },
   openMarkup(tagName, attributes) {
     if (!this._seenMarkerTypes) {

@@ -3,6 +3,7 @@ const { module, test } = QUnit;
 import Helpers from '../../test-helpers';
 import { Editor } from 'content-kit-editor';
 import { containsNode } from 'content-kit-editor/utils/dom-utils';
+import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 let editorElement, editor;
 
 module('Unit: Editor: Card Lifecycle', {
@@ -42,12 +43,15 @@ test('rendering a mobiledoc for editing calls card#setup', (assert) => {
     }
   };
 
-  const mobiledoc = [
-    [],
-    [
-      [10, 'test-card', payload]
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [10, 'test-card', payload]
+      ]
     ]
-  ];
+  };
   editor = new Editor(editorElement, {
     mobiledoc,
     cards: [card],
@@ -64,12 +68,15 @@ test('rendering a mobiledoc for editing calls #unknownCardHandler when it encoun
     assert.equal(env.name, cardName, 'includes card name in env');
   };
 
-  const mobiledoc = [
-    [],
-    [
-      [10, cardName, {}]
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [10, cardName, {}]
+      ]
     ]
-  ];
+  };
 
   editor = new Editor(editorElement, {mobiledoc, unknownCardHandler});
 });
@@ -113,12 +120,15 @@ test('rendered card can fire edit hook to enter editing mode', (assert) => {
     }
   };
 
-  const mobiledoc = [
-    [],
-    [
-      [10, 'test-card', payload]
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [10, 'test-card', payload]
+      ]
     ]
-  ];
+  };
   editor = new Editor(editorElement, {
     mobiledoc,
     cards: [card],
@@ -156,12 +166,15 @@ test('rendered card can fire edit hook to enter editing mode, then save', (asser
   };
 
   const payload = { foo: 'bar' };
-  const mobiledoc = [
-    [],
-    [
-      [10, 'test-card', payload]
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [10, 'test-card', payload]
+      ]
     ]
-  ];
+  };
   editor = new Editor(editorElement, {
     mobiledoc,
     cards: [card]
@@ -200,12 +213,15 @@ test('rendered card can fire edit hook to enter editing mode, then cancel', (ass
   };
 
   const payload = { foo: 'bar' };
-  const mobiledoc = [
-    [],
-    [
-      [10, 'test-card', payload]
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [10, 'test-card', payload]
+      ]
     ]
-  ];
+  };
   editor = new Editor(editorElement, {
     mobiledoc,
     cards: [card]
