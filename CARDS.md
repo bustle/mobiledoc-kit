@@ -87,7 +87,7 @@ Cards rendered by Content-Kit may move between `edit` and `display` hooks
 many times after being added (or loaded from a Mobiledoc). The can do this
 by calling the functions passed to `env`.
 
-The `env.save` function accepts the argment of a payload, which is passed to
+The `env.save` function accepts the argument of a payload, which is passed to
 later setup calls. A minimal editable component would look like:
 
 ```js
