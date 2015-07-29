@@ -30,7 +30,7 @@ var selfieCard = {
         element.appendChild($('' +
           '<div>' +
             'Hello there!' +
-            (env.edit ? "<button id='go-edit'>Click here to take a picture</button>" : "")
+            (env.edit ? "<button id='go-edit'>Click here to take a picture</button>" : "") +
           '</div>')[0]
         );
       }
