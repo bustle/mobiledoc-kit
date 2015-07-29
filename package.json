@@ -3,7 +3,6 @@
   "version": "0.2.0",
   "description": "A modern, minimalist WYSIWYG editor.",
   "repository": "https://github.com/bustlelabs/content-kit-editor",
-  "main": "dist/commonjs/content-kit-editor/index.js",
   "engines": {
     "node": "0.10.x"
   },
@@ -19,9 +18,11 @@
     "json",
     "wysiwyg",
     "editor",
-    "contenteditable"
+    "contenteditable",
+    "ember-addon"
   ],
   "files": [
+    "index.js",
     "src",
     "dist/amd",
     "dist/commonjs",
@@ -32,6 +33,7 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.1.7",
+    "broccoli-funnel": "^0.2.3",
     "busboy": "^0.2.9",
     "embedly": "^1.0.2",
     "express": "^4.11.1"
