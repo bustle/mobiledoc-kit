@@ -187,12 +187,39 @@ var ContentKitDemo = exports.ContentKitDemo = {
     $('#rendered-mobiledoc').empty();
     $('#rendered-mobiledoc')[0].appendChild(rendered);
 
+    var displayHTML = function(html) {
+      return html.replace(/&/g,'&amp;').replace(/</g, '&lt;').replace(/>/g,'&gt;');
+    };
+
+    // adds a pipe ("|") between adjacent text nodes for visual debugging
+    var debugNodeHTML = function(node) {
+      function convertTextNodes(parentNode, converterFn) {
+        var iterator = document.createNodeIterator(parentNode, NodeFilter.SHOW_TEXT);
+        var node = iterator.nextNode();
+        while (node) {
+          converterFn(node);
+          node = iterator.nextNode();
+        }
+      }
+
+      function addPipeBetweenAdjacentTextNodes(textNode) {
+        var nextSibling = textNode.nextSibling;
+        if (nextSibling && nextSibling.nodeType === Node.TEXT_NODE) {
+          textNode.textContent = textNode.textContent + '|';
+        }
+      }
+
+      var deep = true;
+      var cloned = node.cloneNode(deep);
+      convertTextNodes(cloned, addPipeBetweenAdjacentTextNodes);
+      return displayHTML(cloned.innerHTML);
+    };
+
     var htmlRenderer = new MobiledocHTMLRenderer();
-    var html = htmlRenderer.render(mobiledoc);
+    $('#rendered-mobiledoc-html').html(displayHTML(htmlRenderer.render(mobiledoc)));
 
-    html = html.replace(/&/g,'&amp;').replace(/</g, '&lt;').replace(/>/g,'&gt;');
-
-    $('#rendered-mobiledoc-html').html(html);
+    var editorHTML = debugNodeHTML($('#editor')[0]);
+    $('#editor-html').html(editorHTML);
   },
 
   syntaxHighlight: function(json) {
@@ -230,9 +257,12 @@ function bootEditor(element, mobiledoc) {
     cards: [simpleCard, cardWithEditMode, cardWithInput, selfieCard]
   });
 
-  editor.on('update', function() {
+  function sync() {
     ContentKitDemo.syncCodePane(editor);
-  });
+  }
+
+  editor.on('update', sync);
+  sync();
 }
 
 function readMobiledoc(string) {
