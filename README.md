@@ -103,6 +103,13 @@ node server/index.js
 
 And visit [localhost:5000/dist/demo/index.html](http://localhost:5000/dist/demo/index.html)
 
+#### Releasing
+
+* `npm version patch` or `minor` or `major`
+* `npm run build`
+* `git push bustle --tags`
+* `npm publish`
+
 #### Re-deploy the demo
 
 The demo website is hosted at github pages. To publish a new version:
