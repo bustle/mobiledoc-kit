@@ -1,12 +1,13 @@
+import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
+import Editor from 'content-kit-editor/editor/editor';
+
+const { module, test } = window.QUnit;
+
 let fixture = document.getElementById('qunit-fixture');
 let editorElement = document.createElement('div');
 let editor;
 editorElement.id = 'editor1';
 editorElement.className = 'editor';
-
-import Editor from 'content-kit-editor/editor/editor';
-
-const { module, test } = window.QUnit;
 
 module('Unit: Editor', {
   beforeEach: function() {
@@ -51,14 +52,17 @@ test('editor fires update event', (assert) => {
 });
 
 test('editor parses and renders mobiledoc format', (assert) => {
-  const mobiledoc = [
-    [],
-    [
-      [1, 'P', [
-        [[], 0, 'hello world']
-      ]]
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, 'P', [
+          [[], 0, 'hello world']
+        ]]
+      ]
     ]
-  ];
+  };
   editorElement.innerHTML = '<p>something here</p>';
   let editor = new Editor(editorElement, {mobiledoc});
 

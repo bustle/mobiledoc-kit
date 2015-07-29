@@ -1,10 +1,9 @@
-import MobiledocRenderer from 'content-kit-editor/renderers/mobiledoc';
+import MobiledocRenderer, { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 import { generateBuilder } from 'content-kit-editor/utils/post-builder';
 
 const { module, test } = window.QUnit;
 const render = MobiledocRenderer.render;
 let builder;
-
 
 module('Unit: Mobiledoc Renderer', {
   beforeEach() {
@@ -15,7 +14,10 @@ module('Unit: Mobiledoc Renderer', {
 test('renders a blank post', (assert) => {
   let post = builder.generatePost();
   let mobiledoc = render(post);
-  assert.deepEqual(mobiledoc, [[], []]);
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    sections: [[], []]
+  });
 });
 
 test('renders a post with marker', (assert) => {
@@ -28,16 +30,19 @@ test('renders a post with marker', (assert) => {
     ], 'Hi')
   );
   let mobiledoc = render(post);
-  assert.deepEqual(mobiledoc, [
-    [
-      ['strong']
-    ],
-    [
-      [1, 'P', [
-        [[0], 1, 'Hi']
-      ]]
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [
+        ['strong']
+      ],
+      [
+        [1, 'P', [
+          [[0], 1, 'Hi']
+        ]]
+      ]
     ]
-  ]);
+  });
 });
 
 test('renders a post section with markers sharing a markup', (assert) => {
@@ -56,17 +61,20 @@ test('renders a post section with markers sharing a markup', (assert) => {
     ], ' Guy')
   );
   let mobiledoc = render(post);
-  assert.deepEqual(mobiledoc, [
-    [
-      ['strong']
-    ],
-    [
-      [1, 'P', [
-        [[0], 0, 'Hi'],
-        [[], 1, ' Guy']
-      ]]
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [
+        ['strong']
+      ],
+      [
+        [1, 'P', [
+          [[0], 0, 'Hi'],
+          [[], 1, ' Guy']
+        ]]
+      ]
     ]
-  ]);
+  });
 });
 
 test('renders a post with image', (assert) => {
@@ -76,12 +84,15 @@ test('renders a post with image', (assert) => {
   post.appendSection(section);
 
   let mobiledoc = render(post);
-  assert.deepEqual(mobiledoc, [
-    [],
-    [
-      [2, url]
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [2, url]
+      ]
     ]
-  ]);
+  });
 });
 
 test('renders a post with image and null src', (assert) => {
@@ -90,12 +101,15 @@ test('renders a post with image and null src', (assert) => {
   post.appendSection(section);
 
   let mobiledoc = render(post);
-  assert.deepEqual(mobiledoc, [
-    [],
-    [
-      [2, null]
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [2, null]
+      ]
     ]
-  ]);
+  });
 });
 
 test('renders a post with card', (assert) => {
@@ -106,10 +120,13 @@ test('renders a post with card', (assert) => {
   post.appendSection(section);
 
   let mobiledoc = render(post);
-  assert.deepEqual(mobiledoc, [
-    [],
-    [
-      [10, cardName, payload]
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [10, cardName, payload]
+      ]
     ]
-  ]);
+  });
 });
