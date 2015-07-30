@@ -15,14 +15,13 @@ var selfieCard = {
     setup: function(element, options, env, payload) {
       removeChildren(element);
 
-      if (payload.imageSrc) {
+      if (payload.src) {
         element.appendChild(
           $('' +
               '<div>' +
-                '<img src="' + payload.imageSrc + '"><br>' +
+                '<img src="' + payload.src + '"><br>' +
                 '<div>You look nice today.</div>' +
                 (env.edit ? "<div><button id='go-edit'>Take a better picture</button></div>" : "") +
-                '<div><button id="go-edit">Take a better picture</button></div>' +
               '</div>' +
             '')[0]
         );
@@ -69,8 +68,8 @@ var selfieCard = {
 
         $('#snap').click(function() {
           context.drawImage(video, 0, 0, 160, 120);
-          var imageSrc = canvas.toDataURL('image/png');
-          env.save({imageSrc: imageSrc});
+          var src = canvas.toDataURL('image/png');
+          env.save({src: src});
         });
       }, errBack);
     }
