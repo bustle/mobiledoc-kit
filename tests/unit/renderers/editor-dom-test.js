@@ -363,6 +363,35 @@ test('rerender a marker after removing a markup from it (when both markers have 
                '<p>text1<b>text2</b></p>');
 });
 
+test('rerender a marker after removing a markup from it (when both markers have same markup)', (assert) => {
+  const post = builder.generatePost();
+  const section = builder.generateMarkupSection();
+  const bMarkup = builder.generateMarkup('B');
+  const marker1 = builder.generateMarker([bMarkup], 'text1');
+  const marker2 = builder.generateMarker([bMarkup], 'text2');
+
+  section.appendMarker(marker1);
+  section.appendMarker(marker2);
+  post.appendSection(section);
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p><b>text1text2</b></p>');
+
+  marker1.removeMarkup(bMarkup);
+  marker1.renderNode.markDirty();
+
+  // rerender
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p>text1<b>text2</b></p>');
+});
+
 
 /*
 test("It renders a renderTree with rendered dirty section", (assert) => {

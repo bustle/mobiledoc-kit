@@ -1,3 +1,7 @@
+editor actions:
+  * hitting enter multiple times to create arbitrary space (prevent or allow plugin-based validation of the AST)
+  * maintain header hierarchy (no h2 without a prior h1, no h3 w/out prior h2, etc)
+
 abc|def|ghi
 
 i=0, length=0, offset=3

@@ -23,7 +23,7 @@ import EventEmitter from '../utils/event-emitter';
 
 import MobiledocParser from "../parsers/mobiledoc";
 import PostParser from '../parsers/post';
-import Renderer from 'content-kit-editor/renderers/editor-dom';
+import Renderer, { UNPRINTABLE_CHARACTER } from 'content-kit-editor/renderers/editor-dom';
 import RenderTree from 'content-kit-editor/models/render-tree';
 import MobiledocRenderer from '../renderers/mobiledoc';
 
@@ -279,6 +279,7 @@ class Editor {
     this._renderer.render(this._renderTree);
   }
 
+  // FIXME ensure we handle deletion when there is a selection
   handleDeletion(event) {
     let {
       leftRenderNode,
@@ -287,25 +288,74 @@ class Editor {
 
     // need to handle these cases:
     // when cursor is:
-    //   * in the middle of a marker
-    //   * offset is 0 and there is a previous marker
-    //   * offset is 0 and there is no previous marker
+    //   * A in the middle of a marker -- just delete the character
+    //   * B offset is 0 and there is a previous marker
+    //     * delete last char of previous marker
+    //   * C offset is 0 and there is no previous marker
+    //     * join this section with previous section
 
     const currentMarker = leftRenderNode.postNode;
+    let nextCursorMarker = currentMarker;
+    let nextCursorOffset = leftOffset - 1;
+
+    // A: in the middle of a marker
     if (leftOffset !== 0) {
       currentMarker.deleteValueAtOffset(leftOffset-1);
-      leftRenderNode.markDirty();
+      if (currentMarker.length === 0 && currentMarker.section.markers.length > 1) {
+        leftRenderNode.scheduleForRemoval();
+
+        let isFirstRenderNode = leftRenderNode === leftRenderNode.parentNode.firstChild;
+        if (isFirstRenderNode) {
+          // move cursor to start of next node
+          nextCursorMarker = leftRenderNode.nextSibling.postNode;
+          nextCursorOffset = 0;
+        } else {
+          // move cursor to end of prev node
+          nextCursorMarker = leftRenderNode.previousSibling.postNode;
+          nextCursorOffset = leftRenderNode.previousSibling.postNode.length;
+        }
+      } else {
+        leftRenderNode.markDirty();
+      }
     } else {
+      let currentSection = currentMarker.section;
       let previousMarker = currentMarker.previousSibling;
-      if (previousMarker) {
+      if (previousMarker) { // (B)
         let markerLength = previousMarker.length;
         previousMarker.deleteValueAtOffset(markerLength - 1);
+      } else { // (C)
+        // possible previous sections:
+        //   * none -- do nothing
+        //   * markup section -- join to it
+        //   * non-markup section (card) -- select it? delete it?
+        let previousSection = this.post.getPreviousSection(currentSection);
+        if (previousSection) {
+          let isMarkupSection = previousSection.type === MARKUP_SECTION_TYPE;
+
+          if (isMarkupSection) {
+            let previousSectionMarkerLength = previousSection.markers.length;
+            previousSection.join(currentSection);
+            previousSection.renderNode.markDirty();
+            currentSection.renderNode.scheduleForRemoval();
+
+            nextCursorMarker = previousSection.markers[previousSectionMarkerLength];
+            nextCursorOffset = 0;
+          /*
+          } else {
+            // card section: ??
+          */
+          }
+        } else { // no previous section -- do nothing
+          nextCursorMarker = currentMarker;
+          nextCursorOffset = 0;
+        }
       }
     }
 
     this.rerender();
 
-    this.cursor.moveToNode(leftRenderNode.element, leftOffset-1);
+    this.cursor.moveToNode(nextCursorMarker.renderNode.element,
+                           nextCursorOffset);
 
     this.trigger('update');
     event.preventDefault();
@@ -440,7 +490,7 @@ class Editor {
    *         create new section, append it to post
    *         append the after-split markers onto the new section
    *         rerender -- this should render the new section at the appropriate spot
-   */    
+   */
   handleInput() {
     this.reparse();
     this.trigger('update');
@@ -501,8 +551,47 @@ class Editor {
       }
     });
 
+    let {
+      leftRenderNode,
+      leftOffset,
+      rightRenderNode,
+      rightOffset
+    } = this.cursor.offsets;
+
+    // The cursor will lose its textNode if we have parsed (and thus rerendered)
+    // its section. Ensure the cursor is placed where it should be after render.
+    //
+    // New sections are presumed clean, and thus do not get rerendered and lose
+    // their cursor position.
+    //
+    let resetCursor = (leftRenderNode &&
+        sectionsWithCursor.indexOf(leftRenderNode.postNode.section) !== -1);
+
+    if (resetCursor) {
+      let unprintableOffset = leftRenderNode.element.textContent.indexOf(UNPRINTABLE_CHARACTER);
+      if (unprintableOffset !== -1) {
+        leftRenderNode.markDirty();
+        if (unprintableOffset < leftOffset) {
+          // FIXME: we should move backward/forward some number of characters
+          // with a method on markers that returns the relevent marker and
+          // offset (may not be the marker it was called with);
+          leftOffset--;
+          rightOffset--;
+        }
+      }
+    }
+
     this.rerender();
     this.trigger('update');
+
+    if (resetCursor) {
+      this.cursor.moveToNode(
+        leftRenderNode.element,
+        leftOffset,
+        rightRenderNode.element,
+        rightOffset
+      );
+    }
   }
 
   getSectionsWithCursor() {

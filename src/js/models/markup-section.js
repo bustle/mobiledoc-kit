@@ -76,6 +76,11 @@ export default class Section {
     ];
   }
 
+  // mutates this by appending the other section's (cloned) markers to it
+  join(otherSection) {
+    otherSection.markers.forEach(m => this.appendMarker(m.clone()));
+  }
+
   /**
    * A marker contains this offset if:
    *   * The offset is between the marker's start and end

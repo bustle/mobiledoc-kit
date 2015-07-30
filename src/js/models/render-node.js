@@ -6,6 +6,7 @@ export default class RenderNode {
     this.postNode = postNode;
 
     this.firstChild = null;
+    this.lastChild = null;
     this.nextSibling = null;
     this.previousSibling = null;
   }

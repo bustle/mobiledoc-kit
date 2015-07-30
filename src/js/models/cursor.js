@@ -164,10 +164,10 @@ const Cursor = class Cursor {
     selection.addRange(r);
   }
 
-  moveToNode(node, offset=0) {
+  moveToNode(node, offset=0, endNode=node, endOffset=offset) {
     let r = document.createRange();
     r.setStart(node, offset);
-    r.setEnd(node, offset);
+    r.setEnd(endNode, endOffset);
     const selection = this.selection;
     if (selection.rangeCount > 0) {
       selection.removeAllRanges();

@@ -77,9 +77,13 @@ export default {
 
       let renderNode = renderTree.elements.get(textNode);
       if (renderNode) {
-        marker = renderNode.postNode;
-        marker.value = text;
-        marker.markups = markups;
+        if (text.length) {
+          marker = renderNode.postNode;
+          marker.value = text;
+          marker.markups = markups;
+        } else {
+          renderNode.scheduleForRemoval();
+        }
       } else {
         marker = generateBuilder().generateMarker(markups, text);
 

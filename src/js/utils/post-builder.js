@@ -3,6 +3,7 @@ import MarkupSection from "../models/markup-section";
 import ImageSection from "../models/image";
 import Marker from "../models/marker";
 import Markup from "../models/markup";
+import Card from "../models/card";
 
 var builder = {
   generatePost() {
@@ -23,8 +24,7 @@ var builder = {
     return section;
   },
   generateCardSection(name, payload={}) {
-    const type = 'card';
-    return { name, payload, type };
+    return new Card(name, payload);
   },
   generateMarker(markups, value) {
     return new Marker(value, markups);

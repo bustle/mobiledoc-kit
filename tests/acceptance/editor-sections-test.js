@@ -74,6 +74,18 @@ const mobileDocWith1Character = {
   ]
 };
 
+const mobileDocWithNoCharacter = {
+  version: MOBILEDOC_VERSION,
+  sections: [
+    [],
+    [
+      [1, "P", [
+        [[], 0, ""]
+      ]]
+    ]
+  ]
+};
+
 module('Acceptance: Editor sections', {
   beforeEach() {
     fixture = document.getElementById('qunit-fixture');
@@ -165,7 +177,7 @@ Helpers.skipInPhantom('keystroke of delete when cursor is at beginning of marker
   const textNode = editor.element.
                     firstChild.    // section
                     childNodes[1]; // plain marker
-                               
+
   assert.ok(!!textNode, 'gets text node');
   Helpers.dom.moveCursorTo(textNode, 0);
 
@@ -192,7 +204,7 @@ Helpers.skipInPhantom('keystroke of delete when cursor is after only char in onl
   const getTextNode = () => editor.element.
                                   firstChild. // section
                                   firstChild; // c marker
-                               
+
   let textNode = getTextNode();
   assert.ok(!!textNode, 'gets text node');
   Helpers.dom.moveCursorTo(textNode, 1);
@@ -211,3 +223,93 @@ Helpers.skipInPhantom('keystroke of delete when cursor is after only char in onl
                   {node: textNode, offset: 0},
                   'cursor moves to start of empty text node');
 });
+
+Helpers.skipInPhantom('keystroke of character results in unprintable being removed', (assert) => {
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWithNoCharacter});
+  const getTextNode = () => editor.element.
+                                  firstChild. // section
+                                  firstChild; // marker
+
+  let textNode = getTextNode();
+  assert.ok(!!textNode, 'gets text node');
+  Helpers.dom.moveCursorTo(textNode, 1);
+
+  const runDefault = Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.M);
+  if (runDefault) {
+    document.execCommand('insertText', false, 'm');
+    Helpers.dom.triggerEvent(editor.element, 'input');
+  }
+
+  textNode = getTextNode();
+  assert.equal(textNode.textContent, 'm',
+               'adds character');
+
+  assert.equal(textNode.textContent.length, 1);
+
+  assert.deepEqual(Helpers.dom.getCursorPosition(),
+                  {node: textNode, offset: 1},
+                  'cursor moves to end of m text node');
+});
+
+Helpers.skipInPhantom('keystroke of delete at start of section joins with previous section', (assert) => {
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  let secondSectionTextNode = editor.element.childNodes[1].firstChild;
+
+  assert.equal(secondSectionTextNode.textContent, 'second section',
+               'finds section section text node');
+
+  Helpers.dom.moveCursorTo(secondSectionTextNode, 0);
+
+  const runDefault = Helpers.dom.triggerKeyEvent(document, 'keydown',
+                                                 Helpers.dom.KEY_CODES.DELETE);
+  if (runDefault) {
+    document.execCommand('delete', false);
+    Helpers.dom.triggerEvent(editor.element, 'input');
+  }
+
+  assert.equal(editor.element.childNodes.length, 1, 'only 1 section remaining');
+
+  let secondSectionNode = editor.element.firstChild;
+  secondSectionTextNode = secondSectionNode.firstChild;
+  assert.equal(secondSectionNode.textContent,
+               'first sectionsecond section',
+               'joins two sections');
+
+  assert.deepEqual(Helpers.dom.getCursorPosition(),
+                  {node: secondSectionTextNode,
+                   offset: secondSectionTextNode.textContent.length},
+                  'cursor moves to end of first section');
+});
+
+
+Helpers.skipInPhantom('keystroke of delete at start of first section does nothing', (assert) => {
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  let firstSectionTextNode = editor.element.childNodes[0].firstChild;
+
+  assert.equal(firstSectionTextNode.textContent, 'first section',
+               'finds first section text node');
+
+  Helpers.dom.moveCursorTo(firstSectionTextNode, 0);
+
+  const runDefault = Helpers.dom.triggerKeyEvent(document, 'keydown',
+                                                 Helpers.dom.KEY_CODES.DELETE);
+  if (runDefault) {
+    document.execCommand('delete', false);
+    Helpers.dom.triggerEvent(editor.element, 'input');
+  }
+
+  assert.equal(editor.element.childNodes.length, 2, 'still 2 sections');
+  firstSectionTextNode = editor.element.childNodes[0].firstChild;
+  assert.equal(firstSectionTextNode.textContent,
+               'first section',
+               'first section still has same text content');
+
+  assert.deepEqual(Helpers.dom.getCursorPosition(),
+                  {node: firstSectionTextNode,
+                   offset: 0},
+                  'cursor stays at start of first section');
+});
+
+// test: deleting at start of section when previous section is a non-markup section
