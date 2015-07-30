@@ -360,22 +360,6 @@ var sampleMobiledocs = {
     ]
   },
 
-  mobileDocWithAttributeMarker: {
-    version: MOBILEDOC_VERSION,
-    sections: [
-      [['A', ['href', 'http://github.com/bustlelabs/content-kit-editor']]],
-      [
-        [1, "H2", [
-          [[], 0, "headline h2"]
-        ]],
-        [1, "P", [
-          [[], 0, "see it "],
-          [[0], 1, "on github."]
-        ]]
-      ]
-    ]
-  },
-
   mobileDocWithSimpleCard: {
     version: MOBILEDOC_VERSION,
     sections: [
