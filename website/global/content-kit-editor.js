@@ -803,7 +803,7 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       (0, _contentKitUtils.mergeWithOptions)(this, defaults, options);
 
       this._parser = _contentKitEditorParsersPost['default'];
-      this._renderer = new _contentKitEditorRenderersEditorDom['default'](this.cards, this.unknownCardHandler, this.cardOptions);
+      this._renderer = new _contentKitEditorRenderersEditorDom['default'](this, this.cards, this.unknownCardHandler, this.cardOptions);
 
       this.applyClassName();
       this.applyPlaceholder();
@@ -1050,6 +1050,11 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
           this.cursor.clearSelection();
           this.hasNoSelection();
         }
+      }
+    }, {
+      key: 'didUpdate',
+      value: function didUpdate() {
+        this.trigger('update');
       }
     }, {
       key: 'getActiveMarkers',
@@ -1344,9 +1349,10 @@ define('content-kit-editor/models/card-node', ['exports'], function (exports) {
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var CardNode = (function () {
-    function CardNode(card, section, element, cardOptions) {
+    function CardNode(editor, card, section, element, cardOptions) {
       _classCallCheck(this, CardNode);
 
+      this.editor = editor;
       this.card = card;
       this.section = section;
       this.cardOptions = cardOptions;
@@ -1399,6 +1405,8 @@ define('content-kit-editor/models/card-node', ['exports'], function (exports) {
           },
           save: function save(payload) {
             _this.section.payload = payload;
+
+            _this.editor.didUpdate();
             _this.display();
           },
           cancel: function cancel() {
@@ -2937,9 +2945,10 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
   }
 
   var Visitor = (function () {
-    function Visitor(cards, unknownCardHandler, options) {
+    function Visitor(editor, cards, unknownCardHandler, options) {
       _classCallCheck(this, Visitor);
 
+      this.editor = editor;
       this.cards = cards;
       this.unknownCardHandler = unknownCardHandler;
       this.options = options;
@@ -3018,6 +3027,9 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     }, {
       key: _contentKitEditorModelsCard.CARD_TYPE,
       value: function value(renderNode, section) {
+        var editor = this.editor;
+        var options = this.options;
+
         var card = (0, _contentKitEditorUtilsArrayUtils.detect)(this.cards, function (card) {
           return card.name === section.name;
         });
@@ -3029,11 +3041,11 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         renderNode.parentNode.element.appendChild(renderNode.element);
 
         if (card) {
-          var cardNode = new _contentKitEditorModelsCardNode["default"](card, section, renderNode.element, this.options);
+          var cardNode = new _contentKitEditorModelsCardNode["default"](editor, card, section, renderNode.element, options);
           renderNode.cardNode = cardNode;
           cardNode.display();
         } else {
-          this.unknownCardHandler(renderNode.element, this.options, env, section.payload);
+          this.unknownCardHandler(renderNode.element, options, env, section.payload);
         }
       }
     }]);
@@ -3108,10 +3120,11 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
   }
 
   var Renderer = (function () {
-    function Renderer(cards, unknownCardHandler, options) {
+    function Renderer(editor, cards, unknownCardHandler, options) {
       _classCallCheck(this, Renderer);
 
-      this.visitor = new Visitor(cards, unknownCardHandler, options);
+      this.editor = editor;
+      this.visitor = new Visitor(editor, cards, unknownCardHandler, options);
       this.nodes = [];
     }
 
