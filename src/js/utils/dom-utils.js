@@ -71,7 +71,6 @@ function walkDOMUntil(topNode, conditionFn=() => {}) {
   }
 }
 
-
 // see https://github.com/webmodules/node-contains/blob/master/index.js
 function containsNode(parentNode, childNode) {
   const isSame = () => parentNode === childNode;
@@ -112,6 +111,11 @@ function getAttributesArray(element) {
   return result;
 }
 
+function addClassName(element, className) {
+  // FIXME-IE IE10+
+  element.classList.add(className);
+}
+
 export {
   detectParentNode,
   containsNode,
@@ -119,5 +123,6 @@ export {
   getAttributes,
   getAttributesArray,
   walkDOMUntil,
-  walkTextNodes
+  walkTextNodes,
+  addClassName
 };

@@ -8,12 +8,10 @@ import {
 } from '../utils/selection-utils';
 
 import {
-  detectParentNode,
-  containsNode,
-  walkTextNodes
+  detectParentNode
 } from '../utils/dom-utils';
 
-const Cursor = class Cursor {
+export default class Cursor {
   constructor(editor) {
     this.editor = editor;
     this.renderTree = editor._renderTree;
@@ -31,13 +29,6 @@ const Cursor = class Cursor {
 
   get selection() {
     return window.getSelection();
-  }
-
-  /**
-   * the offset from the left edge of the section
-   */
-  get leftOffset() {
-    return this.offsets.leftOffset;
   }
 
   get offsets() {
@@ -73,58 +64,6 @@ const Cursor = class Cursor {
     };
   }
 
-  get activeMarkers() {
-    const firstSection = this.activeSections[0];
-    if (!firstSection) { return []; }
-    const firstSectionElement = firstSection.renderNode.element;
-
-    const {
-      leftNode, rightNode,
-      leftOffset, rightOffset
-    } = this.offsets;
-
-    let textLeftOffset = 0,
-        textRightOffset = 0,
-        foundLeft = false,
-        foundRight = false;
-
-    walkTextNodes(firstSectionElement, (textNode) => {
-      let textLength = textNode.textContent.length;
-
-      if (!foundLeft) {
-        if (containsNode(leftNode, textNode)) {
-          textLeftOffset += leftOffset;
-          foundLeft = true;
-        } else {
-          textLeftOffset += textLength;
-        }
-      }
-      if (!foundRight) {
-        if (containsNode(rightNode, textNode)) {
-          textRightOffset += rightOffset;
-          foundRight = true;
-        } else {
-          textRightOffset += textLength;
-        }
-      }
-    });
-
-    // get section element
-    //   walk it until we find one containing the left node, adding up textContent length along the way
-    //   add the selection offset in the left node -- this is the offset in the parent textContent
-    //   repeat for right node (subtract the remaining chars after selection offset) -- this is the end offset
-    //
-    //   walk the section's markers, adding up length. Each marker with length >= offset and <= end offset is active
-
-    const leftMarker = firstSection.markerContaining(textLeftOffset, true);
-    const rightMarker = firstSection.markerContaining(textRightOffset, false);
-
-    const leftMarkerIndex = firstSection.markers.indexOf(leftMarker),
-          rightMarkerIndex = firstSection.markers.indexOf(rightMarker) + 1;
-
-    return firstSection.markers.slice(leftMarkerIndex, rightMarkerIndex);
-  }
-
   get activeSections() {
     const { sections } = this.post;
     const selection = this.selection;
@@ -135,9 +74,7 @@ const Cursor = class Cursor {
 
     const { startContainer, endContainer } = range;
     const isSectionElement = (element) => {
-      return detect(sections, (section) => {
-        return section.renderNode.element === element;
-      });
+      return detect(sections, (s) => s.renderNode.element === element);
     };
     const {result:startSection} = detectParentNode(startContainer, isSectionElement);
     const {result:endSection} = detectParentNode(endContainer, isSectionElement);
@@ -174,7 +111,4 @@ const Cursor = class Cursor {
     }
     selection.addRange(r);
   }
-};
-
-export default Cursor;
-
+}

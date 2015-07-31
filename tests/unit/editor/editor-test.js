@@ -1,5 +1,5 @@
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
-import Editor from 'content-kit-editor/editor/editor';
+import Editor, { EDITOR_ELEMENT_CLASS_NAME } from 'content-kit-editor/editor/editor';
 
 const { module, test } = window.QUnit;
 
@@ -35,7 +35,16 @@ test('creating an editor without a class name adds appropriate class', (assert) 
   editorElement.className = '';
 
   var editor = new Editor(document.getElementById('editor1'));
-  assert.equal(editor.element.className, 'ck-editor');
+  assert.equal(editor.element.className, EDITOR_ELEMENT_CLASS_NAME);
+});
+
+test('creating an editor adds EDITOR_ELEMENT_CLASS_NAME if not there', (assert) => {
+  editorElement.className = 'abc def';
+
+  var editor = new Editor(document.getElementById('editor1'));
+  const hasClass = (className) => editor.element.className.indexOf(className) !== -1;
+  assert.ok(hasClass(EDITOR_ELEMENT_CLASS_NAME), 'has editor el class name');
+  assert.ok(hasClass('abc') && hasClass('def'), 'preserves existing class names');
 });
 
 test('editor fires update event', (assert) => {

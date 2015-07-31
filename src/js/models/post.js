@@ -17,14 +17,16 @@ export default class Post {
     this.removeSection(section);
   }
   insertSectionAfter(section, previousSection) {
-    var i, l;
-    for (i=0,l=this.sections.length;i<l;i++) {
+    let foundIndex = -1;
+
+    for (let i=0; i<this.sections.length; i++) {
       if (this.sections[i] === previousSection) {
-        this.sections.splice(i+1, 0, section);
-        return;
+        foundIndex = i;
+        break;
       }
     }
-    throw new Error('Previous section was not found in post.sections');
+
+    this.sections.splice(foundIndex+1, 0, section);
   }
   removeSection(section) {
     var i, l;
