@@ -21,4 +21,9 @@ export default class Markup {
       throw new Error(`Cannot create markup of tagName ${tagName}`);
     }
   }
+
+  static isValidElement(element) {
+    let tagName = element.tagName.toLowerCase();
+    return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
+  }
 }

@@ -3,6 +3,7 @@ import MarkupSection from "../models/markup-section";
 import ImageSection from "../models/image";
 import Marker from "../models/marker";
 import Markup from "../models/markup";
+import Card from "../models/card";
 
 var builder = {
   generatePost() {
@@ -23,13 +24,15 @@ var builder = {
     return section;
   },
   generateCardSection(name, payload={}) {
-    const type = 'card';
-    return { name, payload, type };
+    return new Card(name, payload);
   },
-  generateMarker: function(markers, value) {
-    return new Marker(value, markers);
+  generateMarker(markups, value) {
+    return new Marker(value, markups);
   },
-  generateMarkup: function(tagName, attributes) {
+  generateBlankMarker() {
+    return new Marker('__BLANK__');
+  },
+  generateMarkup(tagName, attributes) {
     if (attributes) {
       // FIXME: This could also be cached
       return new Markup(tagName, attributes);

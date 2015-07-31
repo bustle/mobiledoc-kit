@@ -13,6 +13,11 @@ const Marker = class Marker {
     }
   }
 
+  clone() {
+    const clonedMarkups = this.markups.slice();
+    return new this.constructor(this.value, clonedMarkups);
+  }
+
   get length() {
     return this.value.length;
   }
@@ -27,6 +32,23 @@ const Marker = class Marker {
 
   addMarkup(markup) {
     this.markups.push(markup);
+  }
+
+  removeMarkup(markup) {
+    const index = this.markups.indexOf(markup);
+    if (index === -1) { throw new Error('Cannot remove markup that is not there.'); }
+
+    this.markups.splice(index, 1);
+  }
+
+  // delete the character at this offset,
+  // update the value with the new value
+  deleteValueAtOffset(offset) {
+    const [ left, right ] = [
+      this.value.slice(0, offset),
+      this.value.slice(offset+1)
+    ];
+    this.value = left + right;
   }
 
   hasMarkup(tagName) {

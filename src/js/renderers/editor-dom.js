@@ -3,7 +3,12 @@ import CardNode from "content-kit-editor/models/card-node";
 import { detect } from 'content-kit-editor/utils/array-utils';
 import { POST_TYPE } from "../models/post";
 import { MARKUP_SECTION_TYPE } from "../models/markup-section";
+import { MARKER_TYPE } from "../models/marker";
 import { IMAGE_SECTION_TYPE } from "../models/image";
+import { CARD_TYPE } from "../models/card";
+import { clearChildNodes } from '../utils/dom-utils';
+
+export const UNPRINTABLE_CHARACTER = "\u200C";
 
 function createElementFromMarkup(doc, markup) {
   var element = doc.createElement(markup.tagName);
@@ -15,37 +20,70 @@ function createElementFromMarkup(doc, markup) {
   return element;
 }
 
-function renderMarkupSection(doc, section, markers) {
+// ascends from element upward, returning the last parent node that is not
+// parentElement
+function penultimateParentOf(element, parentElement) {
+  while (parentElement &&
+         element.parentNode !== parentElement &&
+         element.parentElement !== document.body // ensure the while loop stops
+        ) {
+    element = element.parentNode;
+  }
+  return element;
+}
+
+function renderMarkupSection(doc, section) {
   var element = doc.createElement(section.tagName);
-  var elements = [element];
-  var currentElement = element;
-  var i, l, j, m, marker, openTypes, closeTypes, text;
-  var markup;
-  var openedElement;
-  for (i=0, l=markers.length;i<l;i++) {
-    marker = markers[i];
-    openTypes = marker.openedMarkups;
-    closeTypes = marker.closedMarkups;
-    text = marker.value;
+  section.element = element;
+  return element;
+}
 
-    for (j=0, m=openTypes.length;j<m;j++) {
-      markup = openTypes[j];
-      openedElement = createElementFromMarkup(doc, markup);
-      currentElement.appendChild(openedElement);
-      elements.push(openedElement);
-      currentElement = openedElement;
-    }
+function isEmptyText(text) {
+  return text.trim() === '';
+}
 
-    currentElement.appendChild(doc.createTextNode(text));
+// pass in a renderNode's previousSibling
+function getNextMarkerElement(renderNode) {
+  let element = renderNode.element.parentNode;
+  let closedCount = renderNode.postNode.closedMarkups.length;
 
-    for (j=0, m=closeTypes.length;j<m;j++) {
-      elements.pop();
-      currentElement = elements[elements.length-1];
-    }
+  // walk up the number of closed markups
+  while (closedCount--) {
+    element = element.parentNode;
+  }
+  return element;
+}
 
+function renderMarker(marker, element, previousRenderNode) {
+  const openTypes = marker.openedMarkups;
+  let text = marker.value;
+  if (isEmptyText(text)) {
+    // This is necessary to allow the cursor to move into this area
+    text = UNPRINTABLE_CHARACTER;
   }
 
-  return element;
+  let textNode = document.createTextNode(text);
+  let currentElement = textNode;
+  let markup;
+
+  for (let j=openTypes.length-1;j>=0;j--) {
+    markup = openTypes[j];
+    let openedElement = createElementFromMarkup(document, markup);
+    openedElement.appendChild(currentElement);
+    currentElement = openedElement;
+  }
+
+  if (previousRenderNode) {
+    let nextMarkerElement = getNextMarkerElement(previousRenderNode);
+
+    let previousSibling = previousRenderNode.element;
+    let previousSiblingPenultimate = penultimateParentOf(previousSibling, nextMarkerElement);
+    nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.nextSibling);
+  } else {
+    element.insertBefore(currentElement, element.firstChild);
+  }
+
+  return textNode;
 }
 
 class Visitor {
@@ -63,9 +101,9 @@ class Visitor {
     visit(renderNode, post.sections);
   }
 
-  [MARKUP_SECTION_TYPE](renderNode, section) {
+  [MARKUP_SECTION_TYPE](renderNode, section, visit) {
     if (!renderNode.element) {
-      let element = renderMarkupSection(window.document, section, section.markers);
+      let element = renderMarkupSection(window.document, section);
       if (renderNode.previousSibling) {
         let previousElement = renderNode.previousSibling.element;
         let nextElement = previousElement.nextSibling;
@@ -78,6 +116,25 @@ class Visitor {
       }
       renderNode.element = element;
     }
+
+    // remove all elements so that we can rerender
+    clearChildNodes(renderNode.element);
+
+    const visitAll = true;
+    visit(renderNode, section.markers, visitAll);
+  }
+
+  [MARKER_TYPE](renderNode, marker) {
+    let parentElement;
+
+    if (renderNode.previousSibling) {
+      parentElement = getNextMarkerElement(renderNode.previousSibling);
+    } else {
+      parentElement = renderNode.parentNode.element;
+    }
+    let textNode = renderMarker(marker, parentElement, renderNode.previousSibling);
+
+    renderNode.element = textNode;
   }
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
@@ -102,7 +159,7 @@ class Visitor {
     }
   }
 
-  card(renderNode, section) {
+  [CARD_TYPE](renderNode, section) {
     const card = detect(this.cards, card => card.name === section.name);
 
     const env = { name: section.name };
@@ -134,12 +191,32 @@ let destroyHooks = {
       renderNode.element.parentNode.removeChild(renderNode.element);
     }
   },
+
+  [MARKER_TYPE](renderNode, marker) {
+    // FIXME before we render marker, should delete previous renderNode's element
+    // and up until the next marker element
+
+    let element = renderNode.element;
+    let nextMarkerElement = getNextMarkerElement(renderNode);
+    while (element.parentNode && element.parentNode !== nextMarkerElement) {
+      element = element.parentNode;
+    }
+
+    marker.section.removeMarker(marker);
+
+    if (element.parentNode) {
+      // if no parentNode, the browser already removed this element
+      element.parentNode.removeChild(element);
+    }
+  },
+
   [IMAGE_SECTION_TYPE](renderNode, section) {
     let post = renderNode.parentNode.postNode;
     post.removeSection(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
   },
-  card(renderNode, section) {
+
+  [CARD_TYPE](renderNode, section) {
     if (renderNode.cardNode) {
       renderNode.cardNode.teardown();
     }
@@ -149,6 +226,7 @@ let destroyHooks = {
   }
 };
 
+// removes children from parentNode that are scheduled for removal
 function removeChildren(parentNode) {
   let child = parentNode.firstChild;
   while (child) {
@@ -161,45 +239,44 @@ function removeChildren(parentNode) {
   }
 }
 
-function lookupNode(renderTree, parentNode, section, previousNode) {
-  if (section.renderNode) {
-    return section.renderNode;
+// Find an existing render node for the given postNode, or
+// create one, insert it into the tree, and return it
+function lookupNode(renderTree, parentNode, postNode, previousNode) {
+  if (postNode.renderNode) {
+    return postNode.renderNode;
   } else {
-    let renderNode = new RenderNode(section);
+    let renderNode = new RenderNode(postNode);
     renderNode.renderTree = renderTree;
     parentNode.insertAfter(renderNode, previousNode);
-    section.renderNode = renderNode;
+    postNode.renderNode = renderNode;
     return renderNode;
-  }
-}
-
-function renderInternal(renderTree, visitor) {
-  let nodes = [renderTree.node];
-  function visit(parentNode, sections) {
-    let previousNode;
-    sections.forEach(section => {
-      let node = lookupNode(renderTree, parentNode, section, previousNode);
-      if (node.isDirty) {
-        nodes.push(node);
-      }
-      previousNode = node;
-    });
-  }
-  let node = nodes.shift();
-  while (node) {
-    removeChildren(node);
-    visitor[node.postNode.type](node, node.postNode, visit);
-    node.markClean();
-    node = nodes.shift();
   }
 }
 
 export default class Renderer {
   constructor(cards, unknownCardHandler, options) {
     this.visitor = new Visitor(cards, unknownCardHandler, options);
+    this.nodes = [];
+  }
+
+  visit(renderTree, parentNode, postNodes, visitAll=false) {
+    let previousNode;
+    postNodes.forEach(postNode => {
+      let node = lookupNode(renderTree, parentNode, postNode, previousNode);
+      if (node.isDirty || visitAll) {
+        this.nodes.push(node);
+      }
+      previousNode = node;
+    });
   }
 
   render(renderTree) {
-    renderInternal(renderTree, this.visitor);
+    let node = renderTree.node;
+    while (node) {
+      removeChildren(node);
+      this.visitor[node.postNode.type](node, node.postNode, (...args) => this.visit(renderTree, ...args));
+      node.markClean();
+      node = this.nodes.shift();
+    }
   }
 }

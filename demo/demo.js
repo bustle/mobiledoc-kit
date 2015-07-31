@@ -15,14 +15,13 @@ var selfieCard = {
     setup: function(element, options, env, payload) {
       removeChildren(element);
 
-      if (payload.imageSrc) {
+      if (payload.src) {
         element.appendChild(
           $('' +
               '<div>' +
-                '<img src="' + payload.imageSrc + '"><br>' +
+                '<img src="' + payload.src + '"><br>' +
                 '<div>You look nice today.</div>' +
                 (env.edit ? "<div><button id='go-edit'>Take a better picture</button></div>" : "") +
-                '<div><button id="go-edit">Take a better picture</button></div>' +
               '</div>' +
             '')[0]
         );
@@ -61,7 +60,7 @@ var selfieCard = {
             alert('error getting video feed');
           };
       if (!navigator.webkitGetUserMedia) {
-        alert('Cannot get your video because no navigator.webkitGetUserMedia');
+        alert('This only works in Chrome (no navigator.webkitGetUserMedia)');
       }
       navigator.webkitGetUserMedia(videoObj, function(stream) {
         video.src = window.webkitURL.createObjectURL(stream);
@@ -69,8 +68,8 @@ var selfieCard = {
 
         $('#snap').click(function() {
           context.drawImage(video, 0, 0, 160, 120);
-          var imageSrc = canvas.toDataURL('image/png');
-          env.save({imageSrc: imageSrc});
+          var src = canvas.toDataURL('image/png');
+          env.save({src: src});
         });
       }, errBack);
     }
@@ -100,7 +99,9 @@ var cardWithEditMode = {
       button.innerText = 'Change to edit';
       button.onclick = env.edit;
 
-      card.appendChild(button);
+      if (env.edit) {
+        card.appendChild(button);
+      }
       element.appendChild(card);
     }
   },
@@ -137,7 +138,9 @@ var cardWithInput = {
       button.innerText = 'Edit';
       button.onclick = env.edit;
 
-      card.appendChild(button);
+      if (env.edit) {
+        card.appendChild(button);
+      }
       element.appendChild(card);
     }
   },
@@ -173,7 +176,7 @@ var ContentKitDemo = exports.ContentKitDemo = {
   syncCodePane: function(editor) {
     var codePaneJSON = document.getElementById('serialized-mobiledoc');
     var mobiledoc = editor.serialize();
-    codePaneJSON.innerHTML = this.syntaxHighlight(mobiledoc);
+    codePaneJSON.innerText = JSON.stringify(mobiledoc, null, '  ');
 
     var cards = {
       'simple-card': simpleCard,
@@ -202,16 +205,21 @@ var ContentKitDemo = exports.ContentKitDemo = {
         }
       }
 
-      function addPipeBetweenAdjacentTextNodes(textNode) {
+      function markAdjacentTextNodes(textNode) {
+        var boxChar = '\u2591',
+            emptySquareChar = '\u25A2',
+            invisibleChar = '\u200C';
         var nextSibling = textNode.nextSibling;
         if (nextSibling && nextSibling.nodeType === Node.TEXT_NODE) {
-          textNode.textContent = textNode.textContent + '|';
+          textNode.textContent = textNode.textContent + boxChar;
         }
+        textNode.textContent = textNode.textContent.replace(new RegExp(invisibleChar, 'g'),
+                                                            emptySquareChar);
       }
 
       var deep = true;
       var cloned = node.cloneNode(deep);
-      convertTextNodes(cloned, addPipeBetweenAdjacentTextNodes);
+      convertTextNodes(cloned, markAdjacentTextNodes);
       return displayHTML(cloned.innerHTML);
     };
 
@@ -278,8 +286,7 @@ function isValidJSON(string) {
   }
 }
 
-function attemptEditorReboot(editor, textarea) {
-  var textPayload = $(textarea).val();
+function attemptEditorReboot(editor, textPayload) {
   if (isValidJSON(textPayload)) {
     var mobiledoc = readMobiledoc(textPayload);
     if (editor) {
@@ -356,22 +363,6 @@ var sampleMobiledocs = {
     ]
   },
 
-  mobileDocWithAttributeMarker: {
-    version: MOBILEDOC_VERSION,
-    sections: [
-      [['A', ['href', 'http://github.com/bustlelabs/content-kit-editor']]],
-      [
-        [1, "H2", [
-          [[], 0, "headline h2"]
-        ]],
-        [1, "P", [
-          [[], 0, "see it "],
-          [[0], 1, "on github."]
-        ]]
-      ]
-    ]
-  },
-
   mobileDocWithSimpleCard: {
     version: MOBILEDOC_VERSION,
     sections: [
@@ -434,14 +425,13 @@ $(function() {
   textarea.val(window.JSON.stringify(mobiledoc, false, 2));
 
   textarea.on('input', function() {
-    attemptEditorReboot(editor, textarea);
   });
 
   $('#select-mobiledoc').on('change', function() {
     var mobiledocName = $(this).val();
     var mobiledoc = sampleMobiledocs[mobiledocName];
-    textarea.val(window.JSON.stringify(mobiledoc, false, 2));
-    textarea.trigger('input');
+    var text = window.JSON.stringify(mobiledoc, false, 2);
+    attemptEditorReboot(editor, text);
   });
 
   bootEditor(editorEl, mobiledoc);

@@ -104,16 +104,6 @@ test('#parse joins contiguous text nodes separated by non-markup elements', (ass
   assert.equal(m1.value, 'span 1span 2');
 });
 
-test('#parse parses a single text node', (assert) => {
-  let element = Helpers.dom.makeDOM(h => 
-    h.text('raw text')
-  );
-  const section = SectionParser.parse(element);
-  assert.equal(section.tagName, 'p');
-  assert.equal(section.markers.length, 1, 'has 1 marker');
-  assert.equal(section.markers[0].value, 'raw text');
-});
-
 // test: a section can parse dom
 
 // test: a section can clear a range:

@@ -5,20 +5,6 @@ import Helpers from '../../test-helpers';
 
 module('Unit: Parser: PostParser');
 
-test('#parse can parse a single text node', (assert) => {
-  let element = Helpers.dom.makeDOM(t =>
-    t('div', {}, [t.text('some text')])
-  );
-
-  const post = PostParser.parse(element);
-  assert.ok(post, 'gets post');
-  assert.equal(post.sections.length, 1, 'has 1 section');
-
-  const s1 = post.sections[0];
-  assert.equal(s1.markers.length, 1, 's1 has 1 marker');
-  assert.equal(s1.markers[0].value, 'some text', 'has text');
-});
-
 test('#parse can parse a section element', (assert) => {
   let element = Helpers.dom.makeDOM(t =>
     t('div', {}, [
@@ -43,7 +29,9 @@ test('#parse can parse multiple elements', (assert) => {
       t('p', {}, [
         t.text('some text')
       ]),
-      t.text('some other text')
+      t('p', {}, [
+        t.text('some other text')
+      ])
     ])
   );
 

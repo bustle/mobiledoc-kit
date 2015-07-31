@@ -1,18 +1,28 @@
 const { module, test } = QUnit;
 import Helpers from '../../test-helpers';
+import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
 import { Editor } from 'content-kit-editor';
 
 let editor, editorElement;
 let triggered = [];
 
+const mobiledoc = {
+  version: MOBILEDOC_VERSION,
+  sections: [
+    [],
+    [[
+      1, 'P', [[[], 0, 'this is the editor']]
+    ]]
+  ]
+};
+
 module('Unit: Editor: events', {
   beforeEach() {
     editorElement = document.createElement('div');
-    editorElement.innerHTML = 'this is the editor';
     document.getElementById('qunit-fixture').appendChild(editorElement);
 
-    editor = new Editor(editorElement);
+    editor = new Editor(editorElement, {mobiledoc});
     editor.trigger = (name) => triggered.push(name);
   },
 

@@ -6,14 +6,21 @@ export default class RenderNode {
     this.postNode = postNode;
 
     this.firstChild = null;
+    this.lastChild = null;
     this.nextSibling = null;
     this.previousSibling = null;
   }
   scheduleForRemoval() {
     this.isRemoved = true;
+    if (this.parentNode) {
+      this.parentNode.markDirty();
+    }
   }
   markDirty() {
     this.isDirty = true;
+    if (this.parentNode) {
+      this.parentNode.markDirty();
+    }
   }
   markClean() {
     this.isDirty = false;

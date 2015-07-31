@@ -56,14 +56,6 @@ OEmbedCommand.prototype.exec = function(url) {
         embedIntent.show();
       } else {
         throw new Error('Unimplemented EmbedModel is not a thing');
-        /*
-        var embedModel = new EmbedModel(response);
-        editorContext.insertBlock(embedModel, index);
-        editorContext.renderBlockAt(index);
-        if (embedModel.attributes.provider_name.toLowerCase() === 'twitter') {
-          loadTwitterWidgets(editorContext.element);
-        }
-        */
       }
     }
   });

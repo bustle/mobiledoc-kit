@@ -4,6 +4,7 @@ import { MARKUP_SECTION_TYPE } from "../models/markup-section";
 import { IMAGE_SECTION_TYPE } from "../models/image";
 import { MARKER_TYPE } from "../models/marker";
 import { MARKUP_TYPE } from "../models/markup";
+import { CARD_TYPE } from "../models/card";
 
 export const MOBILEDOC_VERSION = '0.1';
 
@@ -19,7 +20,7 @@ let visitor = {
   [IMAGE_SECTION_TYPE](node, opcodes) {
     opcodes.push(['openImageSection', node.src]);
   },
-  card(node, opcodes) {
+  [CARD_TYPE](node, opcodes) {
     opcodes.push(['openCardSection', node.name, node.payload]);
   },
   [MARKER_TYPE](node, opcodes) {
