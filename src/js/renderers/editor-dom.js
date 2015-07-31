@@ -87,7 +87,8 @@ function renderMarker(marker, element, previousRenderNode) {
 }
 
 class Visitor {
-  constructor(cards, unknownCardHandler, options) {
+  constructor(editor, cards, unknownCardHandler, options) {
+    this.editor = editor;
     this.cards = cards;
     this.unknownCardHandler = unknownCardHandler;
     this.options = options;
@@ -160,6 +161,7 @@ class Visitor {
   }
 
   [CARD_TYPE](renderNode, section) {
+    const {editor, options} = this;
     const card = detect(this.cards, card => card.name === section.name);
 
     const env = { name: section.name };
@@ -169,11 +171,11 @@ class Visitor {
     renderNode.parentNode.element.appendChild(renderNode.element);
 
     if (card) {
-      let cardNode = new CardNode(card, section, renderNode.element, this.options);
+      let cardNode = new CardNode(editor, card, section, renderNode.element, options);
       renderNode.cardNode = cardNode;
       cardNode.display();
     } else {
-      this.unknownCardHandler(renderNode.element, this.options, env, section.payload);
+      this.unknownCardHandler(renderNode.element, options, env, section.payload);
     }
   }
 }
@@ -254,8 +256,9 @@ function lookupNode(renderTree, parentNode, postNode, previousNode) {
 }
 
 export default class Renderer {
-  constructor(cards, unknownCardHandler, options) {
-    this.visitor = new Visitor(cards, unknownCardHandler, options);
+  constructor(editor, cards, unknownCardHandler, options) {
+    this.editor = editor;
+    this.visitor = new Visitor(editor, cards, unknownCardHandler, options);
     this.nodes = [];
   }
 

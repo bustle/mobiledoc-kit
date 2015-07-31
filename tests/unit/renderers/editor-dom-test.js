@@ -8,11 +8,12 @@ const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAAC
 let builder;
 
 function render(renderTree, cards=[]) {
-  let renderer = new Renderer(cards);
+  let editor = {};
+  let renderer = new Renderer(editor, cards);
   return renderer.render(renderTree);
 }
 
-module("Unit: Renderer", {
+module("Unit: Renderer: Editor-Dom", {
   beforeEach() {
     builder = generateBuilder();
   }

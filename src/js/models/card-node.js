@@ -1,5 +1,6 @@
 export default class CardNode {
-  constructor(card, section, element, cardOptions) {
+  constructor(editor, card, section, element, cardOptions) {
+    this.editor = editor;
     this.card = card;
     this.section = section;
     this.cardOptions = cardOptions;
@@ -29,6 +30,8 @@ export default class CardNode {
       edit: () => { this.edit(); },
       save: (payload) => {
         this.section.payload = payload;
+
+        this.editor.didUpdate();
         this.display();
       },
       cancel: () => { this.display(); }

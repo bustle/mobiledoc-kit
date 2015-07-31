@@ -201,7 +201,7 @@ class Editor {
     mergeWithOptions(this, defaults, options);
 
     this._parser   = PostParser;
-    this._renderer = new Renderer(this.cards, this.unknownCardHandler, this.cardOptions);
+    this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
     this.applyClassName();
     this.applyPlaceholder();
@@ -426,6 +426,10 @@ class Editor {
       this.cursor.clearSelection();
       this.hasNoSelection();
     }
+  }
+
+  didUpdate() {
+    this.trigger('update');
   }
 
   getActiveMarkers() {
