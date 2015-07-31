@@ -1,7 +1,7 @@
 ## Content-Kit Editor [![Build Status](https://travis-ci.org/bustlelabs/content-kit-editor.svg?branch=master)](https://travis-ci.org/bustlelabs/content-kit-editor)
 
-Content-Kit is a WYSIWYG editor supporting rich content via cards. Try a
-demo at [content-kit.herokuapp.com](http://content-kit.herokuapp.com/).
+Content-Kit (WARNING: alpha!!) is a WYSIWYG editor supporting rich content via cards. Try a
+demo at [bustlelabs.github.io/content-kit-editor/demo](http://bustlelabs.github.io/content-kit-editor/demo/).
 
 * It makes limited use of Content Editable, the siren-song of doomed web editor
   technologies.
