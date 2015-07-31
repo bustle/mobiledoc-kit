@@ -60,7 +60,7 @@ var selfieCard = {
             alert('error getting video feed');
           };
       if (!navigator.webkitGetUserMedia) {
-        alert('Cannot get your video because no navigator.webkitGetUserMedia');
+        alert('This only works in Chrome (no navigator.webkitGetUserMedia)');
       }
       navigator.webkitGetUserMedia(videoObj, function(stream) {
         video.src = window.webkitURL.createObjectURL(stream);
@@ -99,7 +99,9 @@ var cardWithEditMode = {
       button.innerText = 'Change to edit';
       button.onclick = env.edit;
 
-      card.appendChild(button);
+      if (env.edit) {
+        card.appendChild(button);
+      }
       element.appendChild(card);
     }
   },
@@ -136,7 +138,9 @@ var cardWithInput = {
       button.innerText = 'Edit';
       button.onclick = env.edit;
 
-      card.appendChild(button);
+      if (env.edit) {
+        card.appendChild(button);
+      }
       element.appendChild(card);
     }
   },
@@ -172,7 +176,7 @@ var ContentKitDemo = exports.ContentKitDemo = {
   syncCodePane: function(editor) {
     var codePaneJSON = document.getElementById('serialized-mobiledoc');
     var mobiledoc = editor.serialize();
-    codePaneJSON.innerHTML = this.syntaxHighlight(mobiledoc);
+    codePaneJSON.innerText = JSON.stringify(mobiledoc, null, '  ');
 
     var cards = {
       'simple-card': simpleCard,
@@ -282,8 +286,7 @@ function isValidJSON(string) {
   }
 }
 
-function attemptEditorReboot(editor, textarea) {
-  var textPayload = $(textarea).val();
+function attemptEditorReboot(editor, textPayload) {
   if (isValidJSON(textPayload)) {
     var mobiledoc = readMobiledoc(textPayload);
     if (editor) {
@@ -422,14 +425,13 @@ $(function() {
   textarea.val(window.JSON.stringify(mobiledoc, false, 2));
 
   textarea.on('input', function() {
-    attemptEditorReboot(editor, textarea);
   });
 
   $('#select-mobiledoc').on('change', function() {
     var mobiledocName = $(this).val();
     var mobiledoc = sampleMobiledocs[mobiledocName];
-    textarea.val(window.JSON.stringify(mobiledoc, false, 2));
-    textarea.trigger('input');
+    var text = window.JSON.stringify(mobiledoc, false, 2);
+    attemptEditorReboot(editor, text);
   });
 
   bootEditor(editorEl, mobiledoc);

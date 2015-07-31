@@ -4,31 +4,82 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #454545;
+  color: #121212;
   margin: 0;
-  padding: 0;
-  background-color: #EFEFEF;
+  padding: 1.2rem;
+  background-color: #F3F3F3;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  height: 100%;
+  width: 100%;
 }
 @media only screen and (max-width: 767px) {
   body {
-    font-size: 0.88em;
+    font-size: 0.79rem;
   }
 }
 
-.container {
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
+h1, h2, h3, h4, h5 {
+  font-family: "Merriweather Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 0.2rem 0 0.2rem;
+}
 
-  -ms-flex-pack: justify;
-  justify-content: space-around;
+h1 {
+  font-size: 1.8rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+}
+
+h4 {
+  font-size: 0.9rem;
+  color: #3C3C3C;
+}
+
+p {
+  margin: 0.6rem 0 0.6rem;
+}
+
+.container {
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: row;
+}
+
+.col-container {
+  display: flex;
+  flex-direction: column;
+}
+
+hr {
+  content: 0;
+  height: 0;
+  border: 0;
+  border-bottom: 3px solid #121212;
+  margin: 0.9rem 0 0.8rem;
+}
+
+.headline-note {
+  color: #D0021B;
+  font-size: 1.0rem;
+  font-weight: normal;
+  margin: 0 0.4rem 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.subheadline {
+  color: #565656;
 }
 
 .pane {
-  max-width: 20%;
-  padding: 0 1em;
+  flex: 1;
+}
+
+.row {
+  flex: 1;
 }
 
 .pane p.desc {
@@ -75,13 +126,34 @@ body {
   right: 0;
   width: 50%;
 }
+#editor {
+  font-size: 0.9rem;
+}
 #serialized-mobiledoc, #mobiledoc-to-load {
   overflow: hidden;
   padding: 0.25em;
 }
 #serialized-mobiledoc {
   white-space: pre;
-  background-color: #080808;
+  font-size: 0.7rem;
+}
+.output {
+  margin: 0.3rem;
+  background: #ffffff;
+  border: 2px solid #8A888A;
+  padding: 0.3rem 0 0.3rem 0.5rem;
+}
+.output.full-left {
+  margin-left: 0;
+}
+.output.full-right {
+  margin-right: 0;
+}
+.serialized-mobiledoc-wrapper {
+  line-height: 1.1;
+}
+#rendered-mobiledoc {
+  font-size: 0.9rem;
 }
 #mobiledoc-to-load {
 }
@@ -101,7 +173,6 @@ body {
   background-color: transparent;
   color: #c0c5ce;
   padding: 5em 1em 1em;
-  overflow: auto;
   -webkit-overflow-scrolling: touch;
   position: absolute;
   top: 0;
