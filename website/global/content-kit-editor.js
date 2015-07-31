@@ -241,16 +241,6 @@ define('content-kit-editor/commands/card', ['exports', 'content-kit-editor/comma
 
   function injectCardBlock() /* cardName, cardPayload, editor, index */{
     throw new Error('Unimplemented: BlockModel and Type.CARD are no longer things');
-    // FIXME: Do we change the block model internal representation here?
-    /*
-    var cardBlock = BlockModel.createWithType(Type.CARD, {
-      attributes: {
-        name: cardName,
-        payload: cardPayload
-      }
-    });
-    editor.replaceBlock(cardBlock, index);
-    */
   }
 
   function CardCommand() {
@@ -270,7 +260,6 @@ define('content-kit-editor/commands/card', ['exports', 'content-kit-editor/comma
       var cardName = 'pick-color';
       var cardPayload = { options: ['red', 'blue'] };
       injectCardBlock(cardName, cardPayload, editor, currentEditingIndex);
-      editor.renderBlockAt(currentEditingIndex, true);
     }
   };
 
@@ -559,14 +548,6 @@ define('content-kit-editor/commands/oembed', ['exports', 'content-kit-editor/com
           embedIntent.show();
         } else {
           throw new Error('Unimplemented EmbedModel is not a thing');
-          /*
-          var embedModel = new EmbedModel(response);
-          editorContext.insertBlock(embedModel, index);
-          editorContext.renderBlockAt(index);
-          if (embedModel.attributes.provider_name.toLowerCase() === 'twitter') {
-            loadTwitterWidgets(editorContext.element);
-          }
-          */
         }
       }
     });
@@ -659,8 +640,10 @@ define('content-kit-editor/commands/unordered-list', ['exports', 'content-kit-ed
 
   exports['default'] = UnorderedListCommand;
 });
-define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/oembed', 'content-kit-editor/commands/card', 'content-kit-editor/utils/keycodes', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/dom', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsOembed, _contentKitEditorCommandsCard, _contentKitEditorUtilsKeycodes, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersDom, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener) {
+define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/oembed', 'content-kit-editor/commands/card', 'content-kit-editor/utils/keycodes', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/post', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/models/cursor', 'content-kit-editor/models/markup-section', 'content-kit-editor/utils/post-builder'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsOembed, _contentKitEditorCommandsCard, _contentKitEditorUtilsKeycodes, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersPost, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorModelsCursor, _contentKitEditorModelsMarkupSection, _contentKitEditorUtilsPostBuilder) {
   'use strict';
+
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -688,15 +671,6 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
   };
 
   function bindContentEditableTypingListeners(editor) {
-    editor.addEventListener(editor.element, 'keyup', function (e) {
-      // Assure there is always a supported block tag, and not empty text nodes or divs.
-      // On a carrage return, make sure to always generate a 'p' tag
-      if (!(0, _contentKitEditorUtilsSelectionUtils.getSelectionBlockElement)() || !editor.element.textContent || !e.shiftKey && e.which === _contentKitEditorUtilsKeycodes['default'].ENTER || e.ctrlKey && e.which === _contentKitEditorUtilsKeycodes['default'].M) {
-        // FIXME-IE 'p' tag doesn't work for formatBlock in IE see https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand
-        document.execCommand('formatBlock', false, 'p');
-      }
-    });
-
     // On 'PASTE' sanitize and insert
     editor.addEventListener(editor.element, 'paste', function (e) {
       var data = e.clipboardData;
@@ -732,7 +706,7 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
   function handleSelection(editor) {
     return function () {
-      if ((0, _contentKitEditorUtilsSelectionUtils.isSelectionInElement)(editor.element)) {
+      if (editor.cursor.hasSelection()) {
         editor.hasSelection();
       } else {
         editor.hasNoSelection();
@@ -763,9 +737,22 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
   }
 
   function bindKeyListeners(editor) {
+    // escape key
     editor.addEventListener(document, 'keyup', function (event) {
       if (event.keyCode === _contentKitEditorUtilsKeycodes['default'].ESC) {
         editor.trigger('escapeKey');
+      }
+    });
+
+    editor.addEventListener(document, 'keydown', function (event) {
+      switch (event.keyCode) {
+        case _contentKitEditorUtilsKeycodes['default'].BACKSPACE:
+        case _contentKitEditorUtilsKeycodes['default'].DELETE:
+          editor.handleDeletion(event);
+          break;
+        case _contentKitEditorUtilsKeycodes['default'].ENTER:
+          editor.handleNewline(event);
+          break;
       }
     });
   }
@@ -815,7 +802,7 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       // FIXME: This should merge onto this.options
       (0, _contentKitUtils.mergeWithOptions)(this, defaults, options);
 
-      this._parser = new _contentKitEditorParsersDom['default']();
+      this._parser = _contentKitEditorParsersPost['default'];
       this._renderer = new _contentKitEditorRenderersEditorDom['default'](this.cards, this.unknownCardHandler, this.cardOptions);
 
       this.applyClassName();
@@ -901,6 +888,142 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
         this._renderer.render(this._renderTree);
       }
+
+      // FIXME ensure we handle deletion when there is a selection
+    }, {
+      key: 'handleDeletion',
+      value: function handleDeletion(event) {
+        var _cursor$offsets = this.cursor.offsets;
+
+        // need to handle these cases:
+        // when cursor is:
+        //   * A in the middle of a marker -- just delete the character
+        //   * B offset is 0 and there is a previous marker
+        //     * delete last char of previous marker
+        //   * C offset is 0 and there is no previous marker
+        //     * join this section with previous section
+
+        var leftRenderNode = _cursor$offsets.leftRenderNode;
+        var leftOffset = _cursor$offsets.leftOffset;
+        var currentMarker = leftRenderNode.postNode;
+        var nextCursorMarker = currentMarker;
+        var nextCursorOffset = leftOffset - 1;
+
+        // A: in the middle of a marker
+        if (leftOffset !== 0) {
+          currentMarker.deleteValueAtOffset(leftOffset - 1);
+          if (currentMarker.length === 0 && currentMarker.section.markers.length > 1) {
+            leftRenderNode.scheduleForRemoval();
+
+            var isFirstRenderNode = leftRenderNode === leftRenderNode.parentNode.firstChild;
+            if (isFirstRenderNode) {
+              // move cursor to start of next node
+              nextCursorMarker = leftRenderNode.nextSibling.postNode;
+              nextCursorOffset = 0;
+            } else {
+              // move cursor to end of prev node
+              nextCursorMarker = leftRenderNode.previousSibling.postNode;
+              nextCursorOffset = leftRenderNode.previousSibling.postNode.length;
+            }
+          } else {
+            leftRenderNode.markDirty();
+          }
+        } else {
+          var currentSection = currentMarker.section;
+          var previousMarker = currentMarker.previousSibling;
+          if (previousMarker) {
+            // (B)
+            var markerLength = previousMarker.length;
+            previousMarker.deleteValueAtOffset(markerLength - 1);
+          } else {
+            // (C)
+            // possible previous sections:
+            //   * none -- do nothing
+            //   * markup section -- join to it
+            //   * non-markup section (card) -- select it? delete it?
+            var previousSection = this.post.getPreviousSection(currentSection);
+            if (previousSection) {
+              var isMarkupSection = previousSection.type === _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE;
+
+              if (isMarkupSection) {
+                var previousSectionMarkerLength = previousSection.markers.length;
+                previousSection.join(currentSection);
+                previousSection.renderNode.markDirty();
+                currentSection.renderNode.scheduleForRemoval();
+
+                nextCursorMarker = previousSection.markers[previousSectionMarkerLength];
+                nextCursorOffset = 0;
+                /*
+                } else {
+                  // card section: ??
+                */
+              }
+            } else {
+                // no previous section -- do nothing
+                nextCursorMarker = currentMarker;
+                nextCursorOffset = 0;
+              }
+          }
+        }
+
+        this.rerender();
+
+        this.cursor.moveToNode(nextCursorMarker.renderNode.element, nextCursorOffset);
+
+        this.trigger('update');
+        event.preventDefault();
+      }
+    }, {
+      key: 'handleNewline',
+      value: function handleNewline(event) {
+        var _cursor$offsets2 = this.cursor.offsets;
+
+        // if there's no left/right nodes, we are probably not in the editor,
+        // or we have selected some non-marker thing like a card
+        var leftRenderNode = _cursor$offsets2.leftRenderNode;
+        var rightRenderNode = _cursor$offsets2.rightRenderNode;
+        var leftOffset = _cursor$offsets2.leftOffset;
+        if (!leftRenderNode || !rightRenderNode) {
+          return;
+        }
+
+        // FIXME handle when the selection is not collapsed, this code assumes it is
+        event.preventDefault();
+
+        var markerRenderNode = leftRenderNode;
+        var marker = markerRenderNode.postNode;
+        var section = marker.section;
+
+        var _marker$split = marker.split(leftOffset);
+
+        var _marker$split2 = _slicedToArray(_marker$split, 2);
+
+        var leftMarker = _marker$split2[0];
+        var rightMarker = _marker$split2[1];
+
+        section.insertMarkerAfter(leftMarker, marker);
+        markerRenderNode.scheduleForRemoval();
+
+        var newSection = (0, _contentKitEditorUtilsPostBuilder.generateBuilder)().generateMarkupSection('P');
+        newSection.appendMarker(rightMarker);
+
+        var nodeForMove = markerRenderNode.nextSibling;
+        while (nodeForMove) {
+          nodeForMove.scheduleForRemoval();
+          var movedMarker = nodeForMove.postNode.clone();
+          newSection.appendMarker(movedMarker);
+
+          nodeForMove = nodeForMove.nextSibling;
+        }
+
+        var post = this.post;
+        post.insertSectionAfter(newSection, section);
+
+        this.rerender();
+        this.trigger('update');
+
+        this.cursor.moveToSection(newSection);
+      }
     }, {
       key: 'hasSelection',
       value: function hasSelection() {
@@ -924,9 +1047,21 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       value: function cancelSelection() {
         if (this._hasSelection) {
           // FIXME perhaps restore cursor position to end of the selection?
-          (0, _contentKitEditorUtilsSelectionUtils.clearSelection)();
+          this.cursor.clearSelection();
           this.hasNoSelection();
         }
+      }
+    }, {
+      key: 'getActiveMarkers',
+      value: function getActiveMarkers() {
+        var cursor = this.cursor;
+        return cursor.activeMarkers;
+      }
+    }, {
+      key: 'getActiveSections',
+      value: function getActiveSections() {
+        var cursor = this.cursor;
+        return cursor.activeSections;
       }
     }, {
       key: 'getCurrentBlockIndex',
@@ -943,34 +1078,6 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
           return (0, _contentKitEditorUtilsSelectionUtils.getCursorOffsetInElement)(currentBlock);
         }
         return -1;
-      }
-    }, {
-      key: 'insertBlock',
-      value: function insertBlock(block, index) {
-        this.post.splice(index, 0, block);
-        this.trigger('update');
-      }
-    }, {
-      key: 'removeBlockAt',
-      value: function removeBlockAt(index) {
-        this.post.splice(index, 1);
-        this.trigger('update');
-      }
-    }, {
-      key: 'replaceBlock',
-      value: function replaceBlock(block, index) {
-        this.post[index] = block;
-        this.trigger('update');
-      }
-    }, {
-      key: 'renderBlockAt',
-      value: function renderBlockAt() /* index, replace */{
-        throw new Error('Unimplemented');
-      }
-    }, {
-      key: 'syncContentEditableBlocks',
-      value: function syncContentEditableBlocks() {
-        throw new Error('Unimplemented');
       }
     }, {
       key: 'applyClassName',
@@ -994,29 +1101,56 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
           (0, _contentKitEditorUtilsElementUtils.setData)(this.element, 'placeholder', placeholder);
         }
       }
+
+      /**
+       * types of input to handle:
+       *   * delete from beginning of section
+       *       joins 2 sections
+       *   * delete when multiple sections selected
+       *       removes wholly-selected sections,
+       *       joins the partially-selected sections
+       *   * hit enter (handled by capturing 'keydown' for enter key and `handleNewline`)
+       *       if anything is selected, delete it first, then
+       *       split the current marker at the cursor position,
+       *         schedule removal of every marker after the split,
+       *         create new section, append it to post
+       *         append the after-split markers onto the new section
+       *         rerender -- this should render the new section at the appropriate spot
+       */
     }, {
       key: 'handleInput',
       value: function handleInput() {
+        this.reparse();
+        this.trigger('update');
+      }
+    }, {
+      key: 'reparse',
+      value: function reparse() {
         var _this2 = this;
 
         // find added sections
         var sectionsInDOM = [];
         var newSections = [];
         var previousSection = undefined;
-        (0, _contentKitEditorUtilsDomUtils.forEachChildNode)(this.element, function (node) {
+
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(this.element.childNodes, function (node) {
           var sectionRenderNode = _this2._renderTree.getElementRenderNode(node);
           if (!sectionRenderNode) {
-            var _section = _this2._parser.parseSection(previousSection, node);
+            var _section = _this2._parser.parseSection(node);
             newSections.push(_section);
 
+            // create a clean "already-rendered" node to represent the fact that
+            // this (new) section is already in DOM
             sectionRenderNode = _this2._renderTree.buildRenderNode(_section);
             sectionRenderNode.element = node;
             sectionRenderNode.markClean();
 
             if (previousSection) {
+              // insert after existing section
               _this2.post.insertSectionAfter(_section, previousSection);
               _this2._renderTree.node.insertAfter(sectionRenderNode, previousSection.renderNode);
             } else {
+              // prepend at beginning (first section)
               _this2.post.prependSection(_section);
               _this2._renderTree.node.insertAfter(sectionRenderNode, null);
             }
@@ -1042,23 +1176,46 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
         // reparse the section(s) with the cursor
         var sectionsWithCursor = this.getSectionsWithCursor();
-        // FIXME: This is a hack to ensure a previous section is parsed when the
-        // user presses enter (or pastes a newline)
-        var firstSection = sectionsWithCursor[0];
-        if (firstSection) {
-          var _previousSection = this.post.getPreviousSection(firstSection);
-          if (_previousSection) {
-            sectionsWithCursor.unshift(_previousSection);
-          }
-        }
         sectionsWithCursor.forEach(function (section) {
           if (newSections.indexOf(section) === -1) {
             _this2.reparseSection(section);
           }
         });
 
+        var _cursor$offsets3 = this.cursor.offsets;
+
+        // The cursor will lose its textNode if we have parsed (and thus rerendered)
+        // its section. Ensure the cursor is placed where it should be after render.
+        //
+        // New sections are presumed clean, and thus do not get rerendered and lose
+        // their cursor position.
+        //
+        var leftRenderNode = _cursor$offsets3.leftRenderNode;
+        var leftOffset = _cursor$offsets3.leftOffset;
+        var rightRenderNode = _cursor$offsets3.rightRenderNode;
+        var rightOffset = _cursor$offsets3.rightOffset;
+        var resetCursor = leftRenderNode && sectionsWithCursor.indexOf(leftRenderNode.postNode.section) !== -1;
+
+        if (resetCursor) {
+          var unprintableOffset = leftRenderNode.element.textContent.indexOf(_contentKitEditorRenderersEditorDom.UNPRINTABLE_CHARACTER);
+          if (unprintableOffset !== -1) {
+            leftRenderNode.markDirty();
+            if (unprintableOffset < leftOffset) {
+              // FIXME: we should move backward/forward some number of characters
+              // with a method on markers that returns the relevent marker and
+              // offset (may not be the marker it was called with);
+              leftOffset--;
+              rightOffset--;
+            }
+          }
+        }
+
         this.rerender();
         this.trigger('update');
+
+        if (resetCursor) {
+          this.cursor.moveToNode(leftRenderNode.element, leftOffset, rightRenderNode.element, rightOffset);
+        }
       }
     }, {
       key: 'getSectionsWithCursor',
@@ -1083,7 +1240,10 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         var endElement = range.endContainer;
 
         var getElementRenderNode = function getElementRenderNode(e) {
-          return _this3._renderTree.getElementRenderNode(e);
+          var node = _this3._renderTree.getElementRenderNode(e);
+          if (node && node.postNode.type === _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE) {
+            return node;
+          }
         };
 
         var _detectParentNode = (0, _contentKitEditorUtilsDomUtils.detectParentNode)(startElement, getElementRenderNode);
@@ -1106,14 +1266,7 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     }, {
       key: 'reparseSection',
       value: function reparseSection(section) {
-        var sectionRenderNode = section.renderNode;
-        var sectionElement = sectionRenderNode.element;
-        var previousSection = this.post.getPreviousSection(section);
-
-        var newSection = this._parser.parseSection(previousSection, sectionElement);
-        section.markers = newSection.markers;
-
-        this.trigger('update');
+        this._parser.reparseSection(section, this._renderTree);
       }
     }, {
       key: 'serialize',
@@ -1151,6 +1304,11 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       value: function destroy() {
         this.removeAllEventListeners();
         this.removeAllViews();
+      }
+    }, {
+      key: 'cursor',
+      get: function get() {
+        return new _contentKitEditorModelsCursor['default'](this);
       }
     }]);
 
@@ -1255,6 +1413,243 @@ define('content-kit-editor/models/card-node', ['exports'], function (exports) {
 
   exports['default'] = CardNode;
 });
+define('content-kit-editor/models/card', ['exports'], function (exports) {
+  'use strict';
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  var CARD_TYPE = 'card-section';
+
+  exports.CARD_TYPE = CARD_TYPE;
+
+  var Card = function Card(name, payload) {
+    _classCallCheck(this, Card);
+
+    this.name = name;
+    this.payload = payload;
+    this.type = CARD_TYPE;
+  };
+
+  exports['default'] = Card;
+});
+define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsDomUtils) {
+  'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  var Cursor = (function () {
+    function Cursor(editor) {
+      _classCallCheck(this, Cursor);
+
+      this.editor = editor;
+      this.renderTree = editor._renderTree;
+      this.post = editor.post;
+    }
+
+    _createClass(Cursor, [{
+      key: 'hasSelection',
+      value: function hasSelection() {
+        var parentElement = this.editor.element;
+        return (0, _contentKitEditorUtilsSelectionUtils.isSelectionInElement)(parentElement);
+      }
+    }, {
+      key: 'clearSelection',
+      value: function clearSelection() {
+        (0, _contentKitEditorUtilsSelectionUtils.clearSelection)();
+      }
+    }, {
+      key: 'moveToSection',
+
+      // moves cursor to the start of the section
+      value: function moveToSection(section) {
+        var marker = section.markers[0];
+        if (!marker) {
+          throw new Error('Cannot move cursor to section without a marker');
+        }
+        var markerElement = marker.renderNode.element;
+
+        var r = document.createRange();
+        r.selectNode(markerElement);
+        r.collapse(true);
+        var selection = this.selection;
+        if (selection.rangeCount > 0) {
+          selection.removeAllRanges();
+        }
+        selection.addRange(r);
+      }
+    }, {
+      key: 'moveToNode',
+      value: function moveToNode(node) {
+        var offset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+        var endNode = arguments.length <= 2 || arguments[2] === undefined ? node : arguments[2];
+        var endOffset = arguments.length <= 3 || arguments[3] === undefined ? offset : arguments[3];
+        return (function () {
+          var r = document.createRange();
+          r.setStart(node, offset);
+          r.setEnd(endNode, endOffset);
+          var selection = this.selection;
+          if (selection.rangeCount > 0) {
+            selection.removeAllRanges();
+          }
+          selection.addRange(r);
+        }).apply(this, arguments);
+      }
+    }, {
+      key: 'selection',
+      get: function get() {
+        return window.getSelection();
+      }
+
+      /**
+       * the offset from the left edge of the section
+       */
+    }, {
+      key: 'leftOffset',
+      get: function get() {
+        return this.offsets.leftOffset;
+      }
+    }, {
+      key: 'offsets',
+      get: function get() {
+        var leftNode = undefined,
+            rightNode = undefined,
+            leftOffset = undefined,
+            rightOffset = undefined;
+        var _selection = this.selection;
+        var anchorNode = _selection.anchorNode;
+        var focusNode = _selection.focusNode;
+        var anchorOffset = _selection.anchorOffset;
+        var focusOffset = _selection.focusOffset;
+
+        var position = anchorNode.compareDocumentPosition(focusNode);
+
+        if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+          leftNode = anchorNode;rightNode = focusNode;
+          leftOffset = anchorOffset;rightOffset = focusOffset;
+        } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+          leftNode = focusNode;rightNode = anchorNode;
+          leftOffset = focusOffset;rightOffset = anchorOffset;
+        } else {
+          // same node
+          leftNode = anchorNode;
+          rightNode = focusNode;
+          leftOffset = Math.min(anchorOffset, focusOffset);
+          rightOffset = Math.max(anchorOffset, focusOffset);
+        }
+
+        var leftRenderNode = this.renderTree.elements.get(leftNode),
+            rightRenderNode = this.renderTree.elements.get(rightNode);
+
+        return {
+          leftNode: leftNode,
+          rightNode: rightNode,
+          leftOffset: leftOffset,
+          rightOffset: rightOffset,
+          leftRenderNode: leftRenderNode,
+          rightRenderNode: rightRenderNode
+        };
+      }
+    }, {
+      key: 'activeMarkers',
+      get: function get() {
+        var firstSection = this.activeSections[0];
+        if (!firstSection) {
+          return [];
+        }
+        var firstSectionElement = firstSection.renderNode.element;
+
+        var _offsets = this.offsets;
+        var leftNode = _offsets.leftNode;
+        var rightNode = _offsets.rightNode;
+        var leftOffset = _offsets.leftOffset;
+        var rightOffset = _offsets.rightOffset;
+
+        var textLeftOffset = 0,
+            textRightOffset = 0,
+            foundLeft = false,
+            foundRight = false;
+
+        (0, _contentKitEditorUtilsDomUtils.walkTextNodes)(firstSectionElement, function (textNode) {
+          var textLength = textNode.textContent.length;
+
+          if (!foundLeft) {
+            if ((0, _contentKitEditorUtilsDomUtils.containsNode)(leftNode, textNode)) {
+              textLeftOffset += leftOffset;
+              foundLeft = true;
+            } else {
+              textLeftOffset += textLength;
+            }
+          }
+          if (!foundRight) {
+            if ((0, _contentKitEditorUtilsDomUtils.containsNode)(rightNode, textNode)) {
+              textRightOffset += rightOffset;
+              foundRight = true;
+            } else {
+              textRightOffset += textLength;
+            }
+          }
+        });
+
+        // get section element
+        //   walk it until we find one containing the left node, adding up textContent length along the way
+        //   add the selection offset in the left node -- this is the offset in the parent textContent
+        //   repeat for right node (subtract the remaining chars after selection offset) -- this is the end offset
+        //
+        //   walk the section's markers, adding up length. Each marker with length >= offset and <= end offset is active
+
+        var leftMarker = firstSection.markerContaining(textLeftOffset, true);
+        var rightMarker = firstSection.markerContaining(textRightOffset, false);
+
+        var leftMarkerIndex = firstSection.markers.indexOf(leftMarker),
+            rightMarkerIndex = firstSection.markers.indexOf(rightMarker) + 1;
+
+        return firstSection.markers.slice(leftMarkerIndex, rightMarkerIndex);
+      }
+    }, {
+      key: 'activeSections',
+      get: function get() {
+        var sections = this.post.sections;
+
+        var selection = this.selection;
+        var rangeCount = selection.rangeCount;
+
+        var range = rangeCount > 0 && selection.getRangeAt(0);
+
+        if (!range) {
+          throw new Error('Unable to get activeSections because no range');
+        }
+
+        var startContainer = range.startContainer;
+        var endContainer = range.endContainer;
+
+        var isSectionElement = function isSectionElement(element) {
+          return (0, _contentKitEditorUtilsArrayUtils.detect)(sections, function (section) {
+            return section.renderNode.element === element;
+          });
+        };
+
+        var _detectParentNode = (0, _contentKitEditorUtilsDomUtils.detectParentNode)(startContainer, isSectionElement);
+
+        var startSection = _detectParentNode.result;
+
+        var _detectParentNode2 = (0, _contentKitEditorUtilsDomUtils.detectParentNode)(endContainer, isSectionElement);
+
+        var endSection = _detectParentNode2.result;
+
+        var startIndex = sections.indexOf(startSection),
+            endIndex = sections.indexOf(endSection) + 1;
+
+        return sections.slice(startIndex, endIndex);
+      }
+    }]);
+
+    return Cursor;
+  })();
+
+  exports['default'] = Cursor;
+});
 define('content-kit-editor/models/image', ['exports'], function (exports) {
   'use strict';
 
@@ -1305,6 +1700,12 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
     }
 
     _createClass(Marker, [{
+      key: 'clone',
+      value: function clone() {
+        var clonedMarkups = this.markups.slice();
+        return new this.constructor(this.value, clonedMarkups);
+      }
+    }, {
       key: 'truncateFrom',
       value: function truncateFrom(offset) {
         this.value = this.value.substr(0, offset);
@@ -1318,6 +1719,27 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
       key: 'addMarkup',
       value: function addMarkup(markup) {
         this.markups.push(markup);
+      }
+    }, {
+      key: 'removeMarkup',
+      value: function removeMarkup(markup) {
+        var index = this.markups.indexOf(markup);
+        if (index === -1) {
+          throw new Error('Cannot remove markup that is not there.');
+        }
+
+        this.markups.splice(index, 1);
+      }
+
+      // delete the character at this offset,
+      // update the value with the new value
+    }, {
+      key: 'deleteValueAtOffset',
+      value: function deleteValueAtOffset(offset) {
+        var left = this.value.slice(0, offset);
+        var right = this.value.slice(offset + 1);
+
+        this.value = left + right;
       }
     }, {
       key: 'hasMarkup',
@@ -1443,6 +1865,7 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
       this.markers = [];
       this.tagName = tagName || DEFAULT_TAG_NAME;
       this.type = MARKUP_SECTION_TYPE;
+      this.element = null;
 
       markers.forEach(function (m) {
         return _this.appendMarker(m);
@@ -1450,10 +1873,36 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
     }
 
     _createClass(Section, [{
+      key: 'prependMarker',
+      value: function prependMarker(marker) {
+        marker.section = this;
+        this.markers.unshift(marker);
+      }
+    }, {
       key: 'appendMarker',
       value: function appendMarker(marker) {
         marker.section = this;
         this.markers.push(marker);
+      }
+    }, {
+      key: 'removeMarker',
+      value: function removeMarker(marker) {
+        var index = this.markers.indexOf(marker);
+        if (index === -1) {
+          throw new Error('Cannot remove not-found marker');
+        }
+        this.markers.splice(index, 1);
+      }
+    }, {
+      key: 'insertMarkerAfter',
+      value: function insertMarkerAfter(marker, previousMarker) {
+        var index = this.markers.indexOf(previousMarker);
+        if (index === -1) {
+          throw new Error('Cannot insert marker after: ' + previousMarker);
+        }
+
+        marker.section = this;
+        this.markers.splice(index + 1, 0, marker);
       }
 
       /**
@@ -1467,6 +1916,10 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
             middle = undefined;
 
         middle = this.markerContaining(offset);
+        // end of section
+        if (!middle) {
+          return [new this.constructor(this.tagName, this.markers), new this.constructor(this.tagName, [])];
+        }
         var middleIndex = this.markers.indexOf(middle);
 
         for (var i = 0; i < this.markers.length; i++) {
@@ -1496,18 +1949,30 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
         return [new this.constructor(this.tagName, left), new this.constructor(this.tagName, right)];
       }
 
+      // mutates this by appending the other section's (cloned) markers to it
+    }, {
+      key: 'join',
+      value: function join(otherSection) {
+        var _this2 = this;
+
+        otherSection.markers.forEach(function (m) {
+          return _this2.appendMarker(m.clone());
+        });
+      }
+
       /**
        * A marker contains this offset if:
        *   * The offset is between the marker's start and end
-       *   * it is the first marker and the offset is 0
-       *   * it is the last marker and the offset is >= total length of all the markers
-       *   * the offset is between two markers and it is the left marker (right-inclusive)
+       *   * the offset is between two markers and this is the right marker (and leftInclusive is true)
+       *   * the offset is between two markers and this is the left marker (and leftInclusive is false)
        *
        * @return {Marker} The marker that contains this offset
        */
     }, {
       key: 'markerContaining',
       value: function markerContaining(offset) {
+        var leftInclusive = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+
         var length = 0,
             i = 0;
 
@@ -1519,7 +1984,12 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
           length += this.markers[i].length;
           i++;
         }
-        return this.markers[i - 1];
+
+        if (length > offset) {
+          return this.markers[i - 1];
+        } else if (length === offset) {
+          return this.markers[leftInclusive ? i : i - 1];
+        }
       }
     }]);
 
@@ -1531,6 +2001,8 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
 define('content-kit-editor/models/markup', ['exports'], function (exports) {
   'use strict';
 
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var MARKUP_TYPE = 'markup';
@@ -1539,19 +2011,35 @@ define('content-kit-editor/models/markup', ['exports'], function (exports) {
 
   exports.VALID_MARKUP_TAGNAMES = VALID_MARKUP_TAGNAMES;
 
-  var Markup = function Markup(tagName) {
-    var attributes = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+  var Markup = (function () {
+    /*
+     * @param {attributes} array flat array of key1,value1,key2,value2,...
+     */
 
-    _classCallCheck(this, Markup);
+    function Markup(tagName) {
+      var attributes = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
-    this.tagName = tagName.toLowerCase();
-    this.attributes = attributes;
-    this.type = MARKUP_TYPE;
+      _classCallCheck(this, Markup);
 
-    if (VALID_MARKUP_TAGNAMES.indexOf(this.tagName) === -1) {
-      throw new Error('Cannot create markup of tagName ' + tagName);
+      this.tagName = tagName.toLowerCase();
+      this.attributes = attributes;
+      this.type = MARKUP_TYPE;
+
+      if (VALID_MARKUP_TAGNAMES.indexOf(this.tagName) === -1) {
+        throw new Error('Cannot create markup of tagName ' + tagName);
+      }
     }
-  };
+
+    _createClass(Markup, null, [{
+      key: 'isValidElement',
+      value: function isValidElement(element) {
+        var tagName = element.tagName.toLowerCase();
+        return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
+      }
+    }]);
+
+    return Markup;
+  })();
 
   exports['default'] = Markup;
 });
@@ -1650,6 +2138,7 @@ define("content-kit-editor/models/render-node", ["exports"], function (exports) 
       this.postNode = postNode;
 
       this.firstChild = null;
+      this.lastChild = null;
       this.nextSibling = null;
       this.previousSibling = null;
     }
@@ -1658,11 +2147,17 @@ define("content-kit-editor/models/render-node", ["exports"], function (exports) 
       key: "scheduleForRemoval",
       value: function scheduleForRemoval() {
         this.isRemoved = true;
+        if (this.parentNode) {
+          this.parentNode.markDirty();
+        }
       }
     }, {
       key: "markDirty",
       value: function markDirty() {
         this.isDirty = true;
+        if (this.parentNode) {
+          this.parentNode.markDirty();
+        }
       }
     }, {
       key: "markClean",
@@ -1984,9 +2479,12 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
 
     _createClass(MobiledocParser, [{
       key: 'parse',
-      value: function parse(mobiledoc) {
-        var markerTypes = mobiledoc[0];
-        var sections = mobiledoc[1];
+      value: function parse(_ref) {
+        var version = _ref.version;
+        var sectionData = _ref.sections;
+
+        var markerTypes = sectionData[0];
+        var sections = sectionData[1];
 
         var post = this.builder.generatePost();
 
@@ -2007,11 +2505,11 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
       }
     }, {
       key: 'parseMarkerType',
-      value: function parseMarkerType(_ref) {
-        var _ref2 = _slicedToArray(_ref, 2);
+      value: function parseMarkerType(_ref2) {
+        var _ref22 = _slicedToArray(_ref2, 2);
 
-        var tagName = _ref2[0];
-        var attributes = _ref2[1];
+        var tagName = _ref22[0];
+        var attributes = _ref22[1];
 
         return this.builder.generateMarkup(tagName, attributes);
       }
@@ -2119,8 +2617,14 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
 
   exports['default'] = MobiledocParser;
 });
-define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models/post', 'content-kit-editor/parsers/section', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorModelsPost, _contentKitEditorParsersSection, _contentKitEditorUtilsArrayUtils) {
+define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models/post', 'content-kit-editor/models/markup-section', 'content-kit-editor/parsers/section', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/post-builder', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/markup'], function (exports, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorParsersSection, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsPostBuilder, _contentKitEditorUtilsDomUtils, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsMarkup) {
   'use strict';
+
+  var sanitizeTextRegex = new RegExp(_contentKitEditorRenderersEditorDom.UNPRINTABLE_CHARACTER, 'g');
+
+  function sanitizeText(text) {
+    return text.replace(sanitizeTextRegex, '');
+  }
 
   exports['default'] = {
     parse: function parse(element) {
@@ -2133,12 +2637,113 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
       return post;
     },
 
-    parseSection: function parseSection(element) {
+    parseSection: function parseSection(element, otherArg) {
+      if (!!otherArg) {
+        element = otherArg; // hack to deal with passed previousSection
+      }
       return _contentKitEditorParsersSection['default'].parse(element);
+    },
+
+    // FIXME should move to the section parser?
+    // FIXME the `collectMarkups` logic could simplify the section parser?
+    reparseSection: function reparseSection(section, renderTree) {
+      if (section.type !== _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE) {
+        // can only reparse markup sections
+        return;
+      }
+      var sectionElement = section.renderNode.element;
+
+      // Turn an element node into a markup
+      function markupFromNode(node) {
+        if (_contentKitEditorModelsMarkup['default'].isValidElement(node)) {
+          var tagName = node.tagName;
+          var attributes = (0, _contentKitEditorUtilsDomUtils.getAttributesArray)(node);
+
+          return (0, _contentKitEditorUtilsPostBuilder.generateBuilder)().generateMarkup(tagName, attributes);
+        }
+      }
+
+      // walk up from the textNode until the rootNode, converting each
+      // parentNode into a markup
+      function collectMarkups(textNode, rootNode) {
+        var markups = [];
+        var currentNode = textNode.parentNode;
+        while (currentNode && currentNode !== rootNode) {
+          var markup = markupFromNode(currentNode);
+          if (markup) {
+            markups.push(markup);
+          }
+
+          currentNode = currentNode.parentNode;
+        }
+        return markups;
+      }
+
+      var seenRenderNodes = [];
+      var previousMarker = undefined;
+
+      (0, _contentKitEditorUtilsDomUtils.walkTextNodes)(sectionElement, function (textNode) {
+        var text = sanitizeText(textNode.textContent);
+        var markups = collectMarkups(textNode, sectionElement);
+
+        var marker = undefined;
+
+        var renderNode = renderTree.elements.get(textNode);
+        if (renderNode) {
+          if (text.length) {
+            marker = renderNode.postNode;
+            marker.value = text;
+            marker.markups = markups;
+          } else {
+            renderNode.scheduleForRemoval();
+          }
+        } else {
+          marker = (0, _contentKitEditorUtilsPostBuilder.generateBuilder)().generateMarker(markups, text);
+
+          // create a cleaned render node to account for the fact that this
+          // render node comes from already-displayed DOM
+          // FIXME this should be cleaner
+          renderNode = renderTree.buildRenderNode(marker);
+          renderNode.element = textNode;
+          renderNode.markClean();
+
+          if (previousMarker) {
+            // insert this marker after the previous one
+            section.insertMarkerAfter(marker, previousMarker);
+            section.renderNode.insertAfter(renderNode, previousMarker.renderNode);
+          } else {
+            // insert marker at the beginning of the section
+            section.prependMarker(marker);
+            section.renderNode.insertAfter(renderNode, null);
+          }
+
+          // find the nextMarkerElement, set it on the render node
+          var parentNodeCount = marker.closedMarkups.length;
+          var nextMarkerElement = textNode.parentNode;
+          while (parentNodeCount--) {
+            nextMarkerElement = nextMarkerElement.parentNode;
+          }
+          renderNode.nextMarkerElement = nextMarkerElement;
+        }
+
+        seenRenderNodes.push(renderNode);
+        previousMarker = marker;
+      });
+
+      // schedule any nodes that were not marked as seen
+      var node = section.renderNode.firstChild;
+      while (node) {
+        if (seenRenderNodes.indexOf(node) === -1) {
+          // remove it
+          node.scheduleForRemoval();
+        }
+
+        node = node.nextSibling;
+      }
     }
   };
 });
-define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/marker', 'content-kit-editor/models/markup', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils) {
+define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/marker', 'content-kit-editor/models/markup', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/post-builder'], function (exports, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsPostBuilder) {
   'use strict';
 
   var TEXT_NODE = 3;
@@ -2152,10 +2757,6 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
   exports['default'] = {
     parse: function parse(element) {
       var _this = this;
-
-      if (!this.isSectionElement(element)) {
-        element = this.wrapInSectionElement(element);
-      }
 
       var tagName = this.sectionTagNameFromElement(element);
       var section = new _contentKitEditorModelsMarkupSection['default'](tagName);
@@ -2171,13 +2772,11 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
         state.section.appendMarker(marker);
       }
 
-      return section;
-    },
+      if (section.markers.length === 0) {
+        section.appendMarker((0, _contentKitEditorUtilsPostBuilder.generateBuilder)().generateBlankMarker());
+      }
 
-    wrapInSectionElement: function wrapInSectionElement(element) {
-      var parent = document.createElement(_contentKitEditorModelsMarkupSection.DEFAULT_TAG_NAME);
-      parent.appendChild(element);
-      return parent;
+      return section;
     },
 
     parseNode: function parseNode(node, state) {
@@ -2240,7 +2839,8 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
     },
 
     sectionTagNameFromElement: function sectionTagNameFromElement(element) {
-      var tagName = element.tagName.toLowerCase();
+      var tagName = element.tagName;
+      tagName = tagName && tagName.toLowerCase();
       if (_contentKitEditorModelsMarkupSection.VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName) === -1) {
         tagName = _contentKitEditorModelsMarkupSection.DEFAULT_TAG_NAME;
       }
@@ -2248,7 +2848,7 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
     }
   };
 });
-define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-editor/models/render-node", "content-kit-editor/models/card-node", "content-kit-editor/utils/array-utils", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/image"], function (exports, _contentKitEditorModelsRenderNode, _contentKitEditorModelsCardNode, _contentKitEditorUtilsArrayUtils, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsImage) {
+define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-editor/models/render-node", "content-kit-editor/models/card-node", "content-kit-editor/utils/array-utils", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/marker", "content-kit-editor/models/image", "content-kit-editor/models/card", "content-kit-editor/utils/dom-utils"], function (exports, _contentKitEditorModelsRenderNode, _contentKitEditorModelsCardNode, _contentKitEditorUtilsArrayUtils, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarker, _contentKitEditorModelsImage, _contentKitEditorModelsCard, _contentKitEditorUtilsDomUtils) {
   "use strict";
 
   var _destroyHooks;
@@ -2259,46 +2859,81 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  function createElementFromMarkerType(doc, markerType) {
-    var element = doc.createElement(markerType.tagName);
-    if (markerType.attributes) {
-      for (var i = 0, l = markerType.attributes.length; i < l; i = i + 2) {
-        element.setAttribute(markerType.attributes[i], markerType.attributes[i + 1]);
+  var UNPRINTABLE_CHARACTER = "‌";
+
+  exports.UNPRINTABLE_CHARACTER = UNPRINTABLE_CHARACTER;
+  function createElementFromMarkup(doc, markup) {
+    var element = doc.createElement(markup.tagName);
+    if (markup.attributes) {
+      for (var i = 0, l = markup.attributes.length; i < l; i = i + 2) {
+        element.setAttribute(markup.attributes[i], markup.attributes[i + 1]);
       }
     }
     return element;
   }
 
-  function renderMarkupSection(doc, section, markers) {
+  // ascends from element upward, returning the last parent node that is not
+  // parentElement
+  function penultimateParentOf(element, parentElement) {
+    while (parentElement && element.parentNode !== parentElement && element.parentElement !== document.body // ensure the while loop stops
+    ) {
+      element = element.parentNode;
+    }
+    return element;
+  }
+
+  function renderMarkupSection(doc, section) {
     var element = doc.createElement(section.tagName);
-    var elements = [element];
-    var currentElement = element;
-    var i, l, j, m, marker, openTypes, closeTypes, text;
-    var markerType;
-    var openedElement;
-    for (i = 0, l = markers.length; i < l; i++) {
-      marker = markers[i];
-      openTypes = marker.markups;
-      closeTypes = marker.close;
-      text = marker.value;
+    section.element = element;
+    return element;
+  }
 
-      for (j = 0, m = openTypes.length; j < m; j++) {
-        markerType = openTypes[j];
-        openedElement = createElementFromMarkerType(doc, markerType);
-        currentElement.appendChild(openedElement);
-        elements.push(openedElement);
-        currentElement = openedElement;
-      }
+  function isEmptyText(text) {
+    return text.trim() === '';
+  }
 
-      currentElement.appendChild(doc.createTextNode(text));
+  // pass in a renderNode's previousSibling
+  function getNextMarkerElement(renderNode) {
+    var element = renderNode.element.parentNode;
+    var closedCount = renderNode.postNode.closedMarkups.length;
 
-      for (j = 0, m = closeTypes; j < m; j++) {
-        elements.pop();
-        currentElement = elements[elements.length - 1];
-      }
+    // walk up the number of closed markups
+    while (closedCount--) {
+      element = element.parentNode;
+    }
+    return element;
+  }
+
+  function renderMarker(marker, element, previousRenderNode) {
+    var openTypes = marker.openedMarkups;
+    var text = marker.value;
+    if (isEmptyText(text)) {
+      // This is necessary to allow the cursor to move into this area
+      text = UNPRINTABLE_CHARACTER;
     }
 
-    return element;
+    var textNode = document.createTextNode(text);
+    var currentElement = textNode;
+    var markup = undefined;
+
+    for (var j = openTypes.length - 1; j >= 0; j--) {
+      markup = openTypes[j];
+      var openedElement = createElementFromMarkup(document, markup);
+      openedElement.appendChild(currentElement);
+      currentElement = openedElement;
+    }
+
+    if (previousRenderNode) {
+      var nextMarkerElement = getNextMarkerElement(previousRenderNode);
+
+      var previousSibling = previousRenderNode.element;
+      var previousSiblingPenultimate = penultimateParentOf(previousSibling, nextMarkerElement);
+      nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.nextSibling);
+    } else {
+      element.insertBefore(currentElement, element.firstChild);
+    }
+
+    return textNode;
   }
 
   var Visitor = (function () {
@@ -2321,9 +2956,9 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
       }
     }, {
       key: _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE,
-      value: function value(renderNode, section) {
+      value: function value(renderNode, section, visit) {
         if (!renderNode.element) {
-          var element = renderMarkupSection(window.document, section, section.markers);
+          var element = renderMarkupSection(window.document, section);
           if (renderNode.previousSibling) {
             var previousElement = renderNode.previousSibling.element;
             var nextElement = previousElement.nextSibling;
@@ -2336,6 +2971,26 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
           }
           renderNode.element = element;
         }
+
+        // remove all elements so that we can rerender
+        (0, _contentKitEditorUtilsDomUtils.clearChildNodes)(renderNode.element);
+
+        var visitAll = true;
+        visit(renderNode, section.markers, visitAll);
+      }
+    }, {
+      key: _contentKitEditorModelsMarker.MARKER_TYPE,
+      value: function value(renderNode, marker) {
+        var parentElement = undefined;
+
+        if (renderNode.previousSibling) {
+          parentElement = getNextMarkerElement(renderNode.previousSibling);
+        } else {
+          parentElement = renderNode.parentNode.element;
+        }
+        var textNode = renderMarker(marker, parentElement, renderNode.previousSibling);
+
+        renderNode.element = textNode;
       }
     }, {
       key: _contentKitEditorModelsImage.IMAGE_SECTION_TYPE,
@@ -2361,8 +3016,8 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         }
       }
     }, {
-      key: "card",
-      value: function card(renderNode, section) {
+      key: _contentKitEditorModelsCard.CARD_TYPE,
+      value: function value(renderNode, section) {
         var card = (0, _contentKitEditorUtilsArrayUtils.detect)(this.cards, function (card) {
           return card.name === section.name;
         });
@@ -2396,11 +3051,27 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     if (renderNode.element.parentNode) {
       renderNode.element.parentNode.removeChild(renderNode.element);
     }
+  }), _defineProperty(_destroyHooks, _contentKitEditorModelsMarker.MARKER_TYPE, function (renderNode, marker) {
+    // FIXME before we render marker, should delete previous renderNode's element
+    // and up until the next marker element
+
+    var element = renderNode.element;
+    var nextMarkerElement = getNextMarkerElement(renderNode);
+    while (element.parentNode && element.parentNode !== nextMarkerElement) {
+      element = element.parentNode;
+    }
+
+    marker.section.removeMarker(marker);
+
+    if (element.parentNode) {
+      // if no parentNode, the browser already removed this element
+      element.parentNode.removeChild(element);
+    }
   }), _defineProperty(_destroyHooks, _contentKitEditorModelsImage.IMAGE_SECTION_TYPE, function (renderNode, section) {
     var post = renderNode.parentNode.postNode;
     post.removeSection(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
-  }), _defineProperty(_destroyHooks, "card", function card(renderNode, section) {
+  }), _defineProperty(_destroyHooks, _contentKitEditorModelsCard.CARD_TYPE, function (renderNode, section) {
     if (renderNode.cardNode) {
       renderNode.cardNode.teardown();
     }
@@ -2409,6 +3080,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     renderNode.element.parentNode.removeChild(renderNode.element);
   }), _destroyHooks);
 
+  // removes children from parentNode that are scheduled for removal
   function removeChildren(parentNode) {
     var child = parentNode.firstChild;
     while (child) {
@@ -2421,36 +3093,17 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     }
   }
 
-  function lookupNode(renderTree, parentNode, section, previousNode) {
-    if (section.renderNode) {
-      return section.renderNode;
+  // Find an existing render node for the given postNode, or
+  // create one, insert it into the tree, and return it
+  function lookupNode(renderTree, parentNode, postNode, previousNode) {
+    if (postNode.renderNode) {
+      return postNode.renderNode;
     } else {
-      var renderNode = new _contentKitEditorModelsRenderNode["default"](section);
+      var renderNode = new _contentKitEditorModelsRenderNode["default"](postNode);
       renderNode.renderTree = renderTree;
       parentNode.insertAfter(renderNode, previousNode);
-      section.renderNode = renderNode;
+      postNode.renderNode = renderNode;
       return renderNode;
-    }
-  }
-
-  function renderInternal(renderTree, visitor) {
-    var nodes = [renderTree.node];
-    function visit(parentNode, sections) {
-      var previousNode = undefined;
-      sections.forEach(function (section) {
-        var node = lookupNode(renderTree, parentNode, section, previousNode);
-        if (node.isDirty) {
-          nodes.push(node);
-        }
-        previousNode = node;
-      });
-    }
-    var node = nodes.shift();
-    while (node) {
-      removeChildren(node);
-      visitor[node.postNode.type](node, node.postNode, visit);
-      node.markClean();
-      node = nodes.shift();
     }
   }
 
@@ -2459,12 +3112,43 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
       _classCallCheck(this, Renderer);
 
       this.visitor = new Visitor(cards, unknownCardHandler, options);
+      this.nodes = [];
     }
 
     _createClass(Renderer, [{
+      key: "visit",
+      value: function visit(renderTree, parentNode, postNodes) {
+        var _this = this;
+
+        var visitAll = arguments.length <= 3 || arguments[3] === undefined ? false : arguments[3];
+
+        var previousNode = undefined;
+        postNodes.forEach(function (postNode) {
+          var node = lookupNode(renderTree, parentNode, postNode, previousNode);
+          if (node.isDirty || visitAll) {
+            _this.nodes.push(node);
+          }
+          previousNode = node;
+        });
+      }
+    }, {
       key: "render",
       value: function render(renderTree) {
-        renderInternal(renderTree, this.visitor);
+        var _this2 = this;
+
+        var node = renderTree.node;
+        while (node) {
+          removeChildren(node);
+          this.visitor[node.postNode.type](node, node.postNode, function () {
+            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+              args[_key] = arguments[_key];
+            }
+
+            return _this2.visit.apply(_this2, [renderTree].concat(args));
+          });
+          node.markClean();
+          node = this.nodes.shift();
+        }
       }
     }]);
 
@@ -2473,13 +3157,16 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
 
   exports["default"] = Renderer;
 });
-define("content-kit-editor/renderers/mobiledoc", ["exports", "content-kit-editor/utils/compiler", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/image", "content-kit-editor/models/marker", "content-kit-editor/models/markup"], function (exports, _contentKitEditorUtilsCompiler, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsImage, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup) {
+define("content-kit-editor/renderers/mobiledoc", ["exports", "content-kit-editor/utils/compiler", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/image", "content-kit-editor/models/marker", "content-kit-editor/models/markup", "content-kit-editor/models/card"], function (exports, _contentKitEditorUtilsCompiler, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsImage, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorModelsCard) {
   "use strict";
 
   var _visitor;
 
   function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+  var MOBILEDOC_VERSION = '0.1';
+
+  exports.MOBILEDOC_VERSION = MOBILEDOC_VERSION;
   var visitor = (_visitor = {}, _defineProperty(_visitor, _contentKitEditorModelsPost.POST_TYPE, function (node, opcodes) {
     opcodes.push(['openPost']);
     (0, _contentKitEditorUtilsCompiler.visitArray)(visitor, node.sections, opcodes);
@@ -2488,7 +3175,7 @@ define("content-kit-editor/renderers/mobiledoc", ["exports", "content-kit-editor
     (0, _contentKitEditorUtilsCompiler.visitArray)(visitor, node.markers, opcodes);
   }), _defineProperty(_visitor, _contentKitEditorModelsImage.IMAGE_SECTION_TYPE, function (node, opcodes) {
     opcodes.push(['openImageSection', node.src]);
-  }), _defineProperty(_visitor, "card", function card(node, opcodes) {
+  }), _defineProperty(_visitor, _contentKitEditorModelsCard.CARD_TYPE, function (node, opcodes) {
     opcodes.push(['openCardSection', node.name, node.payload]);
   }), _defineProperty(_visitor, _contentKitEditorModelsMarker.MARKER_TYPE, function (node, opcodes) {
     opcodes.push(['openMarker', node.closedMarkups.length, node.value]);
@@ -2515,7 +3202,10 @@ define("content-kit-editor/renderers/mobiledoc", ["exports", "content-kit-editor
     openPost: function openPost() {
       this.markerTypes = [];
       this.sections = [];
-      this.result = [this.markerTypes, this.sections];
+      this.result = {
+        version: MOBILEDOC_VERSION,
+        sections: [this.markerTypes, this.sections]
+      };
     },
     openMarkup: function openMarkup(tagName, attributes) {
       if (!this._seenMarkerTypes) {
@@ -2614,8 +3304,10 @@ define("content-kit-editor/utils/compiler", ["exports"], function (exports) {
     }
   }
 });
-define("content-kit-editor/utils/dom-utils", ["exports"], function (exports) {
-  "use strict";
+define('content-kit-editor/utils/dom-utils', ['exports', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorUtilsArrayUtils) {
+  'use strict';
+
+  var TEXT_NODE_TYPE = 3;
 
   function detectParentNode(element, callback) {
     while (element) {
@@ -2635,9 +3327,68 @@ define("content-kit-editor/utils/dom-utils", ["exports"], function (exports) {
     };
   }
 
+  function isTextNode(node) {
+    return node.nodeType === TEXT_NODE_TYPE;
+  }
+
+  // perform a pre-order tree traversal of the dom, calling `callbackFn(node)`
+  // for every node for which `conditionFn(node)` is true
+  function walkDOM(topNode) {
+    var callbackFn = arguments.length <= 1 || arguments[1] === undefined ? function () {} : arguments[1];
+    var conditionFn = arguments.length <= 2 || arguments[2] === undefined ? function () {
+      return true;
+    } : arguments[2];
+
+    var currentNode = topNode;
+
+    if (conditionFn(currentNode)) {
+      callbackFn(currentNode);
+    }
+
+    currentNode = currentNode.firstChild;
+
+    while (currentNode) {
+      walkDOM(currentNode, callbackFn, conditionFn);
+      currentNode = currentNode.nextSibling;
+    }
+  }
+
+  function walkTextNodes(topNode) {
+    var callbackFn = arguments.length <= 1 || arguments[1] === undefined ? function () {} : arguments[1];
+
+    var conditionFn = function conditionFn(node) {
+      return isTextNode(node);
+    };
+    walkDOM(topNode, callbackFn, conditionFn);
+  }
+
   function clearChildNodes(element) {
     while (element.childNodes.length) {
       element.removeChild(element.childNodes[0]);
+    }
+  }
+
+  // walks DOWN the dom from node to childNodes, returning the element
+  // for which `conditionFn(element)` is true
+  function walkDOMUntil(topNode) {
+    var conditionFn = arguments.length <= 1 || arguments[1] === undefined ? function () {} : arguments[1];
+
+    if (!topNode) {
+      throw new Error('Cannot call walkDOMUntil without a node');
+    }
+    var stack = [topNode];
+    var currentElement = undefined;
+
+    while (stack.length) {
+      currentElement = stack.pop();
+
+      if (conditionFn(currentElement)) {
+        return currentElement;
+      }
+
+      (0, _contentKitEditorUtilsArrayUtils.forEach)(currentElement.childNodes, function (el) {
+        return stack.push(el);
+      });
     }
   }
 
@@ -2653,37 +3404,47 @@ define("content-kit-editor/utils/dom-utils", ["exports"], function (exports) {
     return isSame() || isContainedBy();
   }
 
-  function forEachChildNode(element, callback) {
-    for (var i = 0; i < element.childNodes.length; i++) {
-      callback(element.childNodes[i]);
-    }
-  }
-
   /**
    * converts the element's NamedNodeMap of attrs into
    * an object with key-value pairs
+   * FIXME should add a whitelist as a second arg
    */
   function getAttributes(element) {
     var result = {};
     if (element.hasAttributes()) {
       var attributes = element.attributes;
 
-      for (var i = 0; i < attributes.length; i++) {
-        var _attributes$i = attributes[i];
-        var _name = _attributes$i.name;
-        var value = _attributes$i.value;
-
-        result[_name] = value;
-      }
+      (0, _contentKitEditorUtilsArrayUtils.forEach)(attributes, function (_ref) {
+        var name = _ref.name;
+        var value = _ref.value;
+        return result[name] = value;
+      });
     }
+    return result;
+  }
+
+  /**
+   * converts the element's NamedNodeMap of attrs into
+   * an array of key1,value1,key2,value2,...
+   * FIXME should add a whitelist as a second arg
+   */
+  function getAttributesArray(element) {
+    var attributes = getAttributes(element);
+    var result = [];
+    Object.keys(attributes).forEach(function (key) {
+      result.push(key);
+      result.push(attributes[key]);
+    });
     return result;
   }
 
   exports.detectParentNode = detectParentNode;
   exports.containsNode = containsNode;
   exports.clearChildNodes = clearChildNodes;
-  exports.forEachChildNode = forEachChildNode;
   exports.getAttributes = getAttributes;
+  exports.getAttributesArray = getAttributesArray;
+  exports.walkDOMUntil = walkDOMUntil;
+  exports.walkTextNodes = walkTextNodes;
 });
 define('content-kit-editor/utils/element-map', ['exports'], function (exports) {
   // start at one to make the falsy semantics easier
@@ -3091,10 +3852,10 @@ define("content-kit-editor/utils/keycodes", ["exports"], function (exports) {
 
   exports["default"] = {
     LEFT_ARROW: 37,
-    BKSP: 8,
+    BACKSPACE: 8,
     ENTER: 13,
     ESC: 27,
-    DEL: 46,
+    DELETE: 46,
     M: 77
   };
 });
@@ -3118,7 +3879,7 @@ define('content-kit-editor/utils/mixin', ['exports'], function (exports) {
     });
   }
 });
-define("content-kit-editor/utils/post-builder", ["exports", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/image", "content-kit-editor/models/marker", "content-kit-editor/models/markup"], function (exports, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsImage, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup) {
+define("content-kit-editor/utils/post-builder", ["exports", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/image", "content-kit-editor/models/marker", "content-kit-editor/models/markup", "content-kit-editor/models/card"], function (exports, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsImage, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorModelsCard) {
   "use strict";
 
   exports.generateBuilder = generateBuilder;
@@ -3144,11 +3905,13 @@ define("content-kit-editor/utils/post-builder", ["exports", "content-kit-editor/
     generateCardSection: function generateCardSection(name) {
       var payload = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-      var type = 'card';
-      return { name: name, payload: payload, type: type };
+      return new _contentKitEditorModelsCard["default"](name, payload);
     },
-    generateMarker: function generateMarker(markers, value) {
-      return new _contentKitEditorModelsMarker["default"](value, markers);
+    generateMarker: function generateMarker(markups, value) {
+      return new _contentKitEditorModelsMarker["default"](value, markups);
+    },
+    generateBlankMarker: function generateBlankMarker() {
+      return new _contentKitEditorModelsMarker["default"]('__BLANK__');
     },
     generateMarkup: function generateMarkup(tagName, attributes) {
       if (attributes) {

@@ -10,78 +10,60 @@
   <link href="../css/content-kit-editor.css" rel="stylesheet">
 
   <!-- Include fancy fonts (optional) -->
-  <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Merriweather+Sans:800" rel="stylesheet">
+  <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Merriweather+Sans:700" rel="stylesheet">
 
   <!-- CSS just for the demo page -->
   <link href="demo.css" rel="stylesheet">
 </head>
 
 <body>
+  <div class="section">
+    <h1>Content-Kit<span class="headline-note">alpha!</span></h1>
+    <p class="subheadline">A WYSIWYG editor for rich content</p>
+  </div>
+  <hr>
+  <div class="section">
+    <p>
+      Content-Kit is a publishing solution designed for both text and
+      dynamically rendered cards. Posts are serialized into <a href="https://github.com/bustlelabs/content-kit-editor/blob/master/MOBILEDOC.md">Mobiledoc</a>, and
+      rendered to DOM in a reader's browser.
+    </p>
+    <p>
+      Read more on the <a href="https://github.com/bustlelabs/content-kit-editor">content-kit-editor</a>
+      GitHub repo, or on the <a href="http://madhatted.com/2015/7/31/announcing-content-kit-and-mobiledoc">announcement blog post</a>.
+    </p>
+  </div>
+  <div class="section">
+    <br>
+    <h2>Try a Demo</h2>
+  </div>
   <div class="container">
-
     <div class="pane">
-      <h2>mobiledoc to load</h2>
-      <p class='desc'>
-        This mobiledoc will be loaded into the editor.
-        You can change it and see the editor reload with the new contents.
-        (If there is a JSON syntax error it will be ignored; if there is a parser
-         error the editor may stop responding.)
-         <br>
-         Select a preloaded mobiledoc here:
-         <select id='select-mobiledoc'>
-           <option disabled>Choose a mobiledoc...</option>
-           <option value='simpleMobiledoc'>Simple mobiledoc</option>
-           <option value='mobileDocWithSimpleCard'>simple card</option>
-           <option value='mobileDocWithEditCard'>edit card</option>
-           <option value='mobileDocWithInputCard'>input card</option>
-           <option value='mobileDocWithSelfieCard'>selfie card</option>
-           <option value='mobileDocWithMarker'>mobiledoc with simple marker</option>
-           <option value='mobileDocWithMultipleMarkers'>mobiledoc with multiple markers</option>
-           <option value='mobileDocWithAttributeMarker'>mobiledoc with attributed marker</option>
-         </select>
-      </p>
-      <div id="mobiledoc-to-load">
-        <textarea></textarea>
+      <div class="output full-left">
+        <select id='select-mobiledoc'>
+          <option disabled>Load a new Mobiledoc</option>
+          <option value='simpleMobiledoc'>Simple text content</option>
+          <option value='mobileDocWithInputCard'>Card with Input</option>
+          <option value='mobileDocWithSelfieCard'>Selfie Card</option>
+        </select>
+        <div id="editor">
+        </div>
       </div>
     </div>
 
     <div class="pane">
-      <h2>editor</h2>
-      <p class='desc'>
-        The live-editing surface. Changes here are serialized to mobiledoc
-        format and displayed to the right.
-      </p>
-      <div id="editor">
+      <div class="output">
+        <h4>Mobiledoc Output</h4>
+        <pre class="serialized-mobiledoc-wrapper"><code id="serialized-mobiledoc">
+        </code></pre>
       </div>
     </div>
-
     <div class="pane">
-      <h2>serialized mobiledoc</h2>
-      <p class='desc'>
-        When the editor updates, it prints its serialized mobiledoc here.
-      </p>
-      <div id="serialized-mobiledoc">
+      <div class="output full-right">
+        <h4>Rendered with <a href="https://github.com/bustlelabs/mobiledoc-dom-renderer">DOM-Renderer</a></h4>
+        <div id="rendered-mobiledoc">
+        </div>
       </div>
-    </div>
-
-    <div class="pane">
-      <h2>rendered mobiledoc (dom)</h2>
-      <p class='desc'>
-        This is the output of using the runtime (client-side)
-        <a href='http://github.com/bustlelabs/mobiledoc-dom-renderer'>mobiledoc-dom-renderer</a>
-        on the serialized mobiledoc.
-      </p>
-      <div id="rendered-mobiledoc"></div>
-    </div>
-
-    <div class="pane">
-      <h2>rendered mobiledoc (html)</h2>
-      <p class='desc'>
-        This is the output of using the server-side
-        <a href='http://github.com/bustlelabs/mobiledoc-html-renderer'>mobiledoc-html-renderer</a>
-        on the serialized mobiledoc.
-      </p>
-      <div id="rendered-mobiledoc-html"></div>
     </div>
 
   </div>

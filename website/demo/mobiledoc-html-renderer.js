@@ -242,15 +242,17 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
        * @param rootElement optional, defaults to an empty div
        * @return DOMNode
        */
-      value: function render(mobiledoc) {
+      value: function render(_ref3) {
         var _this = this;
 
+        var version = _ref3.version;
+        var sectionData = _ref3.sections;
         var rootElement = arguments.length <= 1 || arguments[1] === undefined ? _mobiledocHtmlRendererUtilsDom['default'].createElement('div') : arguments[1];
 
-        var _mobiledoc = _slicedToArray(mobiledoc, 2);
+        var _sectionData = _slicedToArray(sectionData, 2);
 
-        var markerTypes = _mobiledoc[0];
-        var sections = _mobiledoc[1];
+        var markerTypes = _sectionData[0];
+        var sections = _sectionData[1];
 
         this.root = rootElement;
         this.markerTypes = markerTypes;
@@ -288,11 +290,11 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
       }
     }, {
       key: 'renderImageSection',
-      value: function renderImageSection(_ref3) {
-        var _ref32 = _slicedToArray(_ref3, 2);
+      value: function renderImageSection(_ref4) {
+        var _ref42 = _slicedToArray(_ref4, 2);
 
-        var type = _ref32[0];
-        var url = _ref32[1];
+        var type = _ref42[0];
+        var url = _ref42[1];
 
         var element = _mobiledocHtmlRendererUtilsDom['default'].createElement('img');
         _mobiledocHtmlRendererUtilsDom['default'].setAttribute(element, 'src', url);
@@ -300,12 +302,12 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
       }
     }, {
       key: 'renderCardSection',
-      value: function renderCardSection(_ref4) {
-        var _ref42 = _slicedToArray(_ref4, 3);
+      value: function renderCardSection(_ref5) {
+        var _ref52 = _slicedToArray(_ref5, 3);
 
-        var type = _ref42[0];
-        var name = _ref42[1];
-        var payload = _ref42[2];
+        var type = _ref52[0];
+        var name = _ref52[1];
+        var payload = _ref52[2];
 
         var element = undefined;
         if (payload.src) {
@@ -318,12 +320,12 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
       }
     }, {
       key: 'renderMarkupSection',
-      value: function renderMarkupSection(_ref5) {
-        var _ref52 = _slicedToArray(_ref5, 3);
+      value: function renderMarkupSection(_ref6) {
+        var _ref62 = _slicedToArray(_ref6, 3);
 
-        var type = _ref52[0];
-        var tagName = _ref52[1];
-        var markers = _ref52[2];
+        var type = _ref62[0];
+        var tagName = _ref62[1];
+        var markers = _ref62[2];
 
         var element = _mobiledocHtmlRendererUtilsDom['default'].createElement(tagName);
         var elements = [element];
