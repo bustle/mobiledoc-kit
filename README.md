@@ -14,7 +14,7 @@ demo at [content-kit.herokuapp.com](http://content-kit.herokuapp.com/).
   platform. Mobiledoc is portable and fast.
 
 To learn more about Content-Kit in the abstract,
-[read this announcement blog post](http://madhatted.com/2015/7/27/announcing-content-kit-and-mobiledoc).
+[read this announcement blog post](http://madhatted.com/2015/7/31/announcing-content-kit-and-mobiledoc).
 
 Content-Kit saves posts to
 **[Mobiledoc](https://github.com/bustlelabs/content-kit-editor/blob/master/MOBILEDOC.md)**.
