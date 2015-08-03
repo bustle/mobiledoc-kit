@@ -42,7 +42,7 @@ test('creating an editor adds EDITOR_ELEMENT_CLASS_NAME if not there', (assert) 
   editorElement.className = 'abc def';
 
   var editor = new Editor(document.getElementById('editor1'));
-  const hasClass = (className) => editor.element.className.indexOf(className) !== -1;
+  const hasClass = (className) => editor.element.classList.contains(className);
   assert.ok(hasClass(EDITOR_ELEMENT_CLASS_NAME), 'has editor el class name');
   assert.ok(hasClass('abc') && hasClass('def'), 'preserves existing class names');
 });
