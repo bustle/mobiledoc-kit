@@ -70,7 +70,7 @@ class Toolbar extends View {
   }
 
   addCommand(command) {
-    command.editorContext = this.editor;
+    command.editor = this.editor;
     command.embedIntent = this.embedIntent;
     let button = new ToolbarButton({command: command, toolbar: this});
     this.buttons.push(button);

@@ -266,7 +266,7 @@ class Editor {
   rerender() {
     let postRenderNode = this.post.renderNode;
 
-    // if we haven't rendered this renderNode before, mark it dirty
+    // if we haven't rendered this post's renderNode before, mark it dirty
     if (!postRenderNode.element) {
       postRenderNode.element = this.element;
       postRenderNode.markDirty();
@@ -428,6 +428,10 @@ class Editor {
     this.trigger('update');
   }
 
+  selectSections(sections) {
+    this.cursor.selectSections(sections);
+  }
+
   getActiveSections() {
     const cursor = this.cursor;
     return cursor.activeSections;
@@ -535,7 +539,7 @@ class Editor {
       rightOffset
     } = this.cursor.offsets;
 
-    // The cursor will lose its textNode if we have parsed (and thus rerendered)
+    // The cursor will lose its textNode if we have reparsed (and thus will rerender, below)
     // its section. Ensure the cursor is placed where it should be after render.
     //
     // New sections are presumed clean, and thus do not get rerendered and lose
@@ -568,6 +572,44 @@ class Editor {
         rightOffset
       );
     }
+  }
+
+  get cursorSelection() {
+    return this.cursor.cursorSelection;
+  }
+
+  /*
+   * Returns the active sections. If the cursor selection is collapsed this will be
+   * an array of 1 item. Else will return an array containing each section that is either
+   * wholly or partly contained by the cursor selection.
+   *
+   * @return {array} The sections from the cursor's selection start to the selection end
+   */
+  get activeSections() {
+    return this.cursor.activeSections;
+  }
+
+  /*
+   * Clear the markups from each of the section's markers
+   */
+  resetSectionMarkers(section) {
+    section.markers.forEach(m => {
+      m.clearMarkups();
+      m.renderNode.markDirty();
+    });
+  }
+
+  /*
+   * Change the tag name for the given section
+   */
+  setSectionTagName(section, tagName) {
+    section.setTagName(tagName);
+    section.renderNode.markDirty();
+  }
+
+  resetSectionTagName(section) {
+    section.resetTagName();
+    section.renderNode.markDirty();
   }
 
   reparseSection(section) {

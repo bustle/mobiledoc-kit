@@ -104,6 +104,28 @@ function makeDOM(tree) {
   return tree(_buildDOM);
 }
 
+function getSelectedText() {
+  const selection = window.getSelection();
+  if (selection.rangeCount === 0) {
+    return null;
+  } else if (selection.rangeCount > 1) {
+    // FIXME?
+    throw new Error('Unable to get selected text for multiple ranges');
+  } else {
+    const {
+      anchorNode, anchorOffset,
+      focusNode, focusOffset
+    } = selection;
+
+    if (anchorNode !== focusNode) {
+      // FIXME
+      throw new Error('Unable to get selected text when multiple nodes are selected');
+    } else {
+      return anchorNode.textContent.slice(anchorOffset, focusOffset);
+    }
+  }
+}
+
 // returns the node and the offset that the cursor is on
 function getCursorPosition() {
   const selection = window.getSelection();
@@ -113,7 +135,7 @@ function getCursorPosition() {
   };
 }
 
-export default {
+const DOMHelper = {
   moveCursorTo,
   selectText,
   clearSelection,
@@ -121,5 +143,8 @@ export default {
   triggerKeyEvent,
   makeDOM,
   KEY_CODES,
-  getCursorPosition
+  getCursorPosition,
+  getSelectedText
 };
+
+export default DOMHelper;

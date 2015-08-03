@@ -4,6 +4,8 @@ export const VALID_MARKUP_SECTION_TAGNAMES = [
 ];
 export const MARKUP_SECTION_TYPE = 'markup-section';
 
+const normalizeTagName = (tagName) => tagName.toLowerCase();
+
 export default class Section {
   constructor(tagName, markers=[]) {
     this.markers = [];
@@ -12,6 +14,18 @@ export default class Section {
     this.element = null;
 
     markers.forEach(m => this.appendMarker(m));
+  }
+
+  setTagName(newTagName) {
+    newTagName = normalizeTagName(newTagName);
+    if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(newTagName) === -1) {
+      throw new Error(`Cannot change section tagName to "${newTagName}`);
+    }
+    this.tagName = newTagName;
+  }
+
+  resetTagName() {
+    this.tagName = DEFAULT_TAG_NAME;
   }
 
   prependMarker(marker) {

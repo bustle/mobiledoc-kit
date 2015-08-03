@@ -74,7 +74,7 @@ export default class Cursor {
 
     const { startContainer, endContainer } = range;
     const isSectionElement = (element) => {
-      return detect(sections, (s) => s.renderNode.element === element);
+      return detect(sections, s => s.renderNode.element === element);
     };
     const {result:startSection} = detectParentNode(startContainer, isSectionElement);
     const {result:endSection} = detectParentNode(endContainer, isSectionElement);
@@ -99,6 +99,19 @@ export default class Cursor {
       selection.removeAllRanges();
     }
     selection.addRange(r);
+  }
+
+  selectSections(sections) {
+    const startSection = sections[0],
+          endSection  = sections[sections.length - 1];
+
+    const startNode = startSection.markers[0].renderNode.element,
+          endNode   = endSection.markers[endSection.markers.length - 1].renderNode.element;
+
+    const startOffset = 0,
+          endOffset = endNode.textContent.length;
+
+    this.moveToNode(startNode, startOffset, endNode, endOffset);
   }
 
   moveToNode(node, offset=0, endNode=node, endOffset=offset) {

@@ -32,8 +32,8 @@ function penultimateParentOf(element, parentElement) {
   return element;
 }
 
-function renderMarkupSection(doc, section) {
-  var element = doc.createElement(section.tagName);
+function renderMarkupSection(section) {
+  var element = document.createElement(section.tagName);
   section.element = element;
   return element;
 }
@@ -103,8 +103,17 @@ class Visitor {
   }
 
   [MARKUP_SECTION_TYPE](renderNode, section, visit) {
-    if (!renderNode.element) {
-      let element = renderMarkupSection(window.document, section);
+    let originalElement = renderNode.element;
+    const hasRendered = !!originalElement;
+
+    // Always rerender the section -- its tag name or attributes may have changed.
+    // TODO make this smarter, only rerendering and replacing the element when necessary
+    let element = renderMarkupSection(section);
+    renderNode.element = element;
+
+    if (!hasRendered) {
+      let element = renderNode.element;
+
       if (renderNode.previousSibling) {
         let previousElement = renderNode.previousSibling.element;
         let nextElement = previousElement.nextSibling;
@@ -115,7 +124,8 @@ class Visitor {
       if (!element.parentNode) {
         renderNode.parentNode.element.appendChild(element);
       }
-      renderNode.element = element;
+    } else {
+      renderNode.parentNode.element.replaceChild(element, originalElement);
     }
 
     // remove all elements so that we can rerender
