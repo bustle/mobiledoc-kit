@@ -1,3 +1,4 @@
+import { UNPRINTABLE_CHARACTER } from 'content-kit-editor/renderers/editor-dom';
 import { dasherize } from 'content-kit-editor/utils/string-utils';
 
 function createDiv(className) {
@@ -32,9 +33,11 @@ function getEventTargetMatchingTag(tag, target, container) {
 }
 
 function elementContentIsEmpty(element) {
-  var content = element && element.innerHTML;
-  if (content) {
-    return content === '' || content === '<br>';
+  if (!element.firstChild) {
+    return true;
+  } else if (element.childNodes.length === 1 &&
+             element.firstChild.textContent === UNPRINTABLE_CHARACTER) {
+    return true;
   }
   return false;
 }
