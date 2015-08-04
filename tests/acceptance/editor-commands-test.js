@@ -49,7 +49,7 @@ function assertToolbarHidden(assert) {
 
 function clickToolbarButton(assert, name) {
   const button = getToolbarButton(assert, name);
-  Helpers.dom.triggerEvent(button[0], 'mouseup');
+  Helpers.dom.triggerEvent(button[0], 'click');
 }
 
 function assertActiveToolbarButton(assert, buttonTitle) {

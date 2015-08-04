@@ -51,7 +51,7 @@ class Toolbar extends View {
     (options.commands || []).forEach(c => this.addCommand(c));
 
     // Closes prompt if displayed when changing selection
-    this.addEventListener(document, 'mouseup', () => {
+    this.addEventListener(document, 'click', () => {
       this.dismissPrompt();
     });
   }

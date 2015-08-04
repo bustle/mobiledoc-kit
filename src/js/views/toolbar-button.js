@@ -16,12 +16,15 @@ function ToolbarButton(options) {
   element.title = command.name;
   element.className = buttonClassName;
   element.innerHTML = command.button;
-  this.addEventListener(element, 'mouseup', (e) => {
+  this.addEventListener(element, 'click', (e) => {
     if (!button.isActive && prompt) {
       toolbar.displayPrompt(prompt);
     } else {
       command.exec();
       toolbar.updateForSelection();
+      if (toolbar.embedIntent) {
+        toolbar.embedIntent.hide();
+      }
     }
     e.stopPropagation();
   });
