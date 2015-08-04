@@ -5,7 +5,7 @@ export default class SubheadingCommand extends FormatBlockCommand {
     super(editor, {
       name: 'subheading',
       tag: 'h3',
-      button: '<i class="ck-icon-heading"></i>2'
+      button: '<i class="ck-icon-heading"></i>3'
     });
   }
 }

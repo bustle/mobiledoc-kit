@@ -116,6 +116,10 @@ function addClassName(element, className) {
   element.classList.add(className);
 }
 
+function normalizeTagName(tagName) {
+  return tagName.toLowerCase();
+}
+
 export {
   detectParentNode,
   containsNode,
@@ -124,5 +128,6 @@ export {
   getAttributesArray,
   walkDOMUntil,
   walkTextNodes,
-  addClassName
+  addClassName,
+  normalizeTagName
 };

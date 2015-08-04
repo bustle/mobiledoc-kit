@@ -1,5 +1,6 @@
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 import Editor, { EDITOR_ELEMENT_CLASS_NAME } from 'content-kit-editor/editor/editor';
+import { normalizeTagName } from 'content-kit-editor/utils/dom-utils';
 
 const { module, test } = window.QUnit;
 
@@ -66,7 +67,7 @@ test('editor parses and renders mobiledoc format', (assert) => {
     sections: [
       [],
       [
-        [1, 'P', [
+        [1, normalizeTagName('p'), [
           [[], 0, 'hello world']
         ]]
       ]
