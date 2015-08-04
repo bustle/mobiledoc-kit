@@ -70,7 +70,9 @@ export default class Cursor {
     const { rangeCount } = selection;
     const range = rangeCount > 0 && selection.getRangeAt(0);
 
-    if (!range) { throw new Error('Unable to get activeSections because no range'); }
+    if (!range) {
+      return [];
+    }
 
     const { startContainer, endContainer } = range;
     const isSectionElement = (element) => {

@@ -1,8 +1,21 @@
 import TextFormatCommand from './text-format';
+import {
+  any
+} from '../utils/array-utils';
 
 class FormatBlockCommand extends TextFormatCommand {
-  constructor(options={}) {
+  constructor(editor, options={}) {
     super(options);
+    this.editor = editor;
+  }
+
+  isActive() {
+    const editor = this.editor;
+    const activeSections = editor.activeSections;
+
+    return any(activeSections, section => {
+      return any(this.mappedTags, t => section.tagName === t);
+    });
   }
 
   exec() {
@@ -15,8 +28,6 @@ class FormatBlockCommand extends TextFormatCommand {
     });
 
     editor.rerender();
-    editor.trigger('update'); // FIXME -- should be handled by editor
-
     editor.selectSections(activeSections);
   }
 
@@ -29,8 +40,6 @@ class FormatBlockCommand extends TextFormatCommand {
     });
 
     editor.rerender();
-    editor.trigger('update'); // FIXME -- should be handled by editor
-
     editor.selectSections(activeSections);
   }
 }

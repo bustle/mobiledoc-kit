@@ -34,9 +34,6 @@ class Toolbar extends View {
     options.classNames = ['ck-toolbar'];
     super(options);
 
-    let commands = options.commands;
-    let commandCount = commands && commands.length;
-
     this.setDirection(options.direction || ToolbarDirection.TOP);
     this.editor = options.editor || null;
     this.embedIntent = options.embedIntent || null;
@@ -50,9 +47,8 @@ class Toolbar extends View {
     this.contentElement.appendChild(this.buttonContainerElement);
     this.element.appendChild(this.contentElement);
 
-    for(let i = 0; i < commandCount; i++) {
-      this.addCommand(commands[i]);
-    }
+    (options.buttons || []).forEach(b => this.addButton(b));
+    (options.commands || []).forEach(c => this.addCommand(c));
 
     // Closes prompt if displayed when changing selection
     this.addEventListener(document, 'mouseup', () => {
@@ -73,6 +69,10 @@ class Toolbar extends View {
     command.editor = this.editor;
     command.embedIntent = this.embedIntent;
     let button = new ToolbarButton({command: command, toolbar: this});
+    this.addButton(button);
+  }
+
+  addButton(button) {
     this.buttons.push(button);
     this.buttonContainerElement.appendChild(button.element);
   }

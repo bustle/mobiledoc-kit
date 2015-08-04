@@ -2,6 +2,7 @@ import TextFormatToolbar  from '../views/text-format-toolbar';
 import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
 
+import ReversibleToolbarButton from '../views/reversible-toolbar-button';
 import BoldCommand from '../commands/bold';
 import ItalicCommand from '../commands/italic';
 import LinkCommand from '../commands/link';
@@ -56,10 +57,7 @@ const defaults = {
   textFormatCommands: [
     new BoldCommand(),
     new ItalicCommand(),
-    new LinkCommand(),
-    new QuoteCommand(),
-    new HeadingCommand(),
-    new SubheadingCommand()
+    new LinkCommand()
   ],
   embedCommands: [
     new ImageCommand({ serviceUrl: '/upload' }),
@@ -177,6 +175,23 @@ function initEmbedCommands(editor) {
   }
 }
 
+function makeButtons(editor) {
+  const headingCommand = new HeadingCommand(editor);
+  const headingButton = new ReversibleToolbarButton(headingCommand, editor);
+
+  const subheadingCommand = new SubheadingCommand(editor);
+  const subheadingButton = new ReversibleToolbarButton(subheadingCommand, editor);
+
+  const quoteCommand = new QuoteCommand(editor);
+  const quoteButton = new ReversibleToolbarButton(quoteCommand, editor);
+
+  return [
+    headingButton,
+    subheadingButton,
+    quoteButton
+  ];
+}
+
 /**
  * @class Editor
  * An individual Editor
@@ -225,7 +240,10 @@ class Editor {
     this.addView(new TextFormatToolbar({
       editor: this,
       rootElement: element,
+      // FIXME -- eventually all the commands should migrate to being buttons
+      // that can be added
       commands: this.textFormatCommands,
+      buttons: makeButtons(this),
       sticky: this.stickyToolbar
     }));
 
@@ -430,6 +448,7 @@ class Editor {
 
   selectSections(sections) {
     this.cursor.selectSections(sections);
+    this.hasSelection();
   }
 
   getActiveSections() {

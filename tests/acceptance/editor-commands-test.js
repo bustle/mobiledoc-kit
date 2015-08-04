@@ -131,7 +131,8 @@ test('highlighting heading text activates toolbar button', (assert) => {
       Helpers.dom.triggerEvent(document, 'mouseup');
 
       setTimeout(() => {
-        assertActiveToolbarButton(assert, 'heading');
+        assertActiveToolbarButton(assert, 'heading',
+                                  'heading button is active when text is selected');
 
         done();
       });
@@ -156,6 +157,32 @@ test('when heading text is highlighted, clicking heading button turns it to plai
         done();
       });
     });
+  });
+});
+
+test('clicking multiple heading buttons keeps the correct ones active', (assert) => {
+  const done = assert.async();
+
+  setTimeout(() => {
+    // click subheading, makes its button active, changes the display
+    clickToolbarButton(assert, 'subheading');
+    assert.hasElement('#editor h3:contains(THIS IS A TEST)');
+    assertActiveToolbarButton(assert, 'subheading');
+    assertInactiveToolbarButton(assert, 'heading');
+
+    // click heading, makes its button active and no others, changes display
+    clickToolbarButton(assert, 'heading');
+    assert.hasElement('#editor h2:contains(THIS IS A TEST)');
+    assertActiveToolbarButton(assert, 'heading');
+    assertInactiveToolbarButton(assert, 'subheading');
+
+    // click heading again, removes headline from display, no active buttons
+    clickToolbarButton(assert, 'heading');
+    assert.hasElement('#editor p:contains(THIS IS A TEST)');
+    assertInactiveToolbarButton(assert, 'heading');
+    assertInactiveToolbarButton(assert, 'subheading');
+
+    done();
   });
 });
 
