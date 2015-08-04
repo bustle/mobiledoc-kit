@@ -30,6 +30,10 @@ const Marker = class Marker {
     this.value = this.value.substr(offset);
   }
 
+  clearMarkups() {
+    this.markups = [];
+  }
+
   addMarkup(markup) {
     this.markups.push(markup);
   }

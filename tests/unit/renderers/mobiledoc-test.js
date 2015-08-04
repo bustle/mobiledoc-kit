@@ -1,5 +1,6 @@
 import MobiledocRenderer, { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 import { generateBuilder } from 'content-kit-editor/utils/post-builder';
+import { normalizeTagName } from 'content-kit-editor/utils/dom-utils';
 
 const { module, test } = window.QUnit;
 const render = MobiledocRenderer.render;
@@ -37,7 +38,7 @@ test('renders a post with marker', (assert) => {
         ['strong']
       ],
       [
-        [1, 'P', [
+        [1, normalizeTagName('P'), [
           [[0], 1, 'Hi']
         ]]
       ]
@@ -68,7 +69,7 @@ test('renders a post section with markers sharing a markup', (assert) => {
         ['strong']
       ],
       [
-        [1, 'P', [
+        [1, normalizeTagName('P'), [
           [[0], 0, 'Hi'],
           [[], 1, ' Guy']
         ]]

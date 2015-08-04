@@ -6,6 +6,16 @@ function detect(array, callback) {
   }
 }
 
+function any(array, callback) {
+  for (let i=0; i<array.length; i++) {
+    if (callback(array[i])) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /**
  * Useful for array-like things that aren't
  * actually arrays, like NodeList
@@ -18,5 +28,6 @@ function forEach(enumerable, callback) {
 
 export {
   detect,
-  forEach
+  forEach,
+  any
 };

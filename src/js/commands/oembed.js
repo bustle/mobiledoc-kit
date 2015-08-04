@@ -33,9 +33,7 @@ inherit(OEmbedCommand, Command);
 
 OEmbedCommand.prototype.exec = function(url) {
   var command = this;
-  // var editorContext = command.editorContext;
   var embedIntent = command.embedIntent;
-  // var index = editorContext.getCurrentBlockIndex();
 
   embedIntent.showLoading();
   this.embedService.fetch({

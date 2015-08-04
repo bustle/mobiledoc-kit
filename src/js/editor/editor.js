@@ -2,6 +2,7 @@ import TextFormatToolbar  from '../views/text-format-toolbar';
 import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
 
+import ReversibleToolbarButton from '../views/reversible-toolbar-button';
 import BoldCommand from '../commands/bold';
 import ItalicCommand from '../commands/italic';
 import LinkCommand from '../commands/link';
@@ -16,8 +17,7 @@ import CardCommand from '../commands/card';
 
 import Keycodes from '../utils/keycodes';
 import {
-  getSelectionBlockElement,
-  getCursorOffsetInElement
+  getSelectionBlockElement
 } from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
 
@@ -29,8 +29,8 @@ import MobiledocRenderer from '../renderers/mobiledoc';
 
 import { toArray, mergeWithOptions } from 'content-kit-utils';
 import {
-  detectParentNode,
   clearChildNodes,
+  addClassName
 } from '../utils/dom-utils';
 import {
   forEach
@@ -41,6 +41,8 @@ import EventListenerMixin from '../utils/event-listener';
 import Cursor from '../models/cursor';
 import { MARKUP_SECTION_TYPE } from '../models/markup-section';
 import { generateBuilder } from '../utils/post-builder';
+
+export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
 
 const defaults = {
   placeholder: 'Write here...',
@@ -55,10 +57,7 @@ const defaults = {
   textFormatCommands: [
     new BoldCommand(),
     new ItalicCommand(),
-    new LinkCommand(),
-    new QuoteCommand(),
-    new HeadingCommand(),
-    new SubheadingCommand()
+    new LinkCommand()
   ],
   embedCommands: [
     new ImageCommand({ serviceUrl: '/upload' }),
@@ -109,16 +108,6 @@ function bindAutoTypingListeners(editor) {
   });
 }
 
-function handleSelection(editor) {
-  return () => {
-    if (editor.cursor.hasSelection()) {
-      editor.hasSelection();
-    } else {
-      editor.hasNoSelection();
-    }
-  };
-}
-
 function bindSelectionEvent(editor) {
   /**
    * The following events/sequences can create a selection and are handled:
@@ -131,11 +120,16 @@ function bindSelectionEvent(editor) {
    *  * ctrl-click -> context menu -> click "select all"
    */
 
+  const toggleSelection = () => {
+    return editor.cursor.hasSelection() ? editor.hasSelection() :
+                                          editor.hasNoSelection(); 
+  };
+
   // mouseup will not properly report a selection until the next tick, so add a timeout:
-  const mouseupHandler = () => setTimeout(handleSelection(editor));
+  const mouseupHandler = () => setTimeout(toggleSelection);
   editor.addEventListener(document, 'mouseup', mouseupHandler);
 
-  const keyupHandler = handleSelection(editor);
+  const keyupHandler = toggleSelection;
   editor.addEventListener(editor.element, 'keyup', keyupHandler);
 }
 
@@ -181,6 +175,23 @@ function initEmbedCommands(editor) {
   }
 }
 
+function makeButtons(editor) {
+  const headingCommand = new HeadingCommand(editor);
+  const headingButton = new ReversibleToolbarButton(headingCommand, editor);
+
+  const subheadingCommand = new SubheadingCommand(editor);
+  const subheadingButton = new ReversibleToolbarButton(subheadingCommand, editor);
+
+  const quoteCommand = new QuoteCommand(editor);
+  const quoteButton = new ReversibleToolbarButton(quoteCommand, editor);
+
+  return [
+    headingButton,
+    subheadingButton,
+    quoteButton
+  ];
+}
+
 /**
  * @class Editor
  * An individual Editor
@@ -203,7 +214,7 @@ class Editor {
     this._parser   = PostParser;
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
-    this.applyClassName();
+    this.applyClassName(EDITOR_ELEMENT_CLASS_NAME);
     this.applyPlaceholder();
 
     element.spellcheck = this.spellcheck;
@@ -229,7 +240,10 @@ class Editor {
     this.addView(new TextFormatToolbar({
       editor: this,
       rootElement: element,
+      // FIXME -- eventually all the commands should migrate to being buttons
+      // that can be added
       commands: this.textFormatCommands,
+      buttons: makeButtons(this),
       sticky: this.stickyToolbar
     }));
 
@@ -238,9 +252,7 @@ class Editor {
       showForTag: 'a'
     }));
 
-    if (this.autofocus) {
-      element.focus();
-    }
+    if (this.autofocus) { element.focus(); }
   }
 
   addView(view) {
@@ -271,6 +283,8 @@ class Editor {
 
   rerender() {
     let postRenderNode = this.post.renderNode;
+
+    // if we haven't rendered this post's renderNode before, mark it dirty
     if (!postRenderNode.element) {
       postRenderNode.element = this.element;
       postRenderNode.markDirty();
@@ -432,9 +446,9 @@ class Editor {
     this.trigger('update');
   }
 
-  getActiveMarkers() {
-    const cursor = this.cursor;
-    return cursor.activeMarkers;
+  selectSections(sections) {
+    this.cursor.selectSections(sections);
+    this.hasSelection();
   }
 
   getActiveSections() {
@@ -452,23 +466,8 @@ class Editor {
     return blockElements.indexOf(selectionEl);
   }
 
-  getCursorIndexInCurrentBlock() {
-    var currentBlock = getSelectionBlockElement();
-    if (currentBlock) {
-      return getCursorOffsetInElement(currentBlock);
-    }
-    return -1;
-  }
-
-  applyClassName() {
-    var editorClassName = 'ck-editor';
-    var editorClassNameRegExp = new RegExp(editorClassName);
-    var existingClassName = this.element.className;
-
-    if (!editorClassNameRegExp.test(existingClassName)) {
-      existingClassName += (existingClassName ? ' ' : '') + editorClassName;
-    }
-    this.element.className = existingClassName;
+  applyClassName(className) {
+    addClassName(this.element, className);
   }
 
   applyPlaceholder() {
@@ -518,16 +517,11 @@ class Editor {
         sectionRenderNode.element = node;
         sectionRenderNode.markClean();
 
-        if (previousSection) {
-          // insert after existing section
-          this.post.insertSectionAfter(section, previousSection);
-          this._renderTree.node.insertAfter(sectionRenderNode, previousSection.renderNode);
-        } else {
-          // prepend at beginning (first section)
-          this.post.prependSection(section);
-          this._renderTree.node.insertAfter(sectionRenderNode, null);
-        }
+        let previousSectionRenderNode = previousSection && previousSection.renderNode;
+        this.post.insertSectionAfter(section, previousSection);
+        this._renderTree.node.insertAfter(sectionRenderNode, previousSectionRenderNode);
       }
+
       // may cause duplicates to be included
       let section = sectionRenderNode.postNode;
       sectionsInDOM.push(section);
@@ -535,21 +529,23 @@ class Editor {
     });
 
     // remove deleted nodes
-    let i;
-    for (i=this.post.sections.length-1;i>=0;i--) {
-      let section = this.post.sections[i];
-      if (sectionsInDOM.indexOf(section) === -1) {
-        if (section.renderNode) {
-          section.renderNode.scheduleForRemoval();
-        } else {
-          throw new Error('All sections are expected to have a renderNode');
-        }
+    const deletedSections = [];
+    forEach(this.post.sections, (section) => {
+      if (!section.renderNode) {
+        throw new Error('All sections are expected to have a renderNode');
       }
-    }
 
-    // reparse the section(s) with the cursor
-    const sectionsWithCursor = this.getSectionsWithCursor();
-    sectionsWithCursor.forEach((section) => {
+      if (sectionsInDOM.indexOf(section) === -1) {
+        deletedSections.push(section);
+      }
+    });
+    forEach(deletedSections, (s) => s.renderNode.scheduleForRemoval());
+
+    // reparse the new section(s) with the cursor
+    // to ensure that we catch any changed html that the browser might have
+    // added
+    const sectionsWithCursor = this.cursor.activeSections;
+    forEach(sectionsWithCursor, (section) => {
       if (newSections.indexOf(section) === -1) {
         this.reparseSection(section);
       }
@@ -562,12 +558,11 @@ class Editor {
       rightOffset
     } = this.cursor.offsets;
 
-    // The cursor will lose its textNode if we have parsed (and thus rerendered)
+    // The cursor will lose its textNode if we have reparsed (and thus will rerender, below)
     // its section. Ensure the cursor is placed where it should be after render.
     //
     // New sections are presumed clean, and thus do not get rerendered and lose
     // their cursor position.
-    //
     let resetCursor = (leftRenderNode &&
         sectionsWithCursor.indexOf(leftRenderNode.postNode.section) !== -1);
 
@@ -598,39 +593,42 @@ class Editor {
     }
   }
 
-  getSectionsWithCursor() {
-    return this.getRenderNodesWithCursor().map( renderNode => {
-      return renderNode.postNode;
+  get cursorSelection() {
+    return this.cursor.cursorSelection;
+  }
+
+  /*
+   * Returns the active sections. If the cursor selection is collapsed this will be
+   * an array of 1 item. Else will return an array containing each section that is either
+   * wholly or partly contained by the cursor selection.
+   *
+   * @return {array} The sections from the cursor's selection start to the selection end
+   */
+  get activeSections() {
+    return this.cursor.activeSections;
+  }
+
+  /*
+   * Clear the markups from each of the section's markers
+   */
+  resetSectionMarkers(section) {
+    section.markers.forEach(m => {
+      m.clearMarkups();
+      m.renderNode.markDirty();
     });
   }
 
-  getRenderNodesWithCursor() {
-    const selection = document.getSelection();
-    if (selection.rangeCount === 0) {
-      return null;
-    }
+  /*
+   * Change the tag name for the given section
+   */
+  setSectionTagName(section, tagName) {
+    section.setTagName(tagName);
+    section.renderNode.markDirty();
+  }
 
-    const range = selection.getRangeAt(0);
-
-    let { startContainer:startElement, endContainer:endElement } = range;
-
-    let getElementRenderNode = (e) => {
-      let node = this._renderTree.getElementRenderNode(e);
-      if (node && node.postNode.type === MARKUP_SECTION_TYPE) {
-        return node;
-      }
-    };
-    let { result:startRenderNode } = detectParentNode(startElement, getElementRenderNode);
-    let { result:endRenderNode } = detectParentNode(endElement, getElementRenderNode);
-
-    let nodes = [];
-    let node = startRenderNode;
-    while (node && (!endRenderNode.nextSibling || endRenderNode.nextSibling !== node)) {
-      nodes.push(node);
-      node = node.nextSibling;
-    }
-
-    return nodes;
+  resetSectionTagName(section) {
+    section.resetTagName();
+    section.renderNode.markDirty();
   }
 
   reparseSection(section) {
@@ -648,7 +646,7 @@ class Editor {
 
   insertSectionAtCursor(newSection) {
     let newRenderNode = this._renderTree.buildRenderNode(newSection);
-    let renderNodes = this.getRenderNodesWithCursor();
+    let renderNodes = this.cursor.activeSections.map(s => s.renderNode);
     let lastRenderNode = renderNodes[renderNodes.length-1];
     lastRenderNode.parentNode.insertAfter(newRenderNode, lastRenderNode);
     this.post.insertSectionAfter(newSection, lastRenderNode.postNode);

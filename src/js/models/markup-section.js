@@ -1,7 +1,11 @@
-export const DEFAULT_TAG_NAME = 'p';
+import {
+  normalizeTagName
+} from '../utils/dom-utils';
+
+export const DEFAULT_TAG_NAME = normalizeTagName('p');
 export const VALID_MARKUP_SECTION_TAGNAMES = [
   'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'
-];
+].map(normalizeTagName);
 export const MARKUP_SECTION_TYPE = 'markup-section';
 
 export default class Section {
@@ -12,6 +16,26 @@ export default class Section {
     this.element = null;
 
     markers.forEach(m => this.appendMarker(m));
+  }
+
+  set tagName(val) {
+    this._tagName = normalizeTagName(val);
+  }
+
+  get tagName() {
+    return this._tagName;
+  }
+
+  setTagName(newTagName) {
+    newTagName = normalizeTagName(newTagName);
+    if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(newTagName) === -1) {
+      throw new Error(`Cannot change section tagName to "${newTagName}`);
+    }
+    this.tagName = newTagName;
+  }
+
+  resetTagName() {
+    this.tagName = DEFAULT_TAG_NAME;
   }
 
   prependMarker(marker) {

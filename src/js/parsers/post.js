@@ -52,7 +52,7 @@ export default {
 
     // walk up from the textNode until the rootNode, converting each
     // parentNode into a markup
-    function collectMarkups(textNode, rootNode) {
+    const  collectMarkups = (textNode, rootNode) =>{
       let markups = [];
       let currentNode = textNode.parentNode;
       while (currentNode && currentNode !== rootNode) {
@@ -64,7 +64,7 @@ export default {
         currentNode = currentNode.parentNode;
       }
       return markups;
-    }
+    };
 
     let seenRenderNodes = [];
     let previousMarker;
@@ -117,15 +117,15 @@ export default {
       previousMarker = marker;
     });
 
-    // schedule any nodes that were not marked as seen
-    let node = section.renderNode.firstChild;
-    while (node) {
-      if (seenRenderNodes.indexOf(node) === -1) {
+    // remove any nodes that were not marked as seen
+    let renderNode = section.renderNode.firstChild;
+    while (renderNode) {
+      if (seenRenderNodes.indexOf(renderNode) === -1) {
         // remove it
-        node.scheduleForRemoval();
+        renderNode.scheduleForRemoval();
       }
 
-      node = node.nextSibling;
+      renderNode = renderNode.nextSibling;
     }
   }
 };
