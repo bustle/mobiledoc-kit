@@ -11,7 +11,7 @@ class ReversibleToolbarButton {
     this.element = this.createElement();
     this.active = false;
 
-    this.addEventListener(this.element, 'mouseup', e => this.handleClick(e));
+    this.addEventListener(this.element, 'click', e => this.handleClick(e));
     this.editor.on('selection', () => this.updateActiveState());
     this.editor.on('selectionUpdated', () => this.updateActiveState());
     this.editor.on('selectionEnded', () => this.updateActiveState());

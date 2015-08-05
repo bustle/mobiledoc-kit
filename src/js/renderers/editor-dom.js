@@ -178,7 +178,16 @@ class Visitor {
     const element = document.createElement('div');
     element.contentEditable = 'false';
     renderNode.element = element;
-    renderNode.parentNode.element.appendChild(renderNode.element);
+    if (renderNode.previousSibling) {
+      let previousElement = renderNode.previousSibling.element;
+      let nextElement = previousElement.nextSibling;
+      if (nextElement) {
+        nextElement.parentNode.insertBefore(element, nextElement);
+      }
+    }
+    if (!element.parentNode) {
+      renderNode.parentNode.element.appendChild(element);
+    }
 
     if (card) {
       let cardNode = new CardNode(editor, card, section, renderNode.element, options);

@@ -1,7 +1,9 @@
 import Editor from './editor/editor';
+import ImageCard from './cards/image';
 
 const ContentKit = {
-  Editor
+  Editor,
+  ImageCard
 };
 
 export function registerGlobal(global) {

@@ -32,7 +32,7 @@ function EmbedIntent(options) {
   embedIntent.button.title = 'Insert image or embed...';
   embedIntent.element.appendChild(embedIntent.button);
 
-  this.addEventListener(embedIntent.button, 'mouseup', (e) => {
+  this.addEventListener(embedIntent.button, 'click', (e) => {
     if (embedIntent.isActive) {
       embedIntent.deactivate();
     } else {
@@ -59,7 +59,7 @@ function EmbedIntent(options) {
   }
 
   this.addEventListener(rootElement, 'keyup', embedIntentHandler);
-  this.addEventListener(document, 'mouseup', () => {
+  this.addEventListener(document, 'click', () => {
     setTimeout(() => {
       embedIntentHandler();
     });

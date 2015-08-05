@@ -23,7 +23,7 @@ class Prompt extends View {
 
     prompt.command = options.command;
     prompt.element.placeholder = options.placeholder || '';
-    this.addEventListener(prompt.element, 'mouseup', (e) => {
+    this.addEventListener(prompt.element, 'click', (e) => {
       // prevents closing prompt when clicking input
       e.stopPropagation();
     });

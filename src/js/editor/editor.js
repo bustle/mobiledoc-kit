@@ -15,6 +15,8 @@ import ImageCommand from '../commands/image';
 import OEmbedCommand from '../commands/oembed';
 import CardCommand from '../commands/card';
 
+import ImageCard from '../cards/image';
+
 import Keycodes from '../utils/keycodes';
 import {
   getSelectionBlockElement
@@ -60,7 +62,7 @@ const defaults = {
     new LinkCommand()
   ],
   embedCommands: [
-    new ImageCommand({ serviceUrl: '/upload' }),
+    new ImageCommand(),
     new OEmbedCommand({ serviceUrl: '/embed'  }),
     new CardCommand()
   ],
@@ -210,6 +212,8 @@ class Editor {
 
     // FIXME: This should merge onto this.options
     mergeWithOptions(this, defaults, options);
+
+    this.cards.push(ImageCard);
 
     this._parser   = PostParser;
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
