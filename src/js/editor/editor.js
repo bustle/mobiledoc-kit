@@ -25,7 +25,10 @@ import EventEmitter from '../utils/event-emitter';
 
 import MobiledocParser from "../parsers/mobiledoc";
 import PostParser from '../parsers/post';
-import Renderer, { UNPRINTABLE_CHARACTER } from 'content-kit-editor/renderers/editor-dom';
+import Renderer  from 'content-kit-editor/renderers/editor-dom';
+import {
+  UNPRINTABLE_CHARACTER
+} from 'content-kit-editor/renderers/editor-dom';
 import RenderTree from 'content-kit-editor/models/render-tree';
 import MobiledocRenderer from '../renderers/mobiledoc';
 
@@ -124,7 +127,7 @@ function bindSelectionEvent(editor) {
 
   const toggleSelection = () => {
     return editor.cursor.hasSelection() ? editor.hasSelection() :
-                                          editor.hasNoSelection(); 
+                                          editor.hasNoSelection();
   };
 
   // mouseup will not properly report a selection until the next tick, so add a timeout:
