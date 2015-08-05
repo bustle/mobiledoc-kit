@@ -223,7 +223,11 @@ let destroyHooks = {
       element = element.parentNode;
     }
 
-    marker.section.removeMarker(marker);
+    // FIXME is it ok that this marker may have already been removed from the
+    // section?
+    if (marker.section.markers.indexOf(marker) !== -1) {
+      marker.section.removeMarker(marker);
+    }
 
     if (element.parentNode) {
       // if no parentNode, the browser already removed this element

@@ -60,7 +60,6 @@ const defaults = {
   // in tests
   stickyToolbar: false, // !!('ontouchstart' in window),
   textFormatCommands: [
-    new BoldCommand(),
     new ItalicCommand(),
     new LinkCommand()
   ],
@@ -190,10 +189,14 @@ function makeButtons(editor) {
   const quoteCommand = new QuoteCommand(editor);
   const quoteButton = new ReversibleToolbarButton(quoteCommand, editor);
 
+  const boldCommand = new BoldCommand(editor);
+  const boldButton = new ReversibleToolbarButton(boldCommand, editor);
+
   return [
     headingButton,
     subheadingButton,
-    quoteButton
+    quoteButton,
+    boldButton
   ];
 }
 
@@ -399,7 +402,10 @@ class Editor {
     const markerRenderNode = leftRenderNode;
     const marker = markerRenderNode.postNode;
     const section = marker.section;
-    const [leftMarker, rightMarker] = marker.split(leftOffset);
+    const newMarkers = marker.split(leftOffset);
+
+    // FIXME rightMarker is not guaranteed to be there
+    let [leftMarker, rightMarker] = newMarkers;
 
     section.insertMarkerAfter(leftMarker, marker);
     markerRenderNode.scheduleForRemoval();
@@ -458,10 +464,99 @@ class Editor {
     this.hasSelection();
   }
 
-  getActiveSections() {
-    const cursor = this.cursor;
-    return cursor.activeSections;
+  /*
+   * @return {Array} of markers that are "inside the split"
+   */
+  splitMarkersFromSelection() {
+    const {
+      startMarker,
+      leftOffset:startMarkerOffset,
+      endMarker,
+      rightOffset:endMarkerOffset,
+      startSection,
+      endSection
+    } = this.cursor.offsets;
+
+    let selectedMarkers = [];
+
+    startMarker.renderNode.scheduleForRemoval();
+    endMarker.renderNode.scheduleForRemoval();
+
+    if (startMarker === endMarker) {
+      let newMarkers = startSection.splitMarker(
+        startMarker, startMarkerOffset, endMarkerOffset
+      );
+      selectedMarkers = this.markersInOffset(newMarkers, startMarkerOffset, endMarkerOffset);
+    } else {
+      let newStartMarkers = startSection.splitMarker(startMarker, startMarkerOffset);
+      let selectedStartMarkers = this.markersInOffset(newStartMarkers, startMarkerOffset);
+
+      let newEndMarkers = endSection.splitMarker(endMarker, endMarkerOffset);
+      let selectedEndMarkers = this.markersInOffset(newEndMarkers, 0, endMarkerOffset);
+
+      let newStartMarker = selectedStartMarkers[0],
+          newEndMarker = selectedEndMarkers[selectedEndMarkers.length - 1];
+
+      this.post.markersFrom(newStartMarker, newEndMarker, m => selectedMarkers.push(m));
+    }
+
+    return selectedMarkers;
   }
+
+  markersInOffset(markers, startOffset, endOffset) {
+    let offset = 0;
+    let foundMarkers = [];
+    let toEnd = endOffset === undefined;
+    if (toEnd) { endOffset = 0; }
+
+    markers.forEach(marker => {
+      if (toEnd) {
+        endOffset += marker.length;
+      }
+
+      if (offset >= startOffset && offset < endOffset) {
+        foundMarkers.push(marker);
+      }
+
+      offset += marker.length;
+    });
+
+    return foundMarkers;
+  }
+
+  applyMarkupToSelection(markup) {
+    const markers = this.splitMarkersFromSelection();
+    markers.forEach(marker => {
+      marker.addMarkup(markup);
+      marker.section.renderNode.markDirty();
+    });
+
+    this.rerender();
+    this.selectMarkers(markers);
+    this.didUpdate();
+  }
+
+  removeMarkupFromSelection(markup) {
+    const markers = this.activeMarkers;
+    // FIXME-NEXT Now we need to ensure we are using the singleton
+    // markup for the 'B' tag
+    // in order to get http://localhost:4200/tests/?testId=8cb07cab
+    // to pass
+    markers.forEach(marker => {
+      marker.removeMarkup(markup);
+      marker.section.renderNode.markDirty();
+    });
+
+    this.rerender();
+    this.selectMarkers(markers);
+    this.didUpdate();
+  }
+
+  selectMarkers(markers) {
+    this.cursor.selectMarkers(markers);
+    this.hasSelection();
+  }
+
 
   get cursor() {
     return new Cursor(this);
@@ -613,6 +708,21 @@ class Editor {
    */
   get activeSections() {
     return this.cursor.activeSections;
+  }
+
+  get activeMarkers() {
+    const {
+      startMarker,
+      endMarker,
+    } = this.cursor.offsets;
+
+    if (!(startMarker && endMarker)) {
+      return [];
+    }
+
+    let activeMarkers = [];
+    this.post.markersFrom(startMarker, endMarker, m => activeMarkers.push(m));
+    return activeMarkers;
   }
 
   /*

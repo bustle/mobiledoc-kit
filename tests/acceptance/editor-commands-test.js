@@ -252,3 +252,29 @@ test('highlighting bold text shows bold button as active', (assert) => {
     });
   });
 });
+
+test('click bold button applies bold to selected text', (assert) => {
+  const done = assert.async();
+
+  setTimeout(() => {
+    assertInactiveToolbarButton(assert, 'bold', 'precond - bold button is not active');
+    clickToolbarButton(assert, 'bold');
+    assertActiveToolbarButton(assert, 'bold');
+
+    assert.hasNoElement('#editor b:contains(THIS)');
+    assert.hasNoElement('#editor b:contains(TEST)');
+    assert.hasElement('#editor b:contains(IS A)');
+
+    assert.selectedText(selectedText);
+
+    clickToolbarButton(assert, 'bold');
+
+    assert.hasNoElement('#editor b:contains(IS A)', 'bold text is no longer bold');
+    assertInactiveToolbarButton(assert, 'bold');
+
+    done();
+  });
+});
+
+// test selecting across markers and boldening
+// test selecting across markers in sections and bolding

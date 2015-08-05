@@ -393,7 +393,6 @@ test('rerender a marker after removing a markup from it (when both markers have 
                '<p>text1<b>text2</b></p>');
 });
 
-
 /*
 test("It renders a renderTree with rendered dirty section", (assert) => {
   /*

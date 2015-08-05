@@ -16,6 +16,26 @@ export default class Post {
     this.insertSectionAfter(newSection, section);
     this.removeSection(section);
   }
+  /**
+   * Invoke `callbackFn` for all markers between the startMarker and endMarker (inclusive),
+   * across sections
+   */
+  markersFrom(startMarker, endMarker, callbackFn) {
+    let currentMarker = startMarker;
+    while (currentMarker) {
+      callbackFn(currentMarker);
+
+      if (currentMarker === endMarker) {
+        currentMarker = null;
+      } else if (currentMarker.nextSibling) {
+        currentMarker = currentMarker.nextSibling;
+      } else {
+        let nextSection = currentMarker.section.nextSibling;
+        currentMarker = nextSection.markers[0];
+      }
+    }
+  }
+
   insertSectionAfter(section, previousSection) {
     let foundIndex = -1;
 

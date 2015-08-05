@@ -1,3 +1,6 @@
+import {
+  normalizeTagName
+} from '../utils/dom-utils';
 export const MARKUP_TYPE = 'markup';
 export const VALID_MARKUP_TAGNAMES = [
   'b',
@@ -6,9 +9,11 @@ export const VALID_MARKUP_TAGNAMES = [
   'em',
   'a',
   'li'
-];
+].map(normalizeTagName);
 
-export default class Markup {
+let markupsOfType = {};
+
+class Markup {
   /*
    * @param {attributes} array flat array of key1,value1,key2,value2,...
    */
@@ -22,8 +27,19 @@ export default class Markup {
     }
   }
 
+  static ofType(tagName) {
+    tagName = normalizeTagName(tagName);
+    if (!markupsOfType[tagName]) {
+      markupsOfType[tagName] = new Markup(tagName);
+    }
+
+    return markupsOfType[tagName];
+  }
+
   static isValidElement(element) {
     let tagName = element.tagName.toLowerCase();
     return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
   }
 }
+
+export default Markup;

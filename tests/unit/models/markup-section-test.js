@@ -4,7 +4,7 @@ import Section from 'content-kit-editor/models/markup-section';
 import Marker from 'content-kit-editor/models/marker';
 import Markup from 'content-kit-editor/models/markup';
 
-module('Unit: Section');
+module('Unit: Markup Section');
 
 test('Section exists', (assert) => {
   assert.ok(Section);
@@ -115,9 +115,38 @@ test('a section can be split, splitting its markers when multiple markers', (ass
   assert.equal(s2.markers[0].value, 'ere!');
 });
 
-// test: a section can parse dom
+test('#splitMarker splits the marker at the offset', (assert) => {
+  const m1 = new Marker('hi ');
+  const m2 = new Marker('there!');
+  const s = new Section('h2', [m1,m2]);
 
-// test: a section can clear a range:
-//   * truncating the markers on the boundaries
-//   * removing the intermediate markers
-//   * connecting (but not joining) the truncated boundary markers
+  s.splitMarker(m2, 3);
+  assert.equal(s.markers.length, 3, 'adds a 3rd marker');
+  assert.equal(s.markers[0].value, 'hi ', 'original marker unchanged');
+  assert.equal(s.markers[1].value, 'the');
+  assert.equal(s.markers[2].value, 're!');
+});
+
+test('#splitMarker splits the marker at the end offset if provided', (assert) => {
+  const m1 = new Marker('hi ');
+  const m2 = new Marker('there!');
+  const s = new Section('h2', [m1,m2]);
+
+  s.splitMarker(m2, 1, 3);
+  assert.equal(s.markers.length, 4, 'adds a marker for the split and has one on each side');
+  assert.equal(s.markers[0].value, 'hi ', 'original marker unchanged');
+  assert.equal(s.markers[1].value, 't');
+  assert.equal(s.markers[2].value, 'he');
+  assert.equal(s.markers[3].value, 're!');
+});
+
+test('#splitMarker does not create an empty marker if offset=0', (assert) => {
+  const m1 = new Marker('hi ');
+  const m2 = new Marker('there!');
+  const s = new Section('h2', [m1,m2]);
+
+  s.splitMarker(m2, 0);
+  assert.equal(s.markers.length, 2, 'still 2 markers');
+  assert.equal(s.markers[0].value, 'hi ', 'original 1st marker unchanged');
+  assert.equal(s.markers[1].value, 'there!', 'original 2nd marker unchanged');
+});
