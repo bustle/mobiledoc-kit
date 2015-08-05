@@ -1,5 +1,8 @@
 export const MARKER_TYPE = 'marker';
 
+import {
+  normalizeTagName
+} from '../utils/dom-utils';
 import { detect } from 'content-kit-editor/utils/array-utils';
 
 const Marker = class Marker {
@@ -55,9 +58,14 @@ const Marker = class Marker {
     this.value = left + right;
   }
 
-  hasMarkup(tagName) {
-    tagName = tagName.toLowerCase();
-    return detect(this.markups, markup => markup.tagName === tagName);
+  hasMarkup(tagNameOrMarkup) {
+    if (typeof tagNameOrMarkup === 'string') {
+      let tagName = normalizeTagName(tagNameOrMarkup);
+      return detect(this.markups, markup => markup.tagName === tagName);
+    } else {
+      let targetMarkup = tagNameOrMarkup;
+      return detect(this.markups, markup => markup === targetMarkup);
+    }
   }
 
   getMarkup(tagName) {

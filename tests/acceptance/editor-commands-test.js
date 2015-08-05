@@ -276,5 +276,32 @@ test('click bold button applies bold to selected text', (assert) => {
   });
 });
 
+test('can unbold part of a larger set of bold text', (assert) => {
+  const done = assert.async();
+
+  setTimeout(() => {
+    assertInactiveToolbarButton(assert, 'bold', 'precond - bold button is not active');
+    clickToolbarButton(assert, 'bold');
+    assertActiveToolbarButton(assert, 'bold');
+
+    assert.hasElement('#editor b:contains(IS A)');
+
+    Helpers.dom.selectText('S A', editorElement);
+    Helpers.dom.triggerEvent(document, 'mouseup');
+
+    setTimeout(() => {
+      assertToolbarVisible(assert);
+      assertActiveToolbarButton(assert, 'bold');
+      clickToolbarButton(assert, 'bold');
+
+      assert.hasElement('#editor b:contains(I)', 'unselected text is bold');
+      assert.hasNoElement('#editor b:contains(IS A)', 'unselected text is bold');
+      assert.hasElement('#editor p:contains(S A)', 'unselected text is bold');
+
+      done();
+    });
+  });
+});
+
 // test selecting across markers and boldening
 // test selecting across markers in sections and bolding

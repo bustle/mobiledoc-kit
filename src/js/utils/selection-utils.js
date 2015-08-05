@@ -1,4 +1,7 @@
-import { containsNode } from './dom-utils';
+import {
+  containsNode,
+  normalizeTagName
+} from './dom-utils';
 
 // TODO: remove, pass in Editor's current block set
 var RootTags = [
@@ -54,25 +57,25 @@ function isSelectionInElement(element) {
 function getSelectionBlockElement(selection) {
   selection = selection || window.getSelection();
   var element = getSelectionElement();
-  var tag = element && element.tagName.toLowerCase();
+  let tag = element && normalizeTagName(element.tagName);
   while (tag && RootTags.indexOf(tag) === -1) {
     if (element.contentEditable === 'true') {
       return null; // Stop traversing up dom when hitting an editor element
     }
     element = element.parentNode;
-    tag = element.tagName && element.tagName.toLowerCase();
+    tag = element.tagName && normalizeTagName(element.tagName);
   }
   return element;
 }
 
 function getSelectionTagName() {
   var element = getSelectionElement();
-  return element ? element.tagName.toLowerCase() : null;
+  return element ? normalizeTagName(element.tagName) : null;
 }
 
 function getSelectionBlockTagName() {
   var element = getSelectionBlockElement();
-  return element ? element.tagName && element.tagName.toLowerCase() : null;
+  return element ? element.tagName && normalizeTagName(element.tagName) : null;
 }
 
 function tagsInSelection(selection) {
@@ -81,7 +84,7 @@ function tagsInSelection(selection) {
   while(element) {
     if (element.contentEditable === 'true') { break; } // Stop traversing up dom when hitting an editor element
     if (element.tagName) {
-      tags.push(element.tagName.toLowerCase());
+      tags.push(normalizeTagName(element.tagName));
     }
     element = element.parentNode;
   }

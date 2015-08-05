@@ -2,6 +2,7 @@ import { generateBuilder } from '../utils/post-builder';
 import { trim } from 'content-kit-utils';
 import { VALID_MARKUP_SECTION_TAGNAMES } from '../models/markup-section';
 import { VALID_MARKUP_TAGNAMES } from '../models/markup';
+import { normalizeTagName } from '../utils/dom-utils';
 
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
@@ -58,7 +59,8 @@ function readAttributes(node) {
 }
 
 function isValidMarkerElement(element) {
-  return VALID_MARKUP_TAGNAMES.indexOf(element.tagName.toLowerCase()) !== -1;
+  let tagName = normalizeTagName(element.tagName);
+  return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
 }
 
 function parseMarkers(section, postBuilder, topNode) {
@@ -128,9 +130,9 @@ NewHTMLParser.prototype = {
     var section;
     switch(sectionElement.nodeType) {
     case ELEMENT_NODE:
-      var tagName = sectionElement.tagName;
+      let tagName = normalizeTagName(sectionElement.tagName);
       // <p> <h2>, etc
-      if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName.toLowerCase()) !== -1) {
+      if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName) !== -1) {
         section = postBuilder.generateMarkupSection(tagName, readAttributes(sectionElement));
         var node = sectionElement.firstChild;
         while (node) {

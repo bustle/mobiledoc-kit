@@ -35,11 +35,11 @@ var builder = {
   generateMarkup(tagName, attributes) {
     if (attributes) {
       // FIXME: This could also be cached
-      return new Markup(tagName, attributes);
+      return Markup.create(tagName, attributes);
     }
     var markerType = this._markerTypeCache[tagName];
     if (!markerType) {
-      this._markerTypeCache[tagName] = markerType = new Markup(tagName);
+      this._markerTypeCache[tagName] = markerType = Markup.create(tagName);
     }
     return markerType;
   }

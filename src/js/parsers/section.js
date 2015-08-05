@@ -10,7 +10,10 @@ import {
 import Marker from 'content-kit-editor/models/marker';
 import Markup from 'content-kit-editor/models/markup';
 import { VALID_MARKUP_TAGNAMES } from 'content-kit-editor/models/markup';
-import { getAttributes } from 'content-kit-editor/utils/dom-utils';
+import {
+  getAttributes,
+  normalizeTagName
+} from 'content-kit-editor/utils/dom-utils';
 import { forEach } from 'content-kit-editor/utils/array-utils';
 import { generateBuilder } from 'content-kit-editor/utils/post-builder';
 
@@ -88,19 +91,19 @@ export default {
 
   isSectionElement(element) {
     return element.nodeType === ELEMENT_NODE &&
-      VALID_MARKUP_SECTION_TAGNAMES.indexOf(element.tagName.toLowerCase()) !== -1;
+      VALID_MARKUP_SECTION_TAGNAMES.indexOf(normalizeTagName(element.tagName)) !== -1;
   },
 
   markupFromElement(element) {
-    const tagName = element.tagName.toLowerCase();
+    const tagName = normalizeTagName(element.tagName);
     if (VALID_MARKUP_TAGNAMES.indexOf(tagName) === -1) { return null; }
 
-    return new Markup(tagName, getAttributes(element));
+    return Markup.create(tagName, getAttributes(element));
   },
 
   sectionTagNameFromElement(element) {
     let tagName = element.tagName;
-    tagName = tagName && tagName.toLowerCase();
+    tagName = tagName && normalizeTagName(tagName);
     if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName) === -1) { tagName = DEFAULT_TAG_NAME; }
     return tagName;
   }

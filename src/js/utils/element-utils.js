@@ -1,5 +1,8 @@
 import { UNPRINTABLE_CHARACTER } from 'content-kit-editor/renderers/editor-dom';
 import { dasherize } from 'content-kit-editor/utils/string-utils';
+import {
+  normalizeTagName
+} from 'content-kit-editor/utils/dom-utils';
 
 function createDiv(className) {
   var div = document.createElement('div');
@@ -22,10 +25,11 @@ function swapElements(elementToShow, elementToHide) {
   showElement(elementToShow);
 }
 
-function getEventTargetMatchingTag(tag, target, container) {
+function getEventTargetMatchingTag(tagName, target, container) {
+  tagName = normalizeTagName(tagName);
   // Traverses up DOM from an event target to find the node matching specifed tag
   while (target && target !== container) {
-    if (target.tagName.toLowerCase() === tag) {
+    if (normalizeTagName(target.tagName) === tagName) {
       return target;
     }
     target = target.parentNode;

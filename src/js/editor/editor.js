@@ -537,11 +537,7 @@ class Editor {
   }
 
   removeMarkupFromSelection(markup) {
-    const markers = this.activeMarkers;
-    // FIXME-NEXT Now we need to ensure we are using the singleton
-    // markup for the 'B' tag
-    // in order to get http://localhost:4200/tests/?testId=8cb07cab
-    // to pass
+    const markers = this.splitMarkersFromSelection();
     markers.forEach(marker => {
       marker.removeMarkup(markup);
       marker.section.renderNode.markDirty();

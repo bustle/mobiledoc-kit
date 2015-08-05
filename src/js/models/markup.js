@@ -11,14 +11,14 @@ export const VALID_MARKUP_TAGNAMES = [
   'li'
 ].map(normalizeTagName);
 
-let markupsOfType = {};
+const markupMap = {};
 
 class Markup {
   /*
    * @param {attributes} array flat array of key1,value1,key2,value2,...
    */
   constructor(tagName, attributes=[]) {
-    this.tagName = tagName.toLowerCase();
+    this.tagName = normalizeTagName(tagName);
     this.attributes = attributes;
     this.type = MARKUP_TYPE;
 
@@ -27,17 +27,24 @@ class Markup {
     }
   }
 
-  static ofType(tagName) {
+  // Use `create` to make a new markup so that we can use singletons in the
+  // markupMap
+  static create(tagName, attributes=[]) {
     tagName = normalizeTagName(tagName);
-    if (!markupsOfType[tagName]) {
-      markupsOfType[tagName] = new Markup(tagName);
-    }
 
-    return markupsOfType[tagName];
+    if (attributes.length === 0) {
+      if (!markupMap[tagName]) {
+        markupMap[tagName] = new Markup(tagName);
+      }
+
+      return markupMap[tagName];
+    } else {
+      return new Markup(tagName, attributes);
+    }
   }
 
   static isValidElement(element) {
-    let tagName = element.tagName.toLowerCase();
+    let tagName = normalizeTagName(element.tagName);
     return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
   }
 }
