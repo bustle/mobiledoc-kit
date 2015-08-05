@@ -31,9 +31,9 @@ var simpleMobiledoc = {
     [1, "p", [
       [[], 0, "Welcome to Content-Kit"]
     ]]
-  ]
+  ]]
 };
-var element = $('#editor')[0];
+var element = document.querySelector('#editor');
 var options = { mobiledoc: simpleMobiledoc };
 var editor = new ContentKit.Editor(element, options);
 ```
