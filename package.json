@@ -33,7 +33,6 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.1.7",
-    "broccoli-funnel": "^0.2.3",
     "busboy": "^0.2.9",
     "embedly": "^1.0.2",
     "express": "^4.11.1"
@@ -43,7 +42,7 @@
     "broccoli-funnel": "^0.2.3",
     "broccoli-less-single": "^0.4.0",
     "broccoli-merge-trees": "^0.2.1",
-    "broccoli-multi-builder": "^0.2.5",
+    "broccoli-multi-builder": "^0.2.7",
     "broccoli-test-builder": "^0.1.0",
     "content-kit-utils": "^0.2.0",
     "jquery": "^2.1.4",
