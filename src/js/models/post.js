@@ -7,12 +7,15 @@ export default class Post {
     this.sections = [];
   }
   appendSection(section) {
+    section.post = this;
     this.sections.push(section);
   }
   prependSection(section) {
+    section.post = this;
     this.sections.unshift(section);
   }
   replaceSection(section, newSection) {
+    section.post = this;
     this.insertSectionAfter(newSection, section);
     this.removeSection(section);
   }
@@ -37,6 +40,7 @@ export default class Post {
   }
 
   insertSectionAfter(section, previousSection) {
+    section.post = this;
     let foundIndex = -1;
 
     for (let i=0; i<this.sections.length; i++) {

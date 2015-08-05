@@ -11,7 +11,8 @@ const mobiledoc = {
   sections: [
     [],
     [[
-      1, 'P', [[[], 0, 'THIS IS A TEST']]
+      1, 'P', [[[], 0, 'THIS IS A TEST']],
+      1, 'P', [[[], 0, 'second section']]
     ]]
   ]
 };
