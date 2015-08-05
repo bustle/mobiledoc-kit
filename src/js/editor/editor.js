@@ -60,7 +60,6 @@ const defaults = {
   // in tests
   stickyToolbar: false, // !!('ontouchstart' in window),
   textFormatCommands: [
-    new ItalicCommand(),
     new LinkCommand()
   ],
   embedCommands: [
@@ -192,11 +191,15 @@ function makeButtons(editor) {
   const boldCommand = new BoldCommand(editor);
   const boldButton = new ReversibleToolbarButton(boldCommand, editor);
 
+  const italicCommand = new ItalicCommand(editor);
+  const italicButton = new ReversibleToolbarButton(italicCommand, editor);
+
   return [
     headingButton,
     subheadingButton,
     quoteButton,
-    boldButton
+    boldButton,
+    italicButton
   ];
 }
 

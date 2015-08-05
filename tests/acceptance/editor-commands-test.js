@@ -80,18 +80,7 @@ test('highlight text, click "bold" button bolds text', (assert) => {
 
   setTimeout(() => {
     clickToolbarButton(assert, 'bold');
-    assert.hasElement('#editor b:contains(IS A)');
-
-    done();
-  });
-});
-
-test('highlight text, click "italic" button italicizes text', (assert) => {
-  let done = assert.async();
-
-  setTimeout(() => {
-    clickToolbarButton(assert, 'italic');
-    assert.hasElement('#editor i:contains(IS A)');
+    assert.hasElement('#editor strong:contains(IS A)');
 
     done();
   });
@@ -261,15 +250,15 @@ test('click bold button applies bold to selected text', (assert) => {
     clickToolbarButton(assert, 'bold');
     assertActiveToolbarButton(assert, 'bold');
 
-    assert.hasNoElement('#editor b:contains(THIS)');
-    assert.hasNoElement('#editor b:contains(TEST)');
-    assert.hasElement('#editor b:contains(IS A)');
+    assert.hasNoElement('#editor strong:contains(THIS)');
+    assert.hasNoElement('#editor strong:contains(TEST)');
+    assert.hasElement('#editor strong:contains(IS A)');
 
     assert.selectedText(selectedText);
 
     clickToolbarButton(assert, 'bold');
 
-    assert.hasNoElement('#editor b:contains(IS A)', 'bold text is no longer bold');
+    assert.hasNoElement('#editor strong:contains(IS A)', 'bold text is no longer bold');
     assertInactiveToolbarButton(assert, 'bold');
 
     done();
@@ -284,7 +273,7 @@ test('can unbold part of a larger set of bold text', (assert) => {
     clickToolbarButton(assert, 'bold');
     assertActiveToolbarButton(assert, 'bold');
 
-    assert.hasElement('#editor b:contains(IS A)');
+    assert.hasElement('#editor strong:contains(IS A)');
 
     Helpers.dom.selectText('S A', editorElement);
     Helpers.dom.triggerEvent(document, 'mouseup');
@@ -294,12 +283,31 @@ test('can unbold part of a larger set of bold text', (assert) => {
       assertActiveToolbarButton(assert, 'bold');
       clickToolbarButton(assert, 'bold');
 
-      assert.hasElement('#editor b:contains(I)', 'unselected text is bold');
-      assert.hasNoElement('#editor b:contains(IS A)', 'unselected text is bold');
+      assert.hasElement('#editor strong:contains(I)', 'unselected text is bold');
+      assert.hasNoElement('#editor strong:contains(IS A)', 'unselected text is bold');
       assert.hasElement('#editor p:contains(S A)', 'unselected text is bold');
 
       done();
     });
+  });
+});
+
+test('can italicize text', (assert) => {
+  const done = assert.async();
+
+  setTimeout(() => {
+    assertInactiveToolbarButton(assert, 'italic');
+    clickToolbarButton(assert, 'italic');
+
+    assert.hasElement('#editor em:contains(IS A)');
+    assert.selectedText('IS A');
+    assertActiveToolbarButton(assert, 'italic');
+
+    clickToolbarButton(assert, 'italic');
+    assert.hasNoElement('#editor em:contains(IS A)');
+    assertInactiveToolbarButton(assert, 'italic');
+
+    done();
   });
 });
 

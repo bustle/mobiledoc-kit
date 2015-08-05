@@ -11,7 +11,7 @@ export default class BoldCommand extends TextFormatCommand {
       button: '<i class="ck-icon-bold"></i>'
     });
     this.editor = editor;
-    this.markup = Markup.create('b');
+    this.markup = Markup.create('strong');
   }
   exec() {
     this.editor.applyMarkupToSelection(this.markup);
