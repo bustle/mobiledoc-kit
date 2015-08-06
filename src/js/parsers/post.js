@@ -1,8 +1,6 @@
-import Post from 'content-kit-editor/models/post';
 import { MARKUP_SECTION_TYPE } from '../models/markup-section';
 import SectionParser from 'content-kit-editor/parsers/section';
 import { forEach } from 'content-kit-editor/utils/array-utils';
-import { generateBuilder } from '../utils/post-builder';
 import { getAttributesArray, walkTextNodes } from '../utils/dom-utils';
 import { UNPRINTABLE_CHARACTER } from 'content-kit-editor/renderers/editor-dom';
 import Markup from 'content-kit-editor/models/markup';
@@ -13,23 +11,28 @@ function sanitizeText(text) {
   return text.replace(sanitizeTextRegex, '');
 }
 
-export default {
+export default class PostParser {
+  constructor(builder) {
+    this.builder = builder;
+    this.sectionParser = new SectionParser(this.builder);
+  }
+
   parse(element) {
-    const post = new Post();
+    const post = this.builder.createPost();
 
     forEach(element.childNodes, child => {
-      post.appendSection(SectionParser.parse(child));
+      post.appendSection(this.sectionParser.parse(child));
     });
 
     return post;
-  },
+  }
 
   parseSection(element, otherArg) {
     if (!!otherArg) {
       element = otherArg; // hack to deal with passed previousSection
     }
-    return SectionParser.parse(element);
-  },
+    return this.sectionParser.parse(element);
+  }
 
   // FIXME should move to the section parser?
   // FIXME the `collectMarkups` logic could simplify the section parser?
@@ -41,14 +44,14 @@ export default {
     const sectionElement = section.renderNode.element;
 
     // Turn an element node into a markup
-    function markupFromNode(node) {
+    const markupFromNode = (node) => {
       if (Markup.isValidElement(node)) {
         let tagName = node.tagName;
         let attributes = getAttributesArray(node);
 
-        return generateBuilder().generateMarkup(tagName, attributes);
+        return this.builder.createMarkup(tagName, attributes);
       }
-    }
+    };
 
     // walk up from the textNode until the rootNode, converting each
     // parentNode into a markup
@@ -85,7 +88,7 @@ export default {
           renderNode.scheduleForRemoval();
         }
       } else {
-        marker = generateBuilder().generateMarker(markups, text);
+        marker = this.builder.createMarker(text, markups);
 
         // create a cleaned render node to account for the fact that this
         // render node comes from already-displayed DOM
@@ -128,4 +131,4 @@ export default {
       renderNode = renderNode.nextSibling;
     }
   }
-};
+}

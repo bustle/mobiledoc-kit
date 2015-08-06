@@ -87,7 +87,7 @@ test('#markerContaining finds the marker at the given offset when multiple marke
 });
 
 test('a section can be split, splitting its markers', (assert) => {
-  const m = new Marker('hi there!', [Markup.create('b')]);
+  const m = new Marker('hi there!', [new Markup('b')]);
   const s = new Section('p', [m]);
 
   const [s1, s2] = s.split(5);

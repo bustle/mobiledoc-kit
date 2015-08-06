@@ -1,4 +1,3 @@
-import { generateBuilder } from '../utils/post-builder';
 const CARD_SECTION_TYPE = 10;
 const IMAGE_SECTION_TYPE = 2;
 
@@ -8,15 +7,15 @@ const IMAGE_SECTION_TYPE = 2;
  *
  */
 export default class MobiledocParser {
-  constructor() {
-    this.builder = generateBuilder();
+  constructor(builder) {
+    this.builder = builder;
   }
 
   parse({version, sections: sectionData}) {
     const markerTypes = sectionData[0];
     const sections    = sectionData[1];
 
-    const post = this.builder.generatePost();
+    const post = this.builder.createPost();
 
     this.markups = [];
     this.markerTypes = this.parseMarkerTypes(markerTypes);
@@ -30,7 +29,7 @@ export default class MobiledocParser {
   }
 
   parseMarkerType([tagName, attributes]) {
-    return this.builder.generateMarkup(tagName, attributes);
+    return this.builder.createMarkup(tagName, attributes);
   }
 
   parseSections(sections, post) {
@@ -55,20 +54,17 @@ export default class MobiledocParser {
   }
 
   parseCardSection([type, name, payload], post) {
-    const section = this.builder.generateCardSection(name, payload);
+    const section = this.builder.createCardSection(name, payload);
     post.appendSection(section);
   }
 
   parseImageSection([type, src], post) {
-    const section = this.builder.generateImageSection(src);
+    const section = this.builder.createImageSection(src);
     post.appendSection(section);
   }
 
   parseMarkupSection([type, tagName, markers], post) {
-    const attributes = null;
-    const isGenerated = false;
-    const section = this.builder.generateMarkupSection(tagName, attributes, isGenerated);
-
+    const section = this.builder.createMarkupSection(tagName);
     post.appendSection(section);
     this.parseMarkers(markers, section);
   }
@@ -81,7 +77,7 @@ export default class MobiledocParser {
     markerTypeIndexes.forEach(index => {
       this.markups.push(this.markerTypes[index]);
     });
-    const marker = this.builder.generateMarker(this.markups.slice(), value);
+    const marker = this.builder.createMarker(value, this.markups.slice());
     section.appendMarker(marker);
     this.markups = this.markups.slice(0, this.markups.length-closeCount);
   }

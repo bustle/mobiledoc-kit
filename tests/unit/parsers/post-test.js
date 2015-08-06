@@ -1,9 +1,21 @@
 const {module, test} = QUnit;
 
 import PostParser from 'content-kit-editor/parsers/post';
+import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import Helpers from '../../test-helpers';
 
-module('Unit: Parser: PostParser');
+let builder, parser;
+
+module('Unit: Parser: PostParser', {
+  beforeEach() {
+    builder = new PostNodeBuilder();
+    parser = new PostParser(builder);
+  },
+  afterEach() {
+    builder = null;
+    parser = null;
+  }
+});
 
 test('#parse can parse a section element', (assert) => {
   let element = Helpers.dom.makeDOM(t =>
@@ -14,7 +26,7 @@ test('#parse can parse a section element', (assert) => {
     ])
   );
 
-  const post = PostParser.parse(element);
+  const post = parser.parse(element);
   assert.ok(post, 'gets post');
   assert.equal(post.sections.length, 1, 'has 1 section');
 
@@ -35,7 +47,7 @@ test('#parse can parse multiple elements', (assert) => {
     ])
   );
 
-  const post = PostParser.parse(element);
+  const post = parser.parse(element);
   assert.ok(post, 'gets post');
   assert.equal(post.sections.length, 2, 'has 2 sections');
 

@@ -1,5 +1,4 @@
 import TextFormatCommand from './text-format';
-import Markup from '../models/markup';
 import {
   any
 } from '../utils/array-utils';
@@ -11,7 +10,8 @@ export default class BoldCommand extends TextFormatCommand {
       button: '<i class="ck-icon-bold"></i>'
     });
     this.editor = editor;
-    this.markup = Markup.create('strong');
+    const { builder } = this.editor;
+    this.markup = builder.createMarkup('strong');
   }
   exec() {
     this.editor.applyMarkupToSelection(this.markup);

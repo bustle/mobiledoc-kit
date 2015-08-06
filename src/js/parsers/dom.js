@@ -1,4 +1,3 @@
-import { generateBuilder } from '../utils/post-builder';
 import { trim } from 'content-kit-utils';
 import { VALID_MARKUP_SECTION_TAGNAMES } from '../models/markup-section';
 import { VALID_MARKUP_TAGNAMES } from '../models/markup';
@@ -36,11 +35,13 @@ function sortAttributes(attributes) {
   return sortedAttributes;
 }
 
-// FIXME: should probably always return an array
+/**
+ * @return {array} attributes as key1,value1,key2,value2,etc
+ */
 function readAttributes(node) {
-  var attributes = null;
+  var attributes = [];
+
   if (node.hasAttributes()) {
-    attributes = [];
     var i, l;
     for (i=0,l=node.attributes.length;i<l;i++) {
       if (ALLOWED_ATTRIBUTES.indexOf(node.attributes[i].name) !== -1) {
@@ -48,14 +49,9 @@ function readAttributes(node) {
         attributes.push(node.attributes[i].value);
       }
     }
-    if (attributes.length === 0) {
-      return null;
-    } else {
-      return sortAttributes(attributes);
-    }
   }
 
-  return null;
+  return sortAttributes(attributes);
 }
 
 function isValidMarkerElement(element) {
@@ -63,7 +59,7 @@ function isValidMarkerElement(element) {
   return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
 }
 
-function parseMarkers(section, postBuilder, topNode) {
+function parseMarkers(section, builder, topNode) {
   var markups = [];
   var text = null;
   var currentNode = topNode;
@@ -71,7 +67,7 @@ function parseMarkers(section, postBuilder, topNode) {
     switch(currentNode.nodeType) {
     case ELEMENT_NODE:
       if (isValidMarkerElement(currentNode)) {
-        markups.push(postBuilder.generateMarkup(currentNode.tagName, readAttributes(currentNode)));
+        markups.push(builder.createMarkup(currentNode.tagName, readAttributes(currentNode)));
       }
       break;
     case TEXT_NODE:
@@ -81,23 +77,23 @@ function parseMarkers(section, postBuilder, topNode) {
 
     if (currentNode.firstChild) {
       if (isValidMarkerElement(currentNode) && text !== null) {
-        section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
+        section.appendMarker(builder.createMarker(text, markups.slice()));
         text = null;
       }
       currentNode = currentNode.firstChild;
     } else if (currentNode.nextSibling) {
       if (currentNode === topNode) {
-        section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
+        section.appendMarker(builder.createMarker(text, markups.slice()));
         break;
       } else {
         currentNode = currentNode.nextSibling;
         if (currentNode.nodeType === ELEMENT_NODE && isValidMarkerElement(currentNode) && text !== null) {
-          section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
+          section.appendMarker(builder.createMarker(text, markups.slice()));
           text = null;
         }
       }
     } else {
-      section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
+      section.appendMarker(builder.createMarker(text, markups.slice()));
 
       while (currentNode && !currentNode.nextSibling && currentNode !== topNode) {
         currentNode = currentNode.parentNode;
@@ -120,23 +116,23 @@ function parseMarkers(section, postBuilder, topNode) {
   }
 }
 
-function NewHTMLParser() {
-  this.postBuilder = generateBuilder();
+function NewHTMLParser(builder) {
+  this.builder = builder;
 }
 
 NewHTMLParser.prototype = {
   parseSection: function(previousSection, sectionElement) {
-    var postBuilder = this.postBuilder;
+    var builder = this.builder;
     var section;
     switch(sectionElement.nodeType) {
     case ELEMENT_NODE:
       let tagName = normalizeTagName(sectionElement.tagName);
       // <p> <h2>, etc
       if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName) !== -1) {
-        section = postBuilder.generateMarkupSection(tagName, readAttributes(sectionElement));
+        section = builder.createMarkupSection(tagName);
         var node = sectionElement.firstChild;
         while (node) {
-          parseMarkers(section, postBuilder, node);
+          parseMarkers(section, builder, node);
           node = node.nextSibling;
         }
       // <strong> <b>, etc
@@ -144,24 +140,24 @@ NewHTMLParser.prototype = {
         if (previousSection && previousSection.isGenerated) {
           section = previousSection;
         } else {
-          section = postBuilder.generateMarkupSection('P', {}, true);
+          section = builder.createMarkupSection('P', [], true);
         }
-        parseMarkers(section, postBuilder, sectionElement);
+        parseMarkers(section, builder, sectionElement);
       }
       break;
     case TEXT_NODE:
       if (previousSection && previousSection.isGenerated) {
         section = previousSection;
       } else {
-        section = postBuilder.generateMarkupSection('P', {}, true);
+        section = builder.createMarkupSection('P', [], true);
       }
-      parseMarkers(section, postBuilder, sectionElement);
+      parseMarkers(section, builder, sectionElement);
       break;
     }
     return section;
   },
   parse: function(postElement) {
-    var post = this.postBuilder.generatePost();
+    var post = this.builder.createPost();
     var i, l, section, previousSection, sectionElement;
     // FIXME: Instead of storing isGenerated on sections, and passing
     // the previous section to the parser, we could instead do a two-pass

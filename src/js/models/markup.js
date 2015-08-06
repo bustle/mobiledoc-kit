@@ -11,8 +11,6 @@ export const VALID_MARKUP_TAGNAMES = [
   'li'
 ].map(normalizeTagName);
 
-const markupMap = {};
-
 class Markup {
   /*
    * @param {attributes} array flat array of key1,value1,key2,value2,...
@@ -24,22 +22,6 @@ class Markup {
 
     if (VALID_MARKUP_TAGNAMES.indexOf(this.tagName) === -1) {
       throw new Error(`Cannot create markup of tagName ${tagName}`);
-    }
-  }
-
-  // Use `create` to make a new markup so that we can use singletons in the
-  // markupMap
-  static create(tagName, attributes=[]) {
-    tagName = normalizeTagName(tagName);
-
-    if (attributes.length === 0) {
-      if (!markupMap[tagName]) {
-        markupMap[tagName] = new Markup(tagName);
-      }
-
-      return markupMap[tagName];
-    } else {
-      return new Markup(tagName, attributes);
     }
   }
 

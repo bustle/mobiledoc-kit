@@ -1,5 +1,4 @@
 import TextFormatCommand from './text-format';
-import Markup from '../models/markup';
 import {
   any
 } from '../utils/array-utils';
@@ -11,7 +10,8 @@ export default class ItalicCommand extends TextFormatCommand {
       button: '<i class="ck-icon-italic"></i>'
     });
     this.editor = editor;
-    this.markup = Markup.create('em');
+    const { builder } = this.editor;
+    this.markup = builder.createMarkup('em');
   }
   exec() {
     this.editor.applyMarkupToSelection(this.markup);

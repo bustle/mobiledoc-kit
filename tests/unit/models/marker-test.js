@@ -29,22 +29,22 @@ test('a marker can truncated to an offset', (assert) => {
 
 test('a marker can have a markup applied to it', (assert) => {
   const m1 = new Marker('hi there!');
-  m1.addMarkup(Markup.create('b'));
+  m1.addMarkup(new Markup('b'));
 
   assert.ok(m1.hasMarkup('b'));
 });
 
 test('a marker can have the same markup tagName applied twice', (assert) => {
   const m1 = new Marker('hi there!');
-  m1.addMarkup(Markup.create('b'));
-  m1.addMarkup(Markup.create('b'));
+  m1.addMarkup(new Markup('b'));
+  m1.addMarkup(new Markup('b'));
 
   assert.equal(m1.markups.length, 2, 'markup only applied once');
 });
 
 test('a marker can have a complex markup applied to it', (assert) => {
   const m1 = new Marker('hi there!');
-  const markup = Markup.create('a', {href:'blah'});
+  const markup = new Markup('a', {href:'blah'});
   m1.addMarkup(markup);
 
   assert.ok(m1.hasMarkup('a'));
@@ -53,8 +53,8 @@ test('a marker can have a complex markup applied to it', (assert) => {
 
 test('a marker can have the same complex markup tagName applied twice, even with different attributes', (assert) => {
   const m1 = new Marker('hi there!');
-  const markup1 = Markup.create('a', {href:'blah'});
-  const markup2 = Markup.create('a', {href:'blah2'});
+  const markup1 = new Markup('a', {href:'blah'});
+  const markup2 = new Markup('a', {href:'blah2'});
   m1.addMarkup(markup1);
   m1.addMarkup(markup2);
 
@@ -65,9 +65,9 @@ test('a marker can have the same complex markup tagName applied twice, even with
 
 test('a marker can be joined to another', (assert) => {
   const m1 = new Marker('hi');
-  m1.addMarkup(Markup.create('b'));
+  m1.addMarkup(new Markup('b'));
   const m2 = new Marker(' there!');
-  m2.addMarkup(Markup.create('i'));
+  m2.addMarkup(new Markup('i'));
 
   const m3 = m1.join(m2);
   assert.equal(m3.value, 'hi there!');
@@ -77,7 +77,7 @@ test('a marker can be joined to another', (assert) => {
 
 test('#split splits a marker in 2 when no endOffset is passed', (assert) => {
   const m1 = new Marker('hi there!');
-  m1.addMarkup(Markup.create('b'));
+  m1.addMarkup(new Markup('b'));
 
   const [_m1, m2] = m1.split(5);
   assert.ok(_m1.hasMarkup('b') && m2.hasMarkup('b'),
@@ -89,7 +89,7 @@ test('#split splits a marker in 2 when no endOffset is passed', (assert) => {
 
 test('#split splits a marker in 3 when endOffset is passed', (assert) => {
   const m = new Marker('hi there!');
-  m.addMarkup(Markup.create('b'));
+  m.addMarkup(new Markup('b'));
 
   const newMarkers = m.split(2, 4);
 

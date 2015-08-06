@@ -45,7 +45,7 @@ import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
 import Cursor from '../models/cursor';
 import { MARKUP_SECTION_TYPE } from '../models/markup-section';
-import { generateBuilder } from '../utils/post-builder';
+import PostNodeBuilder from '../models/post-node-builder';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
 
@@ -219,12 +219,14 @@ class Editor {
     this._views = [];
     this.element = element;
 
+    this.builder = new PostNodeBuilder();
+
     // FIXME: This should merge onto this.options
     mergeWithOptions(this, defaults, options);
 
     this.cards.push(ImageCard);
 
-    this._parser   = PostParser;
+    this._parser   = new PostParser(this.builder);
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
     this.applyClassName(EDITOR_ELEMENT_CLASS_NAME);
@@ -287,7 +289,7 @@ class Editor {
   }
 
   parseModelFromMobiledoc(mobiledoc) {
-    this.post = new MobiledocParser().parse(mobiledoc);
+    this.post = new MobiledocParser(this.builder).parse(mobiledoc);
     this._renderTree = new RenderTree();
     let node = this._renderTree.buildRenderNode(this.post);
     this._renderTree.node = node;
@@ -413,7 +415,7 @@ class Editor {
     section.insertMarkerAfter(leftMarker, marker);
     markerRenderNode.scheduleForRemoval();
 
-    const newSection = generateBuilder().generateMarkupSection('P');
+    const newSection = this.builder.createMarkupSection('p');
     newSection.appendMarker(rightMarker);
 
     let nodeForMove = markerRenderNode.nextSibling;
