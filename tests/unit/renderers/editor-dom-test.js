@@ -1,4 +1,4 @@
-import { generateBuilder } from 'content-kit-editor/utils/post-builder';
+import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 const { module, test } = window.QUnit;
 import Renderer from 'content-kit-editor/renderers/editor-dom';
 import RenderNode from 'content-kit-editor/models/render-node';
@@ -15,7 +15,7 @@ function render(renderTree, cards=[]) {
 
 module("Unit: Renderer: Editor-Dom", {
   beforeEach() {
-    builder = generateBuilder();
+    builder = new PostNodeBuilder();
   }
 });
 
@@ -26,7 +26,7 @@ test("It renders a dirty post", (assert) => {
    * renderNode
    *
    */
-  let renderNode = new RenderNode(builder.generatePost());
+  let renderNode = new RenderNode(builder.createPost());
   let renderTree = new RenderTree(renderNode);
   renderNode.renderTree = renderTree;
 
@@ -38,10 +38,10 @@ test("It renders a dirty post", (assert) => {
 });
 
 test("It renders a dirty post with un-rendered sections", (assert) => {
-  let post = builder.generatePost();
-  let sectionA = builder.generateMarkupSection('P');
+  let post = builder.createPost();
+  let sectionA = builder.createMarkupSection('P');
   post.appendSection(sectionA);
-  let sectionB = builder.generateMarkupSection('P');
+  let sectionB = builder.createMarkupSection('P');
   post.appendSection(sectionB);
 
   let renderNode = new RenderNode(post);
@@ -66,19 +66,19 @@ test("It renders a dirty post with un-rendered sections", (assert) => {
 [
   {
     name: 'markup',
-    section: (builder) => builder.generateMarkupSection('P')
+    section: (builder) => builder.createMarkupSection('P')
   },
   {
     name: 'image',
-    section: (builder) => builder.generateImageSection(DATA_URL)
+    section: (builder) => builder.createImageSection(DATA_URL)
   },
   {
     name: 'card',
-    section: (builder) => builder.generateCardSection('new-card')
+    section: (builder) => builder.createCardSection('new-card')
   }
 ].forEach((testInfo) => {
   test(`Remove nodes with ${testInfo.name} section`, (assert) => {
-    let post = builder.generatePost();
+    let post = builder.createPost();
     let section = testInfo.section(builder);
     post.appendSection(section);
 
@@ -111,13 +111,13 @@ test("It renders a dirty post with un-rendered sections", (assert) => {
 });
 
 test('renders a post with marker', (assert) => {
-  let post = builder.generatePost();
-  let section = builder.generateMarkupSection('P');
+  let post = builder.createPost();
+  let section = builder.createMarkupSection('P');
   post.appendSection(section);
   section.appendMarker(
-    builder.generateMarker([
-      builder.generateMarkup('STRONG')
-    ], 'Hi')
+    builder.createMarker('Hi', [
+      builder.createMarkup('STRONG')
+    ])
   );
 
   let node = new RenderNode(post);
@@ -128,27 +128,22 @@ test('renders a post with marker', (assert) => {
 });
 
 test('renders a post with multiple markers', (assert) => {
-  let post = builder.generatePost();
-  let section = builder.generateMarkupSection('P');
+  let post = builder.createPost();
+  let section = builder.createMarkupSection('P');
   post.appendSection(section);
 
-  let bMarkup = builder.generateMarkup('B');
-  let iMarkup = builder.generateMarkup('I');
+  let b = builder.createMarkup('B');
+  let i = builder.createMarkup('I');
 
-  section.appendMarker(builder.generateMarker([], 'hello '));
+  section.appendMarker(builder.createMarker('hello '));
   section.appendMarker(
-    builder.generateMarker([
-      bMarkup
-    ], 'bold, ')
+    builder.createMarker('bold, ', [b])
   );
   section.appendMarker(
-    builder.generateMarker([
-      bMarkup,
-      iMarkup
-    ], 'italic,')
+    builder.createMarker('italic,', [b,i])
   );
   section.appendMarker(
-    builder.generateMarker([], ' world.')
+    builder.createMarker(' world.')
   );
 
   let node = new RenderNode(post);
@@ -161,8 +156,8 @@ test('renders a post with multiple markers', (assert) => {
 
 test('renders a post with image', (assert) => {
   let url = DATA_URL;
-  let post = builder.generatePost();
-  let section = builder.generateImageSection(url);
+  let post = builder.createPost();
+  let section = builder.createImageSection(url);
   post.appendSection(section);
 
   let node = new RenderNode(post);
@@ -173,8 +168,8 @@ test('renders a post with image', (assert) => {
 });
 
 test('renders a card section', (assert) => {
-  let post = builder.generatePost();
-  let cardSection = builder.generateCardSection('my-card');
+  let post = builder.createPost();
+  let cardSection = builder.createCardSection('my-card');
   let card = {
     name: 'my-card',
     display: {
@@ -197,8 +192,8 @@ test('renders a card section', (assert) => {
 test('renders a card section into a non-contenteditable element', (assert) => {
   assert.expect(2);
 
-  let post = builder.generatePost();
-  let cardSection = builder.generateCardSection('my-card');
+  let post = builder.createPost();
+  let cardSection = builder.createCardSection('my-card');
   let card = {
     name: 'my-card',
     display: {
@@ -247,13 +242,11 @@ test('renders a card section into a non-contenteditable element', (assert) => {
  */
 
 test('rerender a marker after adding a markup to it', (assert) => {
-  const post = builder.generatePost();
-  const section = builder.generateMarkupSection();
-  const bMarkup = builder.generateMarkup('B');
-  const marker1 = builder.generateMarker([
-    bMarkup
-  ], 'text1');
-  const marker2 = builder.generateMarker([], 'text2');
+  const post = builder.createPost();
+  const section = builder.createMarkupSection('p');
+  const b = builder.createMarkup('B');
+  const marker1 = builder.createMarker('text1', [b]);
+  const marker2 = builder.createMarker('text2');
 
   section.appendMarker(marker1);
   section.appendMarker(marker2);
@@ -267,7 +260,7 @@ test('rerender a marker after adding a markup to it', (assert) => {
   assert.equal(node.element.innerHTML,
                '<p><b>text1</b>text2</p>');
 
-  marker2.addMarkup(bMarkup);
+  marker2.addMarkup(b);
   marker2.renderNode.markDirty();
 
   // rerender
@@ -278,11 +271,11 @@ test('rerender a marker after adding a markup to it', (assert) => {
 });
 
 test('rerender a marker after removing a markup from it', (assert) => {
-  const post = builder.generatePost();
-  const section = builder.generateMarkupSection();
-  const bMarkup = builder.generateMarkup('B');
-  const marker1 = builder.generateMarker([], 'text1');
-  const marker2 = builder.generateMarker([bMarkup], 'text2');
+  const post = builder.createPost();
+  const section = builder.createMarkupSection('p');
+  const bMarkup = builder.createMarkup('B');
+  const marker1 = builder.createMarker('text1');
+  const marker2 = builder.createMarker('text2', [bMarkup]);
 
   section.appendMarker(marker1);
   section.appendMarker(marker2);
@@ -307,11 +300,11 @@ test('rerender a marker after removing a markup from it', (assert) => {
 });
 
 test('rerender a marker after removing a markup from it (when changed marker is first marker)', (assert) => {
-  const post = builder.generatePost();
-  const section = builder.generateMarkupSection();
-  const bMarkup = builder.generateMarkup('B');
-  const marker1 = builder.generateMarker([bMarkup], 'text1');
-  const marker2 = builder.generateMarker([], 'text2');
+  const post = builder.createPost();
+  const section = builder.createMarkupSection('p');
+  const bMarkup = builder.createMarkup('B');
+  const marker1 = builder.createMarker('text1', [bMarkup]);
+  const marker2 = builder.createMarker('text2');
 
   section.appendMarker(marker1);
   section.appendMarker(marker2);
@@ -336,11 +329,11 @@ test('rerender a marker after removing a markup from it (when changed marker is 
 });
 
 test('rerender a marker after removing a markup from it (when both markers have same markup)', (assert) => {
-  const post = builder.generatePost();
-  const section = builder.generateMarkupSection();
-  const bMarkup = builder.generateMarkup('B');
-  const marker1 = builder.generateMarker([bMarkup], 'text1');
-  const marker2 = builder.generateMarker([bMarkup], 'text2');
+  const post = builder.createPost();
+  const section = builder.createMarkupSection('p');
+  const bMarkup = builder.createMarkup('B');
+  const marker1 = builder.createMarker('text1', [bMarkup]);
+  const marker2 = builder.createMarker('text2', [bMarkup]);
 
   section.appendMarker(marker1);
   section.appendMarker(marker2);
@@ -365,11 +358,11 @@ test('rerender a marker after removing a markup from it (when both markers have 
 });
 
 test('rerender a marker after removing a markup from it (when both markers have same markup)', (assert) => {
-  const post = builder.generatePost();
-  const section = builder.generateMarkupSection();
-  const bMarkup = builder.generateMarkup('B');
-  const marker1 = builder.generateMarker([bMarkup], 'text1');
-  const marker2 = builder.generateMarker([bMarkup], 'text2');
+  const post = builder.createPost();
+  const section = builder.createMarkupSection('p');
+  const bMarkup = builder.createMarkup('B');
+  const marker1 = builder.createMarker('text1', [bMarkup]);
+  const marker2 = builder.createMarker('text2', [bMarkup]);
 
   section.appendMarker(marker1);
   section.appendMarker(marker2);
@@ -393,7 +386,6 @@ test('rerender a marker after removing a markup from it (when both markers have 
                '<p>text1<b>text2</b></p>');
 });
 
-
 /*
 test("It renders a renderTree with rendered dirty section", (assert) => {
   /*
@@ -404,12 +396,12 @@ test("It renders a renderTree with rendered dirty section", (assert) => {
    *      /          \
    * section      section<dirty>
    *
-  let post = builder.generatePost
+  let post = builder.createPost
   let postRenderNode = {
     element: null,
     parent: null,
     isDirty: true,
-    postNode: builder.generatePost()
+    postNode: builder.createPost()
   }
   let renderTree = {
     node: renderNode

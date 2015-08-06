@@ -1,28 +1,31 @@
 const TEXT_NODE = 3;
 const ELEMENT_NODE = 1;
 
-import MarkupSection from 'content-kit-editor/models/markup-section';
 import {
   DEFAULT_TAG_NAME,
   VALID_MARKUP_SECTION_TAGNAMES
 } from 'content-kit-editor/models/markup-section';
 
-import Marker from 'content-kit-editor/models/marker';
-import Markup from 'content-kit-editor/models/markup';
 import { VALID_MARKUP_TAGNAMES } from 'content-kit-editor/models/markup';
-import { getAttributes } from 'content-kit-editor/utils/dom-utils';
+import {
+  getAttributes,
+  normalizeTagName
+} from 'content-kit-editor/utils/dom-utils';
 import { forEach } from 'content-kit-editor/utils/array-utils';
-import { generateBuilder } from 'content-kit-editor/utils/post-builder';
 
 /**
  * parses an element into a section, ignoring any non-markup
  * elements contained within
  * @return {Section}
  */
-export default {
+export default class SectionParser {
+  constructor(builder) {
+    this.builder = builder;
+  }
+
   parse(element) {
     const tagName = this.sectionTagNameFromElement(element);
-    const section = new MarkupSection(tagName);
+    const section = this.builder.createMarkupSection(tagName);
     const state = {section, markups:[], text:''};
 
     forEach(element.childNodes, (el) => {
@@ -31,16 +34,16 @@ export default {
 
     // close a trailing text nodes if it exists
     if (state.text.length) {
-      let marker = new Marker(state.text, state.markups);
+      let marker = this.builder.createMarker(state.text, state.markups);
       state.section.appendMarker(marker);
     }
 
     if (section.markers.length === 0) {
-      section.appendMarker(generateBuilder().generateBlankMarker());
+      section.appendMarker(this.builder.createBlankMarker());
     }
 
     return section;
-  },
+  }
 
   parseNode(node, state) {
     switch (node.nodeType) {
@@ -53,14 +56,14 @@ export default {
       default:
         throw new Error(`parseNode got unexpected element type ${node.nodeType} ` + node);
     }
-  },
+  }
 
   parseElementNode(element, state) {
     const markup = this.markupFromElement(element);
     if (markup) {
       if (state.text.length) {
         // close previous text marker
-        let marker = new Marker(state.text, state.markups);
+        let marker = this.builder.createMarker(state.text, state.markups);
         state.section.appendMarker(marker);
         state.text = '';
       }
@@ -75,33 +78,33 @@ export default {
     if (markup) {
       // close the marker started for this node and pop
       // its markup from the stack
-      let marker = new Marker(state.text, state.markups);
+      let marker = this.builder.createMarker(state.text, state.markups);
       state.section.appendMarker(marker);
       state.markups.pop();
       state.text = '';
     }
-  },
+  }
 
   parseTextNode(textNode, state) {
     state.text += textNode.textContent;
-  },
+  }
 
   isSectionElement(element) {
     return element.nodeType === ELEMENT_NODE &&
-      VALID_MARKUP_SECTION_TAGNAMES.indexOf(element.tagName.toLowerCase()) !== -1;
-  },
+      VALID_MARKUP_SECTION_TAGNAMES.indexOf(normalizeTagName(element.tagName)) !== -1;
+  }
 
   markupFromElement(element) {
-    const tagName = element.tagName.toLowerCase();
+    const tagName = normalizeTagName(element.tagName);
     if (VALID_MARKUP_TAGNAMES.indexOf(tagName) === -1) { return null; }
 
-    return new Markup(tagName, getAttributes(element));
-  },
+    return this.builder.createMarkup(tagName, getAttributes(element));
+  }
 
   sectionTagNameFromElement(element) {
     let tagName = element.tagName;
-    tagName = tagName && tagName.toLowerCase();
+    tagName = tagName && normalizeTagName(tagName);
     if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName) === -1) { tagName = DEFAULT_TAG_NAME; }
     return tagName;
   }
-};
+}

@@ -1,5 +1,5 @@
 import MobiledocParser from 'content-kit-editor/parsers/mobiledoc';
-import { generateBuilder } from 'content-kit-editor/utils/post-builder';
+import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
 const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
@@ -9,9 +9,9 @@ let parser, builder, post;
 
 module('Unit: Parsers: Mobiledoc', {
   beforeEach() {
-    parser = new MobiledocParser();
-    builder = generateBuilder();
-    post = builder.generatePost();
+    builder = new PostNodeBuilder();
+    parser = new MobiledocParser(builder);
+    post = builder.createPost();
   },
   afterEach() {
     parser = null;
@@ -41,8 +41,8 @@ test('#parse doc without marker types', (assert) => {
   };
   const parsed = parser.parse(mobiledoc);
 
-  let section = builder.generateMarkupSection('P', [], false);
-  let marker  = builder.generateMarker([], 'hello world');
+  let section = builder.createMarkupSection('P', [], false);
+  let marker  = builder.createMarker('hello world');
   section.appendMarker(marker);
   post.appendSection(section);
 
@@ -71,14 +71,14 @@ test('#parse doc with marker type', (assert) => {
   };
   const parsed = parser.parse(mobiledoc);
 
-  let section = builder.generateMarkupSection('P', [], false);
-  let aMarkerType = builder.generateMarkup('A', ['href', 'google.com']);
-  let bMarkerType = builder.generateMarkup('B');
+  let section = builder.createMarkupSection('P', [], false);
+  let aMarkerType = builder.createMarkup('A', ['href', 'google.com']);
+  let bMarkerType = builder.createMarkup('B');
 
   let markers  = [
-    builder.generateMarker([aMarkerType], 'hello'),
-    builder.generateMarker([aMarkerType, bMarkerType], 'brave new'),
-    builder.generateMarker([aMarkerType], 'world')
+    builder.createMarker('hello', [aMarkerType]),
+    builder.createMarker('brave new', [aMarkerType, bMarkerType]),
+    builder.createMarker('world', [aMarkerType])
   ];
   markers.forEach(marker => section.appendMarker(marker));
   post.appendSection(section);
@@ -102,7 +102,7 @@ test('#parse doc with image section', (assert) => {
 
   const parsed = parser.parse(mobiledoc);
 
-  let section = builder.generateImageSection(DATA_URL);
+  let section = builder.createImageSection(DATA_URL);
   post.appendSection(section);
   assert.deepEqual(
     parsed,
@@ -123,7 +123,7 @@ test('#parse doc with custom card type', (assert) => {
 
   const parsed = parser.parse(mobiledoc);
 
-  let section = builder.generateCardSection('custom-card');
+  let section = builder.createCardSection('custom-card');
   post.appendSection(section);
   assert.deepEqual(
     parsed,

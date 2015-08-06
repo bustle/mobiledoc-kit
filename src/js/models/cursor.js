@@ -34,7 +34,14 @@ export default class Cursor {
   get offsets() {
     let leftNode, rightNode,
         leftOffset, rightOffset;
-    const { anchorNode, focusNode, anchorOffset, focusOffset } = this.selection;
+    const selection = this.selection;
+    const { anchorNode, focusNode, anchorOffset, focusOffset } = selection;
+    const { rangeCount } = selection;
+    const range = rangeCount > 0 && selection.getRangeAt(0);
+
+    if (!range) {
+      return {};
+    }
 
     const position = anchorNode.compareDocumentPosition(focusNode);
 
@@ -54,13 +61,23 @@ export default class Cursor {
     const leftRenderNode = this.renderTree.elements.get(leftNode),
           rightRenderNode = this.renderTree.elements.get(rightNode);
 
+    const startMarker = leftRenderNode && leftRenderNode.postNode,
+          endMarker = rightRenderNode && rightRenderNode.postNode;
+
+    const startSection = startMarker && startMarker.section;
+    const endSection = endMarker && endMarker.section;
+
     return {
       leftNode,
       rightNode,
       leftOffset,
       rightOffset,
       leftRenderNode,
-      rightRenderNode
+      rightRenderNode,
+      startMarker,
+      endMarker,
+      startSection,
+      endSection
     };
   }
 
@@ -112,6 +129,17 @@ export default class Cursor {
 
     const startOffset = 0,
           endOffset = endNode.textContent.length;
+
+    this.moveToNode(startNode, startOffset, endNode, endOffset);
+  }
+
+  selectMarkers(markers) {
+    const startMarker = markers[0],
+          endMarker   = markers[markers.length - 1];
+
+    const startNode = startMarker.renderNode.element,
+          endNode   = endMarker.renderNode.element;
+    const startOffset = 0, endOffset = endMarker.length;
 
     this.moveToNode(startNode, startOffset, endNode, endOffset);
   }

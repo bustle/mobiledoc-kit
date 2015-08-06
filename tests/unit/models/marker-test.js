@@ -75,7 +75,7 @@ test('a marker can be joined to another', (assert) => {
   assert.ok(m3.hasMarkup('i'));
 });
 
-test('a marker can be split into two', (assert) => {
+test('#split splits a marker in 2 when no endOffset is passed', (assert) => {
   const m1 = new Marker('hi there!');
   m1.addMarkup(new Markup('b'));
 
@@ -85,4 +85,25 @@ test('a marker can be split into two', (assert) => {
 
   assert.equal(_m1.value, 'hi th');
   assert.equal(m2.value, 'ere!');
+});
+
+test('#split splits a marker in 3 when endOffset is passed', (assert) => {
+  const m = new Marker('hi there!');
+  m.addMarkup(new Markup('b'));
+
+  const newMarkers = m.split(2, 4);
+
+  assert.equal(newMarkers.length, 3, 'creates 3 new markers');
+  newMarkers.forEach(m => assert.ok(m.hasMarkup('b'), 'marker has markup'));
+
+  assert.equal(newMarkers[0].value, 'hi');
+  assert.equal(newMarkers[1].value, ' t');
+  assert.equal(newMarkers[2].value, 'here!');
+});
+
+test('#split does not create an empty marker if the offset is 0', (assert) => {
+  const m = new Marker('hi there!');
+  const newMarkers = m.split(0);
+  assert.equal(newMarkers.length, 1);
+  assert.equal(newMarkers[0].value, 'hi there!');
 });

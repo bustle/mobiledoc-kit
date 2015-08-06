@@ -1,14 +1,25 @@
 import TextFormatCommand from './text-format';
-import { inherit } from 'content-kit-utils';
+import {
+  any
+} from '../utils/array-utils';
 
-function ItalicCommand() {
-  TextFormatCommand.call(this, {
-    name: 'italic',
-    tag: 'em',
-    mappedTags: ['i'],
-    button: '<i class="ck-icon-italic"></i>'
-  });
+export default class ItalicCommand extends TextFormatCommand {
+  constructor(editor) {
+    super({
+      name: 'italic',
+      button: '<i class="ck-icon-italic"></i>'
+    });
+    this.editor = editor;
+    const { builder } = this.editor;
+    this.markup = builder.createMarkup('em');
+  }
+  exec() {
+    this.editor.applyMarkupToSelection(this.markup);
+  }
+  unexec() {
+    this.editor.removeMarkupFromSelection(this.markup);
+  }
+  isActive() {
+    return any(this.editor.activeMarkers, m => m.hasMarkup(this.markup));
+  }
 }
-inherit(ItalicCommand, TextFormatCommand);
-
-export default ItalicCommand;

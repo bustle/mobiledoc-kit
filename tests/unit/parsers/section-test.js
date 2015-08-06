@@ -1,9 +1,20 @@
 const {module, test} = QUnit;
 
+import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import SectionParser from 'content-kit-editor/parsers/section';
 import Helpers from '../../test-helpers';
 
-module('Unit: Parser: SectionParser');
+let builder, parser;
+module('Unit: Parser: SectionParser', {
+  beforeEach() {
+    builder = new PostNodeBuilder();
+    parser = new SectionParser(builder);
+  },
+  afterEach() {
+    builder = null;
+    parser = null;
+  }
+});
 
 test('#parse parses simple dom', (assert) => {
   let element = Helpers.dom.makeDOM(t =>
@@ -15,7 +26,7 @@ test('#parse parses simple dom', (assert) => {
     ])
   );
 
-  const section = SectionParser.parse(element);
+  const section = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 2, 'has 2 markers');
   const [m1, m2] = section.markers;
@@ -38,7 +49,7 @@ test('#parse parses nested markups', (assert) => {
     ])
   );
 
-  const section = SectionParser.parse(element);
+  const section = parser.parse(element);
   assert.equal(section.markers.length, 3, 'has 3 markers');
   const [m1, m2, m3] = section.markers;
 
@@ -60,7 +71,7 @@ test('#parse ignores non-markup elements like spans', (assert) => {
     ])
   );
 
-  const section = SectionParser.parse(element);
+  const section = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 markers');
   const [m1] = section.markers;
@@ -76,7 +87,7 @@ test('#parse reads attributes', (assert) => {
       ])
     ])
   );
-  const section = SectionParser.parse(element);
+  const section = parser.parse(element);
   assert.equal(section.markers.length, 1, 'has 1 markers');
   const [m1] = section.markers;
   assert.equal(m1.value, 'i am a link');
@@ -96,7 +107,7 @@ test('#parse joins contiguous text nodes separated by non-markup elements', (ass
     ])
   );
 
-  const section = SectionParser.parse(element);
+  const section = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 markers');
   const [m1] = section.markers;

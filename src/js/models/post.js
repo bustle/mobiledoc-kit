@@ -7,16 +7,40 @@ export default class Post {
     this.sections = [];
   }
   appendSection(section) {
+    section.post = this;
     this.sections.push(section);
   }
   prependSection(section) {
+    section.post = this;
     this.sections.unshift(section);
   }
   replaceSection(section, newSection) {
+    section.post = this;
     this.insertSectionAfter(newSection, section);
     this.removeSection(section);
   }
+  /**
+   * Invoke `callbackFn` for all markers between the startMarker and endMarker (inclusive),
+   * across sections
+   */
+  markersFrom(startMarker, endMarker, callbackFn) {
+    let currentMarker = startMarker;
+    while (currentMarker) {
+      callbackFn(currentMarker);
+
+      if (currentMarker === endMarker) {
+        currentMarker = null;
+      } else if (currentMarker.nextSibling) {
+        currentMarker = currentMarker.nextSibling;
+      } else {
+        let nextSection = currentMarker.section.nextSibling;
+        currentMarker = nextSection.markers[0];
+      }
+    }
+  }
+
   insertSectionAfter(section, previousSection) {
+    section.post = this;
     let foundIndex = -1;
 
     for (let i=0; i<this.sections.length; i++) {

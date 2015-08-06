@@ -1,5 +1,8 @@
 export const MARKER_TYPE = 'marker';
 
+import {
+  normalizeTagName
+} from '../utils/dom-utils';
 import { detect } from 'content-kit-editor/utils/array-utils';
 
 const Marker = class Marker {
@@ -40,9 +43,9 @@ const Marker = class Marker {
 
   removeMarkup(markup) {
     const index = this.markups.indexOf(markup);
-    if (index === -1) { throw new Error('Cannot remove markup that is not there.'); }
-
-    this.markups.splice(index, 1);
+    if (index !== -1) {
+      this.markups.splice(index, 1);
+    }
   }
 
   // delete the character at this offset,
@@ -55,9 +58,14 @@ const Marker = class Marker {
     this.value = left + right;
   }
 
-  hasMarkup(tagName) {
-    tagName = tagName.toLowerCase();
-    return detect(this.markups, markup => markup.tagName === tagName);
+  hasMarkup(tagNameOrMarkup) {
+    if (typeof tagNameOrMarkup === 'string') {
+      let tagName = normalizeTagName(tagNameOrMarkup);
+      return detect(this.markups, markup => markup.tagName === tagName);
+    } else {
+      let targetMarkup = tagNameOrMarkup;
+      return detect(this.markups, markup => markup === targetMarkup);
+    }
   }
 
   getMarkup(tagName) {
@@ -72,14 +80,27 @@ const Marker = class Marker {
     return joined;
   }
 
-  split(offset) {
-    const [m1, m2] = [
-      new Marker(this.value.substr(0, offset)),
-      new Marker(this.value.substr(offset))
-    ];
-    this.markups.forEach(m => {m1.addMarkup(m); m2.addMarkup(m);});
+  split(offset=0, endOffset=this.length) {
+    let markers = [];
 
-    return [m1, m2];
+    if (offset !== 0) {
+      markers.push(
+        new Marker(this.value.substring(0, offset))
+      );
+    }
+
+    markers.push(
+      new Marker(this.value.substring(offset, endOffset))
+    );
+
+    if (endOffset < this.length) {
+      markers.push(
+        new Marker(this.value.substring(endOffset))
+      );
+    }
+
+    this.markups.forEach(mu => markers.forEach(m => m.addMarkup(mu)));
+    return markers;
   }
 
   get openedMarkups() {
@@ -88,6 +109,8 @@ const Marker = class Marker {
     }
     let i;
     for (i=0; i<this.markups.length; i++) {
+      // FIXME this should iterate everything and return all things that are not
+      // on this marker -- it assumes the markups are always in the same order
       if (this.markups[i] !== this.previousSibling.markups[i]) {
         return this.markups.slice(i);
       }

@@ -1,5 +1,8 @@
-import MobiledocRenderer, { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
-import { generateBuilder } from 'content-kit-editor/utils/post-builder';
+import MobiledocRenderer from 'content-kit-editor/renderers/mobiledoc';
+import {
+  MOBILEDOC_VERSION
+} from 'content-kit-editor/renderers/mobiledoc';
+import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import { normalizeTagName } from 'content-kit-editor/utils/dom-utils';
 
 const { module, test } = window.QUnit;
@@ -8,12 +11,12 @@ let builder;
 
 module('Unit: Mobiledoc Renderer', {
   beforeEach() {
-    builder = generateBuilder();
+    builder = new PostNodeBuilder();
   }
 });
 
 test('renders a blank post', (assert) => {
-  let post = builder.generatePost();
+  let post = builder.createPost();
   let mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {
     version: MOBILEDOC_VERSION,
@@ -22,13 +25,13 @@ test('renders a blank post', (assert) => {
 });
 
 test('renders a post with marker', (assert) => {
-  let post = builder.generatePost();
-  let section = builder.generateMarkupSection('P');
+  let post = builder.createPost();
+  let section = builder.createMarkupSection('P');
   post.appendSection(section);
   section.appendMarker(
-    builder.generateMarker([
-      builder.generateMarkup('STRONG')
-    ], 'Hi')
+    builder.createMarker('Hi', [
+      builder.createMarkup('STRONG')
+    ])
   );
   let mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {
@@ -47,19 +50,19 @@ test('renders a post with marker', (assert) => {
 });
 
 test('renders a post section with markers sharing a markup', (assert) => {
-  let post = builder.generatePost();
-  let section = builder.generateMarkupSection('P');
+  let post = builder.createPost();
+  let section = builder.createMarkupSection('P');
   post.appendSection(section);
-  let markup = builder.generateMarkup('STRONG');
+  let markup = builder.createMarkup('STRONG');
   section.appendMarker(
-    builder.generateMarker([
+    builder.createMarker('Hi', [
       markup
-    ], 'Hi')
+    ])
   );
   section.appendMarker(
-    builder.generateMarker([
+    builder.createMarker(' Guy', [
       markup
-    ], ' Guy')
+    ])
   );
   let mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {
@@ -80,8 +83,8 @@ test('renders a post section with markers sharing a markup', (assert) => {
 
 test('renders a post with image', (assert) => {
   let url = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
-  let post = builder.generatePost();
-  let section = builder.generateImageSection(url);
+  let post = builder.createPost();
+  let section = builder.createImageSection(url);
   post.appendSection(section);
 
   let mobiledoc = render(post);
@@ -97,8 +100,8 @@ test('renders a post with image', (assert) => {
 });
 
 test('renders a post with image and null src', (assert) => {
-  let post = builder.generatePost();
-  let section = builder.generateImageSection();
+  let post = builder.createPost();
+  let section = builder.createImageSection();
   post.appendSection(section);
 
   let mobiledoc = render(post);
@@ -116,8 +119,8 @@ test('renders a post with image and null src', (assert) => {
 test('renders a post with card', (assert) => {
   let cardName = 'super-card';
   let payload = { bar: 'baz' };
-  let post = builder.generatePost();
-  let section = builder.generateCardSection(cardName, payload);
+  let post = builder.createPost();
+  let section = builder.createCardSection(cardName, payload);
   post.appendSection(section);
 
   let mobiledoc = render(post);

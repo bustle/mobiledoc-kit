@@ -38,6 +38,29 @@ export default class Section {
     this.tagName = DEFAULT_TAG_NAME;
   }
 
+  /**
+   * Splits the marker at the offset (until the endOffset, if given)
+   * into 1, 2, or 3 markers and replaces the existing marker
+   * with the new ones
+   */
+  splitMarker(marker, offset, endOffset=marker.length) {
+    const newMarkers = marker.split(offset, endOffset);
+    this.replaceMarker(marker, newMarkers);
+    return newMarkers;
+  }
+
+  replaceMarker(oldMarker, newMarkers=[]) {
+    let previousMarker = oldMarker;
+
+    let i = newMarkers.length;
+    while (i--) {
+      let currentMarker = newMarkers[i];
+      this.insertMarkerAfter(currentMarker, previousMarker);
+    }
+
+    this.removeMarker(oldMarker);
+  }
+
   prependMarker(marker) {
     marker.section = this;
     this.markers.unshift(marker);
@@ -127,6 +150,13 @@ export default class Section {
       return this.markers[i-1];
     } else if (length === offset) {
       return this.markers[leftInclusive ? i : i-1];
+    }
+  }
+
+  get nextSibling() {
+    const index = this.post.sections.indexOf(this);
+    if (index !== -1) {
+      return this.post.sections[index+1];
     }
   }
 }
