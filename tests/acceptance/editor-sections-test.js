@@ -147,7 +147,7 @@ test('deleting across 1 section removes it, joins the 2 boundary sections', (ass
                     'remaining paragraph has correct text');
 });
 
-Helpers.skipInPhantom('keystroke of delete removes that character', (assert) => {
+test('keystroke of delete removes that character', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith3Sections});
   const getFirstTextNode = () => {
     return editor.element.
@@ -157,11 +157,7 @@ Helpers.skipInPhantom('keystroke of delete removes that character', (assert) => 
   const textNode = getFirstTextNode();
   Helpers.dom.moveCursorTo(textNode, 1);
 
-  const runDefault = Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.DELETE);
-  if (runDefault) {
-    document.execCommand('delete', false);
-    Helpers.dom.triggerEvent(editor.element, 'input');
-  }
+  Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p:eq(0)').html(), 'irst section',
                'deletes first character');
@@ -172,7 +168,7 @@ Helpers.skipInPhantom('keystroke of delete removes that character', (assert) => 
                    'cursor is at start of new text node');
 });
 
-Helpers.skipInPhantom('keystroke of delete when cursor is at beginning of marker removes character from previous marker', (assert) => {
+test('keystroke of delete when cursor is at beginning of marker removes character from previous marker', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Markers});
   const textNode = editor.element.
                     firstChild.    // section
@@ -181,11 +177,7 @@ Helpers.skipInPhantom('keystroke of delete when cursor is at beginning of marker
   assert.ok(!!textNode, 'gets text node');
   Helpers.dom.moveCursorTo(textNode, 0);
 
-  const runDefault = Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.DELETE);
-  if (runDefault) {
-    document.execCommand('delete', false);
-    Helpers.dom.triggerEvent(editor.element, 'input');
-  }
+  Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p:eq(0)').html(), '<b>bol</b>plain',
                'deletes last character of previous marker');
@@ -199,7 +191,7 @@ Helpers.skipInPhantom('keystroke of delete when cursor is at beginning of marker
                   'cursor moves to end of previous text node');
 });
 
-Helpers.skipInPhantom('keystroke of delete when cursor is after only char in only marker of section removes character', (assert) => {
+test('keystroke of delete when cursor is after only char in only marker of section removes character', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Character});
   const getTextNode = () => editor.element.
                                   firstChild. // section
@@ -209,11 +201,7 @@ Helpers.skipInPhantom('keystroke of delete when cursor is after only char in onl
   assert.ok(!!textNode, 'gets text node');
   Helpers.dom.moveCursorTo(textNode, 1);
 
-  const runDefault = Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.DELETE);
-  if (runDefault) {
-    document.execCommand('delete', false);
-    Helpers.dom.triggerEvent(editor.element, 'input');
-  }
+  Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p:eq(0)')[0].textContent, UNPRINTABLE_CHARACTER,
                'deletes only character');
@@ -251,7 +239,7 @@ Helpers.skipInPhantom('keystroke of character results in unprintable being remov
                   'cursor moves to end of m text node');
 });
 
-Helpers.skipInPhantom('keystroke of delete at start of section joins with previous section', (assert) => {
+test('keystroke of delete at start of section joins with previous section', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
 
   let secondSectionTextNode = editor.element.childNodes[1].firstChild;
@@ -260,13 +248,7 @@ Helpers.skipInPhantom('keystroke of delete at start of section joins with previo
                'finds section section text node');
 
   Helpers.dom.moveCursorTo(secondSectionTextNode, 0);
-
-  const runDefault = Helpers.dom.triggerKeyEvent(document, 'keydown',
-                                                 Helpers.dom.KEY_CODES.DELETE);
-  if (runDefault) {
-    document.execCommand('delete', false);
-    Helpers.dom.triggerEvent(editor.element, 'input');
-  }
+  Helpers.dom.triggerDelete(editor);
 
   assert.equal(editor.element.childNodes.length, 1, 'only 1 section remaining');
 
@@ -283,7 +265,7 @@ Helpers.skipInPhantom('keystroke of delete at start of section joins with previo
 });
 
 
-Helpers.skipInPhantom('keystroke of delete at start of first section does nothing', (assert) => {
+test('keystroke of delete at start of first section does nothing', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
 
   let firstSectionTextNode = editor.element.childNodes[0].firstChild;
@@ -293,12 +275,7 @@ Helpers.skipInPhantom('keystroke of delete at start of first section does nothin
 
   Helpers.dom.moveCursorTo(firstSectionTextNode, 0);
 
-  const runDefault = Helpers.dom.triggerKeyEvent(document, 'keydown',
-                                                 Helpers.dom.KEY_CODES.DELETE);
-  if (runDefault) {
-    document.execCommand('delete', false);
-    Helpers.dom.triggerEvent(editor.element, 'input');
-  }
+  Helpers.dom.triggerDelete(editor);
 
   assert.equal(editor.element.childNodes.length, 2, 'still 2 sections');
   firstSectionTextNode = editor.element.childNodes[0].firstChild;

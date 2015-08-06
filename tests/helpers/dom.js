@@ -138,7 +138,7 @@ function getCursorPosition() {
 
 function triggerDelete(editor) {
   if (isPhantom()) {
-    // simulate deletion
+    // simulate deletion for phantomjs
     let event = { preventDefault() {} };
     editor.handleDeletion(event);
   } else {
