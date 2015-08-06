@@ -144,6 +144,12 @@ export default class Cursor {
     this.moveToNode(startNode, startOffset, endNode, endOffset);
   }
 
+  /**
+   * @param {textNode} node
+   * @param {integer} offset
+   * @param {textNode} endNode (default: node)
+   * @param {integer} endOffset (default: offset)
+   */
   moveToNode(node, offset=0, endNode=node, endOffset=offset) {
     let r = document.createRange();
     r.setStart(node, offset);

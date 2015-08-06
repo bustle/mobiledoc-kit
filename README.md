@@ -1,5 +1,7 @@
 ## Content-Kit Editor [![Build Status](https://travis-ci.org/bustlelabs/content-kit-editor.svg?branch=master)](https://travis-ci.org/bustlelabs/content-kit-editor)
 
+[![Join the chat at https://gitter.im/bustlelabs/content-kit-editor](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bustlelabs/content-kit-editor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Content-Kit (WARNING: alpha!!) is a WYSIWYG editor supporting rich content via cards. Try a
 demo at [bustlelabs.github.io/content-kit-editor/demo](http://bustlelabs.github.io/content-kit-editor/demo/).
 
