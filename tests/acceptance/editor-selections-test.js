@@ -61,7 +61,7 @@ test('selecting an entire section and deleting removes it', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
 
   Helpers.dom.selectText('second section', editorElement);
-  Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.DELETE);
+  Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('p:contains(first section)');
   assert.hasNoElement('p:contains(second section)', 'deletes contents of second section');
@@ -81,7 +81,7 @@ test('selecting text in a section and deleting deletes it', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
 
   Helpers.dom.selectText('cond sec', editorElement);
-  Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.DELETE);
+  Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('p:contains(first section)', 'first section unchanged');
   assert.hasNoElement('p:contains(second section)', 'second section is no longer there');
@@ -103,23 +103,13 @@ test('selecting text across sections and deleting joins sections', (assert) => {
 
   Helpers.dom.selectText('t section', firstSection,
                          'second s', secondSection);
-  Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.DELETE);
+  Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('p:contains(firsection)');
   assert.hasNoElement('p:contains(first section)');
   assert.hasNoElement('p:contains(second section)');
   assert.equal($('#editor p').length, 1, 'only 1 section after deleting to join');
 });
-
-function getToolbarButton(assert, name) {
-  let btnSelector = `.ck-toolbar-btn[title="${name}"]`;
-  return assert.hasElement(btnSelector);
-}
-
-function clickToolbarButton(assert, name) {
-  const button = getToolbarButton(assert, name);
-  Helpers.dom.triggerEvent(button[0], 'click');
-}
 
 test('selecting text across markers and deleting joins markers', (assert) => {
   const done = assert.async();
@@ -130,7 +120,7 @@ test('selecting text across markers and deleting joins markers', (assert) => {
   Helpers.dom.triggerEvent(document, 'mouseup');
 
   setTimeout(() => {
-    clickToolbarButton(assert, 'bold');
+    Helpers.toolbar.clickButton(assert, 'bold');
 
     let firstTextNode = editorElement
                            .childNodes[0] // p
@@ -144,7 +134,7 @@ test('selecting text across markers and deleting joins markers', (assert) => {
     assert.equal(secondTextNode.textContent, 'ion', 'correct second text node');
     Helpers.dom.selectText('t sect', firstTextNode,
                            'ion',    secondTextNode);
-    Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.DELETE);
+    Helpers.dom.triggerDelete(editor);
 
     assert.hasElement('p:contains(firs)', 'deletes across markers');
     assert.hasElement('strong:contains(rs)', 'maintains bold text');

@@ -3,6 +3,7 @@ const TEXT_NODE = 3;
 import { clearSelection } from 'content-kit-editor/utils/selection-utils';
 import { walkDOMUntil } from 'content-kit-editor/utils/dom-utils';
 import KEY_CODES from 'content-kit-editor/utils/keycodes';
+import isPhantom from './is-phantom';
 
 function selectRange(startNode, startOffset, endNode, endOffset) {
   clearSelection();
@@ -135,6 +136,16 @@ function getCursorPosition() {
   };
 }
 
+function triggerDelete(editor) {
+  if (isPhantom()) {
+    // simulate deletion
+    let event = { preventDefault() {} };
+    editor.handleDeletion(event);
+  } else {
+    triggerKeyEvent(document, 'keydown', KEY_CODES.DELETE);
+  }
+}
+
 const DOMHelper = {
   moveCursorTo,
   selectText,
@@ -144,7 +155,10 @@ const DOMHelper = {
   makeDOM,
   KEY_CODES,
   getCursorPosition,
-  getSelectedText
+  getSelectedText,
+  triggerDelete
 };
+
+export { triggerEvent };
 
 export default DOMHelper;

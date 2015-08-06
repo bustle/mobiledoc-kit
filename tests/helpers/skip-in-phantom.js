@@ -1,8 +1,8 @@
 const { test } = QUnit;
+import isPhantom from './is-phantom';
 
 export default function(message, testFn) {
-  const isPhantom = navigator.userAgent.indexOf('PhantomJS') !== -1;
-  if (isPhantom) {
+  if (isPhantom()) {
     message = '[SKIPPED in PhantomJS] ' + message;
     testFn = (assert) => assert.ok(true);
   }
