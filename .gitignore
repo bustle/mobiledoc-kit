@@ -32,6 +32,19 @@ bower_components
 # OS
 .DS_Store
 
+# IDEs/Editor files
+.idea/*
+*.iml
+*.sublime-*
+projectFilesBackup
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+.vimrc
+*~
+
 # Builds
 keys.txt
 export.sh
