@@ -1,23 +1,27 @@
 export const POST_TYPE = 'post';
+import LinkedList from "content-kit-editor/utils/linked-list";
 
-// FIXME: making sections a linked-list would greatly improve this
 export default class Post {
   constructor() {
     this.type = POST_TYPE;
-    this.sections = [];
+    this.sections = new LinkedList({
+      adoptItem(section) {
+        section.post = this;
+      },
+      freeItem(section) {
+        section.post = null;
+      }
+    });
   }
   appendSection(section) {
-    section.post = this;
-    this.sections.push(section);
+    this.sections.append(section);
   }
   prependSection(section) {
-    section.post = this;
-    this.sections.unshift(section);
+    this.sections.prepend(section);
   }
   replaceSection(section, newSection) {
-    section.post = this;
-    this.insertSectionAfter(newSection, section);
-    this.removeSection(section);
+    this.sections.insertAfter(newSection, section);
+    this.sections.remove(section);
   }
   cutMarkers(markers) {
     let firstSection = markers[0].section,
@@ -80,42 +84,21 @@ export default class Post {
       } else if (currentMarker.nextSibling) {
         currentMarker = currentMarker.nextSibling;
       } else {
-        let nextSection = currentMarker.section.nextSibling;
+        let nextSection = currentMarker.section.next;
         currentMarker = nextSection && nextSection.markers[0];
       }
     }
   }
 
-  insertSectionAfter(section, previousSection) {
-    section.post = this;
-    let foundIndex = -1;
-
-    for (let i=0; i<this.sections.length; i++) {
-      if (this.sections[i] === previousSection) {
-        foundIndex = i;
-        break;
-      }
-    }
-
-    this.sections.splice(foundIndex+1, 0, section);
+  insertSectionAfter(section, nextSection) {
+    this.sections.insertAfter(section, nextSection);
   }
+
   removeSection(section) {
-    var i, l;
-    for (i=0,l=this.sections.length;i<l;i++) {
-      if (this.sections[i] === section) {
-        this.sections.splice(i, 1);
-        return;
-      }
-    }
+    this.sections.remove(section);
   }
+
   getPreviousSection(section) {
-    var i, l;
-    if (this.sections[0] !== section) {
-      for (i=1,l=this.sections.length;i<l;i++) {
-        if (this.sections[i] === section) {
-          return this.sections[i-1];
-        }
-      }
-    }
+    return section.prev;
   }
 }

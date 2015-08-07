@@ -7,9 +7,11 @@ export const VALID_MARKUP_SECTION_TAGNAMES = [
   'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'
 ].map(normalizeTagName);
 export const MARKUP_SECTION_TYPE = 'markup-section';
+import LinkedItem from "content-kit-editor/utils/linked-item";
 
-export default class Section {
+export default class Section extends LinkedItem {
   constructor(tagName, markers=[]) {
+    super();
     this.markers = [];
     this.tagName = tagName || DEFAULT_TAG_NAME;
     this.type = MARKUP_SECTION_TYPE;
@@ -158,9 +160,6 @@ export default class Section {
   }
 
   get nextSibling() {
-    const index = this.post.sections.indexOf(this);
-    if (index !== -1) {
-      return this.post.sections[index+1];
-    }
+    return this.next;
   }
 }

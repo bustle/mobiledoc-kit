@@ -2,6 +2,7 @@ export default class LinkedList {
   constructor(options) {
     this.head = null;
     this.tail = null;
+    this.length = 0;
     if (options) {
       let {adoptItem, freeItem} = options;
       this.adoptItem = adoptItem;
@@ -53,15 +54,18 @@ export default class LinkedList {
       }
       this.tail = item;
     }
+    this.length++;
   }
   remove(item) {
     if (this.freeItem) {
       this.freeItem(item);
     }
+    let didRemove = false;
     if (item.next && item.prev) {
       // Middle of the list
       item.next.prev = item.prev;
       item.prev.next = item.next;
+      didRemove = true;
     } else {
       if (item === this.head) {
         // Head of the list
@@ -69,6 +73,7 @@ export default class LinkedList {
           item.next.prev = null;
         }
         this.head = item.next;
+        didRemove = true;
       }
       if (item === this.tail) {
         // Tail of the list
@@ -76,9 +81,45 @@ export default class LinkedList {
           item.prev.next = null;
         }
         this.tail = item.prev;
+        didRemove = true;
       }
+    }
+    if (didRemove) {
+      this.length--;
     }
     item.prev = null;
     item.next = null;
+  }
+  forEach(callback) {
+    let item = this.head;
+    let index = 0;
+    while (item) {
+      callback(item, index);
+      index++;
+      item = item.next;
+    }
+  }
+  takeRange(startItem, endItem) {
+    let items = [];
+    let item = startItem || this.head;
+    while (item) {
+      items.push(item);
+      if (item === endItem) {
+        break;
+      }
+      item = item.next;
+    }
+    return items;
+  }
+  toArray() {
+    return this.takeRange();
+  }
+  detect(callback, item=this.head) {
+    while (item) {
+      if (callback(item)) {
+        return item;
+      }
+      item = item.next;
+    }
   }
 }

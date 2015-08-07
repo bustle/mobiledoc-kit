@@ -9,6 +9,7 @@ test('initial state', (assert) => {
   let list = new LinkedList();
   assert.equal(list.head, null, 'head is null');
   assert.equal(list.tail, null ,'tail is null');
+  assert.equal(list.length, 0, 'length is one');
 });
 
 ['append', 'prepend', 'insertBefore', 'insertAfter'].forEach(method => {
@@ -16,6 +17,7 @@ test('initial state', (assert) => {
     let list = new LinkedList();
     let item = new LinkedItem();
     list[method](item);
+    assert.equal(list.length, 1, 'length is one');
     assert.equal(list.head, item, 'head is item');
     assert.equal(list.tail, item, 'tail is item');
     assert.equal(item.next, null, 'item next is null');
@@ -41,6 +43,7 @@ test(`#append second item`, (assert) => {
   let itemTwo = new LinkedItem();
   list.append(itemOne);
   list.append(itemTwo);
+  assert.equal(list.length, 2, 'length is two');
   assert.equal(list.head, itemOne, 'head is itemOne');
   assert.equal(list.tail, itemTwo, 'tail is itemTwo');
   assert.equal(itemOne.prev, null, 'itemOne prev is null');
@@ -55,6 +58,7 @@ test(`#prepend first item`, (assert) => {
   let itemTwo = new LinkedItem();
   list.prepend(itemTwo);
   list.prepend(itemOne);
+  assert.equal(list.length, 2, 'length is two');
   assert.equal(list.head, itemOne, 'head is itemOne');
   assert.equal(list.tail, itemTwo, 'tail is itemTwo');
   assert.equal(itemOne.prev, null, 'itemOne prev is null');
@@ -71,6 +75,7 @@ test(`#insertBefore a middle item`, (assert) => {
   list.prepend(itemOne);
   list.append(itemThree);
   list.insertBefore(itemTwo, itemThree);
+  assert.equal(list.length, 3, 'length is three');
   assert.equal(list.head, itemOne, 'head is itemOne');
   assert.equal(list.tail, itemThree, 'tail is itemThree');
   assert.equal(itemOne.prev, null, 'itemOne prev is null');
@@ -104,6 +109,7 @@ test(`#remove an only item`, (assert) => {
   let item = new LinkedItem();
   list.append(item);
   list.remove(item);
+  assert.equal(list.length, 0, 'length is zero');
   assert.equal(list.head, null, 'head is null');
   assert.equal(list.tail, null, 'tail is null');
   assert.equal(item.prev, null, 'item prev is null');
@@ -130,6 +136,7 @@ test(`#remove a first item`, (assert) => {
   list.append(itemOne);
   list.append(itemTwo);
   list.remove(itemOne);
+  assert.equal(list.length, 1, 'length is one');
   assert.equal(list.head, itemTwo, 'head is itemTwo');
   assert.equal(list.tail, itemTwo, 'tail is itemTwo');
   assert.equal(itemOne.prev, null, 'itemOne prev is null');
@@ -170,4 +177,88 @@ test(`#remove a middle item`, (assert) => {
   assert.equal(itemTwo.next, null, 'itemTwo next is null');
   assert.equal(itemThree.prev, itemOne, 'itemThree prev is itemOne');
   assert.equal(itemThree.next, null, 'itemThree next is null');
+});
+
+test(`#forEach iterates many`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  let itemTwo = new LinkedItem();
+  let itemThree = new LinkedItem();
+  list.append(itemOne);
+  list.append(itemTwo);
+  list.append(itemThree);
+  let items = [];
+  let indexes = [];
+  list.forEach((item, index) => {
+    items.push(item);
+    indexes.push(index);
+  });
+  assert.deepEqual(items, [itemOne, itemTwo, itemThree], 'items correct');
+  assert.deepEqual(indexes, [0, 1, 2], 'indexes correct');
+});
+
+test(`#forEach iterates one`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  list.append(itemOne);
+  let items = [];
+  let indexes = [];
+  list.forEach((item, index) => {
+    items.push(item);
+    indexes.push(index);
+  });
+  assert.deepEqual(items, [itemOne], 'items correct');
+  assert.deepEqual(indexes, [0], 'indexes correct');
+});
+
+test(`#takeRange walks from start to end`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  let itemTwo = new LinkedItem();
+  let itemThree = new LinkedItem();
+  list.append(itemOne);
+  list.append(itemTwo);
+  list.append(itemThree);
+  let items = [];
+  let indexes = [];
+  list.forEach((item, index) => {
+    items.push(item);
+    indexes.push(index);
+  });
+  assert.deepEqual(list.takeRange(itemOne, itemOne), [itemOne], 'items correct');
+  assert.deepEqual(list.takeRange(itemTwo, itemThree), [itemTwo, itemThree], 'items correct');
+  assert.deepEqual(list.takeRange(itemOne, itemTwo), [itemOne, itemTwo], 'items correct');
+  assert.deepEqual(list.takeRange(itemOne, null), [itemOne, itemTwo, itemThree], 'items correct');
+});
+
+test(`#toArray builds array`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  list.append(itemOne);
+  assert.deepEqual(list.toArray(), [itemOne], 'items correct');
+});
+
+test(`#toArray builds many array`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  let itemTwo = new LinkedItem();
+  let itemThree = new LinkedItem();
+  list.append(itemOne);
+  list.append(itemTwo);
+  list.append(itemThree);
+  assert.deepEqual(list.toArray(), [itemOne, itemTwo, itemThree], 'items correct');
+});
+
+test(`#detect finds`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  let itemTwo = new LinkedItem();
+  let itemThree = new LinkedItem();
+  list.append(itemOne);
+  list.append(itemTwo);
+  list.append(itemThree);
+  assert.equal(list.detect(item => item === itemOne), itemOne, 'itemOne detected');
+  assert.equal(list.detect(item => item === itemTwo), itemTwo, 'itemTwo detected');
+  assert.equal(list.detect(item => item === itemThree), itemThree, 'itemThree detected');
+  assert.equal(list.detect(() => false), undefined, 'no item detected');
 });

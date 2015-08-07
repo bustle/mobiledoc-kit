@@ -239,7 +239,7 @@ test('nested tags (section markup) should create a block', (assert) => {
   expectedPost.appendSection(expectedFirst);
 
   assert.deepEqual(post, expectedPost);
-  let sectionMarkers = post.sections[0].markers;
+  let sectionMarkers = post.sections.head.markers;
   assert.equal(sectionMarkers[2].markups[0], sectionMarkers[3].markups[0]);
 });
 

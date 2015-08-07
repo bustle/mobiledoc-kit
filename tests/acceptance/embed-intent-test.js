@@ -61,7 +61,7 @@ Helpers.skipInPhantom('typing inserts section', (assert) => {
   assert.ok($('.ck-embed-intent').is(':visible'), 'embed intent appears');
 });
 
-Helpers.skipInPhantom('add card between sections', (assert) => {
+Helpers.skipInPhantom('add image card between sections', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith3Sections});
   assert.equal(editorElement.childNodes.length, 3, 'has 3 paragraphs to start');
 
