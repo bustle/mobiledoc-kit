@@ -45,12 +45,16 @@ p {
 
 .container {
   margin: 0.5rem 0 0;
+  display: -webkit-flex;
   display: flex;
+  -webkit-flex-direction: row;
   flex-direction: row;
 }
 
 .col-container {
+  display: -webkit-flex;
   display: flex;
+  -webkit-flex-direction: column;
   flex-direction: column;
 }
 
@@ -75,10 +79,12 @@ hr {
 }
 
 .pane {
+  -webkit-flex: 1;
   flex: 1;
 }
 
 .row {
+  -webkit-flex: 1;
   flex: 1;
 }
 

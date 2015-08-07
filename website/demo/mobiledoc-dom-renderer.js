@@ -13,7 +13,8 @@ var define, requireModule, require, requirejs;
     _isArray = Array.isArray;
   }
 
-  var registry = {}, seen = {};
+  var registry = {};
+  var seen = {};
   var FAILED = false;
 
   var uuid = 0;
@@ -120,7 +121,6 @@ var define, requireModule, require, requirejs;
   requirejs = require = requireModule = function(name) {
     var mod = registry[name];
 
-
     if (mod && mod.callback instanceof Alias) {
       mod = registry[mod.callback.name];
     }
@@ -179,21 +179,52 @@ var define, requireModule, require, requirejs;
           throw new Error('Cannot access parent module of root');
         }
         parentBase.pop();
-      } else if (part === '.') { continue; }
-      else { parentBase.push(part); }
+      } else if (part === '.') {
+        continue;
+      } else { parentBase.push(part); }
     }
 
     return parentBase.join('/');
   }
 
   requirejs.entries = requirejs._eak_seen = registry;
-  requirejs.clear = function(){
+  requirejs.unsee = function(moduleName) {
+    delete seen[moduleName];
+  };
+
+  requirejs.clear = function() {
     requirejs.entries = requirejs._eak_seen = registry = {};
     seen = state = {};
   };
 })();
 
-define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
+define('mobiledoc-dom-renderer/cards/image', ['exports', 'mobiledoc-dom-renderer/utils'], function (exports, _mobiledocDomRendererUtils) {
+  'use strict';
+
+  var ImageCard = {
+    name: 'image',
+    display: {
+      setup: function setup(element, options, env, payload) {
+        if (payload.src) {
+          var img = (0, _mobiledocDomRendererUtils.createElement)('img');
+          img.src = payload.src;
+          element.appendChild(img);
+        }
+      }
+    }
+  };
+
+  exports['default'] = ImageCard;
+});
+define("mobiledoc-dom-renderer/dom-renderer", ["exports", "mobiledoc-dom-renderer/utils", "mobiledoc-dom-renderer/cards/image"], function (exports, _mobiledocDomRendererUtils, _mobiledocDomRendererCardsImage) {
+  "use strict";
+
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
   /**
    * runtime DOM renderer
    * renders a mobiledoc to DOM
@@ -201,26 +232,6 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
    * input: mobiledoc
    * output: DOM
    */
-
-  'use strict';
-
-  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
-
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-  var utils = {
-    createElement: function createElement(tagName) {
-      return document.createElement(tagName);
-    },
-    appendChild: function appendChild(target, child) {
-      target.appendChild(child);
-    },
-    createTextNode: function createTextNode(text) {
-      return document.createTextNode(text);
-    }
-  };
 
   function createElementFromMarkerType() {
     var _ref = arguments.length <= 0 || arguments[0] === undefined ? ['', []] : arguments[0];
@@ -230,7 +241,7 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
     var tagName = _ref2[0];
     var attributes = _ref2[1];
 
-    var element = utils.createElement(tagName);
+    var element = (0, _mobiledocDomRendererUtils.createElement)(tagName);
     attributes = attributes || [];
 
     for (var i = 0, l = attributes.length; i < l; i = i + 2) {
@@ -241,13 +252,17 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
     return element;
   }
 
+  function setDefaultCards(cards) {
+    cards.image = cards.image || _mobiledocDomRendererCardsImage["default"];
+  }
+
   var DOMRenderer = (function () {
     function DOMRenderer() {
       _classCallCheck(this, DOMRenderer);
     }
 
     _createClass(DOMRenderer, [{
-      key: 'render',
+      key: "render",
 
       /**
        * @param mobiledoc
@@ -257,7 +272,7 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
       value: function render(_ref3) {
         var _this = this;
 
-        var rootElement = arguments.length <= 1 || arguments[1] === undefined ? utils.createElement('div') : arguments[1];
+        var rootElement = arguments.length <= 1 || arguments[1] === undefined ? (0, _mobiledocDomRendererUtils.createElement)('div') : arguments[1];
         var version = _ref3.version;
         var sectionData = _ref3.sections;
         var cards = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
@@ -270,6 +285,7 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
         this.root = rootElement;
         this.markerTypes = markerTypes;
         this.cards = cards;
+        setDefaultCards(this.cards);
 
         sections.forEach(function (section) {
           return _this.renderSection(section);
@@ -278,7 +294,7 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
         return this.root;
       }
     }, {
-      key: 'renderSection',
+      key: "renderSection",
       value: function renderSection(section) {
         var _section = _slicedToArray(section, 1);
 
@@ -288,34 +304,34 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
         switch (type) {
           case 1:
             rendered = this.renderMarkupSection(section);
-            utils.appendChild(this.root, rendered);
+            (0, _mobiledocDomRendererUtils.appendChild)(this.root, rendered);
             break;
           case 2:
             rendered = this.renderImageSection(section);
-            utils.appendChild(this.root, rendered);
+            (0, _mobiledocDomRendererUtils.appendChild)(this.root, rendered);
             break;
           case 10:
             rendered = this.renderCardSection(section);
-            utils.appendChild(this.root, rendered);
+            (0, _mobiledocDomRendererUtils.appendChild)(this.root, rendered);
             break;
           default:
             throw new Error('Unimplement renderer for type ' + type);
         }
       }
     }, {
-      key: 'renderImageSection',
+      key: "renderImageSection",
       value: function renderImageSection(_ref4) {
         var _ref42 = _slicedToArray(_ref4, 2);
 
         var type = _ref42[0];
         var src = _ref42[1];
 
-        var element = utils.createElement('img');
+        var element = (0, _mobiledocDomRendererUtils.createElement)('img');
         element.src = src;
         return element;
       }
     }, {
-      key: 'renderCardSection',
+      key: "renderCardSection",
       value: function renderCardSection(_ref5) {
         var _ref52 = _slicedToArray(_ref5, 3);
 
@@ -325,14 +341,14 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
 
         var card = this.cards[name];
         if (!card) {
-          throw new Error('Cannot render unknown card named ' + name);
+          throw new Error("Cannot render unknown card named " + name);
         }
-        var element = utils.createElement('div');
+        var element = (0, _mobiledocDomRendererUtils.createElement)('div');
         card.display.setup(element, {}, { name: name }, payload);
         return element;
       }
     }, {
-      key: 'renderMarkupSection',
+      key: "renderMarkupSection",
       value: function renderMarkupSection(_ref6) {
         var _ref62 = _slicedToArray(_ref6, 3);
 
@@ -340,7 +356,7 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
         var tagName = _ref62[1];
         var markers = _ref62[2];
 
-        var element = utils.createElement(tagName);
+        var element = (0, _mobiledocDomRendererUtils.createElement)(tagName);
         var elements = [element];
         var currentElement = element;
 
@@ -356,12 +372,12 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
           for (var j = 0, m = openTypes.length; j < m; j++) {
             var markerType = this.markerTypes[openTypes[j]];
             var openedElement = createElementFromMarkerType(markerType);
-            utils.appendChild(currentElement, openedElement);
+            (0, _mobiledocDomRendererUtils.appendChild)(currentElement, openedElement);
             elements.push(openedElement);
             currentElement = openedElement;
           }
 
-          utils.appendChild(currentElement, utils.createTextNode(text));
+          (0, _mobiledocDomRendererUtils.appendChild)(currentElement, (0, _mobiledocDomRendererUtils.createTextNode)(text));
 
           for (var j = 0, m = closeTypes; j < m; j++) {
             elements.pop();
@@ -376,7 +392,7 @@ define('mobiledoc-dom-renderer/dom-renderer', ['exports'], function (exports) {
     return DOMRenderer;
   })();
 
-  exports['default'] = DOMRenderer;
+  exports["default"] = DOMRenderer;
 });
 define('mobiledoc-dom-renderer', ['exports', 'mobiledoc-dom-renderer/dom-renderer'], function (exports, _mobiledocDomRendererDomRenderer) {
   'use strict';
@@ -388,6 +404,25 @@ define('mobiledoc-dom-renderer', ['exports', 'mobiledoc-dom-renderer/dom-rendere
   }
 
   exports['default'] = _mobiledocDomRendererDomRenderer['default'];
+});
+define("mobiledoc-dom-renderer/utils", ["exports"], function (exports) {
+  "use strict";
+
+  exports.createElement = createElement;
+  exports.appendChild = appendChild;
+  exports.createTextNode = createTextNode;
+
+  function createElement(tagName) {
+    return document.createElement(tagName);
+  }
+
+  function appendChild(target, child) {
+    target.appendChild(child);
+  }
+
+  function createTextNode(text) {
+    return document.createTextNode(text);
+  }
 });
 require("mobiledoc-dom-renderer")["registerGlobal"](window, document);
 })();

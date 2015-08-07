@@ -182,7 +182,8 @@ var ContentKitDemo = exports.ContentKitDemo = {
       'simple-card': simpleCard,
       'edit-card': cardWithEditMode,
       'input-card': cardWithInput,
-      'selfie-card': selfieCard
+      'selfie-card': selfieCard,
+      'image': ContentKit.ImageCard
     };
     var renderer = new MobiledocDOMRenderer();
     var rendered = renderer.render(mobiledoc, document.createElement('div'), cards);
@@ -262,7 +263,12 @@ function bootEditor(element, mobiledoc) {
   editor = new ContentKit.Editor(element, {
     autofocus: false,
     mobiledoc: mobiledoc,
-    cards: [simpleCard, cardWithEditMode, cardWithInput, selfieCard]
+    cards: [simpleCard, cardWithEditMode, cardWithInput, selfieCard],
+    cardOptions: {
+      image: {
+        uploadUrl: 'http://localhost:5000/upload'
+      }
+    }
   });
 
   function sync() {

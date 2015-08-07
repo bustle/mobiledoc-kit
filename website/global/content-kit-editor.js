@@ -13,7 +13,8 @@ var define, requireModule, require, requirejs;
     _isArray = Array.isArray;
   }
 
-  var registry = {}, seen = {};
+  var registry = {};
+  var seen = {};
   var FAILED = false;
 
   var uuid = 0;
@@ -120,7 +121,6 @@ var define, requireModule, require, requirejs;
   requirejs = require = requireModule = function(name) {
     var mod = registry[name];
 
-
     if (mod && mod.callback instanceof Alias) {
       mod = registry[mod.callback.name];
     }
@@ -179,239 +179,469 @@ var define, requireModule, require, requirejs;
           throw new Error('Cannot access parent module of root');
         }
         parentBase.pop();
-      } else if (part === '.') { continue; }
-      else { parentBase.push(part); }
+      } else if (part === '.') {
+        continue;
+      } else { parentBase.push(part); }
     }
 
     return parentBase.join('/');
   }
 
   requirejs.entries = requirejs._eak_seen = registry;
-  requirejs.clear = function(){
+  requirejs.unsee = function(moduleName) {
+    delete seen[moduleName];
+  };
+
+  requirejs.clear = function() {
     requirejs.entries = requirejs._eak_seen = registry = {};
     seen = state = {};
   };
 })();
 
+define('content-kit-editor/cards/image', ['exports', 'content-kit-editor/cards/placeholder-image', 'content-kit-editor/utils/http-utils'], function (exports, _contentKitEditorCardsPlaceholderImage, _contentKitEditorUtilsHttpUtils) {
+  'use strict';
+
+  function buildFileInput() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.classList.add('ck-file-input');
+    document.body.appendChild(input);
+    return input;
+  }
+
+  function buildButton(text) {
+    var button = document.createElement('button');
+    button.innerHTML = text;
+    return button;
+  }
+
+  function upload(imageOptions, fileInput, success, failure) {
+    var uploader = new _contentKitEditorUtilsHttpUtils.FileUploader({
+      url: imageOptions.uploadUrl,
+      maxFileSize: 5000000
+    });
+    uploader.upload({
+      fileInput: fileInput,
+      complete: function complete(response, error) {
+        if (!error && response && response.url) {
+          success({
+            src: response.url
+          });
+        } else {
+          window.alert('There was a problem uploading the image: ' + error);
+          failure();
+        }
+      }
+    });
+  }
+
+  exports['default'] = {
+    name: 'image',
+
+    display: {
+      setup: function setup(element, options, _ref, payload) {
+        var edit = _ref.edit;
+
+        var img = document.createElement('img');
+        img.src = payload.src || _contentKitEditorCardsPlaceholderImage['default'];
+        if (edit) {
+          img.onclick = edit;
+        }
+        element.appendChild(img);
+        return img;
+      },
+      teardown: function teardown(element) {
+        element.parentNode.removeChild(element);
+      }
+    },
+
+    edit: {
+      setup: function setup(element, options, _ref2) {
+        var save = _ref2.save;
+        var cancel = _ref2.cancel;
+
+        var uploadButton = buildButton('Upload');
+        var cancelButton = buildButton('Cancel');
+        cancelButton.onclick = cancel;
+
+        var imageOptions = options.image;
+
+        if (!imageOptions || imageOptions && !imageOptions.uploadUrl) {
+          window.alert('Image card must have `image.uploadUrl` included in cardOptions');
+          cancel();
+          return;
+        }
+
+        var fileInput = buildFileInput();
+        uploadButton.onclick = function () {
+          fileInput.dispatchEvent(new MouseEvent('click', { bubbles: false }));
+        };
+        element.appendChild(uploadButton);
+        element.appendChild(cancelButton);
+
+        fileInput.onchange = function () {
+          try {
+            if (fileInput.files.length === 0) {
+              cancel();
+            }
+            upload(imageOptions, fileInput, save, cancel);
+          } catch (error) {
+            window.alert('There was a starting the upload: ' + error);
+            cancel();
+          }
+        };
+        return [uploadButton, cancelButton, fileInput];
+      },
+      teardown: function teardown(elements) {
+        elements.forEach(function (element) {
+          return element.parentNode.removeChild(element);
+        });
+      }
+    }
+
+  };
+});
+define("content-kit-editor/cards/placeholder-image", ["exports"], function (exports) {
+  "use strict";
+
+  var placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAMFBMVEXp7vG6vsHm6+63u77Hy868wMPe4+bO09bh5unr8fTR1djAxMfM0NPX3N/c4eTBxcjXRf5TAAACh0lEQVR4nO3b6ZKqMBSFUSQMYZL3f9tbBq/NEEDiqUqOfusn1ZXKbjcQlGQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACC6RkbsGHuabChEtHmiGYfS3EQYM+Sxw/gMQvmcNnYaj6oTDHi73WPn2eqnj9B8zo3TJXcq5uNjXmVff86VwSR3JtryMa1BYqi7S1hJDCVpSigyLcGhJJEwzlCSNtPKrbVhVwsdCfOhH7uuaG3ARV9DwsaOzxt3N1yPqCHhvXytTUz92VDpmE/LLhZwl++R6Sds6sUa/PL6K/2E2fIhw1xdRKefsFolrPc+xNx/N0k/4fpBsdhL2HfeiN+TsDCms8dDpeRyS3P3QDl6Iqaf8L0rTf+80m6Lmn7Ct+4Wxf+/2RY1/YRv3PHz/u+fsCmqgoTnq7Z+8SGviqoh4dnKu1ieqauiakh4/PQ0r6ivqDoSHj0B97eNRVG1JNxV+L4bnxdVecJtRTdFVZ7QU9F1UXUn9FZ0VVRlCav5ob2KLouqKmFjy676u2HsVnRRVFUJq3J+8KCi86IqSthMvyl209Hjijqm3RsqAZ5pNfa5PJ2KelJRjQmr1/r7cfy0ouoSNvOfvbvhvKLaEr4qOin9kTQnrN7LpDZhE/Zmhp6Eq4p+YcKgiipKGFhRRQkDK6ooYfgLbiSMioQkJGF8P5XwHv4O+7AaKiXzaeXh1kMl5AffTUxiKEm/krD94BR8Gdxl1fceSlR58ZhXKbEpyD2amNiBtmrJLTMHL1LF8/rpXkSZXEmz8K8uvAFFNm6Iq0aBLUFOmeCuJ6exrcCmoLpN7kYx891bSAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgh/wDdr8peyRHLogAAAAASUVORK5CYII=";
+
+  exports["default"] = placeholderImage;
+});
 define("content-kit-editor/commands/base", ["exports"], function (exports) {
   "use strict";
 
-  function Command(options) {
-    options = options || {};
-    var command = this;
-    var name = options.name;
-    var prompt = options.prompt;
-    command.name = name;
-    command.button = options.button || name;
-    if (prompt) {
-      command.prompt = prompt;
-    }
-  }
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  Command.prototype.exec = function () {};
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  var Command = (function () {
+    function Command() {
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+      _classCallCheck(this, Command);
+
+      var command = this;
+      var name = options.name;
+      var prompt = options.prompt;
+      command.name = name;
+      command.button = options.button || name;
+      if (prompt) {
+        command.prompt = prompt;
+      }
+    }
+
+    _createClass(Command, [{
+      key: "exec",
+      value: function exec() {/* override in subclass */}
+    }, {
+      key: "unexec",
+      value: function unexec() {/* override in subclass */}
+    }]);
+
+    return Command;
+  })();
 
   exports["default"] = Command;
 });
-define('content-kit-editor/commands/bold', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/utils/selection-utils', 'content-kit-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorUtilsSelectionUtils, _contentKitUtils) {
+define('content-kit-editor/commands/bold', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorUtilsArrayUtils) {
   'use strict';
 
-  var RegExpHeadingTag = /^(h1|h2|h3|h4|h5|h6)$/i;
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function BoldCommand() {
-    _contentKitEditorCommandsTextFormat['default'].call(this, {
-      name: 'bold',
-      tag: 'strong',
-      mappedTags: ['b'],
-      button: '<i class="ck-icon-bold"></i>'
-    });
-  }
-  (0, _contentKitUtils.inherit)(BoldCommand, _contentKitEditorCommandsTextFormat['default']);
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-  BoldCommand.prototype.exec = function () {
-    // Don't allow executing bold command on heading tags
-    if (!RegExpHeadingTag.test((0, _contentKitEditorUtilsSelectionUtils.getSelectionBlockTagName)())) {
-      BoldCommand._super.prototype.exec.call(this);
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var BoldCommand = (function (_TextFormatCommand) {
+    _inherits(BoldCommand, _TextFormatCommand);
+
+    function BoldCommand(editor) {
+      _classCallCheck(this, BoldCommand);
+
+      _get(Object.getPrototypeOf(BoldCommand.prototype), 'constructor', this).call(this, {
+        name: 'bold',
+        button: '<i class="ck-icon-bold"></i>'
+      });
+      this.editor = editor;
+      var builder = this.editor.builder;
+
+      this.markup = builder.createMarkup('strong');
     }
-  };
+
+    _createClass(BoldCommand, [{
+      key: 'exec',
+      value: function exec() {
+        this.editor.applyMarkupToSelection(this.markup);
+      }
+    }, {
+      key: 'unexec',
+      value: function unexec() {
+        this.editor.removeMarkupFromSelection(this.markup);
+      }
+    }, {
+      key: 'isActive',
+      value: function isActive() {
+        var _this = this;
+
+        return (0, _contentKitEditorUtilsArrayUtils.any)(this.editor.activeMarkers, function (m) {
+          return m.hasMarkup(_this.markup);
+        });
+      }
+    }]);
+
+    return BoldCommand;
+  })(_contentKitEditorCommandsTextFormat['default']);
 
   exports['default'] = BoldCommand;
 });
-define('content-kit-editor/commands/card', ['exports', 'content-kit-editor/commands/base', 'content-kit-utils'], function (exports, _contentKitEditorCommandsBase, _contentKitUtils) {
+define('content-kit-editor/commands/card', ['exports', 'content-kit-editor/commands/base'], function (exports, _contentKitEditorCommandsBase) {
   'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   function injectCardBlock() /* cardName, cardPayload, editor, index */{
     throw new Error('Unimplemented: BlockModel and Type.CARD are no longer things');
   }
 
-  function CardCommand() {
-    _contentKitEditorCommandsBase['default'].call(this, {
-      name: 'card',
-      button: '<i>CA</i>'
-    });
-  }
-  (0, _contentKitUtils.inherit)(CardCommand, _contentKitEditorCommandsBase['default']);
+  var CardCommand = (function (_Command) {
+    _inherits(CardCommand, _Command);
 
-  CardCommand.prototype = {
-    exec: function exec() {
-      CardCommand._super.prototype.exec.call(this);
-      var editor = this.editorContext;
-      var currentEditingIndex = editor.getCurrentBlockIndex();
+    function CardCommand() {
+      _classCallCheck(this, CardCommand);
 
-      var cardName = 'pick-color';
-      var cardPayload = { options: ['red', 'blue'] };
-      injectCardBlock(cardName, cardPayload, editor, currentEditingIndex);
+      _get(Object.getPrototypeOf(CardCommand.prototype), 'constructor', this).call(this, {
+        name: 'card',
+        button: '<i>CA</i>'
+      });
     }
-  };
+
+    _createClass(CardCommand, [{
+      key: 'exec',
+      value: function exec() {
+        _get(Object.getPrototypeOf(CardCommand.prototype), 'exec', this).call(this);
+        var editor = this.editor;
+        var currentEditingIndex = editor.getCurrentBlockIndex();
+
+        var cardName = 'pick-color';
+        var cardPayload = { options: ['red', 'blue'] };
+        injectCardBlock(cardName, cardPayload, editor, currentEditingIndex);
+      }
+    }]);
+
+    return CardCommand;
+  })(_contentKitEditorCommandsBase['default']);
 
   exports['default'] = CardCommand;
 });
-define('content-kit-editor/commands/format-block', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/utils/selection-utils', 'content-kit-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorUtilsSelectionUtils, _contentKitUtils) {
+define('content-kit-editor/commands/format-block', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorUtilsArrayUtils) {
   'use strict';
 
-  function FormatBlockCommand(options) {
-    options = options || {};
-    options.action = 'formatBlock';
-    _contentKitEditorCommandsTextFormat['default'].call(this, options);
-  }
-  (0, _contentKitUtils.inherit)(FormatBlockCommand, _contentKitEditorCommandsTextFormat['default']);
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  FormatBlockCommand.prototype.exec = function () {
-    var tag = this.tag;
-    // Brackets neccessary for certain browsers
-    var value = '<' + tag + '>';
-    var blockElement = (0, _contentKitEditorUtilsSelectionUtils.getSelectionBlockElement)();
-    // Allow block commands to be toggled back to a text block
-    if (tag === blockElement.tagName.toLowerCase()) {
-      throw new Error('Unimplemented: Type.BOLD.paragraph must be replaced');
-      /*
-      value = Type.PARAGRAPH.tag;
-      */
-    } else {
-        // Flattens the selection before applying the block format.
-        // Otherwise, undesirable nested blocks can occur.
-        // TODO: would love to be able to remove this
-        var flatNode = document.createTextNode(blockElement.textContent);
-        blockElement.parentNode.insertBefore(flatNode, blockElement);
-        blockElement.parentNode.removeChild(blockElement);
-        (0, _contentKitEditorUtilsSelectionUtils.selectNode)(flatNode);
+  var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var FormatBlockCommand = (function (_TextFormatCommand) {
+    _inherits(FormatBlockCommand, _TextFormatCommand);
+
+    function FormatBlockCommand(editor) {
+      var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+      _classCallCheck(this, FormatBlockCommand);
+
+      _get(Object.getPrototypeOf(FormatBlockCommand.prototype), 'constructor', this).call(this, options);
+      this.editor = editor;
+    }
+
+    _createClass(FormatBlockCommand, [{
+      key: 'isActive',
+      value: function isActive() {
+        var _this = this;
+
+        var editor = this.editor;
+        var activeSections = editor.activeSections;
+
+        return (0, _contentKitEditorUtilsArrayUtils.any)(activeSections, function (section) {
+          return (0, _contentKitEditorUtilsArrayUtils.any)(_this.mappedTags, function (t) {
+            return section.tagName === t;
+          });
+        });
       }
+    }, {
+      key: 'exec',
+      value: function exec() {
+        var _this2 = this;
 
-    FormatBlockCommand._super.prototype.exec.call(this, value);
-  };
+        var editor = this.editor;
+        var activeSections = editor.activeSections;
+
+        activeSections.forEach(function (s) {
+          editor.resetSectionMarkers(s);
+          editor.setSectionTagName(s, _this2.tag);
+        });
+
+        editor.rerender();
+        editor.selectSections(activeSections);
+      }
+    }, {
+      key: 'unexec',
+      value: function unexec() {
+        var editor = this.editor;
+        var activeSections = editor.activeSections;
+
+        activeSections.forEach(function (s) {
+          editor.resetSectionTagName(s);
+        });
+
+        editor.rerender();
+        editor.selectSections(activeSections);
+      }
+    }]);
+
+    return FormatBlockCommand;
+  })(_contentKitEditorCommandsTextFormat['default']);
 
   exports['default'] = FormatBlockCommand;
 });
-define('content-kit-editor/commands/heading', ['exports', 'content-kit-editor/commands/format-block', 'content-kit-utils'], function (exports, _contentKitEditorCommandsFormatBlock, _contentKitUtils) {
+define('content-kit-editor/commands/heading', ['exports', 'content-kit-editor/commands/format-block'], function (exports, _contentKitEditorCommandsFormatBlock) {
   'use strict';
 
-  function HeadingCommand() {
-    _contentKitEditorCommandsFormatBlock['default'].call(this, {
-      name: 'heading',
-      tag: 'h2',
-      button: '<i class="ck-icon-heading"></i>1'
-    });
-  }
-  (0, _contentKitUtils.inherit)(HeadingCommand, _contentKitEditorCommandsFormatBlock['default']);
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var HeadingCommand = (function (_FormatBlockCommand) {
+    _inherits(HeadingCommand, _FormatBlockCommand);
+
+    function HeadingCommand(editor) {
+      _classCallCheck(this, HeadingCommand);
+
+      var options = {
+        name: 'heading',
+        tag: 'h2',
+        button: '<i class="ck-icon-heading"></i>2'
+      };
+      _get(Object.getPrototypeOf(HeadingCommand.prototype), 'constructor', this).call(this, editor, options);
+    }
+
+    return HeadingCommand;
+  })(_contentKitEditorCommandsFormatBlock['default']);
 
   exports['default'] = HeadingCommand;
 });
-define('content-kit-editor/commands/image', ['exports', 'content-kit-editor/commands/base', 'content-kit-editor/views/message', 'content-kit-utils', 'content-kit-editor/utils/http-utils', 'content-kit-editor/utils/post-builder'], function (exports, _contentKitEditorCommandsBase, _contentKitEditorViewsMessage, _contentKitUtils, _contentKitEditorUtilsHttpUtils, _contentKitEditorUtilsPostBuilder) {
+define('content-kit-editor/commands/image', ['exports', 'content-kit-editor/commands/base'], function (exports, _contentKitEditorCommandsBase) {
   'use strict';
 
-  function readFromFile(file, callback) {
-    var reader = new FileReader();
-    reader.onload = function (_ref) {
-      var target = _ref.target;
-      return callback(target.result);
-    };
-    reader.readAsDataURL(file);
-  }
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function ImageCommand(options) {
-    _contentKitEditorCommandsBase['default'].call(this, {
-      name: 'image',
-      button: '<i class="ck-icon-image"></i>'
-    });
-    this.uploader = new _contentKitEditorUtilsHttpUtils.FileUploader({
-      url: options.serviceUrl,
-      maxFileSize: 5000000
-    });
-  }
-  (0, _contentKitUtils.inherit)(ImageCommand, _contentKitEditorCommandsBase['default']);
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-  ImageCommand.prototype = {
-    exec: function exec() {
-      ImageCommand._super.prototype.exec.call(this);
-      var fileInput = this.getFileInput();
-      fileInput.dispatchEvent(new MouseEvent('click', { bubbles: false }));
-    },
-    getFileInput: function getFileInput() {
-      var _this = this;
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-      if (this._fileInput) {
-        return this._fileInput;
-      }
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-      var fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = 'image/*';
-      fileInput.className = 'ck-file-input';
-      fileInput.addEventListener('change', function (e) {
-        return _this.handleFile(e);
-      });
-      document.body.appendChild(fileInput);
+  var ImageCommand = (function (_Command) {
+    _inherits(ImageCommand, _Command);
 
-      return fileInput;
-    },
-    handleFile: function handleFile(_ref2) {
-      var _this2 = this;
+    function ImageCommand() {
+      _classCallCheck(this, ImageCommand);
 
-      var fileInput = _ref2.target;
-
-      var imageSection = undefined;
-
-      var file = fileInput.files[0];
-      readFromFile(file, function (base64Image) {
-        imageSection = (0, _contentKitEditorUtilsPostBuilder.generateBuilder)().generateImageSection(base64Image);
-        _this2.editorContext.insertSectionAtCursor(imageSection);
-        _this2.editorContext.rerender();
-      });
-
-      this.uploader.upload({
-        fileInput: fileInput,
-        complete: function complete(response, error) {
-          if (!imageSection) {
-            throw new Error('Upload completed before the image was read into memory');
-          }
-          if (!error && response && response.url) {
-            imageSection.src = response.url;
-            imageSection.renderNode.markDirty();
-            _this2.editorContext.rerender();
-            _this2.editorContext.trigger('update');
-          } else {
-            _this2.editorContext.removeSection(imageSection);
-            new _contentKitEditorViewsMessage['default']().showError(error.message || 'Error uploading image');
-          }
-          _this2.editorContext.rerender();
-        }
+      _get(Object.getPrototypeOf(ImageCommand.prototype), 'constructor', this).call(this, {
+        name: 'image',
+        button: '<i class="ck-icon-image"></i>'
       });
     }
-  };
+
+    _createClass(ImageCommand, [{
+      key: 'exec',
+      value: function exec() {
+        var _editor = this.editor;
+        var post = _editor.post;
+        var builder = _editor.builder;
+
+        var sections = this.editor.activeSections;
+        var lastSection = sections[sections.length - 1];
+        var section = builder.createCardSection('image');
+        post.insertSectionAfter(section, lastSection);
+        sections.forEach(function (section) {
+          return section.renderNode.scheduleForRemoval();
+        });
+
+        this.editor.rerender();
+        this.editor.trigger('update');
+      }
+    }]);
+
+    return ImageCommand;
+  })(_contentKitEditorCommandsBase['default']);
 
   exports['default'] = ImageCommand;
 });
-define('content-kit-editor/commands/italic', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitUtils) {
+define('content-kit-editor/commands/italic', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorUtilsArrayUtils) {
   'use strict';
 
-  function ItalicCommand() {
-    _contentKitEditorCommandsTextFormat['default'].call(this, {
-      name: 'italic',
-      tag: 'em',
-      mappedTags: ['i'],
-      button: '<i class="ck-icon-italic"></i>'
-    });
-  }
-  (0, _contentKitUtils.inherit)(ItalicCommand, _contentKitEditorCommandsTextFormat['default']);
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var ItalicCommand = (function (_TextFormatCommand) {
+    _inherits(ItalicCommand, _TextFormatCommand);
+
+    function ItalicCommand(editor) {
+      _classCallCheck(this, ItalicCommand);
+
+      _get(Object.getPrototypeOf(ItalicCommand.prototype), 'constructor', this).call(this, {
+        name: 'italic',
+        button: '<i class="ck-icon-italic"></i>'
+      });
+      this.editor = editor;
+      var builder = this.editor.builder;
+
+      this.markup = builder.createMarkup('em');
+    }
+
+    _createClass(ItalicCommand, [{
+      key: 'exec',
+      value: function exec() {
+        this.editor.applyMarkupToSelection(this.markup);
+      }
+    }, {
+      key: 'unexec',
+      value: function unexec() {
+        this.editor.removeMarkupFromSelection(this.markup);
+      }
+    }, {
+      key: 'isActive',
+      value: function isActive() {
+        var _this = this;
+
+        return (0, _contentKitEditorUtilsArrayUtils.any)(this.editor.activeMarkers, function (m) {
+          return m.hasMarkup(_this.markup);
+        });
+      }
+    }]);
+
+    return ItalicCommand;
+  })(_contentKitEditorCommandsTextFormat['default']);
 
   exports['default'] = ItalicCommand;
 });
@@ -525,9 +755,7 @@ define('content-kit-editor/commands/oembed', ['exports', 'content-kit-editor/com
 
   OEmbedCommand.prototype.exec = function (url) {
     var command = this;
-    // var editorContext = command.editorContext;
     var embedIntent = command.embedIntent;
-    // var index = editorContext.getCurrentBlockIndex();
 
     embedIntent.showLoading();
     this.embedService.fetch({
@@ -571,56 +799,104 @@ define('content-kit-editor/commands/ordered-list', ['exports', 'content-kit-edit
 
   exports['default'] = OrderedListCommand;
 });
-define('content-kit-editor/commands/quote', ['exports', 'content-kit-editor/commands/format-block', 'content-kit-utils'], function (exports, _contentKitEditorCommandsFormatBlock, _contentKitUtils) {
+define('content-kit-editor/commands/quote', ['exports', 'content-kit-editor/commands/format-block'], function (exports, _contentKitEditorCommandsFormatBlock) {
   'use strict';
 
-  function QuoteCommand() {
-    _contentKitEditorCommandsFormatBlock['default'].call(this, {
-      name: 'quote',
-      tag: 'blockquote',
-      button: '<i class="ck-icon-quote"></i>'
-    });
-  }
-  (0, _contentKitUtils.inherit)(QuoteCommand, _contentKitEditorCommandsFormatBlock['default']);
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var QuoteCommand = (function (_FormatBlockCommand) {
+    _inherits(QuoteCommand, _FormatBlockCommand);
+
+    function QuoteCommand(editor) {
+      _classCallCheck(this, QuoteCommand);
+
+      _get(Object.getPrototypeOf(QuoteCommand.prototype), 'constructor', this).call(this, editor, {
+        name: 'quote',
+        tag: 'blockquote',
+        button: '<i class="ck-icon-quote"></i>'
+      });
+    }
+
+    return QuoteCommand;
+  })(_contentKitEditorCommandsFormatBlock['default']);
 
   exports['default'] = QuoteCommand;
 });
-define('content-kit-editor/commands/subheading', ['exports', 'content-kit-editor/commands/format-block', 'content-kit-utils'], function (exports, _contentKitEditorCommandsFormatBlock, _contentKitUtils) {
+define('content-kit-editor/commands/subheading', ['exports', 'content-kit-editor/commands/format-block'], function (exports, _contentKitEditorCommandsFormatBlock) {
   'use strict';
 
-  function SubheadingCommand() {
-    _contentKitEditorCommandsFormatBlock['default'].call(this, {
-      name: 'subheading',
-      tag: 'h3',
-      button: '<i class="ck-icon-heading"></i>2'
-    });
-  }
-  (0, _contentKitUtils.inherit)(SubheadingCommand, _contentKitEditorCommandsFormatBlock['default']);
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var SubheadingCommand = (function (_FormatBlockCommand) {
+    _inherits(SubheadingCommand, _FormatBlockCommand);
+
+    function SubheadingCommand(editor) {
+      _classCallCheck(this, SubheadingCommand);
+
+      _get(Object.getPrototypeOf(SubheadingCommand.prototype), 'constructor', this).call(this, editor, {
+        name: 'subheading',
+        tag: 'h3',
+        button: '<i class="ck-icon-heading"></i>3'
+      });
+    }
+
+    return SubheadingCommand;
+  })(_contentKitEditorCommandsFormatBlock['default']);
 
   exports['default'] = SubheadingCommand;
 });
-define('content-kit-editor/commands/text-format', ['exports', 'content-kit-editor/commands/base', 'content-kit-utils'], function (exports, _contentKitEditorCommandsBase, _contentKitUtils) {
+define('content-kit-editor/commands/text-format', ['exports', 'content-kit-editor/commands/base'], function (exports, _contentKitEditorCommandsBase) {
   'use strict';
 
-  function TextFormatCommand(options) {
-    options = options || {};
-    _contentKitEditorCommandsBase['default'].call(this, options);
-    this.tag = options.tag;
-    this.mappedTags = options.mappedTags || [];
-    this.mappedTags.push(this.tag);
-    this.action = options.action || this.name;
-    this.removeAction = options.removeAction || this.action;
-  }
-  (0, _contentKitUtils.inherit)(TextFormatCommand, _contentKitEditorCommandsBase['default']);
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  TextFormatCommand.prototype = {
-    exec: function exec(value) {
-      document.execCommand(this.action, false, value || null);
-    },
-    unexec: function unexec(value) {
-      document.execCommand(this.removeAction, false, value || null);
+  var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var TextFormatCommand = (function (_Command) {
+    _inherits(TextFormatCommand, _Command);
+
+    function TextFormatCommand() {
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+      _classCallCheck(this, TextFormatCommand);
+
+      _get(Object.getPrototypeOf(TextFormatCommand.prototype), 'constructor', this).call(this, options);
+
+      this.tag = options.tag;
+      this.mappedTags = options.mappedTags || [];
+      if (this.tag) {
+        this.mappedTags.push(this.tag);
+      }
+      this.action = options.action || this.name;
+      this.removeAction = options.removeAction || this.action;
     }
-  };
+
+    _createClass(TextFormatCommand, [{
+      key: 'exec',
+      value: function exec(value) {
+        document.execCommand(this.action, false, value || null);
+      }
+    }, {
+      key: 'unexec',
+      value: function unexec(value) {
+        document.execCommand(this.removeAction, false, value || null);
+      }
+    }]);
+
+    return TextFormatCommand;
+  })(_contentKitEditorCommandsBase['default']);
 
   exports['default'] = TextFormatCommand;
 });
@@ -640,7 +916,7 @@ define('content-kit-editor/commands/unordered-list', ['exports', 'content-kit-ed
 
   exports['default'] = UnorderedListCommand;
 });
-define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/oembed', 'content-kit-editor/commands/card', 'content-kit-editor/utils/keycodes', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/post', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/models/cursor', 'content-kit-editor/models/markup-section', 'content-kit-editor/utils/post-builder'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsOembed, _contentKitEditorCommandsCard, _contentKitEditorUtilsKeycodes, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersPost, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorModelsCursor, _contentKitEditorModelsMarkupSection, _contentKitEditorUtilsPostBuilder) {
+define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/views/reversible-toolbar-button', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/oembed', 'content-kit-editor/commands/card', 'content-kit-editor/cards/image', 'content-kit-editor/utils/keycodes', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/post', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/models/cursor', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/post-node-builder'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorViewsReversibleToolbarButton, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsOembed, _contentKitEditorCommandsCard, _contentKitEditorCardsImage, _contentKitEditorUtilsKeycodes, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersPost, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorModelsCursor, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsPostNodeBuilder) {
   'use strict';
 
   var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
@@ -649,6 +925,9 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+  var EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
+
+  exports.EDITOR_ELEMENT_CLASS_NAME = EDITOR_ELEMENT_CLASS_NAME;
   var defaults = {
     placeholder: 'Write here...',
     spellcheck: true,
@@ -659,8 +938,8 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     // causing the stickyToolbar to accidentally be auto-activated
     // in tests
     stickyToolbar: false, // !!('ontouchstart' in window),
-    textFormatCommands: [new _contentKitEditorCommandsBold['default'](), new _contentKitEditorCommandsItalic['default'](), new _contentKitEditorCommandsLink['default'](), new _contentKitEditorCommandsQuote['default'](), new _contentKitEditorCommandsHeading['default'](), new _contentKitEditorCommandsSubheading['default']()],
-    embedCommands: [new _contentKitEditorCommandsImage['default']({ serviceUrl: '/upload' }), new _contentKitEditorCommandsOembed['default']({ serviceUrl: '/embed' }), new _contentKitEditorCommandsCard['default']()],
+    textFormatCommands: [new _contentKitEditorCommandsLink['default']()],
+    embedCommands: [new _contentKitEditorCommandsImage['default'](), new _contentKitEditorCommandsOembed['default']({ serviceUrl: '/embed' }), new _contentKitEditorCommandsCard['default']()],
     autoTypingCommands: [new _contentKitEditorCommandsUnorderedList['default'](), new _contentKitEditorCommandsOrderedList['default']()],
     cards: [],
     cardOptions: {},
@@ -704,16 +983,6 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     });
   }
 
-  function handleSelection(editor) {
-    return function () {
-      if (editor.cursor.hasSelection()) {
-        editor.hasSelection();
-      } else {
-        editor.hasNoSelection();
-      }
-    };
-  }
-
   function bindSelectionEvent(editor) {
     /**
      * The following events/sequences can create a selection and are handled:
@@ -726,13 +995,17 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
      *  * ctrl-click -> context menu -> click "select all"
      */
 
+    var toggleSelection = function toggleSelection() {
+      return editor.cursor.hasSelection() ? editor.hasSelection() : editor.hasNoSelection();
+    };
+
     // mouseup will not properly report a selection until the next tick, so add a timeout:
     var mouseupHandler = function mouseupHandler() {
-      return setTimeout(handleSelection(editor));
+      return setTimeout(toggleSelection);
     };
     editor.addEventListener(document, 'mouseup', mouseupHandler);
 
-    var keyupHandler = handleSelection(editor);
+    var keyupHandler = toggleSelection;
     editor.addEventListener(editor.element, 'keyup', keyupHandler);
   }
 
@@ -778,6 +1051,25 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     }
   }
 
+  function makeButtons(editor) {
+    var headingCommand = new _contentKitEditorCommandsHeading['default'](editor);
+    var headingButton = new _contentKitEditorViewsReversibleToolbarButton['default'](headingCommand, editor);
+
+    var subheadingCommand = new _contentKitEditorCommandsSubheading['default'](editor);
+    var subheadingButton = new _contentKitEditorViewsReversibleToolbarButton['default'](subheadingCommand, editor);
+
+    var quoteCommand = new _contentKitEditorCommandsQuote['default'](editor);
+    var quoteButton = new _contentKitEditorViewsReversibleToolbarButton['default'](quoteCommand, editor);
+
+    var boldCommand = new _contentKitEditorCommandsBold['default'](editor);
+    var boldButton = new _contentKitEditorViewsReversibleToolbarButton['default'](boldCommand, editor);
+
+    var italicCommand = new _contentKitEditorCommandsItalic['default'](editor);
+    var italicButton = new _contentKitEditorViewsReversibleToolbarButton['default'](italicCommand, editor);
+
+    return [headingButton, subheadingButton, quoteButton, boldButton, italicButton];
+  }
+
   /**
    * @class Editor
    * An individual Editor
@@ -799,13 +1091,17 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       this._views = [];
       this.element = element;
 
+      this.builder = new _contentKitEditorModelsPostNodeBuilder['default']();
+
       // FIXME: This should merge onto this.options
       (0, _contentKitUtils.mergeWithOptions)(this, defaults, options);
 
-      this._parser = _contentKitEditorParsersPost['default'];
+      this.cards.push(_contentKitEditorCardsImage['default']);
+
+      this._parser = new _contentKitEditorParsersPost['default'](this.builder);
       this._renderer = new _contentKitEditorRenderersEditorDom['default'](this, this.cards, this.unknownCardHandler, this.cardOptions);
 
-      this.applyClassName();
+      this.applyClassName(EDITOR_ELEMENT_CLASS_NAME);
       this.applyPlaceholder();
 
       element.spellcheck = this.spellcheck;
@@ -833,7 +1129,10 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       this.addView(new _contentKitEditorViewsTextFormatToolbar['default']({
         editor: this,
         rootElement: element,
+        // FIXME -- eventually all the commands should migrate to being buttons
+        // that can be added
         commands: this.textFormatCommands,
+        buttons: makeButtons(this),
         sticky: this.stickyToolbar
       }));
 
@@ -871,7 +1170,7 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     }, {
       key: 'parseModelFromMobiledoc',
       value: function parseModelFromMobiledoc(mobiledoc) {
-        this.post = new _contentKitEditorParsersMobiledoc['default']().parse(mobiledoc);
+        this.post = new _contentKitEditorParsersMobiledoc['default'](this.builder).parse(mobiledoc);
         this._renderTree = new _contentKitEditorModelsRenderTree['default']();
         var node = this._renderTree.buildRenderNode(this.post);
         this._renderTree.node = node;
@@ -881,6 +1180,8 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       key: 'rerender',
       value: function rerender() {
         var postRenderNode = this.post.renderNode;
+
+        // if we haven't rendered this post's renderNode before, mark it dirty
         if (!postRenderNode.element) {
           postRenderNode.element = this.element;
           postRenderNode.markDirty();
@@ -993,18 +1294,19 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         var markerRenderNode = leftRenderNode;
         var marker = markerRenderNode.postNode;
         var section = marker.section;
+        var newMarkers = marker.split(leftOffset);
 
-        var _marker$split = marker.split(leftOffset);
+        // FIXME rightMarker is not guaranteed to be there
 
-        var _marker$split2 = _slicedToArray(_marker$split, 2);
+        var _newMarkers = _slicedToArray(newMarkers, 2);
 
-        var leftMarker = _marker$split2[0];
-        var rightMarker = _marker$split2[1];
+        var leftMarker = _newMarkers[0];
+        var rightMarker = _newMarkers[1];
 
         section.insertMarkerAfter(leftMarker, marker);
         markerRenderNode.scheduleForRemoval();
 
-        var newSection = (0, _contentKitEditorUtilsPostBuilder.generateBuilder)().generateMarkupSection('P');
+        var newSection = this.builder.createMarkupSection('p');
         newSection.appendMarker(rightMarker);
 
         var nodeForMove = markerRenderNode.nextSibling;
@@ -1057,16 +1359,106 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         this.trigger('update');
       }
     }, {
-      key: 'getActiveMarkers',
-      value: function getActiveMarkers() {
-        var cursor = this.cursor;
-        return cursor.activeMarkers;
+      key: 'selectSections',
+      value: function selectSections(sections) {
+        this.cursor.selectSections(sections);
+        this.hasSelection();
+      }
+
+      /*
+       * @return {Array} of markers that are "inside the split"
+       */
+    }, {
+      key: 'splitMarkersFromSelection',
+      value: function splitMarkersFromSelection() {
+        var _cursor$offsets3 = this.cursor.offsets;
+        var startMarker = _cursor$offsets3.startMarker;
+        var startMarkerOffset = _cursor$offsets3.leftOffset;
+        var endMarker = _cursor$offsets3.endMarker;
+        var endMarkerOffset = _cursor$offsets3.rightOffset;
+        var startSection = _cursor$offsets3.startSection;
+        var endSection = _cursor$offsets3.endSection;
+
+        var selectedMarkers = [];
+
+        startMarker.renderNode.scheduleForRemoval();
+        endMarker.renderNode.scheduleForRemoval();
+
+        if (startMarker === endMarker) {
+          var newMarkers = startSection.splitMarker(startMarker, startMarkerOffset, endMarkerOffset);
+          selectedMarkers = this.markersInOffset(newMarkers, startMarkerOffset, endMarkerOffset);
+        } else {
+          var newStartMarkers = startSection.splitMarker(startMarker, startMarkerOffset);
+          var selectedStartMarkers = this.markersInOffset(newStartMarkers, startMarkerOffset);
+
+          var newEndMarkers = endSection.splitMarker(endMarker, endMarkerOffset);
+          var selectedEndMarkers = this.markersInOffset(newEndMarkers, 0, endMarkerOffset);
+
+          var newStartMarker = selectedStartMarkers[0],
+              newEndMarker = selectedEndMarkers[selectedEndMarkers.length - 1];
+
+          this.post.markersFrom(newStartMarker, newEndMarker, function (m) {
+            return selectedMarkers.push(m);
+          });
+        }
+
+        return selectedMarkers;
       }
     }, {
-      key: 'getActiveSections',
-      value: function getActiveSections() {
-        var cursor = this.cursor;
-        return cursor.activeSections;
+      key: 'markersInOffset',
+      value: function markersInOffset(markers, startOffset, endOffset) {
+        var offset = 0;
+        var foundMarkers = [];
+        var toEnd = endOffset === undefined;
+        if (toEnd) {
+          endOffset = 0;
+        }
+
+        markers.forEach(function (marker) {
+          if (toEnd) {
+            endOffset += marker.length;
+          }
+
+          if (offset >= startOffset && offset < endOffset) {
+            foundMarkers.push(marker);
+          }
+
+          offset += marker.length;
+        });
+
+        return foundMarkers;
+      }
+    }, {
+      key: 'applyMarkupToSelection',
+      value: function applyMarkupToSelection(markup) {
+        var markers = this.splitMarkersFromSelection();
+        markers.forEach(function (marker) {
+          marker.addMarkup(markup);
+          marker.section.renderNode.markDirty();
+        });
+
+        this.rerender();
+        this.selectMarkers(markers);
+        this.didUpdate();
+      }
+    }, {
+      key: 'removeMarkupFromSelection',
+      value: function removeMarkupFromSelection(markup) {
+        var markers = this.splitMarkersFromSelection();
+        markers.forEach(function (marker) {
+          marker.removeMarkup(markup);
+          marker.section.renderNode.markDirty();
+        });
+
+        this.rerender();
+        this.selectMarkers(markers);
+        this.didUpdate();
+      }
+    }, {
+      key: 'selectMarkers',
+      value: function selectMarkers(markers) {
+        this.cursor.selectMarkers(markers);
+        this.hasSelection();
       }
     }, {
       key: 'getCurrentBlockIndex',
@@ -1076,25 +1468,9 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         return blockElements.indexOf(selectionEl);
       }
     }, {
-      key: 'getCursorIndexInCurrentBlock',
-      value: function getCursorIndexInCurrentBlock() {
-        var currentBlock = (0, _contentKitEditorUtilsSelectionUtils.getSelectionBlockElement)();
-        if (currentBlock) {
-          return (0, _contentKitEditorUtilsSelectionUtils.getCursorOffsetInElement)(currentBlock);
-        }
-        return -1;
-      }
-    }, {
       key: 'applyClassName',
-      value: function applyClassName() {
-        var editorClassName = 'ck-editor';
-        var editorClassNameRegExp = new RegExp(editorClassName);
-        var existingClassName = this.element.className;
-
-        if (!editorClassNameRegExp.test(existingClassName)) {
-          existingClassName += (existingClassName ? ' ' : '') + editorClassName;
-        }
-        this.element.className = existingClassName;
+      value: function applyClassName(className) {
+        (0, _contentKitEditorUtilsDomUtils.addClassName)(this.element, className);
       }
     }, {
       key: 'applyPlaceholder',
@@ -1150,16 +1526,11 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
             sectionRenderNode.element = node;
             sectionRenderNode.markClean();
 
-            if (previousSection) {
-              // insert after existing section
-              _this2.post.insertSectionAfter(_section, previousSection);
-              _this2._renderTree.node.insertAfter(sectionRenderNode, previousSection.renderNode);
-            } else {
-              // prepend at beginning (first section)
-              _this2.post.prependSection(_section);
-              _this2._renderTree.node.insertAfter(sectionRenderNode, null);
-            }
+            var previousSectionRenderNode = previousSection && previousSection.renderNode;
+            _this2.post.insertSectionAfter(_section, previousSection);
+            _this2._renderTree.node.insertAfter(sectionRenderNode, previousSectionRenderNode);
           }
+
           // may cause duplicates to be included
           var section = sectionRenderNode.postNode;
           sectionsInDOM.push(section);
@@ -1167,38 +1538,41 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         });
 
         // remove deleted nodes
-        var i = undefined;
-        for (i = this.post.sections.length - 1; i >= 0; i--) {
-          var section = this.post.sections[i];
-          if (sectionsInDOM.indexOf(section) === -1) {
-            if (section.renderNode) {
-              section.renderNode.scheduleForRemoval();
-            } else {
-              throw new Error('All sections are expected to have a renderNode');
-            }
+        var deletedSections = [];
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(this.post.sections, function (section) {
+          if (!section.renderNode) {
+            throw new Error('All sections are expected to have a renderNode');
           }
-        }
 
-        // reparse the section(s) with the cursor
-        var sectionsWithCursor = this.getSectionsWithCursor();
-        sectionsWithCursor.forEach(function (section) {
+          if (sectionsInDOM.indexOf(section) === -1) {
+            deletedSections.push(section);
+          }
+        });
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(deletedSections, function (s) {
+          return s.renderNode.scheduleForRemoval();
+        });
+
+        // reparse the new section(s) with the cursor
+        // to ensure that we catch any changed html that the browser might have
+        // added
+        var sectionsWithCursor = this.cursor.activeSections;
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(sectionsWithCursor, function (section) {
           if (newSections.indexOf(section) === -1) {
             _this2.reparseSection(section);
           }
         });
 
-        var _cursor$offsets3 = this.cursor.offsets;
+        var _cursor$offsets4 = this.cursor.offsets;
 
-        // The cursor will lose its textNode if we have parsed (and thus rerendered)
+        // The cursor will lose its textNode if we have reparsed (and thus will rerender, below)
         // its section. Ensure the cursor is placed where it should be after render.
         //
         // New sections are presumed clean, and thus do not get rerendered and lose
         // their cursor position.
-        //
-        var leftRenderNode = _cursor$offsets3.leftRenderNode;
-        var leftOffset = _cursor$offsets3.leftOffset;
-        var rightRenderNode = _cursor$offsets3.rightRenderNode;
-        var rightOffset = _cursor$offsets3.rightOffset;
+        var leftRenderNode = _cursor$offsets4.leftRenderNode;
+        var leftOffset = _cursor$offsets4.leftOffset;
+        var rightRenderNode = _cursor$offsets4.rightRenderNode;
+        var rightOffset = _cursor$offsets4.rightOffset;
         var resetCursor = leftRenderNode && sectionsWithCursor.indexOf(leftRenderNode.postNode.section) !== -1;
 
         if (resetCursor) {
@@ -1223,50 +1597,32 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         }
       }
     }, {
-      key: 'getSectionsWithCursor',
-      value: function getSectionsWithCursor() {
-        return this.getRenderNodesWithCursor().map(function (renderNode) {
-          return renderNode.postNode;
+      key: 'resetSectionMarkers',
+
+      /*
+       * Clear the markups from each of the section's markers
+       */
+      value: function resetSectionMarkers(section) {
+        section.markers.forEach(function (m) {
+          m.clearMarkups();
+          m.renderNode.markDirty();
         });
       }
+
+      /*
+       * Change the tag name for the given section
+       */
     }, {
-      key: 'getRenderNodesWithCursor',
-      value: function getRenderNodesWithCursor() {
-        var _this3 = this;
-
-        var selection = document.getSelection();
-        if (selection.rangeCount === 0) {
-          return null;
-        }
-
-        var range = selection.getRangeAt(0);
-
-        var startElement = range.startContainer;
-        var endElement = range.endContainer;
-
-        var getElementRenderNode = function getElementRenderNode(e) {
-          var node = _this3._renderTree.getElementRenderNode(e);
-          if (node && node.postNode.type === _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE) {
-            return node;
-          }
-        };
-
-        var _detectParentNode = (0, _contentKitEditorUtilsDomUtils.detectParentNode)(startElement, getElementRenderNode);
-
-        var startRenderNode = _detectParentNode.result;
-
-        var _detectParentNode2 = (0, _contentKitEditorUtilsDomUtils.detectParentNode)(endElement, getElementRenderNode);
-
-        var endRenderNode = _detectParentNode2.result;
-
-        var nodes = [];
-        var node = startRenderNode;
-        while (node && (!endRenderNode.nextSibling || endRenderNode.nextSibling !== node)) {
-          nodes.push(node);
-          node = node.nextSibling;
-        }
-
-        return nodes;
+      key: 'setSectionTagName',
+      value: function setSectionTagName(section, tagName) {
+        section.setTagName(tagName);
+        section.renderNode.markDirty();
+      }
+    }, {
+      key: 'resetSectionTagName',
+      value: function resetSectionTagName(section) {
+        section.resetTagName();
+        section.renderNode.markDirty();
       }
     }, {
       key: 'reparseSection',
@@ -1290,7 +1646,9 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       key: 'insertSectionAtCursor',
       value: function insertSectionAtCursor(newSection) {
         var newRenderNode = this._renderTree.buildRenderNode(newSection);
-        var renderNodes = this.getRenderNodesWithCursor();
+        var renderNodes = this.cursor.activeSections.map(function (s) {
+          return s.renderNode;
+        });
         var lastRenderNode = renderNodes[renderNodes.length - 1];
         lastRenderNode.parentNode.insertAfter(newRenderNode, lastRenderNode);
         this.post.insertSectionAfter(newSection, lastRenderNode.postNode);
@@ -1315,6 +1673,41 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       get: function get() {
         return new _contentKitEditorModelsCursor['default'](this);
       }
+    }, {
+      key: 'cursorSelection',
+      get: function get() {
+        return this.cursor.cursorSelection;
+      }
+
+      /*
+       * Returns the active sections. If the cursor selection is collapsed this will be
+       * an array of 1 item. Else will return an array containing each section that is either
+       * wholly or partly contained by the cursor selection.
+       *
+       * @return {array} The sections from the cursor's selection start to the selection end
+       */
+    }, {
+      key: 'activeSections',
+      get: function get() {
+        return this.cursor.activeSections;
+      }
+    }, {
+      key: 'activeMarkers',
+      get: function get() {
+        var _cursor$offsets5 = this.cursor.offsets;
+        var startMarker = _cursor$offsets5.startMarker;
+        var endMarker = _cursor$offsets5.endMarker;
+
+        if (!(startMarker && endMarker)) {
+          return [];
+        }
+
+        var activeMarkers = [];
+        this.post.markersFrom(startMarker, endMarker, function (m) {
+          return activeMarkers.push(m);
+        });
+        return activeMarkers;
+      }
     }]);
 
     return Editor;
@@ -1325,13 +1718,14 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
   exports['default'] = Editor;
 });
-define('content-kit-editor', ['exports', 'content-kit-editor/editor/editor'], function (exports, _contentKitEditorEditorEditor) {
+define('content-kit-editor', ['exports', 'content-kit-editor/editor/editor', 'content-kit-editor/cards/image'], function (exports, _contentKitEditorEditorEditor, _contentKitEditorCardsImage) {
   'use strict';
 
   exports.registerGlobal = registerGlobal;
 
   var ContentKit = {
-    Editor: _contentKitEditorEditorEditor['default']
+    Editor: _contentKitEditorEditorEditor['default'],
+    ImageCard: _contentKitEditorCardsImage['default']
   };
 
   function registerGlobal(global) {
@@ -1488,6 +1882,33 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
         selection.addRange(r);
       }
     }, {
+      key: 'selectSections',
+      value: function selectSections(sections) {
+        var startSection = sections[0],
+            endSection = sections[sections.length - 1];
+
+        var startNode = startSection.markers[0].renderNode.element,
+            endNode = endSection.markers[endSection.markers.length - 1].renderNode.element;
+
+        var startOffset = 0,
+            endOffset = endNode.textContent.length;
+
+        this.moveToNode(startNode, startOffset, endNode, endOffset);
+      }
+    }, {
+      key: 'selectMarkers',
+      value: function selectMarkers(markers) {
+        var startMarker = markers[0],
+            endMarker = markers[markers.length - 1];
+
+        var startNode = startMarker.renderNode.element,
+            endNode = endMarker.renderNode.element;
+        var startOffset = 0,
+            endOffset = endMarker.length;
+
+        this.moveToNode(startNode, startOffset, endNode, endOffset);
+      }
+    }, {
       key: 'moveToNode',
       value: function moveToNode(node) {
         var offset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
@@ -1509,15 +1930,6 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
       get: function get() {
         return window.getSelection();
       }
-
-      /**
-       * the offset from the left edge of the section
-       */
-    }, {
-      key: 'leftOffset',
-      get: function get() {
-        return this.offsets.leftOffset;
-      }
     }, {
       key: 'offsets',
       get: function get() {
@@ -1525,11 +1937,18 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
             rightNode = undefined,
             leftOffset = undefined,
             rightOffset = undefined;
-        var _selection = this.selection;
-        var anchorNode = _selection.anchorNode;
-        var focusNode = _selection.focusNode;
-        var anchorOffset = _selection.anchorOffset;
-        var focusOffset = _selection.focusOffset;
+        var selection = this.selection;
+        var anchorNode = selection.anchorNode;
+        var focusNode = selection.focusNode;
+        var anchorOffset = selection.anchorOffset;
+        var focusOffset = selection.focusOffset;
+        var rangeCount = selection.rangeCount;
+
+        var range = rangeCount > 0 && selection.getRangeAt(0);
+
+        if (!range) {
+          return {};
+        }
 
         var position = anchorNode.compareDocumentPosition(focusNode);
 
@@ -1550,70 +1969,24 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
         var leftRenderNode = this.renderTree.elements.get(leftNode),
             rightRenderNode = this.renderTree.elements.get(rightNode);
 
+        var startMarker = leftRenderNode && leftRenderNode.postNode,
+            endMarker = rightRenderNode && rightRenderNode.postNode;
+
+        var startSection = startMarker && startMarker.section;
+        var endSection = endMarker && endMarker.section;
+
         return {
           leftNode: leftNode,
           rightNode: rightNode,
           leftOffset: leftOffset,
           rightOffset: rightOffset,
           leftRenderNode: leftRenderNode,
-          rightRenderNode: rightRenderNode
+          rightRenderNode: rightRenderNode,
+          startMarker: startMarker,
+          endMarker: endMarker,
+          startSection: startSection,
+          endSection: endSection
         };
-      }
-    }, {
-      key: 'activeMarkers',
-      get: function get() {
-        var firstSection = this.activeSections[0];
-        if (!firstSection) {
-          return [];
-        }
-        var firstSectionElement = firstSection.renderNode.element;
-
-        var _offsets = this.offsets;
-        var leftNode = _offsets.leftNode;
-        var rightNode = _offsets.rightNode;
-        var leftOffset = _offsets.leftOffset;
-        var rightOffset = _offsets.rightOffset;
-
-        var textLeftOffset = 0,
-            textRightOffset = 0,
-            foundLeft = false,
-            foundRight = false;
-
-        (0, _contentKitEditorUtilsDomUtils.walkTextNodes)(firstSectionElement, function (textNode) {
-          var textLength = textNode.textContent.length;
-
-          if (!foundLeft) {
-            if ((0, _contentKitEditorUtilsDomUtils.containsNode)(leftNode, textNode)) {
-              textLeftOffset += leftOffset;
-              foundLeft = true;
-            } else {
-              textLeftOffset += textLength;
-            }
-          }
-          if (!foundRight) {
-            if ((0, _contentKitEditorUtilsDomUtils.containsNode)(rightNode, textNode)) {
-              textRightOffset += rightOffset;
-              foundRight = true;
-            } else {
-              textRightOffset += textLength;
-            }
-          }
-        });
-
-        // get section element
-        //   walk it until we find one containing the left node, adding up textContent length along the way
-        //   add the selection offset in the left node -- this is the offset in the parent textContent
-        //   repeat for right node (subtract the remaining chars after selection offset) -- this is the end offset
-        //
-        //   walk the section's markers, adding up length. Each marker with length >= offset and <= end offset is active
-
-        var leftMarker = firstSection.markerContaining(textLeftOffset, true);
-        var rightMarker = firstSection.markerContaining(textRightOffset, false);
-
-        var leftMarkerIndex = firstSection.markers.indexOf(leftMarker),
-            rightMarkerIndex = firstSection.markers.indexOf(rightMarker) + 1;
-
-        return firstSection.markers.slice(leftMarkerIndex, rightMarkerIndex);
       }
     }, {
       key: 'activeSections',
@@ -1626,15 +1999,15 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
         var range = rangeCount > 0 && selection.getRangeAt(0);
 
         if (!range) {
-          throw new Error('Unable to get activeSections because no range');
+          return [];
         }
 
         var startContainer = range.startContainer;
         var endContainer = range.endContainer;
 
         var isSectionElement = function isSectionElement(element) {
-          return (0, _contentKitEditorUtilsArrayUtils.detect)(sections, function (section) {
-            return section.renderNode.element === element;
+          return (0, _contentKitEditorUtilsArrayUtils.detect)(sections, function (s) {
+            return s.renderNode.element === element;
           });
         };
 
@@ -1676,7 +2049,7 @@ define('content-kit-editor/models/image', ['exports'], function (exports) {
 
   exports['default'] = Image;
 });
-define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorUtilsArrayUtils) {
+define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -1724,6 +2097,11 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
         this.value = this.value.substr(offset);
       }
     }, {
+      key: 'clearMarkups',
+      value: function clearMarkups() {
+        this.markups = [];
+      }
+    }, {
       key: 'addMarkup',
       value: function addMarkup(markup) {
         this.markups.push(markup);
@@ -1732,11 +2110,9 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
       key: 'removeMarkup',
       value: function removeMarkup(markup) {
         var index = this.markups.indexOf(markup);
-        if (index === -1) {
-          throw new Error('Cannot remove markup that is not there.');
+        if (index !== -1) {
+          this.markups.splice(index, 1);
         }
-
-        this.markups.splice(index, 1);
       }
 
       // delete the character at this offset,
@@ -1751,11 +2127,32 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
       }
     }, {
       key: 'hasMarkup',
-      value: function hasMarkup(tagName) {
-        tagName = tagName.toLowerCase();
-        return (0, _contentKitEditorUtilsArrayUtils.detect)(this.markups, function (markup) {
-          return markup.tagName === tagName;
-        });
+      value: function hasMarkup(tagNameOrMarkup) {
+        var _this2 = this;
+
+        if (typeof tagNameOrMarkup === 'string') {
+          var _ret = (function () {
+            var tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagNameOrMarkup);
+            return {
+              v: (0, _contentKitEditorUtilsArrayUtils.detect)(_this2.markups, function (markup) {
+                return markup.tagName === tagName;
+              })
+            };
+          })();
+
+          if (typeof _ret === 'object') return _ret.v;
+        } else {
+          var _ret2 = (function () {
+            var targetMarkup = tagNameOrMarkup;
+            return {
+              v: (0, _contentKitEditorUtilsArrayUtils.detect)(_this2.markups, function (markup) {
+                return markup === targetMarkup;
+              })
+            };
+          })();
+
+          if (typeof _ret2 === 'object') return _ret2.v;
+        }
       }
     }, {
       key: 'getMarkup',
@@ -1777,15 +2174,28 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
       }
     }, {
       key: 'split',
-      value: function split(offset) {
-        var m1 = new Marker(this.value.substr(0, offset));
-        var m2 = new Marker(this.value.substr(offset));
+      value: function split() {
+        var offset = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+        var endOffset = arguments.length <= 1 || arguments[1] === undefined ? this.length : arguments[1];
 
-        this.markups.forEach(function (m) {
-          m1.addMarkup(m);m2.addMarkup(m);
+        var markers = [];
+
+        if (offset !== 0) {
+          markers.push(new Marker(this.value.substring(0, offset)));
+        }
+
+        markers.push(new Marker(this.value.substring(offset, endOffset)));
+
+        if (endOffset < this.length) {
+          markers.push(new Marker(this.value.substring(endOffset)));
+        }
+
+        this.markups.forEach(function (mu) {
+          return markers.forEach(function (m) {
+            return m.addMarkup(mu);
+          });
         });
-
-        return [m1, m2];
+        return markers;
       }
     }, {
       key: 'length',
@@ -1800,6 +2210,8 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
         }
         var i = undefined;
         for (i = 0; i < this.markups.length; i++) {
+          // FIXME this should iterate everything and return all things that are not
+          // on this marker -- it assumes the markups are always in the same order
           if (this.markups[i] !== this.previousSibling.markups[i]) {
             return this.markups.slice(i);
           }
@@ -1845,7 +2257,7 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
 
   exports['default'] = Marker;
 });
-define('content-kit-editor/models/markup-section', ['exports'], function (exports) {
+define('content-kit-editor/models/markup-section', ['exports', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsDomUtils) {
   'use strict';
 
   var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
@@ -1854,9 +2266,9 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  var DEFAULT_TAG_NAME = 'p';
+  var DEFAULT_TAG_NAME = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)('p');
   exports.DEFAULT_TAG_NAME = DEFAULT_TAG_NAME;
-  var VALID_MARKUP_SECTION_TAGNAMES = ['p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'];
+  var VALID_MARKUP_SECTION_TAGNAMES = ['p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'].map(_contentKitEditorUtilsDomUtils.normalizeTagName);
   exports.VALID_MARKUP_SECTION_TAGNAMES = VALID_MARKUP_SECTION_TAGNAMES;
   var MARKUP_SECTION_TYPE = 'markup-section';
 
@@ -1881,6 +2293,51 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
     }
 
     _createClass(Section, [{
+      key: 'setTagName',
+      value: function setTagName(newTagName) {
+        newTagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(newTagName);
+        if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(newTagName) === -1) {
+          throw new Error('Cannot change section tagName to "' + newTagName);
+        }
+        this.tagName = newTagName;
+      }
+    }, {
+      key: 'resetTagName',
+      value: function resetTagName() {
+        this.tagName = DEFAULT_TAG_NAME;
+      }
+
+      /**
+       * Splits the marker at the offset (until the endOffset, if given)
+       * into 1, 2, or 3 markers and replaces the existing marker
+       * with the new ones
+       */
+    }, {
+      key: 'splitMarker',
+      value: function splitMarker(marker, offset) {
+        var endOffset = arguments.length <= 2 || arguments[2] === undefined ? marker.length : arguments[2];
+        return (function () {
+          var newMarkers = marker.split(offset, endOffset);
+          this.replaceMarker(marker, newMarkers);
+          return newMarkers;
+        }).apply(this, arguments);
+      }
+    }, {
+      key: 'replaceMarker',
+      value: function replaceMarker(oldMarker) {
+        var newMarkers = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+        var previousMarker = oldMarker;
+
+        var i = newMarkers.length;
+        while (i--) {
+          var currentMarker = newMarkers[i];
+          this.insertMarkerAfter(currentMarker, previousMarker);
+        }
+
+        this.removeMarker(oldMarker);
+      }
+    }, {
       key: 'prependMarker',
       value: function prependMarker(marker) {
         marker.section = this;
@@ -1999,6 +2456,22 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
           return this.markers[leftInclusive ? i : i - 1];
         }
       }
+    }, {
+      key: 'tagName',
+      set: function set(val) {
+        this._tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(val);
+      },
+      get: function get() {
+        return this._tagName;
+      }
+    }, {
+      key: 'nextSibling',
+      get: function get() {
+        var index = this.post.sections.indexOf(this);
+        if (index !== -1) {
+          return this.post.sections[index + 1];
+        }
+      }
     }]);
 
     return Section;
@@ -2006,7 +2479,7 @@ define('content-kit-editor/models/markup-section', ['exports'], function (export
 
   exports['default'] = Section;
 });
-define('content-kit-editor/models/markup', ['exports'], function (exports) {
+define('content-kit-editor/models/markup', ['exports', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsDomUtils) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -2015,7 +2488,7 @@ define('content-kit-editor/models/markup', ['exports'], function (exports) {
 
   var MARKUP_TYPE = 'markup';
   exports.MARKUP_TYPE = MARKUP_TYPE;
-  var VALID_MARKUP_TAGNAMES = ['b', 'i', 'strong', 'em', 'a', 'li'];
+  var VALID_MARKUP_TAGNAMES = ['b', 'i', 'strong', 'em', 'a', 'li'].map(_contentKitEditorUtilsDomUtils.normalizeTagName);
 
   exports.VALID_MARKUP_TAGNAMES = VALID_MARKUP_TAGNAMES;
 
@@ -2029,7 +2502,7 @@ define('content-kit-editor/models/markup', ['exports'], function (exports) {
 
       _classCallCheck(this, Markup);
 
-      this.tagName = tagName.toLowerCase();
+      this.tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
       this.attributes = attributes;
       this.type = MARKUP_TYPE;
 
@@ -2041,7 +2514,7 @@ define('content-kit-editor/models/markup', ['exports'], function (exports) {
     _createClass(Markup, null, [{
       key: 'isValidElement',
       value: function isValidElement(element) {
-        var tagName = element.tagName.toLowerCase();
+        var tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName);
         return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
       }
     }]);
@@ -2050,6 +2523,98 @@ define('content-kit-editor/models/markup', ['exports'], function (exports) {
   })();
 
   exports['default'] = Markup;
+});
+define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-editor/models/post', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/image', 'content-kit-editor/models/marker', 'content-kit-editor/models/markup', 'content-kit-editor/models/card', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsImage, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorModelsCard, _contentKitEditorUtilsDomUtils) {
+  'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  var PostNodeBuilder = (function () {
+    function PostNodeBuilder() {
+      _classCallCheck(this, PostNodeBuilder);
+
+      this.markupCache = {};
+    }
+
+    _createClass(PostNodeBuilder, [{
+      key: 'createPost',
+      value: function createPost() {
+        var post = new _contentKitEditorModelsPost['default']();
+        post.builder = this;
+        return post;
+      }
+    }, {
+      key: 'createMarkupSection',
+      value: function createMarkupSection(tagName) {
+        var markers = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+        var isGenerated = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
+        tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
+        var section = new _contentKitEditorModelsMarkupSection['default'](tagName, markers);
+        if (isGenerated) {
+          section.isGenerated = true;
+        }
+        return section;
+      }
+    }, {
+      key: 'createImageSection',
+      value: function createImageSection(url) {
+        var section = new _contentKitEditorModelsImage['default']();
+        if (url) {
+          section.src = url;
+        }
+        return section;
+      }
+    }, {
+      key: 'createCardSection',
+      value: function createCardSection(name) {
+        var payload = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+        return new _contentKitEditorModelsCard['default'](name, payload);
+      }
+    }, {
+      key: 'createMarker',
+      value: function createMarker(value) {
+        var markups = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+        var marker = new _contentKitEditorModelsMarker['default'](value, markups);
+        marker.builder = this;
+        return marker;
+      }
+    }, {
+      key: 'createBlankMarker',
+      value: function createBlankMarker() {
+        return new _contentKitEditorModelsMarker['default']('__BLANK__');
+      }
+    }, {
+      key: 'createMarkup',
+      value: function createMarkup(tagName, attributes) {
+        tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
+
+        var markup = undefined;
+
+        if (attributes) {
+          // FIXME: This could also be cached
+          markup = new _contentKitEditorModelsMarkup['default'](tagName, attributes);
+        } else {
+          if (this.markupCache[tagName]) {
+            markup = this.markupCache[tagName];
+          } else {
+            markup = new _contentKitEditorModelsMarkup['default'](tagName, attributes);
+          }
+        }
+
+        markup.builder = this;
+        return markup;
+      }
+    }]);
+
+    return PostNodeBuilder;
+  })();
+
+  exports['default'] = PostNodeBuilder;
 });
 define('content-kit-editor/models/post', ['exports'], function (exports) {
   'use strict';
@@ -2074,30 +2639,58 @@ define('content-kit-editor/models/post', ['exports'], function (exports) {
     _createClass(Post, [{
       key: 'appendSection',
       value: function appendSection(section) {
+        section.post = this;
         this.sections.push(section);
       }
     }, {
       key: 'prependSection',
       value: function prependSection(section) {
+        section.post = this;
         this.sections.unshift(section);
       }
     }, {
       key: 'replaceSection',
       value: function replaceSection(section, newSection) {
+        section.post = this;
         this.insertSectionAfter(newSection, section);
         this.removeSection(section);
+      }
+
+      /**
+       * Invoke `callbackFn` for all markers between the startMarker and endMarker (inclusive),
+       * across sections
+       */
+    }, {
+      key: 'markersFrom',
+      value: function markersFrom(startMarker, endMarker, callbackFn) {
+        var currentMarker = startMarker;
+        while (currentMarker) {
+          callbackFn(currentMarker);
+
+          if (currentMarker === endMarker) {
+            currentMarker = null;
+          } else if (currentMarker.nextSibling) {
+            currentMarker = currentMarker.nextSibling;
+          } else {
+            var nextSection = currentMarker.section.nextSibling;
+            currentMarker = nextSection.markers[0];
+          }
+        }
       }
     }, {
       key: 'insertSectionAfter',
       value: function insertSectionAfter(section, previousSection) {
-        var i, l;
-        for (i = 0, l = this.sections.length; i < l; i++) {
+        section.post = this;
+        var foundIndex = -1;
+
+        for (var i = 0; i < this.sections.length; i++) {
           if (this.sections[i] === previousSection) {
-            this.sections.splice(i + 1, 0, section);
-            return;
+            foundIndex = i;
+            break;
           }
         }
-        throw new Error('Previous section was not found in post.sections');
+
+        this.sections.splice(foundIndex + 1, 0, section);
       }
     }, {
       key: 'removeSection',
@@ -2276,7 +2869,7 @@ define("content-kit-editor/models/render-tree", ["exports", "content-kit-editor/
 
   exports["default"] = RenderTree;
 });
-define('content-kit-editor/parsers/dom', ['exports', 'content-kit-editor/utils/post-builder', 'content-kit-utils', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/markup'], function (exports, _contentKitEditorUtilsPostBuilder, _contentKitUtils, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarkup) {
+define('content-kit-editor/parsers/dom', ['exports', 'content-kit-utils', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/markup', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitUtils, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarkup, _contentKitEditorUtilsDomUtils) {
   'use strict';
 
   var ELEMENT_NODE = 1;
@@ -2313,11 +2906,13 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-editor/utils/p
     return sortedAttributes;
   }
 
-  // FIXME: should probably always return an array
+  /**
+   * @return {array} attributes as key1,value1,key2,value2,etc
+   */
   function readAttributes(node) {
-    var attributes = null;
+    var attributes = [];
+
     if (node.hasAttributes()) {
-      attributes = [];
       var i, l;
       for (i = 0, l = node.attributes.length; i < l; i++) {
         if (ALLOWED_ATTRIBUTES.indexOf(node.attributes[i].name) !== -1) {
@@ -2325,21 +2920,17 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-editor/utils/p
           attributes.push(node.attributes[i].value);
         }
       }
-      if (attributes.length === 0) {
-        return null;
-      } else {
-        return sortAttributes(attributes);
-      }
     }
 
-    return null;
+    return sortAttributes(attributes);
   }
 
   function isValidMarkerElement(element) {
-    return _contentKitEditorModelsMarkup.VALID_MARKUP_TAGNAMES.indexOf(element.tagName.toLowerCase()) !== -1;
+    var tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName);
+    return _contentKitEditorModelsMarkup.VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
   }
 
-  function parseMarkers(section, postBuilder, topNode) {
+  function parseMarkers(section, builder, topNode) {
     var markups = [];
     var text = null;
     var currentNode = topNode;
@@ -2347,7 +2938,7 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-editor/utils/p
       switch (currentNode.nodeType) {
         case ELEMENT_NODE:
           if (isValidMarkerElement(currentNode)) {
-            markups.push(postBuilder.generateMarkup(currentNode.tagName, readAttributes(currentNode)));
+            markups.push(builder.createMarkup(currentNode.tagName, readAttributes(currentNode)));
           }
           break;
         case TEXT_NODE:
@@ -2357,23 +2948,23 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-editor/utils/p
 
       if (currentNode.firstChild) {
         if (isValidMarkerElement(currentNode) && text !== null) {
-          section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
+          section.appendMarker(builder.createMarker(text, markups.slice()));
           text = null;
         }
         currentNode = currentNode.firstChild;
       } else if (currentNode.nextSibling) {
         if (currentNode === topNode) {
-          section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
+          section.appendMarker(builder.createMarker(text, markups.slice()));
           break;
         } else {
           currentNode = currentNode.nextSibling;
           if (currentNode.nodeType === ELEMENT_NODE && isValidMarkerElement(currentNode) && text !== null) {
-            section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
+            section.appendMarker(builder.createMarker(text, markups.slice()));
             text = null;
           }
         }
       } else {
-        section.appendMarker(postBuilder.generateMarker(markups.slice(), text));
+        section.appendMarker(builder.createMarker(text, markups.slice()));
 
         while (currentNode && !currentNode.nextSibling && currentNode !== topNode) {
           currentNode = currentNode.parentNode;
@@ -2396,23 +2987,23 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-editor/utils/p
     }
   }
 
-  function NewHTMLParser() {
-    this.postBuilder = (0, _contentKitEditorUtilsPostBuilder.generateBuilder)();
+  function NewHTMLParser(builder) {
+    this.builder = builder;
   }
 
   NewHTMLParser.prototype = {
     parseSection: function parseSection(previousSection, sectionElement) {
-      var postBuilder = this.postBuilder;
+      var builder = this.builder;
       var section;
       switch (sectionElement.nodeType) {
         case ELEMENT_NODE:
-          var tagName = sectionElement.tagName;
+          var tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(sectionElement.tagName);
           // <p> <h2>, etc
-          if (_contentKitEditorModelsMarkupSection.VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName.toLowerCase()) !== -1) {
-            section = postBuilder.generateMarkupSection(tagName, readAttributes(sectionElement));
+          if (_contentKitEditorModelsMarkupSection.VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName) !== -1) {
+            section = builder.createMarkupSection(tagName);
             var node = sectionElement.firstChild;
             while (node) {
-              parseMarkers(section, postBuilder, node);
+              parseMarkers(section, builder, node);
               node = node.nextSibling;
             }
             // <strong> <b>, etc
@@ -2420,24 +3011,24 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-editor/utils/p
               if (previousSection && previousSection.isGenerated) {
                 section = previousSection;
               } else {
-                section = postBuilder.generateMarkupSection('P', {}, true);
+                section = builder.createMarkupSection('P', [], true);
               }
-              parseMarkers(section, postBuilder, sectionElement);
+              parseMarkers(section, builder, sectionElement);
             }
           break;
         case TEXT_NODE:
           if (previousSection && previousSection.isGenerated) {
             section = previousSection;
           } else {
-            section = postBuilder.generateMarkupSection('P', {}, true);
+            section = builder.createMarkupSection('P', [], true);
           }
-          parseMarkers(section, postBuilder, sectionElement);
+          parseMarkers(section, builder, sectionElement);
           break;
       }
       return section;
     },
     parse: function parse(postElement) {
-      var post = this.postBuilder.generatePost();
+      var post = this.builder.createPost();
       var i, l, section, previousSection, sectionElement;
       // FIXME: Instead of storing isGenerated on sections, and passing
       // the previous section to the parser, we could instead do a two-pass
@@ -2460,14 +3051,14 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-editor/utils/p
 
   exports['default'] = NewHTMLParser;
 });
-define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/utils/post-builder'], function (exports, _contentKitEditorUtilsPostBuilder) {
-  'use strict';
+define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
+  "use strict";
 
-  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
   var CARD_SECTION_TYPE = 10;
   var IMAGE_SECTION_TYPE = 2;
@@ -2479,14 +3070,14 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
    */
 
   var MobiledocParser = (function () {
-    function MobiledocParser() {
+    function MobiledocParser(builder) {
       _classCallCheck(this, MobiledocParser);
 
-      this.builder = (0, _contentKitEditorUtilsPostBuilder.generateBuilder)();
+      this.builder = builder;
     }
 
     _createClass(MobiledocParser, [{
-      key: 'parse',
+      key: "parse",
       value: function parse(_ref) {
         var version = _ref.version;
         var sectionData = _ref.sections;
@@ -2494,7 +3085,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
         var markerTypes = sectionData[0];
         var sections = sectionData[1];
 
-        var post = this.builder.generatePost();
+        var post = this.builder.createPost();
 
         this.markups = [];
         this.markerTypes = this.parseMarkerTypes(markerTypes);
@@ -2503,7 +3094,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
         return post;
       }
     }, {
-      key: 'parseMarkerTypes',
+      key: "parseMarkerTypes",
       value: function parseMarkerTypes(markerTypes) {
         var _this = this;
 
@@ -2512,17 +3103,17 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
         });
       }
     }, {
-      key: 'parseMarkerType',
+      key: "parseMarkerType",
       value: function parseMarkerType(_ref2) {
         var _ref22 = _slicedToArray(_ref2, 2);
 
         var tagName = _ref22[0];
         var attributes = _ref22[1];
 
-        return this.builder.generateMarkup(tagName, attributes);
+        return this.builder.createMarkup(tagName, attributes);
       }
     }, {
-      key: 'parseSections',
+      key: "parseSections",
       value: function parseSections(sections, post) {
         var _this2 = this;
 
@@ -2531,7 +3122,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
         });
       }
     }, {
-      key: 'parseSection',
+      key: "parseSection",
       value: function parseSection(section, post) {
         var _section = _slicedToArray(section, 1);
 
@@ -2549,11 +3140,11 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
             this.parseCardSection(section, post);
             break;
           default:
-            throw new Error('Unexpected section type ' + type);
+            throw new Error("Unexpected section type " + type);
         }
       }
     }, {
-      key: 'parseCardSection',
+      key: "parseCardSection",
       value: function parseCardSection(_ref3, post) {
         var _ref32 = _slicedToArray(_ref3, 3);
 
@@ -2561,22 +3152,22 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
         var name = _ref32[1];
         var payload = _ref32[2];
 
-        var section = this.builder.generateCardSection(name, payload);
+        var section = this.builder.createCardSection(name, payload);
         post.appendSection(section);
       }
     }, {
-      key: 'parseImageSection',
+      key: "parseImageSection",
       value: function parseImageSection(_ref4, post) {
         var _ref42 = _slicedToArray(_ref4, 2);
 
         var type = _ref42[0];
         var src = _ref42[1];
 
-        var section = this.builder.generateImageSection(src);
+        var section = this.builder.createImageSection(src);
         post.appendSection(section);
       }
     }, {
-      key: 'parseMarkupSection',
+      key: "parseMarkupSection",
       value: function parseMarkupSection(_ref5, post) {
         var _ref52 = _slicedToArray(_ref5, 3);
 
@@ -2584,15 +3175,12 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
         var tagName = _ref52[1];
         var markers = _ref52[2];
 
-        var attributes = null;
-        var isGenerated = false;
-        var section = this.builder.generateMarkupSection(tagName, attributes, isGenerated);
-
+        var section = this.builder.createMarkupSection(tagName);
         post.appendSection(section);
         this.parseMarkers(markers, section);
       }
     }, {
-      key: 'parseMarkers',
+      key: "parseMarkers",
       value: function parseMarkers(markers, section) {
         var _this3 = this;
 
@@ -2601,7 +3189,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
         });
       }
     }, {
-      key: 'parseMarker',
+      key: "parseMarker",
       value: function parseMarker(_ref6, section) {
         var _this4 = this;
 
@@ -2614,7 +3202,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
         markerTypeIndexes.forEach(function (index) {
           _this4.markups.push(_this4.markerTypes[index]);
         });
-        var marker = this.builder.generateMarker(this.markups.slice(), value);
+        var marker = this.builder.createMarker(value, this.markups.slice());
         section.appendMarker(marker);
         this.markups = this.markups.slice(0, this.markups.length - closeCount);
       }
@@ -2623,10 +3211,14 @@ define('content-kit-editor/parsers/mobiledoc', ['exports', 'content-kit-editor/u
     return MobiledocParser;
   })();
 
-  exports['default'] = MobiledocParser;
+  exports["default"] = MobiledocParser;
 });
-define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models/post', 'content-kit-editor/models/markup-section', 'content-kit-editor/parsers/section', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/post-builder', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/markup'], function (exports, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorParsersSection, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsPostBuilder, _contentKitEditorUtilsDomUtils, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsMarkup) {
+define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models/markup-section', 'content-kit-editor/parsers/section', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/markup'], function (exports, _contentKitEditorModelsMarkupSection, _contentKitEditorParsersSection, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsMarkup) {
   'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var sanitizeTextRegex = new RegExp(_contentKitEditorRenderersEditorDom.UNPRINTABLE_CHARACTER, 'g');
 
@@ -2634,125 +3226,150 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
     return text.replace(sanitizeTextRegex, '');
   }
 
-  exports['default'] = {
-    parse: function parse(element) {
-      var post = new _contentKitEditorModelsPost['default']();
+  var PostParser = (function () {
+    function PostParser(builder) {
+      _classCallCheck(this, PostParser);
 
-      (0, _contentKitEditorUtilsArrayUtils.forEach)(element.childNodes, function (child) {
-        post.appendSection(_contentKitEditorParsersSection['default'].parse(child));
-      });
+      this.builder = builder;
+      this.sectionParser = new _contentKitEditorParsersSection['default'](this.builder);
+    }
 
-      return post;
-    },
+    _createClass(PostParser, [{
+      key: 'parse',
+      value: function parse(element) {
+        var _this = this;
 
-    parseSection: function parseSection(element, otherArg) {
-      if (!!otherArg) {
-        element = otherArg; // hack to deal with passed previousSection
+        var post = this.builder.createPost();
+
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(element.childNodes, function (child) {
+          post.appendSection(_this.sectionParser.parse(child));
+        });
+
+        return post;
       }
-      return _contentKitEditorParsersSection['default'].parse(element);
-    },
-
-    // FIXME should move to the section parser?
-    // FIXME the `collectMarkups` logic could simplify the section parser?
-    reparseSection: function reparseSection(section, renderTree) {
-      if (section.type !== _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE) {
-        // can only reparse markup sections
-        return;
-      }
-      var sectionElement = section.renderNode.element;
-
-      // Turn an element node into a markup
-      function markupFromNode(node) {
-        if (_contentKitEditorModelsMarkup['default'].isValidElement(node)) {
-          var tagName = node.tagName;
-          var attributes = (0, _contentKitEditorUtilsDomUtils.getAttributesArray)(node);
-
-          return (0, _contentKitEditorUtilsPostBuilder.generateBuilder)().generateMarkup(tagName, attributes);
+    }, {
+      key: 'parseSection',
+      value: function parseSection(element, otherArg) {
+        if (!!otherArg) {
+          element = otherArg; // hack to deal with passed previousSection
         }
+        return this.sectionParser.parse(element);
       }
 
-      // walk up from the textNode until the rootNode, converting each
-      // parentNode into a markup
-      function collectMarkups(textNode, rootNode) {
-        var markups = [];
-        var currentNode = textNode.parentNode;
-        while (currentNode && currentNode !== rootNode) {
-          var markup = markupFromNode(currentNode);
-          if (markup) {
-            markups.push(markup);
+      // FIXME should move to the section parser?
+      // FIXME the `collectMarkups` logic could simplify the section parser?
+    }, {
+      key: 'reparseSection',
+      value: function reparseSection(section, renderTree) {
+        var _this2 = this;
+
+        if (section.type !== _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE) {
+          // can only reparse markup sections
+          return;
+        }
+        var sectionElement = section.renderNode.element;
+
+        // Turn an element node into a markup
+        var markupFromNode = function markupFromNode(node) {
+          if (_contentKitEditorModelsMarkup['default'].isValidElement(node)) {
+            var tagName = node.tagName;
+            var attributes = (0, _contentKitEditorUtilsDomUtils.getAttributesArray)(node);
+
+            return _this2.builder.createMarkup(tagName, attributes);
+          }
+        };
+
+        // walk up from the textNode until the rootNode, converting each
+        // parentNode into a markup
+        var collectMarkups = function collectMarkups(textNode, rootNode) {
+          var markups = [];
+          var currentNode = textNode.parentNode;
+          while (currentNode && currentNode !== rootNode) {
+            var markup = markupFromNode(currentNode);
+            if (markup) {
+              markups.push(markup);
+            }
+
+            currentNode = currentNode.parentNode;
+          }
+          return markups;
+        };
+
+        var seenRenderNodes = [];
+        var previousMarker = undefined;
+
+        (0, _contentKitEditorUtilsDomUtils.walkTextNodes)(sectionElement, function (textNode) {
+          var text = sanitizeText(textNode.textContent);
+          var markups = collectMarkups(textNode, sectionElement);
+
+          var marker = undefined;
+
+          var renderNode = renderTree.elements.get(textNode);
+          if (renderNode) {
+            if (text.length) {
+              marker = renderNode.postNode;
+              marker.value = text;
+              marker.markups = markups;
+            } else {
+              renderNode.scheduleForRemoval();
+            }
+          } else {
+            marker = _this2.builder.createMarker(text, markups);
+
+            // create a cleaned render node to account for the fact that this
+            // render node comes from already-displayed DOM
+            // FIXME this should be cleaner
+            renderNode = renderTree.buildRenderNode(marker);
+            renderNode.element = textNode;
+            renderNode.markClean();
+
+            if (previousMarker) {
+              // insert this marker after the previous one
+              section.insertMarkerAfter(marker, previousMarker);
+              section.renderNode.insertAfter(renderNode, previousMarker.renderNode);
+            } else {
+              // insert marker at the beginning of the section
+              section.prependMarker(marker);
+              section.renderNode.insertAfter(renderNode, null);
+            }
+
+            // find the nextMarkerElement, set it on the render node
+            var parentNodeCount = marker.closedMarkups.length;
+            var nextMarkerElement = textNode.parentNode;
+            while (parentNodeCount--) {
+              nextMarkerElement = nextMarkerElement.parentNode;
+            }
+            renderNode.nextMarkerElement = nextMarkerElement;
           }
 
-          currentNode = currentNode.parentNode;
-        }
-        return markups;
-      }
+          seenRenderNodes.push(renderNode);
+          previousMarker = marker;
+        });
 
-      var seenRenderNodes = [];
-      var previousMarker = undefined;
-
-      (0, _contentKitEditorUtilsDomUtils.walkTextNodes)(sectionElement, function (textNode) {
-        var text = sanitizeText(textNode.textContent);
-        var markups = collectMarkups(textNode, sectionElement);
-
-        var marker = undefined;
-
-        var renderNode = renderTree.elements.get(textNode);
-        if (renderNode) {
-          if (text.length) {
-            marker = renderNode.postNode;
-            marker.value = text;
-            marker.markups = markups;
-          } else {
+        // remove any nodes that were not marked as seen
+        var renderNode = section.renderNode.firstChild;
+        while (renderNode) {
+          if (seenRenderNodes.indexOf(renderNode) === -1) {
+            // remove it
             renderNode.scheduleForRemoval();
           }
-        } else {
-          marker = (0, _contentKitEditorUtilsPostBuilder.generateBuilder)().generateMarker(markups, text);
 
-          // create a cleaned render node to account for the fact that this
-          // render node comes from already-displayed DOM
-          // FIXME this should be cleaner
-          renderNode = renderTree.buildRenderNode(marker);
-          renderNode.element = textNode;
-          renderNode.markClean();
-
-          if (previousMarker) {
-            // insert this marker after the previous one
-            section.insertMarkerAfter(marker, previousMarker);
-            section.renderNode.insertAfter(renderNode, previousMarker.renderNode);
-          } else {
-            // insert marker at the beginning of the section
-            section.prependMarker(marker);
-            section.renderNode.insertAfter(renderNode, null);
-          }
-
-          // find the nextMarkerElement, set it on the render node
-          var parentNodeCount = marker.closedMarkups.length;
-          var nextMarkerElement = textNode.parentNode;
-          while (parentNodeCount--) {
-            nextMarkerElement = nextMarkerElement.parentNode;
-          }
-          renderNode.nextMarkerElement = nextMarkerElement;
+          renderNode = renderNode.nextSibling;
         }
-
-        seenRenderNodes.push(renderNode);
-        previousMarker = marker;
-      });
-
-      // schedule any nodes that were not marked as seen
-      var node = section.renderNode.firstChild;
-      while (node) {
-        if (seenRenderNodes.indexOf(node) === -1) {
-          // remove it
-          node.scheduleForRemoval();
-        }
-
-        node = node.nextSibling;
       }
-    }
-  };
+    }]);
+
+    return PostParser;
+  })();
+
+  exports['default'] = PostParser;
 });
-define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/marker', 'content-kit-editor/models/markup', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/post-builder'], function (exports, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsPostBuilder) {
+define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/markup', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarkup, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils) {
   'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var TEXT_NODE = 3;
   var ELEMENT_NODE = 1;
@@ -2762,99 +3379,119 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
    * elements contained within
    * @return {Section}
    */
-  exports['default'] = {
-    parse: function parse(element) {
-      var _this = this;
 
-      var tagName = this.sectionTagNameFromElement(element);
-      var section = new _contentKitEditorModelsMarkupSection['default'](tagName);
-      var state = { section: section, markups: [], text: '' };
+  var SectionParser = (function () {
+    function SectionParser(builder) {
+      _classCallCheck(this, SectionParser);
 
-      (0, _contentKitEditorUtilsArrayUtils.forEach)(element.childNodes, function (el) {
-        _this.parseNode(el, state);
-      });
+      this.builder = builder;
+    }
 
-      // close a trailing text nodes if it exists
-      if (state.text.length) {
-        var marker = new _contentKitEditorModelsMarker['default'](state.text, state.markups);
-        state.section.appendMarker(marker);
-      }
+    _createClass(SectionParser, [{
+      key: 'parse',
+      value: function parse(element) {
+        var _this = this;
 
-      if (section.markers.length === 0) {
-        section.appendMarker((0, _contentKitEditorUtilsPostBuilder.generateBuilder)().generateBlankMarker());
-      }
+        var tagName = this.sectionTagNameFromElement(element);
+        var section = this.builder.createMarkupSection(tagName);
+        var state = { section: section, markups: [], text: '' };
 
-      return section;
-    },
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(element.childNodes, function (el) {
+          _this.parseNode(el, state);
+        });
 
-    parseNode: function parseNode(node, state) {
-      switch (node.nodeType) {
-        case TEXT_NODE:
-          this.parseTextNode(node, state);
-          break;
-        case ELEMENT_NODE:
-          this.parseElementNode(node, state);
-          break;
-        default:
-          throw new Error('parseNode got unexpected element type ' + node.nodeType + ' ' + node);
-      }
-    },
-
-    parseElementNode: function parseElementNode(element, state) {
-      var _this2 = this;
-
-      var markup = this.markupFromElement(element);
-      if (markup) {
+        // close a trailing text nodes if it exists
         if (state.text.length) {
-          // close previous text marker
-          var marker = new _contentKitEditorModelsMarker['default'](state.text, state.markups);
+          var marker = this.builder.createMarker(state.text, state.markups);
           state.section.appendMarker(marker);
-          state.text = '';
         }
 
-        state.markups.push(markup);
+        if (section.markers.length === 0) {
+          section.appendMarker(this.builder.createBlankMarker());
+        }
+
+        return section;
       }
-
-      (0, _contentKitEditorUtilsArrayUtils.forEach)(element.childNodes, function (node) {
-        _this2.parseNode(node, state);
-      });
-
-      if (markup) {
-        // close the marker started for this node and pop
-        // its markup from the stack
-        var marker = new _contentKitEditorModelsMarker['default'](state.text, state.markups);
-        state.section.appendMarker(marker);
-        state.markups.pop();
-        state.text = '';
+    }, {
+      key: 'parseNode',
+      value: function parseNode(node, state) {
+        switch (node.nodeType) {
+          case TEXT_NODE:
+            this.parseTextNode(node, state);
+            break;
+          case ELEMENT_NODE:
+            this.parseElementNode(node, state);
+            break;
+          default:
+            throw new Error('parseNode got unexpected element type ' + node.nodeType + ' ' + node);
+        }
       }
-    },
+    }, {
+      key: 'parseElementNode',
+      value: function parseElementNode(element, state) {
+        var _this2 = this;
 
-    parseTextNode: function parseTextNode(textNode, state) {
-      state.text += textNode.textContent;
-    },
+        var markup = this.markupFromElement(element);
+        if (markup) {
+          if (state.text.length) {
+            // close previous text marker
+            var marker = this.builder.createMarker(state.text, state.markups);
+            state.section.appendMarker(marker);
+            state.text = '';
+          }
 
-    isSectionElement: function isSectionElement(element) {
-      return element.nodeType === ELEMENT_NODE && _contentKitEditorModelsMarkupSection.VALID_MARKUP_SECTION_TAGNAMES.indexOf(element.tagName.toLowerCase()) !== -1;
-    },
+          state.markups.push(markup);
+        }
 
-    markupFromElement: function markupFromElement(element) {
-      var tagName = element.tagName.toLowerCase();
-      if (_contentKitEditorModelsMarkup.VALID_MARKUP_TAGNAMES.indexOf(tagName) === -1) {
-        return null;
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(element.childNodes, function (node) {
+          _this2.parseNode(node, state);
+        });
+
+        if (markup) {
+          // close the marker started for this node and pop
+          // its markup from the stack
+          var marker = this.builder.createMarker(state.text, state.markups);
+          state.section.appendMarker(marker);
+          state.markups.pop();
+          state.text = '';
+        }
       }
-
-      return new _contentKitEditorModelsMarkup['default'](tagName, (0, _contentKitEditorUtilsDomUtils.getAttributes)(element));
-    },
-
-    sectionTagNameFromElement: function sectionTagNameFromElement(element) {
-      var tagName = element.tagName;
-      tagName = tagName && tagName.toLowerCase();
-      if (_contentKitEditorModelsMarkupSection.VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName) === -1) {
-        tagName = _contentKitEditorModelsMarkupSection.DEFAULT_TAG_NAME;
+    }, {
+      key: 'parseTextNode',
+      value: function parseTextNode(textNode, state) {
+        state.text += textNode.textContent;
       }
-      return tagName;
-    }
-  };
+    }, {
+      key: 'isSectionElement',
+      value: function isSectionElement(element) {
+        return element.nodeType === ELEMENT_NODE && _contentKitEditorModelsMarkupSection.VALID_MARKUP_SECTION_TAGNAMES.indexOf((0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName)) !== -1;
+      }
+    }, {
+      key: 'markupFromElement',
+      value: function markupFromElement(element) {
+        var tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName);
+        if (_contentKitEditorModelsMarkup.VALID_MARKUP_TAGNAMES.indexOf(tagName) === -1) {
+          return null;
+        }
+
+        return this.builder.createMarkup(tagName, (0, _contentKitEditorUtilsDomUtils.getAttributes)(element));
+      }
+    }, {
+      key: 'sectionTagNameFromElement',
+      value: function sectionTagNameFromElement(element) {
+        var tagName = element.tagName;
+        tagName = tagName && (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
+        if (_contentKitEditorModelsMarkupSection.VALID_MARKUP_SECTION_TAGNAMES.indexOf(tagName) === -1) {
+          tagName = _contentKitEditorModelsMarkupSection.DEFAULT_TAG_NAME;
+        }
+        return tagName;
+      }
+    }]);
+
+    return SectionParser;
+  })();
+
+  exports['default'] = SectionParser;
 });
 define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-editor/models/render-node", "content-kit-editor/models/card-node", "content-kit-editor/utils/array-utils", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/marker", "content-kit-editor/models/image", "content-kit-editor/models/card", "content-kit-editor/utils/dom-utils"], function (exports, _contentKitEditorModelsRenderNode, _contentKitEditorModelsCardNode, _contentKitEditorUtilsArrayUtils, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarker, _contentKitEditorModelsImage, _contentKitEditorModelsCard, _contentKitEditorUtilsDomUtils) {
   "use strict";
@@ -2890,8 +3527,8 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     return element;
   }
 
-  function renderMarkupSection(doc, section) {
-    var element = doc.createElement(section.tagName);
+  function renderMarkupSection(section) {
+    var element = document.createElement(section.tagName);
     section.element = element;
     return element;
   }
@@ -2966,19 +3603,29 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     }, {
       key: _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE,
       value: function value(renderNode, section, visit) {
-        if (!renderNode.element) {
-          var element = renderMarkupSection(window.document, section);
+        var originalElement = renderNode.element;
+        var hasRendered = !!originalElement;
+
+        // Always rerender the section -- its tag name or attributes may have changed.
+        // TODO make this smarter, only rerendering and replacing the element when necessary
+        var element = renderMarkupSection(section);
+        renderNode.element = element;
+
+        if (!hasRendered) {
+          var _element = renderNode.element;
+
           if (renderNode.previousSibling) {
             var previousElement = renderNode.previousSibling.element;
             var nextElement = previousElement.nextSibling;
             if (nextElement) {
-              nextElement.parentNode.insertBefore(element, nextElement);
+              nextElement.parentNode.insertBefore(_element, nextElement);
             }
           }
-          if (!element.parentNode) {
-            renderNode.parentNode.element.appendChild(element);
+          if (!_element.parentNode) {
+            renderNode.parentNode.element.appendChild(_element);
           }
-          renderNode.element = element;
+        } else {
+          renderNode.parentNode.element.replaceChild(element, originalElement);
         }
 
         // remove all elements so that we can rerender
@@ -3038,7 +3685,16 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         var element = document.createElement('div');
         element.contentEditable = 'false';
         renderNode.element = element;
-        renderNode.parentNode.element.appendChild(renderNode.element);
+        if (renderNode.previousSibling) {
+          var previousElement = renderNode.previousSibling.element;
+          var nextElement = previousElement.nextSibling;
+          if (nextElement) {
+            nextElement.parentNode.insertBefore(element, nextElement);
+          }
+        }
+        if (!element.parentNode) {
+          renderNode.parentNode.element.appendChild(element);
+        }
 
         if (card) {
           var cardNode = new _contentKitEditorModelsCardNode["default"](editor, card, section, renderNode.element, options);
@@ -3073,7 +3729,11 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
       element = element.parentNode;
     }
 
-    marker.section.removeMarker(marker);
+    // FIXME is it ok that this marker may have already been removed from the
+    // section?
+    if (marker.section.markers.indexOf(marker) !== -1) {
+      marker.section.removeMarker(marker);
+    }
 
     if (element.parentNode) {
       // if no parentNode, the browser already removed this element
@@ -3260,6 +3920,16 @@ define("content-kit-editor/utils/array-utils", ["exports"], function (exports) {
     }
   }
 
+  function any(array, callback) {
+    for (var i = 0; i < array.length; i++) {
+      if (callback(array[i])) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /**
    * Useful for array-like things that aren't
    * actually arrays, like NodeList
@@ -3272,6 +3942,7 @@ define("content-kit-editor/utils/array-utils", ["exports"], function (exports) {
 
   exports.detect = detect;
   exports.forEach = forEach;
+  exports.any = any;
 });
 define('content-kit-editor/utils/compat', ['exports', 'content-kit-editor/utils/doc', 'content-kit-editor/utils/win'], function (exports, _contentKitEditorUtilsDoc, _contentKitEditorUtilsWin) {
   'use strict';
@@ -3451,6 +4122,15 @@ define('content-kit-editor/utils/dom-utils', ['exports', 'content-kit-editor/uti
     return result;
   }
 
+  function addClassName(element, className) {
+    // FIXME-IE IE10+
+    element.classList.add(className);
+  }
+
+  function normalizeTagName(tagName) {
+    return tagName.toLowerCase();
+  }
+
   exports.detectParentNode = detectParentNode;
   exports.containsNode = containsNode;
   exports.clearChildNodes = clearChildNodes;
@@ -3458,6 +4138,8 @@ define('content-kit-editor/utils/dom-utils', ['exports', 'content-kit-editor/uti
   exports.getAttributesArray = getAttributesArray;
   exports.walkDOMUntil = walkDOMUntil;
   exports.walkTextNodes = walkTextNodes;
+  exports.addClassName = addClassName;
+  exports.normalizeTagName = normalizeTagName;
 });
 define('content-kit-editor/utils/element-map', ['exports'], function (exports) {
   // start at one to make the falsy semantics easier
@@ -3508,7 +4190,7 @@ define('content-kit-editor/utils/element-map', ['exports'], function (exports) {
 
   exports['default'] = ElementMap;
 });
-define('content-kit-editor/utils/element-utils', ['exports', 'content-kit-editor/utils/string-utils'], function (exports, _contentKitEditorUtilsStringUtils) {
+define('content-kit-editor/utils/element-utils', ['exports', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/utils/string-utils', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorRenderersEditorDom, _contentKitEditorUtilsStringUtils, _contentKitEditorUtilsDomUtils) {
   'use strict';
 
   function createDiv(className) {
@@ -3532,10 +4214,11 @@ define('content-kit-editor/utils/element-utils', ['exports', 'content-kit-editor
     showElement(elementToShow);
   }
 
-  function getEventTargetMatchingTag(tag, target, container) {
+  function getEventTargetMatchingTag(tagName, target, container) {
+    tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
     // Traverses up DOM from an event target to find the node matching specifed tag
     while (target && target !== container) {
-      if (target.tagName.toLowerCase() === tag) {
+      if ((0, _contentKitEditorUtilsDomUtils.normalizeTagName)(target.tagName) === tagName) {
         return target;
       }
       target = target.parentNode;
@@ -3543,9 +4226,10 @@ define('content-kit-editor/utils/element-utils', ['exports', 'content-kit-editor
   }
 
   function elementContentIsEmpty(element) {
-    var content = element && element.innerHTML;
-    if (content) {
-      return content === '' || content === '<br>';
+    if (!element.firstChild) {
+      return true;
+    } else if (element.childNodes.length === 1 && element.firstChild.textContent === _contentKitEditorRenderersEditorDom.UNPRINTABLE_CHARACTER) {
+      return true;
     }
     return false;
   }
@@ -3892,62 +4576,6 @@ define('content-kit-editor/utils/mixin', ['exports'], function (exports) {
     });
   }
 });
-define("content-kit-editor/utils/post-builder", ["exports", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/image", "content-kit-editor/models/marker", "content-kit-editor/models/markup", "content-kit-editor/models/card"], function (exports, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsImage, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorModelsCard) {
-  "use strict";
-
-  exports.generateBuilder = generateBuilder;
-
-  var builder = {
-    generatePost: function generatePost() {
-      return new _contentKitEditorModelsPost["default"]();
-    },
-    generateMarkupSection: function generateMarkupSection(tagName, attributes, isGenerated) {
-      var section = new _contentKitEditorModelsMarkupSection["default"](tagName);
-      if (isGenerated) {
-        section.isGenerated = !!isGenerated;
-      }
-      return section;
-    },
-    generateImageSection: function generateImageSection(url) {
-      var section = new _contentKitEditorModelsImage["default"]();
-      if (url) {
-        section.src = url;
-      }
-      return section;
-    },
-    generateCardSection: function generateCardSection(name) {
-      var payload = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-      return new _contentKitEditorModelsCard["default"](name, payload);
-    },
-    generateMarker: function generateMarker(markups, value) {
-      return new _contentKitEditorModelsMarker["default"](value, markups);
-    },
-    generateBlankMarker: function generateBlankMarker() {
-      return new _contentKitEditorModelsMarker["default"]('__BLANK__');
-    },
-    generateMarkup: function generateMarkup(tagName, attributes) {
-      if (attributes) {
-        // FIXME: This could also be cached
-        return new _contentKitEditorModelsMarkup["default"](tagName, attributes);
-      }
-      var markerType = this._markerTypeCache[tagName];
-      if (!markerType) {
-        this._markerTypeCache[tagName] = markerType = new _contentKitEditorModelsMarkup["default"](tagName);
-      }
-      return markerType;
-    }
-  };
-
-  function reset(builder) {
-    builder._markerTypeCache = {};
-  }
-
-  function generateBuilder() {
-    reset(builder);
-    return builder;
-  }
-});
 define('content-kit-editor/utils/selection-utils', ['exports', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsDomUtils) {
   'use strict';
 
@@ -4004,25 +4632,25 @@ define('content-kit-editor/utils/selection-utils', ['exports', 'content-kit-edit
   function getSelectionBlockElement(selection) {
     selection = selection || window.getSelection();
     var element = getSelectionElement();
-    var tag = element && element.tagName.toLowerCase();
+    var tag = element && (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName);
     while (tag && RootTags.indexOf(tag) === -1) {
       if (element.contentEditable === 'true') {
         return null; // Stop traversing up dom when hitting an editor element
       }
       element = element.parentNode;
-      tag = element.tagName && element.tagName.toLowerCase();
+      tag = element.tagName && (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName);
     }
     return element;
   }
 
   function getSelectionTagName() {
     var element = getSelectionElement();
-    return element ? element.tagName.toLowerCase() : null;
+    return element ? (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName) : null;
   }
 
   function getSelectionBlockTagName() {
     var element = getSelectionBlockElement();
-    return element ? element.tagName && element.tagName.toLowerCase() : null;
+    return element ? element.tagName && (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName) : null;
   }
 
   function tagsInSelection(selection) {
@@ -4033,7 +4661,7 @@ define('content-kit-editor/utils/selection-utils', ['exports', 'content-kit-edit
         break;
       } // Stop traversing up dom when hitting an editor element
       if (element.tagName) {
-        tags.push(element.tagName.toLowerCase());
+        tags.push((0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName));
       }
       element = element.parentNode;
     }
@@ -4057,20 +4685,6 @@ define('content-kit-editor/utils/selection-utils', ['exports', 'content-kit-edit
     selection.addRange(range);
   }
 
-  function getCursorOffsetInElement(element) {
-    // http://stackoverflow.com/questions/4811822/get-a-ranges-start-and-end-offsets-relative-to-its-parent-container/4812022#4812022
-    var caretOffset = 0;
-    var selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      var range = selection.getRangeAt(0);
-      var preCaretRange = range.cloneRange();
-      preCaretRange.selectNodeContents(element);
-      preCaretRange.setEnd(range.endContainer, range.endOffset);
-      caretOffset = preCaretRange.toString().length;
-    }
-    return caretOffset;
-  }
-
   exports.getDirectionOfSelection = getDirectionOfSelection;
   exports.getSelectionElement = getSelectionElement;
   exports.getSelectionBlockElement = getSelectionBlockElement;
@@ -4079,7 +4693,6 @@ define('content-kit-editor/utils/selection-utils', ['exports', 'content-kit-edit
   exports.tagsInSelection = tagsInSelection;
   exports.restoreRange = restoreRange;
   exports.selectNode = selectNode;
-  exports.getCursorOffsetInElement = getCursorOffsetInElement;
   exports.clearSelection = clearSelection;
   exports.isSelectionInElement = isSelectionInElement;
 });
@@ -4129,7 +4742,7 @@ define('content-kit-editor/views/embed-intent', ['exports', 'content-kit-editor/
     embedIntent.button.title = 'Insert image or embed...';
     embedIntent.element.appendChild(embedIntent.button);
 
-    this.addEventListener(embedIntent.button, 'mouseup', function (e) {
+    this.addEventListener(embedIntent.button, 'click', function (e) {
       if (embedIntent.isActive) {
         embedIntent.deactivate();
       } else {
@@ -4156,7 +4769,7 @@ define('content-kit-editor/views/embed-intent', ['exports', 'content-kit-editor/
     }
 
     this.addEventListener(rootElement, 'keyup', embedIntentHandler);
-    this.addEventListener(document, 'mouseup', function () {
+    this.addEventListener(document, 'click', function () {
       setTimeout(function () {
         embedIntentHandler();
       });
@@ -4295,7 +4908,7 @@ define('content-kit-editor/views/prompt', ['exports', 'content-kit-editor/views/
 
       prompt.command = options.command;
       prompt.element.placeholder = options.placeholder || '';
-      this.addEventListener(prompt.element, 'mouseup', function (e) {
+      this.addEventListener(prompt.element, 'click', function (e) {
         // prevents closing prompt when clicking input
         e.stopPropagation();
       });
@@ -4354,6 +4967,96 @@ define('content-kit-editor/views/prompt', ['exports', 'content-kit-editor/views/
   })(_contentKitEditorViewsView['default']);
 
   exports['default'] = Prompt;
+});
+define('content-kit-editor/views/reversible-toolbar-button', ['exports', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener'], function (exports, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener) {
+  'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  var ELEMENT_TYPE = 'button';
+  var BUTTON_CLASS_NAME = 'ck-toolbar-btn';
+
+  var ReversibleToolbarButton = (function () {
+    function ReversibleToolbarButton(command, editor) {
+      var _this = this;
+
+      _classCallCheck(this, ReversibleToolbarButton);
+
+      this.command = command;
+      this.editor = editor;
+      this.element = this.createElement();
+      this.active = false;
+
+      this.addEventListener(this.element, 'click', function (e) {
+        return _this.handleClick(e);
+      });
+      this.editor.on('selection', function () {
+        return _this.updateActiveState();
+      });
+      this.editor.on('selectionUpdated', function () {
+        return _this.updateActiveState();
+      });
+      this.editor.on('selectionEnded', function () {
+        return _this.updateActiveState();
+      });
+    }
+
+    // These are here to match the API of the ToolbarButton class
+
+    _createClass(ReversibleToolbarButton, [{
+      key: 'setInactive',
+      value: function setInactive() {}
+    }, {
+      key: 'setActive',
+      value: function setActive() {}
+    }, {
+      key: 'handleClick',
+      value: function handleClick(e) {
+        e.stopPropagation();
+
+        if (this.active) {
+          this.command.unexec();
+        } else {
+          this.command.exec();
+        }
+      }
+    }, {
+      key: 'updateActiveState',
+      value: function updateActiveState() {
+        this.active = this.command.isActive();
+      }
+    }, {
+      key: 'createElement',
+      value: function createElement() {
+        var element = document.createElement(ELEMENT_TYPE);
+        element.className = BUTTON_CLASS_NAME;
+        element.innerHTML = this.command.button;
+        element.title = this.command.name;
+        return element;
+      }
+    }, {
+      key: 'active',
+      set: function set(val) {
+        this._active = val;
+        if (this._active) {
+          this.element.className = BUTTON_CLASS_NAME + ' active';
+        } else {
+          this.element.className = BUTTON_CLASS_NAME;
+        }
+      },
+      get: function get() {
+        return this._active;
+      }
+    }]);
+
+    return ReversibleToolbarButton;
+  })();
+
+  (0, _contentKitEditorUtilsMixin['default'])(ReversibleToolbarButton, _contentKitEditorUtilsEventListener['default']);
+
+  exports['default'] = ReversibleToolbarButton;
 });
 define('content-kit-editor/views/text-format-toolbar', ['exports', 'content-kit-editor/views/toolbar'], function (exports, _contentKitEditorViewsToolbar) {
   'use strict';
@@ -4440,12 +5143,15 @@ define('content-kit-editor/views/toolbar-button', ['exports', 'content-kit-edito
     element.title = command.name;
     element.className = buttonClassName;
     element.innerHTML = command.button;
-    this.addEventListener(element, 'mouseup', function (e) {
+    this.addEventListener(element, 'click', function (e) {
       if (!button.isActive && prompt) {
         toolbar.displayPrompt(prompt);
       } else {
         command.exec();
         toolbar.updateForSelection();
+        if (toolbar.embedIntent) {
+          toolbar.embedIntent.hide();
+        }
       }
       e.stopPropagation();
     });
@@ -4522,9 +5228,6 @@ define('content-kit-editor/views/toolbar', ['exports', 'content-kit-editor/views
       options.classNames = ['ck-toolbar'];
       _get(Object.getPrototypeOf(Toolbar.prototype), 'constructor', this).call(this, options);
 
-      var commands = options.commands;
-      var commandCount = commands && commands.length;
-
       this.setDirection(options.direction || ToolbarDirection.TOP);
       this.editor = options.editor || null;
       this.embedIntent = options.embedIntent || null;
@@ -4538,12 +5241,15 @@ define('content-kit-editor/views/toolbar', ['exports', 'content-kit-editor/views
       this.contentElement.appendChild(this.buttonContainerElement);
       this.element.appendChild(this.contentElement);
 
-      for (var i = 0; i < commandCount; i++) {
-        this.addCommand(commands[i]);
-      }
+      (options.buttons || []).forEach(function (b) {
+        return _this.addButton(b);
+      });
+      (options.commands || []).forEach(function (c) {
+        return _this.addCommand(c);
+      });
 
       // Closes prompt if displayed when changing selection
-      this.addEventListener(document, 'mouseup', function () {
+      this.addEventListener(document, 'click', function () {
         _this.dismissPrompt();
       });
     }
@@ -4561,9 +5267,14 @@ define('content-kit-editor/views/toolbar', ['exports', 'content-kit-editor/views
     }, {
       key: 'addCommand',
       value: function addCommand(command) {
-        command.editorContext = this.editor;
+        command.editor = this.editor;
         command.embedIntent = this.embedIntent;
         var button = new _contentKitEditorViewsToolbarButton['default']({ command: command, toolbar: this });
+        this.addButton(button);
+      }
+    }, {
+      key: 'addButton',
+      value: function addButton(button) {
         this.buttons.push(button);
         this.buttonContainerElement.appendChild(button.element);
       }
@@ -4973,4 +5684,4 @@ define('content-kit-utils/string-utils', ['exports'], function (exports) {
   exports.injectIntoString = injectIntoString;
 });
 require("content-kit-editor")["registerGlobal"](window, document);
-})();
+})();//# sourceMappingURL=content-kit-editor.map

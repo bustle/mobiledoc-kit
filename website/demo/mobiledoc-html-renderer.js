@@ -13,7 +13,8 @@ var define, requireModule, require, requirejs;
     _isArray = Array.isArray;
   }
 
-  var registry = {}, seen = {};
+  var registry = {};
+  var seen = {};
   var FAILED = false;
 
   var uuid = 0;
@@ -120,7 +121,6 @@ var define, requireModule, require, requirejs;
   requirejs = require = requireModule = function(name) {
     var mod = registry[name];
 
-
     if (mod && mod.callback instanceof Alias) {
       mod = registry[mod.callback.name];
     }
@@ -179,29 +179,42 @@ var define, requireModule, require, requirejs;
           throw new Error('Cannot access parent module of root');
         }
         parentBase.pop();
-      } else if (part === '.') { continue; }
-      else { parentBase.push(part); }
+      } else if (part === '.') {
+        continue;
+      } else { parentBase.push(part); }
     }
 
     return parentBase.join('/');
   }
 
   requirejs.entries = requirejs._eak_seen = registry;
-  requirejs.clear = function(){
+  requirejs.unsee = function(moduleName) {
+    delete seen[moduleName];
+  };
+
+  requirejs.clear = function() {
     requirejs.entries = requirejs._eak_seen = registry = {};
     seen = state = {};
   };
 })();
 
-define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-renderer/utils/dom'], function (exports, _mobiledocHtmlRendererUtilsDom) {
-  /**
-   * runtime HTML renderer
-   * renders a mobiledoc to HTML
-   *
-   * input: mobiledoc
-   * output: HTML
-   */
+define('mobiledoc-html-renderer/cards/image', ['exports'], function (exports) {
+  'use strict';
 
+  var ImageCard = {
+    name: 'image',
+    html: {
+      setup: function setup(buffer, options, env, payload) {
+        if (payload.src) {
+          buffer.push('<img src="' + payload.src + '">');
+        }
+      }
+    }
+  };
+
+  exports['default'] = ImageCard;
+});
+define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-renderer/cards/image', 'mobiledoc-html-renderer/utils/dom'], function (exports, _mobiledocHtmlRendererCardsImage, _mobiledocHtmlRendererUtilsDom) {
   'use strict';
 
   var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
@@ -229,6 +242,10 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
     return element;
   }
 
+  function setDefaultCards(cards) {
+    cards.image = cards.image || _mobiledocHtmlRendererCardsImage['default'];
+  }
+
   var DOMRenderer = (function () {
     function DOMRenderer() {
       _classCallCheck(this, DOMRenderer);
@@ -247,14 +264,16 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
 
         var version = _ref3.version;
         var sectionData = _ref3.sections;
-        var rootElement = arguments.length <= 1 || arguments[1] === undefined ? _mobiledocHtmlRendererUtilsDom['default'].createElement('div') : arguments[1];
+        var cards = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
         var _sectionData = _slicedToArray(sectionData, 2);
 
         var markerTypes = _sectionData[0];
         var sections = _sectionData[1];
 
-        this.root = rootElement;
+        this.root = _mobiledocHtmlRendererUtilsDom['default'].createElement('div');
+        this.cards = cards;
+        setDefaultCards(this.cards);
         this.markerTypes = markerTypes;
 
         sections.forEach(function (section) {
@@ -310,7 +329,14 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
         var payload = _ref52[2];
 
         var element = undefined;
-        if (payload.src) {
+        if (this.cards && this.cards[name]) {
+          element = _mobiledocHtmlRendererUtilsDom['default'].createElement('div');
+          var buffer = [];
+          this.cards[name].html.setup(buffer, {}, {}, payload);
+          buffer.forEach(function (string) {
+            _mobiledocHtmlRendererUtilsDom['default'].appendChild(element, _mobiledocHtmlRendererUtilsDom['default'].createTextNode(string));
+          });
+        } else if (payload.src) {
           element = _mobiledocHtmlRendererUtilsDom['default'].createElement('img');
           _mobiledocHtmlRendererUtilsDom['default'].setAttribute(element, 'src', payload.src);
         } else {
@@ -365,6 +391,14 @@ define('mobiledoc-html-renderer/html-renderer', ['exports', 'mobiledoc-html-rend
 
   exports['default'] = DOMRenderer;
 });
+
+/**
+ * runtime HTML renderer
+ * renders a mobiledoc to HTML
+ *
+ * input: mobiledoc
+ * output: HTML
+ */
 define('mobiledoc-html-renderer', ['exports', 'mobiledoc-html-renderer/html-renderer'], function (exports, _mobiledocHtmlRendererHtmlRenderer) {
   'use strict';
 
@@ -383,7 +417,7 @@ define("mobiledoc-html-renderer/utils/dom", ["exports"], function (exports) {
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  var VOID_TAGS = "area base br col command embed hr img input keygen link meta param source track wbr".split(" ");
+  var VOID_TAGS = "area base br col command embed hr img input keygen link meta param source track wbr".split(' ');
 
   var Element = (function () {
     function Element(tagName) {
@@ -488,4 +522,4 @@ define("mobiledoc-html-renderer/utils/dom", ["exports"], function (exports) {
   };
 });
 require("mobiledoc-html-renderer")["registerGlobal"](window, document);
-})();
+})();//# sourceMappingURL=mobiledoc-html-renderer.map
