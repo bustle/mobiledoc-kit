@@ -1,75 +1,47 @@
-export default class RenderNode {
+import LinkedItem from "content-kit-editor/utils/linked-item";
+import LinkedList from "content-kit-editor/utils/linked-list";
+
+export default class RenderNode extends LinkedItem {
   constructor(postNode) {
-    this.parentNode = null;
+    super();
+    this.parent = null;
     this.isDirty = true;
     this.isRemoved = false;
     this.postNode = postNode;
-
-    this.firstChild = null;
-    this.lastChild = null;
-    this.nextSibling = null;
-    this.previousSibling = null;
+    this.childNodes = new LinkedList({
+      adoptItem: item => {
+        item.parent = this;
+        item.renderTree = this.renderTree;
+      },
+      freeItem: item => {
+        item.parent = null;
+        item.renderTree = null;
+      }
+    });
   }
   scheduleForRemoval() {
     this.isRemoved = true;
-    if (this.parentNode) {
-      this.parentNode.markDirty();
+    if (this.parent) {
+      this.parent.markDirty();
     }
   }
   markDirty() {
     this.isDirty = true;
-    if (this.parentNode) {
-      this.parentNode.markDirty();
+    if (this.parent) {
+      this.parent.markDirty();
     }
   }
   markClean() {
     this.isDirty = false;
   }
   appendChild(child) {
-    if (!this.firstChild) {
-      this.firstChild = child;
-    }
-    if (this.lastChild) {
-      child.previousSibling = this.lastChild;
-      this.lastChild.nextSibling = child;
-    }
-    this.lastChild = child;
-    child.parentNode = this;
-    child.renderTree = this.renderTree;
+    this.childNodes.append(child);
   }
   removeChild(child) {
-    if (child.nextSibling) {
-      child.nextSibling.previousSibling = child.previousSibling;
-    } else {
-      this.lastChild = child.previousSibling;
-    }
-    if (child.previousSibling) {
-      child.previousSibling.nextSibling = child.nextSibling;
-    } else {
-      this.firstChild = child.nextSibling;
-    }
+    this.childNodes.remove(child);
   }
-  insertAfter(node, previousChild) {
-    if (previousChild) {
-      node.previousSibling = previousChild;
-      if (previousChild.nextSibling) {
-        previousChild.nextSibling.previousSibling = node;
-        node.nextSibling = previousChild.nextSibling;
-      } else {
-        this.lastChild = node;
-      }
-      previousChild.nextSibling = node;
-    } else {
-      node.nextSibling = this.firstChild;
-      if (node.nextSibling) {
-        node.nextSibling.previousSibling = node;
-      } else {
-        this.lastChild = node;
-      }
-      this.firstChild = node;
-    }
-    node.parentNode = this;
-    node.renderTree = this.renderTree;
+  insertAfter(node, prev) {
+    this.childNodes.insertAfter(node, prev);
   }
   set element(element) {
     this._element = element;

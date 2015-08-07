@@ -1,7 +1,12 @@
 export default class LinkedList {
-  constructor() {
+  constructor(options) {
     this.head = null;
     this.tail = null;
+    if (options) {
+      let {adoptItem, freeItem} = options;
+      this.adoptItem = adoptItem;
+      this.freeItem = freeItem;
+    }
   }
   prepend(item) {
     this.insertBefore(item, this.head);
@@ -18,6 +23,9 @@ export default class LinkedList {
   }
   insertBefore(item, nextItem) {
     this.remove(item);
+    if (this.adoptItem) {
+      this.adoptItem(item);
+    }
     if (nextItem && nextItem.prev) {
       // middle of the items
       let prevItem = nextItem.prev;
@@ -47,6 +55,9 @@ export default class LinkedList {
     }
   }
   remove(item) {
+    if (this.freeItem) {
+      this.freeItem(item);
+    }
     if (item.next && item.prev) {
       // Middle of the list
       item.next.prev = item.prev;
