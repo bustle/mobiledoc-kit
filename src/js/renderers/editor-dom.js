@@ -114,18 +114,18 @@ class Visitor {
     if (!hasRendered) {
       let element = renderNode.element;
 
-      if (renderNode.previousSibling) {
-        let previousElement = renderNode.previousSibling.element;
+      if (renderNode.prev) {
+        let previousElement = renderNode.prev.element;
         let nextElement = previousElement.nextSibling;
         if (nextElement) {
           nextElement.parentNode.insertBefore(element, nextElement);
         }
       }
       if (!element.parentNode) {
-        renderNode.parentNode.element.appendChild(element);
+        renderNode.parent.element.appendChild(element);
       }
     } else {
-      renderNode.parentNode.element.replaceChild(element, originalElement);
+      renderNode.parent.element.replaceChild(element, originalElement);
     }
 
     // remove all elements so that we can rerender
@@ -138,12 +138,12 @@ class Visitor {
   [MARKER_TYPE](renderNode, marker) {
     let parentElement;
 
-    if (renderNode.previousSibling) {
-      parentElement = getNextMarkerElement(renderNode.previousSibling);
+    if (renderNode.prev) {
+      parentElement = getNextMarkerElement(renderNode.prev);
     } else {
-      parentElement = renderNode.parentNode.element;
+      parentElement = renderNode.parent.element;
     }
-    let textNode = renderMarker(marker, parentElement, renderNode.previousSibling);
+    let textNode = renderMarker(marker, parentElement, renderNode.prev);
 
     renderNode.element = textNode;
   }
@@ -156,15 +156,15 @@ class Visitor {
     } else {
       let element = document.createElement('img');
       element.src = section.src;
-      if (renderNode.previousSibling) {
-        let previousElement = renderNode.previousSibling.element;
+      if (renderNode.prev) {
+        let previousElement = renderNode.prev.element;
         let nextElement = previousElement.nextSibling;
         if (nextElement) {
           nextElement.parentNode.insertBefore(element, nextElement);
         }
       }
       if (!element.parentNode) {
-        renderNode.parentNode.element.appendChild(element);
+        renderNode.parent.element.appendChild(element);
       }
       renderNode.element = element;
     }
@@ -178,15 +178,15 @@ class Visitor {
     const element = document.createElement('div');
     element.contentEditable = 'false';
     renderNode.element = element;
-    if (renderNode.previousSibling) {
-      let previousElement = renderNode.previousSibling.element;
+    if (renderNode.prev) {
+      let previousElement = renderNode.prev.element;
       let nextElement = previousElement.nextSibling;
       if (nextElement) {
         nextElement.parentNode.insertBefore(element, nextElement);
       }
     }
     if (!element.parentNode) {
-      renderNode.parentNode.element.appendChild(element);
+      renderNode.parent.element.appendChild(element);
     }
 
     if (card) {
@@ -204,7 +204,7 @@ let destroyHooks = {
     throw new Error('post destruction is not supported by the renderer');
   },
   [MARKUP_SECTION_TYPE](renderNode, section) {
-    let post = renderNode.parentNode.postNode;
+    let post = renderNode.parent.postNode;
     post.removeSection(section);
     // Some formatting commands remove the element from the DOM during
     // formatting. Do not error if this is the case.
@@ -236,7 +236,7 @@ let destroyHooks = {
   },
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
-    let post = renderNode.parentNode.postNode;
+    let post = renderNode.parent.postNode;
     post.removeSection(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
   },
@@ -245,7 +245,7 @@ let destroyHooks = {
     if (renderNode.cardNode) {
       renderNode.cardNode.teardown();
     }
-    let post = renderNode.parentNode.postNode;
+    let post = renderNode.parent.postNode;
     post.removeSection(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
   }
@@ -253,9 +253,9 @@ let destroyHooks = {
 
 // removes children from parentNode that are scheduled for removal
 function removeChildren(parentNode) {
-  let child = parentNode.firstChild;
+  let child = parentNode.childNodes.head;
   while (child) {
-    let nextChild = child.nextSibling;
+    let nextChild = child.next;
     if (child.isRemoved) {
       destroyHooks[child.postNode.type](child, child.postNode);
       parentNode.removeChild(child);
@@ -271,7 +271,6 @@ function lookupNode(renderTree, parentNode, postNode, previousNode) {
     return postNode.renderNode;
   } else {
     let renderNode = new RenderNode(postNode);
-    renderNode.renderTree = renderTree;
     parentNode.insertAfter(renderNode, previousNode);
     postNode.renderNode = renderNode;
     return renderNode;

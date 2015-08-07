@@ -53,14 +53,14 @@ test("It renders a dirty post with un-rendered sections", (assert) => {
   assert.equal(renderTree.node.element.outerHTML, '<div><p></p><p></p></div>',
                'correct HTML is rendered');
 
-  assert.ok(renderTree.node.firstChild,
+  assert.ok(renderTree.node.childNodes.head,
             'sectionA creates a first child');
-  assert.equal(renderTree.node.firstChild.postNode, sectionA,
+  assert.equal(renderTree.node.childNodes.head.postNode, sectionA,
                'sectionA is first renderNode child');
-  assert.ok(!renderTree.node.firstChild.isDirty, 'sectionA node is clean');
-  assert.equal(renderTree.node.lastChild.postNode, sectionB,
+  assert.ok(!renderTree.node.childNodes.head.isDirty, 'sectionA node is clean');
+  assert.equal(renderTree.node.childNodes.tail.postNode, sectionB,
                'sectionB is second renderNode child');
-  assert.ok(!renderTree.node.lastChild.isDirty, 'sectionB node is clean');
+  assert.ok(!renderTree.node.childNodes.tail.isDirty, 'sectionB node is clean');
 });
 
 [

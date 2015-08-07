@@ -333,15 +333,15 @@ class Editor {
       if (currentMarker.length === 0 && currentMarker.section.markers.length > 1) {
         leftRenderNode.scheduleForRemoval();
 
-        let isFirstRenderNode = leftRenderNode === leftRenderNode.parentNode.firstChild;
+        let isFirstRenderNode = leftRenderNode === leftRenderNode.parent.childNodes.head;
         if (isFirstRenderNode) {
           // move cursor to start of next node
-          nextCursorMarker = leftRenderNode.nextSibling.postNode;
+          nextCursorMarker = leftRenderNode.next.postNode;
           nextCursorOffset = 0;
         } else {
           // move cursor to end of prev node
-          nextCursorMarker = leftRenderNode.previousSibling.postNode;
-          nextCursorOffset = leftRenderNode.previousSibling.postNode.length;
+          nextCursorMarker = leftRenderNode.prev.postNode;
+          nextCursorOffset = leftRenderNode.prev.postNode.length;
         }
       } else {
         leftRenderNode.markDirty();
@@ -418,7 +418,7 @@ class Editor {
     const newSection = this.builder.createMarkupSection('p');
     newSection.appendMarker(rightMarker);
 
-    let nodeForMove = markerRenderNode.nextSibling;
+    let nodeForMove = markerRenderNode.next;
     while (nodeForMove) {
       nodeForMove.scheduleForRemoval();
       let movedMarker = nodeForMove.postNode.clone();
