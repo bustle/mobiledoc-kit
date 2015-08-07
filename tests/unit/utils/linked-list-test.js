@@ -21,6 +21,18 @@ test('initial state', (assert) => {
     assert.equal(item.next, null, 'item next is null');
     assert.equal(item.prev, null, 'item prev is null');
   });
+
+  test(`#${method} call adoptItem`, (assert) => {
+    let adoptedItem;
+    let list = new LinkedList({
+      adoptItem(item) {
+        adoptedItem = item;
+      }
+    });
+    let item = new LinkedItem();
+    list[method](item);
+    assert.equal(adoptedItem, item, 'item is adopted');
+  });
 });
 
 test(`#append second item`, (assert) => {
@@ -96,6 +108,19 @@ test(`#remove an only item`, (assert) => {
   assert.equal(list.tail, null, 'tail is null');
   assert.equal(item.prev, null, 'item prev is null');
   assert.equal(item.next, null, 'item next is null');
+});
+
+test(`#remove calls freeItem`, (assert) => {
+  let freedItem;
+  let list = new LinkedList({
+    freeItem(item) {
+      freedItem = item;
+    }
+  });
+  let item = new LinkedItem();
+  list.append(item);
+  list.remove(item);
+  assert.equal(freedItem, item, 'item is freed');
 });
 
 test(`#remove a first item`, (assert) => {
