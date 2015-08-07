@@ -1,4 +1,3 @@
-import Marker from './marker';
 export const POST_TYPE = 'post';
 
 // FIXME: making sections a linked-list would greatly improve this
@@ -46,7 +45,7 @@ export default class Post {
     // add a blank marker to any sections that are now empty
     changedSections.forEach(section => {
       if (section.isEmpty()) {
-        section.appendMarker(Marker.createBlank());
+        section.appendMarker(this.builder.createBlankMarker());
       }
     });
 

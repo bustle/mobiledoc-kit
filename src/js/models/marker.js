@@ -6,10 +6,6 @@ import {
 import { detect } from 'content-kit-editor/utils/array-utils';
 
 const Marker = class Marker {
-  static createBlank() {
-    return new Marker('');
-  }
-
   constructor(value='', markups=[]) {
     this.value = value;
     this.markups = [];

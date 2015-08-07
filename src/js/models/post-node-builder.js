@@ -45,7 +45,7 @@ export default class PostNodeBuilder {
   }
 
   createBlankMarker() {
-    return new Marker('__BLANK__');
+    return new Marker('');
   }
 
   createMarkup(tagName, attributes) {
