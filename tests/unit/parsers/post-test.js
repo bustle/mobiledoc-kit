@@ -32,7 +32,7 @@ test('#parse can parse a section element', (assert) => {
 
   const s1 = post.sections.head;
   assert.equal(s1.markers.length, 1, 's1 has 1 marker');
-  assert.equal(s1.markers[0].value, 'some text', 'has text');
+  assert.equal(s1.markers.head.value, 'some text', 'has text');
 });
 
 test('#parse can parse multiple elements', (assert) => {
@@ -53,9 +53,9 @@ test('#parse can parse multiple elements', (assert) => {
 
   const [s1, s2] = post.sections.toArray();
   assert.equal(s1.markers.length, 1, 's1 has 1 marker');
-  assert.equal(s1.markers[0].value, 'some text');
+  assert.equal(s1.markers.head.value, 'some text');
 
   assert.equal(s2.markers.length, 1, 's2 has 1 marker');
-  assert.equal(s2.markers[0].value, 'some other text');
+  assert.equal(s2.markers.head.value, 'some other text');
 });
 

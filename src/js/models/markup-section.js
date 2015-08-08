@@ -7,12 +7,20 @@ export const VALID_MARKUP_SECTION_TAGNAMES = [
   'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'
 ].map(normalizeTagName);
 export const MARKUP_SECTION_TYPE = 'markup-section';
+import LinkedList from "content-kit-editor/utils/linked-list";
 import LinkedItem from "content-kit-editor/utils/linked-item";
 
 export default class Section extends LinkedItem {
   constructor(tagName, markers=[]) {
     super();
-    this.markers = [];
+    this.markers = new LinkedList({
+      adoptItem: (marker) => {
+        marker.section = this;
+      },
+      freeItem: (marker) => {
+        marker.section = null;
+      }
+    });
     this.tagName = tagName || DEFAULT_TAG_NAME;
     this.type = MARKUP_SECTION_TYPE;
     this.element = null;
@@ -55,44 +63,28 @@ export default class Section extends LinkedItem {
     return newMarkers;
   }
 
-  replaceMarker(oldMarker, newMarkers=[]) {
-    let previousMarker = oldMarker;
-
-    let i = newMarkers.length;
-    while (i--) {
-      let currentMarker = newMarkers[i];
-      this.insertMarkerAfter(currentMarker, previousMarker);
-    }
-
-    this.removeMarker(oldMarker);
+  replaceMarker(previousMarker, newMarkers=[]) {
+    let nextMarker = previousMarker.next;
+    newMarkers.forEach(marker => {
+      this.markers.insertBefore(marker, nextMarker);
+    });
+    this.removeMarker(previousMarker);
   }
 
   prependMarker(marker) {
-    marker.section = this;
-    this.markers.unshift(marker);
+    this.markers.prepend(marker);
   }
 
   appendMarker(marker) {
-    marker.section = this;
-    this.markers.push(marker);
+    this.markers.append(marker);
   }
 
   removeMarker(marker) {
-    const index = this.markers.indexOf(marker);
-    if (index === -1) {
-      throw new Error('Cannot remove not-found marker');
-    }
-    this.markers.splice(index, 1);
+    this.markers.remove(marker);
   }
 
   insertMarkerAfter(marker, previousMarker) {
-    const index = this.markers.indexOf(previousMarker);
-    if (index === -1) {
-      throw new Error('Cannot insert marker after: ' + previousMarker);
-    }
-
-    marker.section = this;
-    this.markers.splice(index + 1, 0, marker);
+    this.markers.insertAfter(marker, previousMarker);
   }
 
   /**
@@ -109,12 +101,9 @@ export default class Section extends LinkedItem {
         new this.constructor(this.tagName, [])
       ];
     }
-    const middleIndex = this.markers.indexOf(middle);
 
-    for (let i=0; i<this.markers.length; i++) {
-      if (i < middleIndex) { left.push(this.markers[i]); }
-      if (i > middleIndex) { right.push(this.markers[i]); }
-    }
+    left = (middle.prev ? this.markers.takeRange(null, middle.prev) : []);
+    right = (middle.next ? this.markers.takeRange(middle.next, null) : []);
 
     let leftLength = left.reduce((prev, cur) => prev + cur.length, 0);
     let middleOffset = offset - leftLength;
@@ -143,23 +132,27 @@ export default class Section extends LinkedItem {
    * @return {Marker} The marker that contains this offset
    */
   markerContaining(offset, leftInclusive=true) {
-    var length=0, i=0;
+    let length = 0;
+    let lastMarker = null;
 
-    if (offset === 0) { return this.markers[0]; }
-
-    while (length < offset && i < this.markers.length) {
-      length += this.markers[i].length;
-      i++;
+    if (offset === 0) {
+      return this.markers.head;
     }
+
+    this.markers.detect((marker) => {
+      if (length < offset) {
+        lastMarker = marker;
+        length += marker.length;
+        return false;
+      } else {
+        return true; // stop iteration
+      }
+    });
 
     if (length > offset) {
-      return this.markers[i-1];
+      return lastMarker;
     } else if (length === offset) {
-      return this.markers[leftInclusive ? i : i-1];
+      return (leftInclusive ? lastMarker.next : lastMarker);
     }
-  }
-
-  get nextSibling() {
-    return this.next;
   }
 }

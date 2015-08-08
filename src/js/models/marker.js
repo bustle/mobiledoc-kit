@@ -7,9 +7,11 @@ import {
   detect,
   difference
 } from 'content-kit-editor/utils/array-utils';
+import LinkedItem from "content-kit-editor/utils/linked-item";
 
-const Marker = class Marker {
+const Marker = class Marker extends LinkedItem {
   constructor(value='', markups=[]) {
+    super();
     this.value = value;
     this.markups = [];
     this.type = MARKER_TYPE;
@@ -107,29 +109,13 @@ const Marker = class Marker {
   }
 
   get openedMarkups() {
-    let previousMarkups = this.previousSibling && this.previousSibling.markups;
-    return difference(this.markups, previousMarkups || []);
+    return difference(this.markups, (this.prev ? this.prev.markups : []));
   }
 
   get closedMarkups() {
-    let nextMarkups = this.nextSibling && this.nextSibling.markups;
-    return difference(this.markups, nextMarkups || []);
+    return difference(this.markups, (this.next ? this.next.markups : []));
   }
 
-  // FIXME this should be implemented as a linked list
-  get nextSibling() {
-    let index = this.section.markers.indexOf(this);
-    if (index > -1 && index < this.section.markers.length-1) {
-      return this.section.markers[index + 1];
-    }
-  }
-
-  get previousSibling() {
-    let index = this.section.markers.indexOf(this);
-    if (index > 0) {
-      return this.section.markers[index - 1];
-    }
-  }
 };
 
 export default Marker;

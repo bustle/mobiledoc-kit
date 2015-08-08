@@ -59,7 +59,7 @@ export default class Post {
       currentMarker = previousMarker;
       currentOffset = currentMarker.length;
     } else {
-      currentMarker = firstSection.markers[0];
+      currentMarker = firstSection.markers.head;
       currentOffset = 0;
     }
 
@@ -81,11 +81,11 @@ export default class Post {
 
       if (currentMarker === endMarker) {
         currentMarker = null;
-      } else if (currentMarker.nextSibling) {
-        currentMarker = currentMarker.nextSibling;
+      } else if (currentMarker.next) {
+        currentMarker = currentMarker.next;
       } else {
         let nextSection = currentMarker.section.next;
-        currentMarker = nextSection && nextSection.markers[0];
+        currentMarker = nextSection.markers.head;
       }
     }
   }

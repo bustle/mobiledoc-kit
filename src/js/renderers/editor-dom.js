@@ -78,7 +78,7 @@ function renderMarker(marker, element, previousRenderNode) {
 
     let previousSibling = previousRenderNode.element;
     let previousSiblingPenultimate = penultimateParentOf(previousSibling, nextMarkerElement);
-    nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.nextSibling);
+    nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.next);
   } else {
     element.insertBefore(currentElement, element.firstChild);
   }
@@ -223,9 +223,7 @@ let destroyHooks = {
       element = element.parentNode;
     }
 
-    // FIXME is it ok that this marker may have already been removed from the
-    // section?
-    if (marker.section.markers.indexOf(marker) !== -1) {
+    if (marker.section) {
       marker.section.removeMarker(marker);
     }
 

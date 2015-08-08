@@ -385,7 +385,7 @@ class Editor {
       }
     } else {
       let currentSection = currentMarker.section;
-      let previousMarker = currentMarker.previousSibling;
+      let previousMarker = currentMarker.prev;
       if (previousMarker) { // (B)
         let markerLength = previousMarker.length;
         previousMarker.deleteValueAtOffset(markerLength - 1);
@@ -394,17 +394,17 @@ class Editor {
         //   * none -- do nothing
         //   * markup section -- join to it
         //   * non-markup section (card) -- select it? delete it?
-        let previousSection = this.post.getPreviousSection(currentSection);
+        let previousSection = currentSection.prev;
         if (previousSection) {
           let isMarkupSection = previousSection.type === MARKUP_SECTION_TYPE;
 
           if (isMarkupSection) {
-            let previousSectionMarkerLength = previousSection.markers.length;
+            let lastPreviousMarker = previousSection.markers.tail;
             previousSection.join(currentSection);
             previousSection.renderNode.markDirty();
             currentSection.renderNode.scheduleForRemoval();
 
-            nextCursorMarker = previousSection.markers[previousSectionMarkerLength];
+            nextCursorMarker = lastPreviousMarker.next;
             nextCursorOffset = 0;
           /*
           } else {
@@ -461,7 +461,7 @@ class Editor {
       let movedMarker = nodeForMove.postNode.clone();
       newSection.appendMarker(movedMarker);
 
-      nodeForMove = nodeForMove.nextSibling;
+      nodeForMove = nodeForMove.next;
     }
 
     const post = this.post;
@@ -802,7 +802,7 @@ class Editor {
     let newRenderNode = this._renderTree.buildRenderNode(newSection);
     let renderNodes = this.cursor.activeSections.map(s => s.renderNode);
     let lastRenderNode = renderNodes[renderNodes.length-1];
-    lastRenderNode.parentNode.insertAfter(newRenderNode, lastRenderNode);
+    lastRenderNode.parent.insertAfter(newRenderNode, lastRenderNode);
     this.post.insertSectionAfter(newSection, lastRenderNode.postNode);
     renderNodes.forEach(renderNode => renderNode.scheduleForRemoval());
     this.trigger('update');

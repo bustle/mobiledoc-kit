@@ -103,7 +103,7 @@ export default class Cursor {
 
   // moves cursor to the start of the section
   moveToSection(section) {
-    const marker = section.markers[0];
+    const marker = section.markers.head;
     if (!marker) { throw new Error('Cannot move cursor to section without a marker'); }
     const markerElement = marker.renderNode.element;
 
@@ -121,8 +121,8 @@ export default class Cursor {
     const startSection = sections[0],
           endSection  = sections[sections.length - 1];
 
-    const startNode = startSection.markers[0].renderNode.element,
-          endNode   = endSection.markers[endSection.markers.length - 1].renderNode.element;
+    const startNode = startSection.markers.head.renderNode.element,
+          endNode   = endSection.markers.tail.renderNode.element;
 
     const startOffset = 0,
           endOffset = endNode.textContent.length;

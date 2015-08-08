@@ -128,7 +128,7 @@ export default class PostParser {
         renderNode.scheduleForRemoval();
       }
 
-      renderNode = renderNode.nextSibling;
+      renderNode = renderNode.next;
     }
   }
 }

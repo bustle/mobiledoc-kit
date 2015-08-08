@@ -94,11 +94,11 @@ test('a section can be split, splitting its markers', (assert) => {
   assert.equal(s1.markers.length, 1, 's1 has marker');
   assert.equal(s2.markers.length, 1, 's2 has marker');
 
-  assert.ok(s1.markers[0].hasMarkup('b'));
-  assert.equal(s1.markers[0].value, 'hi th');
+  assert.ok(s1.markers.head.hasMarkup('b'));
+  assert.equal(s1.markers.head.value, 'hi th');
 
-  assert.ok(s2.markers[0].hasMarkup('b'));
-  assert.equal(s2.markers[0].value, 'ere!');
+  assert.ok(s2.markers.head.hasMarkup('b'));
+  assert.equal(s2.markers.head.value, 'ere!');
 });
 
 test('a section can be split, splitting its markers when multiple markers', (assert) => {
@@ -110,9 +110,9 @@ test('a section can be split, splitting its markers when multiple markers', (ass
   assert.equal(s1.markers.length, 2, 's1 has 2 markers');
   assert.equal(s2.markers.length, 1, 's2 has 1 marker');
 
-  assert.equal(s1.markers[0].value, 'hi ');
-  assert.equal(s1.markers[1].value, 'th');
-  assert.equal(s2.markers[0].value, 'ere!');
+  assert.equal(s1.markers.head.value, 'hi ');
+  assert.equal(s1.markers.tail.value, 'th');
+  assert.equal(s2.markers.head.value, 'ere!');
 });
 
 test('#splitMarker splits the marker at the offset', (assert) => {
@@ -122,9 +122,9 @@ test('#splitMarker splits the marker at the offset', (assert) => {
 
   s.splitMarker(m2, 3);
   assert.equal(s.markers.length, 3, 'adds a 3rd marker');
-  assert.equal(s.markers[0].value, 'hi ', 'original marker unchanged');
-  assert.equal(s.markers[1].value, 'the');
-  assert.equal(s.markers[2].value, 're!');
+  assert.equal(s.markers.head.value, 'hi ', 'original marker unchanged');
+  assert.equal(s.markers.head.next.value, 'the', 'first half of split');
+  assert.equal(s.markers.tail.value, 're!', 'second half of split');
 });
 
 test('#splitMarker splits the marker at the end offset if provided', (assert) => {
@@ -134,10 +134,10 @@ test('#splitMarker splits the marker at the end offset if provided', (assert) =>
 
   s.splitMarker(m2, 1, 3);
   assert.equal(s.markers.length, 4, 'adds a marker for the split and has one on each side');
-  assert.equal(s.markers[0].value, 'hi ', 'original marker unchanged');
-  assert.equal(s.markers[1].value, 't');
-  assert.equal(s.markers[2].value, 'he');
-  assert.equal(s.markers[3].value, 're!');
+  assert.equal(s.markers.head.value, 'hi ', 'original marker unchanged');
+  assert.equal(s.markers.head.next.value, 't');
+  assert.equal(s.markers.head.next.next.value, 'he');
+  assert.equal(s.markers.tail.value, 're!');
 });
 
 test('#splitMarker does not create an empty marker if offset=0', (assert) => {
@@ -147,6 +147,6 @@ test('#splitMarker does not create an empty marker if offset=0', (assert) => {
 
   s.splitMarker(m2, 0);
   assert.equal(s.markers.length, 2, 'still 2 markers');
-  assert.equal(s.markers[0].value, 'hi ', 'original 1st marker unchanged');
-  assert.equal(s.markers[1].value, 'there!', 'original 2nd marker unchanged');
+  assert.equal(s.markers.head.value, 'hi ', 'original 1st marker unchanged');
+  assert.equal(s.markers.tail.value, 'there!', 'original 2nd marker unchanged');
 });
