@@ -26,6 +26,10 @@ export default class Section {
     return this._tagName;
   }
 
+  isEmpty() {
+    return this.markers.length === 0;
+  }
+
   setTagName(newTagName) {
     newTagName = normalizeTagName(newTagName);
     if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(newTagName) === -1) {

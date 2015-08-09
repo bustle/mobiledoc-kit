@@ -308,6 +308,38 @@ class Editor {
     this._renderer.render(this._renderTree);
   }
 
+  deleteSelection(event) {
+    event.preventDefault();
+
+    // types of selection deletion:
+    //   * a selection starts at the beginning of a section
+    //     -- cursor should end up at the beginning of that section
+    //     -- if the section not longer has markers, add a blank one for the cursor to focus on
+    //   * a selection is entirely within a section
+    //     -- split the markers with the selection, remove those new markers from their section
+    //     -- cursor goes at end of the marker before the selection start, or if the
+    //     -- selection was at the start of the section, cursor goes at section start
+    //   * a selection crosses multiple sections
+    //     -- remove all the sections that are between (exclusive ) selection start and end
+    //     -- join the start and end sections
+    //     -- mark the end section for removal
+    //     -- cursor goes at end of marker before the selection start
+
+    const markers = this.splitMarkersFromSelection();
+
+    const {changedSections, removedSections, currentMarker, currentOffset} = this.post.cutMarkers(markers);
+
+    changedSections.forEach(section => section.renderNode.markDirty());
+    removedSections.forEach(section => section.renderNode.scheduleForRemoval());
+
+    this.rerender();
+
+    let currentTextNode = currentMarker.renderNode.element;
+    this.cursor.moveToNode(currentTextNode, currentOffset);
+
+    this.trigger('update');
+  }
+
   // FIXME ensure we handle deletion when there is a selection
   handleDeletion(event) {
     let {
@@ -322,6 +354,11 @@ class Editor {
     //     * delete last char of previous marker
     //   * C offset is 0 and there is no previous marker
     //     * join this section with previous section
+
+    if (this.cursor.hasSelection()) {
+      this.deleteSelection(event);
+      return;
+    }
 
     const currentMarker = leftRenderNode.postNode;
     let nextCursorMarker = currentMarker;
@@ -557,7 +594,6 @@ class Editor {
     this.cursor.selectMarkers(markers);
     this.hasSelection();
   }
-
 
   get cursor() {
     return new Cursor(this);

@@ -35,34 +35,6 @@ module('Acceptance: Editor commands', {
   }
 });
 
-function getToolbarButton(assert, name) {
-  let btnSelector = `.ck-toolbar-btn[title="${name}"]`;
-  return assert.hasElement(btnSelector);
-}
-
-function assertToolbarVisible(assert) {
-  return assert.hasElement(`.ck-toolbar`);
-}
-
-function assertToolbarHidden(assert) {
-  return assert.hasNoElement(`.ck-toolbar`);
-}
-
-function clickToolbarButton(assert, name) {
-  const button = getToolbarButton(assert, name);
-  Helpers.dom.triggerEvent(button[0], 'click');
-}
-
-function assertActiveToolbarButton(assert, buttonTitle) {
-  const button = getToolbarButton(assert, buttonTitle);
-  assert.ok(button.is('.active'), `button ${buttonTitle} is active`);
-}
-
-function assertInactiveToolbarButton(assert, buttonTitle) {
-  const button = getToolbarButton(assert, buttonTitle);
-  assert.ok(!button.is('.active'), `button ${buttonTitle} is not active`);
-}
-
 test('when text is highlighted, shows toolbar', (assert) => {
   let done = assert.async();
 
@@ -80,7 +52,7 @@ test('highlight text, click "bold" button bolds text', (assert) => {
   let done = assert.async();
 
   setTimeout(() => {
-    clickToolbarButton(assert, 'bold');
+    Helpers.toolbar.clickButton(assert, 'bold');
     assert.hasElement('#editor strong:contains(IS A)');
 
     done();
@@ -91,7 +63,7 @@ test('highlight text, click "heading" button turns text into h2 header', (assert
   const done = assert.async();
 
   setTimeout(() => {
-    clickToolbarButton(assert, 'heading');
+    Helpers.toolbar.clickButton(assert, 'heading');
     assert.hasElement('#editor h2:contains(THIS IS A TEST)');
     assert.selectedText('THIS IS A TEST', 'expands selection to entire section');
 
@@ -103,25 +75,25 @@ test('highlighting heading text activates toolbar button', (assert) => {
   const done = assert.async();
 
   setTimeout(() => {
-    assertToolbarVisible(assert);
-    assertInactiveToolbarButton(assert, 'heading');
+    Helpers.toolbar.assertVisible(assert);
+    Helpers.toolbar.assertInactiveButton(assert, 'heading');
 
-    clickToolbarButton(assert, 'heading');
+    Helpers.toolbar.clickButton(assert, 'heading');
 
-    assertActiveToolbarButton(assert, 'heading');
+    Helpers.toolbar.assertActiveButton(assert, 'heading');
 
     // FIXME must actually trigger the mouseup
     Helpers.dom.clearSelection();
     Helpers.dom.triggerEvent(document, 'mouseup');
 
     setTimeout(() => {
-      assertToolbarHidden(assert);
+      Helpers.toolbar.assertHidden(assert);
 
       Helpers.dom.selectText(selectedText, editorElement);
       Helpers.dom.triggerEvent(document, 'mouseup');
 
       setTimeout(() => {
-        assertActiveToolbarButton(assert, 'heading',
+        Helpers.toolbar.assertActiveButton(assert, 'heading',
                                   'heading button is active when text is selected');
 
         done();
@@ -134,11 +106,11 @@ test('when heading text is highlighted, clicking heading button turns it to plai
   const done = assert.async();
 
   setTimeout(() => {
-    clickToolbarButton(assert, 'heading');
+    Helpers.toolbar.clickButton(assert, 'heading');
     assert.hasElement('#editor h2:contains(THIS IS A TEST)');
 
     setTimeout(() => {
-      clickToolbarButton(assert, 'heading');
+      Helpers.toolbar.clickButton(assert, 'heading');
 
       setTimeout(() => {
         assert.hasNoElement('#editor h2:contains(THIS IS A TEST)');
@@ -155,22 +127,22 @@ test('clicking multiple heading buttons keeps the correct ones active', (assert)
 
   setTimeout(() => {
     // click subheading, makes its button active, changes the display
-    clickToolbarButton(assert, 'subheading');
+    Helpers.toolbar.clickButton(assert, 'subheading');
     assert.hasElement('#editor h3:contains(THIS IS A TEST)');
-    assertActiveToolbarButton(assert, 'subheading');
-    assertInactiveToolbarButton(assert, 'heading');
+    Helpers.toolbar.assertActiveButton(assert, 'subheading');
+    Helpers.toolbar.assertInactiveButton(assert, 'heading');
 
     // click heading, makes its button active and no others, changes display
-    clickToolbarButton(assert, 'heading');
+    Helpers.toolbar.clickButton(assert, 'heading');
     assert.hasElement('#editor h2:contains(THIS IS A TEST)');
-    assertActiveToolbarButton(assert, 'heading');
-    assertInactiveToolbarButton(assert, 'subheading');
+    Helpers.toolbar.assertActiveButton(assert, 'heading');
+    Helpers.toolbar.assertInactiveButton(assert, 'subheading');
 
     // click heading again, removes headline from display, no active buttons
-    clickToolbarButton(assert, 'heading');
+    Helpers.toolbar.clickButton(assert, 'heading');
     assert.hasElement('#editor p:contains(THIS IS A TEST)');
-    assertInactiveToolbarButton(assert, 'heading');
-    assertInactiveToolbarButton(assert, 'subheading');
+    Helpers.toolbar.assertInactiveButton(assert, 'heading');
+    Helpers.toolbar.assertInactiveButton(assert, 'subheading');
 
     done();
   });
@@ -180,7 +152,7 @@ test('highlight text, click "subheading" button turns text into h3 header', (ass
   const done = assert.async();
 
   setTimeout(() => {
-    clickToolbarButton(assert, 'subheading');
+    Helpers.toolbar.clickButton(assert, 'subheading');
     assert.hasElement('#editor h3:contains(THIS IS A TEST)');
 
     done();
@@ -191,7 +163,7 @@ test('highlight text, click "quote" button turns text into blockquote', (assert)
   const done = assert.async();
 
   setTimeout(() => {
-    clickToolbarButton(assert, 'quote');
+    Helpers.toolbar.clickButton(assert, 'quote');
     assert.hasElement('#editor blockquote:contains(THIS IS A TEST)');
 
     done();
@@ -204,7 +176,7 @@ Helpers.skipInPhantom('highlight text, click "link" button shows input for URL, 
   const done = assert.async();
 
   setTimeout(() => {
-    clickToolbarButton(assert, 'link');
+    Helpers.toolbar.clickButton(assert, 'link');
     let input = assert.hasElement('.ck-toolbar-prompt input');
     let url = 'http://google.com';
     $(input).val(url);
@@ -220,22 +192,22 @@ test('highlighting bold text shows bold button as active', (assert) => {
   const done = assert.async();
 
   setTimeout(() => {
-    assertInactiveToolbarButton(assert, 'bold', 'precond - bold button is not active');
-    clickToolbarButton(assert, 'bold');
-    assertActiveToolbarButton(assert, 'bold');
+    Helpers.toolbar.assertInactiveButton(assert, 'bold', 'precond - bold button is not active');
+    Helpers.toolbar.clickButton(assert, 'bold');
+    Helpers.toolbar.assertActiveButton(assert, 'bold');
 
     Helpers.dom.clearSelection();
     Helpers.dom.triggerEvent(document, 'mouseup');
 
     setTimeout(() => {
-      assertToolbarHidden(assert);
+      Helpers.toolbar.assertHidden(assert);
 
       Helpers.dom.selectText(selectedText, editorElement);
       Helpers.dom.triggerEvent(document, 'mouseup');
 
       setTimeout(() => {
-        assertToolbarVisible(assert);
-        assertActiveToolbarButton(assert, 'bold');
+        Helpers.toolbar.assertVisible(assert);
+        Helpers.toolbar.assertActiveButton(assert, 'bold');
 
         done();
       });
@@ -247,9 +219,9 @@ test('click bold button applies bold to selected text', (assert) => {
   const done = assert.async();
 
   setTimeout(() => {
-    assertInactiveToolbarButton(assert, 'bold', 'precond - bold button is not active');
-    clickToolbarButton(assert, 'bold');
-    assertActiveToolbarButton(assert, 'bold');
+    Helpers.toolbar.assertInactiveButton(assert, 'bold', 'precond - bold button is not active');
+    Helpers.toolbar.clickButton(assert, 'bold');
+    Helpers.toolbar.assertActiveButton(assert, 'bold');
 
     assert.hasNoElement('#editor strong:contains(THIS)');
     assert.hasNoElement('#editor strong:contains(TEST)');
@@ -257,10 +229,10 @@ test('click bold button applies bold to selected text', (assert) => {
 
     assert.selectedText(selectedText);
 
-    clickToolbarButton(assert, 'bold');
+    Helpers.toolbar.clickButton(assert, 'bold');
 
     assert.hasNoElement('#editor strong:contains(IS A)', 'bold text is no longer bold');
-    assertInactiveToolbarButton(assert, 'bold');
+    Helpers.toolbar.assertInactiveButton(assert, 'bold');
 
     done();
   });
@@ -270,9 +242,9 @@ test('can unbold part of a larger set of bold text', (assert) => {
   const done = assert.async();
 
   setTimeout(() => {
-    assertInactiveToolbarButton(assert, 'bold', 'precond - bold button is not active');
-    clickToolbarButton(assert, 'bold');
-    assertActiveToolbarButton(assert, 'bold');
+    Helpers.toolbar.assertInactiveButton(assert, 'bold', 'precond - bold button is not active');
+    Helpers.toolbar.clickButton(assert, 'bold');
+    Helpers.toolbar.assertActiveButton(assert, 'bold');
 
     assert.hasElement('#editor strong:contains(IS A)');
 
@@ -280,9 +252,9 @@ test('can unbold part of a larger set of bold text', (assert) => {
     Helpers.dom.triggerEvent(document, 'mouseup');
 
     setTimeout(() => {
-      assertToolbarVisible(assert);
-      assertActiveToolbarButton(assert, 'bold');
-      clickToolbarButton(assert, 'bold');
+      Helpers.toolbar.assertVisible(assert);
+      Helpers.toolbar.assertActiveButton(assert, 'bold');
+      Helpers.toolbar.clickButton(assert, 'bold');
 
       assert.hasElement('#editor strong:contains(I)', 'unselected text is bold');
       assert.hasNoElement('#editor strong:contains(IS A)', 'unselected text is bold');
@@ -297,16 +269,16 @@ test('can italicize text', (assert) => {
   const done = assert.async();
 
   setTimeout(() => {
-    assertInactiveToolbarButton(assert, 'italic');
-    clickToolbarButton(assert, 'italic');
+    Helpers.toolbar.assertInactiveButton(assert, 'italic');
+    Helpers.toolbar.clickButton(assert, 'italic');
 
     assert.hasElement('#editor em:contains(IS A)');
     assert.selectedText('IS A');
-    assertActiveToolbarButton(assert, 'italic');
+    Helpers.toolbar.assertActiveButton(assert, 'italic');
 
-    clickToolbarButton(assert, 'italic');
+    Helpers.toolbar.clickButton(assert, 'italic');
     assert.hasNoElement('#editor em:contains(IS A)');
-    assertInactiveToolbarButton(assert, 'italic');
+    Helpers.toolbar.assertInactiveButton(assert, 'italic');
 
     done();
   });
