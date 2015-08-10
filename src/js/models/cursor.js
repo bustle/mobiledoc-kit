@@ -98,7 +98,7 @@ export default class Cursor {
     const {result:startSection} = detectParentNode(startContainer, isSectionElement);
     const {result:endSection} = detectParentNode(endContainer, isSectionElement);
 
-    return sections.takeRange(startSection, endSection);
+    return sections.readRange(startSection, endSection);
   }
 
   // moves cursor to the start of the section

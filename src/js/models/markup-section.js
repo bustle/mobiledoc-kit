@@ -102,8 +102,8 @@ export default class Section extends LinkedItem {
       ];
     }
 
-    left = (middle.prev ? this.markers.takeRange(null, middle.prev) : []);
-    right = (middle.next ? this.markers.takeRange(middle.next, null) : []);
+    left = (middle.prev ? this.markers.readRange(null, middle.prev) : []);
+    right = (middle.next ? this.markers.readRange(middle.next, null) : []);
 
     let leftLength = left.reduce((prev, cur) => prev + cur.length, 0);
     let middleOffset = offset - leftLength;

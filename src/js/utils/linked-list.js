@@ -99,7 +99,7 @@ export default class LinkedList {
       item = item.next;
     }
   }
-  takeRange(startItem, endItem) {
+  readRange(startItem, endItem) {
     let items = [];
     let item = startItem || this.head;
     while (item) {
@@ -112,7 +112,7 @@ export default class LinkedList {
     return items;
   }
   toArray() {
-    return this.takeRange();
+    return this.readRange();
   }
   detect(callback, item=this.head) {
     while (item) {

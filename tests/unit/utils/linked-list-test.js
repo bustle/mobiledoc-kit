@@ -211,7 +211,7 @@ test(`#forEach iterates one`, (assert) => {
   assert.deepEqual(indexes, [0], 'indexes correct');
 });
 
-test(`#takeRange walks from start to end`, (assert) => {
+test(`#readRange walks from start to end`, (assert) => {
   let list = new LinkedList();
   let itemOne = new LinkedItem();
   let itemTwo = new LinkedItem();
@@ -225,10 +225,10 @@ test(`#takeRange walks from start to end`, (assert) => {
     items.push(item);
     indexes.push(index);
   });
-  assert.deepEqual(list.takeRange(itemOne, itemOne), [itemOne], 'items correct');
-  assert.deepEqual(list.takeRange(itemTwo, itemThree), [itemTwo, itemThree], 'items correct');
-  assert.deepEqual(list.takeRange(itemOne, itemTwo), [itemOne, itemTwo], 'items correct');
-  assert.deepEqual(list.takeRange(itemOne, null), [itemOne, itemTwo, itemThree], 'items correct');
+  assert.deepEqual(list.readRange(itemOne, itemOne), [itemOne], 'items correct');
+  assert.deepEqual(list.readRange(itemTwo, itemThree), [itemTwo, itemThree], 'items correct');
+  assert.deepEqual(list.readRange(itemOne, itemTwo), [itemOne, itemTwo], 'items correct');
+  assert.deepEqual(list.readRange(itemOne, null), [itemOne, itemTwo, itemThree], 'items correct');
 });
 
 test(`#toArray builds array`, (assert) => {
