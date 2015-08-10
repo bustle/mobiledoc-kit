@@ -101,16 +101,67 @@ module('Acceptance: Editor sections', {
   }
 });
 
-Helpers.skipInPhantom('typing inserts section', (assert) => {
+test('typing enter inserts new section', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Section});
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 5);
-  Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.ENTER);
+  Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor p').length, 2, 'has 2 paragraphs after typing return');
   assert.hasElement(`#editor p:contains(only)`, 'has correct first pargraph text');
   assert.hasElement('#editor p:contains(section)', 'has correct second paragraph text');
+});
+
+test('hitting enter in first section splits it correctly', (assert) => {
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  assert.equal($('#editor p').length, 2, 'precond - has 2 paragraphs');
+
+  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 3);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.equal($('#editor p').length, 3, 'has 3 paragraphs after typing return');
+
+  assert.equal($('#editor p:eq(0)').text(), 'fir', 'first para has correct text');
+  assert.equal($('#editor p:eq(1)').text(), 'st section', 'second para has correct text');
+  assert.equal($('#editor p:eq(2)').text(), 'second section', 'third para still has correct text');
+
+  assert.deepEqual(Helpers.dom.getCursorPosition(),
+                   {node: editorElement.childNodes[1].childNodes[0],
+                    offset: 0});
+});
+
+test('hitting enter at start of a section creates empty section where cursor was', (assert) => {
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Section});
+  assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
+
+  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 0);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.equal($('#editor p').length, 2, 'has 2 paragraphs after typing return');
+
+  let firstP = $('#editor p:eq(0)');
+  assert.equal(firstP.text(), UNPRINTABLE_CHARACTER, 'first para has unprintable char');
+  assert.hasElement('#editor p:eq(1):contains(only section)', 'has correct second paragraph text');
+
+  assert.deepEqual(Helpers.dom.getCursorPosition(),
+                   {node: editorElement.childNodes[1].childNodes[0],
+                    offset: 0});
+});
+
+test('hitting enter at end of a section creates new empty section', (assert) => {
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Section});
+  assert.equal($('#editor p').length, 1, 'has 1 section to start');
+
+  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 'only section'.length);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.equal($('#editor p').length, 2, 'has 2 sections after typing return');
+  assert.hasElement('#editor p:eq(0):contains(only section)', 'has same first section text');
+
+  assert.deepEqual(Helpers.dom.getCursorPosition(),
+                   {node: editorElement.childNodes[1].childNodes[0],
+                    offset: 0});
 });
 
 test('deleting across 0 sections merges them', (assert) => {

@@ -146,6 +146,16 @@ function triggerDelete(editor) {
   }
 }
 
+function triggerEnter(editor) {
+  if (isPhantom()) {
+    // simulate event when testing with phantom
+    let event = { preventDefault() {} };
+    editor.handleNewline(event);
+  } else {
+    triggerKeyEvent(document, 'keydown', KEY_CODES.ENTER);
+  }
+}
+
 const DOMHelper = {
   moveCursorTo,
   selectText,
@@ -156,7 +166,8 @@ const DOMHelper = {
   KEY_CODES,
   getCursorPosition,
   getSelectedText,
-  triggerDelete
+  triggerDelete,
+  triggerEnter
 };
 
 export { triggerEvent };

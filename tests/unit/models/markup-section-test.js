@@ -1,26 +1,28 @@
 const {module, test} = QUnit;
 
-import Section from 'content-kit-editor/models/markup-section';
-import Marker from 'content-kit-editor/models/marker';
-import Markup from 'content-kit-editor/models/markup';
+import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 
-module('Unit: Markup Section');
-
-test('Section exists', (assert) => {
-  assert.ok(Section);
+let builder;
+module('Unit: Markup Section', {
+  beforeEach() {
+    builder = new PostNodeBuilder();
+  },
+  afterEach() {
+    builder = null;
+  }
 });
 
 test('a section can append a marker', (assert) => {
-  const s1 = new Section();
-  const m1 = new Marker('hello');
+  const s1 = builder.createMarkupSection('P');
+  const m1 = builder.createMarker('hello');
 
   s1.markers.append(m1);
   assert.equal(s1.markers.length, 1);
 });
 
 test('#markerContaining finds the marker at the given offset when 1 marker', (assert) => {
-  const m = new Marker('hi there!');
-  const s = new Section('h2',[m]);
+  const m = builder.createMarker('hi there!');
+  const s = builder.createMarkupSection('h2',[m]);
 
   for (let i=0; i<m.length; i++) {
     assert.equal(s.markerContaining(i), m, `finds marker at offset ${i}`);
@@ -28,9 +30,9 @@ test('#markerContaining finds the marker at the given offset when 1 marker', (as
 });
 
 test('#markerContaining finds the marker at the given offset when 2 markers', (assert) => {
-  const m1 = new Marker('hi ');
-  const m2 = new Marker('there!');
-  const s = new Section('h2',[m1,m2]);
+  const m1 = builder.createMarker('hi ');
+  const m2 = builder.createMarker('there!');
+  const s = builder.createMarkupSection('h2',[m1,m2]);
 
   assert.equal(s.markerContaining(0), m1,
                'first marker is always found at offset 0');
@@ -53,11 +55,11 @@ test('#markerContaining finds the marker at the given offset when 2 markers', (a
 });
 
 test('#markerContaining finds the marker at the given offset when multiple markers', (assert) => {
-  const m1 = new Marker('hi ');
-  const m2 = new Marker('there!');
-  const m3 = new Marker(' and more');
+  const m1 = builder.createMarker('hi ');
+  const m2 = builder.createMarker('there!');
+  const m3 = builder.createMarker(' and more');
   const markerLength = [m1,m2,m3].reduce((prev, cur) => prev + cur.length, 0);
-  const s = new Section('h2',[m1,m2,m3]);
+  const s = builder.createMarkupSection('h2',[m1,m2,m3]);
 
   assert.equal(s.markerContaining(0), m1,
                'first marker is always found at offset 0');
@@ -87,8 +89,8 @@ test('#markerContaining finds the marker at the given offset when multiple marke
 });
 
 test('a section can be split, splitting its markers', (assert) => {
-  const m = new Marker('hi there!', [new Markup('b')]);
-  const s = new Section('p', [m]);
+  const m = builder.createMarker('hi there!', [builder.createMarkup('b')]);
+  const s = builder.createMarkupSection('p', [m]);
 
   const [s1, s2] = s.split(5);
   assert.equal(s1.markers.length, 1, 's1 has marker');
@@ -102,9 +104,9 @@ test('a section can be split, splitting its markers', (assert) => {
 });
 
 test('a section can be split, splitting its markers when multiple markers', (assert) => {
-  const m1 = new Marker('hi ');
-  const m2 = new Marker('there!');
-  const s = new Section('h2', [m1,m2]);
+  const m1 = builder.createMarker('hi ');
+  const m2 = builder.createMarker('there!');
+  const s = builder.createMarkupSection('h2', [m1,m2]);
 
   const [s1, s2] = s.split(5);
   assert.equal(s1.markers.length, 2, 's1 has 2 markers');
@@ -116,21 +118,21 @@ test('a section can be split, splitting its markers when multiple markers', (ass
 });
 
 test('#splitMarker splits the marker at the offset', (assert) => {
-  const m1 = new Marker('hi ');
-  const m2 = new Marker('there!');
-  const s = new Section('h2', [m1,m2]);
+  const m1 = builder.createMarker('hi ');
+  const m2 = builder.createMarker('there!');
+  const s = builder.createMarkupSection('h2', [m1,m2]);
 
   s.splitMarker(m2, 3);
   assert.equal(s.markers.length, 3, 'adds a 3rd marker');
-  assert.equal(s.markers.head.value, 'hi ', 'original marker unchanged');
+  assert.equal(s.markers.objectAt(0).value, 'hi ', 'original marker unchanged');
   assert.equal(s.markers.objectAt(1).value, 'the', 'first half of split');
-  assert.equal(s.markers.tail.value, 're!', 'second half of split');
+  assert.equal(s.markers.objectAt(2).value, 're!', 'second half of split');
 });
 
 test('#splitMarker splits the marker at the end offset if provided', (assert) => {
-  const m1 = new Marker('hi ');
-  const m2 = new Marker('there!');
-  const s = new Section('h2', [m1,m2]);
+  const m1 = builder.createMarker('hi ');
+  const m2 = builder.createMarker('there!');
+  const s = builder.createMarkupSection('h2', [m1,m2]);
 
   s.splitMarker(m2, 1, 3);
   assert.equal(s.markers.length, 4, 'adds a marker for the split and has one on each side');
@@ -141,9 +143,9 @@ test('#splitMarker splits the marker at the end offset if provided', (assert) =>
 });
 
 test('#splitMarker does not create an empty marker if offset=0', (assert) => {
-  const m1 = new Marker('hi ');
-  const m2 = new Marker('there!');
-  const s = new Section('h2', [m1,m2]);
+  const m1 = builder.createMarker('hi ');
+  const m2 = builder.createMarker('there!');
+  const s = builder.createMarkupSection('h2', [m1,m2]);
 
   s.splitMarker(m2, 0);
   assert.equal(s.markers.length, 2, 'still 2 markers');

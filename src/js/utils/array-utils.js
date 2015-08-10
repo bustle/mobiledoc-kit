@@ -49,9 +49,18 @@ function difference(enumerable, otherEnumerable) {
   return diff;
 }
 
+function filter(enumerable, conditionFn) {
+  const filtered = [];
+  forEach(enumerable, i => {
+    if (conditionFn(i)) { filtered.push(i); }
+  });
+  return filtered;
+}
+
 export {
   detect,
   forEach,
   any,
-  difference
+  difference,
+  filter
 };

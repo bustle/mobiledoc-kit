@@ -9,6 +9,9 @@ export default class LinkedList {
       this.freeItem = freeItem;
     }
   }
+  empty() {
+    return this.length === 0;
+  }
   prepend(item) {
     this.insertBefore(item, this.head);
   }

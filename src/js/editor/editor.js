@@ -442,33 +442,19 @@ class Editor {
     const markerRenderNode = leftRenderNode;
     const marker = markerRenderNode.postNode;
     const section = marker.section;
-    const newMarkers = marker.split(leftOffset);
 
-    // FIXME rightMarker is not guaranteed to be there
-    let [leftMarker, rightMarker] = newMarkers;
+    let [beforeSection, afterSection] = section.splitAtMarker(marker, leftOffset);
 
-    section.markers.insertAfter(leftMarker, marker);
-    markerRenderNode.scheduleForRemoval();
+    section.renderNode.scheduleForRemoval();
 
-    const newSection = this.builder.createMarkupSection('p');
-    newSection.markers.append(rightMarker);
-
-    let nodeForMove = markerRenderNode.next;
-    while (nodeForMove) {
-      nodeForMove.scheduleForRemoval();
-      let movedMarker = nodeForMove.postNode.clone();
-      newSection.markers.append(movedMarker);
-
-      nodeForMove = nodeForMove.next;
-    }
-
-    const post = this.post;
-    post.sections.insertAfter(newSection, section);
+    this.post.sections.insertAfter(beforeSection, section);
+    this.post.sections.insertAfter(afterSection, beforeSection);
+    this.post.sections.remove(section);
 
     this.rerender();
     this.trigger('update');
 
-    this.cursor.moveToSection(newSection);
+    this.cursor.moveToSection(afterSection);
   }
 
   hasSelection() {

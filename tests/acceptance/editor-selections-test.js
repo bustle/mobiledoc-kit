@@ -176,6 +176,35 @@ test('select text and apply markup multiple times', (assert) => {
   });
 });
 
-// test selecting text across markers deletes intermediary markers
+test('selecting text across markers deletes intermediary markers', (assert) => {
+  const done = assert.async();
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  Helpers.dom.selectText('rst sec', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    Helpers.toolbar.clickButton(assert, 'bold');
+
+    const textNode1 = editorElement.childNodes[0].childNodes[0],
+          textNode2 = editorElement.childNodes[0].childNodes[2];
+    Helpers.dom.selectText('i', textNode1,
+                           'tio', textNode2);
+    Helpers.dom.triggerEvent(document, 'mouseup');
+
+    setTimeout(() => {
+      Helpers.dom.triggerDelete(editor);
+
+      assert.hasElement('p:contains(fn)', 'has remaining first section');
+      assert.deepEqual(Helpers.dom.getCursorPosition(),
+                       {node: editorElement.childNodes[0].childNodes[0],
+                         offset: 1});
+
+      done();
+    });
+  });
+});
+
 // test selecting text that includes entire sections deletes the sections
+// test selecting text across two types of sections and deleting
 // test selecting text and hitting enter or keydown
