@@ -151,6 +151,31 @@ test('selecting text across markers and deleting joins markers', (assert) => {
   });
 });
 
+test('select text and apply markup multiple times', (assert) => {
+  const done = assert.async();
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  Helpers.dom.selectText('t sect', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    Helpers.toolbar.clickButton(assert, 'bold');
+
+    Helpers.dom.selectText('fir', editorElement);
+    Helpers.dom.triggerEvent(document, 'mouseup');
+
+    setTimeout(() => {
+      Helpers.toolbar.clickButton(assert, 'bold');
+
+      assert.hasElement('p:contains(first section)', 'correct first section');
+      assert.hasElement('strong:contains(fir)', 'strong "fir"');
+      assert.hasElement('strong:contains(t sect)', 'strong "t sect"');
+
+      done();
+    });
+  });
+});
+
 // test selecting text across markers deletes intermediary markers
 // test selecting text that includes entire sections deletes the sections
 // test selecting text and hitting enter or keydown
