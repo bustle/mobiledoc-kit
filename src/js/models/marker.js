@@ -3,7 +3,10 @@ export const MARKER_TYPE = 'marker';
 import {
   normalizeTagName
 } from '../utils/dom-utils';
-import { detect } from 'content-kit-editor/utils/array-utils';
+import {
+  detect,
+  difference
+} from 'content-kit-editor/utils/array-utils';
 
 const Marker = class Marker {
   constructor(value='', markups=[]) {
@@ -104,31 +107,13 @@ const Marker = class Marker {
   }
 
   get openedMarkups() {
-    if (!this.previousSibling) {
-      return this.markups.slice();
-    }
-    let i;
-    for (i=0; i<this.markups.length; i++) {
-      // FIXME this should iterate everything and return all things that are not
-      // on this marker -- it assumes the markups are always in the same order
-      if (this.markups[i] !== this.previousSibling.markups[i]) {
-        return this.markups.slice(i);
-      }
-    }
-    return [];
+    let previousMarkups = this.previousSibling && this.previousSibling.markups;
+    return difference(this.markups, previousMarkups || []);
   }
 
   get closedMarkups() {
-    if (!this.nextSibling) {
-      return this.markups.slice();
-    }
-    let i;
-    for (i=0; i<this.markups.length; i++) {
-      if (this.markups[i] !== this.nextSibling.markups[i]) {
-        return this.markups.slice(i);
-      }
-    }
-    return [];
+    let nextMarkups = this.nextSibling && this.nextSibling.markups;
+    return difference(this.markups, nextMarkups || []);
   }
 
   // FIXME this should be implemented as a linked list
