@@ -386,6 +386,40 @@ test('rerender a marker after removing a markup from it (when both markers have 
                '<p>text1<b>text2</b></p>');
 });
 
+test('render when contiguous markers have out-of-order markups', (assert) => {
+  const post = builder.createPost();
+  const section = builder.createMarkupSection('p');
+
+  const b = builder.createMarkup('B'),
+        i = builder.createMarkup('I');
+
+  const markers = [
+    builder.createMarker('bi', [b,i]),
+    builder.createMarker('ib', [i,b]),
+    builder.createMarker('plain', [])
+  ];
+  const m1 = markers[0];
+
+  markers.forEach(m => section.appendMarker(m));
+  post.appendSection(section);
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p><b><i>biib</i></b>plain</p>');
+
+  // remove 'b' from 1st marker, rerender
+  m1.removeMarkup(b);
+  m1.renderNode.markDirty();
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p><i>bi<b>ib</b></i>plain</p>');
+});
+
 /*
 test("It renders a renderTree with rendered dirty section", (assert) => {
   /*

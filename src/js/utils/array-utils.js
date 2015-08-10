@@ -26,8 +26,24 @@ function forEach(enumerable, callback) {
   }
 }
 
+/**
+ * @return {Array} The things in enumerable that are not in otherEnumerable,
+ * aka the relative complement of `otherEnumerable` in `enumerable`
+ */
+function difference(enumerable, otherEnumerable) {
+  const diff = [];
+  forEach(enumerable, (item) => {
+    if (otherEnumerable.indexOf(item) === -1) {
+      diff.push(item);
+    }
+  });
+
+  return diff;
+}
+
 export {
   detect,
   forEach,
-  any
+  any,
+  difference
 };
