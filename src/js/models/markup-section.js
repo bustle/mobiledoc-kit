@@ -64,11 +64,7 @@ export default class Section extends LinkedItem {
   }
 
   replaceMarker(previousMarker, newMarkers=[]) {
-    let nextMarker = previousMarker.next;
-    newMarkers.forEach(marker => {
-      this.markers.insertBefore(marker, nextMarker);
-    });
-    this.removeMarker(previousMarker);
+    this.markers.splice(previousMarker, 1, newMarkers);
   }
 
   prependMarker(marker) {

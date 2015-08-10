@@ -129,4 +129,18 @@ export default class LinkedList {
       return (targetIndex === index);
     });
   }
+  splice(targetItem, removalCount, newItems) {
+    let item = targetItem;
+    let nextItem = item.next;
+    let count = 0;
+    while (item && count < removalCount) {
+      count++;
+      nextItem = item.next;
+      this.remove(item);
+      item = nextItem;
+    }
+    newItems.forEach((newItem) => {
+      this.insertBefore(newItem, nextItem);
+    });
+  }
 }

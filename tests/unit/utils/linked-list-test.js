@@ -277,3 +277,46 @@ test(`#objectAt looks up by index`, (assert) => {
   assert.equal(list.objectAt(1), itemTwo, 'itemTwo looked up');
   assert.equal(list.objectAt(2), itemThree, 'itemThree looked up');
 });
+
+test(`#splice removes a target and inserts an array of items`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  let itemTwo = new LinkedItem();
+  let itemThree = new LinkedItem();
+  list.append(itemOne);
+  list.append(itemThree);
+
+  list.splice(itemOne, 1, [itemTwo]);
+
+  assert.equal(list.head, itemTwo, 'itemOne is head');
+  assert.equal(list.objectAt(1), itemThree, 'itemThree is present');
+});
+
+test(`#splice remove nothing and inserts an array of nothing`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  let itemTwo = new LinkedItem();
+  list.append(itemOne);
+  list.append(itemTwo);
+
+  list.splice(itemTwo, 0, []);
+
+  assert.equal(list.head, itemOne, 'itemOne is head');
+  assert.equal(list.objectAt(1), itemTwo, 'itemTwo is present');
+});
+
+test(`#splice can reorganize items`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  let itemTwo = new LinkedItem();
+  let itemThree = new LinkedItem();
+  list.append(itemOne);
+  list.append(itemTwo);
+  list.append(itemThree);
+
+  list.splice(itemOne, 3, [itemThree, itemOne, itemTwo]);
+
+  assert.equal(list.head, itemThree, 'itemThree is head');
+  assert.equal(list.objectAt(1), itemOne, 'itemOne is present');
+  assert.equal(list.objectAt(2), itemTwo, 'itemTwo is present');
+});
