@@ -14,7 +14,7 @@ test('a section can append a marker', (assert) => {
   const s1 = new Section();
   const m1 = new Marker('hello');
 
-  s1.appendMarker(m1);
+  s1.markers.append(m1);
   assert.equal(s1.markers.length, 1);
 });
 

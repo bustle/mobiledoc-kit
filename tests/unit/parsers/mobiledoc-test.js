@@ -43,8 +43,8 @@ test('#parse doc without marker types', (assert) => {
 
   let section = builder.createMarkupSection('P', [], false);
   let marker  = builder.createMarker('hello world');
-  section.appendMarker(marker);
-  post.appendSection(section);
+  section.markers.append(marker);
+  post.sections.append(section);
 
   assert.deepEqual(
     parsed,
@@ -80,8 +80,8 @@ test('#parse doc with marker type', (assert) => {
     builder.createMarker('brave new', [aMarkerType, bMarkerType]),
     builder.createMarker('world', [aMarkerType])
   ];
-  markers.forEach(marker => section.appendMarker(marker));
-  post.appendSection(section);
+  markers.forEach(marker => section.markers.append(marker));
+  post.sections.append(section);
 
   assert.deepEqual(
     parsed,
@@ -103,7 +103,7 @@ test('#parse doc with image section', (assert) => {
   const parsed = parser.parse(mobiledoc);
 
   let section = builder.createImageSection(DATA_URL);
-  post.appendSection(section);
+  post.sections.append(section);
   assert.deepEqual(
     parsed,
     post
@@ -124,7 +124,7 @@ test('#parse doc with custom card type', (assert) => {
   const parsed = parser.parse(mobiledoc);
 
   let section = builder.createCardSection('custom-card');
-  post.appendSection(section);
+  post.sections.append(section);
   assert.deepEqual(
     parsed,
     post

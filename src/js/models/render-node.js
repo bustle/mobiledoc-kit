@@ -40,15 +40,6 @@ export default class RenderNode extends LinkedItem {
   markClean() {
     this.isDirty = false;
   }
-  appendChild(child) {
-    this.childNodes.append(child);
-  }
-  removeChild(child) {
-    this.childNodes.remove(child);
-  }
-  insertAfter(node, prev) {
-    this.childNodes.insertAfter(node, prev);
-  }
   set element(element) {
     this._element = element;
     this.renderTree.elements.set(element, this);

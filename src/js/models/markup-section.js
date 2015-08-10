@@ -25,7 +25,7 @@ export default class Section extends LinkedItem {
     this.type = MARKUP_SECTION_TYPE;
     this.element = null;
 
-    markers.forEach(m => this.appendMarker(m));
+    markers.forEach(m => this.markers.append(m));
   }
 
   set tagName(val) {
@@ -59,28 +59,8 @@ export default class Section extends LinkedItem {
    */
   splitMarker(marker, offset, endOffset=marker.length) {
     const newMarkers = marker.split(offset, endOffset);
-    this.replaceMarker(marker, newMarkers);
+    this.markers.splice(marker, 1, newMarkers);
     return newMarkers;
-  }
-
-  replaceMarker(previousMarker, newMarkers=[]) {
-    this.markers.splice(previousMarker, 1, newMarkers);
-  }
-
-  prependMarker(marker) {
-    this.markers.prepend(marker);
-  }
-
-  appendMarker(marker) {
-    this.markers.append(marker);
-  }
-
-  removeMarker(marker) {
-    this.markers.remove(marker);
-  }
-
-  insertMarkerAfter(marker, previousMarker) {
-    this.markers.insertAfter(marker, previousMarker);
   }
 
   /**
@@ -116,7 +96,9 @@ export default class Section extends LinkedItem {
 
   // mutates this by appending the other section's (cloned) markers to it
   join(otherSection) {
-    otherSection.markers.forEach(m => this.appendMarker(m.clone()));
+    otherSection.markers.forEach(m => {
+      this.markers.append(m.clone());
+    });
   }
 
   /**

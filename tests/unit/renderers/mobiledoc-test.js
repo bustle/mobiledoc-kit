@@ -27,8 +27,8 @@ test('renders a blank post', (assert) => {
 test('renders a post with marker', (assert) => {
   let post = builder.createPost();
   let section = builder.createMarkupSection('P');
-  post.appendSection(section);
-  section.appendMarker(
+  post.sections.append(section);
+  section.markers.append(
     builder.createMarker('Hi', [
       builder.createMarkup('STRONG')
     ])
@@ -52,14 +52,14 @@ test('renders a post with marker', (assert) => {
 test('renders a post section with markers sharing a markup', (assert) => {
   let post = builder.createPost();
   let section = builder.createMarkupSection('P');
-  post.appendSection(section);
+  post.sections.append(section);
   let markup = builder.createMarkup('STRONG');
-  section.appendMarker(
+  section.markers.append(
     builder.createMarker('Hi', [
       markup
     ])
   );
-  section.appendMarker(
+  section.markers.append(
     builder.createMarker(' Guy', [
       markup
     ])
@@ -85,7 +85,7 @@ test('renders a post with image', (assert) => {
   let url = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
   let post = builder.createPost();
   let section = builder.createImageSection(url);
-  post.appendSection(section);
+  post.sections.append(section);
 
   let mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {
@@ -102,7 +102,7 @@ test('renders a post with image', (assert) => {
 test('renders a post with image and null src', (assert) => {
   let post = builder.createPost();
   let section = builder.createImageSection();
-  post.appendSection(section);
+  post.sections.append(section);
 
   let mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {
@@ -121,7 +121,7 @@ test('renders a post with card', (assert) => {
   let payload = { bar: 'baz' };
   let post = builder.createPost();
   let section = builder.createCardSection(cardName, payload);
-  post.appendSection(section);
+  post.sections.append(section);
 
   let mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {

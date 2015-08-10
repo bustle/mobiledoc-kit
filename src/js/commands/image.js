@@ -13,7 +13,7 @@ export default class ImageCommand extends Command {
     let sections = this.editor.activeSections;
     let lastSection = sections[sections.length - 1];
     let section = builder.createCardSection('image');
-    post.insertSectionAfter(section, lastSection);
+    post.sections.insertAfter(section, lastSection);
     sections.forEach(section => section.renderNode.scheduleForRemoval());
 
     this.editor.rerender();

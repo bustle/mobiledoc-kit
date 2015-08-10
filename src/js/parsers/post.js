@@ -21,7 +21,7 @@ export default class PostParser {
     const post = this.builder.createPost();
 
     forEach(element.childNodes, child => {
-      post.appendSection(this.sectionParser.parse(child));
+      post.sections.append(this.sectionParser.parse(child));
     });
 
     return post;
@@ -99,12 +99,12 @@ export default class PostParser {
 
         if (previousMarker) {
           // insert this marker after the previous one
-          section.insertMarkerAfter(marker, previousMarker);
-          section.renderNode.insertAfter(renderNode, previousMarker.renderNode);
+          section.markers.insertAfter(marker, previousMarker);
+          section.renderNode.childNodes.insertAfter(renderNode, previousMarker.renderNode);
         } else {
           // insert marker at the beginning of the section
-          section.prependMarker(marker);
-          section.renderNode.insertAfter(renderNode, null);
+          section.markers.prepend(marker);
+          section.renderNode.childNodes.insertAfter(renderNode, null);
         }
 
         // find the nextMarkerElement, set it on the render node

@@ -13,16 +13,6 @@ export default class Post {
       }
     });
   }
-  appendSection(section) {
-    this.sections.append(section);
-  }
-  prependSection(section) {
-    this.sections.prepend(section);
-  }
-  replaceSection(section, newSection) {
-    this.sections.insertAfter(newSection, section);
-    this.sections.remove(section);
-  }
   cutMarkers(markers) {
     let firstSection = markers[0].section,
         lastSection  = markers[markers.length - 1].section;
@@ -31,7 +21,7 @@ export default class Post {
     let removedSections = [],
         changedSections = [firstSection, lastSection];
 
-    let previousMarker = markers[0].previousSibling;
+    let previousMarker = markers[0].prev;
 
     markers.forEach(marker => {
       if (marker.section !== currentSection) { // this marker is in a section we haven't seen yet
@@ -43,13 +33,13 @@ export default class Post {
       }
 
       currentSection = marker.section;
-      currentSection.removeMarker(marker);
+      currentSection.markers.remove(marker);
     });
 
     // add a blank marker to any sections that are now empty
     changedSections.forEach(section => {
       if (section.isEmpty()) {
-        section.appendMarker(this.builder.createBlankMarker());
+        section.markers.append(this.builder.createBlankMarker());
       }
     });
 
@@ -88,17 +78,5 @@ export default class Post {
         currentMarker = nextSection.markers.head;
       }
     }
-  }
-
-  insertSectionAfter(section, nextSection) {
-    this.sections.insertAfter(section, nextSection);
-  }
-
-  removeSection(section) {
-    this.sections.remove(section);
-  }
-
-  getPreviousSection(section) {
-    return section.prev;
   }
 }

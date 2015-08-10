@@ -449,23 +449,23 @@ class Editor {
     // FIXME rightMarker is not guaranteed to be there
     let [leftMarker, rightMarker] = newMarkers;
 
-    section.insertMarkerAfter(leftMarker, marker);
+    section.markers.insertAfter(leftMarker, marker);
     markerRenderNode.scheduleForRemoval();
 
     const newSection = this.builder.createMarkupSection('p');
-    newSection.appendMarker(rightMarker);
+    newSection.markers.append(rightMarker);
 
     let nodeForMove = markerRenderNode.next;
     while (nodeForMove) {
       nodeForMove.scheduleForRemoval();
       let movedMarker = nodeForMove.postNode.clone();
-      newSection.appendMarker(movedMarker);
+      newSection.markers.append(movedMarker);
 
       nodeForMove = nodeForMove.next;
     }
 
     const post = this.post;
-    post.insertSectionAfter(newSection, section);
+    post.sections.insertAfter(newSection, section);
 
     this.rerender();
     this.trigger('update');
@@ -657,8 +657,8 @@ class Editor {
         sectionRenderNode.markClean();
 
         let previousSectionRenderNode = previousSection && previousSection.renderNode;
-        this.post.insertSectionAfter(section, previousSection);
-        this._renderTree.node.insertAfter(sectionRenderNode, previousSectionRenderNode);
+        this.post.sections.insertAfter(section, previousSection);
+        this._renderTree.node.childNodes.insertAfter(sectionRenderNode, previousSectionRenderNode);
       }
 
       // may cause duplicates to be included
@@ -802,14 +802,10 @@ class Editor {
     let newRenderNode = this._renderTree.buildRenderNode(newSection);
     let renderNodes = this.cursor.activeSections.map(s => s.renderNode);
     let lastRenderNode = renderNodes[renderNodes.length-1];
-    lastRenderNode.parent.insertAfter(newRenderNode, lastRenderNode);
-    this.post.insertSectionAfter(newSection, lastRenderNode.postNode);
+    lastRenderNode.parent.childNodes.insertAfter(newRenderNode, lastRenderNode);
+    this.post.sections.insertAfter(newSection, lastRenderNode.postNode);
     renderNodes.forEach(renderNode => renderNode.scheduleForRemoval());
     this.trigger('update');
-  }
-
-  removeSection(section) {
-    this.post.removeSection(section);
   }
 
   destroy() {

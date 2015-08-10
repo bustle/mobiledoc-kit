@@ -55,17 +55,17 @@ export default class MobiledocParser {
 
   parseCardSection([type, name, payload], post) {
     const section = this.builder.createCardSection(name, payload);
-    post.appendSection(section);
+    post.sections.append(section);
   }
 
   parseImageSection([type, src], post) {
     const section = this.builder.createImageSection(src);
-    post.appendSection(section);
+    post.sections.append(section);
   }
 
   parseMarkupSection([type, tagName, markers], post) {
     const section = this.builder.createMarkupSection(tagName);
-    post.appendSection(section);
+    post.sections.append(section);
     this.parseMarkers(markers, section);
   }
 
@@ -78,7 +78,7 @@ export default class MobiledocParser {
       this.markups.push(this.markerTypes[index]);
     });
     const marker = this.builder.createMarker(value, this.markups.slice());
-    section.appendMarker(marker);
+    section.markers.append(marker);
     this.markups = this.markups.slice(0, this.markups.length-closeCount);
   }
 }
