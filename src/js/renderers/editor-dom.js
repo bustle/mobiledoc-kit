@@ -78,7 +78,7 @@ function renderMarker(marker, element, previousRenderNode) {
 
     let previousSibling = previousRenderNode.element;
     let previousSiblingPenultimate = penultimateParentOf(previousSibling, nextMarkerElement);
-    nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.nextSibling);
+    nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.next);
   } else {
     element.insertBefore(currentElement, element.firstChild);
   }
@@ -205,7 +205,7 @@ let destroyHooks = {
   },
   [MARKUP_SECTION_TYPE](renderNode, section) {
     let post = renderNode.parent.postNode;
-    post.removeSection(section);
+    post.sections.remove(section);
     // Some formatting commands remove the element from the DOM during
     // formatting. Do not error if this is the case.
     if (renderNode.element.parentNode) {
@@ -223,10 +223,8 @@ let destroyHooks = {
       element = element.parentNode;
     }
 
-    // FIXME is it ok that this marker may have already been removed from the
-    // section?
-    if (marker.section.markers.indexOf(marker) !== -1) {
-      marker.section.removeMarker(marker);
+    if (marker.section) {
+      marker.section.markers.remove(marker);
     }
 
     if (element.parentNode) {
@@ -237,7 +235,7 @@ let destroyHooks = {
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
     let post = renderNode.parent.postNode;
-    post.removeSection(section);
+    post.sections.remove(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
   },
 
@@ -246,7 +244,7 @@ let destroyHooks = {
       renderNode.cardNode.teardown();
     }
     let post = renderNode.parent.postNode;
-    post.removeSection(section);
+    post.sections.remove(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
   }
 };
@@ -258,7 +256,7 @@ function removeChildren(parentNode) {
     let nextChild = child.next;
     if (child.isRemoved) {
       destroyHooks[child.postNode.type](child, child.postNode);
-      parentNode.removeChild(child);
+      parentNode.childNodes.remove(child);
     }
     child = nextChild;
   }
@@ -271,7 +269,7 @@ function lookupNode(renderTree, parentNode, postNode, previousNode) {
     return postNode.renderNode;
   } else {
     let renderNode = new RenderNode(postNode);
-    parentNode.insertAfter(renderNode, previousNode);
+    parentNode.childNodes.insertAfter(renderNode, previousNode);
     postNode.renderNode = renderNode;
     return renderNode;
   }

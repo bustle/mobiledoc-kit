@@ -77,23 +77,23 @@ function parseMarkers(section, builder, topNode) {
 
     if (currentNode.firstChild) {
       if (isValidMarkerElement(currentNode) && text !== null) {
-        section.appendMarker(builder.createMarker(text, markups.slice()));
+        section.markers.append(builder.createMarker(text, markups.slice()));
         text = null;
       }
       currentNode = currentNode.firstChild;
     } else if (currentNode.nextSibling) {
       if (currentNode === topNode) {
-        section.appendMarker(builder.createMarker(text, markups.slice()));
+        section.markers.append(builder.createMarker(text, markups.slice()));
         break;
       } else {
         currentNode = currentNode.nextSibling;
         if (currentNode.nodeType === ELEMENT_NODE && isValidMarkerElement(currentNode) && text !== null) {
-          section.appendMarker(builder.createMarker(text, markups.slice()));
+          section.markers.append(builder.createMarker(text, markups.slice()));
           text = null;
         }
       }
     } else {
-      section.appendMarker(builder.createMarker(text, markups.slice()));
+      section.markers.append(builder.createMarker(text, markups.slice()));
 
       while (currentNode && !currentNode.nextSibling && currentNode !== topNode) {
         currentNode = currentNode.parentNode;
@@ -169,7 +169,7 @@ NewHTMLParser.prototype = {
       if (!isEmptyTextNode(sectionElement)) {
         section = this.parseSection(previousSection, sectionElement);
         if (section !== previousSection) {
-          post.appendSection(section);
+          post.sections.append(section);
           previousSection = section;
         }
       }

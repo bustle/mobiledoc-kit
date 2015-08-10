@@ -1,23 +1,17 @@
 export const POST_TYPE = 'post';
+import LinkedList from "content-kit-editor/utils/linked-list";
 
-// FIXME: making sections a linked-list would greatly improve this
 export default class Post {
   constructor() {
     this.type = POST_TYPE;
-    this.sections = [];
-  }
-  appendSection(section) {
-    section.post = this;
-    this.sections.push(section);
-  }
-  prependSection(section) {
-    section.post = this;
-    this.sections.unshift(section);
-  }
-  replaceSection(section, newSection) {
-    section.post = this;
-    this.insertSectionAfter(newSection, section);
-    this.removeSection(section);
+    this.sections = new LinkedList({
+      adoptItem(section) {
+        section.post = this;
+      },
+      freeItem(section) {
+        section.post = null;
+      }
+    });
   }
   cutMarkers(markers) {
     let firstSection = markers[0].section,
@@ -27,7 +21,7 @@ export default class Post {
     let removedSections = [],
         changedSections = [firstSection, lastSection];
 
-    let previousMarker = markers[0].previousSibling;
+    let previousMarker = markers[0].prev;
 
     markers.forEach(marker => {
       if (marker.section !== currentSection) { // this marker is in a section we haven't seen yet
@@ -39,13 +33,13 @@ export default class Post {
       }
 
       currentSection = marker.section;
-      currentSection.removeMarker(marker);
+      currentSection.markers.remove(marker);
     });
 
     // add a blank marker to any sections that are now empty
     changedSections.forEach(section => {
       if (section.isEmpty()) {
-        section.appendMarker(this.builder.createBlankMarker());
+        section.markers.append(this.builder.createBlankMarker());
       }
     });
 
@@ -55,7 +49,7 @@ export default class Post {
       currentMarker = previousMarker;
       currentOffset = currentMarker.length;
     } else {
-      currentMarker = firstSection.markers[0];
+      currentMarker = firstSection.markers.head;
       currentOffset = 0;
     }
 
@@ -77,44 +71,11 @@ export default class Post {
 
       if (currentMarker === endMarker) {
         currentMarker = null;
-      } else if (currentMarker.nextSibling) {
-        currentMarker = currentMarker.nextSibling;
+      } else if (currentMarker.next) {
+        currentMarker = currentMarker.next;
       } else {
-        let nextSection = currentMarker.section.nextSibling;
-        currentMarker = nextSection && nextSection.markers[0];
-      }
-    }
-  }
-
-  insertSectionAfter(section, previousSection) {
-    section.post = this;
-    let foundIndex = -1;
-
-    for (let i=0; i<this.sections.length; i++) {
-      if (this.sections[i] === previousSection) {
-        foundIndex = i;
-        break;
-      }
-    }
-
-    this.sections.splice(foundIndex+1, 0, section);
-  }
-  removeSection(section) {
-    var i, l;
-    for (i=0,l=this.sections.length;i<l;i++) {
-      if (this.sections[i] === section) {
-        this.sections.splice(i, 1);
-        return;
-      }
-    }
-  }
-  getPreviousSection(section) {
-    var i, l;
-    if (this.sections[0] !== section) {
-      for (i=1,l=this.sections.length;i<l;i++) {
-        if (this.sections[i] === section) {
-          return this.sections[i-1];
-        }
+        let nextSection = currentMarker.section.next;
+        currentMarker = nextSection.markers.head;
       }
     }
   }

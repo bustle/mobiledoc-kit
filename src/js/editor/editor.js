@@ -385,7 +385,7 @@ class Editor {
       }
     } else {
       let currentSection = currentMarker.section;
-      let previousMarker = currentMarker.previousSibling;
+      let previousMarker = currentMarker.prev;
       if (previousMarker) { // (B)
         let markerLength = previousMarker.length;
         previousMarker.deleteValueAtOffset(markerLength - 1);
@@ -394,17 +394,17 @@ class Editor {
         //   * none -- do nothing
         //   * markup section -- join to it
         //   * non-markup section (card) -- select it? delete it?
-        let previousSection = this.post.getPreviousSection(currentSection);
+        let previousSection = currentSection.prev;
         if (previousSection) {
           let isMarkupSection = previousSection.type === MARKUP_SECTION_TYPE;
 
           if (isMarkupSection) {
-            let previousSectionMarkerLength = previousSection.markers.length;
+            let lastPreviousMarker = previousSection.markers.tail;
             previousSection.join(currentSection);
             previousSection.renderNode.markDirty();
             currentSection.renderNode.scheduleForRemoval();
 
-            nextCursorMarker = previousSection.markers[previousSectionMarkerLength];
+            nextCursorMarker = lastPreviousMarker.next;
             nextCursorOffset = 0;
           /*
           } else {
@@ -449,23 +449,23 @@ class Editor {
     // FIXME rightMarker is not guaranteed to be there
     let [leftMarker, rightMarker] = newMarkers;
 
-    section.insertMarkerAfter(leftMarker, marker);
+    section.markers.insertAfter(leftMarker, marker);
     markerRenderNode.scheduleForRemoval();
 
     const newSection = this.builder.createMarkupSection('p');
-    newSection.appendMarker(rightMarker);
+    newSection.markers.append(rightMarker);
 
     let nodeForMove = markerRenderNode.next;
     while (nodeForMove) {
       nodeForMove.scheduleForRemoval();
       let movedMarker = nodeForMove.postNode.clone();
-      newSection.appendMarker(movedMarker);
+      newSection.markers.append(movedMarker);
 
-      nodeForMove = nodeForMove.nextSibling;
+      nodeForMove = nodeForMove.next;
     }
 
     const post = this.post;
-    post.insertSectionAfter(newSection, section);
+    post.sections.insertAfter(newSection, section);
 
     this.rerender();
     this.trigger('update');
@@ -657,8 +657,8 @@ class Editor {
         sectionRenderNode.markClean();
 
         let previousSectionRenderNode = previousSection && previousSection.renderNode;
-        this.post.insertSectionAfter(section, previousSection);
-        this._renderTree.node.insertAfter(sectionRenderNode, previousSectionRenderNode);
+        this.post.sections.insertAfter(section, previousSection);
+        this._renderTree.node.childNodes.insertAfter(sectionRenderNode, previousSectionRenderNode);
       }
 
       // may cause duplicates to be included
@@ -802,14 +802,10 @@ class Editor {
     let newRenderNode = this._renderTree.buildRenderNode(newSection);
     let renderNodes = this.cursor.activeSections.map(s => s.renderNode);
     let lastRenderNode = renderNodes[renderNodes.length-1];
-    lastRenderNode.parentNode.insertAfter(newRenderNode, lastRenderNode);
-    this.post.insertSectionAfter(newSection, lastRenderNode.postNode);
+    lastRenderNode.parent.childNodes.insertAfter(newRenderNode, lastRenderNode);
+    this.post.sections.insertAfter(newSection, lastRenderNode.postNode);
     renderNodes.forEach(renderNode => renderNode.scheduleForRemoval());
     this.trigger('update');
-  }
-
-  removeSection(section) {
-    this.post.removeSection(section);
   }
 
   destroy() {

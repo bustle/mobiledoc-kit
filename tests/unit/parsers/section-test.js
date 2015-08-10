@@ -29,7 +29,7 @@ test('#parse parses simple dom', (assert) => {
   const section = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 2, 'has 2 markers');
-  const [m1, m2] = section.markers;
+  const [m1, m2] = section.markers.toArray();
 
   assert.equal(m1.value, 'hello there');
   assert.equal(m2.value, 'i am bold');
@@ -51,7 +51,7 @@ test('#parse parses nested markups', (assert) => {
 
   const section = parser.parse(element);
   assert.equal(section.markers.length, 3, 'has 3 markers');
-  const [m1, m2, m3] = section.markers;
+  const [m1, m2, m3] = section.markers.toArray();
 
   assert.equal(m1.value, 'i am bold');
   assert.equal(m2.value, 'i am bold and italic');
@@ -74,7 +74,7 @@ test('#parse ignores non-markup elements like spans', (assert) => {
   const section = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 markers');
-  const [m1] = section.markers;
+  const [m1] = section.markers.toArray();
 
   assert.equal(m1.value, 'i was in span');
 });
@@ -89,7 +89,7 @@ test('#parse reads attributes', (assert) => {
   );
   const section = parser.parse(element);
   assert.equal(section.markers.length, 1, 'has 1 markers');
-  const [m1] = section.markers;
+  const [m1] = section.markers.toArray();
   assert.equal(m1.value, 'i am a link');
   assert.ok(m1.hasMarkup('a'), 'has "a" markup');
   assert.equal(m1.getMarkup('a').attributes.href, 'google.com');
@@ -110,7 +110,7 @@ test('#parse joins contiguous text nodes separated by non-markup elements', (ass
   const section = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 markers');
-  const [m1] = section.markers;
+  const [m1] = section.markers.toArray();
 
   assert.equal(m1.value, 'span 1span 2');
 });

@@ -40,9 +40,9 @@ test("It renders a dirty post", (assert) => {
 test("It renders a dirty post with un-rendered sections", (assert) => {
   let post = builder.createPost();
   let sectionA = builder.createMarkupSection('P');
-  post.appendSection(sectionA);
+  post.sections.append(sectionA);
   let sectionB = builder.createMarkupSection('P');
-  post.appendSection(sectionB);
+  post.sections.append(sectionB);
 
   let renderNode = new RenderNode(post);
   let renderTree = new RenderTree(renderNode);
@@ -80,7 +80,7 @@ test("It renders a dirty post with un-rendered sections", (assert) => {
   test(`Remove nodes with ${testInfo.name} section`, (assert) => {
     let post = builder.createPost();
     let section = testInfo.section(builder);
-    post.appendSection(section);
+    post.sections.append(section);
 
     let postElement = document.createElement('div');
     let sectionElement = document.createElement('p');
@@ -95,7 +95,7 @@ test("It renders a dirty post with un-rendered sections", (assert) => {
     let sectionRenderNode = renderTree.buildRenderNode(section);
     sectionRenderNode.element = sectionElement;
     sectionRenderNode.scheduleForRemoval();
-    postRenderNode.appendChild(sectionRenderNode);
+    postRenderNode.childNodes.append(sectionRenderNode);
 
     render(renderTree);
 
@@ -113,8 +113,8 @@ test("It renders a dirty post with un-rendered sections", (assert) => {
 test('renders a post with marker', (assert) => {
   let post = builder.createPost();
   let section = builder.createMarkupSection('P');
-  post.appendSection(section);
-  section.appendMarker(
+  post.sections.append(section);
+  section.markers.append(
     builder.createMarker('Hi', [
       builder.createMarkup('STRONG')
     ])
@@ -130,19 +130,19 @@ test('renders a post with marker', (assert) => {
 test('renders a post with multiple markers', (assert) => {
   let post = builder.createPost();
   let section = builder.createMarkupSection('P');
-  post.appendSection(section);
+  post.sections.append(section);
 
   let b = builder.createMarkup('B');
   let i = builder.createMarkup('I');
 
-  section.appendMarker(builder.createMarker('hello '));
-  section.appendMarker(
+  section.markers.append(builder.createMarker('hello '));
+  section.markers.append(
     builder.createMarker('bold, ', [b])
   );
-  section.appendMarker(
+  section.markers.append(
     builder.createMarker('italic,', [b,i])
   );
-  section.appendMarker(
+  section.markers.append(
     builder.createMarker(' world.')
   );
 
@@ -158,7 +158,7 @@ test('renders a post with image', (assert) => {
   let url = DATA_URL;
   let post = builder.createPost();
   let section = builder.createImageSection(url);
-  post.appendSection(section);
+  post.sections.append(section);
 
   let node = new RenderNode(post);
   let renderTree = new RenderTree(node);
@@ -178,7 +178,7 @@ test('renders a card section', (assert) => {
       }
     }
   };
-  post.appendSection(cardSection);
+  post.sections.append(cardSection);
 
   let node = new RenderNode(post);
   let renderTree = new RenderTree(node);
@@ -202,7 +202,7 @@ test('renders a card section into a non-contenteditable element', (assert) => {
       }
     }
   };
-  post.appendSection(cardSection);
+  post.sections.append(cardSection);
 
   let node = new RenderNode(post);
   let renderTree = new RenderTree(node);
@@ -248,9 +248,9 @@ test('rerender a marker after adding a markup to it', (assert) => {
   const marker1 = builder.createMarker('text1', [b]);
   const marker2 = builder.createMarker('text2');
 
-  section.appendMarker(marker1);
-  section.appendMarker(marker2);
-  post.appendSection(section);
+  section.markers.append(marker1);
+  section.markers.append(marker2);
+  post.sections.append(section);
 
   let node = new RenderNode(post);
   let renderTree = new RenderTree(node);
@@ -277,9 +277,9 @@ test('rerender a marker after removing a markup from it', (assert) => {
   const marker1 = builder.createMarker('text1');
   const marker2 = builder.createMarker('text2', [bMarkup]);
 
-  section.appendMarker(marker1);
-  section.appendMarker(marker2);
-  post.appendSection(section);
+  section.markers.append(marker1);
+  section.markers.append(marker2);
+  post.sections.append(section);
 
   let node = new RenderNode(post);
   let renderTree = new RenderTree(node);
@@ -306,9 +306,9 @@ test('rerender a marker after removing a markup from it (when changed marker is 
   const marker1 = builder.createMarker('text1', [bMarkup]);
   const marker2 = builder.createMarker('text2');
 
-  section.appendMarker(marker1);
-  section.appendMarker(marker2);
-  post.appendSection(section);
+  section.markers.append(marker1);
+  section.markers.append(marker2);
+  post.sections.append(section);
 
   let node = new RenderNode(post);
   let renderTree = new RenderTree(node);
@@ -335,9 +335,9 @@ test('rerender a marker after removing a markup from it (when both markers have 
   const marker1 = builder.createMarker('text1', [bMarkup]);
   const marker2 = builder.createMarker('text2', [bMarkup]);
 
-  section.appendMarker(marker1);
-  section.appendMarker(marker2);
-  post.appendSection(section);
+  section.markers.append(marker1);
+  section.markers.append(marker2);
+  post.sections.append(section);
 
   let node = new RenderNode(post);
   let renderTree = new RenderTree(node);
@@ -364,9 +364,9 @@ test('rerender a marker after removing a markup from it (when both markers have 
   const marker1 = builder.createMarker('text1', [bMarkup]);
   const marker2 = builder.createMarker('text2', [bMarkup]);
 
-  section.appendMarker(marker1);
-  section.appendMarker(marker2);
-  post.appendSection(section);
+  section.markers.append(marker1);
+  section.markers.append(marker2);
+  post.sections.append(section);
 
   let node = new RenderNode(post);
   let renderTree = new RenderTree(node);
@@ -400,8 +400,8 @@ test('render when contiguous markers have out-of-order markups', (assert) => {
   ];
   const m1 = markers[0];
 
-  markers.forEach(m => section.appendMarker(m));
-  post.appendSection(section);
+  markers.forEach(m => section.markers.append(m));
+  post.sections.append(section);
 
   let node = new RenderNode(post);
   let renderTree = new RenderTree(node);

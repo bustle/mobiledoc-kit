@@ -17,7 +17,7 @@ export function visitArray(visitor, nodes, opcodes) {
   if (!nodes || nodes.length === 0) {
     return;
   }
-  for (var i=0, l=nodes.length; i<l; i++) {
-    visit(visitor, nodes[i], opcodes);
-  }
+  nodes.forEach(node => {
+    visit(visitor, node, opcodes);
+  });
 }

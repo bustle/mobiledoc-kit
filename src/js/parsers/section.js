@@ -35,11 +35,11 @@ export default class SectionParser {
     // close a trailing text nodes if it exists
     if (state.text.length) {
       let marker = this.builder.createMarker(state.text, state.markups);
-      state.section.appendMarker(marker);
+      state.section.markers.append(marker);
     }
 
     if (section.markers.length === 0) {
-      section.appendMarker(this.builder.createBlankMarker());
+      section.markers.append(this.builder.createBlankMarker());
     }
 
     return section;
@@ -64,7 +64,7 @@ export default class SectionParser {
       if (state.text.length) {
         // close previous text marker
         let marker = this.builder.createMarker(state.text, state.markups);
-        state.section.appendMarker(marker);
+        state.section.markers.append(marker);
         state.text = '';
       }
 
@@ -79,7 +79,7 @@ export default class SectionParser {
       // close the marker started for this node and pop
       // its markup from the stack
       let marker = this.builder.createMarker(state.text, state.markups);
-      state.section.appendMarker(marker);
+      state.section.markers.append(marker);
       state.markups.pop();
       state.text = '';
     }

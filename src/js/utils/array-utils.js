@@ -1,7 +1,11 @@
-function detect(array, callback) {
-  for (let i=0; i<array.length; i++) {
-    if (callback(array[i])) {
-      return array[i];
+function detect(enumerable, callback) {
+  if (enumerable.detect) {
+    return enumerable.detect(callback);
+  } else {
+    for (let i=0; i<enumerable.length; i++) {
+      if (callback(enumerable[i])) {
+        return enumerable[i];
+      }
     }
   }
 }
@@ -21,8 +25,12 @@ function any(array, callback) {
  * actually arrays, like NodeList
  */
 function forEach(enumerable, callback) {
-  for (let i=0; i<enumerable.length; i++) {
-    callback(enumerable[i]);
+  if (enumerable.forEach) {
+    enumerable.forEach(callback);
+  } else {
+    for (let i=0; i<enumerable.length; i++) {
+      callback(enumerable[i], i);
+    }
   }
 }
 

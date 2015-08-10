@@ -8,16 +8,22 @@ export default class RenderNode extends LinkedItem {
     this.isDirty = true;
     this.isRemoved = false;
     this.postNode = postNode;
-    this.childNodes = new LinkedList({
-      adoptItem: item => {
-        item.parent = this;
-        item.renderTree = this.renderTree;
-      },
-      freeItem: item => {
-        item.parent = null;
-        item.renderTree = null;
-      }
-    });
+    this._childNodes = null;
+  }
+  get childNodes() {
+    if (!this._childNodes) {
+      this._childNodes = new LinkedList({
+        adoptItem: item => {
+          item.parent = this;
+          item.renderTree = this.renderTree;
+        },
+        freeItem: item => {
+          item.parent = null;
+          item.renderTree = null;
+        }
+      });
+    }
+    return this._childNodes;
   }
   scheduleForRemoval() {
     this.isRemoved = true;
@@ -33,15 +39,6 @@ export default class RenderNode extends LinkedItem {
   }
   markClean() {
     this.isDirty = false;
-  }
-  appendChild(child) {
-    this.childNodes.append(child);
-  }
-  removeChild(child) {
-    this.childNodes.remove(child);
-  }
-  insertAfter(node, prev) {
-    this.childNodes.insertAfter(node, prev);
   }
   set element(element) {
     this._element = element;
