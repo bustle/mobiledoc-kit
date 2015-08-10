@@ -12,7 +12,6 @@ import SubheadingCommand from '../commands/subheading';
 import UnorderedListCommand from '../commands/unordered-list';
 import OrderedListCommand from '../commands/ordered-list';
 import ImageCommand from '../commands/image';
-import OEmbedCommand from '../commands/oembed';
 import CardCommand from '../commands/card';
 
 import ImageCard from '../cards/image';
@@ -64,7 +63,6 @@ const defaults = {
   ],
   embedCommands: [
     new ImageCommand(),
-    new OEmbedCommand({ serviceUrl: '/embed'  }),
     new CardCommand()
   ],
   autoTypingCommands: [

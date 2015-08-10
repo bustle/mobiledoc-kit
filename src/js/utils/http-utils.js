@@ -14,14 +14,6 @@ function createXHR(options) {
   return xhr;
 }
 
-function xhrGet(options) {
-  options.method = 'GET';
-  var xhr = createXHR(options);
-  try {
-    xhr.send();
-  } catch(error) {}
-}
-
 function xhrPost(options) {
   options.method = 'POST';
   var xhr = createXHR(options);
@@ -83,27 +75,4 @@ FileUploader.prototype.upload = function(options) {
   });
 };
 
-function OEmbedder(options) {
-  options = options || {};
-  var url = options.url;
-  if (url) {
-    this.url = url;
-  } else {
-    throw new Error('OEmbedder: setting the `url` to an embed service is required');
-  }
-}
-
-OEmbedder.prototype.fetch = function(options) {
-  var callback = options.complete;
-  xhrGet({
-    url: this.url + "?url=" + encodeURI(options.url),
-    success: function(response) {
-      if (callback) { callback.call(this, responseJSON(response)); }
-    },
-    error: function(error) {
-      if (callback) { callback.call(this, null, responseJSON(error)); }
-    }
-  });
-};
-
-export { FileUploader, OEmbedder };
+export { FileUploader };
