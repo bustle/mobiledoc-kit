@@ -35,11 +35,11 @@
     "aws-sdk": "^2.1.7",
     "busboy": "^0.2.9",
     "embedly": "^1.0.2",
-    "express": "^4.11.1"
+    "express": "^4.11.1",
+    "broccoli-funnel": "^0.2.3"
   },
   "devDependencies": {
     "broccoli": "^0.16.3",
-    "broccoli-funnel": "^0.2.3",
     "broccoli-less-single": "^0.4.0",
     "broccoli-merge-trees": "^0.2.1",
     "broccoli-multi-builder": "^0.2.7",
