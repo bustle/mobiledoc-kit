@@ -122,4 +122,11 @@ export default class LinkedList {
       item = item.next;
     }
   }
+  objectAt(targetIndex) {
+    let index = -1;
+    return this.detect(() => {
+      index++;
+      return (targetIndex === index);
+    });
+  }
 }

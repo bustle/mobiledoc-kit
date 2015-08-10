@@ -262,3 +262,18 @@ test(`#detect finds`, (assert) => {
   assert.equal(list.detect(item => item === itemThree), itemThree, 'itemThree detected');
   assert.equal(list.detect(() => false), undefined, 'no item detected');
 });
+
+test(`#objectAt looks up by index`, (assert) => {
+  let list = new LinkedList();
+  let itemOne = new LinkedItem();
+  list.append(itemOne);
+  assert.equal(list.objectAt(0), itemOne, 'itemOne looked up');
+
+  let itemTwo = new LinkedItem();
+  let itemThree = new LinkedItem();
+  list.append(itemTwo);
+  list.append(itemThree);
+  assert.equal(list.objectAt(0), itemOne, 'itemOne looked up');
+  assert.equal(list.objectAt(1), itemTwo, 'itemTwo looked up');
+  assert.equal(list.objectAt(2), itemThree, 'itemThree looked up');
+});
