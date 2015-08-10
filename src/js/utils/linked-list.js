@@ -19,6 +19,8 @@ export default class LinkedList {
     let nextItem = null;
     if (prevItem) {
       nextItem = prevItem.next;
+    } else {
+      nextItem = this.head;
     }
     this.insertBefore(item, nextItem);
   }

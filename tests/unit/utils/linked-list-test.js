@@ -104,6 +104,28 @@ test(`#insertAfter a middle item`, (assert) => {
   assert.equal(itemThree.next, null, 'itemThree next is null');
 });
 
+test('#insertAfter null reference item prepends the item', (assert) => {
+  let list = new LinkedList();
+  let item1 = new LinkedItem();
+  let item2 = new LinkedItem();
+  list.append(item1);
+  list.insertAfter(item2, null);
+
+  assert.equal(list.head, item2, 'item2 is appended');
+  assert.equal(list.tail, item1, 'item1 is at tail');
+});
+
+test('#insertBefore null reference item appends the item', (assert) => {
+  let list = new LinkedList();
+  let item1 = new LinkedItem();
+  let item2 = new LinkedItem();
+  list.append(item1);
+  list.insertBefore(item2, null);
+
+  assert.equal(list.tail, item2, 'item2 is appended');
+  assert.equal(list.head, item1, 'item1 is at head');
+});
+
 test(`#remove an only item`, (assert) => {
   let list = new LinkedList();
   let item = new LinkedItem();
