@@ -2,6 +2,11 @@ import {
   normalizeTagName
 } from '../utils/dom-utils';
 
+import {
+  forEach,
+  filter
+} from '../utils/array-utils';
+
 export const DEFAULT_TAG_NAME = normalizeTagName('p');
 export const VALID_MARKUP_SECTION_TAGNAMES = [
   'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'
@@ -53,14 +58,55 @@ export default class Section extends LinkedItem {
   }
 
   /**
-   * Splits the marker at the offset (until the endOffset, if given)
-   * into 1, 2, or 3 markers and replaces the existing marker
-   * with the new ones
+   * Splits the marker at the offset, filters empty markers from the result,
+   * and replaces this marker with the new non-empty ones
+   * @param {Marker} marker the marker to split
+   * @return {Array} the new markers that replaced `marker`
    */
   splitMarker(marker, offset, endOffset=marker.length) {
-    const newMarkers = marker.split(offset, endOffset);
+    const newMarkers = filter(marker.split(offset, endOffset), m => !m.empty());
     this.markers.splice(marker, 1, newMarkers);
     return newMarkers;
+  }
+
+  splitAtMarker(marker, offset=0) {
+    let [beforeSection, afterSection] = [
+      this.builder.createMarkupSection(this.tagName, []),
+      this.builder.createMarkupSection(this.tagName, [])
+    ];
+
+    let currentSection = beforeSection;
+    forEach(this.markers, m => {
+      if (m === marker) {
+        const [beforeMarker, ...afterMarkers] = marker.split(offset);
+        beforeSection.markers.append(beforeMarker);
+        forEach(afterMarkers, _m => afterSection.markers.append(_m));
+        currentSection = afterSection;
+      } else {
+        currentSection.markers.append(m.clone());
+      }
+    });
+
+    beforeSection.coalesceMarkers();
+    afterSection.coalesceMarkers();
+
+    return [beforeSection, afterSection];
+  }
+
+  /**
+   * Remove extranous empty markers, adding one at the end if there
+   * are no longer any markers
+   *
+   * Mutates this section's markers
+   */
+  coalesceMarkers() {
+    forEach(
+      filter(this.markers, m => m.empty()),
+      m => this.markers.remove(m)
+    );
+    if (this.markers.empty()) {
+      this.markers.append(this.builder.createBlankMarker());
+    }
   }
 
   /**

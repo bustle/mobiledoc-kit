@@ -26,6 +26,10 @@ const Marker = class Marker extends LinkedItem {
     return new this.constructor(this.value, clonedMarkups);
   }
 
+  empty() {
+    return this.length === 0;
+  }
+
   get length() {
     return this.value.length;
   }
@@ -88,21 +92,11 @@ const Marker = class Marker extends LinkedItem {
   split(offset=0, endOffset=this.length) {
     let markers = [];
 
-    if (offset !== 0) {
-      markers.push(
-        new Marker(this.value.substring(0, offset))
-      );
-    }
-
-    markers.push(
-      new Marker(this.value.substring(offset, endOffset))
-    );
-
-    if (endOffset < this.length) {
-      markers.push(
-        new Marker(this.value.substring(endOffset))
-      );
-    }
+    markers = [
+      this.builder.createMarker(this.value.substring(0, offset)),
+      this.builder.createMarker(this.value.substring(offset, endOffset)),
+      this.builder.createMarker(this.value.substring(endOffset))
+    ];
 
     this.markups.forEach(mu => markers.forEach(m => m.addMarkup(mu)));
     return markers;

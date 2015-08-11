@@ -23,6 +23,7 @@ export default class PostNodeBuilder {
     if (isGenerated) {
       section.isGenerated = true;
     }
+    section.builder = this;
     return section;
   }
 
@@ -45,7 +46,9 @@ export default class PostNodeBuilder {
   }
 
   createBlankMarker() {
-    return new Marker('');
+    const marker = new Marker('');
+    marker.builder = this;
+    return marker;
   }
 
   createMarkup(tagName, attributes) {

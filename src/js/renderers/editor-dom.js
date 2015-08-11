@@ -8,7 +8,7 @@ import { IMAGE_SECTION_TYPE } from "../models/image";
 import { CARD_TYPE } from "../models/card";
 import { clearChildNodes } from '../utils/dom-utils';
 
-export const UNPRINTABLE_CHARACTER = "\u200C";
+export const UNPRINTABLE_CHARACTER = "\u2006";
 
 function createElementFromMarkup(doc, markup) {
   var element = doc.createElement(markup.tagName);
@@ -55,7 +55,6 @@ function getNextMarkerElement(renderNode) {
 }
 
 function renderMarker(marker, element, previousRenderNode) {
-  const openTypes = marker.openedMarkups;
   let text = marker.value;
   if (isEmptyText(text)) {
     // This is necessary to allow the cursor to move into this area
@@ -66,6 +65,7 @@ function renderMarker(marker, element, previousRenderNode) {
   let currentElement = textNode;
   let markup;
 
+  const openTypes = marker.openedMarkups;
   for (let j=openTypes.length-1;j>=0;j--) {
     markup = openTypes[j];
     let openedElement = createElementFromMarkup(document, markup);
@@ -116,13 +116,11 @@ class Visitor {
 
       if (renderNode.prev) {
         let previousElement = renderNode.prev.element;
-        let nextElement = previousElement.nextSibling;
-        if (nextElement) {
-          nextElement.parentNode.insertBefore(element, nextElement);
-        }
-      }
-      if (!element.parentNode) {
-        renderNode.parent.element.appendChild(element);
+        let parentNode = previousElement.parentNode;
+        parentNode.insertBefore(element, previousElement.nextSibling);
+      } else {
+        let parentElement = renderNode.parent.element;
+        parentElement.insertBefore(element, parentElement.firstChild);
       }
     } else {
       renderNode.parent.element.replaceChild(element, originalElement);
