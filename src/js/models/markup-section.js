@@ -105,7 +105,7 @@ export default class Section extends LinkedItem {
         this.markers.remove(m);
       }
     });
-    if (this.markers.empty()) {
+    if (this.markers.isEmpty) {
       this.markers.append(this.builder.createBlankMarker());
     }
   }

@@ -9,7 +9,7 @@ export default class LinkedList {
       this.freeItem = freeItem;
     }
   }
-  empty() {
+  get isEmpty() {
     return this.length === 0;
   }
   prepend(item) {
