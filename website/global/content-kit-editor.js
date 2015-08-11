@@ -495,6 +495,7 @@ define('content-kit-editor/commands/format-block', ['exports', 'content-kit-edit
 
         editor.rerender();
         editor.selectSections(activeSections);
+        this.editor.didUpdate();
       }
     }, {
       key: 'unexec',
@@ -508,6 +509,7 @@ define('content-kit-editor/commands/format-block', ['exports', 'content-kit-edit
 
         editor.rerender();
         editor.selectSections(activeSections);
+        this.editor.didUpdate();
       }
     }]);
 
@@ -583,7 +585,7 @@ define('content-kit-editor/commands/image', ['exports', 'content-kit-editor/comm
         });
 
         this.editor.rerender();
-        this.editor.trigger('update');
+        this.editor.didUpdate();
       }
     }]);
 
@@ -2075,12 +2077,7 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
       key: 'clone',
       value: function clone() {
         var clonedMarkups = this.markups.slice();
-        return new this.constructor(this.value, clonedMarkups);
-      }
-    }, {
-      key: 'empty',
-      value: function empty() {
-        return this.length === 0;
+        return this.builder.createMarker(this.value, clonedMarkups);
       }
     }, {
       key: 'truncateFrom',
@@ -2158,7 +2155,7 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
     }, {
       key: 'join',
       value: function join(other) {
-        var joined = new Marker(this.value + other.value);
+        var joined = this.builder.createMarker(this.value + other.value);
         this.markups.forEach(function (m) {
           return joined.addMarkup(m);
         });
@@ -2186,6 +2183,11 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
         return markers;
       }
     }, {
+      key: 'isEmpty',
+      get: function get() {
+        return this.length === 0;
+      }
+    }, {
       key: 'length',
       get: function get() {
         return this.value.length;
@@ -2193,12 +2195,22 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
     }, {
       key: 'openedMarkups',
       get: function get() {
-        return (0, _contentKitEditorUtilsArrayUtils.difference)(this.markups, this.prev ? this.prev.markups : []);
+        var count = 0;
+        if (this.prev) {
+          count = (0, _contentKitEditorUtilsArrayUtils.commonItemLength)(this.markups, this.prev.markups);
+        }
+
+        return this.markups.slice(count);
       }
     }, {
       key: 'closedMarkups',
       get: function get() {
-        return (0, _contentKitEditorUtilsArrayUtils.difference)(this.markups, this.next ? this.next.markups : []);
+        var count = 0;
+        if (this.next) {
+          count = (0, _contentKitEditorUtilsArrayUtils.commonItemLength)(this.markups, this.next.markups);
+        }
+
+        return this.markups.slice(count);
       }
     }]);
 
@@ -2258,11 +2270,6 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
     }
 
     _createClass(Section, [{
-      key: 'isEmpty',
-      value: function isEmpty() {
-        return this.markers.length === 0;
-      }
-    }, {
       key: 'setTagName',
       value: function setTagName(newTagName) {
         newTagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(newTagName);
@@ -2289,7 +2296,7 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
         var endOffset = arguments.length <= 2 || arguments[2] === undefined ? marker.length : arguments[2];
         return (function () {
           var newMarkers = (0, _contentKitEditorUtilsArrayUtils.filter)(marker.split(offset, endOffset), function (m) {
-            return !m.empty();
+            return !m.isEmpty;
           });
           this.markers.splice(marker, 1, newMarkers);
           return newMarkers;
@@ -2341,11 +2348,11 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
         var _this2 = this;
 
         (0, _contentKitEditorUtilsArrayUtils.forEach)(this.markers, function (m) {
-          if (m.empty()) {
+          if (m.isEmpty) {
             _this2.markers.remove(m);
           }
         });
-        if (this.markers.empty()) {
+        if (this.markers.isEmpty) {
           this.markers.append(this.builder.createBlankMarker());
         }
       }
@@ -2441,6 +2448,11 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
       },
       get: function get() {
         return this._tagName;
+      }
+    }, {
+      key: 'isEmpty',
+      get: function get() {
+        return this.markers.isEmpty;
       }
     }]);
 
@@ -2643,7 +2655,7 @@ define("content-kit-editor/models/post", ["exports", "content-kit-editor/utils/l
 
         // add a blank marker to any sections that are now empty
         changedSections.forEach(function (section) {
-          if (section.isEmpty()) {
+          if (section.isEmpty) {
             section.markers.append(_this.builder.createBlankMarker());
           }
         });
@@ -3447,7 +3459,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  var UNPRINTABLE_CHARACTER = " ";
+  var UNPRINTABLE_CHARACTER = "‌";
 
   exports.UNPRINTABLE_CHARACTER = UNPRINTABLE_CHARACTER;
   function createElementFromMarkup(doc, markup) {
@@ -3485,7 +3497,6 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     var element = renderNode.element.parentNode;
     var closedCount = renderNode.postNode.closedMarkups.length;
 
-    // walk up the number of closed markups
     while (closedCount--) {
       element = element.parentNode;
     }
@@ -3512,11 +3523,9 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     }
 
     if (previousRenderNode) {
-      var nextMarkerElement = getNextMarkerElement(previousRenderNode);
-
       var previousSibling = previousRenderNode.element;
-      var previousSiblingPenultimate = penultimateParentOf(previousSibling, nextMarkerElement);
-      nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.next);
+      var previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
+      element.insertBefore(currentElement, previousSiblingPenultimate.nextSibling);
     } else {
       element.insertBefore(currentElement, element.firstChild);
     }
@@ -3886,21 +3895,6 @@ define("content-kit-editor/utils/array-utils", ["exports"], function (exports) {
     }
   }
 
-  /**
-   * @return {Array} The things in enumerable that are not in otherEnumerable,
-   * aka the relative complement of `otherEnumerable` in `enumerable`
-   */
-  function difference(enumerable, otherEnumerable) {
-    var diff = [];
-    forEach(enumerable, function (item) {
-      if (otherEnumerable.indexOf(item) === -1) {
-        diff.push(item);
-      }
-    });
-
-    return diff;
-  }
-
   function filter(enumerable, conditionFn) {
     var filtered = [];
     forEach(enumerable, function (i) {
@@ -3911,11 +3905,25 @@ define("content-kit-editor/utils/array-utils", ["exports"], function (exports) {
     return filtered;
   }
 
+  /**
+   * @return {Integer} the number of items that are the same, starting from the 0th index, in a and b
+   */
+  function commonItemLength(listA, listB) {
+    var offset = 0;
+    while (offset < listA.length && offset < listB.length) {
+      if (listA[offset] !== listB[offset]) {
+        break;
+      }
+      offset++;
+    }
+    return offset;
+  }
+
   exports.detect = detect;
   exports.forEach = forEach;
   exports.any = any;
-  exports.difference = difference;
   exports.filter = filter;
+  exports.commonItemLength = commonItemLength;
 });
 define('content-kit-editor/utils/compat', ['exports', 'content-kit-editor/utils/doc', 'content-kit-editor/utils/win'], function (exports, _contentKitEditorUtilsDoc, _contentKitEditorUtilsWin) {
   'use strict';
@@ -4531,11 +4539,6 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
     }
 
     _createClass(LinkedList, [{
-      key: "empty",
-      value: function empty() {
-        return this.length === 0;
-      }
-    }, {
       key: "prepend",
       value: function prepend(item) {
         this.insertBefore(item, this.head);
@@ -4696,6 +4699,11 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
         newItems.forEach(function (newItem) {
           _this.insertBefore(newItem, nextItem);
         });
+      }
+    }, {
+      key: "isEmpty",
+      get: function get() {
+        return this.length === 0;
       }
     }]);
 
