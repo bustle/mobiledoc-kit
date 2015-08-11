@@ -82,7 +82,7 @@ const Marker = class Marker extends LinkedItem {
   }
 
   join(other) {
-    const joined = new Marker(this.value + other.value);
+    const joined = this.builder.createMarker(this.value + other.value);
     this.markups.forEach(m => joined.addMarkup(m));
     other.markups.forEach(m => joined.addMarkup(m));
 

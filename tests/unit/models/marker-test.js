@@ -73,6 +73,7 @@ test('a marker can be joined to another', (assert) => {
   m2.addMarkup(builder.createMarkup('i'));
 
   const m3 = m1.join(m2);
+  assert.equal(m3.builder, builder, 'joined marker also has builder');
   assert.equal(m3.value, 'hi there!');
   assert.ok(m3.hasMarkup('b'));
   assert.ok(m3.hasMarkup('i'));
