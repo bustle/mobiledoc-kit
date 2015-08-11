@@ -23,7 +23,7 @@ const Marker = class Marker extends LinkedItem {
 
   clone() {
     const clonedMarkups = this.markups.slice();
-    return new this.constructor(this.value, clonedMarkups);
+    return this.builder.createMarker(this.value, clonedMarkups);
   }
 
   empty() {
