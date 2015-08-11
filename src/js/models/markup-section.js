@@ -100,10 +100,11 @@ export default class Section extends LinkedItem {
    * Mutates this section's markers
    */
   coalesceMarkers() {
-    forEach(
-      filter(this.markers, m => m.empty()),
-      m => this.markers.remove(m)
-    );
+    forEach(this.markers, m => {
+      if (m.empty()) {
+        this.markers.remove(m);
+      }
+    });
     if (this.markers.empty()) {
       this.markers.append(this.builder.createBlankMarker());
     }
