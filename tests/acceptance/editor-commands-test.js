@@ -71,6 +71,24 @@ test('highlight text, click "heading" button turns text into h2 header', (assert
   });
 });
 
+test('click heading button triggers update', (assert) => {
+  const done = assert.async();
+  const triggered = [];
+  const triggerFn = editor.trigger;
+  editor.trigger = (name, ...args) => {
+    triggered.push(name);
+    triggerFn.call(editor, name, ...args);
+  };
+
+  setTimeout(() => {
+    Helpers.toolbar.clickButton(assert, 'heading');
+    assert.ok(triggered.indexOf('update') !== -1,
+              'update was triggered');
+
+    done();
+  });
+});
+
 test('highlighting heading text activates toolbar button', (assert) => {
   const done = assert.async();
 

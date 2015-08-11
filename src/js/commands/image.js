@@ -17,6 +17,6 @@ export default class ImageCommand extends Command {
     sections.forEach(section => section.renderNode.scheduleForRemoval());
 
     this.editor.rerender();
-    this.editor.trigger('update');
+    this.editor.didUpdate();
   }
 }
