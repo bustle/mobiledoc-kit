@@ -34,21 +34,6 @@ function forEach(enumerable, callback) {
   }
 }
 
-/**
- * @return {Array} The things in enumerable that are not in otherEnumerable,
- * aka the relative complement of `otherEnumerable` in `enumerable`
- */
-function difference(enumerable, otherEnumerable) {
-  const diff = [];
-  forEach(enumerable, (item) => {
-    if (otherEnumerable.indexOf(item) === -1) {
-      diff.push(item);
-    }
-  });
-
-  return diff;
-}
-
 function filter(enumerable, conditionFn) {
   const filtered = [];
   forEach(enumerable, i => {
@@ -57,10 +42,24 @@ function filter(enumerable, conditionFn) {
   return filtered;
 }
 
+/**
+ * @return {Integer} the number of items that are the same, starting from the 0th index, in a and b
+ */
+function commonItemLength(listA, listB) {
+  let offset = 0;
+  while (offset < listA.length && offset < listB.length) {
+    if (listA[offset] !== listB[offset]) {
+      break;
+    }
+    offset++;
+  }
+  return offset;
+}
+
 export {
   detect,
   forEach,
   any,
-  difference,
-  filter
+  filter,
+  commonItemLength
 };

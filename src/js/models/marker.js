@@ -5,7 +5,7 @@ import {
 } from '../utils/dom-utils';
 import {
   detect,
-  difference
+  commonItemLength
 } from 'content-kit-editor/utils/array-utils';
 import LinkedItem from "content-kit-editor/utils/linked-item";
 
@@ -103,11 +103,21 @@ const Marker = class Marker extends LinkedItem {
   }
 
   get openedMarkups() {
-    return difference(this.markups, (this.prev ? this.prev.markups : []));
+    let count = 0;
+    if (this.prev) {
+      count = commonItemLength(this.markups, this.prev.markups);
+    }
+
+    return this.markups.slice(count);
   }
 
   get closedMarkups() {
-    return difference(this.markups, (this.next ? this.next.markups : []));
+    let count = 0;
+    if (this.next) {
+      count = commonItemLength(this.markups, this.next.markups);
+    }
+
+    return this.markups.slice(count);
   }
 
 };

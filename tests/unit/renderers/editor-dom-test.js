@@ -394,8 +394,8 @@ test('render when contiguous markers have out-of-order markups', (assert) => {
         i = builder.createMarkup('I');
 
   const markers = [
-    builder.createMarker('bi', [b,i]),
-    builder.createMarker('ib', [i,b]),
+    builder.createMarker('BI', [b,i]),
+    builder.createMarker('IB', [i,b]),
     builder.createMarker('plain', [])
   ];
   const m1 = markers[0];
@@ -409,7 +409,7 @@ test('render when contiguous markers have out-of-order markups', (assert) => {
   render(renderTree);
 
   assert.equal(node.element.innerHTML,
-               '<p><b><i>biib</i></b>plain</p>');
+               '<p><b><i>BI</i></b><i><b>IB</b></i>plain</p>');
 
   // remove 'b' from 1st marker, rerender
   m1.removeMarkup(b);
@@ -417,7 +417,28 @@ test('render when contiguous markers have out-of-order markups', (assert) => {
   render(renderTree);
 
   assert.equal(node.element.innerHTML,
-               '<p><i>bi<b>ib</b></i>plain</p>');
+               '<p><i>BI<b>IB</b></i>plain</p>');
+});
+
+test('contiguous markers have overlapping markups', (assert) => {
+  const b = builder.createMarkup('b'),
+        i = builder.createMarkup('i');
+  const post = builder.createPost();
+  const markers = [
+    builder.createMarker('W', [i]),
+    builder.createMarker('XY', [i,b]),
+    builder.createMarker('Z', [b])
+  ];
+  const section = builder.createMarkupSection('P', markers);
+  post.sections.append(section);
+
+  const node = new RenderNode(post);
+  const renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               '<p><i>W<b>XY</b></i><b>Z</b></p>');
 });
 
 /*
