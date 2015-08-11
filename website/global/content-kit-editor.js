@@ -577,7 +577,7 @@ define('content-kit-editor/commands/image', ['exports', 'content-kit-editor/comm
         var sections = this.editor.activeSections;
         var lastSection = sections[sections.length - 1];
         var section = builder.createCardSection('image');
-        post.insertSectionAfter(section, lastSection);
+        post.sections.insertAfter(section, lastSection);
         sections.forEach(function (section) {
           return section.renderNode.scheduleForRemoval();
         });
@@ -723,66 +723,6 @@ define('content-kit-editor/commands/list', ['exports', 'content-kit-editor/comma
 
   exports['default'] = ListCommand;
 });
-define('content-kit-editor/commands/oembed', ['exports', 'content-kit-editor/commands/base', 'content-kit-editor/views/prompt', 'content-kit-editor/views/message', 'content-kit-utils', 'content-kit-editor/utils/http-utils'], function (exports, _contentKitEditorCommandsBase, _contentKitEditorViewsPrompt, _contentKitEditorViewsMessage, _contentKitUtils, _contentKitEditorUtilsHttpUtils) {
-  'use strict';
-
-  /*
-  function loadTwitterWidgets(element) {
-    if (window.twttr) {
-      window.twttr.widgets.load(element);
-    } else {
-      var script = document.createElement('script');
-      script.async = true;
-      script.src = 'http://platform.twitter.com/widgets.js';
-      document.head.appendChild(script);
-    }
-  }
-  */
-
-  function OEmbedCommand(options) {
-    _contentKitEditorCommandsBase['default'].call(this, {
-      name: 'embed',
-      button: '<i class="ck-icon-embed"></i>',
-      prompt: new _contentKitEditorViewsPrompt['default']({
-        command: this,
-        placeholder: 'Paste a YouTube or Twitter url...'
-      })
-    });
-
-    this.embedService = new _contentKitEditorUtilsHttpUtils.OEmbedder({ url: options.serviceUrl });
-  }
-  (0, _contentKitUtils.inherit)(OEmbedCommand, _contentKitEditorCommandsBase['default']);
-
-  OEmbedCommand.prototype.exec = function (url) {
-    var command = this;
-    var embedIntent = command.embedIntent;
-
-    embedIntent.showLoading();
-    this.embedService.fetch({
-      url: url,
-      complete: function complete(response, error) {
-        embedIntent.hideLoading();
-        if (error) {
-          var errorMsg = error;
-          if (error.target && error.target.status === 0) {
-            errorMsg = 'Error: could not connect to embed service.';
-          } else if (typeof error !== 'string') {
-            errorMsg = 'Error: unexpected embed error.';
-          }
-          new _contentKitEditorViewsMessage['default']().showError(errorMsg);
-          embedIntent.show();
-        } else if (response.error_message) {
-          new _contentKitEditorViewsMessage['default']().showError(response.error_message);
-          embedIntent.show();
-        } else {
-          throw new Error('Unimplemented EmbedModel is not a thing');
-        }
-      }
-    });
-  };
-
-  exports['default'] = OEmbedCommand;
-});
 define('content-kit-editor/commands/ordered-list', ['exports', 'content-kit-editor/commands/list', 'content-kit-utils'], function (exports, _contentKitEditorCommandsList, _contentKitUtils) {
   'use strict';
 
@@ -916,7 +856,7 @@ define('content-kit-editor/commands/unordered-list', ['exports', 'content-kit-ed
 
   exports['default'] = UnorderedListCommand;
 });
-define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/views/reversible-toolbar-button', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/oembed', 'content-kit-editor/commands/card', 'content-kit-editor/cards/image', 'content-kit-editor/utils/keycodes', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/post', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/models/cursor', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/post-node-builder'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorViewsReversibleToolbarButton, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsOembed, _contentKitEditorCommandsCard, _contentKitEditorCardsImage, _contentKitEditorUtilsKeycodes, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersPost, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorModelsCursor, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsPostNodeBuilder) {
+define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/views/reversible-toolbar-button', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/card', 'content-kit-editor/cards/image', 'content-kit-editor/utils/keycodes', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/post', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/models/cursor', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/post-node-builder'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorViewsReversibleToolbarButton, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsCard, _contentKitEditorCardsImage, _contentKitEditorUtilsKeycodes, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersPost, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorModelsCursor, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsPostNodeBuilder) {
   'use strict';
 
   var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
@@ -939,7 +879,7 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     // in tests
     stickyToolbar: false, // !!('ontouchstart' in window),
     textFormatCommands: [new _contentKitEditorCommandsLink['default']()],
-    embedCommands: [new _contentKitEditorCommandsImage['default'](), new _contentKitEditorCommandsOembed['default']({ serviceUrl: '/embed' }), new _contentKitEditorCommandsCard['default']()],
+    embedCommands: [new _contentKitEditorCommandsImage['default'](), new _contentKitEditorCommandsCard['default']()],
     autoTypingCommands: [new _contentKitEditorCommandsUnorderedList['default'](), new _contentKitEditorCommandsOrderedList['default']()],
     cards: [],
     cardOptions: {},
@@ -1189,12 +1129,56 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
         this._renderer.render(this._renderTree);
       }
+    }, {
+      key: 'deleteSelection',
+      value: function deleteSelection(event) {
+        event.preventDefault();
+
+        // types of selection deletion:
+        //   * a selection starts at the beginning of a section
+        //     -- cursor should end up at the beginning of that section
+        //     -- if the section not longer has markers, add a blank one for the cursor to focus on
+        //   * a selection is entirely within a section
+        //     -- split the markers with the selection, remove those new markers from their section
+        //     -- cursor goes at end of the marker before the selection start, or if the
+        //     -- selection was at the start of the section, cursor goes at section start
+        //   * a selection crosses multiple sections
+        //     -- remove all the sections that are between (exclusive ) selection start and end
+        //     -- join the start and end sections
+        //     -- mark the end section for removal
+        //     -- cursor goes at end of marker before the selection start
+
+        var markers = this.splitMarkersFromSelection();
+
+        var _post$cutMarkers = this.post.cutMarkers(markers);
+
+        var changedSections = _post$cutMarkers.changedSections;
+        var removedSections = _post$cutMarkers.removedSections;
+        var currentMarker = _post$cutMarkers.currentMarker;
+        var currentOffset = _post$cutMarkers.currentOffset;
+
+        changedSections.forEach(function (section) {
+          return section.renderNode.markDirty();
+        });
+        removedSections.forEach(function (section) {
+          return section.renderNode.scheduleForRemoval();
+        });
+
+        this.rerender();
+
+        var currentTextNode = currentMarker.renderNode.element;
+        this.cursor.moveToNode(currentTextNode, currentOffset);
+
+        this.trigger('update');
+      }
 
       // FIXME ensure we handle deletion when there is a selection
     }, {
       key: 'handleDeletion',
       value: function handleDeletion(event) {
         var _cursor$offsets = this.cursor.offsets;
+        var leftRenderNode = _cursor$offsets.leftRenderNode;
+        var leftOffset = _cursor$offsets.leftOffset;
 
         // need to handle these cases:
         // when cursor is:
@@ -1204,8 +1188,11 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         //   * C offset is 0 and there is no previous marker
         //     * join this section with previous section
 
-        var leftRenderNode = _cursor$offsets.leftRenderNode;
-        var leftOffset = _cursor$offsets.leftOffset;
+        if (this.cursor.hasSelection()) {
+          this.deleteSelection(event);
+          return;
+        }
+
         var currentMarker = leftRenderNode.postNode;
         var nextCursorMarker = currentMarker;
         var nextCursorOffset = leftOffset - 1;
@@ -1216,22 +1203,22 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
           if (currentMarker.length === 0 && currentMarker.section.markers.length > 1) {
             leftRenderNode.scheduleForRemoval();
 
-            var isFirstRenderNode = leftRenderNode === leftRenderNode.parentNode.firstChild;
+            var isFirstRenderNode = leftRenderNode === leftRenderNode.parent.childNodes.head;
             if (isFirstRenderNode) {
               // move cursor to start of next node
-              nextCursorMarker = leftRenderNode.nextSibling.postNode;
+              nextCursorMarker = leftRenderNode.next.postNode;
               nextCursorOffset = 0;
             } else {
               // move cursor to end of prev node
-              nextCursorMarker = leftRenderNode.previousSibling.postNode;
-              nextCursorOffset = leftRenderNode.previousSibling.postNode.length;
+              nextCursorMarker = leftRenderNode.prev.postNode;
+              nextCursorOffset = leftRenderNode.prev.postNode.length;
             }
           } else {
             leftRenderNode.markDirty();
           }
         } else {
           var currentSection = currentMarker.section;
-          var previousMarker = currentMarker.previousSibling;
+          var previousMarker = currentMarker.prev;
           if (previousMarker) {
             // (B)
             var markerLength = previousMarker.length;
@@ -1242,17 +1229,17 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
             //   * none -- do nothing
             //   * markup section -- join to it
             //   * non-markup section (card) -- select it? delete it?
-            var previousSection = this.post.getPreviousSection(currentSection);
+            var previousSection = currentSection.prev;
             if (previousSection) {
               var isMarkupSection = previousSection.type === _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE;
 
               if (isMarkupSection) {
-                var previousSectionMarkerLength = previousSection.markers.length;
+                var lastPreviousMarker = previousSection.markers.tail;
                 previousSection.join(currentSection);
                 previousSection.renderNode.markDirty();
                 currentSection.renderNode.scheduleForRemoval();
 
-                nextCursorMarker = previousSection.markers[previousSectionMarkerLength];
+                nextCursorMarker = lastPreviousMarker.next;
                 nextCursorOffset = 0;
                 /*
                 } else {
@@ -1278,12 +1265,12 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       key: 'handleNewline',
       value: function handleNewline(event) {
         var _cursor$offsets2 = this.cursor.offsets;
-
-        // if there's no left/right nodes, we are probably not in the editor,
-        // or we have selected some non-marker thing like a card
         var leftRenderNode = _cursor$offsets2.leftRenderNode;
         var rightRenderNode = _cursor$offsets2.rightRenderNode;
         var leftOffset = _cursor$offsets2.leftOffset;
+
+        // if there's no left/right nodes, we are probably not in the editor,
+        // or we have selected some non-marker thing like a card
         if (!leftRenderNode || !rightRenderNode) {
           return;
         }
@@ -1294,37 +1281,24 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         var markerRenderNode = leftRenderNode;
         var marker = markerRenderNode.postNode;
         var section = marker.section;
-        var newMarkers = marker.split(leftOffset);
 
-        // FIXME rightMarker is not guaranteed to be there
+        var _section$splitAtMarker = section.splitAtMarker(marker, leftOffset);
 
-        var _newMarkers = _slicedToArray(newMarkers, 2);
+        var _section$splitAtMarker2 = _slicedToArray(_section$splitAtMarker, 2);
 
-        var leftMarker = _newMarkers[0];
-        var rightMarker = _newMarkers[1];
+        var beforeSection = _section$splitAtMarker2[0];
+        var afterSection = _section$splitAtMarker2[1];
 
-        section.insertMarkerAfter(leftMarker, marker);
-        markerRenderNode.scheduleForRemoval();
+        section.renderNode.scheduleForRemoval();
 
-        var newSection = this.builder.createMarkupSection('p');
-        newSection.appendMarker(rightMarker);
-
-        var nodeForMove = markerRenderNode.nextSibling;
-        while (nodeForMove) {
-          nodeForMove.scheduleForRemoval();
-          var movedMarker = nodeForMove.postNode.clone();
-          newSection.appendMarker(movedMarker);
-
-          nodeForMove = nodeForMove.nextSibling;
-        }
-
-        var post = this.post;
-        post.insertSectionAfter(newSection, section);
+        this.post.sections.insertAfter(beforeSection, section);
+        this.post.sections.insertAfter(afterSection, beforeSection);
+        this.post.sections.remove(section);
 
         this.rerender();
         this.trigger('update');
 
-        this.cursor.moveToSection(newSection);
+        this.cursor.moveToSection(afterSection);
       }
     }, {
       key: 'hasSelection',
@@ -1527,8 +1501,8 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
             sectionRenderNode.markClean();
 
             var previousSectionRenderNode = previousSection && previousSection.renderNode;
-            _this2.post.insertSectionAfter(_section, previousSection);
-            _this2._renderTree.node.insertAfter(sectionRenderNode, previousSectionRenderNode);
+            _this2.post.sections.insertAfter(_section, previousSection);
+            _this2._renderTree.node.childNodes.insertAfter(sectionRenderNode, previousSectionRenderNode);
           }
 
           // may cause duplicates to be included
@@ -1563,16 +1537,16 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         });
 
         var _cursor$offsets4 = this.cursor.offsets;
+        var leftRenderNode = _cursor$offsets4.leftRenderNode;
+        var leftOffset = _cursor$offsets4.leftOffset;
+        var rightRenderNode = _cursor$offsets4.rightRenderNode;
+        var rightOffset = _cursor$offsets4.rightOffset;
 
         // The cursor will lose its textNode if we have reparsed (and thus will rerender, below)
         // its section. Ensure the cursor is placed where it should be after render.
         //
         // New sections are presumed clean, and thus do not get rerendered and lose
         // their cursor position.
-        var leftRenderNode = _cursor$offsets4.leftRenderNode;
-        var leftOffset = _cursor$offsets4.leftOffset;
-        var rightRenderNode = _cursor$offsets4.rightRenderNode;
-        var rightOffset = _cursor$offsets4.rightOffset;
         var resetCursor = leftRenderNode && sectionsWithCursor.indexOf(leftRenderNode.postNode.section) !== -1;
 
         if (resetCursor) {
@@ -1650,17 +1624,12 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
           return s.renderNode;
         });
         var lastRenderNode = renderNodes[renderNodes.length - 1];
-        lastRenderNode.parentNode.insertAfter(newRenderNode, lastRenderNode);
-        this.post.insertSectionAfter(newSection, lastRenderNode.postNode);
+        lastRenderNode.parent.childNodes.insertAfter(newRenderNode, lastRenderNode);
+        this.post.sections.insertAfter(newSection, lastRenderNode.postNode);
         renderNodes.forEach(function (renderNode) {
           return renderNode.scheduleForRemoval();
         });
         this.trigger('update');
-      }
-    }, {
-      key: 'removeSection',
-      value: function removeSection(section) {
-        this.post.removeSection(section);
       }
     }, {
       key: 'destroy',
@@ -1815,24 +1784,35 @@ define('content-kit-editor/models/card-node', ['exports'], function (exports) {
 
   exports['default'] = CardNode;
 });
-define('content-kit-editor/models/card', ['exports'], function (exports) {
-  'use strict';
+define("content-kit-editor/models/card", ["exports", "content-kit-editor/utils/linked-item"], function (exports, _contentKitEditorUtilsLinkedItem) {
+  "use strict";
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   var CARD_TYPE = 'card-section';
 
   exports.CARD_TYPE = CARD_TYPE;
 
-  var Card = function Card(name, payload) {
-    _classCallCheck(this, Card);
+  var Card = (function (_LinkedItem) {
+    _inherits(Card, _LinkedItem);
 
-    this.name = name;
-    this.payload = payload;
-    this.type = CARD_TYPE;
-  };
+    function Card(name, payload) {
+      _classCallCheck(this, Card);
 
-  exports['default'] = Card;
+      _get(Object.getPrototypeOf(Card.prototype), "constructor", this).call(this);
+      this.name = name;
+      this.payload = payload;
+      this.type = CARD_TYPE;
+    }
+
+    return Card;
+  })(_contentKitEditorUtilsLinkedItem["default"]);
+
+  exports["default"] = Card;
 });
 define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsDomUtils) {
   'use strict';
@@ -1866,7 +1846,7 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
 
       // moves cursor to the start of the section
       value: function moveToSection(section) {
-        var marker = section.markers[0];
+        var marker = section.markers.head;
         if (!marker) {
           throw new Error('Cannot move cursor to section without a marker');
         }
@@ -1887,8 +1867,8 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
         var startSection = sections[0],
             endSection = sections[sections.length - 1];
 
-        var startNode = startSection.markers[0].renderNode.element,
-            endNode = endSection.markers[endSection.markers.length - 1].renderNode.element;
+        var startNode = startSection.markers.head.renderNode.element,
+            endNode = endSection.markers.tail.renderNode.element;
 
         var startOffset = 0,
             endOffset = endNode.textContent.length;
@@ -1908,6 +1888,13 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
 
         this.moveToNode(startNode, startOffset, endNode, endOffset);
       }
+
+      /**
+       * @param {textNode} node
+       * @param {integer} offset
+       * @param {textNode} endNode (default: node)
+       * @param {integer} endOffset (default: offset)
+       */
     }, {
       key: 'moveToNode',
       value: function moveToNode(node) {
@@ -2019,10 +2006,7 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
 
         var endSection = _detectParentNode2.result;
 
-        var startIndex = sections.indexOf(startSection),
-            endIndex = sections.indexOf(endSection) + 1;
-
-        return sections.slice(startIndex, endIndex);
+        return sections.readRange(startSection, endSection);
       }
     }]);
 
@@ -2049,18 +2033,24 @@ define('content-kit-editor/models/image', ['exports'], function (exports) {
 
   exports['default'] = Image;
 });
-define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils) {
+define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/linked-item'], function (exports, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsLinkedItem) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+  var _get = function get(_x5, _x6, _x7) { var _again = true; _function: while (_again) { var object = _x5, property = _x6, receiver = _x7; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x5 = parent; _x6 = property; _x7 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   var MARKER_TYPE = 'marker';
 
   exports.MARKER_TYPE = MARKER_TYPE;
 
-  var Marker = (function () {
+  var Marker = (function (_LinkedItem) {
+    _inherits(Marker, _LinkedItem);
+
     function Marker() {
       var _this = this;
 
@@ -2069,6 +2059,7 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
 
       _classCallCheck(this, Marker);
 
+      _get(Object.getPrototypeOf(Marker.prototype), 'constructor', this).call(this);
       this.value = value;
       this.markups = [];
       this.type = MARKER_TYPE;
@@ -2085,6 +2076,11 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
       value: function clone() {
         var clonedMarkups = this.markups.slice();
         return new this.constructor(this.value, clonedMarkups);
+      }
+    }, {
+      key: 'empty',
+      value: function empty() {
+        return this.length === 0;
       }
     }, {
       key: 'truncateFrom',
@@ -2180,15 +2176,7 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
 
         var markers = [];
 
-        if (offset !== 0) {
-          markers.push(new Marker(this.value.substring(0, offset)));
-        }
-
-        markers.push(new Marker(this.value.substring(offset, endOffset)));
-
-        if (endOffset < this.length) {
-          markers.push(new Marker(this.value.substring(endOffset)));
-        }
+        markers = [this.builder.createMarker(this.value.substring(0, offset)), this.builder.createMarker(this.value.substring(offset, endOffset)), this.builder.createMarker(this.value.substring(endOffset))];
 
         this.markups.forEach(function (mu) {
           return markers.forEach(function (m) {
@@ -2205,76 +2193,45 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
     }, {
       key: 'openedMarkups',
       get: function get() {
-        if (!this.previousSibling) {
-          return this.markups.slice();
-        }
-        var i = undefined;
-        for (i = 0; i < this.markups.length; i++) {
-          // FIXME this should iterate everything and return all things that are not
-          // on this marker -- it assumes the markups are always in the same order
-          if (this.markups[i] !== this.previousSibling.markups[i]) {
-            return this.markups.slice(i);
-          }
-        }
-        return [];
+        return (0, _contentKitEditorUtilsArrayUtils.difference)(this.markups, this.prev ? this.prev.markups : []);
       }
     }, {
       key: 'closedMarkups',
       get: function get() {
-        if (!this.nextSibling) {
-          return this.markups.slice();
-        }
-        var i = undefined;
-        for (i = 0; i < this.markups.length; i++) {
-          if (this.markups[i] !== this.nextSibling.markups[i]) {
-            return this.markups.slice(i);
-          }
-        }
-        return [];
-      }
-
-      // FIXME this should be implemented as a linked list
-    }, {
-      key: 'nextSibling',
-      get: function get() {
-        var index = this.section.markers.indexOf(this);
-        if (index > -1 && index < this.section.markers.length - 1) {
-          return this.section.markers[index + 1];
-        }
-      }
-    }, {
-      key: 'previousSibling',
-      get: function get() {
-        var index = this.section.markers.indexOf(this);
-        if (index > 0) {
-          return this.section.markers[index - 1];
-        }
+        return (0, _contentKitEditorUtilsArrayUtils.difference)(this.markups, this.next ? this.next.markups : []);
       }
     }]);
 
     return Marker;
-  })();
+  })(_contentKitEditorUtilsLinkedItem['default']);
 
   exports['default'] = Marker;
 });
-define('content-kit-editor/models/markup-section', ['exports', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsDomUtils) {
+define('content-kit-editor/models/markup-section', ['exports', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/linked-list', 'content-kit-editor/utils/linked-item'], function (exports, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsLinkedList, _contentKitEditorUtilsLinkedItem) {
   'use strict';
 
   var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+  var _get = function get(_x5, _x6, _x7) { var _again = true; _function: while (_again) { var object = _x5, property = _x6, receiver = _x7; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x5 = parent; _x6 = property; _x7 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
+
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   var DEFAULT_TAG_NAME = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)('p');
   exports.DEFAULT_TAG_NAME = DEFAULT_TAG_NAME;
   var VALID_MARKUP_SECTION_TAGNAMES = ['p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'].map(_contentKitEditorUtilsDomUtils.normalizeTagName);
   exports.VALID_MARKUP_SECTION_TAGNAMES = VALID_MARKUP_SECTION_TAGNAMES;
   var MARKUP_SECTION_TYPE = 'markup-section';
-
   exports.MARKUP_SECTION_TYPE = MARKUP_SECTION_TYPE;
 
-  var Section = (function () {
+  var Section = (function (_LinkedItem) {
+    _inherits(Section, _LinkedItem);
+
     function Section(tagName) {
       var _this = this;
 
@@ -2282,17 +2239,30 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
 
       _classCallCheck(this, Section);
 
-      this.markers = [];
+      _get(Object.getPrototypeOf(Section.prototype), 'constructor', this).call(this);
+      this.markers = new _contentKitEditorUtilsLinkedList['default']({
+        adoptItem: function adoptItem(marker) {
+          marker.section = _this;
+        },
+        freeItem: function freeItem(marker) {
+          marker.section = null;
+        }
+      });
       this.tagName = tagName || DEFAULT_TAG_NAME;
       this.type = MARKUP_SECTION_TYPE;
       this.element = null;
 
       markers.forEach(function (m) {
-        return _this.appendMarker(m);
+        return _this.markers.append(m);
       });
     }
 
     _createClass(Section, [{
+      key: 'isEmpty',
+      value: function isEmpty() {
+        return this.markers.length === 0;
+      }
+    }, {
       key: 'setTagName',
       value: function setTagName(newTagName) {
         newTagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(newTagName);
@@ -2308,66 +2278,76 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
       }
 
       /**
-       * Splits the marker at the offset (until the endOffset, if given)
-       * into 1, 2, or 3 markers and replaces the existing marker
-       * with the new ones
+       * Splits the marker at the offset, filters empty markers from the result,
+       * and replaces this marker with the new non-empty ones
+       * @param {Marker} marker the marker to split
+       * @return {Array} the new markers that replaced `marker`
        */
     }, {
       key: 'splitMarker',
       value: function splitMarker(marker, offset) {
         var endOffset = arguments.length <= 2 || arguments[2] === undefined ? marker.length : arguments[2];
         return (function () {
-          var newMarkers = marker.split(offset, endOffset);
-          this.replaceMarker(marker, newMarkers);
+          var newMarkers = (0, _contentKitEditorUtilsArrayUtils.filter)(marker.split(offset, endOffset), function (m) {
+            return !m.empty();
+          });
+          this.markers.splice(marker, 1, newMarkers);
           return newMarkers;
         }).apply(this, arguments);
       }
     }, {
-      key: 'replaceMarker',
-      value: function replaceMarker(oldMarker) {
-        var newMarkers = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+      key: 'splitAtMarker',
+      value: function splitAtMarker(marker) {
+        var offset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+        var beforeSection = this.builder.createMarkupSection(this.tagName, []);
+        var afterSection = this.builder.createMarkupSection(this.tagName, []);
 
-        var previousMarker = oldMarker;
+        var currentSection = beforeSection;
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(this.markers, function (m) {
+          if (m === marker) {
+            var _marker$split = marker.split(offset);
 
-        var i = newMarkers.length;
-        while (i--) {
-          var currentMarker = newMarkers[i];
-          this.insertMarkerAfter(currentMarker, previousMarker);
+            var _marker$split2 = _toArray(_marker$split);
+
+            var beforeMarker = _marker$split2[0];
+
+            var afterMarkers = _marker$split2.slice(1);
+
+            beforeSection.markers.append(beforeMarker);
+            (0, _contentKitEditorUtilsArrayUtils.forEach)(afterMarkers, function (_m) {
+              return afterSection.markers.append(_m);
+            });
+            currentSection = afterSection;
+          } else {
+            currentSection.markers.append(m.clone());
+          }
+        });
+
+        beforeSection.coalesceMarkers();
+        afterSection.coalesceMarkers();
+
+        return [beforeSection, afterSection];
+      }
+
+      /**
+       * Remove extranous empty markers, adding one at the end if there
+       * are no longer any markers
+       *
+       * Mutates this section's markers
+       */
+    }, {
+      key: 'coalesceMarkers',
+      value: function coalesceMarkers() {
+        var _this2 = this;
+
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(this.markers, function (m) {
+          if (m.empty()) {
+            _this2.markers.remove(m);
+          }
+        });
+        if (this.markers.empty()) {
+          this.markers.append(this.builder.createBlankMarker());
         }
-
-        this.removeMarker(oldMarker);
-      }
-    }, {
-      key: 'prependMarker',
-      value: function prependMarker(marker) {
-        marker.section = this;
-        this.markers.unshift(marker);
-      }
-    }, {
-      key: 'appendMarker',
-      value: function appendMarker(marker) {
-        marker.section = this;
-        this.markers.push(marker);
-      }
-    }, {
-      key: 'removeMarker',
-      value: function removeMarker(marker) {
-        var index = this.markers.indexOf(marker);
-        if (index === -1) {
-          throw new Error('Cannot remove not-found marker');
-        }
-        this.markers.splice(index, 1);
-      }
-    }, {
-      key: 'insertMarkerAfter',
-      value: function insertMarkerAfter(marker, previousMarker) {
-        var index = this.markers.indexOf(previousMarker);
-        if (index === -1) {
-          throw new Error('Cannot insert marker after: ' + previousMarker);
-        }
-
-        marker.section = this;
-        this.markers.splice(index + 1, 0, marker);
       }
 
       /**
@@ -2385,16 +2365,9 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
         if (!middle) {
           return [new this.constructor(this.tagName, this.markers), new this.constructor(this.tagName, [])];
         }
-        var middleIndex = this.markers.indexOf(middle);
 
-        for (var i = 0; i < this.markers.length; i++) {
-          if (i < middleIndex) {
-            left.push(this.markers[i]);
-          }
-          if (i > middleIndex) {
-            right.push(this.markers[i]);
-          }
-        }
+        left = middle.prev ? this.markers.readRange(null, middle.prev) : [];
+        right = middle.next ? this.markers.readRange(middle.next, null) : [];
 
         var leftLength = left.reduce(function (prev, cur) {
           return prev + cur.length;
@@ -2418,10 +2391,10 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
     }, {
       key: 'join',
       value: function join(otherSection) {
-        var _this2 = this;
+        var _this3 = this;
 
         otherSection.markers.forEach(function (m) {
-          return _this2.appendMarker(m.clone());
+          _this3.markers.append(m.clone());
         });
       }
 
@@ -2438,22 +2411,27 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
       value: function markerContaining(offset) {
         var leftInclusive = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
 
-        var length = 0,
-            i = 0;
+        var length = 0;
+        var lastMarker = null;
 
         if (offset === 0) {
-          return this.markers[0];
+          return this.markers.head;
         }
 
-        while (length < offset && i < this.markers.length) {
-          length += this.markers[i].length;
-          i++;
-        }
+        this.markers.detect(function (marker) {
+          if (length < offset) {
+            lastMarker = marker;
+            length += marker.length;
+            return false;
+          } else {
+            return true; // stop iteration
+          }
+        });
 
         if (length > offset) {
-          return this.markers[i - 1];
+          return lastMarker;
         } else if (length === offset) {
-          return this.markers[leftInclusive ? i : i - 1];
+          return leftInclusive ? lastMarker.next : lastMarker;
         }
       }
     }, {
@@ -2464,18 +2442,10 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
       get: function get() {
         return this._tagName;
       }
-    }, {
-      key: 'nextSibling',
-      get: function get() {
-        var index = this.post.sections.indexOf(this);
-        if (index !== -1) {
-          return this.post.sections[index + 1];
-        }
-      }
     }]);
 
     return Section;
-  })();
+  })(_contentKitEditorUtilsLinkedItem['default']);
 
   exports['default'] = Section;
 });
@@ -2556,6 +2526,7 @@ define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-e
         if (isGenerated) {
           section.isGenerated = true;
         }
+        section.builder = this;
         return section;
       }
     }, {
@@ -2586,7 +2557,9 @@ define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-e
     }, {
       key: 'createBlankMarker',
       value: function createBlankMarker() {
-        return new _contentKitEditorModelsMarker['default']('__BLANK__');
+        var marker = new _contentKitEditorModelsMarker['default']('');
+        marker.builder = this;
+        return marker;
       }
     }, {
       key: 'createMarkup',
@@ -2616,16 +2589,14 @@ define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-e
 
   exports['default'] = PostNodeBuilder;
 });
-define('content-kit-editor/models/post', ['exports'], function (exports) {
-  'use strict';
+define("content-kit-editor/models/post", ["exports", "content-kit-editor/utils/linked-list"], function (exports, _contentKitEditorUtilsLinkedList) {
+  "use strict";
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
   var POST_TYPE = 'post';
-
-  // FIXME: making sections a linked-list would greatly improve this
   exports.POST_TYPE = POST_TYPE;
 
   var Post = (function () {
@@ -2633,27 +2604,67 @@ define('content-kit-editor/models/post', ['exports'], function (exports) {
       _classCallCheck(this, Post);
 
       this.type = POST_TYPE;
-      this.sections = [];
+      this.sections = new _contentKitEditorUtilsLinkedList["default"]({
+        adoptItem: function adoptItem(section) {
+          section.post = this;
+        },
+        freeItem: function freeItem(section) {
+          section.post = null;
+        }
+      });
     }
 
     _createClass(Post, [{
-      key: 'appendSection',
-      value: function appendSection(section) {
-        section.post = this;
-        this.sections.push(section);
-      }
-    }, {
-      key: 'prependSection',
-      value: function prependSection(section) {
-        section.post = this;
-        this.sections.unshift(section);
-      }
-    }, {
-      key: 'replaceSection',
-      value: function replaceSection(section, newSection) {
-        section.post = this;
-        this.insertSectionAfter(newSection, section);
-        this.removeSection(section);
+      key: "cutMarkers",
+      value: function cutMarkers(markers) {
+        var _this = this;
+
+        var firstSection = markers[0].section,
+            lastSection = markers[markers.length - 1].section;
+
+        var currentSection = firstSection;
+        var removedSections = [],
+            changedSections = [firstSection, lastSection];
+
+        var previousMarker = markers[0].prev;
+
+        markers.forEach(function (marker) {
+          if (marker.section !== currentSection) {
+            // this marker is in a section we haven't seen yet
+            if (marker.section !== firstSection && marker.section !== lastSection) {
+              // section is wholly contained by markers, and can be removed
+              removedSections.push(marker.section);
+            }
+          }
+
+          currentSection = marker.section;
+          currentSection.markers.remove(marker);
+        });
+
+        // add a blank marker to any sections that are now empty
+        changedSections.forEach(function (section) {
+          if (section.isEmpty()) {
+            section.markers.append(_this.builder.createBlankMarker());
+          }
+        });
+
+        var currentMarker = undefined,
+            currentOffset = undefined;
+
+        if (previousMarker) {
+          currentMarker = previousMarker;
+          currentOffset = currentMarker.length;
+        } else {
+          currentMarker = firstSection.markers.head;
+          currentOffset = 0;
+        }
+
+        if (firstSection !== lastSection) {
+          firstSection.join(lastSection);
+          removedSections.push(lastSection);
+        }
+
+        return { changedSections: changedSections, removedSections: removedSections, currentMarker: currentMarker, currentOffset: currentOffset };
       }
 
       /**
@@ -2661,7 +2672,7 @@ define('content-kit-editor/models/post', ['exports'], function (exports) {
        * across sections
        */
     }, {
-      key: 'markersFrom',
+      key: "markersFrom",
       value: function markersFrom(startMarker, endMarker, callbackFn) {
         var currentMarker = startMarker;
         while (currentMarker) {
@@ -2669,49 +2680,11 @@ define('content-kit-editor/models/post', ['exports'], function (exports) {
 
           if (currentMarker === endMarker) {
             currentMarker = null;
-          } else if (currentMarker.nextSibling) {
-            currentMarker = currentMarker.nextSibling;
+          } else if (currentMarker.next) {
+            currentMarker = currentMarker.next;
           } else {
-            var nextSection = currentMarker.section.nextSibling;
-            currentMarker = nextSection.markers[0];
-          }
-        }
-      }
-    }, {
-      key: 'insertSectionAfter',
-      value: function insertSectionAfter(section, previousSection) {
-        section.post = this;
-        var foundIndex = -1;
-
-        for (var i = 0; i < this.sections.length; i++) {
-          if (this.sections[i] === previousSection) {
-            foundIndex = i;
-            break;
-          }
-        }
-
-        this.sections.splice(foundIndex + 1, 0, section);
-      }
-    }, {
-      key: 'removeSection',
-      value: function removeSection(section) {
-        var i, l;
-        for (i = 0, l = this.sections.length; i < l; i++) {
-          if (this.sections[i] === section) {
-            this.sections.splice(i, 1);
-            return;
-          }
-        }
-      }
-    }, {
-      key: 'getPreviousSection',
-      value: function getPreviousSection(section) {
-        var i, l;
-        if (this.sections[0] !== section) {
-          for (i = 1, l = this.sections.length; i < l; i++) {
-            if (this.sections[i] === section) {
-              return this.sections[i - 1];
-            }
+            var nextSection = currentMarker.section.next;
+            currentMarker = nextSection.markers.head;
           }
         }
       }
@@ -2720,44 +2693,47 @@ define('content-kit-editor/models/post', ['exports'], function (exports) {
     return Post;
   })();
 
-  exports['default'] = Post;
+  exports["default"] = Post;
 });
-define("content-kit-editor/models/render-node", ["exports"], function (exports) {
+define("content-kit-editor/models/render-node", ["exports", "content-kit-editor/utils/linked-item", "content-kit-editor/utils/linked-list"], function (exports, _contentKitEditorUtilsLinkedItem, _contentKitEditorUtilsLinkedList) {
   "use strict";
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  var RenderNode = (function () {
+  function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var RenderNode = (function (_LinkedItem) {
+    _inherits(RenderNode, _LinkedItem);
+
     function RenderNode(postNode) {
       _classCallCheck(this, RenderNode);
 
-      this.parentNode = null;
+      _get(Object.getPrototypeOf(RenderNode.prototype), "constructor", this).call(this);
+      this.parent = null;
       this.isDirty = true;
       this.isRemoved = false;
       this.postNode = postNode;
-
-      this.firstChild = null;
-      this.lastChild = null;
-      this.nextSibling = null;
-      this.previousSibling = null;
+      this._childNodes = null;
     }
 
     _createClass(RenderNode, [{
       key: "scheduleForRemoval",
       value: function scheduleForRemoval() {
         this.isRemoved = true;
-        if (this.parentNode) {
-          this.parentNode.markDirty();
+        if (this.parent) {
+          this.parent.markDirty();
         }
       }
     }, {
       key: "markDirty",
       value: function markDirty() {
         this.isDirty = true;
-        if (this.parentNode) {
-          this.parentNode.markDirty();
+        if (this.parent) {
+          this.parent.markDirty();
         }
       }
     }, {
@@ -2766,56 +2742,23 @@ define("content-kit-editor/models/render-node", ["exports"], function (exports) 
         this.isDirty = false;
       }
     }, {
-      key: "appendChild",
-      value: function appendChild(child) {
-        if (!this.firstChild) {
-          this.firstChild = child;
+      key: "childNodes",
+      get: function get() {
+        var _this = this;
+
+        if (!this._childNodes) {
+          this._childNodes = new _contentKitEditorUtilsLinkedList["default"]({
+            adoptItem: function adoptItem(item) {
+              item.parent = _this;
+              item.renderTree = _this.renderTree;
+            },
+            freeItem: function freeItem(item) {
+              item.parent = null;
+              item.renderTree = null;
+            }
+          });
         }
-        if (this.lastChild) {
-          child.previousSibling = this.lastChild;
-          this.lastChild.nextSibling = child;
-        }
-        this.lastChild = child;
-        child.parentNode = this;
-        child.renderTree = this.renderTree;
-      }
-    }, {
-      key: "removeChild",
-      value: function removeChild(child) {
-        if (child.nextSibling) {
-          child.nextSibling.previousSibling = child.previousSibling;
-        } else {
-          this.lastChild = child.previousSibling;
-        }
-        if (child.previousSibling) {
-          child.previousSibling.nextSibling = child.nextSibling;
-        } else {
-          this.firstChild = child.nextSibling;
-        }
-      }
-    }, {
-      key: "insertAfter",
-      value: function insertAfter(node, previousChild) {
-        if (previousChild) {
-          node.previousSibling = previousChild;
-          if (previousChild.nextSibling) {
-            previousChild.nextSibling.previousSibling = node;
-            node.nextSibling = previousChild.nextSibling;
-          } else {
-            this.lastChild = node;
-          }
-          previousChild.nextSibling = node;
-        } else {
-          node.nextSibling = this.firstChild;
-          if (node.nextSibling) {
-            node.nextSibling.previousSibling = node;
-          } else {
-            this.lastChild = node;
-          }
-          this.firstChild = node;
-        }
-        node.parentNode = this;
-        node.renderTree = this.renderTree;
+        return this._childNodes;
       }
     }, {
       key: "element",
@@ -2830,7 +2773,7 @@ define("content-kit-editor/models/render-node", ["exports"], function (exports) 
     }]);
 
     return RenderNode;
-  })();
+  })(_contentKitEditorUtilsLinkedItem["default"]);
 
   exports["default"] = RenderNode;
 });
@@ -2948,23 +2891,23 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-utils', 'conte
 
       if (currentNode.firstChild) {
         if (isValidMarkerElement(currentNode) && text !== null) {
-          section.appendMarker(builder.createMarker(text, markups.slice()));
+          section.markers.append(builder.createMarker(text, markups.slice()));
           text = null;
         }
         currentNode = currentNode.firstChild;
       } else if (currentNode.nextSibling) {
         if (currentNode === topNode) {
-          section.appendMarker(builder.createMarker(text, markups.slice()));
+          section.markers.append(builder.createMarker(text, markups.slice()));
           break;
         } else {
           currentNode = currentNode.nextSibling;
           if (currentNode.nodeType === ELEMENT_NODE && isValidMarkerElement(currentNode) && text !== null) {
-            section.appendMarker(builder.createMarker(text, markups.slice()));
+            section.markers.append(builder.createMarker(text, markups.slice()));
             text = null;
           }
         }
       } else {
-        section.appendMarker(builder.createMarker(text, markups.slice()));
+        section.markers.append(builder.createMarker(text, markups.slice()));
 
         while (currentNode && !currentNode.nextSibling && currentNode !== topNode) {
           currentNode = currentNode.parentNode;
@@ -3040,7 +2983,7 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-utils', 'conte
         if (!isEmptyTextNode(sectionElement)) {
           section = this.parseSection(previousSection, sectionElement);
           if (section !== previousSection) {
-            post.appendSection(section);
+            post.sections.append(section);
             previousSection = section;
           }
         }
@@ -3153,7 +3096,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         var payload = _ref32[2];
 
         var section = this.builder.createCardSection(name, payload);
-        post.appendSection(section);
+        post.sections.append(section);
       }
     }, {
       key: "parseImageSection",
@@ -3164,7 +3107,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         var src = _ref42[1];
 
         var section = this.builder.createImageSection(src);
-        post.appendSection(section);
+        post.sections.append(section);
       }
     }, {
       key: "parseMarkupSection",
@@ -3176,7 +3119,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         var markers = _ref52[2];
 
         var section = this.builder.createMarkupSection(tagName);
-        post.appendSection(section);
+        post.sections.append(section);
         this.parseMarkers(markers, section);
       }
     }, {
@@ -3203,7 +3146,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
           _this4.markups.push(_this4.markerTypes[index]);
         });
         var marker = this.builder.createMarker(value, this.markups.slice());
-        section.appendMarker(marker);
+        section.markers.append(marker);
         this.markups = this.markups.slice(0, this.markups.length - closeCount);
       }
     }]);
@@ -3242,7 +3185,7 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
         var post = this.builder.createPost();
 
         (0, _contentKitEditorUtilsArrayUtils.forEach)(element.childNodes, function (child) {
-          post.appendSection(_this.sectionParser.parse(child));
+          post.sections.append(_this.sectionParser.parse(child));
         });
 
         return post;
@@ -3325,12 +3268,12 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
 
             if (previousMarker) {
               // insert this marker after the previous one
-              section.insertMarkerAfter(marker, previousMarker);
-              section.renderNode.insertAfter(renderNode, previousMarker.renderNode);
+              section.markers.insertAfter(marker, previousMarker);
+              section.renderNode.childNodes.insertAfter(renderNode, previousMarker.renderNode);
             } else {
               // insert marker at the beginning of the section
-              section.prependMarker(marker);
-              section.renderNode.insertAfter(renderNode, null);
+              section.markers.prepend(marker);
+              section.renderNode.childNodes.insertAfter(renderNode, null);
             }
 
             // find the nextMarkerElement, set it on the render node
@@ -3354,7 +3297,7 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
             renderNode.scheduleForRemoval();
           }
 
-          renderNode = renderNode.nextSibling;
+          renderNode = renderNode.next;
         }
       }
     }]);
@@ -3403,11 +3346,11 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
         // close a trailing text nodes if it exists
         if (state.text.length) {
           var marker = this.builder.createMarker(state.text, state.markups);
-          state.section.appendMarker(marker);
+          state.section.markers.append(marker);
         }
 
         if (section.markers.length === 0) {
-          section.appendMarker(this.builder.createBlankMarker());
+          section.markers.append(this.builder.createBlankMarker());
         }
 
         return section;
@@ -3436,7 +3379,7 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
           if (state.text.length) {
             // close previous text marker
             var marker = this.builder.createMarker(state.text, state.markups);
-            state.section.appendMarker(marker);
+            state.section.markers.append(marker);
             state.text = '';
           }
 
@@ -3451,7 +3394,7 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
           // close the marker started for this node and pop
           // its markup from the stack
           var marker = this.builder.createMarker(state.text, state.markups);
-          state.section.appendMarker(marker);
+          state.section.markers.append(marker);
           state.markups.pop();
           state.text = '';
         }
@@ -3504,7 +3447,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  var UNPRINTABLE_CHARACTER = "‌";
+  var UNPRINTABLE_CHARACTER = " ";
 
   exports.UNPRINTABLE_CHARACTER = UNPRINTABLE_CHARACTER;
   function createElementFromMarkup(doc, markup) {
@@ -3550,7 +3493,6 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
   }
 
   function renderMarker(marker, element, previousRenderNode) {
-    var openTypes = marker.openedMarkups;
     var text = marker.value;
     if (isEmptyText(text)) {
       // This is necessary to allow the cursor to move into this area
@@ -3561,6 +3503,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     var currentElement = textNode;
     var markup = undefined;
 
+    var openTypes = marker.openedMarkups;
     for (var j = openTypes.length - 1; j >= 0; j--) {
       markup = openTypes[j];
       var openedElement = createElementFromMarkup(document, markup);
@@ -3573,7 +3516,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
 
       var previousSibling = previousRenderNode.element;
       var previousSiblingPenultimate = penultimateParentOf(previousSibling, nextMarkerElement);
-      nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.nextSibling);
+      nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.next);
     } else {
       element.insertBefore(currentElement, element.firstChild);
     }
@@ -3614,18 +3557,16 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         if (!hasRendered) {
           var _element = renderNode.element;
 
-          if (renderNode.previousSibling) {
-            var previousElement = renderNode.previousSibling.element;
-            var nextElement = previousElement.nextSibling;
-            if (nextElement) {
-              nextElement.parentNode.insertBefore(_element, nextElement);
-            }
-          }
-          if (!_element.parentNode) {
-            renderNode.parentNode.element.appendChild(_element);
+          if (renderNode.prev) {
+            var previousElement = renderNode.prev.element;
+            var parentNode = previousElement.parentNode;
+            parentNode.insertBefore(_element, previousElement.nextSibling);
+          } else {
+            var parentElement = renderNode.parent.element;
+            parentElement.insertBefore(_element, parentElement.firstChild);
           }
         } else {
-          renderNode.parentNode.element.replaceChild(element, originalElement);
+          renderNode.parent.element.replaceChild(element, originalElement);
         }
 
         // remove all elements so that we can rerender
@@ -3639,12 +3580,12 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
       value: function value(renderNode, marker) {
         var parentElement = undefined;
 
-        if (renderNode.previousSibling) {
-          parentElement = getNextMarkerElement(renderNode.previousSibling);
+        if (renderNode.prev) {
+          parentElement = getNextMarkerElement(renderNode.prev);
         } else {
-          parentElement = renderNode.parentNode.element;
+          parentElement = renderNode.parent.element;
         }
-        var textNode = renderMarker(marker, parentElement, renderNode.previousSibling);
+        var textNode = renderMarker(marker, parentElement, renderNode.prev);
 
         renderNode.element = textNode;
       }
@@ -3658,15 +3599,15 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         } else {
           var element = document.createElement('img');
           element.src = section.src;
-          if (renderNode.previousSibling) {
-            var previousElement = renderNode.previousSibling.element;
+          if (renderNode.prev) {
+            var previousElement = renderNode.prev.element;
             var nextElement = previousElement.nextSibling;
             if (nextElement) {
               nextElement.parentNode.insertBefore(element, nextElement);
             }
           }
           if (!element.parentNode) {
-            renderNode.parentNode.element.appendChild(element);
+            renderNode.parent.element.appendChild(element);
           }
           renderNode.element = element;
         }
@@ -3685,15 +3626,15 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         var element = document.createElement('div');
         element.contentEditable = 'false';
         renderNode.element = element;
-        if (renderNode.previousSibling) {
-          var previousElement = renderNode.previousSibling.element;
+        if (renderNode.prev) {
+          var previousElement = renderNode.prev.element;
           var nextElement = previousElement.nextSibling;
           if (nextElement) {
             nextElement.parentNode.insertBefore(element, nextElement);
           }
         }
         if (!element.parentNode) {
-          renderNode.parentNode.element.appendChild(element);
+          renderNode.parent.element.appendChild(element);
         }
 
         if (card) {
@@ -3712,8 +3653,8 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
   var destroyHooks = (_destroyHooks = {}, _defineProperty(_destroyHooks, _contentKitEditorModelsPost.POST_TYPE, function () /*renderNode, post*/{
     throw new Error('post destruction is not supported by the renderer');
   }), _defineProperty(_destroyHooks, _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE, function (renderNode, section) {
-    var post = renderNode.parentNode.postNode;
-    post.removeSection(section);
+    var post = renderNode.parent.postNode;
+    post.sections.remove(section);
     // Some formatting commands remove the element from the DOM during
     // formatting. Do not error if this is the case.
     if (renderNode.element.parentNode) {
@@ -3729,10 +3670,8 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
       element = element.parentNode;
     }
 
-    // FIXME is it ok that this marker may have already been removed from the
-    // section?
-    if (marker.section.markers.indexOf(marker) !== -1) {
-      marker.section.removeMarker(marker);
+    if (marker.section) {
+      marker.section.markers.remove(marker);
     }
 
     if (element.parentNode) {
@@ -3740,26 +3679,26 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
       element.parentNode.removeChild(element);
     }
   }), _defineProperty(_destroyHooks, _contentKitEditorModelsImage.IMAGE_SECTION_TYPE, function (renderNode, section) {
-    var post = renderNode.parentNode.postNode;
-    post.removeSection(section);
+    var post = renderNode.parent.postNode;
+    post.sections.remove(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
   }), _defineProperty(_destroyHooks, _contentKitEditorModelsCard.CARD_TYPE, function (renderNode, section) {
     if (renderNode.cardNode) {
       renderNode.cardNode.teardown();
     }
-    var post = renderNode.parentNode.postNode;
-    post.removeSection(section);
+    var post = renderNode.parent.postNode;
+    post.sections.remove(section);
     renderNode.element.parentNode.removeChild(renderNode.element);
   }), _destroyHooks);
 
   // removes children from parentNode that are scheduled for removal
   function removeChildren(parentNode) {
-    var child = parentNode.firstChild;
+    var child = parentNode.childNodes.head;
     while (child) {
-      var nextChild = child.nextSibling;
+      var nextChild = child.next;
       if (child.isRemoved) {
         destroyHooks[child.postNode.type](child, child.postNode);
-        parentNode.removeChild(child);
+        parentNode.childNodes.remove(child);
       }
       child = nextChild;
     }
@@ -3772,8 +3711,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
       return postNode.renderNode;
     } else {
       var renderNode = new _contentKitEditorModelsRenderNode["default"](postNode);
-      renderNode.renderTree = renderTree;
-      parentNode.insertAfter(renderNode, previousNode);
+      parentNode.childNodes.insertAfter(renderNode, previousNode);
       postNode.renderNode = renderNode;
       return renderNode;
     }
@@ -3912,10 +3850,14 @@ define("content-kit-editor/renderers/mobiledoc", ["exports", "content-kit-editor
 define("content-kit-editor/utils/array-utils", ["exports"], function (exports) {
   "use strict";
 
-  function detect(array, callback) {
-    for (var i = 0; i < array.length; i++) {
-      if (callback(array[i])) {
-        return array[i];
+  function detect(enumerable, callback) {
+    if (enumerable.detect) {
+      return enumerable.detect(callback);
+    } else {
+      for (var i = 0; i < enumerable.length; i++) {
+        if (callback(enumerable[i])) {
+          return enumerable[i];
+        }
       }
     }
   }
@@ -3935,14 +3877,45 @@ define("content-kit-editor/utils/array-utils", ["exports"], function (exports) {
    * actually arrays, like NodeList
    */
   function forEach(enumerable, callback) {
-    for (var i = 0; i < enumerable.length; i++) {
-      callback(enumerable[i]);
+    if (enumerable.forEach) {
+      enumerable.forEach(callback);
+    } else {
+      for (var i = 0; i < enumerable.length; i++) {
+        callback(enumerable[i], i);
+      }
     }
+  }
+
+  /**
+   * @return {Array} The things in enumerable that are not in otherEnumerable,
+   * aka the relative complement of `otherEnumerable` in `enumerable`
+   */
+  function difference(enumerable, otherEnumerable) {
+    var diff = [];
+    forEach(enumerable, function (item) {
+      if (otherEnumerable.indexOf(item) === -1) {
+        diff.push(item);
+      }
+    });
+
+    return diff;
+  }
+
+  function filter(enumerable, conditionFn) {
+    var filtered = [];
+    forEach(enumerable, function (i) {
+      if (conditionFn(i)) {
+        filtered.push(i);
+      }
+    });
+    return filtered;
   }
 
   exports.detect = detect;
   exports.forEach = forEach;
   exports.any = any;
+  exports.difference = difference;
+  exports.filter = filter;
 });
 define('content-kit-editor/utils/compat', ['exports', 'content-kit-editor/utils/doc', 'content-kit-editor/utils/win'], function (exports, _contentKitEditorUtilsDoc, _contentKitEditorUtilsWin) {
   'use strict';
@@ -3983,9 +3956,9 @@ define("content-kit-editor/utils/compiler", ["exports"], function (exports) {
     if (!nodes || nodes.length === 0) {
       return;
     }
-    for (var i = 0, l = nodes.length; i < l; i++) {
-      visit(visitor, nodes[i], opcodes);
-    }
+    nodes.forEach(function (node) {
+      visit(visitor, node, opcodes);
+    });
   }
 });
 define('content-kit-editor/utils/dom-utils', ['exports', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorUtilsArrayUtils) {
@@ -4433,14 +4406,6 @@ define('content-kit-editor/utils/http-utils', ['exports'], function (exports) {
     return xhr;
   }
 
-  function xhrGet(options) {
-    options.method = 'GET';
-    var xhr = createXHR(options);
-    try {
-      xhr.send();
-    } catch (error) {}
-  }
-
   function xhrPost(options) {
     options.method = 'POST';
     var xhr = createXHR(options);
@@ -4514,35 +4479,7 @@ define('content-kit-editor/utils/http-utils', ['exports'], function (exports) {
     });
   };
 
-  function OEmbedder(options) {
-    options = options || {};
-    var url = options.url;
-    if (url) {
-      this.url = url;
-    } else {
-      throw new Error('OEmbedder: setting the `url` to an embed service is required');
-    }
-  }
-
-  OEmbedder.prototype.fetch = function (options) {
-    var callback = options.complete;
-    xhrGet({
-      url: this.url + "?url=" + encodeURI(options.url),
-      success: function success(response) {
-        if (callback) {
-          callback.call(this, responseJSON(response));
-        }
-      },
-      error: function error(_error2) {
-        if (callback) {
-          callback.call(this, null, responseJSON(_error2));
-        }
-      }
-    });
-  };
-
   exports.FileUploader = FileUploader;
-  exports.OEmbedder = OEmbedder;
 });
 define("content-kit-editor/utils/keycodes", ["exports"], function (exports) {
   "use strict";
@@ -4555,6 +4492,217 @@ define("content-kit-editor/utils/keycodes", ["exports"], function (exports) {
     DELETE: 46,
     M: 77
   };
+});
+define("content-kit-editor/utils/linked-item", ["exports"], function (exports) {
+  "use strict";
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  var LinkedItem = function LinkedItem() {
+    _classCallCheck(this, LinkedItem);
+
+    this.next = null;
+    this.prev = null;
+  };
+
+  exports["default"] = LinkedItem;
+});
+define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
+  "use strict";
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  var LinkedList = (function () {
+    function LinkedList(options) {
+      _classCallCheck(this, LinkedList);
+
+      this.head = null;
+      this.tail = null;
+      this.length = 0;
+      if (options) {
+        var adoptItem = options.adoptItem;
+        var freeItem = options.freeItem;
+
+        this.adoptItem = adoptItem;
+        this.freeItem = freeItem;
+      }
+    }
+
+    _createClass(LinkedList, [{
+      key: "empty",
+      value: function empty() {
+        return this.length === 0;
+      }
+    }, {
+      key: "prepend",
+      value: function prepend(item) {
+        this.insertBefore(item, this.head);
+      }
+    }, {
+      key: "append",
+      value: function append(item) {
+        this.insertBefore(item, null);
+      }
+    }, {
+      key: "insertAfter",
+      value: function insertAfter(item, prevItem) {
+        var nextItem = null;
+        if (prevItem) {
+          nextItem = prevItem.next;
+        } else {
+          nextItem = this.head;
+        }
+        this.insertBefore(item, nextItem);
+      }
+    }, {
+      key: "insertBefore",
+      value: function insertBefore(item, nextItem) {
+        this.remove(item);
+        if (this.adoptItem) {
+          this.adoptItem(item);
+        }
+        if (nextItem && nextItem.prev) {
+          // middle of the items
+          var prevItem = nextItem.prev;
+          item.next = nextItem;
+          nextItem.prev = item;
+          item.prev = prevItem;
+          prevItem.next = item;
+        } else if (nextItem) {
+          // first item
+          if (this.head === nextItem) {
+            item.next = nextItem;
+            nextItem.prev = item;
+          } else {
+            this.tail = item;
+          }
+          this.head = item;
+        } else {
+          // last item
+          if (this.tail) {
+            item.prev = this.tail;
+            this.tail.next = item;
+          }
+          if (!this.head) {
+            this.head = item;
+          }
+          this.tail = item;
+        }
+        this.length++;
+      }
+    }, {
+      key: "remove",
+      value: function remove(item) {
+        if (this.freeItem) {
+          this.freeItem(item);
+        }
+        var didRemove = false;
+        if (item.next && item.prev) {
+          // Middle of the list
+          item.next.prev = item.prev;
+          item.prev.next = item.next;
+          didRemove = true;
+        } else {
+          if (item === this.head) {
+            // Head of the list
+            if (item.next) {
+              item.next.prev = null;
+            }
+            this.head = item.next;
+            didRemove = true;
+          }
+          if (item === this.tail) {
+            // Tail of the list
+            if (item.prev) {
+              item.prev.next = null;
+            }
+            this.tail = item.prev;
+            didRemove = true;
+          }
+        }
+        if (didRemove) {
+          this.length--;
+        }
+        item.prev = null;
+        item.next = null;
+      }
+    }, {
+      key: "forEach",
+      value: function forEach(callback) {
+        var item = this.head;
+        var index = 0;
+        while (item) {
+          callback(item, index);
+          index++;
+          item = item.next;
+        }
+      }
+    }, {
+      key: "readRange",
+      value: function readRange(startItem, endItem) {
+        var items = [];
+        var item = startItem || this.head;
+        while (item) {
+          items.push(item);
+          if (item === endItem) {
+            break;
+          }
+          item = item.next;
+        }
+        return items;
+      }
+    }, {
+      key: "toArray",
+      value: function toArray() {
+        return this.readRange();
+      }
+    }, {
+      key: "detect",
+      value: function detect(callback) {
+        var item = arguments.length <= 1 || arguments[1] === undefined ? this.head : arguments[1];
+
+        while (item) {
+          if (callback(item)) {
+            return item;
+          }
+          item = item.next;
+        }
+      }
+    }, {
+      key: "objectAt",
+      value: function objectAt(targetIndex) {
+        var index = -1;
+        return this.detect(function () {
+          index++;
+          return targetIndex === index;
+        });
+      }
+    }, {
+      key: "splice",
+      value: function splice(targetItem, removalCount, newItems) {
+        var _this = this;
+
+        var item = targetItem;
+        var nextItem = item.next;
+        var count = 0;
+        while (item && count < removalCount) {
+          count++;
+          nextItem = item.next;
+          this.remove(item);
+          item = nextItem;
+        }
+        newItems.forEach(function (newItem) {
+          _this.insertBefore(newItem, nextItem);
+        });
+      }
+    }]);
+
+    return LinkedList;
+  })();
+
+  exports["default"] = LinkedList;
 });
 define('content-kit-editor/utils/mixin', ['exports'], function (exports) {
   'use strict';
@@ -5518,9 +5666,6 @@ define('content-kit-utils', ['exports', 'content-kit-utils/array-utils', 'conten
   'use strict';
 
   exports.toArray = _contentKitUtilsArrayUtils.toArray;
-
-  // needs a default export to be compatible with
-  // broccoli-multi-builder
   exports.sumSparseArray = _contentKitUtilsArrayUtils.sumSparseArray;
   exports.textOfNode = _contentKitUtilsNodeUtils.textOfNode;
   exports.unwrapNode = _contentKitUtilsNodeUtils.unwrapNode;
@@ -5533,6 +5678,9 @@ define('content-kit-utils', ['exports', 'content-kit-utils/array-utils', 'conten
   exports.underscore = _contentKitUtilsStringUtils.underscore;
   exports.sanitizeWhitespace = _contentKitUtilsStringUtils.sanitizeWhitespace;
   exports.injectIntoString = _contentKitUtilsStringUtils.injectIntoString;
+
+  // needs a default export to be compatible with
+  // broccoli-multi-builder
   exports['default'] = {};
 });
 define('content-kit-utils/node-utils', ['exports', 'content-kit-utils/string-utils', 'content-kit-utils/array-utils'], function (exports, _contentKitUtilsStringUtils, _contentKitUtilsArrayUtils) {
