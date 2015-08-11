@@ -26,7 +26,7 @@ const Marker = class Marker extends LinkedItem {
     return new this.constructor(this.value, clonedMarkups);
   }
 
-  empty() {
+  get isEmpty() {
     return this.length === 0;
   }
 

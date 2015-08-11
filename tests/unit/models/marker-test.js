@@ -90,7 +90,7 @@ test('#split splits a marker in 3 with blank markers when no endOffset is passed
 
   assert.equal(beforeMarker.value, 'hi th');
   assert.equal(afterMarkers[0].value, 'ere!');
-  assert.ok(afterMarkers[1].empty(), 'final split marker is empty');
+  assert.ok(afterMarkers[1].isEmpty, 'final split marker is empty');
 });
 
 test('#split splits a marker in 3 when endOffset is passed', (assert) => {
@@ -112,7 +112,7 @@ test('#split creates an initial empty marker if the offset is 0', (assert) => {
   const m = builder.createMarker('hi there!');
   const [beforeMarker, ...afterMarkers] = m.split(0);
   assert.equal(afterMarkers.length, 2, '2 after markers');
-  assert.ok(beforeMarker.empty(), 'beforeMarker is empty');
+  assert.ok(beforeMarker.isEmpty, 'beforeMarker is empty');
   assert.equal(afterMarkers[0].value, 'hi there!');
-  assert.ok(afterMarkers[1].empty(), 'final afterMarker is empty');
+  assert.ok(afterMarkers[1].isEmpty, 'final afterMarker is empty');
 });
