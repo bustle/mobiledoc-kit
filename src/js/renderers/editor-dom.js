@@ -47,7 +47,6 @@ function getNextMarkerElement(renderNode) {
   let element = renderNode.element.parentNode;
   let closedCount = renderNode.postNode.closedMarkups.length;
 
-  // walk up the number of closed markups
   while (closedCount--) {
     element = element.parentNode;
   }
@@ -74,11 +73,9 @@ function renderMarker(marker, element, previousRenderNode) {
   }
 
   if (previousRenderNode) {
-    let nextMarkerElement = getNextMarkerElement(previousRenderNode);
-
     let previousSibling = previousRenderNode.element;
-    let previousSiblingPenultimate = penultimateParentOf(previousSibling, nextMarkerElement);
-    nextMarkerElement.insertBefore(currentElement, previousSiblingPenultimate.next);
+    let previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
+    element.insertBefore(currentElement, previousSiblingPenultimate.nextSibling);
   } else {
     element.insertBefore(currentElement, element.firstChild);
   }
