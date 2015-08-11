@@ -41,8 +41,8 @@ export default class Section extends LinkedItem {
     return this._tagName;
   }
 
-  isEmpty() {
-    return this.markers.length === 0;
+  get isEmpty() {
+    return this.markers.isEmpty;
   }
 
   setTagName(newTagName) {
@@ -64,7 +64,7 @@ export default class Section extends LinkedItem {
    * @return {Array} the new markers that replaced `marker`
    */
   splitMarker(marker, offset, endOffset=marker.length) {
-    const newMarkers = filter(marker.split(offset, endOffset), m => !m.empty());
+    const newMarkers = filter(marker.split(offset, endOffset), m => !m.isEmpty);
     this.markers.splice(marker, 1, newMarkers);
     return newMarkers;
   }
@@ -101,7 +101,7 @@ export default class Section extends LinkedItem {
    */
   coalesceMarkers() {
     forEach(this.markers, m => {
-      if (m.empty()) {
+      if (m.isEmpty) {
         this.markers.remove(m);
       }
     });
