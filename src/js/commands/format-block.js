@@ -29,6 +29,7 @@ class FormatBlockCommand extends TextFormatCommand {
 
     editor.rerender();
     editor.selectSections(activeSections);
+    this.editor.didUpdate();
   }
 
   unexec() {
@@ -41,6 +42,7 @@ class FormatBlockCommand extends TextFormatCommand {
 
     editor.rerender();
     editor.selectSections(activeSections);
+    this.editor.didUpdate();
   }
 }
 
