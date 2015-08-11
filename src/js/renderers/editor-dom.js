@@ -8,7 +8,7 @@ import { IMAGE_SECTION_TYPE } from "../models/image";
 import { CARD_TYPE } from "../models/card";
 import { clearChildNodes } from '../utils/dom-utils';
 
-export const UNPRINTABLE_CHARACTER = "\u2006";
+export const UNPRINTABLE_CHARACTER = "\u200C";
 
 function createElementFromMarkup(doc, markup) {
   var element = doc.createElement(markup.tagName);
