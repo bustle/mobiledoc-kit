@@ -10,6 +10,7 @@ test('initial state', (assert) => {
   assert.equal(list.head, null, 'head is null');
   assert.equal(list.tail, null ,'tail is null');
   assert.equal(list.length, 0, 'length is one');
+  assert.equal(list.isEmpty, true, 'isEmpty is true');
 });
 
 ['append', 'prepend', 'insertBefore', 'insertAfter'].forEach(method => {
@@ -18,6 +19,7 @@ test('initial state', (assert) => {
     let item = new LinkedItem();
     list[method](item);
     assert.equal(list.length, 1, 'length is one');
+    assert.equal(list.isEmpty, false, 'isEmpty is false');
     assert.equal(list.head, item, 'head is item');
     assert.equal(list.tail, item, 'tail is item');
     assert.equal(item.next, null, 'item next is null');
@@ -132,6 +134,7 @@ test(`#remove an only item`, (assert) => {
   list.append(item);
   list.remove(item);
   assert.equal(list.length, 0, 'length is zero');
+  assert.equal(list.isEmpty, true, 'isEmpty is true');
   assert.equal(list.head, null, 'head is null');
   assert.equal(list.tail, null, 'tail is null');
   assert.equal(item.prev, null, 'item prev is null');
