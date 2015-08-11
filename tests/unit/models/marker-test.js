@@ -116,3 +116,11 @@ test('#split creates an initial empty marker if the offset is 0', (assert) => {
   assert.equal(afterMarkers[0].value, 'hi there!');
   assert.ok(afterMarkers[1].isEmpty, 'final afterMarker is empty');
 });
+
+test('#clone a marker', (assert) => {
+  const marker = builder.createMarker('hi there!');
+  const cloned = marker.clone();
+  assert.equal(marker.builder, cloned.builder, 'builder is present');
+  assert.equal(marker.value, cloned.value, 'value is present');
+  assert.equal(marker.markups.length, cloned.markups.length, 'markup length is the same');
+});
