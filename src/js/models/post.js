@@ -38,7 +38,7 @@ export default class Post {
 
     // add a blank marker to any sections that are now empty
     changedSections.forEach(section => {
-      if (section.isEmpty) {
+      if (section.markers.isEmpty) {
         section.markers.append(this.builder.createBlankMarker());
       }
     });

@@ -206,6 +206,20 @@ class PostEditor {
     return markers;
   }
 
+  insertSectionBefore(section, beforeSection) {
+    this.editor.post.sections.insertBefore(section, beforeSection);
+    this.editor.post.renderNode.markDirty();
+
+    this.rerender();
+    this.didUpdate();
+  }
+
+  removeSection(section) {
+    section.renderNode.scheduleForRemoval();
+
+    this.rerender();
+    this.didUpdate();
+  }
 
   /**
    * A method for adding work the deferred queue

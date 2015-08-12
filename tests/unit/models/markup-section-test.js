@@ -149,3 +149,21 @@ test('#coalesceMarkers appends a single blank marker if all the markers were bla
   assert.equal(s.markers.length, 1, 'has 1 marker after coalescing');
   assert.ok(s.markers.head.isEmpty, 'remaining marker is empty');
 });
+
+test('#isBlank returns true if the text length is zero for two markers', (assert) => {
+  const m1 = builder.createBlankMarker();
+  const m2 = builder.createBlankMarker();
+  const s = builder.createMarkupSection('p', [m1,m2]);
+  assert.ok(s.isBlank, 'section with two blank markers is blank');
+});
+
+test('#isBlank returns true if there are no markers', (assert) => {
+  const s = builder.createMarkupSection('p');
+  assert.ok(s.isBlank, 'section with no markers is blank');
+});
+
+test('#isBlank returns false if there is a marker with length', (assert) => {
+  const m = builder.createMarker('a');
+  const s = builder.createMarkupSection('p', [m]);
+  assert.ok(!s.isBlank, 'section with marker is not blank');
+});

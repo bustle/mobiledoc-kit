@@ -615,16 +615,6 @@ class Editor {
     this._views = [];
   }
 
-  insertSectionAtCursor(newSection) {
-    let newRenderNode = this._renderTree.buildRenderNode(newSection);
-    let renderNodes = this.cursor.activeSections.map(s => s.renderNode);
-    let lastRenderNode = renderNodes[renderNodes.length-1];
-    lastRenderNode.parent.childNodes.insertAfter(newRenderNode, lastRenderNode);
-    this.post.sections.insertAfter(newSection, lastRenderNode.postNode);
-    renderNodes.forEach(renderNode => renderNode.scheduleForRemoval());
-    this.trigger('update');
-  }
-
   destroy() {
     this.removeAllEventListeners();
     this.removeAllViews();
