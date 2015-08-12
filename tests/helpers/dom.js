@@ -38,8 +38,8 @@ function selectText(startText,
   selectRange(startTextNode, startOffset, endTextNode, endOffset);
 }
 
-function moveCursorTo(element, offset=0) {
-  selectRange(element, offset, element, offset);
+function moveCursorTo(node, offset=0, endNode=node, endOffset=offset) {
+  selectRange(node, offset, endNode, endOffset);
 }
 
 function triggerEvent(node, eventType) {

@@ -340,4 +340,62 @@ test('keystroke of delete at start of first section does nothing', (assert) => {
                   'cursor stays at start of first section');
 });
 
+test('when selection incorrectly contains P end tag, editor reports correct selection', (assert) => {
+  const done = assert.async();
+
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  let secondSectionTextNode = editor.element.childNodes[1].firstChild;
+  let firstSectionPNode = editor.element.childNodes[0];
+
+  Helpers.dom.moveCursorTo(firstSectionPNode, 0,
+                           secondSectionTextNode, 0);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    assert.ok(true, 'No error should occur');
+
+    let firstSectionTextNode = editor.element.childNodes[0].childNodes[0];
+    let firstSectionLength = firstSectionTextNode.textContent.length;
+
+    let {leftNode, rightNode, leftOffset, rightOffset} = editor.cursor.offsets;
+
+    assert.equal(leftNode, firstSectionTextNode, 'returns first section text node as left');
+    assert.equal(rightNode, firstSectionTextNode, 'returns first section text node as right');
+    assert.equal(leftOffset, 0, 'leftOffset correct');
+    assert.equal(rightOffset, firstSectionLength, 'rightOffset correct');
+
+    done();
+  });
+});
+
+test('when selection incorrectly contains P start tag, editor reports correct selection', (assert) => {
+  const done = assert.async();
+
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  let firstSectionTextNode = editor.element.childNodes[0].firstChild;
+  let secondSectionPNode = editor.element.childNodes[1];
+
+  Helpers.dom.moveCursorTo(firstSectionTextNode, 0,
+                           secondSectionPNode, 0);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    assert.ok(true, 'No error should occur');
+
+    let firstSectionTextNode = editor.element.childNodes[0].childNodes[0];
+    let firstSectionLength = firstSectionTextNode.textContent.length;
+
+    let {leftNode, rightNode, leftOffset, rightOffset} = editor.cursor.offsets;
+
+    assert.equal(leftNode, firstSectionTextNode, 'returns first section text node as left');
+    assert.equal(rightNode, firstSectionTextNode, 'returns first section text node as right');
+    assert.equal(leftOffset, 0, 'leftOffset correct');
+    assert.equal(rightOffset, firstSectionLength, 'rightOffset correct');
+
+    done();
+  });
+});
+
 // test: deleting at start of section when previous section is a non-markup section
