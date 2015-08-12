@@ -59,12 +59,21 @@ var selfieCard = {
           errBack = function(error) {
             alert('error getting video feed');
           };
-      if (!navigator.webkitGetUserMedia) {
-        alert('This only works in Chrome (no navigator.webkitGetUserMedia)');
-      }
-      navigator.webkitGetUserMedia(videoObj, function(stream) {
-        video.src = window.webkitURL.createObjectURL(stream);
-        video.play();
+
+      navigator.getMedia = (navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
+        navigator.msGetUserMedia);
+
+      navigator.getMedia(videoObj, function(stream) {
+        var vendorURL;
+        if (navigator.mozGetUserMedia) {
+          video.mozSrcObject = stream;
+        } else {
+          vendorURL = window.URL || window.webkitURL;
+          video.src = vendorURL.createObjectURL(stream);
+          video.play();
+        }
 
         $('#snap').click(function() {
           context.drawImage(video, 0, 0, 160, 120);
