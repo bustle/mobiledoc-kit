@@ -172,7 +172,7 @@ test('deleting across 0 sections merges them', (assert) => {
         p1 = $('#editor p:eq(1)')[0];
 
   Helpers.dom.selectText('tion', p0, 'sec', p1);
-  document.execCommand('delete', false);
+  Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p').length, 1, 'has only 1 paragraph after deletion');
   assert.hasElement('#editor p:contains(first second section)',
@@ -189,9 +189,7 @@ test('deleting across 1 section removes it, joins the 2 boundary sections', (ass
   assert.ok(p0 && p1 && p2, 'precond - paragraphs exist');
 
   Helpers.dom.selectText('section', p0, 'third ', p2);
-
-  document.execCommand('delete', false);
-
+  Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p').length, 1, 'has only 1 paragraph after deletion');
   assert.hasElement('#editor p:contains(first section)',
