@@ -88,35 +88,6 @@ test('#markerContaining finds the marker at the given offset when multiple marke
   }
 });
 
-test('a section can be split, splitting its markers', (assert) => {
-  const m = builder.createMarker('hi there!', [builder.createMarkup('b')]);
-  const s = builder.createMarkupSection('p', [m]);
-
-  const [s1, s2] = s.split(5);
-  assert.equal(s1.markers.length, 1, 's1 has marker');
-  assert.equal(s2.markers.length, 1, 's2 has marker');
-
-  assert.ok(s1.markers.head.hasMarkup('b'));
-  assert.equal(s1.markers.head.value, 'hi th');
-
-  assert.ok(s2.markers.head.hasMarkup('b'));
-  assert.equal(s2.markers.head.value, 'ere!');
-});
-
-test('a section can be split, splitting its markers when multiple markers', (assert) => {
-  const m1 = builder.createMarker('hi ');
-  const m2 = builder.createMarker('there!');
-  const s = builder.createMarkupSection('h2', [m1,m2]);
-
-  const [s1, s2] = s.split(5);
-  assert.equal(s1.markers.length, 2, 's1 has 2 markers');
-  assert.equal(s2.markers.length, 1, 's2 has 1 marker');
-
-  assert.equal(s1.markers.head.value, 'hi ');
-  assert.equal(s1.markers.tail.value, 'th');
-  assert.equal(s2.markers.head.value, 'ere!');
-});
-
 test('#splitMarker splits the marker at the offset', (assert) => {
   const m1 = builder.createMarker('hi ');
   const m2 = builder.createMarker('there!');

@@ -109,37 +109,6 @@ export default class Section extends LinkedItem {
     }
   }
 
-  /**
-   * @return {Array} 2 new sections
-   */
-  split(offset) {
-    let left = [], right = [], middle;
-
-    middle = this.markerContaining(offset);
-    // end of section
-    if (!middle) {
-      return [
-        new this.constructor(this.tagName, this.markers),
-        new this.constructor(this.tagName, [])
-      ];
-    }
-
-    left = (middle.prev ? this.markers.readRange(null, middle.prev) : []);
-    right = (middle.next ? this.markers.readRange(middle.next, null) : []);
-
-    let leftLength = left.reduce((prev, cur) => prev + cur.length, 0);
-    let middleOffset = offset - leftLength;
-
-    let [leftMiddle, rightMiddle] = middle.split(middleOffset);
-    left.push(leftMiddle);
-    right.push(rightMiddle);
-
-    return [
-      new this.constructor(this.tagName, left),
-      new this.constructor(this.tagName, right)
-    ];
-  }
-
   // mutates this by appending the other section's (cloned) markers to it
   join(otherSection) {
     otherSection.markers.forEach(m => {
