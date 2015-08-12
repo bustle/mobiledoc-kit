@@ -156,6 +156,10 @@ function triggerEnter(editor) {
   }
 }
 
+function insertText(string) {
+  document.execCommand('insertText', false, string);
+}
+
 const DOMHelper = {
   moveCursorTo,
   selectText,
@@ -167,7 +171,8 @@ const DOMHelper = {
   getCursorPosition,
   getSelectedText,
   triggerDelete,
-  triggerEnter
+  triggerEnter,
+  insertText
 };
 
 export { triggerEvent };

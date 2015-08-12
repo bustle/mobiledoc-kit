@@ -1,7 +1,10 @@
 import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
-import { UNPRINTABLE_CHARACTER } from 'content-kit-editor/renderers/editor-dom';
+import {
+  UNPRINTABLE_CHARACTER,
+  NO_BREAK_SPACE
+} from 'content-kit-editor/renderers/editor-dom';
 
 const { test, module } = QUnit;
 
@@ -172,7 +175,7 @@ test('deleting across 0 sections merges them', (assert) => {
         p1 = $('#editor p:eq(1)')[0];
 
   Helpers.dom.selectText('tion', p0, 'sec', p1);
-  document.execCommand('delete', false);
+  Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p').length, 1, 'has only 1 paragraph after deletion');
   assert.hasElement('#editor p:contains(first second section)',
@@ -189,9 +192,7 @@ test('deleting across 1 section removes it, joins the 2 boundary sections', (ass
   assert.ok(p0 && p1 && p2, 'precond - paragraphs exist');
 
   Helpers.dom.selectText('section', p0, 'third ', p2);
-
-  document.execCommand('delete', false);
-
+  Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p').length, 1, 'has only 1 paragraph after deletion');
   assert.hasElement('#editor p:contains(first section)',
@@ -393,6 +394,35 @@ test('when selection incorrectly contains P start tag, editor reports correct se
     assert.equal(rightNode, firstSectionTextNode, 'returns first section text node as right');
     assert.equal(leftOffset, 0, 'leftOffset correct');
     assert.equal(rightOffset, firstSectionLength, 'rightOffset correct');
+
+    done();
+  });
+});
+
+test('deleting when after deletion there is a trailing space positions cursor at end of selection', (assert) => {
+  const done = assert.async();
+
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  let firstSectionTextNode = editor.element.childNodes[0].firstChild;
+  Helpers.dom.moveCursorTo(firstSectionTextNode, 'first section'.length);
+
+  let count = 'ection'.length;
+  while (count--) {
+    Helpers.dom.triggerDelete(editor);
+  }
+
+  assert.equal($('#editor p:eq(0)').text(), 'first s', 'precond - correct section text after initial deletions');
+
+  Helpers.dom.triggerDelete(editor);
+
+  assert.equal($('#editor p:eq(0)').text(), `first${NO_BREAK_SPACE}`, 'precond - correct text after deleting last char before space');
+
+  let text = 'e';
+  Helpers.dom.insertText(text);
+
+  setTimeout(() => {
+    assert.equal($('#editor p:eq(0)').text(), `first ${text}`, 'character is placed after space');
 
     done();
   });
