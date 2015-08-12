@@ -205,6 +205,31 @@ test('selecting text across markers deletes intermediary markers', (assert) => {
   });
 });
 
+test('selecting text across sections and hitting enter deletes and moves cursor to last selected section', (assert) => {
+  const done = assert.async();
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  let firstSection = $('#editor p:eq(0)')[0],
+      secondSection = $('#editor p:eq(1)')[0];
+
+  Helpers.dom.selectText(' section', firstSection,
+                         'second ', secondSection);
+
+  Helpers.dom.triggerEnter(editor);
+
+  setTimeout(() => {
+    assert.equal($('#editor p').length, 2, 'still 2 sections');
+    assert.equal($('#editor p:eq(0)').text(), 'first', 'correct text in 1st section');
+    assert.equal($('#editor p:eq(1)').text(), 'section', 'correct text in 2nd section');
+
+    let secondSectionTextNode = editor.element.childNodes[1].childNodes[0];
+    assert.deepEqual(Helpers.dom.getCursorPosition(),
+                    {node: secondSectionTextNode, offset: 0},
+                    'cursor is at start of second section');
+    done();
+  });
+});
+
 // test selecting text that includes entire sections deletes the sections
 // test selecting text across two types of sections and deleting
 // test selecting text and hitting enter or keydown

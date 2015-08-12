@@ -428,6 +428,10 @@ class Editor {
   }
 
   handleNewline(event) {
+    if (this.cursor.hasSelection()) {
+      this.handleDeletion(event);
+    }
+
     const {
       leftRenderNode,
       rightRenderNode,
@@ -438,7 +442,6 @@ class Editor {
     // or we have selected some non-marker thing like a card
     if (!leftRenderNode || !rightRenderNode) { return; }
 
-    // FIXME handle when the selection is not collapsed, this code assumes it is
     event.preventDefault();
 
     const markerRenderNode = leftRenderNode;
