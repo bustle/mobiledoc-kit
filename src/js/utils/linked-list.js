@@ -3,11 +3,18 @@ export default class LinkedList {
     this.head = null;
     this.tail = null;
     this.length = 0;
+
     if (options) {
-      let {adoptItem, freeItem} = options;
-      this.adoptItem = adoptItem;
-      this.freeItem = freeItem;
+      const {adoptItem, freeItem} = options;
+      this._adoptItem = adoptItem;
+      this._freeItem = freeItem;
     }
+  }
+  adoptItem(item) {
+    if (this._adoptItem) { this._adoptItem(item); }
+  }
+  freeItem(item) {
+    if (this._freeItem) { this._freeItem(item); }
   }
   get isEmpty() {
     return this.length === 0;
@@ -28,10 +35,11 @@ export default class LinkedList {
     this.insertBefore(item, nextItem);
   }
   insertBefore(item, nextItem) {
-    this.remove(item);
-    if (this.adoptItem) {
-      this.adoptItem(item);
+    if (item.next || item.prev || this.head === item) {
+      throw new Error('Cannot insert an item into a list if it is already in a list');
     }
+    this.adoptItem(item);
+
     if (nextItem && nextItem.prev) {
       // middle of the items
       let prevItem = nextItem.prev;
@@ -62,9 +70,8 @@ export default class LinkedList {
     this.length++;
   }
   remove(item) {
-    if (this.freeItem) {
-      this.freeItem(item);
-    }
+    this.freeItem(item);
+
     let didRemove = false;
     if (item.next && item.prev) {
       // Middle of the list
@@ -147,5 +154,17 @@ export default class LinkedList {
     newItems.forEach((newItem) => {
       this.insertBefore(newItem, nextItem);
     });
+  }
+  removeBy(conditionFn) {
+    let item = this.head;
+    while (item) {
+      let nextItem = item.next;
+
+      if (conditionFn(item)) {
+        this.remove(item);
+      }
+
+      item = nextItem;
+    }
   }
 }

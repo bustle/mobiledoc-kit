@@ -345,3 +345,113 @@ test(`#splice can reorganize items`, (assert) => {
   assert.equal(list.objectAt(1), itemOne, 'itemOne is present');
   assert.equal(list.objectAt(2), itemTwo, 'itemTwo is present');
 });
+
+test(`#removeBy mutates list when item is in middle`, (assert) => {
+  let list = new LinkedList();
+  let items = [
+    new LinkedItem(),
+    new LinkedItem(),
+    new LinkedItem(),
+    new LinkedItem()
+  ];
+  items[1].shouldRemove = true;
+  items.forEach(i => list.append(i));
+
+  assert.equal(list.length, 4);
+  list.removeBy(i => i.shouldRemove);
+  assert.equal(list.length, 3);
+  assert.equal(list.head, items[0]);
+  assert.equal(list.objectAt(1), items[2]);
+  assert.equal(list.objectAt(2), items[3]);
+  assert.equal(list.tail, items[3]);
+});
+
+test(`#removeBy mutates list when item is first`, (assert) => {
+  let list = new LinkedList();
+  let items = [
+    new LinkedItem(),
+    new LinkedItem(),
+    new LinkedItem(),
+    new LinkedItem()
+  ];
+  items[0].shouldRemove = true;
+  items.forEach(i => list.append(i));
+
+  assert.equal(list.length, 4);
+  list.removeBy(i => i.shouldRemove);
+  assert.equal(list.length, 3);
+  assert.equal(list.head, items[1]);
+  assert.equal(list.objectAt(1), items[2]);
+  assert.equal(list.tail, items[3]);
+});
+
+test(`#removeBy mutates list when item is last`, (assert) => {
+  let list = new LinkedList();
+  let items = [
+    new LinkedItem(),
+    new LinkedItem(),
+    new LinkedItem(),
+    new LinkedItem()
+  ];
+  items[3].shouldRemove = true;
+  items.forEach(i => list.append(i));
+
+  assert.equal(list.length, 4);
+  list.removeBy(i => i.shouldRemove);
+  assert.equal(list.length, 3);
+  assert.equal(list.head, items[0]);
+  assert.equal(list.objectAt(1), items[1]);
+  assert.equal(list.tail, items[2]);
+});
+
+test('#removeBy calls `freeItem` for each item removed', (assert) => {
+  let freed = [];
+
+  let list = new LinkedList({
+    freeItem(item) {
+      freed.push(item);
+    }
+  });
+
+  let items = [
+    new LinkedItem(),
+    new LinkedItem(),
+    new LinkedItem()
+  ];
+  items[0].name = '0';
+  items[1].name = '1';
+  items[2].name = '2';
+
+  items[0].shouldRemove = true;
+  items[1].shouldRemove = true;
+
+  items.forEach(i => list.append(i));
+
+  list.removeBy(i => i.shouldRemove);
+
+  assert.deepEqual(freed, [items[0], items[1]]);
+});
+
+test('#insertBefore throws if item to be inserted is already in this list', (assert) => {
+  let item1 = new LinkedItem();
+  let list1 = new LinkedList();
+  list1.append(item1);
+
+  assert.throws(() => {
+    list1.insertBefore(item1, null);
+  });
+});
+
+test('#insertBefore throws if item to be inserted is in another non-empty list', (assert) => {
+  let item1 = new LinkedItem();
+  let item2 = new LinkedItem();
+  let list1 = new LinkedList();
+  list1.append(item1);
+  list1.append(item2);
+
+  let list2 = new LinkedList();
+
+  assert.throws(() => {
+    list2.insertBefore(item1, null);
+  });
+});
