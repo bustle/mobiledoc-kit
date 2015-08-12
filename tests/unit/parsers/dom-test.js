@@ -26,6 +26,11 @@ module('Unit: DOMParser', {
 
 test('parse empty content', (assert) => {
   const post = parser.parse(buildDOM(''));
+  let section = builder.createMarkupSection('p');
+  expectedPost.sections.append(section);
+  let marker = builder.createMarker();
+  section.markers.append(marker);
+
   assert.deepEqual(post, expectedPost);
 });
 

@@ -154,6 +154,10 @@ NewHTMLParser.prototype = {
       parseMarkers(section, builder, sectionElement);
       break;
     }
+    if (section.markers.isEmpty) {
+      let marker = this.builder.createBlankMarker();
+      section.markers.append(marker);
+    }
     return section;
   },
   parse: function(postElement) {
@@ -174,6 +178,14 @@ NewHTMLParser.prototype = {
         }
       }
     }
+
+    if (post.sections.isEmpty) {
+      section = this.builder.createMarkupSection('p');
+      let marker = this.builder.createBlankMarker();
+      section.markers.append(marker);
+      post.sections.append(section);
+    }
+
     return post;
   }
 };

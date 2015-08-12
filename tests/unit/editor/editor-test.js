@@ -25,6 +25,11 @@ module('Unit: Editor', {
 test('can create an editor via dom node reference', (assert) => {
   editor = new Editor(editorElement);
   assert.equal(editor.element, editorElement);
+  assert.ok(editor.post);
+  assert.equal(editor.post.sections.length, 1);
+  assert.equal(editor.post.sections.head.tagName, 'p');
+  assert.equal(editor.post.sections.head.markers.length, 1);
+  assert.equal(editor.post.sections.head.markers.head.value, '');
 });
 
 test('can create an editor via dom node reference from getElementById', (assert) => {
