@@ -25,6 +25,27 @@ test('#parse empty doc returns an empty post', (assert) => {
     version: MOBILEDOC_VERSION,
     sections: [[], []]
   };
+
+  let section = builder.createMarkupSection('P');
+  let marker  = builder.createBlankMarker();
+  section.markers.append(marker);
+  post.sections.append(section);
+  assert.deepEqual(parser.parse(mobiledoc),
+                   post);
+});
+
+test('#parse empty markup section returns an empty post', (assert) => {
+  let mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [[], [
+      [1, 'h2', []]
+    ]]
+  };
+
+  let section = builder.createMarkupSection('h2');
+  let marker  = builder.createBlankMarker();
+  section.markers.append(marker);
+  post.sections.append(section);
   assert.deepEqual(parser.parse(mobiledoc),
                    post);
 });

@@ -21,6 +21,13 @@ export default class MobiledocParser {
     this.markerTypes = this.parseMarkerTypes(markerTypes);
     this.parseSections(sections, post);
 
+    if (post.sections.isEmpty) {
+      let section = this.builder.createMarkupSection('p');
+      let marker = this.builder.createBlankMarker();
+      section.markers.append(marker);
+      post.sections.append(section);
+    }
+
     return post;
   }
 
@@ -67,6 +74,10 @@ export default class MobiledocParser {
     const section = this.builder.createMarkupSection(tagName);
     post.sections.append(section);
     this.parseMarkers(markers, section);
+    if (section.markers.isEmpty) {
+      let marker = this.builder.createBlankMarker();
+      section.markers.append(marker);
+    }
   }
 
   parseMarkers(markers, section) {

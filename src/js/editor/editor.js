@@ -24,6 +24,7 @@ import EventEmitter from '../utils/event-emitter';
 
 import MobiledocParser from "../parsers/mobiledoc";
 import PostParser from '../parsers/post';
+import DOMParser from '../parsers/dom';
 import Renderer  from 'content-kit-editor/renderers/editor-dom';
 import {
   UNPRINTABLE_CHARACTER
@@ -279,7 +280,8 @@ class Editor {
   }
 
   parseModelFromDOM(element) {
-    this.post = this._parser.parse(element);
+    let parser = new DOMParser(this.builder);
+    this.post = parser.parse(element);
     this._renderTree = new RenderTree();
     let node = this._renderTree.buildRenderNode(this.post);
     this._renderTree.node = node;
