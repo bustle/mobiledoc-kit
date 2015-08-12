@@ -9,6 +9,8 @@ import { CARD_TYPE } from "../models/card";
 import { clearChildNodes } from '../utils/dom-utils';
 
 export const UNPRINTABLE_CHARACTER = "\u200C";
+export const NO_BREAK_SPACE = "\u00A0";
+const SPACE = ' ';
 
 function createElementFromMarkup(doc, markup) {
   var element = doc.createElement(markup.tagName);
@@ -18,6 +20,10 @@ function createElementFromMarkup(doc, markup) {
     }
   }
   return element;
+}
+
+function endsWith(string, character) {
+  return string.charAt(string.length -1) === character;
 }
 
 // ascends from element upward, returning the last parent node that is not
@@ -42,10 +48,10 @@ function isEmptyText(text) {
   return text.trim() === '';
 }
 
-// pass in a renderNode's previousSibling
 function getNextMarkerElement(renderNode) {
   let element = renderNode.element.parentNode;
-  let closedCount = renderNode.postNode.closedMarkups.length;
+  let marker = renderNode.postNode;
+  let closedCount = marker.closedMarkups.length;
 
   while (closedCount--) {
     element = element.parentNode;
@@ -58,6 +64,13 @@ function renderMarker(marker, element, previousRenderNode) {
   if (isEmptyText(text)) {
     // This is necessary to allow the cursor to move into this area
     text = UNPRINTABLE_CHARACTER;
+  }
+
+  // If the textNode has a trailing space, the browser will collapse the
+  // displayed cursor position to the previous character
+  // See https://github.com/bustlelabs/content-kit-editor/issues/68
+  if (!marker.next && endsWith(text, SPACE)) {
+    text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
   }
 
   let textNode = document.createTextNode(text);
