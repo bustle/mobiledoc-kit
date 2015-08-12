@@ -95,7 +95,13 @@ export default class Cursor {
       startMarker,
       endMarker,
       startSection,
-      endSection
+      endSection,
+
+      // FIXME: this should become the public API
+      headMarker: startMarker,
+      tailMarker: endMarker,
+      headOffset: leftOffset,
+      tailOffset: rightOffset
     };
   }
 
