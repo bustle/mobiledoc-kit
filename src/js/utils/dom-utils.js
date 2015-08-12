@@ -129,5 +129,6 @@ export {
   walkDOMUntil,
   walkTextNodes,
   addClassName,
-  normalizeTagName
+  normalizeTagName,
+  isTextNode
 };

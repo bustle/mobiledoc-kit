@@ -8,8 +8,32 @@ import {
 } from '../utils/selection-utils';
 
 import {
-  detectParentNode
+  detectParentNode,
+  isTextNode
 } from '../utils/dom-utils';
+
+
+function comparePosition(selection) {
+  let { anchorNode, focusNode, anchorOffset, focusOffset } = selection;
+  let leftNode, rightNode, leftOffset, rightOffset;
+
+  const position = anchorNode.compareDocumentPosition(focusNode);
+
+  if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+    leftNode = anchorNode; rightNode = focusNode;
+    leftOffset = anchorOffset; rightOffset = focusOffset;
+  } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+    leftNode = focusNode; rightNode = anchorNode;
+    leftOffset = focusOffset; rightOffset = anchorOffset;
+  } else { // same node
+    leftNode = anchorNode;
+    rightNode = focusNode;
+    leftOffset = Math.min(anchorOffset, focusOffset);
+    rightOffset = Math.max(anchorOffset, focusOffset);
+  }
+
+  return {leftNode, leftOffset, rightNode, rightOffset};
+}
 
 export default class Cursor {
   constructor(editor) {
@@ -32,10 +56,7 @@ export default class Cursor {
   }
 
   get offsets() {
-    let leftNode, rightNode,
-        leftOffset, rightOffset;
     const selection = this.selection;
-    const { anchorNode, focusNode, anchorOffset, focusOffset } = selection;
     const { rangeCount } = selection;
     const range = rangeCount > 0 && selection.getRangeAt(0);
 
@@ -43,19 +64,16 @@ export default class Cursor {
       return {};
     }
 
-    const position = anchorNode.compareDocumentPosition(focusNode);
+    let {leftNode, leftOffset, rightNode, rightOffset} =
+      comparePosition(selection);
 
-    if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
-      leftNode = anchorNode; rightNode = focusNode;
-      leftOffset = anchorOffset; rightOffset = focusOffset;
-    } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
-      leftNode = focusNode; rightNode = anchorNode;
-      leftOffset = focusOffset; rightOffset = anchorOffset;
-    } else { // same node
-      leftNode = anchorNode;
-      rightNode = focusNode;
-      leftOffset = Math.min(anchorOffset, focusOffset);
-      rightOffset = Math.max(anchorOffset, focusOffset);
+    // The selection should contain two text nodes.
+    // On Chrome/Safari using shift+<Up arrow> can create a selection with
+    // a tag rather than a text node. This fixes that.
+    // See https://github.com/bustlelabs/content-kit-editor/issues/56
+    if (!isTextNode(rightNode)) {
+      rightNode = rightNode.previousSibling.lastChild;
+      rightOffset = rightNode.textContent.length;
     }
 
     const leftRenderNode = this.renderTree.elements.get(leftNode),
