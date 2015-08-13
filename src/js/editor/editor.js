@@ -16,7 +16,7 @@ import CardCommand from '../commands/card';
 
 import ImageCard from '../cards/image';
 
-import Keycodes from '../utils/keycodes';
+import Key from '../utils/key';
 import {
   getSelectionBlockElement
 } from '../utils/selection-utils';
@@ -136,22 +136,25 @@ function bindSelectionEvent(editor) {
 }
 
 function bindKeyListeners(editor) {
-  // escape key
   editor.addEventListener(document, 'keyup', (event) => {
-    if (event.keyCode === Keycodes.ESC) {
+    const key = Key.fromEvent(event);
+    if (key.isEscape()) {
       editor.trigger('escapeKey');
     }
   });
 
   editor.addEventListener(document, 'keydown', (event) => {
-    switch (event.keyCode) {
-      case Keycodes.BACKSPACE:
-      case Keycodes.DELETE:
-        editor.handleDeletion(event);
-        break;
-      case Keycodes.ENTER:
+    const key = Key.fromEvent(event);
+
+    if (key.isDelete()) {
+      editor.handleDeletion(event);
+      event.preventDefault();
+    } else if (key.isEnter()) {
         editor.handleNewline(event);
-        break;
+    } else if (key.isPrintable()) {
+      if (editor.cursor.hasSelection()) {
+        editor.deleteSelection(event, {preventDefault:false});
+      }
     }
   });
 }
@@ -308,8 +311,10 @@ class Editor {
     this._renderer.render(this._renderTree);
   }
 
-  deleteSelection(event) {
-    event.preventDefault();
+  deleteSelection(event, options={preventDefault:true}) {
+    if (options.preventDefault) {
+      event.preventDefault();
+    }
 
     // types of selection deletion:
     //   * a selection starts at the beginning of a section
@@ -424,7 +429,6 @@ class Editor {
                            nextCursorOffset);
 
     this.trigger('update');
-    event.preventDefault();
   }
 
   handleNewline(event) {

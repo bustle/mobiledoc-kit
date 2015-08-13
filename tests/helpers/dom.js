@@ -75,9 +75,12 @@ function createKeyEvent(eventType, keyCode) {
   return oEvent;
 }
 
-function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER) {
+function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER, character=null) {
   let oEvent = createKeyEvent(eventType, keyCode);
-  return node.dispatchEvent(oEvent);
+  node.dispatchEvent(oEvent);
+  if (character) {
+    document.execCommand('insertText', false, character);
+  }
 }
 
 function _buildDOM(tagName, attributes={}, children=[]) {

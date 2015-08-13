@@ -274,21 +274,19 @@ Helpers.skipInPhantom('keystroke of character results in unprintable being remov
   assert.ok(!!textNode, 'gets text node');
   Helpers.dom.moveCursorTo(textNode, 1);
 
-  const runDefault = Helpers.dom.triggerKeyEvent(document, 'keydown', Helpers.dom.KEY_CODES.M);
-  if (runDefault) {
-    document.execCommand('insertText', false, 'm');
-    Helpers.dom.triggerEvent(editor.element, 'input');
-  }
+  const key = "M";
+  const keyCode = key.charCodeAt(0);
+  Helpers.dom.triggerKeyEvent(document, 'keydown', keyCode, key);
 
   textNode = getTextNode();
-  assert.equal(textNode.textContent, 'm',
+  assert.equal(textNode.textContent, key,
                'adds character');
 
   assert.equal(textNode.textContent.length, 1);
 
   assert.deepEqual(Helpers.dom.getCursorPosition(),
                   {node: textNode, offset: 1},
-                  'cursor moves to end of m text node');
+                  `cursor moves to end of ${key} text node`);
 });
 
 test('keystroke of delete at start of section joins with previous section', (assert) => {
