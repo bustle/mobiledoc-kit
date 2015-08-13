@@ -7,6 +7,7 @@ import { MARKER_TYPE } from "../models/marker";
 import { IMAGE_SECTION_TYPE } from "../models/image";
 import { CARD_TYPE } from "../models/card";
 import { clearChildNodes } from '../utils/dom-utils';
+import { startsWith, endsWith } from '../utils/string-utils';
 
 export const UNPRINTABLE_CHARACTER = "\u200C";
 export const NO_BREAK_SPACE = "\u00A0";
@@ -20,10 +21,6 @@ function createElementFromMarkup(doc, markup) {
     }
   }
   return element;
-}
-
-function endsWith(string, character) {
-  return string.charAt(string.length -1) === character;
 }
 
 // ascends from element upward, returning the last parent node that is not
@@ -66,11 +63,15 @@ function renderMarker(marker, element, previousRenderNode) {
     text = UNPRINTABLE_CHARACTER;
   }
 
-  // If the textNode has a trailing space, the browser will collapse the
-  // displayed cursor position to the previous character
+  // If the first marker has a leading space or the last marker has a
+  // trailing space, the browser will collapse the space when we position
+  // the cursor.
   // See https://github.com/bustlelabs/content-kit-editor/issues/68
+  //   and https://github.com/bustlelabs/content-kit-editor/issues/75
   if (!marker.next && endsWith(text, SPACE)) {
     text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
+  } else if (!marker.prev && startsWith(text, SPACE)) {
+    text = NO_BREAK_SPACE + text.substr(1);
   }
 
   let textNode = document.createTextNode(text);

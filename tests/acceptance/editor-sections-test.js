@@ -428,4 +428,22 @@ test('deleting when after deletion there is a trailing space positions cursor at
   });
 });
 
+test('deleting when after deletion there is a leading space positions cursor at start of selection', (assert) => {
+  const done = assert.async();
+
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  Helpers.dom.selectText('second', editorElement);
+  Helpers.dom.triggerDelete(editor);
+
+  assert.equal($('#editor p:eq(1)').text(), `${NO_BREAK_SPACE}section`, 'correct text after deletion');
+  let text = 'e';
+  Helpers.dom.insertText(text);
+
+  setTimeout(() => {
+    assert.equal($('#editor p:eq(1)').text(), `${text} section`, 'correct text after insertion');
+    done();
+  });
+});
+
 // test: deleting at start of section when previous section is a non-markup section
