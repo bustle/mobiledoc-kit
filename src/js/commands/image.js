@@ -9,14 +9,16 @@ export default class ImageCommand extends Command {
   }
 
   exec() {
-    let {post, builder} = this.editor;
-    let sections = this.editor.activeSections;
-    let lastSection = sections[sections.length - 1];
-    let section = builder.createCardSection('image');
-    post.sections.insertAfter(section, lastSection);
-    sections.forEach(section => section.renderNode.scheduleForRemoval());
+    let {headMarker} = this.editor.cursor.offsets;
+    let beforeSection = headMarker.section;
+    let afterSection = beforeSection.next;
+    let section = this.editor.builder.createCardSection('image');
 
-    this.editor.rerender();
-    this.editor.didUpdate();
+    this.editor.run((postEditor) => {
+      if (beforeSection.isBlank) {
+        postEditor.removeSection(beforeSection);
+      }
+      postEditor.insertSectionBefore(section, afterSection);
+    });
   }
 }

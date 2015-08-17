@@ -1,6 +1,7 @@
 import TextFormatToolbar  from '../views/text-format-toolbar';
 import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
+import PostEditor from './post';
 
 import ReversibleToolbarButton from '../views/reversible-toolbar-button';
 import BoldCommand from '../commands/bold';
@@ -17,9 +18,6 @@ import CardCommand from '../commands/card';
 import ImageCard from '../cards/image';
 
 import Key from '../utils/key';
-import {
-  getSelectionBlockElement
-} from '../utils/selection-utils';
 import EventEmitter from '../utils/event-emitter';
 
 import MobiledocParser from "../parsers/mobiledoc";
@@ -32,7 +30,7 @@ import {
 import RenderTree from 'content-kit-editor/models/render-tree';
 import MobiledocRenderer from '../renderers/mobiledoc';
 
-import { toArray, mergeWithOptions } from 'content-kit-utils';
+import { mergeWithOptions } from 'content-kit-utils';
 import {
   clearChildNodes,
   addClassName
@@ -44,7 +42,6 @@ import { getData, setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
 import Cursor from '../models/cursor';
-import { MARKUP_SECTION_TYPE } from '../models/markup-section';
 import PostNodeBuilder from '../models/post-node-builder';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
@@ -150,10 +147,13 @@ function bindKeyListeners(editor) {
       editor.handleDeletion(event);
       event.preventDefault();
     } else if (key.isEnter()) {
-        editor.handleNewline(event);
+      editor.handleNewline(event);
     } else if (key.isPrintable()) {
       if (editor.cursor.hasSelection()) {
-        editor.deleteSelection(event, {preventDefault:false});
+        let result = editor.run((postEditor) => {
+          return postEditor.deleteRange(editor.cursor.offsets);
+        });
+        editor.cursor.moveToMarker(result.currentMarker, result.currentOffset);
       }
     }
   });
@@ -276,12 +276,6 @@ class Editor {
     this._views.push(view);
   }
 
-  loadModel(post) {
-    this.post = post;
-    this.rerender();
-    this.trigger('update');
-  }
-
   parseModelFromDOM(element) {
     let parser = new DOMParser(this.builder);
     this.post = parser.parse(element);
@@ -311,159 +305,49 @@ class Editor {
     this._renderer.render(this._renderTree);
   }
 
-  deleteSelection(event, options={preventDefault:true}) {
-    if (options.preventDefault) {
-      event.preventDefault();
-    }
-
-    // types of selection deletion:
-    //   * a selection starts at the beginning of a section
-    //     -- cursor should end up at the beginning of that section
-    //     -- if the section not longer has markers, add a blank one for the cursor to focus on
-    //   * a selection is entirely within a section
-    //     -- split the markers with the selection, remove those new markers from their section
-    //     -- cursor goes at end of the marker before the selection start, or if the
-    //     -- selection was at the start of the section, cursor goes at section start
-    //   * a selection crosses multiple sections
-    //     -- remove all the sections that are between (exclusive ) selection start and end
-    //     -- join the start and end sections
-    //     -- mark the end section for removal
-    //     -- cursor goes at end of marker before the selection start
-
-    const markers = this.splitMarkersFromSelection();
-
-    const {changedSections, removedSections, currentMarker, currentOffset} = this.post.cutMarkers(markers);
-
-    changedSections.forEach(section => section.renderNode.markDirty());
-    removedSections.forEach(section => section.renderNode.scheduleForRemoval());
-
-    this.rerender();
-
-    let currentTextNode = currentMarker.renderNode.element;
-    this.cursor.moveToNode(currentTextNode, currentOffset);
-
-    this.trigger('update');
-  }
-
-  // FIXME ensure we handle deletion when there is a selection
   handleDeletion(event) {
-    let {
-      leftRenderNode,
-      leftOffset
-    } = this.cursor.offsets;
+    event.preventDefault();
 
-    // need to handle these cases:
-    // when cursor is:
-    //   * A in the middle of a marker -- just delete the character
-    //   * B offset is 0 and there is a previous marker
-    //     * delete last char of previous marker
-    //   * C offset is 0 and there is no previous marker
-    //     * join this section with previous section
-
-    if (this.cursor.hasSelection()) {
-      this.deleteSelection(event);
-      return;
-    }
-
-    const currentMarker = leftRenderNode.postNode;
-    let nextCursorMarker = currentMarker;
-    let nextCursorOffset = leftOffset - 1;
-
-    // A: in the middle of a marker
-    if (leftOffset !== 0) {
-      currentMarker.deleteValueAtOffset(leftOffset-1);
-      if (currentMarker.length === 0 && currentMarker.section.markers.length > 1) {
-        leftRenderNode.scheduleForRemoval();
-
-        let isFirstRenderNode = leftRenderNode === leftRenderNode.parent.childNodes.head;
-        if (isFirstRenderNode) {
-          // move cursor to start of next node
-          nextCursorMarker = leftRenderNode.next.postNode;
-          nextCursorOffset = 0;
-        } else {
-          // move cursor to end of prev node
-          nextCursorMarker = leftRenderNode.prev.postNode;
-          nextCursorOffset = leftRenderNode.prev.postNode.length;
-        }
+    let offsets = this.cursor.offsets;
+    let currentMarker, currentOffset;
+    this.run((postEditor) => {
+      let results;
+      if (this.cursor.hasSelection()) {
+        results = postEditor.deleteRange(offsets);
       } else {
-        leftRenderNode.markDirty();
+        // FIXME: perhaps this should accept this.cursor.offsets?
+        results = postEditor.deleteCharAt(offsets.headMarker, offsets.headOffset-1);
       }
-    } else {
-      let currentSection = currentMarker.section;
-      let previousMarker = currentMarker.prev;
-      if (previousMarker) { // (B)
-        let markerLength = previousMarker.length;
-        previousMarker.deleteValueAtOffset(markerLength - 1);
-      } else { // (C)
-        // possible previous sections:
-        //   * none -- do nothing
-        //   * markup section -- join to it
-        //   * non-markup section (card) -- select it? delete it?
-        let previousSection = currentSection.prev;
-        if (previousSection) {
-          let isMarkupSection = previousSection.type === MARKUP_SECTION_TYPE;
-
-          if (isMarkupSection) {
-            let lastPreviousMarker = previousSection.markers.tail;
-            previousSection.join(currentSection);
-            previousSection.renderNode.markDirty();
-            currentSection.renderNode.scheduleForRemoval();
-
-            nextCursorMarker = lastPreviousMarker.next;
-            nextCursorOffset = 0;
-          /*
-          } else {
-            // card section: ??
-          */
-          }
-        } else { // no previous section -- do nothing
-          nextCursorMarker = currentMarker;
-          nextCursorOffset = 0;
-        }
-      }
-    }
-
-    this.rerender();
-
-    this.cursor.moveToNode(nextCursorMarker.renderNode.element,
-                           nextCursorOffset);
-
-    this.trigger('update');
+      currentMarker = results.currentMarker;
+      currentOffset = results.currentOffset;
+    });
+    this.cursor.moveToMarker(currentMarker, currentOffset);
   }
 
   handleNewline(event) {
-    if (this.cursor.hasSelection()) {
-      this.handleDeletion(event);
-    }
-
-    const {
-      leftRenderNode,
-      rightRenderNode,
-      leftOffset
-    } = this.cursor.offsets;
+    let offsets = this.cursor.offsets;
 
     // if there's no left/right nodes, we are probably not in the editor,
     // or we have selected some non-marker thing like a card
-    if (!leftRenderNode || !rightRenderNode) { return; }
+    if (!offsets.leftRenderNode || !offsets.rightRenderNode) {
+      return;
+    }
 
     event.preventDefault();
 
-    const markerRenderNode = leftRenderNode;
-    const marker = markerRenderNode.postNode;
-    const section = marker.section;
-
-    let [beforeSection, afterSection] = section.splitAtMarker(marker, leftOffset);
-
-    section.renderNode.scheduleForRemoval();
-
-    this.post.sections.insertAfter(beforeSection, section);
-    this.post.sections.insertAfter(afterSection, beforeSection);
-    this.post.sections.remove(section);
-
-    this.rerender();
-    this.trigger('update');
-
-    this.cursor.moveToSection(afterSection);
+    let cursorSection;
+    this.run((postEditor) => {
+      let offsetAfterDeletion;
+      if (this.cursor.hasSelection()) {
+        let result = postEditor.deleteRange(offsets);
+        offsetAfterDeletion = {
+          headMarker: result.currentMarker,
+          headOffset: result.currentOffset
+        };
+      }
+      cursorSection = postEditor.splitSection(offsetAfterDeletion || offsets)[1];
+    });
+    this.cursor.moveToSection(cursorSection);
   }
 
   hasSelection() {
@@ -499,57 +383,18 @@ class Editor {
     this.hasSelection();
   }
 
-  /*
-   * @return {Array} of markers that are "inside the split"
-   */
-  splitMarkersFromSelection() {
-    const {
-      startMarker,
-      leftOffset:startMarkerOffset,
-      endMarker,
-      rightOffset:endMarkerOffset,
-      startSection,
-      endSection
-    } = this.cursor.offsets;
-
-    let selectedMarkers = [];
-
-    startMarker.renderNode.scheduleForRemoval();
-    endMarker.renderNode.scheduleForRemoval();
-
-    if (startMarker === endMarker) {
-      let newMarkers = startSection.splitMarker(
-        startMarker, startMarkerOffset, endMarkerOffset
-      );
-      selectedMarkers = this.markersInOffset(newMarkers, startMarkerOffset, endMarkerOffset);
-    } else {
-      let newStartMarkers = startSection.splitMarker(startMarker, startMarkerOffset);
-      let selectedStartMarkers = this.markersInOffset(newStartMarkers, startMarkerOffset);
-
-      let newEndMarkers = endSection.splitMarker(endMarker, endMarkerOffset);
-      let selectedEndMarkers = this.markersInOffset(newEndMarkers, 0, endMarkerOffset);
-
-      let newStartMarker = selectedStartMarkers[0],
-          newEndMarker = selectedEndMarkers[selectedEndMarkers.length - 1];
-
-      this.post.markersFrom(newStartMarker, newEndMarker, m => selectedMarkers.push(m));
-    }
-
-    return selectedMarkers;
-  }
-
-  markersInOffset(markers, startOffset, endOffset) {
+  markersInRange({headMarker, headOffset, tailMarker, tailOffset}) {
     let offset = 0;
     let foundMarkers = [];
-    let toEnd = endOffset === undefined;
-    if (toEnd) { endOffset = 0; }
+    let toEnd = tailOffset === undefined;
+    if (toEnd) { tailOffset = 0; }
 
-    markers.forEach(marker => {
+    this.post.markersFrom(headMarker, tailMarker, marker => {
       if (toEnd) {
-        endOffset += marker.length;
+        tailOffset += marker.length;
       }
 
-      if (offset >= startOffset && offset < endOffset) {
+      if (offset >= headOffset && offset < tailOffset) {
         foundMarkers.push(marker);
       }
 
@@ -559,30 +404,6 @@ class Editor {
     return foundMarkers;
   }
 
-  applyMarkupToSelection(markup) {
-    const markers = this.splitMarkersFromSelection();
-    markers.forEach(marker => {
-      marker.addMarkup(markup);
-      marker.section.renderNode.markDirty();
-    });
-
-    this.rerender();
-    this.selectMarkers(markers);
-    this.didUpdate();
-  }
-
-  removeMarkupFromSelection(markup) {
-    const markers = this.splitMarkersFromSelection();
-    markers.forEach(marker => {
-      marker.removeMarkup(markup);
-      marker.section.renderNode.markDirty();
-    });
-
-    this.rerender();
-    this.selectMarkers(markers);
-    this.didUpdate();
-  }
-
   selectMarkers(markers) {
     this.cursor.selectMarkers(markers);
     this.hasSelection();
@@ -590,12 +411,6 @@ class Editor {
 
   get cursor() {
     return new Cursor(this);
-  }
-
-  getCurrentBlockIndex() {
-    var selectionEl = this.element || getSelectionBlockElement();
-    var blockElements = toArray(this.element.children);
-    return blockElements.indexOf(selectionEl);
   }
 
   applyClassName(className) {
@@ -725,10 +540,6 @@ class Editor {
     }
   }
 
-  get cursorSelection() {
-    return this.cursor.cursorSelection;
-  }
-
   /*
    * Returns the active sections. If the cursor selection is collapsed this will be
    * an array of 1 item. Else will return an array containing each section that is either
@@ -791,19 +602,42 @@ class Editor {
     this._views = [];
   }
 
-  insertSectionAtCursor(newSection) {
-    let newRenderNode = this._renderTree.buildRenderNode(newSection);
-    let renderNodes = this.cursor.activeSections.map(s => s.renderNode);
-    let lastRenderNode = renderNodes[renderNodes.length-1];
-    lastRenderNode.parent.childNodes.insertAfter(newRenderNode, lastRenderNode);
-    this.post.sections.insertAfter(newSection, lastRenderNode.postNode);
-    renderNodes.forEach(renderNode => renderNode.scheduleForRemoval());
-    this.trigger('update');
-  }
-
   destroy() {
     this.removeAllEventListeners();
     this.removeAllViews();
+  }
+
+  /**
+   * Run a new post editing session. Yields a block with a new `postEditor`
+   * instance. This instance can be used to interact with the post abstract,
+   * and defers rendering until the end of all changes.
+   *
+   * Usage:
+   *
+   *     let markerRange = this.cursor.offsets;
+   *     editor.run((postEditor) => {
+   *       postEditor.deleteRange(markerRange);
+   *       // editing surface not updated yet
+   *       postEditor.schedule(() => {
+   *         console.log('logs during rerender flush');
+   *       });
+   *       // logging not yet flushed
+   *     });
+   *     // editing surface now updated.
+   *     // logging now flushed
+   *
+   * The return value of `run` is whatever was returned from the callback.
+   *
+   * @method run
+   * @param {Function} callback Function to handle post editing with, provided the `postEditor` as an argument.
+   * @return {} Whatever the return value of `callback` is.
+   * @public
+   */
+  run(callback) {
+    let postEditor = new PostEditor(this);
+    let result = callback(postEditor);
+    postEditor.complete();
+    return result;
   }
 }
 

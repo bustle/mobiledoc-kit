@@ -41,8 +41,14 @@ export default class Section extends LinkedItem {
     return this._tagName;
   }
 
-  get isEmpty() {
-    return this.markers.isEmpty;
+  get isBlank() {
+    if (!this.markers.length) {
+      return true;
+    }
+    let markerWithLength = this.markers.detect((marker) => {
+      return !!marker.length;
+    });
+    return !markerWithLength;
   }
 
   setTagName(newTagName) {

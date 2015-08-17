@@ -14,10 +14,21 @@ export default class ItalicCommand extends TextFormatCommand {
     this.markup = builder.createMarkup('em');
   }
   exec() {
-    this.editor.applyMarkupToSelection(this.markup);
+    let markerRange = this.editor.cursor.offsets;
+    if (!markerRange.leftRenderNode || !markerRange.rightRenderNode) {
+      return;
+    }
+    let markers = this.editor.run((postEditor) => {
+      return postEditor.applyMarkupToMarkers(markerRange, this.markup);
+    });
+    this.editor.selectMarkers(markers);
   }
   unexec() {
-    this.editor.removeMarkupFromSelection(this.markup);
+    let markerRange = this.editor.cursor.offsets;
+    let markers = this.editor.run((postEditor) => {
+      return postEditor.removeMarkupFromMarkers(markerRange, this.markup);
+    });
+    this.editor.selectMarkers(markers);
   }
   isActive() {
     return any(this.editor.activeMarkers, m => m.hasMarkup(this.markup));

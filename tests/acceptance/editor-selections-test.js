@@ -205,6 +205,37 @@ test('selecting text across markers deletes intermediary markers', (assert) => {
   });
 });
 
+test('selecting text across markers preserves node after', (assert) => {
+  const done = assert.async();
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  Helpers.dom.selectText('rst sec', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    Helpers.toolbar.clickButton(assert, 'bold');
+
+    const textNode1 = editorElement.childNodes[0].childNodes[0],
+          textNode2 = editorElement.childNodes[0].childNodes[1];
+    Helpers.dom.selectText('i', textNode1,
+                           'sec', textNode2);
+    Helpers.dom.triggerEvent(document, 'mouseup');
+
+    setTimeout(() => {
+      Helpers.dom.triggerDelete(editor);
+
+      assert.deepEqual(
+        editorElement.childNodes[0].innerHTML, 'ftion',
+        'has remaining first section'
+      );
+      assert.deepEqual(Helpers.dom.getCursorPosition(),
+                       {node: editorElement.childNodes[0].childNodes[0],
+                         offset: 1});
+      done();
+    });
+  });
+});
+
 test('selecting text across sections and hitting enter deletes and moves cursor to last selected section', (assert) => {
   const done = assert.async();
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
