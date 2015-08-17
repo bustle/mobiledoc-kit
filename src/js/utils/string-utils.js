@@ -9,3 +9,11 @@ export function dasherize(string) {
     return (offset === 0 ? lower : '-' + lower);
   });
 }
+
+export function startsWith(string, character) {
+  return string.charAt(0) === character;
+}
+
+export function endsWith(string, character) {
+  return string.charAt(string.length -1) === character;
+}
