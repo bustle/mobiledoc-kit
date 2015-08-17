@@ -35,8 +35,8 @@ class PostEditor {
     changedSections.forEach(section => section.renderNode.markDirty());
     removedSections.forEach(section => section.renderNode.scheduleForRemoval());
 
-    this.rerender();
-    this.didUpdate();
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
 
     return {
       currentMarker,
@@ -113,8 +113,8 @@ class PostEditor {
       }
     }
 
-    this.rerender();
-    this.didUpdate();
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
 
     return {
       currentMarker: nextCursorMarker,
@@ -171,8 +171,8 @@ class PostEditor {
       });
     }
 
-    this.rerender();
-    this.didUpdate();
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
 
     return selectedMarkers;
   }
@@ -195,8 +195,8 @@ class PostEditor {
     post.sections.insertAfter(afterSection, beforeSection);
     post.renderNode.markDirty();
 
-    this.rerender();
-    this.didUpdate();
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
 
     return [beforeSection, afterSection];
   }
@@ -208,8 +208,8 @@ class PostEditor {
       marker.section.renderNode.markDirty();
     });
 
-    this.rerender();
-    this.didUpdate();
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
 
     return markers;
   }
@@ -221,8 +221,8 @@ class PostEditor {
       marker.section.renderNode.markDirty();
     });
 
-    this.rerender();
-    this.didUpdate();
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
 
     return markers;
   }
@@ -231,15 +231,15 @@ class PostEditor {
     this.editor.post.sections.insertBefore(section, beforeSection);
     this.editor.post.renderNode.markDirty();
 
-    this.rerender();
-    this.didUpdate();
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
   }
 
   removeSection(section) {
     section.renderNode.scheduleForRemoval();
 
-    this.rerender();
-    this.didUpdate();
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
   }
 
   /**
@@ -257,7 +257,7 @@ class PostEditor {
    * Add a rerender job to the queue
    *
    */
-  rerender() {
+  scheduleRerender() {
     this.schedule(() => {
       if (!this._didRerender) {
         this._didRerender = true;
@@ -270,7 +270,7 @@ class PostEditor {
    * Add an update notice job to the queue
    *
    */
-  didUpdate() {
+  scheduleDidUpdate() {
     this.schedule(() => {
       if (!this._didUpdate) {
         this._didUpdate = true;
