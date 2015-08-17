@@ -230,6 +230,33 @@ test('selecting text across sections and hitting enter deletes and moves cursor 
   });
 });
 
+Helpers.skipInPhantom('keystroke of printable character while text is selected deletes the text', (assert) => {
+  const done = assert.async();
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+
+  Helpers.dom.selectText('first section', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    Helpers.toolbar.clickButton(assert, 'heading');
+
+    assert.ok($('#editor h2:contains(first section)').length,
+              'first section is a heading');
+
+    const firstSectionTextNode = editorElement.childNodes[0].childNodes[0];
+    const secondSectionTextNode = editorElement.childNodes[1].childNodes[0];
+    Helpers.dom.selectText('section', firstSectionTextNode,
+                          'secon', secondSectionTextNode);
+
+    const key = 'A';
+    const charCodeA = 65;
+    Helpers.dom.triggerKeyEvent(document, 'keydown', charCodeA, key);
+
+    assert.ok($(`#editor h2:contains(first ${key}d section)`).length,
+              'updates the section');
+
+    done();
+  });
+});
+
 // test selecting text that includes entire sections deletes the sections
-// test selecting text across two types of sections and deleting
-// test selecting text and hitting enter or keydown
