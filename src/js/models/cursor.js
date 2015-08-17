@@ -129,16 +129,16 @@ export default class Cursor {
   moveToSection(section) {
     const marker = section.markers.head;
     if (!marker) { throw new Error('Cannot move cursor to section without a marker'); }
-    const markerElement = marker.renderNode.element;
+    this.moveToMarker(marker);
+  }
 
-    let r = document.createRange();
-    r.selectNode(markerElement);
-    r.collapse(true);
-    const selection = this.selection;
-    if (selection.rangeCount > 0) {
-      selection.removeAllRanges();
-    }
-    selection.addRange(r);
+  // moves cursor to marker
+  moveToMarker(headMarker, headOffset=0, tailMarker=headMarker, tailOffset=headOffset) {
+    if (!headMarker) { throw new Error('Cannot move cursor to section without a marker'); }
+    const headElement = headMarker.renderNode.element;
+    const tailElement = tailMarker.renderNode.element;
+
+    this.moveToNode(headElement, headOffset, tailElement, tailOffset);
   }
 
   selectSections(sections) {

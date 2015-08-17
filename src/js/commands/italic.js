@@ -15,6 +15,9 @@ export default class ItalicCommand extends TextFormatCommand {
   }
   exec() {
     let markerRange = this.editor.cursor.offsets;
+    if (!markerRange.leftRenderNode || !markerRange.rightRenderNode) {
+      return;
+    }
     let markers = this.editor.run((postEditor) => {
       return postEditor.applyMarkupToMarkers(markerRange, this.markup);
     });

@@ -35,14 +35,13 @@ class PostEditor {
     changedSections.forEach(section => section.renderNode.markDirty());
     removedSections.forEach(section => section.renderNode.scheduleForRemoval());
 
-    this.didUpdate();
     this.rerender();
-    this.schedule(() => {
-      // FIXME the cursor API should accept markers, not elements. Or there
-      // should be a proxy method on editor
-      let currentTextNode = currentMarker.renderNode.element;
-      this.editor.cursor.moveToNode(currentTextNode, currentOffset);
-    });
+    this.didUpdate();
+
+    return {
+      currentMarker,
+      currentOffset
+    };
   }
 
   // need to handle these cases:
@@ -114,15 +113,13 @@ class PostEditor {
       }
     }
 
-    this.didUpdate();
     this.rerender();
-    this.schedule(() => {
-      let nextElement = nextCursorMarker.renderNode.element;
-      this.editor.cursor.moveToNode(
-        nextElement,
-        nextCursorOffset
-      );
-    });
+    this.didUpdate();
+
+    return {
+      currentMarker: nextCursorMarker,
+      currentOffset: nextCursorOffset
+    };
   }
 
   /*
@@ -138,9 +135,9 @@ class PostEditor {
     // for removal before doing that. FIXME this seems prime for
     // refactoring onto the postEditor as a split function
     headMarker.renderNode.scheduleForRemoval();
-    headMarker.renderNode.scheduleForRemoval();
+    tailMarker.renderNode.scheduleForRemoval();
     headMarker.section.renderNode.markDirty();
-    headMarker.section.renderNode.markDirty();
+    tailMarker.section.renderNode.markDirty();
 
     if (headMarker === tailMarker) {
       let markers = headSection.splitMarker(headMarker, headOffset, tailOffset);
@@ -174,10 +171,34 @@ class PostEditor {
       });
     }
 
-    this.didUpdate();
     this.rerender();
+    this.didUpdate();
 
     return selectedMarkers;
+  }
+
+  /*
+   * @return {Array} of new sections
+   */
+  splitSection({headMarker, headOffset}) {
+    const { post } = this.editor;
+    const { section } = headMarker;
+
+    const [
+      beforeSection,
+      afterSection
+    ] = section.splitAtMarker(headMarker, headOffset);
+
+    this.removeSection(section);
+
+    post.sections.insertAfter(beforeSection, section);
+    post.sections.insertAfter(afterSection, beforeSection);
+    post.renderNode.markDirty();
+
+    this.rerender();
+    this.didUpdate();
+
+    return [beforeSection, afterSection];
   }
 
   applyMarkupToMarkers(markerRange, markup) {

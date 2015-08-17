@@ -314,53 +314,46 @@ class Editor {
   handleDeletion(event) {
     event.preventDefault();
 
+    let offsets = this.cursor.offsets;
+    let currentMarker, currentOffset;
     this.run((postEditor) => {
+      let results;
       if (this.cursor.hasSelection()) {
-        postEditor.deleteRange(this.cursor.offsets);
+        results = postEditor.deleteRange(offsets);
       } else {
-        let {
-          headMarker: marker,
-          headOffset: offset
-        } = this.cursor.offsets;
         // FIXME: perhaps this should accept this.cursor.offsets?
-        postEditor.deleteCharAt(marker, offset-1);
+        results = postEditor.deleteCharAt(offsets.headMarker, offsets.headOffset-1);
       }
+      currentMarker = results.currentMarker;
+      currentOffset = results.currentOffset;
     });
+    this.cursor.moveToMarker(currentMarker, currentOffset);
   }
 
   handleNewline(event) {
-    if (this.cursor.hasSelection()) {
-      this.handleDeletion(event);
-    }
-
-    const {
-      leftRenderNode,
-      rightRenderNode,
-      leftOffset
-    } = this.cursor.offsets;
+    let offsets = this.cursor.offsets;
 
     // if there's no left/right nodes, we are probably not in the editor,
     // or we have selected some non-marker thing like a card
-    if (!leftRenderNode || !rightRenderNode) { return; }
+    if (!offsets.leftRenderNode || !offsets.rightRenderNode) {
+      return;
+    }
 
     event.preventDefault();
 
-    const markerRenderNode = leftRenderNode;
-    const marker = markerRenderNode.postNode;
-    const section = marker.section;
-
-    let [beforeSection, afterSection] = section.splitAtMarker(marker, leftOffset);
-
-    section.renderNode.scheduleForRemoval();
-
-    this.post.sections.insertAfter(beforeSection, section);
-    this.post.sections.insertAfter(afterSection, beforeSection);
-    this.post.sections.remove(section);
-
-    this.rerender();
-    this.trigger('update');
-
-    this.cursor.moveToSection(afterSection);
+    let cursorSection;
+    this.run((postEditor) => {
+      let offsetAfterDeletion;
+      if (this.cursor.hasSelection()) {
+        let result = postEditor.deleteRange(offsets);
+        offsetAfterDeletion = {
+          headMarker: result.currentMarker,
+          headOffset: result.currentOffset
+        };
+      }
+      cursorSection = postEditor.splitSection(offsetAfterDeletion || offsets)[1];
+    });
+    this.cursor.moveToSection(cursorSection);
   }
 
   hasSelection() {
