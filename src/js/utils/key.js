@@ -1,4 +1,8 @@
 import Keycodes from './keycodes';
+export const DIRECTION = {
+  FORWARD: 1,
+  BACKWARD: 2
+};
 
 /**
  * An abstraction around a KeyEvent
@@ -22,6 +26,14 @@ const Key = class Key {
   isDelete() {
     return this.keyCode === Keycodes.BACKSPACE ||
            this.keyCode === Keycodes.DELETE;
+  }
+
+  isForwardDelete() {
+    return this.keyCode === Keycodes.DELETE;
+  }
+
+  get direction() {
+    return this.isForwardDelete() ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
   }
 
   isSpace() {

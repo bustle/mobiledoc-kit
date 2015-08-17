@@ -1,4 +1,11 @@
 import { MARKUP_SECTION_TYPE } from '../models/markup-section';
+
+import { DIRECTION } from '../utils/key';
+
+function isMarkupSection(section) {
+  return section.type === MARKUP_SECTION_TYPE;
+}
+
 class PostEditor {
   constructor(editor) {
     this.editor = editor;
@@ -68,94 +75,114 @@ class PostEditor {
   }
 
   /**
-   * Remove a character from a marker.
+   * Remove a character from a {marker, offset} position, in either
+   * forward or backward (default) direction.
    *
    * Usage:
    *
    *     let marker = editor.post.sections.head.markers.head;
    *     // marker has text of "Howdy!"
    *     editor.run((postEditor) => {
-   *       postEditor.deleteCharAt(marker, 3);
+   *       postEditor.deleteFrom({marker, offset: 3});
    *     });
    *     // marker has text of "Hody!"
    *
-   * `deleteCharAt` may remove a character from a different marker or section
-   * if the position of the deletion is at the 0th offset. Offset behaves like
-   * a cursor position, with the deletion going to the previous character.
+   * `deleteFrom` may remove a character from a different marker or join the
+   * marker's section with the previous/next section (depending on the
+   * deletion direction) if direction is `BACKWARD` and the offset is 0,
+   * or direction is `FORWARD` and the offset is equal to the length of the
+   * marker.
    *
-   * @method deleteCharAt
-   * @param {Object} marker the marker to delete the character from
-   * @param {Object} offset offset in the text of the marker to delete, first character is 1
-   * @return {Object} {currentMarker, currentOffset} for cursor
+   * @method deleteFrom
+   * @param {Object} position object with {marker, offset} the marker and offset to delete from
+   * @param {Number} direction The direction to delete in (default is BACKWARD)
+   * @return {Object} {currentMarker, currentOffset} for positioning the cursor
    * @public
    */
-  deleteCharAt(marker, offset) {
-    // need to handle these cases:
-    // when cursor is:
-    //   * A in the middle of a marker -- just delete the character
-    //   * B offset is 0 and there is a previous marker
-    //     * delete last char of previous marker
-    //   * C offset is 0 and there is no previous marker
-    //     * join this section with previous section
-    const currentMarker = marker;
-    let nextCursorMarker = currentMarker;
-    let nextCursorOffset = offset;
-    let renderNode = marker.renderNode;
+  deleteFrom({marker, offset}, direction=DIRECTION.BACKWARD) {
+    if (direction === DIRECTION.BACKWARD) {
+      return this._deleteBackwardFrom({marker, offset});
+    } else {
+      return this._deleteForwardFrom({marker, offset});
+    }
+  }
 
-    // A: in the middle of a marker
-    if (offset >= 0) {
-      currentMarker.deleteValueAtOffset(offset);
-      if (currentMarker.length === 0 && currentMarker.section.markers.length > 1) {
-        if (marker.renderNode) {
-          marker.renderNode.scheduleForRemoval();
-        }
+  /**
+   * delete 1 character in the FORWARD direction from the given position
+   * @method _deleteForwardFrom
+   * @private
+   */
+  _deleteForwardFrom({marker, offset}) {
+    const nextCursorMarker = marker,
+          nextCursorOffset = offset;
 
-        let isFirstRenderNode = renderNode === renderNode.parent.childNodes.head;
-        if (isFirstRenderNode) {
-          // move cursor to start of next node
-          nextCursorMarker = renderNode.next.postNode;
-          nextCursorOffset = 0;
-        } else {
-          // move cursor to end of prev node
-          nextCursorMarker = renderNode.prev.postNode;
-          nextCursorOffset = renderNode.prev.postNode.length;
-        }
+    if (offset === marker.length) {
+      const nextMarker = marker.next;
+
+      if (nextMarker) {
+        this._deleteForwardFrom({marker: nextMarker, offset: 0});
       } else {
-        renderNode.markDirty();
+        const nextSection = marker.section.next;
+        if (nextSection && isMarkupSection(nextSection)) {
+          const currentSection = marker.section;
+
+          currentSection.join(nextSection);
+
+          currentSection.renderNode.markDirty();
+          nextSection.renderNode.scheduleForRemoval();
+        }
       }
     } else {
-      let currentSection = currentMarker.section;
-      let previousMarker = currentMarker.prev;
-      if (previousMarker) { // (B)
-        let markerLength = previousMarker.length;
-        previousMarker.deleteValueAtOffset(markerLength - 1);
-      } else { // (C)
-        // possible previous sections:
-        //   * none -- do nothing
-        //   * markup section -- join to it
-        //   * non-markup section (card) -- select it? delete it?
-        let previousSection = currentSection.prev;
-        if (previousSection) {
-          let isMarkupSection = previousSection.type === MARKUP_SECTION_TYPE;
+      marker.deleteValueAtOffset(offset);
+      marker.renderNode.markDirty();
+    }
 
-          if (isMarkupSection) {
-            let lastPreviousMarker = previousSection.markers.tail;
-            previousSection.join(currentSection);
-            previousSection.renderNode.markDirty();
-            currentSection.renderNode.scheduleForRemoval();
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
 
-            nextCursorMarker = lastPreviousMarker.next;
-            nextCursorOffset = 0;
-          /*
-          } else {
-            // card section: ??
-          */
+    return {
+      currentMarker: nextCursorMarker,
+      currentOffset: nextCursorOffset
+    };
+  }
+
+  /**
+   * delete 1 character in the BACKWARD direction from the given position
+   * @method _deleteBackwardFrom
+   * @private
+   */
+  _deleteBackwardFrom({marker, offset}) {
+    let nextCursorMarker = marker,
+        nextCursorOffset = offset;
+
+    if (offset === 0) {
+      const prevMarker = marker.prev;
+
+      if (prevMarker) {
+        return this._deleteBackwardFrom({marker: prevMarker, offset: prevMarker.length});
+      } else {
+        const prevSection = marker.section.prev;
+
+        if (prevSection) {
+          if (isMarkupSection(prevSection)) {
+            nextCursorMarker = prevSection.markers.tail;
+            nextCursorOffset = nextCursorMarker.length;
+
+            prevSection.join(marker.section);
+            prevSection.renderNode.markDirty();
+            marker.section.renderNode.scheduleForRemoval();
           }
-        } else { // no previous section -- do nothing
-          nextCursorMarker = currentMarker;
-          nextCursorOffset = 0;
+          // ELSE: FIXME: card section -- what should deleting into it do?
         }
       }
+
+    } else if (offset <= marker.length) {
+      const offsetToDeleteAt = offset - 1;
+
+      marker.deleteValueAtOffset(offsetToDeleteAt);
+      marker.renderNode.markDirty();
+
+      nextCursorOffset = offsetToDeleteAt;
     }
 
     this.scheduleRerender();
