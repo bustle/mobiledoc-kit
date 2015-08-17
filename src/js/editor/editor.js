@@ -276,12 +276,6 @@ class Editor {
     this._views.push(view);
   }
 
-  loadModel(post) {
-    this.post = post;
-    this.rerender();
-    this.trigger('update');
-  }
-
   parseModelFromDOM(element) {
     let parser = new DOMParser(this.builder);
     this.post = parser.parse(element);
