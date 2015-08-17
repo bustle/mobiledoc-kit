@@ -607,6 +607,32 @@ class Editor {
     this.removeAllViews();
   }
 
+  /**
+   * Run a new post editing session. Yields a block with a new `postEditor`
+   * instance. This instance can be used to interact with the post abstract,
+   * and defers rendering until the end of all changes.
+   *
+   * Usage:
+   *
+   *     let markerRange = this.cursor.offsets;
+   *     editor.run((postEditor) => {
+   *       postEditor.deleteRange(markerRange);
+   *       // editing surface not updated yet
+   *       postEditor.schedule(() => {
+   *         console.log('logs during rerender flush');
+   *       });
+   *       // logging not yet flushed
+   *     });
+   *     // editing surface now updated.
+   *     // logging now flushed
+   *
+   * The return value of `run` is whatever was returned from the callback.
+   *
+   * @method run
+   * @param {Function} callback Function to handle post editing with, provided the `postEditor` as an argument.
+   * @return {} Whatever the return value of `callback` is.
+   * @public
+   */
   run(callback) {
     let postEditor = new PostEditor(this);
     let result = callback(postEditor);

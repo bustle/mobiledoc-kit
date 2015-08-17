@@ -8,22 +8,45 @@ class PostEditor {
     this._didComplete = false;
   }
 
-  // types of selection deletion:
-  //   * a selection starts at the beginning of a section
-  //     -- cursor should end up at the beginning of that section
-  //     -- if the section not longer has markers, add a blank one for the cursor to focus on
-  //   * a selection is entirely within a section
-  //     -- split the markers with the selection, remove those new markers from their section
-  //     -- cursor goes at end of the marker before the selection start, or if the
-  //     -- selection was at the start of the section, cursor goes at section start
-  //   * a selection crosses multiple sections
-  //     -- remove all the sections that are between (exclusive ) selection start and end
-  //     -- join the start and end sections
-  //     -- mark the end section for removal
-  //     -- cursor goes at end of marker before the selection start
-  deleteRange(rangeMarkers) {
-    // rangeMarkers should be akin to this.cursor.offset
-    const markers = this.splitMarkers(rangeMarkers);
+  /**
+   * Remove a range of markers from the post.
+   *
+   * Usage:
+   *
+   *     let marker = editor.post.sections.head.markers.head;
+   *     editor.run((postEditor) => {
+   *       postEditor.deleteRange({
+   *         headMarker: marker,
+   *         headOffset: 2,
+   *         tailMarker: marker,
+   *         tailOffset: 4,
+   *       });
+   *     });
+   *
+   * `deleteRange` accepts the value of `this.cursor.offsets` for deletion.
+   *
+   * @method deleteRange
+   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @return {Object} {currentMarker, currentOffset} for cursor
+   * @public
+   */
+  deleteRange(markerRange) {
+    // types of selection deletion:
+    //   * a selection starts at the beginning of a section
+    //     -- cursor should end up at the beginning of that section
+    //     -- if the section not longer has markers, add a blank one for the cursor to focus on
+    //   * a selection is entirely within a section
+    //     -- split the markers with the selection, remove those new markers from their section
+    //     -- cursor goes at end of the marker before the selection start, or if the
+    //     -- selection was at the start of the section, cursor goes at section start
+    //   * a selection crosses multiple sections
+    //     -- remove all the sections that are between (exclusive ) selection start and end
+    //     -- join the start and end sections
+    //     -- mark the end section for removal
+    //     -- cursor goes at end of marker before the selection start
+
+    // markerRange should be akin to this.cursor.offset
+    const markers = this.splitMarkers(markerRange);
 
     const {
       changedSections,
@@ -44,14 +67,36 @@ class PostEditor {
     };
   }
 
-  // need to handle these cases:
-  // when cursor is:
-  //   * A in the middle of a marker -- just delete the character
-  //   * B offset is 0 and there is a previous marker
-  //     * delete last char of previous marker
-  //   * C offset is 0 and there is no previous marker
-  //     * join this section with previous section
+  /**
+   * Remove a character from a marker.
+   *
+   * Usage:
+   *
+   *     let marker = editor.post.sections.head.markers.head;
+   *     // marker has text of "Howdy!"
+   *     editor.run((postEditor) => {
+   *       postEditor.deleteCharAt(marker, 3);
+   *     });
+   *     // marker has text of "Hody!"
+   *
+   * `deleteCharAt` may remove a character from a different marker or section
+   * if the position of the deletion is at the 0th offset. Offset behaves like
+   * a cursor position, with the deletion going to the previous character.
+   *
+   * @method deleteCharAt
+   * @param {Object} marker the marker to delete the character from
+   * @param {Object} offset offset in the text of the marker to delete, first character is 1
+   * @return {Object} {currentMarker, currentOffset} for cursor
+   * @public
+   */
   deleteCharAt(marker, offset) {
+    // need to handle these cases:
+    // when cursor is:
+    //   * A in the middle of a marker -- just delete the character
+    //   * B offset is 0 and there is a previous marker
+    //     * delete last char of previous marker
+    //   * C offset is 0 and there is no previous marker
+    //     * join this section with previous section
     const currentMarker = marker;
     let nextCursorMarker = currentMarker;
     let nextCursorOffset = offset;
@@ -122,8 +167,25 @@ class PostEditor {
     };
   }
 
-  /*
-   * @return {Array} of markers that are "inside the split"
+  /**
+   * Split makers at two positions, once at the head, and if necessary once
+   * at the tail. This method is designed to accept `editor.cursor.offsets`
+   * as an argument.
+   *
+   * Usage:
+   *
+   *     let markerRange = this.cursor.offsets;
+   *     editor.run((postEditor) => {
+   *       postEditor.splitMarkers(markerRange);
+   *     });
+   *
+   * The return value will be marker object completely inside the offsets
+   * provided. Markers on the outside of the split may also have been modified.
+   *
+   * @method splitMarkers
+   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @return {Array} of markers that are inside the split
+   * @public
    */
   splitMarkers({headMarker, headOffset, tailMarker, tailOffset}) {
     let selectedMarkers = [];
@@ -177,8 +239,32 @@ class PostEditor {
     return selectedMarkers;
   }
 
-  /*
-   * @return {Array} of new sections
+  /**
+   * Split a section at one position. This method is designed to accept
+   * `editor.cursor.offsets` as an argument, but will only split at the
+   * head of the cursor position.
+   *
+   * Usage:
+   *
+   *     let marker = editor.post.sections.head.marker.head;
+   *     editor.run((postEditor) => {
+   *       postEditor.splitSection({
+   *         headMarker: marker,
+   *         headOffset: 3
+   *       });
+   *     });
+   *     // Will result in the marker and its old section being removed from
+   *     // the post and rendered DOM, and in the creation of two new sections
+   *     // replacing the old one.
+   *
+   * The return value will be the two new sections. One or both of these
+   * sections can be blank (contain only a blank marker), for example if the
+   * headOffset is 0.
+   *
+   * @method splitMarkers
+   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @return {Array} of new sections, one for the first half and one for the second
+   * @public
    */
   splitSection({headMarker, headOffset}) {
     const { post } = this.editor;
@@ -201,6 +287,30 @@ class PostEditor {
     return [beforeSection, afterSection];
   }
 
+  /**
+   * Given a markerRange (for example `editor.cursor.offsets`) mark all markers
+   * inside it as a given markup. The markup must be provided as a post
+   * abstract node.
+   *
+   * Usage:
+   *
+   *     let markerRange = editor.cursor.offsets;
+   *     let strongMarkup = editor.builder.createMarkup('strong');
+   *     editor.run((postEditor) => {
+   *       postEditor.applyMarkupToMarkers(markerRange, strongMarkup);
+   *     });
+   *     // Will result some markers possibly being split, and the markup
+   *     // being applied to all markers between the split.
+   *
+   * The return value will be all markers between the split, the same return
+   * value as `splitMarkers`.
+   *
+   * @method applyMarkupToMarkers
+   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @param {Object} markup A markup post abstract node
+   * @return {Array} of markers that are inside the split
+   * @public
+   */
   applyMarkupToMarkers(markerRange, markup) {
     const markers = this.splitMarkers(markerRange);
     markers.forEach(marker => {
@@ -214,6 +324,30 @@ class PostEditor {
     return markers;
   }
 
+  /**
+   * Given a markerRange (for example `editor.cursor.offsets`) remove the given
+   * markup from all contained markers. The markup must be provided as a post
+   * abstract node.
+   *
+   * Usage:
+   *
+   *     let markerRange = editor.cursor.offsets;
+   *     let markup = markerRange.headMarker.markups[0];
+   *     editor.run((postEditor) => {
+   *       postEditor.removeMarkupFromMarkers(markerRange, markup);
+   *     });
+   *     // Will result some markers possibly being split, and the markup
+   *     // being removed from all markers between the split.
+   *
+   * The return value will be all markers between the split, the same return
+   * value as `splitMarkers`.
+   *
+   * @method removeMarkupFromMarkers
+   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @param {Object} markup A markup post abstract node
+   * @return {Array} of markers that are inside the split
+   * @public
+   */
   removeMarkupFromMarkers(markerRange, markup) {
     const markers = this.splitMarkers(markerRange);
     markers.forEach(marker => {
@@ -227,6 +361,24 @@ class PostEditor {
     return markers;
   }
 
+  /**
+   * Insert a given section before another one, updating the post abstract
+   * and the rendered UI.
+   *
+   * Usage:
+   *
+   *     let markerRange = editor.cursor.offsets;
+   *     let sectionWithCursor = markerRange.headMarker.section;
+   *     let section = editor.builder.createCardSection('my-image');
+   *     editor.run((postEditor) => {
+   *       postEditor.insertSectionBefore(section, sectionWithCursor);
+   *     });
+   *
+   * @method insertSectionBefore
+   * @param {Object} section The new section
+   * @param {Object} beforeSection The section "before" is relative to
+   * @public
+   */
   insertSectionBefore(section, beforeSection) {
     this.editor.post.sections.insertBefore(section, beforeSection);
     this.editor.post.renderNode.markDirty();
@@ -235,6 +387,21 @@ class PostEditor {
     this.scheduleDidUpdate();
   }
 
+  /**
+   * Remove a given section from the post abstract and the rendered UI.
+   *
+   * Usage:
+   *
+   *     let markerRange = editor.cursor.offsets;
+   *     let sectionWithCursor = markerRange.headMarker.section;
+   *     editor.run((postEditor) => {
+   *       postEditor.removeSection(sectionWithCursor);
+   *     });
+   *
+   * @method insertSectionBefore
+   * @param {Object} section The section to remove
+   * @public
+   */
   removeSection(section) {
     section.renderNode.scheduleForRemoval();
 
@@ -245,6 +412,9 @@ class PostEditor {
   /**
    * A method for adding work the deferred queue
    *
+   * @method schedule
+   * @param {Function} callback to run during completion
+   * @public
    */
   schedule(callback) {
     if (this._didComplete) {
@@ -256,6 +426,8 @@ class PostEditor {
   /**
    * Add a rerender job to the queue
    *
+   * @method scheduleRerender
+   * @public
    */
   scheduleRerender() {
     this.schedule(() => {
@@ -267,8 +439,10 @@ class PostEditor {
   }
 
   /**
-   * Add an update notice job to the queue
+   * Add a didUpdate job to the queue
    *
+   * @method scheduleDidRender
+   * @public
    */
   scheduleDidUpdate() {
     this.schedule(() => {
@@ -280,8 +454,11 @@ class PostEditor {
   }
 
   /**
-   * Flush the work queue
+   * Flush any work on the queue. `editor.run` already does this, calling this
+   * method directly should not be needed outside `editor.run`.
    *
+   * @method complete
+   * @private
    */
   complete() {
     if (this._didComplete) {

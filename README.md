@@ -56,6 +56,33 @@ var editor = new ContentKit.Editor(element, options);
   Mobiledoc.
 * `editor.destroy()` - teardown the editor event listeners, free memory etc.
 
+### Programmatic Post Editing
+
+A major goal of Content-Kit is to allow complete customization of user
+interfaces using the editing surface. The programmatic editing API allows
+the creation of completely custom interfaces for buttons, hot-keys, and
+other interactions.
+
+To change the post in code, use the `editor.run` API. For example, the
+following usage would mark currently selected text as bold:
+
+```js
+let strongMarkup = editor.builder.createMarkup('strong');
+let markerRange = editor.cursor.offsets;
+editor.run((postEditor) => {
+  postEditor.applyMarkupToMarkers(markerRange, strongMarkup);
+});
+```
+
+It is important that you make changes to posts, sections, and markers through
+the `run` and `postEditor` API. This API allows Content-Kit to conserve
+and better understand changes being made to the post.
+
+For more details on the API of `postEditor`, see the [API documentation](https://github.com/mixonic/content-kit-editor/blob/master/src/js/editor/post.js).
+
+For more details on the API for the builder, required to create new sections
+and markers, see the [builder API](https://github.com/mixonic/content-kit-editor/blob/master/src/js/models/post-node-builder.js).
+
 ### Contributing
 
 Fork the repo, write a test, make a change, open a PR.
