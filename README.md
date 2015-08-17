@@ -55,6 +55,10 @@ var editor = new ContentKit.Editor(element, options);
 * `editor.serialize()` - serialize the current post for persistence. Returns
   Mobiledoc.
 * `editor.destroy()` - teardown the editor event listeners, free memory etc.
+* `editor.disableEditing()` - stop the user from being able to edit the
+  current post with their cursor. Programmatic edits are still allowed.
+* `editor.enableEditing()` - allow the user to make direct edits directly
+  to a post's text.
 
 ### Programmatic Post Editing
 

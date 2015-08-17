@@ -51,7 +51,6 @@ const defaults = {
   spellcheck: true,
   autofocus: true,
   post: null,
-  serverHost: '',
   // FIXME PhantomJS has 'ontouchstart' in window,
   // causing the stickyToolbar to accidentally be auto-activated
   // in tests
@@ -69,7 +68,9 @@ const defaults = {
   ],
   cards: [],
   cardOptions: {},
-  unknownCardHandler: () => { throw new Error('Unknown card encountered'); },
+  unknownCardHandler: () => {
+    throw new Error('Unknown card encountered');
+  },
   mobiledoc: null
 };
 
@@ -133,6 +134,9 @@ function bindSelectionEvent(editor) {
 }
 
 function bindKeyListeners(editor) {
+  if (!editor.isEditable) {
+    return;
+  }
   editor.addEventListener(document, 'keyup', (event) => {
     const key = Key.fromEvent(event);
     if (key.isEscape()) {
@@ -141,6 +145,9 @@ function bindKeyListeners(editor) {
   });
 
   editor.addEventListener(document, 'keydown', (event) => {
+    if (!editor.isEditable) {
+      return;
+    }
     const key = Key.fromEvent(event);
 
     if (key.isDelete()) {
@@ -235,7 +242,7 @@ class Editor {
     this.applyPlaceholder();
 
     element.spellcheck = this.spellcheck;
-    element.setAttribute('contentEditable', true);
+    this.enableEditing();
 
     if (this.mobiledoc) {
       this.post = new MobiledocParser(this.builder).parse(this.mobiledoc);
@@ -600,6 +607,31 @@ class Editor {
   destroy() {
     this.removeAllEventListeners();
     this.removeAllViews();
+  }
+
+  /**
+   * Keep the user from directly editing the post. Modification via the
+   * programmatic API is still permitted.
+   *
+   * @method disableEditing
+   * @return undefined
+   * @public
+   */
+  disableEditing() {
+    this.isEditable = false;
+    this.element.setAttribute('contentEditable', false);
+  }
+
+  /**
+   * Allow the user to directly interact with editing a post via a cursor.
+   *
+   * @method enableEditing
+   * @return undefined
+   * @public
+   */
+  enableEditing() {
+    this.isEditable = true;
+    this.element.setAttribute('contentEditable', true);
   }
 
   /**

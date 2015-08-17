@@ -29,3 +29,21 @@ test('sets element as contenteditable', (assert) => {
   assert.equal(editorElement.firstChild.tagName, 'P',
                `editor element has a P as its first child`);
 });
+
+test('#disableEditing and #enableEditing toggle contenteditable', (assert) => {
+  let innerHTML = `<p>Hello</p>`;
+  editorElement.innerHTML = innerHTML;
+  editor = new Editor(document.getElementById('editor'));
+
+  assert.equal(editorElement.getAttribute('contenteditable'),
+               'true',
+               'element is contenteditable');
+  editor.disableEditing();
+  assert.equal(editorElement.getAttribute('contenteditable'),
+               'false',
+               'element is not contenteditable');
+  editor.enableEditing();
+  assert.equal(editorElement.getAttribute('contenteditable'),
+               'true',
+               'element is contenteditable');
+});
