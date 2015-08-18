@@ -1,9 +1,11 @@
 import Editor from './editor/editor';
+import BoldCommand from './commands/bold';
 import ImageCard from './cards/image';
 
 const ContentKit = {
   Editor,
-  ImageCard
+  ImageCard,
+  BoldCommand
 };
 
 export function registerGlobal(global) {
