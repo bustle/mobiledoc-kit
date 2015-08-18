@@ -238,10 +238,12 @@ class Editor {
     element.setAttribute('contentEditable', true);
 
     if (this.mobiledoc) {
-      this.parseModelFromMobiledoc(this.mobiledoc);
+      this.post = new MobiledocParser(this.builder).parse(this.mobiledoc);
     } else {
-      this.parseModelFromDOM(this.element);
+      this.post = new DOMParser(this.builder).parse(this.element);
     }
+
+    this._renderTree = this.prepareRenderTree(this.post);
 
     clearChildNodes(element);
     this.rerender();
@@ -276,21 +278,11 @@ class Editor {
     this._views.push(view);
   }
 
-  parseModelFromDOM(element) {
-    let parser = new DOMParser(this.builder);
-    this.post = parser.parse(element);
-    this._renderTree = new RenderTree();
-    let node = this._renderTree.buildRenderNode(this.post);
-    this._renderTree.node = node;
-    this.trigger('update');
-  }
-
-  parseModelFromMobiledoc(mobiledoc) {
-    this.post = new MobiledocParser(this.builder).parse(mobiledoc);
-    this._renderTree = new RenderTree();
-    let node = this._renderTree.buildRenderNode(this.post);
-    this._renderTree.node = node;
-    this.trigger('update');
+  prepareRenderTree(post) {
+    let renderTree = new RenderTree();
+    let node = renderTree.buildRenderNode(post);
+    renderTree.node = node;
+    return renderTree;
   }
 
   rerender() {
@@ -308,20 +300,23 @@ class Editor {
   handleDeletion(event) {
     event.preventDefault();
 
-    let offsets = this.cursor.offsets;
-    let currentMarker, currentOffset;
-    this.run((postEditor) => {
-      let results;
+
+    const results = this.run(postEditor => {
+      const offsets = this.cursor.offsets;
+
       if (this.cursor.hasSelection()) {
-        results = postEditor.deleteRange(offsets);
+        return postEditor.deleteRange(offsets);
       } else {
-        // FIXME: perhaps this should accept this.cursor.offsets?
-        results = postEditor.deleteCharAt(offsets.headMarker, offsets.headOffset-1);
+        const {headMarker, headOffset} = offsets;
+        const key = Key.fromEvent(event);
+
+        const deletePosition = {marker: headMarker, offset: headOffset},
+              direction = key.direction;
+        return postEditor.deleteFrom(deletePosition, direction);
       }
-      currentMarker = results.currentMarker;
-      currentOffset = results.currentOffset;
     });
-    this.cursor.moveToMarker(currentMarker, currentOffset);
+
+    this.cursor.moveToMarker(results.currentMarker, results.currentOffset);
   }
 
   handleNewline(event) {

@@ -11,9 +11,12 @@ export default class PostNodeBuilder {
     this.markupCache = {};
   }
 
-  createPost() {
+  createPost(sections=[]) {
     const post = new Post();
     post.builder = this;
+
+    sections.forEach(s => post.sections.append(s));
+
     return post;
   }
 

@@ -145,7 +145,7 @@ function triggerDelete(editor) {
     let event = { preventDefault() {} };
     editor.handleDeletion(event);
   } else {
-    triggerKeyEvent(document, 'keydown', KEY_CODES.DELETE);
+    triggerKeyEvent(document, 'keydown', KEY_CODES.BACKSPACE);
   }
 }
 
