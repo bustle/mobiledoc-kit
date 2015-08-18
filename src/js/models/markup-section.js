@@ -121,37 +121,4 @@ export default class Section extends LinkedItem {
       this.markers.append(m.clone());
     });
   }
-
-  /**
-   * A marker contains this offset if:
-   *   * The offset is between the marker's start and end
-   *   * the offset is between two markers and this is the right marker (and leftInclusive is true)
-   *   * the offset is between two markers and this is the left marker (and leftInclusive is false)
-   *
-   * @return {Marker} The marker that contains this offset
-   */
-  markerContaining(offset, leftInclusive=true) {
-    let length = 0;
-    let lastMarker = null;
-
-    if (offset === 0) {
-      return this.markers.head;
-    }
-
-    this.markers.detect((marker) => {
-      if (length < offset) {
-        lastMarker = marker;
-        length += marker.length;
-        return false;
-      } else {
-        return true; // stop iteration
-      }
-    });
-
-    if (length > offset) {
-      return lastMarker;
-    } else if (length === offset) {
-      return (leftInclusive ? lastMarker.next : lastMarker);
-    }
-  }
 }
