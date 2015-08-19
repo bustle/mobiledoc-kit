@@ -56,6 +56,15 @@ test('#splitMarker does not create an empty marker if offset=0', (assert) => {
   assert.equal(s.markers.tail.value, 'there!', 'original 2nd marker unchanged');
 });
 
+test('#splitMarker does not remove an existing marker when the offset and endOffset are 0', (assert) => {
+  const m1 = builder.createMarker('X');
+  const s = builder.createMarkupSection('p', [m1]);
+  s.splitMarker(m1, 0, 0);
+
+  assert.equal(s.markers.length, 1, 'still 1 marker');
+  assert.equal(s.markers.head.value, 'X', 'still correct marker value');
+});
+
 test('#coalesceMarkers removes empty markers', (assert) => {
   const m1 = builder.createBlankMarker();
   const m2 = builder.createBlankMarker();
@@ -98,4 +107,64 @@ test('#isBlank returns false if there is a marker with length', (assert) => {
   const m = builder.createMarker('a');
   const s = builder.createMarkupSection('p', [m]);
   assert.ok(!s.isBlank, 'section with marker is not blank');
+});
+
+test('#markersFor clones markers', (assert) => {
+  const m = builder.createMarker('a');
+  const s = builder.createMarkupSection('p', [m]);
+  const clones = s.markersFor(0, 1);
+  assert.equal(clones.length, 1, 'correct number of clones are created');
+  assert.ok(clones[0] !== m, 'marker is cloned');
+  assert.equal(clones[0].value, m.value, 'marker content is the same');
+});
+
+test('#markersFor clones markers, trimming at tailOffset', (assert) => {
+  const m1 = builder.createMarker('ab');
+  const m2 = builder.createMarker('cd');
+  const s = builder.createMarkupSection('p', [m1, m2]);
+  const clones = s.markersFor(0, 3);
+  assert.equal(clones.length, 2, 'correct number of clones are created');
+  assert.equal(clones[0].value, 'ab', 'marker content correct');
+  assert.equal(clones[1].value, 'c', 'marker content is correct');
+});
+
+test('#markersFor clones markers, trimming at headOffset', (assert) => {
+  const m1 = builder.createMarker('ab');
+  const m2 = builder.createMarker('cd');
+  const s = builder.createMarkupSection('p', [m1, m2]);
+  const clones = s.markersFor(1, 4);
+  assert.equal(clones.length, 2, 'correct number of clones are created');
+  assert.equal(clones[0].value, 'b', 'marker content correct');
+  assert.equal(clones[1].value, 'cd', 'marker content is correct');
+});
+
+test('#markersFor clones markers, trimming at offsets that do not trim', (assert) => {
+  const m1 = builder.createMarker('ab');
+  const m2 = builder.createMarker('cd');
+  const m3 = builder.createMarker('ef');
+  const s = builder.createMarkupSection('p', [m1, m2, m3]);
+  const clones = s.markersFor(2, 4);
+  assert.equal(clones.length, 1, 'correct number of clones are created');
+  assert.equal(clones[0].value, 'cd', 'marker content correct');
+});
+
+test('#markersFor clones markers when offset completely surrounds a marker', (assert) => {
+  const m1 = builder.createMarker('ab');  // 0-2
+  const m2 = builder.createMarker('cd1'); // 2-5
+  const m3 = builder.createMarker('cd2'); // 5-8
+  const m4 = builder.createMarker('ef');  // 8-10
+  const s = builder.createMarkupSection('p', [m1, m2, m3, m4]);
+  const clones = s.markersFor(3, 9);
+  assert.equal(clones.length, 3, 'correct number of clones are created');
+  assert.equal(clones[0].value, 'd1', 'marker content correct');
+  assert.equal(clones[1].value, 'cd2', 'marker content correct');
+  assert.equal(clones[2].value, 'e', 'marker content correct');
+});
+
+test('#markersFor clones a single marker with a tail offset', (assert) => {
+  const m1 = builder.createMarker(' def');
+  const s = builder.createMarkupSection('p', [m1]);
+  const clones = s.markersFor(0,1);
+  assert.equal(clones.length, 1);
+  assert.equal(clones[0].value, ' ');
 });

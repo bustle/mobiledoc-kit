@@ -1,10 +1,7 @@
 import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
-import {
-  UNPRINTABLE_CHARACTER,
-  NO_BREAK_SPACE
-} from 'content-kit-editor/renderers/editor-dom';
+import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
 
 const { test, module } = QUnit;
 
@@ -98,9 +95,7 @@ module('Acceptance: Editor sections', {
   },
 
   afterEach() {
-    if (editor) {
-      editor.destroy();
-    }
+    if (editor) { editor.destroy(); }
   }
 });
 
@@ -144,7 +139,7 @@ test('hitting enter at start of a section creates empty section where cursor was
   assert.equal($('#editor p').length, 2, 'has 2 paragraphs after typing return');
 
   let firstP = $('#editor p:eq(0)');
-  assert.equal(firstP.text(), UNPRINTABLE_CHARACTER, 'first para has unprintable char');
+  assert.equal(firstP.text(), '', 'first para has no text');
   assert.hasElement('#editor p:eq(1):contains(only section)', 'has correct second paragraph text');
 
   assert.deepEqual(Helpers.dom.getCursorPosition(),
@@ -161,10 +156,11 @@ test('hitting enter at end of a section creates new empty section', (assert) => 
 
   assert.equal($('#editor p').length, 2, 'has 2 sections after typing return');
   assert.hasElement('#editor p:eq(0):contains(only section)', 'has same first section text');
+  assert.hasElement('#editor p:eq(1):contains()', 'second section has no text');
 
-  assert.deepEqual(Helpers.dom.getCursorPosition(),
-                   {node: editorElement.childNodes[1].childNodes[0],
-                    offset: 0});
+  Helpers.dom.insertText('X');
+
+  assert.hasElement('#editor p:eq(1):contains(X)', 'text is inserted in the new section');
 });
 
 // Phantom does not recognize toggling contenteditable off
@@ -270,33 +266,28 @@ test('keystroke of delete when cursor is after only char in only marker of secti
 
   Helpers.dom.triggerDelete(editor);
 
-  assert.equal($('#editor p:eq(0)')[0].textContent, UNPRINTABLE_CHARACTER,
-               'deletes only character');
+  assert.hasElement('#editor p:eq(0):contains()', 'first p is empty');
 
-  textNode = getTextNode();
-  assert.deepEqual(Helpers.dom.getCursorPosition(),
-                  {node: textNode, offset: 0},
-                  'cursor moves to start of empty text node');
+  Helpers.dom.insertText('X');
+  assert.hasElement('#editor p:eq(0):contains(X)', 'text is added back to section');
 });
 
-Helpers.skipInPhantom('keystroke of character results in unprintable being removed', (assert) => {
+Helpers.skipInPhantom('keystroke of character in empty section adds character, moves cursor', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWithNoCharacter});
   const getTextNode = () => editor.element.
                                   firstChild. // section
                                   firstChild; // marker
 
   let textNode = getTextNode();
-  assert.ok(!!textNode, 'gets text node');
-  Helpers.dom.moveCursorTo(textNode, 1);
+  assert.ok(!!textNode, 'precond - gets text node');
+  Helpers.dom.moveCursorTo(textNode, 0);
 
   const key = "M";
   const keyCode = key.charCodeAt(0);
   Helpers.dom.triggerKeyEvent(document, 'keydown', keyCode, key);
 
   textNode = getTextNode();
-  assert.equal(textNode.textContent, key,
-               'adds character');
-
+  assert.equal(textNode.textContent, key, 'adds character');
   assert.equal(textNode.textContent.length, 1);
 
   assert.deepEqual(Helpers.dom.getCursorPosition(),
@@ -370,14 +361,13 @@ test('when selection incorrectly contains P end tag, editor reports correct sele
     assert.ok(true, 'No error should occur');
 
     let firstSectionTextNode = editor.element.childNodes[0].childNodes[0];
-    let firstSectionLength = firstSectionTextNode.textContent.length;
 
     let {leftNode, rightNode, leftOffset, rightOffset} = editor.cursor.offsets;
 
     assert.equal(leftNode, firstSectionTextNode, 'returns first section text node as left');
-    assert.equal(rightNode, firstSectionTextNode, 'returns first section text node as right');
+    assert.equal(rightNode, secondSectionTextNode, 'returns second section text node as right');
     assert.equal(leftOffset, 0, 'leftOffset correct');
-    assert.equal(rightOffset, firstSectionLength, 'rightOffset correct');
+    assert.equal(rightOffset, 0, 'rightOffset correct');
 
     done();
   });
@@ -390,6 +380,7 @@ test('when selection incorrectly contains P start tag, editor reports correct se
 
   let firstSectionTextNode = editor.element.childNodes[0].firstChild;
   let secondSectionPNode = editor.element.childNodes[1];
+  let secondSectionTextNode = secondSectionPNode.childNodes[0];
 
   Helpers.dom.moveCursorTo(firstSectionTextNode, 0,
                            secondSectionPNode, 0);
@@ -399,14 +390,13 @@ test('when selection incorrectly contains P start tag, editor reports correct se
     assert.ok(true, 'No error should occur');
 
     let firstSectionTextNode = editor.element.childNodes[0].childNodes[0];
-    let firstSectionLength = firstSectionTextNode.textContent.length;
 
     let {leftNode, rightNode, leftOffset, rightOffset} = editor.cursor.offsets;
 
     assert.equal(leftNode, firstSectionTextNode, 'returns first section text node as left');
-    assert.equal(rightNode, firstSectionTextNode, 'returns first section text node as right');
+    assert.equal(rightNode, secondSectionTextNode, 'returns second section p node as right');
     assert.equal(leftOffset, 0, 'leftOffset correct');
-    assert.equal(rightOffset, firstSectionLength, 'rightOffset correct');
+    assert.equal(rightOffset, 0, 'rightOffset correct');
 
     done();
   });

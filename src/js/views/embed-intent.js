@@ -1,8 +1,7 @@
 import View from './view';
 import Toolbar from './toolbar';
 import { inherit } from 'content-kit-utils';
-import { getSelectionBlockElement } from '../utils/selection-utils';
-import { elementContentIsEmpty, positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
+import { positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
 import { createDiv } from '../utils/element-utils';
 import Keycodes from '../utils/keycodes';
 
@@ -49,14 +48,21 @@ function EmbedIntent(options) {
     direction: Toolbar.Direction.RIGHT
   });
 
-  function embedIntentHandler() {
-    var blockElement = getSelectionBlockElement();
-    if (blockElement && elementContentIsEmpty(blockElement)) {
-      embedIntent.showAt(blockElement);
+  const embedIntentHandler = () => {
+    const {editorContext:editor} = this;
+    if (this._isDestroyed || editor._isDestroyed) {
+      return;
+    }
+
+    const {headSection, isCollapsed} = embedIntent.editorContext.cursor.offsets;
+    const headRenderNode = headSection && headSection.renderNode && headSection.renderNode.element;
+
+    if (headRenderNode && headSection.isBlank && isCollapsed) {
+      embedIntent.showAt(headRenderNode);
     } else {
       embedIntent.hide();
     }
-  }
+  };
 
   this.addEventListener(rootElement, 'keyup', embedIntentHandler);
   this.addEventListener(document, 'click', () => {

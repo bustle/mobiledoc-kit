@@ -26,7 +26,7 @@ module('Unit: Editor #destroy', {
     editor = new Editor(editorElement, {mobiledoc});
   },
   afterEach() {
-    if (editor) {
+    if (editor && !editor._isDestroyed) {
       editor.destroy();
     }
   }

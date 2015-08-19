@@ -111,16 +111,21 @@ export default class LinkedList {
       item = item.next;
     }
   }
-  readRange(startItem, endItem) {
-    let items = [];
+  walk(startItem, endItem, callback) {
     let item = startItem || this.head;
     while (item) {
-      items.push(item);
+      callback(item);
       if (item === endItem) {
         break;
       }
       item = item.next;
     }
+  }
+  readRange(startItem, endItem) {
+    let items = [];
+    this.walk(startItem, endItem, (item) => {
+      items.push(item);
+    });
     return items;
   }
   toArray() {

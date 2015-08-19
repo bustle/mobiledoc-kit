@@ -12,9 +12,7 @@ module('Acceptance: editor: basic', {
     fixture.appendChild(editorElement);
   },
   afterEach() {
-    if (editor) {
-      editor.destroy();
-    }
+    if (editor) { editor.destroy(); }
   }
 });
 

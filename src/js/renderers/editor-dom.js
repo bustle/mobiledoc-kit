@@ -41,12 +41,8 @@ function renderMarkupSection(section) {
   return element;
 }
 
-function isEmptyText(text) {
-  return text.trim() === '';
-}
-
 function getNextMarkerElement(renderNode) {
-  let element = renderNode.element.parentNode;
+  let element = renderNode._teardownElement.parentNode;
   let marker = renderNode.postNode;
   let closedCount = marker.closedMarkups.length;
 
@@ -56,12 +52,23 @@ function getNextMarkerElement(renderNode) {
   return element;
 }
 
+function renderBlankMarker(marker, element, previousRenderNode) {
+  let blankElement = document.createElement('br');
+
+  if (previousRenderNode) {
+    // FIXME there should never be a previousRenderNode for a blank marker
+    let previousSibling = previousRenderNode.element;
+    let previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
+    element.insertBefore(blankElement, previousSiblingPenultimate.nextSibling);
+  } else {
+    element.insertBefore(blankElement, element.firstChild);
+  }
+
+  return blankElement;
+}
+
 function renderMarker(marker, element, previousRenderNode) {
   let text = marker.value;
-  if (isEmptyText(text)) {
-    // This is necessary to allow the cursor to move into this area
-    text = UNPRINTABLE_CHARACTER;
-  }
 
   // If the first marker has a leading space or the last marker has a
   // trailing space, the browser will collapse the space when we position
@@ -152,9 +159,17 @@ class Visitor {
     } else {
       parentElement = renderNode.parent.element;
     }
-    let textNode = renderMarker(marker, parentElement, renderNode.prev);
+    let markerNode, focusableNode;
+    if (marker.isEmpty) {
+      markerNode    = renderBlankMarker(marker, parentElement, renderNode.prev);
+      focusableNode = markerNode.parentNode;
+    } else {
+      markerNode = focusableNode = renderMarker(marker, parentElement, renderNode.prev);
+    }
 
-    renderNode.element = textNode;
+    renderNode.renderTree.elements.set(focusableNode, renderNode);
+    renderNode.element = focusableNode;
+    renderNode._teardownElement = markerNode;
   }
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
@@ -226,7 +241,7 @@ let destroyHooks = {
     // FIXME before we render marker, should delete previous renderNode's element
     // and up until the next marker element
 
-    let element = renderNode.element;
+    let element = renderNode._teardownElement;
     let nextMarkerElement = getNextMarkerElement(renderNode);
     while (element.parentNode && element.parentNode !== nextMarkerElement) {
       element = element.parentNode;

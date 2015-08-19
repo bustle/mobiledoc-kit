@@ -1,4 +1,3 @@
-import { UNPRINTABLE_CHARACTER } from 'content-kit-editor/renderers/editor-dom';
 import { dasherize } from 'content-kit-editor/utils/string-utils';
 import {
   normalizeTagName
@@ -34,16 +33,6 @@ function getEventTargetMatchingTag(tagName, target, container) {
     }
     target = target.parentNode;
   }
-}
-
-function elementContentIsEmpty(element) {
-  if (!element.firstChild) {
-    return true;
-  } else if (element.childNodes.length === 1 &&
-             element.firstChild.textContent === UNPRINTABLE_CHARACTER) {
-    return true;
-  }
-  return false;
 }
 
 function getElementRelativeOffset(element) {
@@ -138,7 +127,6 @@ export {
   showElement,
   swapElements,
   getEventTargetMatchingTag,
-  elementContentIsEmpty,
   getElementRelativeOffset,
   getElementComputedStyleNumericProp,
   positionElementToRect,

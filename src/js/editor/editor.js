@@ -24,9 +24,6 @@ import MobiledocParser from "../parsers/mobiledoc";
 import PostParser from '../parsers/post';
 import DOMParser from '../parsers/dom';
 import Renderer  from 'content-kit-editor/renderers/editor-dom';
-import {
-  UNPRINTABLE_CHARACTER
-} from 'content-kit-editor/renderers/editor-dom';
 import RenderTree from 'content-kit-editor/models/render-tree';
 import MobiledocRenderer from '../renderers/mobiledoc';
 
@@ -36,7 +33,8 @@ import {
   addClassName
 } from '../utils/dom-utils';
 import {
-  forEach
+  forEach,
+  detect
 } from '../utils/array-utils';
 import { getData, setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
@@ -157,10 +155,11 @@ function bindKeyListeners(editor) {
       editor.handleNewline(event);
     } else if (key.isPrintable()) {
       if (editor.cursor.hasSelection()) {
-        let result = editor.run((postEditor) => {
-          return postEditor.deleteRange(editor.cursor.offsets);
+        let offsets = editor.cursor.offsets;
+        editor.run((postEditor) => {
+          postEditor.deleteRange(editor.cursor.offsets);
         });
-        editor.cursor.moveToMarker(result.currentMarker, result.currentOffset);
+        editor.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
       }
     }
   });
@@ -307,23 +306,24 @@ class Editor {
   handleDeletion(event) {
     event.preventDefault();
 
+    const offsets = this.cursor.offsets;
 
-    const results = this.run(postEditor => {
-      const offsets = this.cursor.offsets;
-
-      if (this.cursor.hasSelection()) {
-        return postEditor.deleteRange(offsets);
-      } else {
+    if (this.cursor.hasSelection()) {
+      this.run(postEditor => {
+        postEditor.deleteRange(offsets);
+      });
+      this.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
+    } else {
+      let results = this.run(postEditor => {
         const {headMarker, headOffset} = offsets;
         const key = Key.fromEvent(event);
 
         const deletePosition = {marker: headMarker, offset: headOffset},
               direction = key.direction;
         return postEditor.deleteFrom(deletePosition, direction);
-      }
-    });
-
-    this.cursor.moveToMarker(results.currentMarker, results.currentOffset);
+      });
+      this.cursor.moveToMarker(results.currentMarker, results.currentOffset);
+    }
   }
 
   handleNewline(event) {
@@ -339,15 +339,10 @@ class Editor {
 
     let cursorSection;
     this.run((postEditor) => {
-      let offsetAfterDeletion;
       if (this.cursor.hasSelection()) {
-        let result = postEditor.deleteRange(offsets);
-        offsetAfterDeletion = {
-          headMarker: result.currentMarker,
-          headOffset: result.currentOffset
-        };
+        postEditor.deleteRange(offsets);
       }
-      cursorSection = postEditor.splitSection(offsetAfterDeletion || offsets)[1];
+      cursorSection = postEditor.splitSection(offsets)[1];
     });
     this.cursor.moveToSection(cursorSection);
   }
@@ -383,27 +378,6 @@ class Editor {
   selectSections(sections) {
     this.cursor.selectSections(sections);
     this.hasSelection();
-  }
-
-  markersInRange({headMarker, headOffset, tailMarker, tailOffset}) {
-    let offset = 0;
-    let foundMarkers = [];
-    let toEnd = tailOffset === undefined;
-    if (toEnd) { tailOffset = 0; }
-
-    this.post.markersFrom(headMarker, tailMarker, marker => {
-      if (toEnd) {
-        tailOffset += marker.length;
-      }
-
-      if (offset >= headOffset && offset < tailOffset) {
-        foundMarkers.push(marker);
-      }
-
-      offset += marker.length;
-    });
-
-    return foundMarkers;
   }
 
   selectMarkers(markers) {
@@ -455,7 +429,10 @@ class Editor {
     let previousSection;
 
     forEach(this.element.childNodes, (node) => {
-      let sectionRenderNode = this._renderTree.getElementRenderNode(node);
+      // FIXME: this is kind of slow
+      let sectionRenderNode = detect(this._renderTree.node.childNodes, (renderNode) => {
+        return renderNode.element === node;
+      });
       if (!sectionRenderNode) {
         let section = this._parser.parseSection(node);
         newSections.push(section);
@@ -501,44 +478,22 @@ class Editor {
     });
 
     let {
-      leftRenderNode,
-      leftOffset,
-      rightRenderNode,
-      rightOffset
-    } = this.cursor.offsets;
+      headSection,
+      headSectionOffset
+    } = this.cursor.sectionOffsets;
 
     // The cursor will lose its textNode if we have reparsed (and thus will rerender, below)
     // its section. Ensure the cursor is placed where it should be after render.
     //
     // New sections are presumed clean, and thus do not get rerendered and lose
     // their cursor position.
-    let resetCursor = (leftRenderNode &&
-        sectionsWithCursor.indexOf(leftRenderNode.postNode.section) !== -1);
-
-    if (resetCursor) {
-      let unprintableOffset = leftRenderNode.element.textContent.indexOf(UNPRINTABLE_CHARACTER);
-      if (unprintableOffset !== -1) {
-        leftRenderNode.markDirty();
-        if (unprintableOffset < leftOffset) {
-          // FIXME: we should move backward/forward some number of characters
-          // with a method on markers that returns the relevent marker and
-          // offset (may not be the marker it was called with);
-          leftOffset--;
-          rightOffset--;
-        }
-      }
-    }
+    let resetCursor = sectionsWithCursor.indexOf(headSection) !== -1;
 
     this.rerender();
     this.trigger('update');
 
     if (resetCursor) {
-      this.cursor.moveToNode(
-        leftRenderNode.element,
-        leftOffset,
-        rightRenderNode.element,
-        rightOffset
-      );
+      this.cursor.moveToSection(headSection, headSectionOffset);
     }
   }
 
@@ -556,7 +511,7 @@ class Editor {
   get activeMarkers() {
     const {
       startMarker,
-      endMarker,
+      endMarker
     } = this.cursor.offsets;
 
     if (!(startMarker && endMarker)) {
@@ -605,6 +560,7 @@ class Editor {
   }
 
   destroy() {
+    this._isDestroyed = true;
     this.removeAllEventListeners();
     this.removeAllViews();
   }

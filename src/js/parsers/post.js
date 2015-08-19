@@ -78,7 +78,7 @@ export default class PostParser {
 
       let marker;
 
-      let renderNode = renderTree.elements.get(textNode);
+      let renderNode = renderTree.getElementRenderNode(textNode);
       if (renderNode) {
         if (text.length) {
           marker = renderNode.postNode;
@@ -121,14 +121,17 @@ export default class PostParser {
     });
 
     // remove any nodes that were not marked as seen
-    let renderNode = section.renderNode.firstChild;
-    while (renderNode) {
-      if (seenRenderNodes.indexOf(renderNode) === -1) {
-        // remove it
-        renderNode.scheduleForRemoval();
+    section.renderNode.childNodes.forEach(childRenderNode => {
+      if (seenRenderNodes.indexOf(childRenderNode) === -1) {
+        childRenderNode.scheduleForRemoval();
       }
+    });
 
-      renderNode = renderNode.next;
+    /** FIXME that we are reparsing and there are no markers should never
+     * happen. We manage the delete key on our own. */
+    if (section.markers.isEmpty) {
+      let marker = this.builder.createBlankMarker();
+      section.markers.append(marker);
     }
   }
 }
