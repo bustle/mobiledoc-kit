@@ -167,7 +167,22 @@ test('hitting enter at end of a section creates new empty section', (assert) => 
                     offset: 0});
 });
 
-test('deleting across 0 sections merges them', (assert) => {
+// Phantom does not recognize toggling contenteditable off
+Helpers.skipInPhantom('deleting across 2 sections does nothing if editing is disabled', (assert) => {
+  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor.disableEditing();
+  assert.equal($('#editor p').length, 2, 'precond - has 2 sections to start');
+
+  const p0 = $('#editor p:eq(0)')[0],
+        p1 = $('#editor p:eq(1)')[0];
+
+  Helpers.dom.selectText('tion', p0, 'sec', p1);
+  Helpers.dom.triggerDelete(editor);
+
+  assert.equal($('#editor p').length, 2, 'still has 2 sections');
+});
+
+test('deleting across 2 sections merges them', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
   assert.equal($('#editor p').length, 2, 'precond - has 2 sections to start');
 
