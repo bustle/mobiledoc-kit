@@ -98,7 +98,7 @@ test('editor parses and renders mobiledoc format', (assert) => {
 
 test('editor parses and renders html', (assert) => {
   editorElement.innerHTML = '<p>something here</p>';
-  let editor = new Editor({html: '<p>hello world</p>'});
+  editor = new Editor({html: '<p>hello world</p>'});
   editor.render(editorElement);
 
   assert.equal(editorElement.innerHTML,
@@ -107,7 +107,7 @@ test('editor parses and renders html', (assert) => {
 
 test('editor parses and renders DOM', (assert) => {
   editorElement.innerHTML = '<p>something here</p>';
-  let editor = new Editor({html: $('<p>hello world</p>')[0]});
+  editor = new Editor({html: $('<p>hello world</p>')[0]});
   editor.render(editorElement);
 
   assert.equal(editorElement.innerHTML,
