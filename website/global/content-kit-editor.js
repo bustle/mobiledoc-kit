@@ -375,20 +375,35 @@ define('content-kit-editor/commands/bold', ['exports', 'content-kit-editor/comma
     _createClass(BoldCommand, [{
       key: 'exec',
       value: function exec() {
-        this.editor.applyMarkupToSelection(this.markup);
+        var _this = this;
+
+        var markerRange = this.editor.cursor.offsets;
+        if (!markerRange.leftRenderNode || !markerRange.rightRenderNode) {
+          return;
+        }
+        var markers = this.editor.run(function (postEditor) {
+          return postEditor.applyMarkupToMarkers(markerRange, _this.markup);
+        });
+        this.editor.selectMarkers(markers);
       }
     }, {
       key: 'unexec',
       value: function unexec() {
-        this.editor.removeMarkupFromSelection(this.markup);
+        var _this2 = this;
+
+        var markerRange = this.editor.cursor.offsets;
+        var markers = this.editor.run(function (postEditor) {
+          return postEditor.removeMarkupFromMarkers(markerRange, _this2.markup);
+        });
+        this.editor.selectMarkers(markers);
       }
     }, {
       key: 'isActive',
       value: function isActive() {
-        var _this = this;
+        var _this3 = this;
 
         return (0, _contentKitEditorUtilsArrayUtils.any)(this.editor.activeMarkers, function (m) {
-          return m.hasMarkup(_this.markup);
+          return m.hasMarkup(_this3.markup);
         });
       }
     }]);
@@ -572,20 +587,18 @@ define('content-kit-editor/commands/image', ['exports', 'content-kit-editor/comm
     _createClass(ImageCommand, [{
       key: 'exec',
       value: function exec() {
-        var _editor = this.editor;
-        var post = _editor.post;
-        var builder = _editor.builder;
+        var headMarker = this.editor.cursor.offsets.headMarker;
 
-        var sections = this.editor.activeSections;
-        var lastSection = sections[sections.length - 1];
-        var section = builder.createCardSection('image');
-        post.sections.insertAfter(section, lastSection);
-        sections.forEach(function (section) {
-          return section.renderNode.scheduleForRemoval();
+        var beforeSection = headMarker.section;
+        var afterSection = beforeSection.next;
+        var section = this.editor.builder.createCardSection('image');
+
+        this.editor.run(function (postEditor) {
+          if (beforeSection.isBlank) {
+            postEditor.removeSection(beforeSection);
+          }
+          postEditor.insertSectionBefore(section, afterSection);
         });
-
-        this.editor.rerender();
-        this.editor.didUpdate();
       }
     }]);
 
@@ -624,20 +637,35 @@ define('content-kit-editor/commands/italic', ['exports', 'content-kit-editor/com
     _createClass(ItalicCommand, [{
       key: 'exec',
       value: function exec() {
-        this.editor.applyMarkupToSelection(this.markup);
+        var _this = this;
+
+        var markerRange = this.editor.cursor.offsets;
+        if (!markerRange.leftRenderNode || !markerRange.rightRenderNode) {
+          return;
+        }
+        var markers = this.editor.run(function (postEditor) {
+          return postEditor.applyMarkupToMarkers(markerRange, _this.markup);
+        });
+        this.editor.selectMarkers(markers);
       }
     }, {
       key: 'unexec',
       value: function unexec() {
-        this.editor.removeMarkupFromSelection(this.markup);
+        var _this2 = this;
+
+        var markerRange = this.editor.cursor.offsets;
+        var markers = this.editor.run(function (postEditor) {
+          return postEditor.removeMarkupFromMarkers(markerRange, _this2.markup);
+        });
+        this.editor.selectMarkers(markers);
       }
     }, {
       key: 'isActive',
       value: function isActive() {
-        var _this = this;
+        var _this3 = this;
 
         return (0, _contentKitEditorUtilsArrayUtils.any)(this.editor.activeMarkers, function (m) {
-          return m.hasMarkup(_this.markup);
+          return m.hasMarkup(_this3.markup);
         });
       }
     }]);
@@ -858,10 +886,8 @@ define('content-kit-editor/commands/unordered-list', ['exports', 'content-kit-ed
 
   exports['default'] = UnorderedListCommand;
 });
-define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/views/reversible-toolbar-button', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/card', 'content-kit-editor/cards/image', 'content-kit-editor/utils/keycodes', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/post', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/models/cursor', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/post-node-builder'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorViewsReversibleToolbarButton, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsCard, _contentKitEditorCardsImage, _contentKitEditorUtilsKeycodes, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersPost, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorModelsCursor, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsPostNodeBuilder) {
+define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/editor/post', 'content-kit-editor/views/reversible-toolbar-button', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/card', 'content-kit-editor/cards/image', 'content-kit-editor/utils/key', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/post', 'content-kit-editor/parsers/dom', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/models/cursor', 'content-kit-editor/models/post-node-builder'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorEditorPost, _contentKitEditorViewsReversibleToolbarButton, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsCard, _contentKitEditorCardsImage, _contentKitEditorUtilsKey, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersPost, _contentKitEditorParsersDom, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorModelsCursor, _contentKitEditorModelsPostNodeBuilder) {
   'use strict';
-
-  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -875,7 +901,6 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     spellcheck: true,
     autofocus: true,
     post: null,
-    serverHost: '',
     // FIXME PhantomJS has 'ontouchstart' in window,
     // causing the stickyToolbar to accidentally be auto-activated
     // in tests
@@ -888,7 +913,8 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     unknownCardHandler: function unknownCardHandler() {
       throw new Error('Unknown card encountered');
     },
-    mobiledoc: null
+    mobiledoc: null,
+    html: null
   };
 
   function bindContentEditableTypingListeners(editor) {
@@ -952,22 +978,35 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
   }
 
   function bindKeyListeners(editor) {
-    // escape key
+    if (!editor.isEditable) {
+      return;
+    }
     editor.addEventListener(document, 'keyup', function (event) {
-      if (event.keyCode === _contentKitEditorUtilsKeycodes['default'].ESC) {
+      var key = _contentKitEditorUtilsKey['default'].fromEvent(event);
+      if (key.isEscape()) {
         editor.trigger('escapeKey');
       }
     });
 
     editor.addEventListener(document, 'keydown', function (event) {
-      switch (event.keyCode) {
-        case _contentKitEditorUtilsKeycodes['default'].BACKSPACE:
-        case _contentKitEditorUtilsKeycodes['default'].DELETE:
-          editor.handleDeletion(event);
-          break;
-        case _contentKitEditorUtilsKeycodes['default'].ENTER:
-          editor.handleNewline(event);
-          break;
+      if (!editor.isEditable) {
+        return;
+      }
+      var key = _contentKitEditorUtilsKey['default'].fromEvent(event);
+
+      if (key.isDelete()) {
+        editor.handleDeletion(event);
+        event.preventDefault();
+      } else if (key.isEnter()) {
+        editor.handleNewline(event);
+      } else if (key.isPrintable()) {
+        if (editor.cursor.hasSelection()) {
+          var offsets = editor.cursor.offsets;
+          editor.run(function (postEditor) {
+            postEditor.deleteRange(editor.cursor.offsets);
+          });
+          editor.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
+        }
       }
     });
   }
@@ -1020,18 +1059,17 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
    */
 
   var Editor = (function () {
-    function Editor(element, options) {
-      var _this = this;
+    function Editor() {
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
       _classCallCheck(this, Editor);
 
-      if (!element) {
-        throw new Error('Editor requires an element as the first argument');
+      if (!options || options.nodeType) {
+        throw new Error('editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation');
       }
-
       this._elementListeners = [];
       this._views = [];
-      this.element = element;
+      this.isEditable = null;
 
       this.builder = new _contentKitEditorModelsPostNodeBuilder['default']();
 
@@ -1043,49 +1081,18 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       this._parser = new _contentKitEditorParsersPost['default'](this.builder);
       this._renderer = new _contentKitEditorRenderersEditorDom['default'](this, this.cards, this.unknownCardHandler, this.cardOptions);
 
-      this.applyClassName(EDITOR_ELEMENT_CLASS_NAME);
-      this.applyPlaceholder();
-
-      element.spellcheck = this.spellcheck;
-      element.setAttribute('contentEditable', true);
-
       if (this.mobiledoc) {
-        this.parseModelFromMobiledoc(this.mobiledoc);
+        this.post = new _contentKitEditorParsersMobiledoc['default'](this.builder).parse(this.mobiledoc);
+      } else if (this.html) {
+        if (typeof this.html === 'string') {
+          this.html = (0, _contentKitEditorUtilsDomUtils.parseHTML)(this.html);
+        }
+        this.post = new _contentKitEditorParsersDom['default'](this.builder).parse(this.html);
       } else {
-        this.parseModelFromDOM(this.element);
+        this.post = this.builder.createBlankPost();
       }
 
-      (0, _contentKitEditorUtilsDomUtils.clearChildNodes)(element);
-      this.rerender();
-
-      bindContentEditableTypingListeners(this);
-      bindAutoTypingListeners(this);
-      bindDragAndDrop(this);
-      bindSelectionEvent(this);
-      bindKeyListeners(this);
-      this.addEventListener(element, 'input', function () {
-        return _this.handleInput();
-      });
-      initEmbedCommands(this);
-
-      this.addView(new _contentKitEditorViewsTextFormatToolbar['default']({
-        editor: this,
-        rootElement: element,
-        // FIXME -- eventually all the commands should migrate to being buttons
-        // that can be added
-        commands: this.textFormatCommands,
-        buttons: makeButtons(this),
-        sticky: this.stickyToolbar
-      }));
-
-      this.addView(new _contentKitEditorViewsTooltip['default']({
-        rootElement: element,
-        showForTag: 'a'
-      }));
-
-      if (this.autofocus) {
-        element.focus();
-      }
+      this._renderTree = this.prepareRenderTree(this.post);
     }
 
     _createClass(Editor, [{
@@ -1094,29 +1101,12 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         this._views.push(view);
       }
     }, {
-      key: 'loadModel',
-      value: function loadModel(post) {
-        this.post = post;
-        this.rerender();
-        this.trigger('update');
-      }
-    }, {
-      key: 'parseModelFromDOM',
-      value: function parseModelFromDOM(element) {
-        this.post = this._parser.parse(element);
-        this._renderTree = new _contentKitEditorModelsRenderTree['default']();
-        var node = this._renderTree.buildRenderNode(this.post);
-        this._renderTree.node = node;
-        this.trigger('update');
-      }
-    }, {
-      key: 'parseModelFromMobiledoc',
-      value: function parseModelFromMobiledoc(mobiledoc) {
-        this.post = new _contentKitEditorParsersMobiledoc['default'](this.builder).parse(mobiledoc);
-        this._renderTree = new _contentKitEditorModelsRenderTree['default']();
-        var node = this._renderTree.buildRenderNode(this.post);
-        this._renderTree.node = node;
-        this.trigger('update');
+      key: 'prepareRenderTree',
+      value: function prepareRenderTree(post) {
+        var renderTree = new _contentKitEditorModelsRenderTree['default']();
+        var node = renderTree.buildRenderNode(post);
+        renderTree.node = node;
+        return renderTree;
       }
     }, {
       key: 'rerender',
@@ -1125,6 +1115,9 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
         // if we haven't rendered this post's renderNode before, mark it dirty
         if (!postRenderNode.element) {
+          if (!this.element) {
+            throw new Error('Initial call to `render` must happen before `rerender` can be called.');
+          }
           postRenderNode.element = this.element;
           postRenderNode.markDirty();
         }
@@ -1132,175 +1125,107 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         this._renderer.render(this._renderTree);
       }
     }, {
-      key: 'deleteSelection',
-      value: function deleteSelection(event) {
-        event.preventDefault();
+      key: 'render',
+      value: function render(element) {
+        var _this = this;
 
-        // types of selection deletion:
-        //   * a selection starts at the beginning of a section
-        //     -- cursor should end up at the beginning of that section
-        //     -- if the section not longer has markers, add a blank one for the cursor to focus on
-        //   * a selection is entirely within a section
-        //     -- split the markers with the selection, remove those new markers from their section
-        //     -- cursor goes at end of the marker before the selection start, or if the
-        //     -- selection was at the start of the section, cursor goes at section start
-        //   * a selection crosses multiple sections
-        //     -- remove all the sections that are between (exclusive ) selection start and end
-        //     -- join the start and end sections
-        //     -- mark the end section for removal
-        //     -- cursor goes at end of marker before the selection start
+        if (this.element) {
+          throw new Error('Cannot render an editor twice. Use `rerender` to update the rendering of an existing editor instance');
+        }
 
-        var markers = this.splitMarkersFromSelection();
+        this.element = element;
 
-        var _post$cutMarkers = this.post.cutMarkers(markers);
+        this.applyClassName(EDITOR_ELEMENT_CLASS_NAME);
+        this.applyPlaceholder();
 
-        var changedSections = _post$cutMarkers.changedSections;
-        var removedSections = _post$cutMarkers.removedSections;
-        var currentMarker = _post$cutMarkers.currentMarker;
-        var currentOffset = _post$cutMarkers.currentOffset;
+        element.spellcheck = this.spellcheck;
 
-        changedSections.forEach(function (section) {
-          return section.renderNode.markDirty();
+        if (this.isEditable === null) {
+          this.enableEditing();
+        }
+
+        (0, _contentKitEditorUtilsDomUtils.clearChildNodes)(element);
+
+        bindContentEditableTypingListeners(this);
+        bindAutoTypingListeners(this);
+        bindDragAndDrop(this);
+        bindSelectionEvent(this);
+        bindKeyListeners(this);
+        this.addEventListener(element, 'input', function () {
+          return _this.handleInput();
         });
-        removedSections.forEach(function (section) {
-          return section.renderNode.scheduleForRemoval();
-        });
+        initEmbedCommands(this);
+
+        this.addView(new _contentKitEditorViewsTextFormatToolbar['default']({
+          editor: this,
+          rootElement: element,
+          // FIXME -- eventually all the commands should migrate to being buttons
+          // that can be added
+          commands: this.textFormatCommands,
+          buttons: makeButtons(this),
+          sticky: this.stickyToolbar
+        }));
+
+        this.addView(new _contentKitEditorViewsTooltip['default']({
+          rootElement: element,
+          showForTag: 'a'
+        }));
 
         this.rerender();
 
-        var currentTextNode = currentMarker.renderNode.element;
-        this.cursor.moveToNode(currentTextNode, currentOffset);
-
-        this.trigger('update');
+        if (this.autofocus) {
+          element.focus();
+        }
       }
-
-      // FIXME ensure we handle deletion when there is a selection
     }, {
       key: 'handleDeletion',
       value: function handleDeletion(event) {
-        var _cursor$offsets = this.cursor.offsets;
-        var leftRenderNode = _cursor$offsets.leftRenderNode;
-        var leftOffset = _cursor$offsets.leftOffset;
+        event.preventDefault();
 
-        // need to handle these cases:
-        // when cursor is:
-        //   * A in the middle of a marker -- just delete the character
-        //   * B offset is 0 and there is a previous marker
-        //     * delete last char of previous marker
-        //   * C offset is 0 and there is no previous marker
-        //     * join this section with previous section
+        var offsets = this.cursor.offsets;
 
         if (this.cursor.hasSelection()) {
-          this.deleteSelection(event);
-          return;
-        }
-
-        var currentMarker = leftRenderNode.postNode;
-        var nextCursorMarker = currentMarker;
-        var nextCursorOffset = leftOffset - 1;
-
-        // A: in the middle of a marker
-        if (leftOffset !== 0) {
-          currentMarker.deleteValueAtOffset(leftOffset - 1);
-          if (currentMarker.length === 0 && currentMarker.section.markers.length > 1) {
-            leftRenderNode.scheduleForRemoval();
-
-            var isFirstRenderNode = leftRenderNode === leftRenderNode.parent.childNodes.head;
-            if (isFirstRenderNode) {
-              // move cursor to start of next node
-              nextCursorMarker = leftRenderNode.next.postNode;
-              nextCursorOffset = 0;
-            } else {
-              // move cursor to end of prev node
-              nextCursorMarker = leftRenderNode.prev.postNode;
-              nextCursorOffset = leftRenderNode.prev.postNode.length;
-            }
-          } else {
-            leftRenderNode.markDirty();
-          }
+          this.run(function (postEditor) {
+            postEditor.deleteRange(offsets);
+          });
+          this.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
         } else {
-          var currentSection = currentMarker.section;
-          var previousMarker = currentMarker.prev;
-          if (previousMarker) {
-            // (B)
-            var markerLength = previousMarker.length;
-            previousMarker.deleteValueAtOffset(markerLength - 1);
-          } else {
-            // (C)
-            // possible previous sections:
-            //   * none -- do nothing
-            //   * markup section -- join to it
-            //   * non-markup section (card) -- select it? delete it?
-            var previousSection = currentSection.prev;
-            if (previousSection) {
-              var isMarkupSection = previousSection.type === _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE;
+          var results = this.run(function (postEditor) {
+            var headMarker = offsets.headMarker;
+            var headOffset = offsets.headOffset;
 
-              if (isMarkupSection) {
-                var lastPreviousMarker = previousSection.markers.tail;
-                previousSection.join(currentSection);
-                previousSection.renderNode.markDirty();
-                currentSection.renderNode.scheduleForRemoval();
+            var key = _contentKitEditorUtilsKey['default'].fromEvent(event);
 
-                nextCursorMarker = lastPreviousMarker.next;
-                nextCursorOffset = 0;
-                /*
-                } else {
-                  // card section: ??
-                */
-              }
-            } else {
-                // no previous section -- do nothing
-                nextCursorMarker = currentMarker;
-                nextCursorOffset = 0;
-              }
-          }
+            var deletePosition = { marker: headMarker, offset: headOffset },
+                direction = key.direction;
+            return postEditor.deleteFrom(deletePosition, direction);
+          });
+          this.cursor.moveToMarker(results.currentMarker, results.currentOffset);
         }
-
-        this.rerender();
-
-        this.cursor.moveToNode(nextCursorMarker.renderNode.element, nextCursorOffset);
-
-        this.trigger('update');
-        event.preventDefault();
       }
     }, {
       key: 'handleNewline',
       value: function handleNewline(event) {
-        var _cursor$offsets2 = this.cursor.offsets;
-        var leftRenderNode = _cursor$offsets2.leftRenderNode;
-        var rightRenderNode = _cursor$offsets2.rightRenderNode;
-        var leftOffset = _cursor$offsets2.leftOffset;
+        var _this2 = this;
+
+        var offsets = this.cursor.offsets;
 
         // if there's no left/right nodes, we are probably not in the editor,
         // or we have selected some non-marker thing like a card
-        if (!leftRenderNode || !rightRenderNode) {
+        if (!offsets.leftRenderNode || !offsets.rightRenderNode) {
           return;
         }
 
-        // FIXME handle when the selection is not collapsed, this code assumes it is
         event.preventDefault();
 
-        var markerRenderNode = leftRenderNode;
-        var marker = markerRenderNode.postNode;
-        var section = marker.section;
-
-        var _section$splitAtMarker = section.splitAtMarker(marker, leftOffset);
-
-        var _section$splitAtMarker2 = _slicedToArray(_section$splitAtMarker, 2);
-
-        var beforeSection = _section$splitAtMarker2[0];
-        var afterSection = _section$splitAtMarker2[1];
-
-        section.renderNode.scheduleForRemoval();
-
-        this.post.sections.insertAfter(beforeSection, section);
-        this.post.sections.insertAfter(afterSection, beforeSection);
-        this.post.sections.remove(section);
-
-        this.rerender();
-        this.trigger('update');
-
-        this.cursor.moveToSection(afterSection);
+        var cursorSection = undefined;
+        this.run(function (postEditor) {
+          if (_this2.cursor.hasSelection()) {
+            postEditor.deleteRange(offsets);
+          }
+          cursorSection = postEditor.splitSection(offsets)[1];
+        });
+        this.cursor.moveToSection(cursorSection);
       }
     }, {
       key: 'hasSelection',
@@ -1340,108 +1265,11 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         this.cursor.selectSections(sections);
         this.hasSelection();
       }
-
-      /*
-       * @return {Array} of markers that are "inside the split"
-       */
-    }, {
-      key: 'splitMarkersFromSelection',
-      value: function splitMarkersFromSelection() {
-        var _cursor$offsets3 = this.cursor.offsets;
-        var startMarker = _cursor$offsets3.startMarker;
-        var startMarkerOffset = _cursor$offsets3.leftOffset;
-        var endMarker = _cursor$offsets3.endMarker;
-        var endMarkerOffset = _cursor$offsets3.rightOffset;
-        var startSection = _cursor$offsets3.startSection;
-        var endSection = _cursor$offsets3.endSection;
-
-        var selectedMarkers = [];
-
-        startMarker.renderNode.scheduleForRemoval();
-        endMarker.renderNode.scheduleForRemoval();
-
-        if (startMarker === endMarker) {
-          var newMarkers = startSection.splitMarker(startMarker, startMarkerOffset, endMarkerOffset);
-          selectedMarkers = this.markersInOffset(newMarkers, startMarkerOffset, endMarkerOffset);
-        } else {
-          var newStartMarkers = startSection.splitMarker(startMarker, startMarkerOffset);
-          var selectedStartMarkers = this.markersInOffset(newStartMarkers, startMarkerOffset);
-
-          var newEndMarkers = endSection.splitMarker(endMarker, endMarkerOffset);
-          var selectedEndMarkers = this.markersInOffset(newEndMarkers, 0, endMarkerOffset);
-
-          var newStartMarker = selectedStartMarkers[0],
-              newEndMarker = selectedEndMarkers[selectedEndMarkers.length - 1];
-
-          this.post.markersFrom(newStartMarker, newEndMarker, function (m) {
-            return selectedMarkers.push(m);
-          });
-        }
-
-        return selectedMarkers;
-      }
-    }, {
-      key: 'markersInOffset',
-      value: function markersInOffset(markers, startOffset, endOffset) {
-        var offset = 0;
-        var foundMarkers = [];
-        var toEnd = endOffset === undefined;
-        if (toEnd) {
-          endOffset = 0;
-        }
-
-        markers.forEach(function (marker) {
-          if (toEnd) {
-            endOffset += marker.length;
-          }
-
-          if (offset >= startOffset && offset < endOffset) {
-            foundMarkers.push(marker);
-          }
-
-          offset += marker.length;
-        });
-
-        return foundMarkers;
-      }
-    }, {
-      key: 'applyMarkupToSelection',
-      value: function applyMarkupToSelection(markup) {
-        var markers = this.splitMarkersFromSelection();
-        markers.forEach(function (marker) {
-          marker.addMarkup(markup);
-          marker.section.renderNode.markDirty();
-        });
-
-        this.rerender();
-        this.selectMarkers(markers);
-        this.didUpdate();
-      }
-    }, {
-      key: 'removeMarkupFromSelection',
-      value: function removeMarkupFromSelection(markup) {
-        var markers = this.splitMarkersFromSelection();
-        markers.forEach(function (marker) {
-          marker.removeMarkup(markup);
-          marker.section.renderNode.markDirty();
-        });
-
-        this.rerender();
-        this.selectMarkers(markers);
-        this.didUpdate();
-      }
     }, {
       key: 'selectMarkers',
       value: function selectMarkers(markers) {
         this.cursor.selectMarkers(markers);
         this.hasSelection();
-      }
-    }, {
-      key: 'getCurrentBlockIndex',
-      value: function getCurrentBlockIndex() {
-        var selectionEl = this.element || (0, _contentKitEditorUtilsSelectionUtils.getSelectionBlockElement)();
-        var blockElements = (0, _contentKitUtils.toArray)(this.element.children);
-        return blockElements.indexOf(selectionEl);
       }
     }, {
       key: 'applyClassName',
@@ -1483,7 +1311,7 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     }, {
       key: 'reparse',
       value: function reparse() {
-        var _this2 = this;
+        var _this3 = this;
 
         // find added sections
         var sectionsInDOM = [];
@@ -1491,20 +1319,23 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         var previousSection = undefined;
 
         (0, _contentKitEditorUtilsArrayUtils.forEach)(this.element.childNodes, function (node) {
-          var sectionRenderNode = _this2._renderTree.getElementRenderNode(node);
+          // FIXME: this is kind of slow
+          var sectionRenderNode = (0, _contentKitEditorUtilsArrayUtils.detect)(_this3._renderTree.node.childNodes, function (renderNode) {
+            return renderNode.element === node;
+          });
           if (!sectionRenderNode) {
-            var _section = _this2._parser.parseSection(node);
+            var _section = _this3._parser.parseSection(node);
             newSections.push(_section);
 
             // create a clean "already-rendered" node to represent the fact that
             // this (new) section is already in DOM
-            sectionRenderNode = _this2._renderTree.buildRenderNode(_section);
+            sectionRenderNode = _this3._renderTree.buildRenderNode(_section);
             sectionRenderNode.element = node;
             sectionRenderNode.markClean();
 
             var previousSectionRenderNode = previousSection && previousSection.renderNode;
-            _this2.post.sections.insertAfter(_section, previousSection);
-            _this2._renderTree.node.childNodes.insertAfter(sectionRenderNode, previousSectionRenderNode);
+            _this3.post.sections.insertAfter(_section, previousSection);
+            _this3._renderTree.node.childNodes.insertAfter(sectionRenderNode, previousSectionRenderNode);
           }
 
           // may cause duplicates to be included
@@ -1534,44 +1365,36 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         var sectionsWithCursor = this.cursor.activeSections;
         (0, _contentKitEditorUtilsArrayUtils.forEach)(sectionsWithCursor, function (section) {
           if (newSections.indexOf(section) === -1) {
-            _this2.reparseSection(section);
+            _this3.reparseSection(section);
           }
         });
 
-        var _cursor$offsets4 = this.cursor.offsets;
-        var leftRenderNode = _cursor$offsets4.leftRenderNode;
-        var leftOffset = _cursor$offsets4.leftOffset;
-        var rightRenderNode = _cursor$offsets4.rightRenderNode;
-        var rightOffset = _cursor$offsets4.rightOffset;
+        var _cursor$sectionOffsets = this.cursor.sectionOffsets;
+        var headSection = _cursor$sectionOffsets.headSection;
+        var headSectionOffset = _cursor$sectionOffsets.headSectionOffset;
 
         // The cursor will lose its textNode if we have reparsed (and thus will rerender, below)
         // its section. Ensure the cursor is placed where it should be after render.
         //
         // New sections are presumed clean, and thus do not get rerendered and lose
         // their cursor position.
-        var resetCursor = leftRenderNode && sectionsWithCursor.indexOf(leftRenderNode.postNode.section) !== -1;
-
-        if (resetCursor) {
-          var unprintableOffset = leftRenderNode.element.textContent.indexOf(_contentKitEditorRenderersEditorDom.UNPRINTABLE_CHARACTER);
-          if (unprintableOffset !== -1) {
-            leftRenderNode.markDirty();
-            if (unprintableOffset < leftOffset) {
-              // FIXME: we should move backward/forward some number of characters
-              // with a method on markers that returns the relevent marker and
-              // offset (may not be the marker it was called with);
-              leftOffset--;
-              rightOffset--;
-            }
-          }
-        }
+        var resetCursor = sectionsWithCursor.indexOf(headSection) !== -1;
 
         this.rerender();
         this.trigger('update');
 
         if (resetCursor) {
-          this.cursor.moveToNode(leftRenderNode.element, leftOffset, rightRenderNode.element, rightOffset);
+          this.cursor.moveToSection(headSection, headSectionOffset);
         }
       }
+
+      /*
+       * Returns the active sections. If the cursor selection is collapsed this will be
+       * an array of 1 item. Else will return an array containing each section that is either
+       * wholly or partly contained by the cursor selection.
+       *
+       * @return {array} The sections from the cursor's selection start to the selection end
+       */
     }, {
       key: 'resetSectionMarkers',
 
@@ -1619,44 +1442,81 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         this._views = [];
       }
     }, {
-      key: 'insertSectionAtCursor',
-      value: function insertSectionAtCursor(newSection) {
-        var newRenderNode = this._renderTree.buildRenderNode(newSection);
-        var renderNodes = this.cursor.activeSections.map(function (s) {
-          return s.renderNode;
-        });
-        var lastRenderNode = renderNodes[renderNodes.length - 1];
-        lastRenderNode.parent.childNodes.insertAfter(newRenderNode, lastRenderNode);
-        this.post.sections.insertAfter(newSection, lastRenderNode.postNode);
-        renderNodes.forEach(function (renderNode) {
-          return renderNode.scheduleForRemoval();
-        });
-        this.trigger('update');
-      }
-    }, {
       key: 'destroy',
       value: function destroy() {
+        this._isDestroyed = true;
         this.removeAllEventListeners();
         this.removeAllViews();
+      }
+
+      /**
+       * Keep the user from directly editing the post. Modification via the
+       * programmatic API is still permitted.
+       *
+       * @method disableEditing
+       * @return undefined
+       * @public
+       */
+    }, {
+      key: 'disableEditing',
+      value: function disableEditing() {
+        this.isEditable = false;
+        this.element.setAttribute('contentEditable', false);
+      }
+
+      /**
+       * Allow the user to directly interact with editing a post via a cursor.
+       *
+       * @method enableEditing
+       * @return undefined
+       * @public
+       */
+    }, {
+      key: 'enableEditing',
+      value: function enableEditing() {
+        this.isEditable = true;
+        this.element.setAttribute('contentEditable', true);
+      }
+
+      /**
+       * Run a new post editing session. Yields a block with a new `postEditor`
+       * instance. This instance can be used to interact with the post abstract,
+       * and defers rendering until the end of all changes.
+       *
+       * Usage:
+       *
+       *     let markerRange = this.cursor.offsets;
+       *     editor.run((postEditor) => {
+       *       postEditor.deleteRange(markerRange);
+       *       // editing surface not updated yet
+       *       postEditor.schedule(() => {
+       *         console.log('logs during rerender flush');
+       *       });
+       *       // logging not yet flushed
+       *     });
+       *     // editing surface now updated.
+       *     // logging now flushed
+       *
+       * The return value of `run` is whatever was returned from the callback.
+       *
+       * @method run
+       * @param {Function} callback Function to handle post editing with, provided the `postEditor` as an argument.
+       * @return {} Whatever the return value of `callback` is.
+       * @public
+       */
+    }, {
+      key: 'run',
+      value: function run(callback) {
+        var postEditor = new _contentKitEditorEditorPost['default'](this);
+        var result = callback(postEditor);
+        postEditor.complete();
+        return result;
       }
     }, {
       key: 'cursor',
       get: function get() {
         return new _contentKitEditorModelsCursor['default'](this);
       }
-    }, {
-      key: 'cursorSelection',
-      get: function get() {
-        return this.cursor.cursorSelection;
-      }
-
-      /*
-       * Returns the active sections. If the cursor selection is collapsed this will be
-       * an array of 1 item. Else will return an array containing each section that is either
-       * wholly or partly contained by the cursor selection.
-       *
-       * @return {array} The sections from the cursor's selection start to the selection end
-       */
     }, {
       key: 'activeSections',
       get: function get() {
@@ -1665,9 +1525,9 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     }, {
       key: 'activeMarkers',
       get: function get() {
-        var _cursor$offsets5 = this.cursor.offsets;
-        var startMarker = _cursor$offsets5.startMarker;
-        var endMarker = _cursor$offsets5.endMarker;
+        var _cursor$offsets = this.cursor.offsets;
+        var startMarker = _cursor$offsets.startMarker;
+        var endMarker = _cursor$offsets.endMarker;
 
         if (!(startMarker && endMarker)) {
           return [];
@@ -1689,14 +1549,687 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
   exports['default'] = Editor;
 });
-define('content-kit-editor', ['exports', 'content-kit-editor/editor/editor', 'content-kit-editor/cards/image'], function (exports, _contentKitEditorEditorEditor, _contentKitEditorCardsImage) {
+define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/markup-section', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/key'], function (exports, _contentKitEditorModelsMarkupSection, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsKey) {
+  'use strict';
+
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function isMarkupSection(section) {
+    return section.type === _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE;
+  }
+
+  var PostEditor = (function () {
+    function PostEditor(editor) {
+      _classCallCheck(this, PostEditor);
+
+      this.editor = editor;
+      this._completionWorkQueue = [];
+      this._didRerender = false;
+      this._didUpdate = false;
+      this._didComplete = false;
+    }
+
+    /**
+     * Remove a range of markers from the post.
+     *
+     * Usage:
+     *
+     *     let marker = editor.post.sections.head.markers.head;
+     *     editor.run((postEditor) => {
+     *       postEditor.deleteRange({
+     *         headMarker: marker,
+     *         headOffset: 2,
+     *         tailMarker: marker,
+     *         tailOffset: 4,
+     *       });
+     *     });
+     *
+     * `deleteRange` accepts the value of `this.cursor.offsets` for deletion.
+     *
+     * @method deleteRange
+     * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+     * @return {Object} {currentMarker, currentOffset} for cursor
+     * @public
+     */
+
+    _createClass(PostEditor, [{
+      key: 'deleteRange',
+      value: function deleteRange(markerRange) {
+        var _this = this;
+
+        // types of selection deletion:
+        //   * a selection starts at the beginning of a section
+        //     -- cursor should end up at the beginning of that section
+        //     -- if the section not longer has markers, add a blank one for the cursor to focus on
+        //   * a selection is entirely within a section
+        //     -- split the markers with the selection, remove those new markers from their section
+        //     -- cursor goes at end of the marker before the selection start, or if the
+        //     -- selection was at the start of the section, cursor goes at section start
+        //   * a selection crosses multiple sections
+        //     -- remove all the sections that are between (exclusive) selection start and end
+        //     -- join the start and end sections
+        //     -- mark the end section for removal
+        //     -- cursor goes at end of marker before the selection start
+
+        // markerRange should be akin to this.cursor.offset
+        var headSection = markerRange.headSection;
+        var headSectionOffset = markerRange.headSectionOffset;
+        var tailSection = markerRange.tailSection;
+        var tailSectionOffset = markerRange.tailSectionOffset;
+        var post = this.editor.post;
+
+        if (headSection === tailSection) {
+          this.cutSection(headSection, headSectionOffset, tailSectionOffset);
+        } else {
+          (function () {
+            var removedSections = [];
+            post.sections.walk(headSection, tailSection, function (section) {
+              switch (section) {
+                case headSection:
+                  _this.cutSection(section, headSectionOffset, section.text.length);
+                  break;
+                case tailSection:
+                  tailSection.markersFor(tailSectionOffset, section.text.length).forEach(function (m) {
+                    headSection.markers.append(m);
+                  });
+                  removedSections.push(tailSection);
+                  break;
+                default:
+                  removedSections.push(section);
+              }
+            });
+            removedSections.forEach(function (section) {
+              return _this.removeSection(section);
+            });
+          })();
+        }
+
+        this._coalesceMarkers(headSection);
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+      }
+    }, {
+      key: 'cutSection',
+      value: function cutSection(section, headSectionOffset, tailSectionOffset) {
+        var _section$markerPositionAtOffset = section.markerPositionAtOffset(headSectionOffset);
+
+        var headMarker = _section$markerPositionAtOffset.marker;
+        var headOffset = _section$markerPositionAtOffset.offset;
+
+        var _section$markerPositionAtOffset2 = section.markerPositionAtOffset(tailSectionOffset);
+
+        var tailMarker = _section$markerPositionAtOffset2.marker;
+        var tailOffset = _section$markerPositionAtOffset2.offset;
+
+        var markers = this.splitMarkers({ headMarker: headMarker, headOffset: headOffset, tailMarker: tailMarker, tailOffset: tailOffset });
+        section.markers.removeBy(function (m) {
+          return markers.indexOf(m) !== -1;
+        });
+      }
+    }, {
+      key: '_coalesceMarkers',
+      value: function _coalesceMarkers(section) {
+        var _this2 = this;
+
+        var builder = this.editor.builder;
+
+        (0, _contentKitEditorUtilsArrayUtils.filter)(section.markers, function (m) {
+          return m.isEmpty;
+        }).forEach(function (m) {
+          _this2.removeMarker(m);
+        });
+        if (section.markers.isEmpty) {
+          section.markers.append(builder.createBlankMarker());
+          section.renderNode.markDirty();
+        }
+      }
+    }, {
+      key: 'removeMarker',
+      value: function removeMarker(marker) {
+        if (marker.renderNode) {
+          marker.renderNode.scheduleForRemoval();
+        }
+        marker.section.markers.remove(marker);
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+      }
+
+      /**
+       * Remove a character from a {marker, offset} position, in either
+       * forward or backward (default) direction.
+       *
+       * Usage:
+       *
+       *     let marker = editor.post.sections.head.markers.head;
+       *     // marker has text of "Howdy!"
+       *     editor.run((postEditor) => {
+       *       postEditor.deleteFrom({marker, offset: 3});
+       *     });
+       *     // marker has text of "Hody!"
+       *
+       * `deleteFrom` may remove a character from a different marker or join the
+       * marker's section with the previous/next section (depending on the
+       * deletion direction) if direction is `BACKWARD` and the offset is 0,
+       * or direction is `FORWARD` and the offset is equal to the length of the
+       * marker.
+       *
+       * @method deleteFrom
+       * @param {Object} position object with {marker, offset} the marker and offset to delete from
+       * @param {Number} direction The direction to delete in (default is BACKWARD)
+       * @return {Object} {currentMarker, currentOffset} for positioning the cursor
+       * @public
+       */
+    }, {
+      key: 'deleteFrom',
+      value: function deleteFrom(_ref) {
+        var marker = _ref.marker;
+        var offset = _ref.offset;
+        var direction = arguments.length <= 1 || arguments[1] === undefined ? _contentKitEditorUtilsKey.DIRECTION.BACKWARD : arguments[1];
+
+        if (direction === _contentKitEditorUtilsKey.DIRECTION.BACKWARD) {
+          return this._deleteBackwardFrom({ marker: marker, offset: offset });
+        } else {
+          return this._deleteForwardFrom({ marker: marker, offset: offset });
+        }
+      }
+
+      /**
+       * delete 1 character in the FORWARD direction from the given position
+       * @method _deleteForwardFrom
+       * @private
+       */
+    }, {
+      key: '_deleteForwardFrom',
+      value: function _deleteForwardFrom(_ref2) {
+        var marker = _ref2.marker;
+        var offset = _ref2.offset;
+
+        var nextCursorMarker = marker,
+            nextCursorOffset = offset;
+
+        if (offset === marker.length) {
+          var nextMarker = marker.next;
+
+          if (nextMarker) {
+            this._deleteForwardFrom({ marker: nextMarker, offset: 0 });
+          } else {
+            var nextSection = marker.section.next;
+            if (nextSection && isMarkupSection(nextSection)) {
+              var currentSection = marker.section;
+
+              currentSection.join(nextSection);
+
+              currentSection.renderNode.markDirty();
+              nextSection.renderNode.scheduleForRemoval();
+            }
+          }
+        } else {
+          marker.deleteValueAtOffset(offset);
+          marker.renderNode.markDirty();
+        }
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+
+        return {
+          currentMarker: nextCursorMarker,
+          currentOffset: nextCursorOffset
+        };
+      }
+
+      /**
+       * delete 1 character in the BACKWARD direction from the given position
+       * @method _deleteBackwardFrom
+       * @private
+       */
+    }, {
+      key: '_deleteBackwardFrom',
+      value: function _deleteBackwardFrom(_ref3) {
+        var marker = _ref3.marker;
+        var offset = _ref3.offset;
+
+        var nextCursorMarker = marker,
+            nextCursorOffset = offset;
+
+        if (offset === 0) {
+          var prevMarker = marker.prev;
+
+          if (prevMarker) {
+            return this._deleteBackwardFrom({ marker: prevMarker, offset: prevMarker.length });
+          } else {
+            var prevSection = marker.section.prev;
+
+            if (prevSection) {
+              if (isMarkupSection(prevSection)) {
+                nextCursorMarker = prevSection.markers.tail;
+                nextCursorOffset = nextCursorMarker.length;
+
+                var _prevSection$join = prevSection.join(marker.section);
+
+                var beforeMarker = _prevSection$join.beforeMarker;
+                var afterMarker = _prevSection$join.afterMarker;
+
+                prevSection.renderNode.markDirty();
+                marker.section.renderNode.scheduleForRemoval();
+
+                if (beforeMarker) {
+                  nextCursorMarker = beforeMarker;
+                  nextCursorOffset = beforeMarker.length;
+                } else {
+                  nextCursorMarker = afterMarker;
+                  nextCursorOffset = 0;
+                }
+              }
+              // ELSE: FIXME: card section -- what should deleting into it do?
+            }
+          }
+        } else if (offset <= marker.length) {
+            var offsetToDeleteAt = offset - 1;
+
+            marker.deleteValueAtOffset(offsetToDeleteAt);
+
+            if (marker.isEmpty && marker.prev) {
+              marker.renderNode.scheduleForRemoval();
+              nextCursorMarker = marker.prev;
+              nextCursorOffset = nextCursorMarker.length;
+            } else if (marker.isEmpty && marker.next) {
+              marker.renderNode.scheduleForRemoval();
+              nextCursorMarker = marker.next;
+              nextCursorOffset = 0;
+            } else {
+              marker.renderNode.markDirty();
+              nextCursorOffset = offsetToDeleteAt;
+            }
+          }
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+
+        return {
+          currentMarker: nextCursorMarker,
+          currentOffset: nextCursorOffset
+        };
+      }
+
+      /**
+       * Split makers at two positions, once at the head, and if necessary once
+       * at the tail. This method is designed to accept `editor.cursor.offsets`
+       * as an argument.
+       *
+       * Usage:
+       *
+       *     let markerRange = this.cursor.offsets;
+       *     editor.run((postEditor) => {
+       *       postEditor.splitMarkers(markerRange);
+       *     });
+       *
+       * The return value will be marker object completely inside the offsets
+       * provided. Markers on the outside of the split may also have been modified.
+       *
+       * @method splitMarkers
+       * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+       * @return {Array} of markers that are inside the split
+       * @public
+       */
+    }, {
+      key: 'splitMarkers',
+      value: function splitMarkers(_ref4) {
+        var headMarker = _ref4.headMarker;
+        var headOffset = _ref4.headOffset;
+        var tailMarker = _ref4.tailMarker;
+        var tailOffset = _ref4.tailOffset;
+        var post = this.editor.post;
+
+        var selectedMarkers = [];
+
+        var headSection = headMarker.section;
+        var tailSection = tailMarker.section;
+
+        // These render will be removed by the split functions. Mark them
+        // for removal before doing that. FIXME this seems prime for
+        // refactoring onto the postEditor as a split function
+        headMarker.renderNode.scheduleForRemoval();
+        tailMarker.renderNode.scheduleForRemoval();
+        headMarker.section.renderNode.markDirty();
+        tailMarker.section.renderNode.markDirty();
+
+        if (headMarker === tailMarker) {
+          var markers = headSection.splitMarker(headMarker, headOffset, tailOffset);
+          selectedMarkers = post.markersInRange({
+            headMarker: markers[0],
+            tailMarker: markers[markers.length - 1],
+            headOffset: headOffset,
+            tailOffset: tailOffset
+          });
+        } else {
+          var newHeadMarkers = headSection.splitMarker(headMarker, headOffset);
+          var selectedHeadMarkers = post.markersInRange({
+            headMarker: newHeadMarkers[0],
+            tailMarker: newHeadMarkers[newHeadMarkers.length - 1],
+            headOffset: headOffset
+          });
+
+          var newTailMarkers = tailSection.splitMarker(tailMarker, 0, tailOffset);
+          var selectedTailMarkers = post.markersInRange({
+            headMarker: newTailMarkers[0],
+            tailMarker: newTailMarkers[newTailMarkers.length - 1],
+            headOffset: 0,
+            tailOffset: tailOffset
+          });
+
+          var newHeadMarker = selectedHeadMarkers[0],
+              newTailMarker = selectedTailMarkers[selectedTailMarkers.length - 1];
+
+          var newMarkers = [];
+          if (newHeadMarker) {
+            newMarkers.push(newHeadMarker);
+          }
+          if (newTailMarker) {
+            newMarkers.push(newTailMarker);
+          }
+
+          if (newMarkers.length) {
+            this.editor.post.markersFrom(newMarkers[0], newMarkers[newMarkers.length - 1], function (m) {
+              selectedMarkers.push(m);
+            });
+          }
+        }
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+
+        return selectedMarkers;
+      }
+
+      /**
+       * Split a section at one position. This method is designed to accept
+       * `editor.cursor.offsets` as an argument, but will only split at the
+       * head of the cursor position.
+       *
+       * Usage:
+       *
+       *     let marker = editor.post.sections.head.marker.head;
+       *     editor.run((postEditor) => {
+       *       postEditor.splitSection({
+       *         headMarker: marker,
+       *         headOffset: 3
+       *       });
+       *     });
+       *     // Will result in the marker and its old section being removed from
+       *     // the post and rendered DOM, and in the creation of two new sections
+       *     // replacing the old one.
+       *
+       * The return value will be the two new sections. One or both of these
+       * sections can be blank (contain only a blank marker), for example if the
+       * headOffset is 0.
+       *
+       * @method splitMarkers
+       * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+       * @return {Array} of new sections, one for the first half and one for the second
+       * @public
+       */
+    }, {
+      key: 'splitSection',
+      value: function splitSection(_ref5) {
+        var section = _ref5.headSection;
+        var headSectionOffset = _ref5.headSectionOffset;
+
+        var _section$markerPositionAtOffset3 = section.markerPositionAtOffset(headSectionOffset);
+
+        var headMarker = _section$markerPositionAtOffset3.marker;
+        var headOffset = _section$markerPositionAtOffset3.offset;
+
+        var _section$splitAtMarker = section.splitAtMarker(headMarker, headOffset);
+
+        var _section$splitAtMarker2 = _slicedToArray(_section$splitAtMarker, 2);
+
+        var beforeSection = _section$splitAtMarker2[0];
+        var afterSection = _section$splitAtMarker2[1];
+
+        this._replaceSection(section, [beforeSection, afterSection]);
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+
+        return [beforeSection, afterSection];
+      }
+    }, {
+      key: '_replaceSection',
+      value: function _replaceSection(section, newSections) {
+        var _this3 = this;
+
+        var nextSection = section.next;
+        newSections.forEach(function (s) {
+          return _this3.insertSectionBefore(s, nextSection);
+        });
+        this.removeSection(section);
+      }
+
+      /**
+       * Given a markerRange (for example `editor.cursor.offsets`) mark all markers
+       * inside it as a given markup. The markup must be provided as a post
+       * abstract node.
+       *
+       * Usage:
+       *
+       *     let markerRange = editor.cursor.offsets;
+       *     let strongMarkup = editor.builder.createMarkup('strong');
+       *     editor.run((postEditor) => {
+       *       postEditor.applyMarkupToMarkers(markerRange, strongMarkup);
+       *     });
+       *     // Will result some markers possibly being split, and the markup
+       *     // being applied to all markers between the split.
+       *
+       * The return value will be all markers between the split, the same return
+       * value as `splitMarkers`.
+       *
+       * @method applyMarkupToMarkers
+       * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+       * @param {Object} markup A markup post abstract node
+       * @return {Array} of markers that are inside the split
+       * @public
+       */
+    }, {
+      key: 'applyMarkupToMarkers',
+      value: function applyMarkupToMarkers(markerRange, markup) {
+        var markers = this.splitMarkers(markerRange);
+        markers.forEach(function (marker) {
+          marker.addMarkup(markup);
+          marker.section.renderNode.markDirty();
+        });
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+
+        return markers;
+      }
+
+      /**
+       * Given a markerRange (for example `editor.cursor.offsets`) remove the given
+       * markup from all contained markers. The markup must be provided as a post
+       * abstract node.
+       *
+       * Usage:
+       *
+       *     let markerRange = editor.cursor.offsets;
+       *     let markup = markerRange.headMarker.markups[0];
+       *     editor.run((postEditor) => {
+       *       postEditor.removeMarkupFromMarkers(markerRange, markup);
+       *     });
+       *     // Will result some markers possibly being split, and the markup
+       *     // being removed from all markers between the split.
+       *
+       * The return value will be all markers between the split, the same return
+       * value as `splitMarkers`.
+       *
+       * @method removeMarkupFromMarkers
+       * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+       * @param {Object} markup A markup post abstract node
+       * @return {Array} of markers that are inside the split
+       * @public
+       */
+    }, {
+      key: 'removeMarkupFromMarkers',
+      value: function removeMarkupFromMarkers(markerRange, markup) {
+        var markers = this.splitMarkers(markerRange);
+        markers.forEach(function (marker) {
+          marker.removeMarkup(markup);
+          marker.section.renderNode.markDirty();
+        });
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+
+        return markers;
+      }
+
+      /**
+       * Insert a given section before another one, updating the post abstract
+       * and the rendered UI.
+       *
+       * Usage:
+       *
+       *     let markerRange = editor.cursor.offsets;
+       *     let sectionWithCursor = markerRange.headMarker.section;
+       *     let section = editor.builder.createCardSection('my-image');
+       *     editor.run((postEditor) => {
+       *       postEditor.insertSectionBefore(section, sectionWithCursor);
+       *     });
+       *
+       * @method insertSectionBefore
+       * @param {Object} section The new section
+       * @param {Object} beforeSection The section "before" is relative to
+       * @public
+       */
+    }, {
+      key: 'insertSectionBefore',
+      value: function insertSectionBefore(section, beforeSection) {
+        this.editor.post.sections.insertBefore(section, beforeSection);
+        this.editor.post.renderNode.markDirty();
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+      }
+
+      /**
+       * Remove a given section from the post abstract and the rendered UI.
+       *
+       * Usage:
+       *
+       *     let markerRange = editor.cursor.offsets;
+       *     let sectionWithCursor = markerRange.headMarker.section;
+       *     editor.run((postEditor) => {
+       *       postEditor.removeSection(sectionWithCursor);
+       *     });
+       *
+       * @method insertSectionBefore
+       * @param {Object} section The section to remove
+       * @public
+       */
+    }, {
+      key: 'removeSection',
+      value: function removeSection(section) {
+        section.renderNode.scheduleForRemoval();
+        section.post.sections.remove(section);
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+      }
+
+      /**
+       * A method for adding work the deferred queue
+       *
+       * @method schedule
+       * @param {Function} callback to run during completion
+       * @public
+       */
+    }, {
+      key: 'schedule',
+      value: function schedule(callback) {
+        if (this._didComplete) {
+          throw new Error('Work can only be scheduled before a post edit has completed');
+        }
+        this._completionWorkQueue.push(callback);
+      }
+
+      /**
+       * Add a rerender job to the queue
+       *
+       * @method scheduleRerender
+       * @public
+       */
+    }, {
+      key: 'scheduleRerender',
+      value: function scheduleRerender() {
+        var _this4 = this;
+
+        this.schedule(function () {
+          if (!_this4._didRerender) {
+            _this4._didRerender = true;
+            _this4.editor.rerender();
+          }
+        });
+      }
+
+      /**
+       * Add a didUpdate job to the queue
+       *
+       * @method scheduleDidRender
+       * @public
+       */
+    }, {
+      key: 'scheduleDidUpdate',
+      value: function scheduleDidUpdate() {
+        var _this5 = this;
+
+        this.schedule(function () {
+          if (!_this5._didUpdate) {
+            _this5._didUpdate = true;
+            _this5.editor.didUpdate();
+          }
+        });
+      }
+
+      /**
+       * Flush any work on the queue. `editor.run` already does this, calling this
+       * method directly should not be needed outside `editor.run`.
+       *
+       * @method complete
+       * @private
+       */
+    }, {
+      key: 'complete',
+      value: function complete() {
+        if (this._didComplete) {
+          throw new Error('Post editing can only be completed once');
+        }
+        this._didComplete = true;
+        this._completionWorkQueue.forEach(function (callback) {
+          callback();
+        });
+      }
+    }]);
+
+    return PostEditor;
+  })();
+
+  exports['default'] = PostEditor;
+});
+define('content-kit-editor', ['exports', 'content-kit-editor/editor/editor', 'content-kit-editor/commands/bold', 'content-kit-editor/cards/image'], function (exports, _contentKitEditorEditorEditor, _contentKitEditorCommandsBold, _contentKitEditorCardsImage) {
   'use strict';
 
   exports.registerGlobal = registerGlobal;
 
   var ContentKit = {
     Editor: _contentKitEditorEditorEditor['default'],
-    ImageCard: _contentKitEditorCardsImage['default']
+    ImageCard: _contentKitEditorCardsImage['default'],
+    BoldCommand: _contentKitEditorCommandsBold['default']
   };
 
   function registerGlobal(global) {
@@ -1823,6 +2356,67 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+  function findOffsetInParent(parentElement, targetElement, targetOffset) {
+    var offset = 0;
+    var found = false;
+    // FIXME: would be nice to exit this walk early after we find the end node
+    (0, _contentKitEditorUtilsDomUtils.walkDOM)(parentElement, function (childElement) {
+      if (found) {
+        return;
+      }
+      found = childElement === targetElement;
+
+      if (found) {
+        offset += targetOffset;
+      } else if ((0, _contentKitEditorUtilsDomUtils.isTextNode)(childElement)) {
+        offset += childElement.textContent.length;
+      }
+    });
+    return offset;
+  }
+
+  function findSectionContaining(sections, childNode) {
+    var _detectParentNode = (0, _contentKitEditorUtilsDomUtils.detectParentNode)(childNode, function (node) {
+      return (0, _contentKitEditorUtilsArrayUtils.detect)(sections, function (s) {
+        return s.renderNode.element === node;
+      });
+    });
+
+    var section = _detectParentNode.result;
+
+    return section;
+  }
+
+  function comparePosition(selection) {
+    var anchorNode = selection.anchorNode;
+    var focusNode = selection.focusNode;
+    var anchorOffset = selection.anchorOffset;
+    var focusOffset = selection.focusOffset;
+
+    var leftNode = undefined,
+        rightNode = undefined,
+        leftOffset = undefined,
+        rightOffset = undefined;
+
+    var position = anchorNode.compareDocumentPosition(focusNode);
+
+    if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+      leftNode = anchorNode;rightNode = focusNode;
+      leftOffset = anchorOffset;rightOffset = focusOffset;
+    } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+      leftNode = focusNode;rightNode = anchorNode;
+      leftOffset = focusOffset;rightOffset = anchorOffset;
+    } else {
+      // same node
+      leftNode = anchorNode;
+      rightNode = focusNode;
+      leftOffset = Math.min(anchorOffset, focusOffset);
+      rightOffset = Math.max(anchorOffset, focusOffset);
+    }
+
+    return { leftNode: leftNode, leftOffset: leftOffset, rightNode: rightNode, rightOffset: rightOffset };
+  }
+
   var Cursor = (function () {
     function Cursor(editor) {
       _classCallCheck(this, Cursor);
@@ -1848,20 +2442,35 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
 
       // moves cursor to the start of the section
       value: function moveToSection(section) {
-        var marker = section.markers.head;
+        var offsetInSection = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+
+        var _section$markerPositionAtOffset = section.markerPositionAtOffset(offsetInSection);
+
+        var marker = _section$markerPositionAtOffset.marker;
+        var offset = _section$markerPositionAtOffset.offset;
+
         if (!marker) {
           throw new Error('Cannot move cursor to section without a marker');
         }
-        var markerElement = marker.renderNode.element;
+        this.moveToMarker(marker, offset);
+      }
 
-        var r = document.createRange();
-        r.selectNode(markerElement);
-        r.collapse(true);
-        var selection = this.selection;
-        if (selection.rangeCount > 0) {
-          selection.removeAllRanges();
-        }
-        selection.addRange(r);
+      // moves cursor to marker
+    }, {
+      key: 'moveToMarker',
+      value: function moveToMarker(headMarker) {
+        var headOffset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+        var tailMarker = arguments.length <= 2 || arguments[2] === undefined ? headMarker : arguments[2];
+        var tailOffset = arguments.length <= 3 || arguments[3] === undefined ? headOffset : arguments[3];
+        return (function () {
+          if (!headMarker) {
+            throw new Error('Cannot move cursor to section without a marker');
+          }
+          var headElement = headMarker.renderNode.element;
+          var tailElement = tailMarker.renderNode.element;
+
+          this.moveToNode(headElement, headOffset, tailElement, tailOffset);
+        }).apply(this, arguments);
       }
     }, {
       key: 'selectSections',
@@ -1920,17 +2529,11 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
         return window.getSelection();
       }
     }, {
-      key: 'offsets',
+      key: 'sectionOffsets',
       get: function get() {
-        var leftNode = undefined,
-            rightNode = undefined,
-            leftOffset = undefined,
-            rightOffset = undefined;
+        var sections = this.post.sections;
+
         var selection = this.selection;
-        var anchorNode = selection.anchorNode;
-        var focusNode = selection.focusNode;
-        var anchorOffset = selection.anchorOffset;
-        var focusOffset = selection.focusOffset;
         var rangeCount = selection.rangeCount;
 
         var range = rangeCount > 0 && selection.getRangeAt(0);
@@ -1939,30 +2542,72 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
           return {};
         }
 
-        var position = anchorNode.compareDocumentPosition(focusNode);
+        var _comparePosition = comparePosition(selection);
 
-        if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
-          leftNode = anchorNode;rightNode = focusNode;
-          leftOffset = anchorOffset;rightOffset = focusOffset;
-        } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
-          leftNode = focusNode;rightNode = anchorNode;
-          leftOffset = focusOffset;rightOffset = anchorOffset;
-        } else {
-          // same node
-          leftNode = anchorNode;
-          rightNode = focusNode;
-          leftOffset = Math.min(anchorOffset, focusOffset);
-          rightOffset = Math.max(anchorOffset, focusOffset);
+        var headNode = _comparePosition.leftNode;
+        var headOffset = _comparePosition.leftOffset;
+
+        var headSection = findSectionContaining(sections, headNode);
+        var headSectionOffset = findOffsetInParent(headSection.renderNode.element, headNode, headOffset);
+
+        return { headSection: headSection, headSectionOffset: headSectionOffset };
+      }
+    }, {
+      key: 'offsets',
+      get: function get() {
+        var sections = this.post.sections;
+
+        var selection = this.selection;
+        var isCollapsed = selection.isCollapsed;
+        var rangeCount = selection.rangeCount;
+
+        var range = rangeCount > 0 && selection.getRangeAt(0);
+
+        if (!range) {
+          return {};
         }
 
-        var leftRenderNode = this.renderTree.elements.get(leftNode),
-            rightRenderNode = this.renderTree.elements.get(rightNode);
+        var _comparePosition2 = comparePosition(selection);
+
+        var leftNode = _comparePosition2.leftNode;
+        var leftOffset = _comparePosition2.leftOffset;
+        var rightNode = _comparePosition2.rightNode;
+        var rightOffset = _comparePosition2.rightOffset;
+
+        // The selection should contain two text nodes, but may contain a P
+        // tag if the section only has a blank br marker or on
+        // Chrome/Safari using shift+<Up arrow> can create a selection with
+        // a tag rather than a text node. This fixes that.
+        // See https://github.com/bustlelabs/content-kit-editor/issues/56
+
+        var leftRenderNode = this.renderTree.getElementRenderNode(leftNode),
+            rightRenderNode = this.renderTree.getElementRenderNode(rightNode);
+
+        if (!rightRenderNode) {
+          var rightSection = findSectionContaining(sections, rightNode);
+          var rightMarker = rightSection.markers.head;
+          rightRenderNode = rightMarker.renderNode;
+          rightNode = rightRenderNode.element;
+          rightOffset = 0;
+        }
+
+        if (!leftRenderNode) {
+          var leftSection = findSectionContaining(sections, leftNode);
+          var leftMarker = leftSection.markers.head;
+          leftRenderNode = leftMarker.renderNode;
+          leftNode = leftRenderNode.element;
+          leftOffset = 0;
+        }
 
         var startMarker = leftRenderNode && leftRenderNode.postNode,
             endMarker = rightRenderNode && rightRenderNode.postNode;
 
         var startSection = startMarker && startMarker.section;
         var endSection = endMarker && endMarker.section;
+
+        var headSectionOffset = startSection && startMarker && startMarker.offsetInParent(leftOffset);
+
+        var tailSectionOffset = endSection && endMarker && endMarker.offsetInParent(rightOffset);
 
         return {
           leftNode: leftNode,
@@ -1974,7 +2619,21 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
           startMarker: startMarker,
           endMarker: endMarker,
           startSection: startSection,
-          endSection: endSection
+          endSection: endSection,
+
+          // FIXME: this should become the public API
+          headMarker: startMarker,
+          tailMarker: endMarker,
+          headOffset: leftOffset,
+          tailOffset: rightOffset,
+          headNode: leftNode,
+          tailNode: rightNode,
+
+          headSection: startSection,
+          tailSection: endSection,
+          headSectionOffset: headSectionOffset,
+          tailSectionOffset: tailSectionOffset,
+          isCollapsed: isCollapsed
         };
       }
     }, {
@@ -1994,19 +2653,8 @@ define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils
         var startContainer = range.startContainer;
         var endContainer = range.endContainer;
 
-        var isSectionElement = function isSectionElement(element) {
-          return (0, _contentKitEditorUtilsArrayUtils.detect)(sections, function (s) {
-            return s.renderNode.element === element;
-          });
-        };
-
-        var _detectParentNode = (0, _contentKitEditorUtilsDomUtils.detectParentNode)(startContainer, isSectionElement);
-
-        var startSection = _detectParentNode.result;
-
-        var _detectParentNode2 = (0, _contentKitEditorUtilsDomUtils.detectParentNode)(endContainer, isSectionElement);
-
-        var endSection = _detectParentNode2.result;
+        var startSection = findSectionContaining(sections, startContainer);
+        var endSection = findSectionContaining(sections, endContainer);
 
         return sections.readRange(startSection, endSection);
       }
@@ -2098,6 +2746,34 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
       key: 'addMarkup',
       value: function addMarkup(markup) {
         this.markups.push(markup);
+      }
+
+      // find the value of the absolute offset in this marker's parent section
+    }, {
+      key: 'offsetInParent',
+      value: function offsetInParent(offset) {
+        var parent = this.section;
+        var markers = parent.markers;
+
+        var foundMarker = false;
+        var parentOffset = 0;
+        var marker = markers.head;
+        var length;
+        while (marker && !foundMarker) {
+          length = marker.length;
+          if (marker === this) {
+            foundMarker = true;
+            length = offset;
+          }
+
+          parentOffset += length;
+          marker = marker.next;
+        }
+
+        if (!foundMarker) {
+          throw new Error('offsetInParent could not find offset for marker');
+        }
+        return parentOffset;
       }
     }, {
       key: 'removeMarkup',
@@ -2222,11 +2898,9 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
 define('content-kit-editor/models/markup-section', ['exports', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/linked-list', 'content-kit-editor/utils/linked-item'], function (exports, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsLinkedList, _contentKitEditorUtilsLinkedItem) {
   'use strict';
 
-  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
-
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  var _get = function get(_x5, _x6, _x7) { var _again = true; _function: while (_again) { var object = _x5, property = _x6, receiver = _x7; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x5 = parent; _x6 = property; _x7 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+  var _get = function get(_x4, _x5, _x6) { var _again = true; _function: while (_again) { var object = _x4, property = _x5, receiver = _x6; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x4 = parent; _x5 = property; _x6 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
   function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
@@ -2253,11 +2927,11 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
 
       _get(Object.getPrototypeOf(Section.prototype), 'constructor', this).call(this);
       this.markers = new _contentKitEditorUtilsLinkedList['default']({
-        adoptItem: function adoptItem(marker) {
-          marker.section = _this;
+        adoptItem: function adoptItem(m) {
+          return m.section = _this;
         },
-        freeItem: function freeItem(marker) {
-          marker.section = null;
+        freeItem: function freeItem(m) {
+          return m.section = null;
         }
       });
       this.tagName = tagName || DEFAULT_TAG_NAME;
@@ -2299,6 +2973,11 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
             return !m.isEmpty;
           });
           this.markers.splice(marker, 1, newMarkers);
+          if (this.markers.length === 0) {
+            var blankMarker = this.builder.createBlankMarker();
+            this.markers.append(blankMarker);
+            newMarkers.push(blankMarker);
+          }
           return newMarkers;
         }).apply(this, arguments);
       }
@@ -2347,51 +3026,31 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
       value: function coalesceMarkers() {
         var _this2 = this;
 
-        (0, _contentKitEditorUtilsArrayUtils.forEach)(this.markers, function (m) {
-          if (m.isEmpty) {
-            _this2.markers.remove(m);
-          }
+        (0, _contentKitEditorUtilsArrayUtils.forEach)((0, _contentKitEditorUtilsArrayUtils.filter)(this.markers, function (m) {
+          return m.isEmpty;
+        }), function (m) {
+          return _this2.markers.remove(m);
         });
         if (this.markers.isEmpty) {
           this.markers.append(this.builder.createBlankMarker());
         }
       }
-
-      /**
-       * @return {Array} 2 new sections
-       */
     }, {
-      key: 'split',
-      value: function split(offset) {
-        var left = [],
-            right = [],
-            middle = undefined;
+      key: 'markerPositionAtOffset',
+      value: function markerPositionAtOffset(offset) {
+        var currentOffset = 0;
+        var currentMarker = undefined;
+        var remaining = offset;
+        this.markers.detect(function (marker) {
+          currentOffset = Math.min(remaining, marker.length);
+          remaining -= currentOffset;
+          if (remaining === 0) {
+            currentMarker = marker;
+            return true; // break out of detect
+          }
+        });
 
-        middle = this.markerContaining(offset);
-        // end of section
-        if (!middle) {
-          return [new this.constructor(this.tagName, this.markers), new this.constructor(this.tagName, [])];
-        }
-
-        left = middle.prev ? this.markers.readRange(null, middle.prev) : [];
-        right = middle.next ? this.markers.readRange(middle.next, null) : [];
-
-        var leftLength = left.reduce(function (prev, cur) {
-          return prev + cur.length;
-        }, 0);
-        var middleOffset = offset - leftLength;
-
-        var _middle$split = middle.split(middleOffset);
-
-        var _middle$split2 = _slicedToArray(_middle$split, 2);
-
-        var leftMiddle = _middle$split2[0];
-        var rightMiddle = _middle$split2[1];
-
-        left.push(leftMiddle);
-        right.push(rightMiddle);
-
-        return [new this.constructor(this.tagName, left), new this.constructor(this.tagName, right)];
+        return { marker: currentMarker, offset: currentOffset };
       }
 
       // mutates this by appending the other section's (cloned) markers to it
@@ -2400,46 +3059,51 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
       value: function join(otherSection) {
         var _this3 = this;
 
+        var wasBlank = this.isBlank;
+        var didAddContent = false;
+
+        var beforeMarker = this.markers.tail;
+        var afterMarker = null;
+
         otherSection.markers.forEach(function (m) {
-          _this3.markers.append(m.clone());
-        });
-      }
-
-      /**
-       * A marker contains this offset if:
-       *   * The offset is between the marker's start and end
-       *   * the offset is between two markers and this is the right marker (and leftInclusive is true)
-       *   * the offset is between two markers and this is the left marker (and leftInclusive is false)
-       *
-       * @return {Marker} The marker that contains this offset
-       */
-    }, {
-      key: 'markerContaining',
-      value: function markerContaining(offset) {
-        var leftInclusive = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
-
-        var length = 0;
-        var lastMarker = null;
-
-        if (offset === 0) {
-          return this.markers.head;
-        }
-
-        this.markers.detect(function (marker) {
-          if (length < offset) {
-            lastMarker = marker;
-            length += marker.length;
-            return false;
-          } else {
-            return true; // stop iteration
+          if (!m.isEmpty) {
+            m = m.clone();
+            _this3.markers.append(m);
+            if (!afterMarker) {
+              afterMarker = m;
+            }
+            didAddContent = true;
           }
         });
 
-        if (length > offset) {
-          return lastMarker;
-        } else if (length === offset) {
-          return leftInclusive ? lastMarker.next : lastMarker;
+        if (wasBlank && didAddContent) {
+          // FIXME: Join should maybe not be on the markup-section
+          beforeMarker.renderNode.scheduleForRemoval();
+          beforeMarker = null;
         }
+
+        return { beforeMarker: beforeMarker, afterMarker: afterMarker };
+      }
+    }, {
+      key: 'markersFor',
+      value: function markersFor(headOffset, tailOffset) {
+        var markers = [];
+        var adjustedHead = 0,
+            adjustedTail = 0;
+        this.markers.forEach(function (m) {
+          adjustedTail += m.length;
+
+          if (adjustedTail > headOffset && adjustedHead < tailOffset) {
+            var head = Math.max(headOffset - adjustedHead, 0);
+            var tail = adjustedTail < tailOffset ? m.length : m.length - (adjustedTail - tailOffset);
+            var cloned = m.clone();
+
+            cloned.value = m.value.slice(head, tail);
+            markers.push(cloned);
+          }
+          adjustedHead += m.length;
+        });
+        return markers;
       }
     }, {
       key: 'tagName',
@@ -2450,9 +3114,24 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
         return this._tagName;
       }
     }, {
-      key: 'isEmpty',
+      key: 'isBlank',
       get: function get() {
-        return this.markers.isEmpty;
+        if (!this.markers.length) {
+          return true;
+        }
+        var markerWithLength = this.markers.detect(function (marker) {
+          return !!marker.length;
+        });
+        return !markerWithLength;
+      }
+    }, {
+      key: 'text',
+      get: function get() {
+        var text = '';
+        this.markers.forEach(function (m) {
+          return text += m.value;
+        });
+        return text;
       }
     }]);
 
@@ -2523,9 +3202,22 @@ define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-e
     _createClass(PostNodeBuilder, [{
       key: 'createPost',
       value: function createPost() {
+        var sections = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+
         var post = new _contentKitEditorModelsPost['default']();
         post.builder = this;
+
+        sections.forEach(function (s) {
+          return post.sections.append(s);
+        });
+
         return post;
+      }
+    }, {
+      key: 'createBlankPost',
+      value: function createBlankPost() {
+        var blankMarkupSection = this.createBlankMarkupSection('p');
+        return this.createPost([blankMarkupSection]);
       }
     }, {
       key: 'createMarkupSection',
@@ -2540,6 +3232,13 @@ define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-e
         }
         section.builder = this;
         return section;
+      }
+    }, {
+      key: 'createBlankMarkupSection',
+      value: function createBlankMarkupSection(tagName) {
+        tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
+        var blankMarker = this.createBlankMarker();
+        return this.createMarkupSection(tagName, [blankMarker]);
       }
     }, {
       key: 'createImageSection',
@@ -2613,70 +3312,95 @@ define("content-kit-editor/models/post", ["exports", "content-kit-editor/utils/l
 
   var Post = (function () {
     function Post() {
+      var _this = this;
+
       _classCallCheck(this, Post);
 
       this.type = POST_TYPE;
       this.sections = new _contentKitEditorUtilsLinkedList["default"]({
-        adoptItem: function adoptItem(section) {
-          section.post = this;
+        adoptItem: function adoptItem(s) {
+          return s.post = _this;
         },
-        freeItem: function freeItem(section) {
-          section.post = null;
+        freeItem: function freeItem(s) {
+          return s.post = null;
         }
       });
     }
 
     _createClass(Post, [{
+      key: "markersInRange",
+      value: function markersInRange(_ref) {
+        var headMarker = _ref.headMarker;
+        var headOffset = _ref.headOffset;
+        var tailMarker = _ref.tailMarker;
+        var tailOffset = _ref.tailOffset;
+
+        var offset = 0;
+        var foundMarkers = [];
+        var toEnd = tailOffset === undefined;
+        if (toEnd) {
+          tailOffset = 0;
+        }
+
+        this.markersFrom(headMarker, tailMarker, function (marker) {
+          if (toEnd) {
+            tailOffset += marker.length;
+          }
+
+          if (offset >= headOffset && offset < tailOffset) {
+            foundMarkers.push(marker);
+          }
+
+          offset += marker.length;
+        });
+
+        return foundMarkers;
+      }
+    }, {
       key: "cutMarkers",
       value: function cutMarkers(markers) {
-        var _this = this;
+        var _this2 = this;
 
-        var firstSection = markers[0].section,
-            lastSection = markers[markers.length - 1].section;
+        var firstSection = markers.length && markers[0].section,
+            lastSection = markers.length && markers[markers.length - 1].section;
 
         var currentSection = firstSection;
         var removedSections = [],
-            changedSections = [firstSection, lastSection];
-
-        var previousMarker = markers[0].prev;
-
-        markers.forEach(function (marker) {
-          if (marker.section !== currentSection) {
-            // this marker is in a section we haven't seen yet
-            if (marker.section !== firstSection && marker.section !== lastSection) {
-              // section is wholly contained by markers, and can be removed
-              removedSections.push(marker.section);
+            changedSections = [];
+        if (firstSection) {
+          changedSections.push(firstSection);
+        }
+        if (lastSection) {
+          changedSections.push(lastSection);
+        }
+        if (markers.length !== 0) {
+          markers.forEach(function (marker) {
+            if (marker.section !== currentSection) {
+              // this marker is in a section we haven't seen yet
+              if (marker.section !== firstSection && marker.section !== lastSection) {
+                // section is wholly contained by markers, and can be removed
+                removedSections.push(marker.section);
+              }
             }
+
+            currentSection = marker.section;
+            currentSection.markers.remove(marker);
+          });
+
+          // add a blank marker to any sections that are now empty
+          changedSections.forEach(function (section) {
+            if (section.markers.isEmpty) {
+              section.markers.append(_this2.builder.createBlankMarker());
+            }
+          });
+
+          if (firstSection !== lastSection) {
+            firstSection.join(lastSection);
+            removedSections.push(lastSection);
           }
-
-          currentSection = marker.section;
-          currentSection.markers.remove(marker);
-        });
-
-        // add a blank marker to any sections that are now empty
-        changedSections.forEach(function (section) {
-          if (section.isEmpty) {
-            section.markers.append(_this.builder.createBlankMarker());
-          }
-        });
-
-        var currentMarker = undefined,
-            currentOffset = undefined;
-
-        if (previousMarker) {
-          currentMarker = previousMarker;
-          currentOffset = currentMarker.length;
-        } else {
-          currentMarker = firstSection.markers.head;
-          currentOffset = 0;
         }
 
-        if (firstSection !== lastSection) {
-          firstSection.join(lastSection);
-          removedSections.push(lastSection);
-        }
-
-        return { changedSections: changedSections, removedSections: removedSections, currentMarker: currentMarker, currentOffset: currentOffset };
+        return { changedSections: changedSections, removedSections: removedSections };
       }
 
       /**
@@ -2696,7 +3420,7 @@ define("content-kit-editor/models/post", ["exports", "content-kit-editor/utils/l
             currentMarker = currentMarker.next;
           } else {
             var nextSection = currentMarker.section.next;
-            currentMarker = nextSection.markers.head;
+            currentMarker = nextSection && nextSection.markers.head;
           }
         }
       }
@@ -2730,6 +3454,7 @@ define("content-kit-editor/models/render-node", ["exports", "content-kit-editor/
       this.isRemoved = false;
       this.postNode = postNode;
       this._childNodes = null;
+      this.element = null;
     }
 
     _createClass(RenderNode, [{
@@ -2771,16 +3496,6 @@ define("content-kit-editor/models/render-node", ["exports", "content-kit-editor/
           });
         }
         return this._childNodes;
-      }
-    }, {
-      key: "element",
-      set: function set(element) {
-        this._element = element;
-        this.renderTree.elements.set(element, this);
-        return element;
-      },
-      get: function get() {
-        return this._element;
       }
     }]);
 
@@ -2980,6 +3695,10 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-utils', 'conte
           parseMarkers(section, builder, sectionElement);
           break;
       }
+      if (section.markers.isEmpty) {
+        var marker = this.builder.createBlankMarker();
+        section.markers.append(marker);
+      }
       return section;
     },
     parse: function parse(postElement) {
@@ -3000,20 +3719,28 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-utils', 'conte
           }
         }
       }
+
+      if (post.sections.isEmpty) {
+        section = this.builder.createMarkupSection('p');
+        var marker = this.builder.createBlankMarker();
+        section.markers.append(marker);
+        post.sections.append(section);
+      }
+
       return post;
     }
   };
 
   exports['default'] = NewHTMLParser;
 });
-define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
-  "use strict";
+define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
+  'use strict';
 
-  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var CARD_SECTION_TYPE = 10;
   var IMAGE_SECTION_TYPE = 2;
@@ -3032,7 +3759,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
     }
 
     _createClass(MobiledocParser, [{
-      key: "parse",
+      key: 'parse',
       value: function parse(_ref) {
         var version = _ref.version;
         var sectionData = _ref.sections;
@@ -3046,10 +3773,17 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         this.markerTypes = this.parseMarkerTypes(markerTypes);
         this.parseSections(sections, post);
 
+        if (post.sections.isEmpty) {
+          var section = this.builder.createMarkupSection('p');
+          var marker = this.builder.createBlankMarker();
+          section.markers.append(marker);
+          post.sections.append(section);
+        }
+
         return post;
       }
     }, {
-      key: "parseMarkerTypes",
+      key: 'parseMarkerTypes',
       value: function parseMarkerTypes(markerTypes) {
         var _this = this;
 
@@ -3058,7 +3792,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         });
       }
     }, {
-      key: "parseMarkerType",
+      key: 'parseMarkerType',
       value: function parseMarkerType(_ref2) {
         var _ref22 = _slicedToArray(_ref2, 2);
 
@@ -3068,7 +3802,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         return this.builder.createMarkup(tagName, attributes);
       }
     }, {
-      key: "parseSections",
+      key: 'parseSections',
       value: function parseSections(sections, post) {
         var _this2 = this;
 
@@ -3077,7 +3811,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         });
       }
     }, {
-      key: "parseSection",
+      key: 'parseSection',
       value: function parseSection(section, post) {
         var _section = _slicedToArray(section, 1);
 
@@ -3095,11 +3829,11 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
             this.parseCardSection(section, post);
             break;
           default:
-            throw new Error("Unexpected section type " + type);
+            throw new Error('Unexpected section type ' + type);
         }
       }
     }, {
-      key: "parseCardSection",
+      key: 'parseCardSection',
       value: function parseCardSection(_ref3, post) {
         var _ref32 = _slicedToArray(_ref3, 3);
 
@@ -3111,7 +3845,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         post.sections.append(section);
       }
     }, {
-      key: "parseImageSection",
+      key: 'parseImageSection',
       value: function parseImageSection(_ref4, post) {
         var _ref42 = _slicedToArray(_ref4, 2);
 
@@ -3122,7 +3856,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         post.sections.append(section);
       }
     }, {
-      key: "parseMarkupSection",
+      key: 'parseMarkupSection',
       value: function parseMarkupSection(_ref5, post) {
         var _ref52 = _slicedToArray(_ref5, 3);
 
@@ -3133,9 +3867,13 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         var section = this.builder.createMarkupSection(tagName);
         post.sections.append(section);
         this.parseMarkers(markers, section);
+        if (section.markers.isEmpty) {
+          var marker = this.builder.createBlankMarker();
+          section.markers.append(marker);
+        }
       }
     }, {
-      key: "parseMarkers",
+      key: 'parseMarkers',
       value: function parseMarkers(markers, section) {
         var _this3 = this;
 
@@ -3144,7 +3882,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
         });
       }
     }, {
-      key: "parseMarker",
+      key: 'parseMarker',
       value: function parseMarker(_ref6, section) {
         var _this4 = this;
 
@@ -3166,7 +3904,7 @@ define("content-kit-editor/parsers/mobiledoc", ["exports"], function (exports) {
     return MobiledocParser;
   })();
 
-  exports["default"] = MobiledocParser;
+  exports['default'] = MobiledocParser;
 });
 define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models/markup-section', 'content-kit-editor/parsers/section', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/markup'], function (exports, _contentKitEditorModelsMarkupSection, _contentKitEditorParsersSection, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsMarkup) {
   'use strict';
@@ -3259,7 +3997,7 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
 
           var marker = undefined;
 
-          var renderNode = renderTree.elements.get(textNode);
+          var renderNode = renderTree.getElementRenderNode(textNode);
           if (renderNode) {
             if (text.length) {
               marker = renderNode.postNode;
@@ -3302,14 +4040,17 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
         });
 
         // remove any nodes that were not marked as seen
-        var renderNode = section.renderNode.firstChild;
-        while (renderNode) {
-          if (seenRenderNodes.indexOf(renderNode) === -1) {
-            // remove it
-            renderNode.scheduleForRemoval();
+        section.renderNode.childNodes.forEach(function (childRenderNode) {
+          if (seenRenderNodes.indexOf(childRenderNode) === -1) {
+            childRenderNode.scheduleForRemoval();
           }
+        });
 
-          renderNode = renderNode.next;
+        /** FIXME that we are reparsing and there are no markers should never
+         * happen. We manage the delete key on our own. */
+        if (section.markers.isEmpty) {
+          var marker = this.builder.createBlankMarker();
+          section.markers.append(marker);
         }
       }
     }]);
@@ -3448,7 +4189,7 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
 
   exports['default'] = SectionParser;
 });
-define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-editor/models/render-node", "content-kit-editor/models/card-node", "content-kit-editor/utils/array-utils", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/marker", "content-kit-editor/models/image", "content-kit-editor/models/card", "content-kit-editor/utils/dom-utils"], function (exports, _contentKitEditorModelsRenderNode, _contentKitEditorModelsCardNode, _contentKitEditorUtilsArrayUtils, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarker, _contentKitEditorModelsImage, _contentKitEditorModelsCard, _contentKitEditorUtilsDomUtils) {
+define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-editor/models/render-node", "content-kit-editor/models/card-node", "content-kit-editor/utils/array-utils", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/marker", "content-kit-editor/models/image", "content-kit-editor/models/card", "content-kit-editor/utils/dom-utils", "content-kit-editor/utils/string-utils"], function (exports, _contentKitEditorModelsRenderNode, _contentKitEditorModelsCardNode, _contentKitEditorUtilsArrayUtils, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarker, _contentKitEditorModelsImage, _contentKitEditorModelsCard, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsStringUtils) {
   "use strict";
 
   var _destroyHooks;
@@ -3460,8 +4201,11 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
   var UNPRINTABLE_CHARACTER = "‌";
-
   exports.UNPRINTABLE_CHARACTER = UNPRINTABLE_CHARACTER;
+  var NO_BREAK_SPACE = " ";
+  exports.NO_BREAK_SPACE = NO_BREAK_SPACE;
+  var SPACE = ' ';
+
   function createElementFromMarkup(doc, markup) {
     var element = doc.createElement(markup.tagName);
     if (markup.attributes) {
@@ -3488,14 +4232,10 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     return element;
   }
 
-  function isEmptyText(text) {
-    return text.trim() === '';
-  }
-
-  // pass in a renderNode's previousSibling
   function getNextMarkerElement(renderNode) {
-    var element = renderNode.element.parentNode;
-    var closedCount = renderNode.postNode.closedMarkups.length;
+    var element = renderNode._teardownElement.parentNode;
+    var marker = renderNode.postNode;
+    var closedCount = marker.closedMarkups.length;
 
     while (closedCount--) {
       element = element.parentNode;
@@ -3503,11 +4243,33 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     return element;
   }
 
+  function renderBlankMarker(marker, element, previousRenderNode) {
+    var blankElement = document.createElement('br');
+
+    if (previousRenderNode) {
+      // FIXME there should never be a previousRenderNode for a blank marker
+      var previousSibling = previousRenderNode.element;
+      var previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
+      element.insertBefore(blankElement, previousSiblingPenultimate.nextSibling);
+    } else {
+      element.insertBefore(blankElement, element.firstChild);
+    }
+
+    return blankElement;
+  }
+
   function renderMarker(marker, element, previousRenderNode) {
     var text = marker.value;
-    if (isEmptyText(text)) {
-      // This is necessary to allow the cursor to move into this area
-      text = UNPRINTABLE_CHARACTER;
+
+    // If the first marker has a leading space or the last marker has a
+    // trailing space, the browser will collapse the space when we position
+    // the cursor.
+    // See https://github.com/bustlelabs/content-kit-editor/issues/68
+    //   and https://github.com/bustlelabs/content-kit-editor/issues/75
+    if (!marker.next && (0, _contentKitEditorUtilsStringUtils.endsWith)(text, SPACE)) {
+      text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
+    } else if (!marker.prev && (0, _contentKitEditorUtilsStringUtils.startsWith)(text, SPACE)) {
+      text = NO_BREAK_SPACE + text.substr(1);
     }
 
     var textNode = document.createTextNode(text);
@@ -3594,9 +4356,18 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         } else {
           parentElement = renderNode.parent.element;
         }
-        var textNode = renderMarker(marker, parentElement, renderNode.prev);
+        var markerNode = undefined,
+            focusableNode = undefined;
+        if (marker.isEmpty) {
+          markerNode = renderBlankMarker(marker, parentElement, renderNode.prev);
+          focusableNode = markerNode.parentNode;
+        } else {
+          markerNode = focusableNode = renderMarker(marker, parentElement, renderNode.prev);
+        }
 
-        renderNode.element = textNode;
+        renderNode.renderTree.elements.set(focusableNode, renderNode);
+        renderNode.element = focusableNode;
+        renderNode._teardownElement = markerNode;
       }
     }, {
       key: _contentKitEditorModelsImage.IMAGE_SECTION_TYPE,
@@ -3673,7 +4444,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     // FIXME before we render marker, should delete previous renderNode's element
     // and up until the next marker element
 
-    var element = renderNode.element;
+    var element = renderNode._teardownElement;
     var nextMarkerElement = getNextMarkerElement(renderNode);
     while (element.parentNode && element.parentNode !== nextMarkerElement) {
       element = element.parentNode;
@@ -4112,15 +4883,24 @@ define('content-kit-editor/utils/dom-utils', ['exports', 'content-kit-editor/uti
     return tagName.toLowerCase();
   }
 
+  function parseHTML(html) {
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    return div;
+  }
+
   exports.detectParentNode = detectParentNode;
   exports.containsNode = containsNode;
   exports.clearChildNodes = clearChildNodes;
   exports.getAttributes = getAttributes;
   exports.getAttributesArray = getAttributesArray;
   exports.walkDOMUntil = walkDOMUntil;
+  exports.walkDOM = walkDOM;
   exports.walkTextNodes = walkTextNodes;
   exports.addClassName = addClassName;
   exports.normalizeTagName = normalizeTagName;
+  exports.isTextNode = isTextNode;
+  exports.parseHTML = parseHTML;
 });
 define('content-kit-editor/utils/element-map', ['exports'], function (exports) {
   // start at one to make the falsy semantics easier
@@ -4171,7 +4951,7 @@ define('content-kit-editor/utils/element-map', ['exports'], function (exports) {
 
   exports['default'] = ElementMap;
 });
-define('content-kit-editor/utils/element-utils', ['exports', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/utils/string-utils', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorRenderersEditorDom, _contentKitEditorUtilsStringUtils, _contentKitEditorUtilsDomUtils) {
+define('content-kit-editor/utils/element-utils', ['exports', 'content-kit-editor/utils/string-utils', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsStringUtils, _contentKitEditorUtilsDomUtils) {
   'use strict';
 
   function createDiv(className) {
@@ -4204,15 +4984,6 @@ define('content-kit-editor/utils/element-utils', ['exports', 'content-kit-editor
       }
       target = target.parentNode;
     }
-  }
-
-  function elementContentIsEmpty(element) {
-    if (!element.firstChild) {
-      return true;
-    } else if (element.childNodes.length === 1 && element.firstChild.textContent === _contentKitEditorRenderersEditorDom.UNPRINTABLE_CHARACTER) {
-      return true;
-    }
-    return false;
   }
 
   function getElementRelativeOffset(element) {
@@ -4306,7 +5077,6 @@ define('content-kit-editor/utils/element-utils', ['exports', 'content-kit-editor
   exports.showElement = showElement;
   exports.swapElements = swapElements;
   exports.getEventTargetMatchingTag = getEventTargetMatchingTag;
-  exports.elementContentIsEmpty = elementContentIsEmpty;
   exports.getElementRelativeOffset = getElementRelativeOffset;
   exports.getElementComputedStyleNumericProp = getElementComputedStyleNumericProp;
   exports.positionElementToRect = positionElementToRect;
@@ -4489,16 +5259,132 @@ define('content-kit-editor/utils/http-utils', ['exports'], function (exports) {
 
   exports.FileUploader = FileUploader;
 });
-define("content-kit-editor/utils/keycodes", ["exports"], function (exports) {
-  "use strict";
+define('content-kit-editor/utils/key', ['exports', 'content-kit-editor/utils/keycodes'], function (exports, _contentKitEditorUtilsKeycodes) {
+  'use strict';
 
-  exports["default"] = {
-    LEFT_ARROW: 37,
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  var DIRECTION = {
+    FORWARD: 1,
+    BACKWARD: 2
+  };
+
+  exports.DIRECTION = DIRECTION;
+  /**
+   * An abstraction around a KeyEvent
+   * that key listeners in the editor can use
+   * to determine what sort of key was pressed
+   */
+  var Key = (function () {
+    function Key(event) {
+      _classCallCheck(this, Key);
+
+      this.keyCode = event.keyCode;
+      this.event = event;
+    }
+
+    _createClass(Key, [{
+      key: 'isEscape',
+      value: function isEscape() {
+        return this.keyCode === _contentKitEditorUtilsKeycodes['default'].ESC;
+      }
+    }, {
+      key: 'isDelete',
+      value: function isDelete() {
+        return this.keyCode === _contentKitEditorUtilsKeycodes['default'].BACKSPACE || this.keyCode === _contentKitEditorUtilsKeycodes['default'].DELETE;
+      }
+    }, {
+      key: 'isForwardDelete',
+      value: function isForwardDelete() {
+        return this.keyCode === _contentKitEditorUtilsKeycodes['default'].DELETE;
+      }
+    }, {
+      key: 'isSpace',
+      value: function isSpace() {
+        return this.keyCode === _contentKitEditorUtilsKeycodes['default'].SPACE;
+      }
+    }, {
+      key: 'isEnter',
+      value: function isEnter() {
+        return this.keyCode === _contentKitEditorUtilsKeycodes['default'].ENTER;
+      }
+    }, {
+      key: 'isPrintable',
+
+      /**
+       * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
+       *   and http://stackoverflow.com/a/12467610/137784
+       */
+      value: function isPrintable() {
+        if (this.ctrlKey || this.metaKey) {
+          return false;
+        }
+
+        var code = this.keyCode;
+
+        return code >= _contentKitEditorUtilsKeycodes['default']['0'] && code <= _contentKitEditorUtilsKeycodes['default']['9'] || // number keys
+        this.isSpace() || this.isEnter() || code >= _contentKitEditorUtilsKeycodes['default'].A && code <= _contentKitEditorUtilsKeycodes['default'].Z || // letter keys
+        code >= _contentKitEditorUtilsKeycodes['default'].NUMPAD_0 && code <= _contentKitEditorUtilsKeycodes['default'].NUMPAD_9 || // numpad keys
+        code >= _contentKitEditorUtilsKeycodes['default'][';'] && code <= _contentKitEditorUtilsKeycodes['default']['`'] || // punctuation
+        code >= _contentKitEditorUtilsKeycodes['default']['['] && code <= _contentKitEditorUtilsKeycodes['default']['"'] ||
+        // FIXME the IME action seems to get lost when we issue an `editor.deleteSelection`
+        // before it (in Chrome)
+        code === _contentKitEditorUtilsKeycodes['default'].IME;
+      }
+    }, {
+      key: 'direction',
+      get: function get() {
+        return this.isForwardDelete() ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
+      }
+    }, {
+      key: 'ctrlKey',
+      get: function get() {
+        return this.event.ctrlKey;
+      }
+    }, {
+      key: 'metaKey',
+      get: function get() {
+        return this.event.metaKey;
+      }
+    }], [{
+      key: 'fromEvent',
+      value: function fromEvent(event) {
+        return new Key(event);
+      }
+    }]);
+
+    return Key;
+  })();
+
+  exports['default'] = Key;
+});
+define('content-kit-editor/utils/keycodes', ['exports'], function (exports) {
+  'use strict';
+
+  exports['default'] = {
     BACKSPACE: 8,
+    SPACE: 32,
     ENTER: 13,
     ESC: 27,
     DELETE: 46,
-    M: 77
+    '0': 48,
+    '9': 57,
+    A: 65,
+    Z: 90,
+    'NUMPAD_0': 186,
+    'NUMPAD_9': 111,
+    ';': 186,
+    '`': 192,
+    '[': 219,
+    '"': 222,
+
+    // Input Method Editor uses multiple keystrokes to display characters.
+    // Example on mac: press option-i then i. This fires 2 key events in Chrome
+    // with keyCode 229 and displays ˆ and then î.
+    // See http://lists.w3.org/Archives/Public/www-dom/2010JulSep/att-0182/keyCode-spec.html#fixed-virtual-key-codes
+    IME: 229
   };
 });
 define("content-kit-editor/utils/linked-item", ["exports"], function (exports) {
@@ -4515,12 +5401,12 @@ define("content-kit-editor/utils/linked-item", ["exports"], function (exports) {
 
   exports["default"] = LinkedItem;
 });
-define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
-  "use strict";
+define('content-kit-editor/utils/linked-list', ['exports'], function (exports) {
+  'use strict';
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var LinkedList = (function () {
     function LinkedList(options) {
@@ -4529,27 +5415,42 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
       this.head = null;
       this.tail = null;
       this.length = 0;
+
       if (options) {
         var adoptItem = options.adoptItem;
         var freeItem = options.freeItem;
 
-        this.adoptItem = adoptItem;
-        this.freeItem = freeItem;
+        this._adoptItem = adoptItem;
+        this._freeItem = freeItem;
       }
     }
 
     _createClass(LinkedList, [{
-      key: "prepend",
+      key: 'adoptItem',
+      value: function adoptItem(item) {
+        if (this._adoptItem) {
+          this._adoptItem(item);
+        }
+      }
+    }, {
+      key: 'freeItem',
+      value: function freeItem(item) {
+        if (this._freeItem) {
+          this._freeItem(item);
+        }
+      }
+    }, {
+      key: 'prepend',
       value: function prepend(item) {
         this.insertBefore(item, this.head);
       }
     }, {
-      key: "append",
+      key: 'append',
       value: function append(item) {
         this.insertBefore(item, null);
       }
     }, {
-      key: "insertAfter",
+      key: 'insertAfter',
       value: function insertAfter(item, prevItem) {
         var nextItem = null;
         if (prevItem) {
@@ -4560,12 +5461,13 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
         this.insertBefore(item, nextItem);
       }
     }, {
-      key: "insertBefore",
+      key: 'insertBefore',
       value: function insertBefore(item, nextItem) {
-        this.remove(item);
-        if (this.adoptItem) {
-          this.adoptItem(item);
+        if (item.next || item.prev || this.head === item) {
+          throw new Error('Cannot insert an item into a list if it is already in a list');
         }
+        this.adoptItem(item);
+
         if (nextItem && nextItem.prev) {
           // middle of the items
           var prevItem = nextItem.prev;
@@ -4596,11 +5498,10 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
         this.length++;
       }
     }, {
-      key: "remove",
+      key: 'remove',
       value: function remove(item) {
-        if (this.freeItem) {
-          this.freeItem(item);
-        }
+        this.freeItem(item);
+
         var didRemove = false;
         if (item.next && item.prev) {
           // Middle of the list
@@ -4632,7 +5533,7 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
         item.next = null;
       }
     }, {
-      key: "forEach",
+      key: 'forEach',
       value: function forEach(callback) {
         var item = this.head;
         var index = 0;
@@ -4643,26 +5544,33 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
         }
       }
     }, {
-      key: "readRange",
-      value: function readRange(startItem, endItem) {
-        var items = [];
+      key: 'walk',
+      value: function walk(startItem, endItem, callback) {
         var item = startItem || this.head;
         while (item) {
-          items.push(item);
+          callback(item);
           if (item === endItem) {
             break;
           }
           item = item.next;
         }
+      }
+    }, {
+      key: 'readRange',
+      value: function readRange(startItem, endItem) {
+        var items = [];
+        this.walk(startItem, endItem, function (item) {
+          items.push(item);
+        });
         return items;
       }
     }, {
-      key: "toArray",
+      key: 'toArray',
       value: function toArray() {
         return this.readRange();
       }
     }, {
-      key: "detect",
+      key: 'detect',
       value: function detect(callback) {
         var item = arguments.length <= 1 || arguments[1] === undefined ? this.head : arguments[1];
 
@@ -4674,7 +5582,7 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
         }
       }
     }, {
-      key: "objectAt",
+      key: 'objectAt',
       value: function objectAt(targetIndex) {
         var index = -1;
         return this.detect(function () {
@@ -4683,7 +5591,7 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
         });
       }
     }, {
-      key: "splice",
+      key: 'splice',
       value: function splice(targetItem, removalCount, newItems) {
         var _this = this;
 
@@ -4701,7 +5609,21 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
         });
       }
     }, {
-      key: "isEmpty",
+      key: 'removeBy',
+      value: function removeBy(conditionFn) {
+        var item = this.head;
+        while (item) {
+          var nextItem = item.next;
+
+          if (conditionFn(item)) {
+            this.remove(item);
+          }
+
+          item = nextItem;
+        }
+      }
+    }, {
+      key: 'isEmpty',
       get: function get() {
         return this.length === 0;
       }
@@ -4710,7 +5632,7 @@ define("content-kit-editor/utils/linked-list", ["exports"], function (exports) {
     return LinkedList;
   })();
 
-  exports["default"] = LinkedList;
+  exports['default'] = LinkedList;
 });
 define('content-kit-editor/utils/mixin', ['exports'], function (exports) {
   'use strict';
@@ -4860,6 +5782,8 @@ define('content-kit-editor/utils/string-utils', ['exports'], function (exports) 
   'use strict';
 
   exports.dasherize = dasherize;
+  exports.startsWith = startsWith;
+  exports.endsWith = endsWith;
 
   function dasherize(string) {
     return string.replace(/[A-Z]/g, function (match, offset) {
@@ -4868,8 +5792,16 @@ define('content-kit-editor/utils/string-utils', ['exports'], function (exports) 
       return offset === 0 ? lower : '-' + lower;
     });
   }
+
+  function startsWith(string, character) {
+    return string.charAt(0) === character;
+  }
+
+  function endsWith(string, character) {
+    return string.charAt(string.length - 1) === character;
+  }
 });
-define('content-kit-editor/views/embed-intent', ['exports', 'content-kit-editor/views/view', 'content-kit-editor/views/toolbar', 'content-kit-utils', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/keycodes'], function (exports, _contentKitEditorViewsView, _contentKitEditorViewsToolbar, _contentKitUtils, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsKeycodes) {
+define('content-kit-editor/views/embed-intent', ['exports', 'content-kit-editor/views/view', 'content-kit-editor/views/toolbar', 'content-kit-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/keycodes'], function (exports, _contentKitEditorViewsView, _contentKitEditorViewsToolbar, _contentKitUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsKeycodes) {
   'use strict';
 
   var LayoutStyle = {
@@ -4885,6 +5817,8 @@ define('content-kit-editor/views/embed-intent', ['exports', 'content-kit-editor/
   }
 
   function EmbedIntent(options) {
+    var _this = this;
+
     var embedIntent = this;
     var rootElement = embedIntent.rootElement = options.rootElement;
     options.classNames = ['ck-embed-intent'];
@@ -4915,14 +5849,25 @@ define('content-kit-editor/views/embed-intent', ['exports', 'content-kit-editor/
       direction: _contentKitEditorViewsToolbar['default'].Direction.RIGHT
     });
 
-    function embedIntentHandler() {
-      var blockElement = (0, _contentKitEditorUtilsSelectionUtils.getSelectionBlockElement)();
-      if (blockElement && (0, _contentKitEditorUtilsElementUtils.elementContentIsEmpty)(blockElement)) {
-        embedIntent.showAt(blockElement);
+    var embedIntentHandler = function embedIntentHandler() {
+      var editor = _this.editorContext;
+
+      if (_this._isDestroyed || editor._isDestroyed) {
+        return;
+      }
+
+      var _embedIntent$editorContext$cursor$offsets = embedIntent.editorContext.cursor.offsets;
+      var headSection = _embedIntent$editorContext$cursor$offsets.headSection;
+      var isCollapsed = _embedIntent$editorContext$cursor$offsets.isCollapsed;
+
+      var headRenderNode = headSection && headSection.renderNode && headSection.renderNode.element;
+
+      if (headRenderNode && headSection.isBlank && isCollapsed) {
+        embedIntent.showAt(headRenderNode);
       } else {
         embedIntent.hide();
       }
-    }
+    };
 
     this.addEventListener(rootElement, 'keyup', embedIntentHandler);
     this.addEventListener(document, 'click', function () {
@@ -5626,6 +6571,7 @@ define('content-kit-editor/views/view', ['exports', 'content-kit-editor/utils/mi
       value: function destroy() {
         this.removeAllEventListeners();
         this.hide();
+        this._isDestroyed = true;
       }
     }]);
 
