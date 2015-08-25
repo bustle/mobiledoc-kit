@@ -598,7 +598,9 @@ class Editor {
    */
   disableEditing() {
     this.isEditable = false;
-    this.element.setAttribute('contentEditable', false);
+    if (this.element) {
+      this.element.setAttribute('contentEditable', false);
+    }
   }
 
   /**
@@ -610,7 +612,9 @@ class Editor {
    */
   enableEditing() {
     this.isEditable = true;
-    this.element.setAttribute('contentEditable', true);
+    if (this.element) {
+      this.element.setAttribute('contentEditable', true);
+    }
   }
 
   /**
