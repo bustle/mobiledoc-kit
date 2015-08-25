@@ -1,8 +1,9 @@
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
-const { module, test } = window.QUnit;
 import Renderer from 'content-kit-editor/renderers/editor-dom';
 import RenderNode from 'content-kit-editor/models/render-node';
 import RenderTree from 'content-kit-editor/models/render-tree';
+import Helpers from '../../test-helpers';
+const { module, test } = Helpers;
 
 const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
 let builder;
@@ -19,7 +20,7 @@ module("Unit: Renderer: Editor-Dom", {
   }
 });
 
-test("It renders a dirty post", (assert) => {
+test("renders a dirty post", (assert) => {
   /*
    * renderTree is:
    *
@@ -37,7 +38,7 @@ test("It renders a dirty post", (assert) => {
   assert.equal(renderTree.node.element.tagName, 'DIV', 'renderTree renders element for post');
 });
 
-test("It renders a dirty post with un-rendered sections", (assert) => {
+test("renders a dirty post with un-rendered sections", (assert) => {
   let post = builder.createPost();
   let sectionA = builder.createMarkupSection('P');
   post.sections.append(sectionA);
@@ -77,7 +78,7 @@ test("It renders a dirty post with un-rendered sections", (assert) => {
     section: (builder) => builder.createCardSection('new-card')
   }
 ].forEach((testInfo) => {
-  test(`Remove nodes with ${testInfo.name} section`, (assert) => {
+  test(`remove nodes with ${testInfo.name} section`, (assert) => {
     let post = builder.createPost();
     let section = testInfo.section(builder);
     post.sections.append(section);
@@ -439,6 +440,115 @@ test('contiguous markers have overlapping markups', (assert) => {
 
   assert.equal(node.element.innerHTML,
                '<p><i>W<b>XY</b></i><b>Z</b></p>');
+});
+
+test('renders and rerenders list items', (assert) => {
+  const post = Helpers.postAbstract.build(({post, listSection, listItem, marker}) => 
+    post([
+      listSection('ul', [
+        listItem([marker('first item')]),
+        listItem([marker('second item')])
+      ])
+    ])
+  );
+
+  const node = new RenderNode(post);
+  const renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  const expectedDOM = Helpers.dom.build(t =>
+    t('ul', {}, [
+      t('li', {}, [t.text('first item')]),
+      t('li', {}, [t.text('second item')])
+    ])
+  );
+  const expectedHTML = expectedDOM.outerHTML;
+
+  assert.equal(node.element.innerHTML, expectedHTML, 'correct html on initial render');
+
+  // test rerender after dirtying list section
+  const listSection = post.sections.head;
+  listSection.renderNode.markDirty();
+  render(renderTree);
+  assert.equal(node.element.innerHTML, expectedHTML, 'correct html on rerender after dirtying list-section');
+
+  // test rerender after dirtying list item
+  const listItem = post.sections.head.items.head;
+  listItem.renderNode.markDirty();
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML, expectedHTML, 'correct html on rerender after diryting list-item');
+});
+
+test('removes list items', (assert) => {
+  const post = Helpers.postAbstract.build(({post, listSection, listItem, marker}) =>
+    post([
+      listSection('ul', [
+        listItem([marker('first item')]),
+        listItem([marker('second item')]),
+        listItem([marker('third item')])
+      ])
+    ])
+  );
+
+  const node = new RenderNode(post);
+  const renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  // return HTML for a list with the given items
+  const htmlWithItems = (itemTexts) => {
+    const expectedDOM = Helpers.dom.build(t =>
+      t('ul', {}, itemTexts.map(text => t('li', {}, [t.text(text)])))
+    );
+    return expectedDOM.outerHTML;
+  };
+
+  const listItem2 = post.sections.head. // listSection
+                         items.objectAt(1); // li
+  listItem2.renderNode.scheduleForRemoval();
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               htmlWithItems(['first item', 'third item']),
+               'removes middle list item');
+
+  const listItemLast = post.sections.head. // listSection
+                            items.tail;
+  listItemLast.renderNode.scheduleForRemoval();
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML,
+               htmlWithItems(['first item']),
+               'removes last list item');
+});
+
+test('removes list sections', (assert) => {
+  const post = Helpers.postAbstract.build(({post, listSection, markupSection, listItem, marker}) =>
+    post([
+      markupSection('p', [marker('something')]),
+      listSection('ul', [
+        listItem([marker('first item')])
+      ])
+    ])
+  );
+
+  const node = new RenderNode(post);
+  const renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+
+  const expectedDOM = Helpers.dom.build(t =>
+    t('p', {}, [t.text('something')])
+  );
+  const expectedHTML = expectedDOM.outerHTML;
+
+  const listSection = post.sections.objectAt(1);
+  listSection.renderNode.scheduleForRemoval();
+  render(renderTree);
+
+  assert.equal(node.element.innerHTML, expectedHTML, 'removes list section');
 });
 
 /*

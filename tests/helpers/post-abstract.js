@@ -13,12 +13,16 @@ import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 function build(treeFn) {
   let builder = new PostNodeBuilder();
 
-  const post          = (...args) => builder.createPost(...args);
-  const markupSection = (...args) => builder.createMarkupSection(...args);
-  const markup        = (...args) => builder.createMarkup(...args);
-  const marker        = (...args) => builder.createMarker(...args);
+  const simpleBuilder = {
+    post          : (...args) => builder.createPost(...args),
+    markupSection : (...args) => builder.createMarkupSection(...args),
+    markup        : (...args) => builder.createMarkup(...args),
+    marker        : (...args) => builder.createMarker(...args),
+    listSection   : (...args) => builder.createListSection(...args),
+    listItem      : (...args) => builder.createListItem(...args)
+  };
 
-  return treeFn({post, markupSection, markup, marker});
+  return treeFn(simpleBuilder);
 }
 
 export default {

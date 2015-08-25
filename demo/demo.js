@@ -326,7 +326,7 @@ function attemptEditorReboot(editor, textPayload) {
 
 var MOBILEDOC_VERSION = "0.1";
 var sampleMobiledocs = {
-  xsimpleMobiledoc: {
+  simpleMobiledoc: {
     version: MOBILEDOC_VERSION,
     sections: [
       [],
@@ -341,8 +341,7 @@ var sampleMobiledocs = {
     ]
   },
 
-  //simpleMobiledocWithList: {
-  simpleMobiledoc: {
+  simpleMobiledocWithList: {
     version: MOBILEDOC_VERSION,
     sections: [
       [],
@@ -350,12 +349,10 @@ var sampleMobiledocs = {
         [1, "H2", [
           [[], 0, "To do today:"]
         ]],
-        [1, "UL", [
-          [
-            [[], 0, "buy milk"],
-            [[], 0, "water cows"],
-            [[], 0, "world domination"]
-          ]
+        [3, 'ul', [
+          [[[], 0, 'buy milk']],
+          [[[], 0, 'water plants']],
+          [[[], 0, 'world domination']]
         ]]
       ]
     ]

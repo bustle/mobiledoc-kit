@@ -3,10 +3,11 @@ import CardNode from "content-kit-editor/models/card-node";
 import { detect } from 'content-kit-editor/utils/array-utils';
 import { POST_TYPE } from "../models/post";
 import { MARKUP_SECTION_TYPE } from "../models/markup-section";
+import { LIST_SECTION_TYPE } from "../models/list-section";
+import { LIST_ITEM_TYPE } from "../models/list-item";
 import { MARKER_TYPE } from "../models/marker";
 import { IMAGE_SECTION_TYPE } from "../models/image";
 import { CARD_TYPE } from "../models/card";
-import { clearChildNodes } from '../utils/dom-utils';
 import { startsWith, endsWith } from '../utils/string-utils';
 
 export const UNPRINTABLE_CHARACTER = "\u200C";
@@ -28,7 +29,7 @@ function createElementFromMarkup(doc, markup) {
 function penultimateParentOf(element, parentElement) {
   while (parentElement &&
          element.parentNode !== parentElement &&
-         element.parentElement !== document.body // ensure the while loop stops
+         element.parentNode !== document.body // ensure the while loop stops
         ) {
     element = element.parentNode;
   }
@@ -36,9 +37,15 @@ function penultimateParentOf(element, parentElement) {
 }
 
 function renderMarkupSection(section) {
-  var element = document.createElement(section.tagName);
-  section.element = element;
-  return element;
+  return document.createElement(section.tagName);
+}
+
+function renderListSection(section) {
+  return document.createElement(section.tagName);
+}
+
+function renderListItem() {
+  return document.createElement('li');
 }
 
 function getNextMarkerElement(renderNode) {
@@ -104,6 +111,37 @@ function renderMarker(marker, element, previousRenderNode) {
   return textNode;
 }
 
+function attachRenderNodeElementToDOM(renderNode, element, originalElement) {
+  const hasRendered = !!originalElement;
+
+  if (hasRendered) {
+    let parentElement = renderNode.parent.element;
+    parentElement.replaceChild(element, originalElement);
+  } else {
+    let parentElement, nextSiblingElement;
+    if (renderNode.prev) {
+      let previousElement = renderNode.prev.element;
+      parentElement = previousElement.parentNode;
+      nextSiblingElement = previousElement.nextSibling;
+    } else {
+      parentElement = renderNode.parent.element;
+      nextSiblingElement = parentElement.firstChild;
+    }
+    parentElement.insertBefore(element, nextSiblingElement);
+  }
+}
+
+function removeRenderNodeSectionFromParent(renderNode, section) {
+  const parent = renderNode.parent.postNode;
+  parent.sections.remove(section);
+}
+
+function removeRenderNodeElementFromParent(renderNode) {
+  if (renderNode.element.parentNode) {
+    renderNode.element.parentNode.removeChild(renderNode.element);
+  }
+}
+
 class Visitor {
   constructor(editor, cards, unknownCardHandler, options) {
     this.editor = editor;
@@ -121,34 +159,39 @@ class Visitor {
   }
 
   [MARKUP_SECTION_TYPE](renderNode, section, visit) {
-    let originalElement = renderNode.element;
-    const hasRendered = !!originalElement;
+    const originalElement = renderNode.element;
 
     // Always rerender the section -- its tag name or attributes may have changed.
     // TODO make this smarter, only rerendering and replacing the element when necessary
     let element = renderMarkupSection(section);
     renderNode.element = element;
 
-    if (!hasRendered) {
-      let element = renderNode.element;
-
-      if (renderNode.prev) {
-        let previousElement = renderNode.prev.element;
-        let parentNode = previousElement.parentNode;
-        parentNode.insertBefore(element, previousElement.nextSibling);
-      } else {
-        let parentElement = renderNode.parent.element;
-        parentElement.insertBefore(element, parentElement.firstChild);
-      }
-    } else {
-      renderNode.parent.element.replaceChild(element, originalElement);
-    }
-
-    // remove all elements so that we can rerender
-    clearChildNodes(renderNode.element);
+    attachRenderNodeElementToDOM(renderNode, element, originalElement);
 
     const visitAll = true;
     visit(renderNode, section.markers, visitAll);
+  }
+
+  [LIST_SECTION_TYPE](renderNode, section, visit) {
+    const originalElement = renderNode.element;
+    const element = renderListSection(section);
+    renderNode.element = element;
+
+    attachRenderNodeElementToDOM(renderNode, element, originalElement);
+
+    const visitAll = true;
+    visit(renderNode, section.items, visitAll);
+  }
+
+  [LIST_ITEM_TYPE](renderNode, item, visit) {
+    // FIXME do we need to do anything special for rerenders?
+    const element = renderListItem();
+    renderNode.element = element;
+
+    attachRenderNodeElementToDOM(renderNode, element, null);
+
+    const visitAll = true;
+    visit(renderNode, item.markers, visitAll);
   }
 
   [MARKER_TYPE](renderNode, marker) {
@@ -227,14 +270,20 @@ let destroyHooks = {
   [POST_TYPE](/*renderNode, post*/) {
     throw new Error('post destruction is not supported by the renderer');
   },
+
   [MARKUP_SECTION_TYPE](renderNode, section) {
-    let post = renderNode.parent.postNode;
-    post.sections.remove(section);
-    // Some formatting commands remove the element from the DOM during
-    // formatting. Do not error if this is the case.
-    if (renderNode.element.parentNode) {
-      renderNode.element.parentNode.removeChild(renderNode.element);
-    }
+    removeRenderNodeSectionFromParent(renderNode, section);
+    removeRenderNodeElementFromParent(renderNode);
+  },
+
+  [LIST_SECTION_TYPE](renderNode, section) {
+    removeRenderNodeSectionFromParent(renderNode, section);
+    removeRenderNodeElementFromParent(renderNode);
+  },
+
+  [LIST_ITEM_TYPE](renderNode, li) {
+    removeRenderNodeSectionFromParent(renderNode, li);
+    removeRenderNodeElementFromParent(renderNode);
   },
 
   [MARKER_TYPE](renderNode, marker) {
@@ -258,28 +307,31 @@ let destroyHooks = {
   },
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
-    let post = renderNode.parent.postNode;
-    post.sections.remove(section);
-    renderNode.element.parentNode.removeChild(renderNode.element);
+    removeRenderNodeSectionFromParent(renderNode, section);
+    removeRenderNodeElementFromParent(renderNode);
   },
 
   [CARD_TYPE](renderNode, section) {
     if (renderNode.cardNode) {
       renderNode.cardNode.teardown();
     }
-    let post = renderNode.parent.postNode;
-    post.sections.remove(section);
-    renderNode.element.parentNode.removeChild(renderNode.element);
+    removeRenderNodeSectionFromParent(renderNode, section);
+    removeRenderNodeElementFromParent(renderNode);
   }
 };
 
 // removes children from parentNode that are scheduled for removal
 function removeChildren(parentNode) {
   let child = parentNode.childNodes.head;
+  let nextChild, method;
   while (child) {
-    let nextChild = child.next;
+    nextChild = child.next;
     if (child.isRemoved) {
-      destroyHooks[child.postNode.type](child, child.postNode);
+      method = child.postNode.type;
+      if (!destroyHooks[method]) {
+        throw new Error(`editor-dom cannot destroy "${method}"`);
+      }
+      destroyHooks[method](child, child.postNode);
       parentNode.childNodes.remove(child);
     }
     child = nextChild;
@@ -319,9 +371,17 @@ export default class Renderer {
 
   render(renderTree) {
     let node = renderTree.node;
+    let method, postNode;
+
     while (node) {
       removeChildren(node);
-      this.visitor[node.postNode.type](node, node.postNode, (...args) => this.visit(renderTree, ...args));
+      postNode = node.postNode;
+
+      method = postNode.type;
+      if (!this.visitor[method]) {
+        throw new Error(`EditorDom visitor cannot handle type ${method}`);
+      }
+      this.visitor[node.postNode.type](node, postNode, (...args) => this.visit(renderTree, ...args));
       node.markClean();
       node = this.nodes.shift();
     }

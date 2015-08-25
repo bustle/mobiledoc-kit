@@ -8,7 +8,7 @@ const { module, test } = window.QUnit;
 let fixture, editorElement, editor;
 
 module('Unit: Editor', {
-  beforeEach: function() {
+  beforeEach() {
     fixture = document.getElementById('qunit-fixture');
     editorElement = document.createElement('div');
     editorElement.id = 'editor1';

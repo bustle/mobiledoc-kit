@@ -1,10 +1,11 @@
-const {module, test} = QUnit;
-
 import PostParser from 'content-kit-editor/parsers/post';
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import Helpers from '../../test-helpers';
+import { Editor } from 'content-kit-editor';
 
-let builder, parser;
+const {module, test} = Helpers;
+
+let builder, parser, editor;
 
 module('Unit: Parser: PostParser', {
   beforeEach() {
@@ -14,11 +15,15 @@ module('Unit: Parser: PostParser', {
   afterEach() {
     builder = null;
     parser = null;
+    if (editor) {
+      editor.destroy();
+      editor = null;
+    }
   }
 });
 
 test('#parse can parse a section element', (assert) => {
-  let element = Helpers.dom.makeDOM(t =>
+  let element = Helpers.dom.build(t =>
     t('div', {}, [
       t('p', {}, [
         t.text('some text')
@@ -36,7 +41,7 @@ test('#parse can parse a section element', (assert) => {
 });
 
 test('#parse can parse multiple elements', (assert) => {
-  let element = Helpers.dom.makeDOM(t =>
+  const element = Helpers.dom.build(t =>
     t('div', {}, [
       t('p', {}, [
         t.text('some text')
@@ -59,3 +64,48 @@ test('#parse can parse multiple elements', (assert) => {
   assert.equal(s2.markers.head.value, 'some other text');
 });
 
+test('editor#reparse catches changes to section', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => 
+    post([
+      markupSection('p', [marker('the marker')])
+    ])
+  );
+  editor = new Editor({mobiledoc});
+  const editorElement = $('<div id="editor"></div>')[0];
+  $('#qunit-fixture').append(editorElement);
+  editor.render(editorElement);
+
+  assert.hasElement('#editor p:contains(the marker)', 'precond - rendered correctly');
+
+  const p = $('#editor p:eq(0)')[0];
+  p.childNodes[0].textContent = 'the NEW marker';
+
+  editor.reparse();
+
+  const section = editor.post.sections.head;
+  assert.equal(section.text, 'the NEW marker');
+});
+
+test('editor#reparse catches changes to list section', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, listSection, listItem, marker}) => 
+    post([
+      listSection('ul', [
+        listItem([marker('the list item')])
+      ])
+    ])
+  );
+  editor = new Editor({mobiledoc});
+  const editorElement = $('<div id="editor"></div>')[0];
+  $('#qunit-fixture').append(editorElement);
+  editor.render(editorElement);
+
+  assert.hasElement('#editor li:contains(list item)', 'precond - rendered correctly');
+
+  const li = $('#editor li:eq(0)')[0];
+  li.childNodes[0].textContent = 'the NEW list item';
+
+  editor.reparse();
+
+  const listItem = editor.post.sections.head.items.head;
+  assert.equal(listItem.text, 'the NEW list item');
+});

@@ -13,12 +13,13 @@ export default class ImageCommand extends Command {
     let beforeSection = headMarker.section;
     let afterSection = beforeSection.next;
     let section = this.editor.builder.createCardSection('image');
+    const collection = beforeSection.parent.sections;
 
     this.editor.run((postEditor) => {
       if (beforeSection.isBlank) {
         postEditor.removeSection(beforeSection);
       }
-      postEditor.insertSectionBefore(section, afterSection);
+      postEditor.insertSectionBefore(collection, section, afterSection);
     });
   }
 }

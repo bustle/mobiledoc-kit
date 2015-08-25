@@ -35,7 +35,7 @@ import {
 } from '../utils/dom-utils';
 import {
   forEach,
-  detect
+  filter
 } from '../utils/array-utils';
 import { getData, setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
@@ -446,78 +446,27 @@ class Editor {
   }
 
   reparse() {
-    // find added sections
-    let sectionsInDOM = [];
-    let newSections = [];
-    let previousSection;
+    let { headSection, headSectionOffset } = this.cursor.offsets;
+    if (headSectionOffset === 0) {
+      // FIXME if the offset is 0, the user is typing the first character
+      // in an empty section, so we need to move the cursor 1 letter forward
+      headSectionOffset = 1;
+    }
 
-    forEach(this.element.childNodes, (node) => {
-      // FIXME: this is kind of slow
-      let sectionRenderNode = detect(this._renderTree.node.childNodes, (renderNode) => {
-        return renderNode.element === node;
-      });
-      if (!sectionRenderNode) {
-        let section = this._parser.parseSection(node);
-        newSections.push(section);
-
-        // create a clean "already-rendered" node to represent the fact that
-        // this (new) section is already in DOM
-        sectionRenderNode = this._renderTree.buildRenderNode(section);
-        sectionRenderNode.element = node;
-        sectionRenderNode.markClean();
-
-        let previousSectionRenderNode = previousSection && previousSection.renderNode;
-        this.post.sections.insertAfter(section, previousSection);
-        this._renderTree.node.childNodes.insertAfter(sectionRenderNode, previousSectionRenderNode);
-      }
-
-      // may cause duplicates to be included
-      let section = sectionRenderNode.postNode;
-      sectionsInDOM.push(section);
-      previousSection = section;
-    });
-
-    // remove deleted nodes
-    const deletedSections = [];
-    forEach(this.post.sections, (section) => {
-      if (!section.renderNode) {
-        throw new Error('All sections are expected to have a renderNode');
-      }
-
-      if (sectionsInDOM.indexOf(section) === -1) {
-        deletedSections.push(section);
-      }
-    });
-    forEach(deletedSections, (s) => s.renderNode.scheduleForRemoval());
-
-    // reparse the new section(s) with the cursor
-    // to ensure that we catch any changed html that the browser might have
-    // added
-    const sectionsWithCursor = this.cursor.activeSections;
-    forEach(sectionsWithCursor, (section) => {
-      if (newSections.indexOf(section) === -1) {
-        this.reparseSection(section);
-      }
-    });
-
-    let {
-      headSection,
-      headSectionOffset
-    } = this.cursor.sectionOffsets;
-
-    // The cursor will lose its textNode if we have reparsed (and thus will rerender, below)
-    // its section. Ensure the cursor is placed where it should be after render.
-    //
-    // New sections are presumed clean, and thus do not get rerendered and lose
-    // their cursor position.
-    let resetCursor = sectionsWithCursor.indexOf(headSection) !== -1;
+    this._reparseCurrentSection();
+    this._removeDetachedSections();
 
     this.rerender();
     this.trigger('update');
 
-    if (resetCursor) {
-      this.cursor.moveToSection(headSection, headSectionOffset);
-    }
+    this.cursor.moveToSection(headSection, headSectionOffset);
+  }
+
+  _removeDetachedSections() {
+    forEach(
+      filter(this.post.sections, s => !s.renderNode.isAttached()),
+      s => s.renderNode.scheduleForRemoval()
+    );
   }
 
   /*
@@ -571,8 +520,9 @@ class Editor {
     section.renderNode.markDirty();
   }
 
-  reparseSection(section) {
-    this._parser.reparseSection(section, this._renderTree);
+  _reparseCurrentSection() {
+    const {headSection:currentSection } = this.cursor.offsets;
+    this._parser.reparseSection(currentSection, this._renderTree);
   }
 
   serialize() {

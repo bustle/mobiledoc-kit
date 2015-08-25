@@ -19,12 +19,11 @@ export default class Section extends LinkedItem {
   constructor(tagName, markers=[]) {
     super();
     this.markers = new LinkedList({
-      adoptItem: m => m.section = this,
-      freeItem: m => m.section = null
+      adoptItem: m => m.section = m.parent = this,
+      freeItem: m => m.section = m.parent = null
     });
     this.tagName = tagName || DEFAULT_TAG_NAME;
     this.type = MARKUP_SECTION_TYPE;
-    this.element = null;
 
     markers.forEach(m => this.markers.append(m));
   }
@@ -76,12 +75,7 @@ export default class Section extends LinkedItem {
     return newMarkers;
   }
 
-  splitAtMarker(marker, offset=0) {
-    let [beforeSection, afterSection] = [
-      this.builder.createMarkupSection(this.tagName, []),
-      this.builder.createMarkupSection(this.tagName, [])
-    ];
-
+  _redistributeMarkers(beforeSection, afterSection, marker, offset=0) {
     let currentSection = beforeSection;
     forEach(this.markers, m => {
       if (m === marker) {
@@ -98,6 +92,15 @@ export default class Section extends LinkedItem {
     afterSection.coalesceMarkers();
 
     return [beforeSection, afterSection];
+  }
+
+  splitAtMarker(marker, offset=0) {
+    let [beforeSection, afterSection] = [
+      this.builder.createMarkupSection(this.tagName, []),
+      this.builder.createMarkupSection(this.tagName, [])
+    ];
+
+    return this._redistributeMarkers(beforeSection, afterSection, marker, offset);
   }
 
   /**

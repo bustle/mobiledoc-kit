@@ -1,5 +1,9 @@
-const CARD_SECTION_TYPE = 10;
-const IMAGE_SECTION_TYPE = 2;
+import {
+  MOBILEDOC_MARKUP_SECTION_TYPE,
+  MOBILEDOC_IMAGE_SECTION_TYPE,
+  MOBILEDOC_LIST_SECTION_TYPE,
+  MOBILEDOC_CARD_SECTION_TYPE
+} from '../renderers/mobiledoc';
 
 /*
  * input mobiledoc: [ markers, elements ]
@@ -46,14 +50,17 @@ export default class MobiledocParser {
   parseSection(section, post) {
     let [type] = section;
     switch(type) {
-      case 1: // markup section
+      case MOBILEDOC_MARKUP_SECTION_TYPE:
         this.parseMarkupSection(section, post);
         break;
-      case IMAGE_SECTION_TYPE:
+      case MOBILEDOC_IMAGE_SECTION_TYPE:
         this.parseImageSection(section, post);
         break;
-      case CARD_SECTION_TYPE:
+      case MOBILEDOC_CARD_SECTION_TYPE:
         this.parseCardSection(section, post);
+        break;
+      case MOBILEDOC_LIST_SECTION_TYPE:
+        this.parseListSection(section, post);
         break;
       default:
         throw new Error(`Unexpected section type ${type}`);
@@ -80,16 +87,32 @@ export default class MobiledocParser {
     }
   }
 
-  parseMarkers(markers, section) {
-    markers.forEach((marker) => this.parseMarker(marker, section));
+  parseListSection([type, tagName, items], post) {
+    const section = this.builder.createListSection(tagName);
+    post.sections.append(section);
+    this.parseListItems(items, section);
   }
 
-  parseMarker([markerTypeIndexes, closeCount, value], section) {
+  parseListItems(items, section) {
+    items.forEach(i => this.parseListItem(i, section));
+  }
+
+  parseListItem(markers, section) {
+    const item = this.builder.createListItem();
+    this.parseMarkers(markers, item);
+    section.items.append(item);
+  }
+
+  parseMarkers(markers, parent) {
+    markers.forEach(m => this.parseMarker(m, parent));
+  }
+
+  parseMarker([markerTypeIndexes, closeCount, value], parent) {
     markerTypeIndexes.forEach(index => {
       this.markups.push(this.markerTypes[index]);
     });
     const marker = this.builder.createMarker(value, this.markups.slice());
-    section.markers.append(marker);
+    parent.markers.append(marker);
     this.markups = this.markups.slice(0, this.markups.length-closeCount);
   }
 }
