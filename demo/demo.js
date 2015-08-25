@@ -195,7 +195,12 @@ var ContentKitDemo = exports.ContentKitDemo = {
       'image': ContentKit.ImageCard
     };
     var renderer = new MobiledocDOMRenderer();
-    var rendered = renderer.render(mobiledoc, document.createElement('div'), cards);
+    var rendered;
+    try {
+      rendered = renderer.render(mobiledoc, document.createElement('div'), cards);
+    } catch (e) {
+      rendered = document.createTextNode('Error rendering: ' + e);
+    }
 
     $('#rendered-mobiledoc').empty();
     $('#rendered-mobiledoc')[0].appendChild(rendered);
@@ -234,7 +239,14 @@ var ContentKitDemo = exports.ContentKitDemo = {
     };
 
     var htmlRenderer = new MobiledocHTMLRenderer();
-    $('#rendered-mobiledoc-html').html(displayHTML(htmlRenderer.render(mobiledoc)));
+    var renderedHTML;
+    try {
+      renderedHTML = htmlRenderer.render(mobiledoc);
+    } catch (e) {
+      renderedHTML = 'Error rendering: ' + e;
+    }
+
+    $('#rendered-mobiledoc-html').html(displayHTML(renderedHTML));
 
     var editorHTML = debugNodeHTML($('#editor')[0]);
     $('#editor-html').html(editorHTML);
@@ -314,7 +326,7 @@ function attemptEditorReboot(editor, textPayload) {
 
 var MOBILEDOC_VERSION = "0.1";
 var sampleMobiledocs = {
-  simpleMobiledoc: {
+  xsimpleMobiledoc: {
     version: MOBILEDOC_VERSION,
     sections: [
       [],
@@ -324,6 +336,26 @@ var sampleMobiledocs = {
         ]],
         [1, "P", [
           [[], 0, "hello world"]
+        ]]
+      ]
+    ]
+  },
+
+  //simpleMobiledocWithList: {
+  simpleMobiledoc: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, "H2", [
+          [[], 0, "To do today:"]
+        ]],
+        [1, "UL", [
+          [
+            [[], 0, "buy milk"],
+            [[], 0, "water cows"],
+            [[], 0, "world domination"]
+          ]
         ]]
       ]
     ]
