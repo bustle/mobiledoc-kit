@@ -20,6 +20,11 @@ export default class PostNodeBuilder {
     return post;
   }
 
+  createBlankPost() {
+    let blankMarkupSection = this.createBlankMarkupSection('p');
+    return this.createPost([ blankMarkupSection ]);
+  }
+
   createMarkupSection(tagName, markers=[], isGenerated=false) {
     tagName = normalizeTagName(tagName);
     const section = new MarkupSection(tagName, markers);
@@ -28,6 +33,12 @@ export default class PostNodeBuilder {
     }
     section.builder = this;
     return section;
+  }
+
+  createBlankMarkupSection(tagName) {
+    tagName = normalizeTagName(tagName);
+    let blankMarker = this.createBlankMarker();
+    return this.createMarkupSection(tagName, [ blankMarker ]);
   }
 
   createImageSection(url) {

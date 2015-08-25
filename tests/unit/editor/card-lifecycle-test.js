@@ -52,11 +52,12 @@ test('rendering a mobiledoc for editing calls card#setup', (assert) => {
       ]
     ]
   };
-  editor = new Editor(editorElement, {
+  editor = new Editor({
     mobiledoc,
     cards: [card],
     cardOptions
   });
+  editor.render(editorElement);
 });
 
 test('rendering a mobiledoc for editing calls #unknownCardHandler when it encounters an unknown card', (assert) => {
@@ -78,7 +79,8 @@ test('rendering a mobiledoc for editing calls #unknownCardHandler when it encoun
     ]
   };
 
-  editor = new Editor(editorElement, {mobiledoc, unknownCardHandler});
+  editor = new Editor({mobiledoc, unknownCardHandler});
+  editor.render(editorElement);
 });
 
 test('rendered card can fire edit hook to enter editing mode', (assert) => {
@@ -129,11 +131,12 @@ test('rendered card can fire edit hook to enter editing mode', (assert) => {
       ]
     ]
   };
-  editor = new Editor(editorElement, {
+  editor = new Editor({
     mobiledoc,
     cards: [card],
     cardOptions
   });
+  editor.render(editorElement);
 
   Helpers.dom.triggerEvent(span, 'click');
 });
@@ -175,10 +178,11 @@ test('rendered card can fire edit hook to enter editing mode, then save', (asser
       ]
     ]
   };
-  editor = new Editor(editorElement, {
+  editor = new Editor({
     mobiledoc,
     cards: [card]
   });
+  editor.render(editorElement);
 
   doEdit();
   doSave();
@@ -222,10 +226,11 @@ test('rendered card can fire edit hook to enter editing mode, then cancel', (ass
       ]
     ]
   };
-  editor = new Editor(editorElement, {
+  editor = new Editor({
     mobiledoc,
     cards: [card]
   });
+  editor.render(editorElement);
 
   doEdit();
   doCancel();

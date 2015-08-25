@@ -23,7 +23,8 @@ module('Acceptance: Editor commands', {
     editorElement = document.createElement('div');
     editorElement.setAttribute('id', 'editor');
     fixture.appendChild(editorElement);
-    editor = new Editor(editorElement, {mobiledoc});
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
     selectedText = 'IS A';
     Helpers.dom.selectText(selectedText, editorElement);

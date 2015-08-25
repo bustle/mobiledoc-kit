@@ -22,7 +22,8 @@ module('Unit: Editor: events', {
     editorElement = document.createElement('div');
     document.getElementById('qunit-fixture').appendChild(editorElement);
 
-    editor = new Editor(editorElement, {mobiledoc});
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
     editor.trigger = (name) => triggered.push(name);
   },
 

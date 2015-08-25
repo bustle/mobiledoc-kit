@@ -58,7 +58,8 @@ module('Acceptance: editor: cards', {
 
 test('changing to display state triggers update on editor', (assert) => {
   const cards = [simpleCard];
-  editor = new Editor(editorElement, {mobiledoc, cards});
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
 
   let updateCount = 0,
       triggeredUpdate = () => updateCount++;

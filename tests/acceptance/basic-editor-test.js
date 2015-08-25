@@ -19,7 +19,8 @@ module('Acceptance: editor: basic', {
 test('sets element as contenteditable', (assert) => {
   let innerHTML = `<p>Hello</p>`;
   editorElement.innerHTML = innerHTML;
-  editor = new Editor(document.getElementById('editor'));
+  editor = new Editor();
+  editor.render(editorElement);
 
   assert.equal(editorElement.getAttribute('contenteditable'),
                'true',
@@ -31,7 +32,8 @@ test('sets element as contenteditable', (assert) => {
 test('#disableEditing and #enableEditing toggle contenteditable', (assert) => {
   let innerHTML = `<p>Hello</p>`;
   editorElement.innerHTML = innerHTML;
-  editor = new Editor(document.getElementById('editor'));
+  editor = new Editor();
+  editor.render(editorElement);
 
   assert.equal(editorElement.getAttribute('contenteditable'),
                'true',

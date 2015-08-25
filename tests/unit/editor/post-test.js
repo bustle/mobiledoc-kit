@@ -24,7 +24,8 @@ function getMarker(sectionIndex, markerIndex) {
 
 function postEditorWithMobiledoc(treeFn) {
   const mobiledoc = Helpers.mobiledoc.build(treeFn);
-  editor = new Editor(editorElement, {mobiledoc});
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
   return new PostEditor(editor);
 }
 
