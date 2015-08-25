@@ -269,7 +269,7 @@ function bootEditor(element, mobiledoc) {
   if (editor) {
     editor.destroy();
   }
-  editor = new ContentKit.Editor(element, {
+  editor = new ContentKit.Editor({
     autofocus: false,
     mobiledoc: mobiledoc,
     cards: [simpleCard, cardWithEditMode, cardWithInput, selfieCard],
@@ -279,6 +279,7 @@ function bootEditor(element, mobiledoc) {
       }
     }
   });
+  editor.render(element);
 
   function sync() {
     ContentKitDemo.syncCodePane(editor);

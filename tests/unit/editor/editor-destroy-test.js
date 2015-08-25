@@ -23,7 +23,8 @@ module('Unit: Editor #destroy', {
     let fixture = $('#qunit-fixture')[0];
     editorElement = document.createElement('div');
     fixture.appendChild(editorElement);
-    editor = new Editor(editorElement, {mobiledoc});
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
   },
   afterEach() {
     if (editor && !editor._isDestroyed) {

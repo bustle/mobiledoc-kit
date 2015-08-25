@@ -37,7 +37,8 @@ var simpleMobiledoc = {
 };
 var element = document.querySelector('#editor');
 var options = { mobiledoc: simpleMobiledoc };
-var editor = new ContentKit.Editor(element, options);
+var editor = new ContentKit.Editor(options);
+editor.render(element);
 ```
 
 `options` is an object which may include the following properties:

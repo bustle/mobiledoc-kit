@@ -100,7 +100,8 @@ module('Acceptance: Editor sections', {
 });
 
 test('typing enter inserts new section', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Section});
+  editor = new Editor({mobiledoc: mobileDocWith1Section});
+  editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 5);
@@ -112,7 +113,8 @@ test('typing enter inserts new section', (assert) => {
 });
 
 test('hitting enter in first section splits it correctly', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
   assert.equal($('#editor p').length, 2, 'precond - has 2 paragraphs');
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 3);
@@ -130,7 +132,8 @@ test('hitting enter in first section splits it correctly', (assert) => {
 });
 
 test('hitting enter at start of a section creates empty section where cursor was', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Section});
+  editor = new Editor({mobiledoc: mobileDocWith1Section});
+  editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 0);
@@ -148,7 +151,8 @@ test('hitting enter at start of a section creates empty section where cursor was
 });
 
 test('hitting enter at end of a section creates new empty section', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Section});
+  editor = new Editor({mobiledoc: mobileDocWith1Section});
+  editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 section to start');
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 'only section'.length);
@@ -165,7 +169,8 @@ test('hitting enter at end of a section creates new empty section', (assert) => 
 
 // Phantom does not recognize toggling contenteditable off
 Helpers.skipInPhantom('deleting across 2 sections does nothing if editing is disabled', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
   editor.disableEditing();
   assert.equal($('#editor p').length, 2, 'precond - has 2 sections to start');
 
@@ -179,7 +184,8 @@ Helpers.skipInPhantom('deleting across 2 sections does nothing if editing is dis
 });
 
 test('deleting across 2 sections merges them', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
   assert.equal($('#editor p').length, 2, 'precond - has 2 sections to start');
 
   const p0 = $('#editor p:eq(0)')[0],
@@ -194,7 +200,8 @@ test('deleting across 2 sections merges them', (assert) => {
 });
 
 test('deleting across 1 section removes it, joins the 2 boundary sections', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith3Sections});
+  editor = new Editor({mobiledoc: mobileDocWith3Sections});
+  editor.render(editorElement);
   assert.equal($('#editor p').length, 3, 'precond - has 3 paragraphs to start');
 
   const p0 = $('#editor p:eq(0)')[0],
@@ -211,7 +218,8 @@ test('deleting across 1 section removes it, joins the 2 boundary sections', (ass
 });
 
 test('keystroke of delete removes that character', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith3Sections});
+  editor = new Editor({mobiledoc: mobileDocWith3Sections});
+  editor.render(editorElement);
   const getFirstTextNode = () => {
     return editor.element.
              firstChild. // section
@@ -232,7 +240,8 @@ test('keystroke of delete removes that character', (assert) => {
 });
 
 test('keystroke of delete when cursor is at beginning of marker removes character from previous marker', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Markers});
+  editor = new Editor({mobiledoc: mobileDocWith2Markers});
+  editor.render(editorElement);
   const textNode = editor.element.
                     firstChild.    // section
                     childNodes[1]; // plain marker
@@ -255,7 +264,8 @@ test('keystroke of delete when cursor is at beginning of marker removes characte
 });
 
 test('keystroke of delete when cursor is after only char in only marker of section removes character', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Character});
+  editor = new Editor({mobiledoc: mobileDocWith1Character});
+  editor.render(editorElement);
   const getTextNode = () => editor.element.
                                   firstChild. // section
                                   firstChild; // c marker
@@ -273,7 +283,8 @@ test('keystroke of delete when cursor is after only char in only marker of secti
 });
 
 Helpers.skipInPhantom('keystroke of character in empty section adds character, moves cursor', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWithNoCharacter});
+  editor = new Editor({mobiledoc: mobileDocWithNoCharacter});
+  editor.render(editorElement);
   const getTextNode = () => editor.element.
                                   firstChild. // section
                                   firstChild; // marker
@@ -296,7 +307,8 @@ Helpers.skipInPhantom('keystroke of character in empty section adds character, m
 });
 
 test('keystroke of delete at start of section joins with previous section', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   let secondSectionTextNode = editor.element.childNodes[1].firstChild;
 
@@ -322,7 +334,8 @@ test('keystroke of delete at start of section joins with previous section', (ass
 
 
 test('keystroke of delete at start of first section does nothing', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   let firstSectionTextNode = editor.element.childNodes[0].firstChild;
 
@@ -348,7 +361,8 @@ test('keystroke of delete at start of first section does nothing', (assert) => {
 test('when selection incorrectly contains P end tag, editor reports correct selection', (assert) => {
   const done = assert.async();
 
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   let secondSectionTextNode = editor.element.childNodes[1].firstChild;
   let firstSectionPNode = editor.element.childNodes[0];
@@ -376,7 +390,8 @@ test('when selection incorrectly contains P end tag, editor reports correct sele
 test('when selection incorrectly contains P start tag, editor reports correct selection', (assert) => {
   const done = assert.async();
 
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   let firstSectionTextNode = editor.element.childNodes[0].firstChild;
   let secondSectionPNode = editor.element.childNodes[1];
@@ -405,7 +420,8 @@ test('when selection incorrectly contains P start tag, editor reports correct se
 test('deleting when after deletion there is a trailing space positions cursor at end of selection', (assert) => {
   const done = assert.async();
 
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   let firstSectionTextNode = editor.element.childNodes[0].firstChild;
   Helpers.dom.moveCursorTo(firstSectionTextNode, 'first section'.length);
@@ -434,7 +450,8 @@ test('deleting when after deletion there is a trailing space positions cursor at
 test('deleting when after deletion there is a leading space positions cursor at start of selection', (assert) => {
   const done = assert.async();
 
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   Helpers.dom.selectText('second', editorElement);
   Helpers.dom.triggerDelete(editor);

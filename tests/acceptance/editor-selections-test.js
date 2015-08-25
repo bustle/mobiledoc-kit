@@ -37,7 +37,8 @@ module('Acceptance: Editor Selections', {
 test('selecting across sections is possible', (assert) => {
   const done = assert.async();
 
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   let firstSection = $('p:contains(first section)')[0];
   let secondSection = $('p:contains(second section)')[0];
@@ -56,7 +57,8 @@ test('selecting across sections is possible', (assert) => {
 test('selecting an entire section and deleting removes it', (assert) => {
   const done = assert.async();
 
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   Helpers.dom.selectText('second section', editorElement);
   Helpers.dom.triggerDelete(editor);
@@ -73,7 +75,8 @@ test('selecting an entire section and deleting removes it', (assert) => {
 });
 
 test('selecting text in a section and deleting deletes it', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   Helpers.dom.selectText('cond sec', editorElement);
   Helpers.dom.triggerDelete(editor);
@@ -91,7 +94,8 @@ test('selecting text in a section and deleting deletes it', (assert) => {
 });
 
 test('selecting text across sections and deleting joins sections', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   const firstSection = $('#editor p')[0],
         secondSection = $('#editor p')[1];
@@ -109,7 +113,8 @@ test('selecting text across sections and deleting joins sections', (assert) => {
 test('selecting text across markers and deleting joins markers', (assert) => {
   const done = assert.async();
 
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   Helpers.dom.selectText('rst sect', editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
@@ -148,7 +153,8 @@ test('selecting text across markers and deleting joins markers', (assert) => {
 
 test('select text and apply markup multiple times', (assert) => {
   const done = assert.async();
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   Helpers.dom.selectText('t sect', editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
@@ -173,7 +179,8 @@ test('select text and apply markup multiple times', (assert) => {
 
 test('selecting text across markers deletes intermediary markers', (assert) => {
   const done = assert.async();
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   Helpers.dom.selectText('rst sec', editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
@@ -202,7 +209,8 @@ test('selecting text across markers deletes intermediary markers', (assert) => {
 
 test('selecting text across markers preserves node after', (assert) => {
   const done = assert.async();
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   Helpers.dom.selectText('rst sec', editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
@@ -233,7 +241,8 @@ test('selecting text across markers preserves node after', (assert) => {
 
 test('selecting text across sections and hitting enter deletes and moves cursor to last selected section', (assert) => {
   const done = assert.async();
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   let firstSection = $('#editor p:eq(0)')[0],
       secondSection = $('#editor p:eq(1)')[0];
@@ -258,7 +267,8 @@ test('selecting text across sections and hitting enter deletes and moves cursor 
 
 Helpers.skipInPhantom('keystroke of printable character while text is selected deletes the text', (assert) => {
   const done = assert.async();
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith2Sections});
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
 
   Helpers.dom.selectText('first section', editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');

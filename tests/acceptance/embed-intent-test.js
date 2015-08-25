@@ -48,7 +48,8 @@ module('Acceptance: Embed intent', {
 });
 
 Helpers.skipInPhantom('typing inserts empty section and displays embed-intent button', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Section});
+  editor = new Editor({mobiledoc: mobileDocWith1Section});
+  editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
   assert.hasNoElement('.ck-embed-intent', 'embed intent is hidden');
 
@@ -60,7 +61,8 @@ Helpers.skipInPhantom('typing inserts empty section and displays embed-intent bu
 });
 
 Helpers.skipInPhantom('add image card between sections', (assert) => {
-  editor = new Editor(editorElement, {mobiledoc: mobileDocWith3Sections});
+  editor = new Editor({mobiledoc: mobileDocWith3Sections});
+  editor.render(editorElement);
   assert.equal(editorElement.childNodes.length, 3, 'has 3 paragraphs to start');
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[1].firstChild, 0);

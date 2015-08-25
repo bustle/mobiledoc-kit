@@ -120,6 +120,12 @@ function normalizeTagName(tagName) {
   return tagName.toLowerCase();
 }
 
+function parseHTML(html) {
+  var div = document.createElement('div');
+  div.innerHTML = html;
+  return div;
+}
+
 export {
   detectParentNode,
   containsNode,
@@ -131,5 +137,6 @@ export {
   walkTextNodes,
   addClassName,
   normalizeTagName,
-  isTextNode
+  isTextNode,
+  parseHTML
 };

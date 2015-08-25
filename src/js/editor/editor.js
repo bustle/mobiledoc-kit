@@ -30,7 +30,8 @@ import MobiledocRenderer from '../renderers/mobiledoc';
 import { mergeWithOptions } from 'content-kit-utils';
 import {
   clearChildNodes,
-  addClassName
+  addClassName,
+  parseHTML
 } from '../utils/dom-utils';
 import {
   forEach,
@@ -69,7 +70,8 @@ const defaults = {
   unknownCardHandler: () => {
     throw new Error('Unknown card encountered');
   },
-  mobiledoc: null
+  mobiledoc: null,
+  html: null
 };
 
 function bindContentEditableTypingListeners(editor) {
@@ -218,14 +220,13 @@ function makeButtons(editor) {
  * @param options hash of options
  */
 class Editor {
-  constructor(element, options) {
-    if (!element) {
-      throw new Error('Editor requires an element as the first argument');
+  constructor(options={}) {
+    if (!options || options.nodeType) {
+      throw new Error('editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation');
     }
-
     this._elementListeners = [];
     this._views = [];
-    this.element = element;
+    this.isEditable = null;
 
     this.builder = new PostNodeBuilder();
 
@@ -237,22 +238,63 @@ class Editor {
     this._parser   = new PostParser(this.builder);
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
+    if (this.mobiledoc) {
+      this.post = new MobiledocParser(this.builder).parse(this.mobiledoc);
+    } else if (this.html) {
+      if (typeof this.html === 'string') {
+        this.html = parseHTML(this.html);
+      }
+      this.post = new DOMParser(this.builder).parse(this.html);
+    } else {
+      this.post = this.builder.createBlankPost();
+    }
+
+    this._renderTree = this.prepareRenderTree(this.post);
+  }
+
+  addView(view) {
+    this._views.push(view);
+  }
+
+  prepareRenderTree(post) {
+    let renderTree = new RenderTree();
+    let node = renderTree.buildRenderNode(post);
+    renderTree.node = node;
+    return renderTree;
+  }
+
+  rerender() {
+    let postRenderNode = this.post.renderNode;
+
+    // if we haven't rendered this post's renderNode before, mark it dirty
+    if (!postRenderNode.element) {
+      if (!this.element) {
+        throw new Error('Initial call to `render` must happen before `rerender` can be called.');
+      }
+      postRenderNode.element = this.element;
+      postRenderNode.markDirty();
+    }
+
+    this._renderer.render(this._renderTree);
+  }
+
+  render(element) {
+    if (this.element) {
+      throw new Error('Cannot render an editor twice. Use `rerender` to update the rendering of an existing editor instance');
+    }
+
+    this.element = element;
+
     this.applyClassName(EDITOR_ELEMENT_CLASS_NAME);
     this.applyPlaceholder();
 
     element.spellcheck = this.spellcheck;
-    this.enableEditing();
 
-    if (this.mobiledoc) {
-      this.post = new MobiledocParser(this.builder).parse(this.mobiledoc);
-    } else {
-      this.post = new DOMParser(this.builder).parse(this.element);
+    if (this.isEditable === null) {
+      this.enableEditing();
     }
 
-    this._renderTree = this.prepareRenderTree(this.post);
-
     clearChildNodes(element);
-    this.rerender();
 
     bindContentEditableTypingListeners(this);
     bindAutoTypingListeners(this);
@@ -277,30 +319,11 @@ class Editor {
       showForTag: 'a'
     }));
 
-    if (this.autofocus) { element.focus(); }
-  }
+    this.rerender();
 
-  addView(view) {
-    this._views.push(view);
-  }
-
-  prepareRenderTree(post) {
-    let renderTree = new RenderTree();
-    let node = renderTree.buildRenderNode(post);
-    renderTree.node = node;
-    return renderTree;
-  }
-
-  rerender() {
-    let postRenderNode = this.post.renderNode;
-
-    // if we haven't rendered this post's renderNode before, mark it dirty
-    if (!postRenderNode.element) {
-      postRenderNode.element = this.element;
-      postRenderNode.markDirty();
+    if (this.autofocus) {
+      element.focus();
     }
-
-    this._renderer.render(this._renderTree);
   }
 
   handleDeletion(event) {
