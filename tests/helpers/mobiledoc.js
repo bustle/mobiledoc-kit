@@ -1,4 +1,4 @@
-import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
+import PostAbstractHelpers from './post-abstract';
 import MobiledocRenderer from 'content-kit-editor/renderers/mobiledoc';
 
 /*
@@ -12,15 +12,7 @@ import MobiledocRenderer from 'content-kit-editor/renderers/mobiledoc';
  *  )
  */
 function build(treeFn) {
-  let builder = new PostNodeBuilder();
-
-  const post          = (...args) => builder.createPost(...args);
-  const markupSection = (...args) => builder.createMarkupSection(...args);
-  const markup        = (...args) => builder.createMarkup(...args);
-  const marker        = (...args) => builder.createMarker(...args);
-
-  let builtPost = treeFn({post, markupSection, markup, marker});
-  return MobiledocRenderer.render(builtPost);
+  return MobiledocRenderer.render(PostAbstractHelpers.build(treeFn));
 }
 
 export default {

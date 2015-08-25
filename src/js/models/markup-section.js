@@ -19,12 +19,8 @@ export default class Section extends LinkedItem {
   constructor(tagName, markers=[]) {
     super();
     this.markers = new LinkedList({
-      adoptItem: (marker) => {
-        marker.section = this;
-      },
-      freeItem: (marker) => {
-        marker.section = null;
-      }
+      adoptItem: m => m.section = this,
+      freeItem: m => m.section = null
     });
     this.tagName = tagName || DEFAULT_TAG_NAME;
     this.type = MARKUP_SECTION_TYPE;
@@ -72,6 +68,11 @@ export default class Section extends LinkedItem {
   splitMarker(marker, offset, endOffset=marker.length) {
     const newMarkers = filter(marker.split(offset, endOffset), m => !m.isEmpty);
     this.markers.splice(marker, 1, newMarkers);
+    if (this.markers.length === 0) {
+      let blankMarker = this.builder.createBlankMarker();
+      this.markers.append(blankMarker);
+      newMarkers.push(blankMarker);
+    }
     return newMarkers;
   }
 
@@ -115,10 +116,73 @@ export default class Section extends LinkedItem {
     }
   }
 
+  markerPositionAtOffset(offset) {
+    let currentOffset = 0;
+    let currentMarker;
+    let remaining = offset;
+    this.markers.detect((marker) => {
+      currentOffset = Math.min(remaining, marker.length);
+      remaining -= currentOffset;
+      if (remaining === 0) {
+        currentMarker = marker;
+        return true; // break out of detect
+      }
+    });
+
+    return {marker:currentMarker, offset:currentOffset};
+  }
+
   // mutates this by appending the other section's (cloned) markers to it
   join(otherSection) {
+    let wasBlank = this.isBlank;
+    let didAddContent = false;
+
+    let beforeMarker = this.markers.tail;
+    let afterMarker = null;
+
     otherSection.markers.forEach(m => {
-      this.markers.append(m.clone());
+      if (!m.isEmpty) {
+        m = m.clone();
+        this.markers.append(m);
+        if (!afterMarker) {
+          afterMarker = m;
+        }
+        didAddContent = true;
+      }
     });
+
+    if (wasBlank && didAddContent) {
+      // FIXME: Join should maybe not be on the markup-section
+      beforeMarker.renderNode.scheduleForRemoval();
+      beforeMarker = null;
+    }
+
+
+    return { beforeMarker, afterMarker };
+  }
+
+  get text() {
+    let text = '';
+    this.markers.forEach(m => text += m.value);
+    return text;
+  }
+
+  markersFor(headOffset, tailOffset) {
+    let markers = [];
+    let adjustedHead = 0, adjustedTail = 0;
+    this.markers.forEach(m => {
+      adjustedTail += m.length;
+
+      if (adjustedTail > headOffset && adjustedHead < tailOffset) {
+        let head = Math.max(headOffset - adjustedHead, 0);
+        let tail = adjustedTail < tailOffset ? m.length : m.length - (adjustedTail - tailOffset);
+        let cloned = m.clone();
+
+        cloned.value = m.value.slice(head, tail);
+        markers.push(cloned);
+      }
+      adjustedHead += m.length;
+    });
+    return markers;
   }
 }

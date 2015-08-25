@@ -9,6 +9,7 @@ export default class RenderNode extends LinkedItem {
     this.isRemoved = false;
     this.postNode = postNode;
     this._childNodes = null;
+    this.element = null;
   }
   get childNodes() {
     if (!this._childNodes) {
@@ -39,13 +40,5 @@ export default class RenderNode extends LinkedItem {
   }
   markClean() {
     this.isDirty = false;
-  }
-  set element(element) {
-    this._element = element;
-    this.renderTree.elements.set(element, this);
-    return element;
-  }
-  get element() {
-    return this._element;
   }
 }

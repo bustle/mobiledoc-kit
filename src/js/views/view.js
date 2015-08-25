@@ -62,6 +62,7 @@ class View {
   destroy() {
     this.removeAllEventListeners();
     this.hide();
+    this._isDestroyed = true;
   }
 }
 

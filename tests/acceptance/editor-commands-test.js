@@ -31,7 +31,7 @@ module('Acceptance: Editor commands', {
   },
 
   afterEach() {
-    editor.destroy();
+    if (editor) { editor.destroy(); }
   }
 });
 

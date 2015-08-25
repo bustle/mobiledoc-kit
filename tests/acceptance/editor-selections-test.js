@@ -30,9 +30,7 @@ module('Acceptance: Editor Selections', {
   },
 
   afterEach() {
-    if (editor) {
-      editor.destroy();
-    }
+    if (editor) { editor.destroy(); }
   }
 });
 
@@ -67,12 +65,9 @@ test('selecting an entire section and deleting removes it', (assert) => {
   assert.hasNoElement('p:contains(second section)', 'deletes contents of second section');
   assert.equal($('#editor p').length, 2, 'still has 2 sections');
 
-  let textNode = editorElement
-                  .childNodes[1] // second section p
-                  .childNodes[0]; // textNode
+  Helpers.dom.insertText('X');
 
-  assert.deepEqual(Helpers.dom.getCursorPosition(),
-                   {node: textNode, offset: 0});
+  assert.hasElement('#editor p:eq(1):contains(X)', 'inserts text in correct spot');
 
   done();
 });

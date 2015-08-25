@@ -1,13 +1,18 @@
+import EditorDomRenderer from 'content-kit-editor/renderers/editor-dom';
+import RenderTree from 'content-kit-editor/models/render-tree';
 import PostEditor from 'content-kit-editor/editor/post';
 import { Editor } from 'content-kit-editor';
 import Helpers from '../../test-helpers';
 import { DIRECTION } from 'content-kit-editor/utils/key';
+import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 
 const { FORWARD } = DIRECTION;
 
 const { module, test } = window.QUnit;
 
 let editor, editorElement;
+
+let builder, postEditor, mockEditor;
 
 function getSection(sectionIndex) {
   return editor.post.sections.objectAt(sectionIndex);
@@ -23,7 +28,21 @@ function postEditorWithMobiledoc(treeFn) {
   return new PostEditor(editor);
 }
 
-module('Unit: PostEditor', {
+function prepareRenderTree(post) {
+  let renderTree = new RenderTree();
+  let node = renderTree.buildRenderNode(post);
+  renderTree.node = node;
+  return renderTree;
+}
+
+function renderBuiltAbstract(post) {
+  mockEditor.post = post;
+  let renderer = new EditorDomRenderer(mockEditor, [], () => {}, {});
+  let renderTree = prepareRenderTree(post);
+  renderer.render(renderTree);
+}
+
+module('Unit: PostEditor with mobiledoc', {
   beforeEach() {
     $('#qunit-fixture').append('<div id="editor"></div>');
     editorElement = $('#editor')[0];
@@ -156,4 +175,158 @@ test('#deleteFrom (FORWARD) end of marker deletes first character of next marker
 
   assert.deepEqual(nextPosition,
                    {currentMarker: getMarker(0, 0), currentOffset: values[0].length});
+});
+
+
+module('Unit: PostEditor', {
+  beforeEach() {
+    builder = new PostNodeBuilder();
+    mockEditor = {
+      rerender() {},
+      didUpdate() {}
+    };
+    postEditor = new PostEditor(mockEditor);
+  },
+
+  afterEach() {
+    if (editor) {
+      editor.destroy();
+      editor = null;
+    }
+  }
+});
+
+test('#deleteRange when within the same marker', (assert) => {
+  let post, section;
+  Helpers.postAbstract.build(({marker, markupSection: buildMarkupSection, post: buildPost}) => {
+    section = buildMarkupSection('p', [
+      marker('abc def')
+    ]);
+    post = buildPost([
+      section
+    ]);
+    return post;
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.deleteRange({
+    headSection: section,
+    headSectionOffset: 3,
+    tailSection: section,
+    tailSectionOffset: 4
+  });
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, 'abcdef');
+});
+
+test('#deleteRange when same section, different markers, same markups', (assert) => {
+  let post, section;
+  Helpers.postAbstract.build(({marker, markupSection: buildMarkupSection, post: buildPost}) => {
+    section = buildMarkupSection('p', [
+      marker('abc'),
+      marker(' def')
+    ]);
+    post = buildPost([
+      section
+    ]);
+    return post;
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.deleteRange({
+    headSection: section,
+    headSectionOffset: 3,
+    tailSection: section,
+    tailSectionOffset: 4
+  });
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, 'abcdef');
+});
+
+test('#deleteRange when same section, different markers, different markups', (assert) => {
+  let post, section, markup;
+  Helpers.postAbstract.build(({marker, markup:buildMarkup, markupSection: buildMarkupSection, post: buildPost}) => {
+    markup = buildMarkup('b');
+    section = buildMarkupSection('p', [
+      marker('abc'),
+      marker(' def', [markup])
+    ]);
+    post = buildPost([
+      section
+    ]);
+    return post;
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.deleteRange({
+    headSection: section,
+    headSectionOffset: 3,
+    tailSection: section,
+    tailSectionOffset: 4
+  });
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, 'abcdef');
+  const [m1, m2] = post.sections.head.markers.toArray();
+  assert.ok(!m1.hasMarkup(markup),
+            'head marker has no markup');
+  assert.ok(m2.hasMarkup(markup),
+            'tail marker has markup');
+});
+
+test('#deleteRange across contiguous sections', (assert) => {
+  let post, s1, s2;
+  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
+    s1 = markupSection('p', [ marker('abc') ]);
+    s2 = markupSection('p', [ marker(' def') ]);
+    post = buildPost([ s1, s2 ]);
+    return post;
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.deleteRange({
+    headSection: s1,
+    headSectionOffset: 3,
+    tailSection: s2,
+    tailSectionOffset: 1
+  });
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, 'abcdef');
+  assert.equal(post.sections.length, 1, 'only 1 section remains');
+});
+
+test('#deleteRange across entire sections', (assert) => {
+  let post, s1, s2, s3;
+  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
+    s1 = markupSection('p', [ marker('abc') ]);
+    s2 = markupSection('p', [ marker('this space left blank') ]);
+    s3 = markupSection('p', [ marker('def') ]);
+    post = buildPost([ s1, s2, s3 ]);
+    return post;
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.deleteRange({
+    headSection: s1,
+    headSectionOffset: 3,
+    tailSection: s3,
+    tailSectionOffset: 0
+  });
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, 'abcdef');
+  assert.equal(post.sections.length, 1, 'only 1 section remains');
 });

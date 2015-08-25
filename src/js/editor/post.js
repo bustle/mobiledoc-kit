@@ -1,4 +1,7 @@
 import { MARKUP_SECTION_TYPE } from '../models/markup-section';
+import {
+  filter
+} from '../utils/array-utils';
 
 import { DIRECTION } from '../utils/key';
 
@@ -47,31 +50,71 @@ class PostEditor {
     //     -- cursor goes at end of the marker before the selection start, or if the
     //     -- selection was at the start of the section, cursor goes at section start
     //   * a selection crosses multiple sections
-    //     -- remove all the sections that are between (exclusive ) selection start and end
+    //     -- remove all the sections that are between (exclusive) selection start and end
     //     -- join the start and end sections
     //     -- mark the end section for removal
     //     -- cursor goes at end of marker before the selection start
 
     // markerRange should be akin to this.cursor.offset
-    const markers = this.splitMarkers(markerRange);
+    const {headSection, headSectionOffset, tailSection, tailSectionOffset} = markerRange;
+    const {post} = this.editor;
 
-    const {
-      changedSections,
-      removedSections,
-      currentMarker,
-      currentOffset
-    } = this.editor.post.cutMarkers(markers);
+    if (headSection === tailSection) {
+      this.cutSection(headSection, headSectionOffset, tailSectionOffset);
+    } else {
+      let removedSections = [];
+      post.sections.walk(headSection, tailSection, section => {
+        switch (section) {
+          case headSection:
+            this.cutSection(section, headSectionOffset, section.text.length);
+            break;
+          case tailSection:
+            tailSection.markersFor(tailSectionOffset, section.text.length).forEach(m => {
+              headSection.markers.append(m);
+            });
+            removedSections.push(tailSection);
+            break;
+          default:
+            removedSections.push(section);
+          }
+      });
+      removedSections.forEach(section => this.removeSection(section) );
+    }
 
-    changedSections.forEach(section => section.renderNode.markDirty());
-    removedSections.forEach(section => section.renderNode.scheduleForRemoval());
+    this._coalesceMarkers(headSection);
 
     this.scheduleRerender();
     this.scheduleDidUpdate();
+  }
 
-    return {
-      currentMarker,
-      currentOffset
-    };
+  cutSection(section, headSectionOffset, tailSectionOffset) {
+    const {marker:headMarker, offset:headOffset} = section.markerPositionAtOffset(headSectionOffset);
+    const {marker:tailMarker, offset:tailOffset} = section.markerPositionAtOffset(tailSectionOffset);
+    const markers = this.splitMarkers({headMarker, headOffset, tailMarker, tailOffset});
+    section.markers.removeBy(m => {
+      return markers.indexOf(m) !== -1;
+    });
+  }
+
+  _coalesceMarkers(section) {
+    let {builder} = this.editor;
+    filter(section.markers, m => m.isEmpty).forEach(m => {
+      this.removeMarker(m);
+    });
+    if (section.markers.isEmpty) {
+      section.markers.append(builder.createBlankMarker());
+      section.renderNode.markDirty();
+    }
+  }
+
+  removeMarker(marker) {
+    if (marker.renderNode) {
+      marker.renderNode.scheduleForRemoval();
+    }
+    marker.section.markers.remove(marker);
+
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
   }
 
   /**
@@ -168,9 +211,17 @@ class PostEditor {
             nextCursorMarker = prevSection.markers.tail;
             nextCursorOffset = nextCursorMarker.length;
 
-            prevSection.join(marker.section);
+            let { beforeMarker, afterMarker } = prevSection.join(marker.section);
             prevSection.renderNode.markDirty();
             marker.section.renderNode.scheduleForRemoval();
+
+            if (beforeMarker) {
+              nextCursorMarker = beforeMarker;
+              nextCursorOffset = beforeMarker.length;
+            } else {
+              nextCursorMarker = afterMarker;
+              nextCursorOffset = 0;
+            }
           }
           // ELSE: FIXME: card section -- what should deleting into it do?
         }
@@ -180,9 +231,19 @@ class PostEditor {
       const offsetToDeleteAt = offset - 1;
 
       marker.deleteValueAtOffset(offsetToDeleteAt);
-      marker.renderNode.markDirty();
 
-      nextCursorOffset = offsetToDeleteAt;
+      if (marker.isEmpty && marker.prev) {
+        marker.renderNode.scheduleForRemoval();
+        nextCursorMarker = marker.prev;
+        nextCursorOffset = nextCursorMarker.length;
+      } else if (marker.isEmpty && marker.next) {
+        marker.renderNode.scheduleForRemoval();
+        nextCursorMarker = marker.next;
+        nextCursorOffset = 0;
+      } else {
+        marker.renderNode.markDirty();
+        nextCursorOffset = offsetToDeleteAt;
+      }
     }
 
     this.scheduleRerender();
@@ -215,6 +276,7 @@ class PostEditor {
    * @public
    */
   splitMarkers({headMarker, headOffset, tailMarker, tailOffset}) {
+    const { post } = this.editor;
     let selectedMarkers = [];
 
     let headSection = headMarker.section;
@@ -230,7 +292,7 @@ class PostEditor {
 
     if (headMarker === tailMarker) {
       let markers = headSection.splitMarker(headMarker, headOffset, tailOffset);
-      selectedMarkers = this.editor.markersInRange({
+      selectedMarkers = post.markersInRange({
         headMarker: markers[0],
         tailMarker: markers[markers.length-1],
         headOffset,
@@ -238,14 +300,14 @@ class PostEditor {
       });
     } else {
       let newHeadMarkers = headSection.splitMarker(headMarker, headOffset);
-      let selectedHeadMarkers = this.editor.markersInRange({
+      let selectedHeadMarkers = post.markersInRange({
         headMarker: newHeadMarkers[0],
         tailMarker: newHeadMarkers[newHeadMarkers.length-1],
         headOffset
       });
 
-      let newTailMarkers = tailSection.splitMarker(tailMarker, tailOffset);
-      let selectedTailMarkers = this.editor.markersInRange({
+      let newTailMarkers = tailSection.splitMarker(tailMarker, 0, tailOffset);
+      let selectedTailMarkers = post.markersInRange({
         headMarker: newTailMarkers[0],
         tailMarker: newTailMarkers[newTailMarkers.length-1],
         headOffset: 0,
@@ -255,9 +317,19 @@ class PostEditor {
       let newHeadMarker = selectedHeadMarkers[0],
           newTailMarker = selectedTailMarkers[selectedTailMarkers.length - 1];
 
-      this.editor.post.markersFrom(newHeadMarker, newTailMarker, m => {
-        selectedMarkers.push(m);
-      });
+      let newMarkers = [];
+      if (newHeadMarker) {
+        newMarkers.push(newHeadMarker);
+      }
+      if (newTailMarker) {
+        newMarkers.push(newTailMarker);
+      }
+
+      if (newMarkers.length) {
+        this.editor.post.markersFrom(newMarkers[0], newMarkers[newMarkers.length-1], m => {
+          selectedMarkers.push(m);
+        });
+      }
     }
 
     this.scheduleRerender();
@@ -293,25 +365,26 @@ class PostEditor {
    * @return {Array} of new sections, one for the first half and one for the second
    * @public
    */
-  splitSection({headMarker, headOffset}) {
-    const { post } = this.editor;
-    const { section } = headMarker;
+  splitSection({headSection: section, headSectionOffset}) {
+    let {
+      marker: headMarker,
+      offset: headOffset
+    } = section.markerPositionAtOffset(headSectionOffset);
 
-    const [
-      beforeSection,
-      afterSection
-    ] = section.splitAtMarker(headMarker, headOffset);
+    const [beforeSection, afterSection] = section.splitAtMarker(headMarker, headOffset);
 
-    this.removeSection(section);
-
-    post.sections.insertAfter(beforeSection, section);
-    post.sections.insertAfter(afterSection, beforeSection);
-    post.renderNode.markDirty();
+    this._replaceSection(section, [beforeSection, afterSection]);
 
     this.scheduleRerender();
     this.scheduleDidUpdate();
 
     return [beforeSection, afterSection];
+  }
+
+  _replaceSection(section, newSections) {
+    let nextSection = section.next;
+    newSections.forEach(s => this.insertSectionBefore(s, nextSection));
+    this.removeSection(section);
   }
 
   /**
@@ -431,6 +504,7 @@ class PostEditor {
    */
   removeSection(section) {
     section.renderNode.scheduleForRemoval();
+    section.post.sections.remove(section);
 
     this.scheduleRerender();
     this.scheduleDidUpdate();

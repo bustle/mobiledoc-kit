@@ -43,20 +43,18 @@ module('Acceptance: Embed intent', {
   },
 
   afterEach() {
-    if (editor) {
-      editor.destroy();
-    }
+    if (editor) { editor.destroy(); }
   }
 });
 
-Helpers.skipInPhantom('typing inserts section', (assert) => {
+Helpers.skipInPhantom('typing inserts empty section and displays embed-intent button', (assert) => {
   editor = new Editor(editorElement, {mobiledoc: mobileDocWith1Section});
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
   assert.hasNoElement('.ck-embed-intent', 'embed intent is hidden');
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 12);
-  Helpers.dom.triggerKeyEvent(editorElement, 'keydown', Helpers.dom.KEY_CODES.ENTER);
-  Helpers.dom.triggerKeyEvent(editorElement, 'keyup', Helpers.dom.KEY_CODES.ENTER);
+  Helpers.dom.triggerEnter(editor);
+  Helpers.dom.triggerEvent(editorElement, 'keyup');
 
   assert.ok($('.ck-embed-intent').is(':visible'), 'embed intent appears');
 });

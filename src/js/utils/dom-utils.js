@@ -127,6 +127,7 @@ export {
   getAttributes,
   getAttributesArray,
   walkDOMUntil,
+  walkDOM,
   walkTextNodes,
   addClassName,
   normalizeTagName,
