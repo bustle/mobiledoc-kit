@@ -3095,7 +3095,7 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
 
           if (adjustedTail > headOffset && adjustedHead < tailOffset) {
             var head = Math.max(headOffset - adjustedHead, 0);
-            var tail = adjustedTail < tailOffset ? m.length : m.length - (adjustedTail - tailOffset);
+            var tail = m.length - Math.max(adjustedTail - tailOffset, 0);
             var cloned = m.clone();
 
             cloned.value = m.value.slice(head, tail);
