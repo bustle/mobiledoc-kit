@@ -175,7 +175,7 @@ export default class Section extends LinkedItem {
 
       if (adjustedTail > headOffset && adjustedHead < tailOffset) {
         let head = Math.max(headOffset - adjustedHead, 0);
-        let tail = adjustedTail < tailOffset ? m.length : m.length - (adjustedTail - tailOffset);
+        let tail = m.length - Math.max(adjustedTail - tailOffset, 0);
         let cloned = m.clone();
 
         cloned.value = m.value.slice(head, tail);
