@@ -374,14 +374,23 @@ test('when selection incorrectly contains P end tag, editor reports correct sele
   setTimeout(() => {
     assert.ok(true, 'No error should occur');
 
-    let firstSectionTextNode = editor.element.childNodes[0].childNodes[0];
+    let {
+      headSection, tailSection, headMarker, tailMarker,
+      headSectionOffset, tailSectionOffset, headMarkerOffset, tailMarkerOffset
+    } = editor.cursor.offsets;
 
-    let {leftNode, rightNode, leftOffset, rightOffset} = editor.cursor.offsets;
-
-    assert.equal(leftNode, firstSectionTextNode, 'returns first section text node as left');
-    assert.equal(rightNode, secondSectionTextNode, 'returns second section text node as right');
-    assert.equal(leftOffset, 0, 'leftOffset correct');
-    assert.equal(rightOffset, 0, 'rightOffset correct');
+    assert.equal(headSection, editor.post.sections.objectAt(0),
+                 'returns first section head');
+    assert.equal(tailSection, editor.post.sections.objectAt(1),
+                 'returns second section tail');
+    assert.equal(headMarker, editor.post.sections.objectAt(0).markers.head,
+                 'returns first section marker head');
+    assert.equal(tailMarker, editor.post.sections.objectAt(1).markers.head,
+                 'returns second section marker tail');
+    assert.equal(headMarkerOffset, 0, 'headMarkerOffset correct');
+    assert.equal(tailMarkerOffset, 0, 'tailMarkerOffset correct');
+    assert.equal(headSectionOffset, 0, 'headSectionOffset correct');
+    assert.equal(tailSectionOffset, 0, 'tailSectionOffset correct');
 
     done();
   });
@@ -395,7 +404,6 @@ test('when selection incorrectly contains P start tag, editor reports correct se
 
   let firstSectionTextNode = editor.element.childNodes[0].firstChild;
   let secondSectionPNode = editor.element.childNodes[1];
-  let secondSectionTextNode = secondSectionPNode.childNodes[0];
 
   Helpers.dom.moveCursorTo(firstSectionTextNode, 0,
                            secondSectionPNode, 0);
@@ -404,14 +412,23 @@ test('when selection incorrectly contains P start tag, editor reports correct se
   setTimeout(() => {
     assert.ok(true, 'No error should occur');
 
-    let firstSectionTextNode = editor.element.childNodes[0].childNodes[0];
+    let {
+      headSection, tailSection, headMarker, tailMarker,
+      headSectionOffset, tailSectionOffset, headMarkerOffset, tailMarkerOffset
+    } = editor.cursor.offsets;
 
-    let {leftNode, rightNode, leftOffset, rightOffset} = editor.cursor.offsets;
-
-    assert.equal(leftNode, firstSectionTextNode, 'returns first section text node as left');
-    assert.equal(rightNode, secondSectionTextNode, 'returns second section p node as right');
-    assert.equal(leftOffset, 0, 'leftOffset correct');
-    assert.equal(rightOffset, 0, 'rightOffset correct');
+    assert.equal(headSection, editor.post.sections.objectAt(0),
+                 'returns first section head');
+    assert.equal(tailSection, editor.post.sections.objectAt(1),
+                 'returns second section tail');
+    assert.equal(headMarker, editor.post.sections.objectAt(0).markers.head,
+                 'returns first section marker head');
+    assert.equal(tailMarker, editor.post.sections.objectAt(1).markers.head,
+                 'returns second section marker tail');
+    assert.equal(headMarkerOffset, 0, 'headMarkerOffset correct');
+    assert.equal(tailMarkerOffset, 0, 'tailMarkerOffset correct');
+    assert.equal(headSectionOffset, 0, 'headSectionOffset correct');
+    assert.equal(tailSectionOffset, 0, 'tailSectionOffset correct');
 
     done();
   });

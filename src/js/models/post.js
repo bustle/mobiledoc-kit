@@ -10,18 +10,18 @@ export default class Post {
     });
   }
 
-  markersInRange({headMarker, headOffset, tailMarker, tailOffset}) {
+  markersInRange({headMarker, headMarkerOffset, tailMarker, tailMarkerOffset}) {
     let offset = 0;
     let foundMarkers = [];
-    let toEnd = tailOffset === undefined;
-    if (toEnd) { tailOffset = 0; }
+    let toEnd = tailMarkerOffset === undefined;
+    if (toEnd) { tailMarkerOffset = 0; }
 
     this.markersFrom(headMarker, tailMarker, marker => {
       if (toEnd) {
-        tailOffset += marker.length;
+        tailMarkerOffset += marker.length;
       }
 
-      if (offset >= headOffset && offset < tailOffset) {
+      if (offset >= headMarkerOffset && offset < tailMarkerOffset) {
         foundMarkers.push(marker);
       }
 
@@ -74,20 +74,21 @@ export default class Post {
     return {changedSections, removedSections};
   }
   /**
-   * Invoke `callbackFn` for all markers between the startMarker and endMarker (inclusive),
+   * Invoke `callbackFn` for all markers between the headMarker and tailMarker (inclusive),
    * across sections
    */
-  markersFrom(startMarker, endMarker, callbackFn) {
-    let currentMarker = startMarker;
+  markersFrom(headMarker, tailMarker, callbackFn) {
+    let currentMarker = headMarker;
     while (currentMarker) {
       callbackFn(currentMarker);
 
-      if (currentMarker === endMarker) {
+      if (currentMarker === tailMarker) {
         currentMarker = null;
       } else if (currentMarker.next) {
         currentMarker = currentMarker.next;
       } else {
         let nextSection = currentMarker.section.next;
+        // FIXME: This will fail across cards
         currentMarker = nextSection && nextSection.markers.head;
       }
     }

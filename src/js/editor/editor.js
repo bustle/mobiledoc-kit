@@ -40,7 +40,7 @@ import {
 import { getData, setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
-import Cursor from '../models/cursor';
+import Cursor from '../utils/cursor';
 import PostNodeBuilder from '../models/post-node-builder';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
@@ -338,10 +338,10 @@ class Editor {
       this.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
     } else {
       let results = this.run(postEditor => {
-        const {headMarker, headOffset} = offsets;
+        const {headMarker, headMarkerOffset} = offsets;
         const key = Key.fromEvent(event);
 
-        const deletePosition = {marker: headMarker, offset: headOffset},
+        const deletePosition = {marker: headMarker, offset: headMarkerOffset},
               direction = key.direction;
         return postEditor.deleteFrom(deletePosition, direction);
       });
@@ -354,7 +354,7 @@ class Editor {
 
     // if there's no left/right nodes, we are probably not in the editor,
     // or we have selected some non-marker thing like a card
-    if (!offsets.leftRenderNode || !offsets.rightRenderNode) {
+    if (!offsets.headSection || !offsets.tailSection) {
       return;
     }
 
@@ -533,16 +533,18 @@ class Editor {
 
   get activeMarkers() {
     const {
-      startMarker,
-      endMarker
+      headMarker,
+      tailMarker
     } = this.cursor.offsets;
 
-    if (!(startMarker && endMarker)) {
-      return [];
+    let activeMarkers = [];
+
+    if (headMarker && tailMarker) {
+      this.post.markersFrom(headMarker, tailMarker, m => {
+        activeMarkers.push(m);
+      });
     }
 
-    let activeMarkers = [];
-    this.post.markersFrom(startMarker, endMarker, m => activeMarkers.push(m));
     return activeMarkers;
   }
 

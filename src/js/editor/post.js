@@ -26,17 +26,17 @@ class PostEditor {
    *     let marker = editor.post.sections.head.markers.head;
    *     editor.run((postEditor) => {
    *       postEditor.deleteRange({
-   *         headMarker: marker,
-   *         headOffset: 2,
-   *         tailMarker: marker,
-   *         tailOffset: 4,
+   *         headSection: section,
+   *         headSectionOffset: 2,
+   *         tailSection: section,
+   *         tailSectionOffset: 4,
    *       });
    *     });
    *
    * `deleteRange` accepts the value of `this.cursor.offsets` for deletion.
    *
    * @method deleteRange
-   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @param {Object} markerRange Object with offsets, {headSection, headSectionOffset, tailSection, tailSectionOffset}
    * @return {Object} {currentMarker, currentOffset} for cursor
    * @public
    */
@@ -56,8 +56,10 @@ class PostEditor {
     //     -- cursor goes at end of marker before the selection start
 
     // markerRange should be akin to this.cursor.offset
-    const {headSection, headSectionOffset, tailSection, tailSectionOffset} = markerRange;
-    const {post} = this.editor;
+    const {
+      headSection, headSectionOffset, tailSection, tailSectionOffset
+    } = markerRange;
+    const { post } = this.editor;
 
     if (headSection === tailSection) {
       this.cutSection(headSection, headSectionOffset, tailSectionOffset);
@@ -88,9 +90,9 @@ class PostEditor {
   }
 
   cutSection(section, headSectionOffset, tailSectionOffset) {
-    const {marker:headMarker, offset:headOffset} = section.markerPositionAtOffset(headSectionOffset);
-    const {marker:tailMarker, offset:tailOffset} = section.markerPositionAtOffset(tailSectionOffset);
-    const markers = this.splitMarkers({headMarker, headOffset, tailMarker, tailOffset});
+    const {marker:headMarker, offset:headMarkerOffset} = section.markerPositionAtOffset(headSectionOffset);
+    const {marker:tailMarker, offset:tailMarkerOffset} = section.markerPositionAtOffset(tailSectionOffset);
+    const markers = this.splitMarkers({headMarker, headMarkerOffset, tailMarker, tailMarkerOffset});
     section.markers.removeBy(m => {
       return markers.indexOf(m) !== -1;
     });
@@ -271,11 +273,11 @@ class PostEditor {
    * provided. Markers on the outside of the split may also have been modified.
    *
    * @method splitMarkers
-   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @param {Object} markerRange Object with offsets, {headMarker, headMarkerOffset, tailMarker, tailMarkerOffset}
    * @return {Array} of markers that are inside the split
    * @public
    */
-  splitMarkers({headMarker, headOffset, tailMarker, tailOffset}) {
+  splitMarkers({headMarker, headMarkerOffset, tailMarker, tailMarkerOffset}) {
     const { post } = this.editor;
     let selectedMarkers = [];
 
@@ -291,27 +293,27 @@ class PostEditor {
     tailMarker.section.renderNode.markDirty();
 
     if (headMarker === tailMarker) {
-      let markers = headSection.splitMarker(headMarker, headOffset, tailOffset);
+      let markers = headSection.splitMarker(headMarker, headMarkerOffset, tailMarkerOffset);
       selectedMarkers = post.markersInRange({
         headMarker: markers[0],
         tailMarker: markers[markers.length-1],
-        headOffset,
-        tailOffset
+        headMarkerOffset,
+        tailMarkerOffset
       });
     } else {
-      let newHeadMarkers = headSection.splitMarker(headMarker, headOffset);
+      let newHeadMarkers = headSection.splitMarker(headMarker, headMarkerOffset);
       let selectedHeadMarkers = post.markersInRange({
         headMarker: newHeadMarkers[0],
         tailMarker: newHeadMarkers[newHeadMarkers.length-1],
-        headOffset
+        headMarkerOffset
       });
 
-      let newTailMarkers = tailSection.splitMarker(tailMarker, 0, tailOffset);
+      let newTailMarkers = tailSection.splitMarker(tailMarker, 0, tailMarkerOffset);
       let selectedTailMarkers = post.markersInRange({
         headMarker: newTailMarkers[0],
         tailMarker: newTailMarkers[newTailMarkers.length-1],
-        headOffset: 0,
-        tailOffset
+        headMarkerOffset: 0,
+        tailMarkerOffset
       });
 
       let newHeadMarker = selectedHeadMarkers[0],
@@ -348,8 +350,8 @@ class PostEditor {
    *     let marker = editor.post.sections.head.marker.head;
    *     editor.run((postEditor) => {
    *       postEditor.splitSection({
-   *         headMarker: marker,
-   *         headOffset: 3
+   *         headSection: section,
+   *         headSectionOffset: 3
    *       });
    *     });
    *     // Will result in the marker and its old section being removed from
@@ -358,20 +360,20 @@ class PostEditor {
    *
    * The return value will be the two new sections. One or both of these
    * sections can be blank (contain only a blank marker), for example if the
-   * headOffset is 0.
+   * headMaOffset is 0.
    *
    * @method splitMarkers
-   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @param {Object} markerRange Object with offsets, {headSection, headSectionOffset}
    * @return {Array} of new sections, one for the first half and one for the second
    * @public
    */
   splitSection({headSection: section, headSectionOffset}) {
     let {
       marker: headMarker,
-      offset: headOffset
+      offset: headMarkerOffset
     } = section.markerPositionAtOffset(headSectionOffset);
 
-    const [beforeSection, afterSection] = section.splitAtMarker(headMarker, headOffset);
+    const [beforeSection, afterSection] = section.splitAtMarker(headMarker, headMarkerOffset);
 
     this._replaceSection(section, [beforeSection, afterSection]);
 
@@ -406,7 +408,7 @@ class PostEditor {
    * value as `splitMarkers`.
    *
    * @method applyMarkupToMarkers
-   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @param {Object} markerRange Object with offsets
    * @param {Object} markup A markup post abstract node
    * @return {Array} of markers that are inside the split
    * @public
@@ -443,7 +445,7 @@ class PostEditor {
    * value as `splitMarkers`.
    *
    * @method removeMarkupFromMarkers
-   * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+   * @param {Object} markerRange Object with offsets
    * @param {Object} markup A markup post abstract node
    * @return {Array} of markers that are inside the split
    * @public

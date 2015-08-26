@@ -1,4 +1,5 @@
 import { Editor } from 'content-kit-editor';
+import Helpers from '../test-helpers';
 
 const { test, module } = QUnit;
 
@@ -17,8 +18,6 @@ module('Acceptance: editor: basic', {
 });
 
 test('sets element as contenteditable', (assert) => {
-  let innerHTML = `<p>Hello</p>`;
-  editorElement.innerHTML = innerHTML;
   editor = new Editor();
   editor.render(editorElement);
 
@@ -30,8 +29,6 @@ test('sets element as contenteditable', (assert) => {
 });
 
 test('#disableEditing before render is meaningful', (assert) => {
-  let innerHTML = `<p>Hello</p>`;
-  editorElement.innerHTML = innerHTML;
   editor = new Editor();
   editor.disableEditing();
   editor.render(editorElement);
@@ -45,8 +42,6 @@ test('#disableEditing before render is meaningful', (assert) => {
 });
 
 test('#disableEditing and #enableEditing toggle contenteditable', (assert) => {
-  let innerHTML = `<p>Hello</p>`;
-  editorElement.innerHTML = innerHTML;
   editor = new Editor();
   editor.render(editorElement);
 
@@ -61,4 +56,28 @@ test('#disableEditing and #enableEditing toggle contenteditable', (assert) => {
   assert.equal(editorElement.getAttribute('contenteditable'),
                'true',
                'element is contenteditable');
+});
+
+test('clicking outside the editor does not raise an error', (assert) => {
+  editor = new Editor({autofocus: false});
+  editor.render(editorElement);
+
+  let secondEditorElement = document.createElement('div');
+  document.body.appendChild(secondEditorElement);
+
+  let secondEditor = new Editor(); // This editor will be focused
+  secondEditor.render(secondEditorElement);
+
+  Helpers.dom.triggerEvent(editorElement, 'click');
+
+  // Embed intent uses setTimeout, so this assertion must
+  // setTimeout after it to catch the exception during failure
+  // cases.
+  let done = assert.async();
+  setTimeout(() => {
+    assert.ok(true, 'can click external item without error');
+    done();
+    secondEditor.destroy();
+    document.body.removeChild(secondEditorElement);
+  }, 1);
 });
