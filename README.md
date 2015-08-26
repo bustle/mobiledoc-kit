@@ -61,6 +61,44 @@ editor.render(element);
 * `editor.enableEditing()` - allow the user to make direct edits directly
   to a post's text.
 
+### Editor Lifecycle Hooks
+
+API consumers may want to react to given interaction by the user (or by
+a programmatic edit of the post). Lifecyle hooks provide notification
+of change and opportunity to edit the post where appropriate.
+
+Register a lifecycle hook by calling the hook name on the editor with a
+callback function. For example:
+
+```js
+editor.didUpdatePost(postEditor => {
+  let { offsets } = editor.offsets,
+      cursorSection;
+
+  if (offset.headSection.text === 'add-section-when-i-type-this') {
+    let section = editor.builder.createMarkupSection('p');
+    postEditor.insertSectionBefore(section, cursorSection.next);
+    cursorSection = section;
+  }
+
+  postEditor.scheduleRerender();
+  postEditor.schedule(() => {
+    if (cursorSection) {
+      editor.moveToSection(cursorSection, 0);
+    }
+  });
+});
+```
+
+The available lifecycle hooks are:
+
+* `editor.didUpdatePost(postEditor => {})` - An opprotunity to use the
+  `postEditor` and possibly change the post before rendering begins.
+* `editor.willRender()` - After all post mutation has finished, but before
+   the DOM is updated.
+* `editor.didRender()` - After the DOM has been updated to match the
+  edited post.
+
 ### Programmatic Post Editing
 
 A major goal of Content-Kit is to allow complete customization of user
