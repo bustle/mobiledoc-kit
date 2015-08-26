@@ -15,7 +15,7 @@ export default class BoldCommand extends TextFormatCommand {
   }
   exec() {
     let markerRange = this.editor.cursor.offsets;
-    if (!markerRange.leftRenderNode || !markerRange.rightRenderNode) {
+    if (!markerRange.headSection || !markerRange.tailSection) {
       return;
     }
     let markers = this.editor.run((postEditor) => {

@@ -1,17 +1,15 @@
-import {
-  detect
-} from '../utils/array-utils';
-
+import { detect } from '../utils/array-utils';
 import {
   isSelectionInElement,
   clearSelection
 } from '../utils/selection-utils';
-
 import {
   detectParentNode,
   isTextNode,
   walkDOM
 } from '../utils/dom-utils';
+import Position from "./cursor/position";
+import Range from "./cursor/range";
 
 function findOffsetInParent(parentElement, targetElement, targetOffset) {
   let offset = 0;
@@ -31,8 +29,10 @@ function findOffsetInParent(parentElement, targetElement, targetOffset) {
 }
 
 function findSectionContaining(sections, childNode) {
-  const {result:section} = detectParentNode(childNode, node => {
-    return detect(sections, s => s.renderNode.element === node);
+  const { result: section } = detectParentNode(childNode, node => {
+    return detect(sections, section => {
+      return section.renderNode.element === node;
+    });
   });
   return section;
 }
@@ -98,87 +98,29 @@ export default class Cursor {
 
   get offsets() {
     const { sections } = this.post;
-    const selection = this.selection;
-    const { isCollapsed, rangeCount } = selection;
-    const range = rangeCount > 0 && selection.getRangeAt(0);
+    const { selection } = this;
 
-    if (!range) {
+    if (selection.rangeCount === 0 || !selection.getRangeAt(0)) {
       return {};
     }
 
+    let {
+      leftNode, leftOffset, rightNode, rightOffset
+    } = comparePosition(selection);
 
-    let {leftNode, leftOffset, rightNode, rightOffset} = comparePosition(selection);
+    let headPosition = Position.fromNode(
+      this.renderTree, sections, leftNode, leftOffset
+    );
+    let tailPosition = Position.fromNode(
+      this.renderTree, sections, rightNode, rightOffset
+    );
 
-    // The selection should contain two text nodes, but may contain a P
-    // tag if the section only has a blank br marker or on
-    // Chrome/Safari using shift+<Up arrow> can create a selection with
-    // a tag rather than a text node. This fixes that.
-    // See https://github.com/bustlelabs/content-kit-editor/issues/56
-
-    let leftRenderNode = this.renderTree.getElementRenderNode(leftNode),
-        rightRenderNode = this.renderTree.getElementRenderNode(rightNode);
-
-    if (!rightRenderNode) {
-      let rightSection = findSectionContaining(sections, rightNode);
-      let rightMarker = rightSection.markers.head;
-      rightRenderNode = rightMarker.renderNode;
-      rightNode = rightRenderNode.element;
-      rightOffset = 0;
-    }
-
-    if (!leftRenderNode) {
-      let leftSection = findSectionContaining(sections, leftNode);
-      let leftMarker = leftSection.markers.head;
-      leftRenderNode = leftMarker.renderNode;
-      leftNode = leftRenderNode.element;
-      leftOffset = 0;
-    }
-
-    const startMarker = leftRenderNode && leftRenderNode.postNode,
-          endMarker = rightRenderNode && rightRenderNode.postNode;
-
-    const startSection = startMarker && startMarker.section;
-    const endSection = endMarker && endMarker.section;
-
-    const headSectionOffset = startSection &&
-      startMarker &&
-      startMarker.offsetInParent(leftOffset);
-
-    const tailSectionOffset = endSection &&
-      endMarker &&
-      endMarker.offsetInParent(rightOffset);
-
-    return {
-      leftNode,
-      rightNode,
-      leftOffset,
-      rightOffset,
-      leftRenderNode,
-      rightRenderNode,
-      startMarker,
-      endMarker,
-      startSection,
-      endSection,
-
-      // FIXME: this should become the public API
-      headMarker: startMarker,
-      tailMarker: endMarker,
-      headOffset: leftOffset,
-      tailOffset: rightOffset,
-      headNode: leftNode,
-      tailNode: rightNode,
-
-      headSection: startSection,
-      tailSection: endSection,
-      headSectionOffset,
-      tailSectionOffset,
-      isCollapsed
-    };
+    return Range.fromPositions(headPosition, tailPosition);
   }
 
   get activeSections() {
     const { sections } = this.post;
-    const selection = this.selection;
+    const { selection } = this;
     const { rangeCount } = selection;
     const range = rangeCount > 0 && selection.getRangeAt(0);
 
@@ -187,10 +129,10 @@ export default class Cursor {
     }
 
     const { startContainer, endContainer } = range;
-    const startSection = findSectionContaining(sections, startContainer);
-    const endSection = findSectionContaining(sections, endContainer);
+    const headSection = findSectionContaining(sections, startContainer);
+    const tailSection = findSectionContaining(sections, endContainer);
 
-    return sections.readRange(startSection, endSection);
+    return sections.readRange(headSection, tailSection);
   }
 
   // moves cursor to the start of the section
@@ -210,27 +152,24 @@ export default class Cursor {
   }
 
   selectSections(sections) {
-    const startSection = sections[0],
-          endSection  = sections[sections.length - 1];
+    const headSection = sections[0],
+          tailSection = sections[sections.length - 1];
 
-    const startNode = startSection.markers.head.renderNode.element,
-          endNode   = endSection.markers.tail.renderNode.element;
+    const headMarker = headSection.markers.head,
+          tailMarker = tailSection.markers.tail;
 
-    const startOffset = 0,
-          endOffset = endNode.textContent.length;
+    const headMarkerOffset = 0,
+          tailMarkerOffset = tailMarker.length;
 
-    this.moveToNode(startNode, startOffset, endNode, endOffset);
+    this.moveToMarker(headMarker, headMarkerOffset, tailMarker, tailMarkerOffset);
   }
 
   selectMarkers(markers) {
-    const startMarker = markers[0],
-          endMarker   = markers[markers.length - 1];
-
-    const startNode = startMarker.renderNode.element,
-          endNode   = endMarker.renderNode.element;
-    const startOffset = 0, endOffset = endMarker.length;
-
-    this.moveToNode(startNode, startOffset, endNode, endOffset);
+    const headMarker = markers[0],
+          tailMarker = markers[markers.length - 1],
+          headOffset = 0,
+          tailOffset = tailMarker.length;
+    this.moveToMarker(headMarker, headOffset, tailMarker, tailOffset);
   }
 
   /**
