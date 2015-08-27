@@ -38,10 +38,6 @@ export default class SectionParser {
       state.section.markers.append(marker);
     }
 
-    if (section.markers.length === 0) {
-      section.markers.append(this.builder.createBlankMarker());
-    }
-
     return section;
   }
 

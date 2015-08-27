@@ -94,6 +94,10 @@ const Marker = class Marker extends LinkedItem {
   }
 
   hasMarkup(tagNameOrMarkup) {
+    return !!this.getMarkup(tagNameOrMarkup);
+  }
+
+  getMarkup(tagNameOrMarkup) {
     if (typeof tagNameOrMarkup === 'string') {
       let tagName = normalizeTagName(tagNameOrMarkup);
       return detect(this.markups, markup => markup.tagName === tagName);
@@ -101,10 +105,6 @@ const Marker = class Marker extends LinkedItem {
       let targetMarkup = tagNameOrMarkup;
       return detect(this.markups, markup => markup === targetMarkup);
     }
-  }
-
-  getMarkup(tagName) {
-    return this.hasMarkup(tagName);
   }
 
   join(other) {

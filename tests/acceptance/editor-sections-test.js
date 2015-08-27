@@ -112,6 +112,17 @@ test('typing enter inserts new section', (assert) => {
   assert.hasElement('#editor p:contains(section)', 'has correct second paragraph text');
 });
 
+test('typing enter inserts new section from blank section', (assert) => {
+  editor = new Editor({mobiledoc: mobileDocWithNoCharacter});
+  editor.render(editorElement);
+  assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
+
+  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 0);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.equal($('#editor p').length, 2, 'has 2 paragraphs after typing return');
+});
+
 test('hitting enter in first section splits it correctly', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWith2Sections});
   editor.render(editorElement);
@@ -486,6 +497,20 @@ test('deleting when after deletion there is a leading space positions cursor at 
     assert.equal($('#editor p:eq(1)').text(), `${text} section`, 'correct text after insertion');
     done();
   });
+});
+
+test('deleting when the previous section is also blank', (assert) => {
+  editor = new Editor({mobiledoc: mobileDocWithNoCharacter});
+  editor.render(editorElement);
+
+  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 0);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.equal($('#editor p').length, 2, 'has 2 paragraphs after typing return');
+
+  Helpers.dom.triggerDelete(editor);
+
+  assert.equal($('#editor p').length, 1, 'has 1 paragraphs after typing delete');
 });
 
 // test: deleting at start of section when previous section is a non-markup section

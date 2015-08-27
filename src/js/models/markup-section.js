@@ -88,9 +88,6 @@ export default class Section extends LinkedItem {
       }
     });
 
-    beforeSection.coalesceMarkers();
-    afterSection.coalesceMarkers();
-
     return [beforeSection, afterSection];
   }
 
@@ -101,22 +98,6 @@ export default class Section extends LinkedItem {
     ];
 
     return this._redistributeMarkers(beforeSection, afterSection, marker, offset);
-  }
-
-  /**
-   * Remove extranous empty markers, adding one at the end if there
-   * are no longer any markers
-   *
-   * Mutates this section's markers
-   */
-  coalesceMarkers() {
-    forEach(
-      filter(this.markers, m => m.isEmpty),
-      m => this.markers.remove(m)
-    );
-    if (this.markers.isEmpty) {
-      this.markers.append(this.builder.createBlankMarker());
-    }
   }
 
   markerPositionAtOffset(offset) {
@@ -137,9 +118,6 @@ export default class Section extends LinkedItem {
 
   // mutates this by appending the other section's (cloned) markers to it
   join(otherSection) {
-    let wasBlank = this.isBlank;
-    let didAddContent = false;
-
     let beforeMarker = this.markers.tail;
     let afterMarker = null;
 
@@ -150,16 +128,8 @@ export default class Section extends LinkedItem {
         if (!afterMarker) {
           afterMarker = m;
         }
-        didAddContent = true;
       }
     });
-
-    if (wasBlank && didAddContent) {
-      // FIXME: Join should maybe not be on the markup-section
-      beforeMarker.renderNode.scheduleForRemoval();
-      beforeMarker = null;
-    }
-
 
     return { beforeMarker, afterMarker };
   }

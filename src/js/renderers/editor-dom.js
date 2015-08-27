@@ -49,7 +49,7 @@ function renderListItem() {
 }
 
 function getNextMarkerElement(renderNode) {
-  let element = renderNode._teardownElement.parentNode;
+  let element = renderNode.element.parentNode;
   let marker = renderNode.postNode;
   let closedCount = marker.closedMarkups.length;
 
@@ -57,21 +57,6 @@ function getNextMarkerElement(renderNode) {
     element = element.parentNode;
   }
   return element;
-}
-
-function renderBlankMarker(marker, element, previousRenderNode) {
-  let blankElement = document.createElement('br');
-
-  if (previousRenderNode) {
-    // FIXME there should never be a previousRenderNode for a blank marker
-    let previousSibling = previousRenderNode.element;
-    let previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
-    element.insertBefore(blankElement, previousSiblingPenultimate.nextSibling);
-  } else {
-    element.insertBefore(blankElement, element.firstChild);
-  }
-
-  return blankElement;
 }
 
 function renderMarker(marker, element, previousRenderNode) {
@@ -168,8 +153,14 @@ class Visitor {
 
     attachRenderNodeElementToDOM(renderNode, element, originalElement);
 
-    const visitAll = true;
-    visit(renderNode, section.markers, visitAll);
+    if (section.markers.length) {
+      const visitAll = true;
+      visit(renderNode, section.markers, visitAll);
+    } else {
+      renderNode.renderTree.elements.set(renderNode.element, renderNode);
+      let br = document.createElement('br');
+      renderNode.element.appendChild(br);
+    }
   }
 
   [LIST_SECTION_TYPE](renderNode, section, visit) {
@@ -190,8 +181,14 @@ class Visitor {
 
     attachRenderNodeElementToDOM(renderNode, element, null);
 
-    const visitAll = true;
-    visit(renderNode, item.markers, visitAll);
+    if (item.markers.length) {
+      const visitAll = true;
+      visit(renderNode, item.markers, visitAll);
+    } else {
+      renderNode.renderTree.elements.set(renderNode.element, renderNode);
+      let br = document.createElement('br');
+      renderNode.element.appendChild(br);
+    }
   }
 
   [MARKER_TYPE](renderNode, marker) {
@@ -202,17 +199,10 @@ class Visitor {
     } else {
       parentElement = renderNode.parent.element;
     }
-    let markerNode, focusableNode;
-    if (marker.isEmpty) {
-      markerNode    = renderBlankMarker(marker, parentElement, renderNode.prev);
-      focusableNode = markerNode.parentNode;
-    } else {
-      markerNode = focusableNode = renderMarker(marker, parentElement, renderNode.prev);
-    }
 
-    renderNode.renderTree.elements.set(focusableNode, renderNode);
-    renderNode.element = focusableNode;
-    renderNode._teardownElement = markerNode;
+    let markerNode = renderMarker(marker, parentElement, renderNode.prev);
+    renderNode.renderTree.elements.set(markerNode, renderNode);
+    renderNode.element = markerNode;
   }
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
@@ -290,7 +280,7 @@ let destroyHooks = {
     // FIXME before we render marker, should delete previous renderNode's element
     // and up until the next marker element
 
-    let element = renderNode._teardownElement;
+    let element = renderNode.element;
     let nextMarkerElement = getNextMarkerElement(renderNode);
     while (element.parentNode && element.parentNode !== nextMarkerElement) {
       element = element.parentNode;

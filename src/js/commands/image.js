@@ -9,8 +9,7 @@ export default class ImageCommand extends Command {
   }
 
   exec() {
-    let {headMarker} = this.editor.cursor.offsets;
-    let beforeSection = headMarker.section;
+    let {headSection: beforeSection} = this.editor.cursor.offsets;
     let afterSection = beforeSection.next;
     let section = this.editor.builder.createCardSection('image');
     const collection = beforeSection.parent.sections;

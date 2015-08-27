@@ -51,7 +51,7 @@ test("renders a dirty post with un-rendered sections", (assert) => {
 
   render(renderTree);
 
-  assert.equal(renderTree.node.element.outerHTML, '<div><p></p><p></p></div>',
+  assert.equal(renderTree.node.element.outerHTML, '<div><p><br></p><p><br></p></div>',
                'correct HTML is rendered');
 
   assert.ok(renderTree.node.childNodes.head,
@@ -126,6 +126,18 @@ test('renders a post with marker', (assert) => {
   node.renderTree = renderTree;
   render(renderTree);
   assert.equal(node.element.innerHTML, '<p><strong>Hi</strong></p>');
+});
+
+test('renders a post with markup empty section', (assert) => {
+  let post = builder.createPost();
+  let section = builder.createMarkupSection('P');
+  post.sections.append(section);
+
+  let node = new RenderNode(post);
+  let renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree);
+  assert.equal(node.element.innerHTML, '<p><br></p>');
 });
 
 test('renders a post with multiple markers', (assert) => {

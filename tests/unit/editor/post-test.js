@@ -64,11 +64,11 @@ test('#deleteFrom in middle of marker deletes char before offset', (assert) => {
     ]) 
   );
 
-  const nextPosition = postEditor.deleteFrom({marker: getMarker(0,0), offset:4});
+  const nextPosition = postEditor.deleteFrom({section: getSection(0), offset:4});
   postEditor.complete();
 
   assert.equal(getMarker(0, 0).value, 'abcdef');
-  assert.deepEqual(nextPosition, {currentMarker: getMarker(0, 0), currentOffset: 3});
+  assert.deepEqual(nextPosition, {currentSection: getSection(0), currentOffset: 3});
 });
 
 
@@ -79,11 +79,11 @@ test('#deleteFrom (forward) in middle of marker deletes char after offset', (ass
     ])
   );
 
-  const nextPosition = postEditor.deleteFrom({marker: getMarker(0,0), offset:3}, FORWARD);
+  const nextPosition = postEditor.deleteFrom({section: getSection(0), offset:3}, FORWARD);
   postEditor.complete();
 
   assert.equal(getMarker(0, 0).value, 'abcdef');
-  assert.deepEqual(nextPosition, {currentMarker: getMarker(0, 0), currentOffset: 3});
+  assert.deepEqual(nextPosition, {currentSection: getSection(0), currentOffset: 3});
 });
 
 test('#deleteFrom offset 0 joins section with previous if first marker', (assert) => {
@@ -94,7 +94,7 @@ test('#deleteFrom offset 0 joins section with previous if first marker', (assert
     ])
   );
 
-  const nextPosition = postEditor.deleteFrom({marker: getMarker(1,0), offset:0});
+  const nextPosition = postEditor.deleteFrom({section: getSection(1), offset:0});
   postEditor.complete();
 
   assert.equal(editor.post.sections.length, 1,
@@ -108,7 +108,7 @@ test('#deleteFrom offset 0 joins section with previous if first marker', (assert
   assert.deepEqual(newValues, ['abc','def'], 'new markers have correct values');
 
   assert.deepEqual(nextPosition,
-                   {currentMarker: getMarker(0, 0), currentOffset: newValues[0].length});
+                   {currentSection: getSection(0), currentOffset: newValues[0].length});
 });
 
 test('#deleteFrom (FORWARD) end of marker joins section with next if last marker', (assert) => {
@@ -119,8 +119,8 @@ test('#deleteFrom (FORWARD) end of marker joins section with next if last marker
     ])
   );
 
-  let marker = getMarker(0,0);
-  const nextPosition = postEditor.deleteFrom({marker, offset:marker.length},
+  let section = getSection(0);
+  const nextPosition = postEditor.deleteFrom({section, offset: 3},
                                              FORWARD);
   postEditor.complete();
 
@@ -135,7 +135,7 @@ test('#deleteFrom (FORWARD) end of marker joins section with next if last marker
   assert.deepEqual(newValues, ['abc','def'], 'new markers have correct values');
 
   assert.deepEqual(nextPosition,
-                   {currentMarker: getMarker(0, 0), currentOffset: newValues[0].length});
+                   {currentSection: getSection(0), currentOffset: newValues[0].length});
 });
 
 test('#deleteFrom offset 0 deletes last character of previous marker when there is one', (assert) => {
@@ -145,7 +145,7 @@ test('#deleteFrom offset 0 deletes last character of previous marker when there 
     ])
   );
 
-  const nextPosition = postEditor.deleteFrom({marker: getMarker(0, 1), offset:0});
+  const nextPosition = postEditor.deleteFrom({section: getSection(0), offset:3});
   postEditor.complete();
 
   let markers = getSection(0).markers.toArray();
@@ -154,7 +154,7 @@ test('#deleteFrom offset 0 deletes last character of previous marker when there 
   assert.deepEqual(values, ['ab', 'def'], 'markers have correct values');
 
   assert.deepEqual(nextPosition,
-                   {currentMarker: getMarker(0, 0), currentOffset: values[0].length});
+                   {currentSection: getSection(0), currentOffset: values[0].length});
 });
 
 test('#deleteFrom (FORWARD) end of marker deletes first character of next marker when there is one', (assert) => {
@@ -164,8 +164,8 @@ test('#deleteFrom (FORWARD) end of marker deletes first character of next marker
     ])
   );
 
-  let marker = getMarker(0, 0);
-  const nextPosition = postEditor.deleteFrom({marker, offset:marker.length},
+  let section = getSection(0);
+  const nextPosition = postEditor.deleteFrom({section, offset: 3},
                                             FORWARD);
   postEditor.complete();
 
@@ -175,7 +175,7 @@ test('#deleteFrom (FORWARD) end of marker deletes first character of next marker
   assert.deepEqual(values, ['abc', 'ef'], 'markers have correct values');
 
   assert.deepEqual(nextPosition,
-                   {currentMarker: getMarker(0, 0), currentOffset: values[0].length});
+                   {currentSection: getSection(0), currentOffset: values[0].length});
 });
 
 
@@ -184,7 +184,8 @@ module('Unit: PostEditor', {
     builder = new PostNodeBuilder();
     mockEditor = {
       rerender() {},
-      didUpdate() {}
+      didUpdate() {},
+      builder
     };
     postEditor = new PostEditor(mockEditor);
   },
@@ -206,7 +207,6 @@ test('#deleteRange when within the same marker', (assert) => {
     post = buildPost([
       section
     ]);
-    return post;
   });
 
   renderBuiltAbstract(post);
@@ -233,7 +233,6 @@ test('#deleteRange when same section, different markers, same markups', (assert)
     post = buildPost([
       section
     ]);
-    return post;
   });
 
   renderBuiltAbstract(post);
@@ -261,7 +260,6 @@ test('#deleteRange when same section, different markers, different markups', (as
     post = buildPost([
       section
     ]);
-    return post;
   });
 
   renderBuiltAbstract(post);
@@ -289,7 +287,6 @@ test('#deleteRange across contiguous sections', (assert) => {
     s1 = markupSection('p', [ marker('abc') ]);
     s2 = markupSection('p', [ marker(' def') ]);
     post = buildPost([ s1, s2 ]);
-    return post;
   });
 
   renderBuiltAbstract(post);
@@ -314,7 +311,6 @@ test('#deleteRange across entire sections', (assert) => {
     s2 = markupSection('p', [ marker('this space left blank') ]);
     s3 = markupSection('p', [ marker('def') ]);
     post = buildPost([ s1, s2, s3 ]);
-    return post;
   });
 
   renderBuiltAbstract(post);
@@ -330,4 +326,111 @@ test('#deleteRange across entire sections', (assert) => {
 
   assert.equal(post.sections.head.text, 'abcdef');
   assert.equal(post.sections.length, 1, 'only 1 section remains');
+});
+
+test('#deleteRange across all content', (assert) => {
+  let post, s1, s2;
+  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
+    s1 = markupSection('p', [ marker('abc') ]);
+    s2 = markupSection('p', [ marker('def') ]);
+    post = buildPost([ s1, s2 ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.deleteRange({
+    headSection: s1,
+    headSectionOffset: 0,
+    tailSection: s2,
+    tailSectionOffset: 3
+  });
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, '');
+  assert.equal(post.sections.length, 1, 'only 1 section remains');
+  assert.equal(post.sections.head.markers.length, 0, 'no markers remain');
+});
+
+test('#cutSection with one marker', (assert) => {
+  let post, section;
+  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
+    section = markupSection('p', [ marker('abc') ]);
+    post = buildPost([ section ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.cutSection(section, 1, 2);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, 'ac');
+  assert.equal(post.sections.length, 1, 'only 1 section remains');
+  assert.equal(post.sections.head.markers.length, 2, 'two markers remain');
+});
+
+test('#cutSection at bounderies across markers', (assert) => {
+  let post, section;
+  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
+    section = markupSection('p', [
+      marker('a'),
+      marker('b'),
+      marker('c'),
+      marker('d')
+    ]);
+    post = buildPost([ section ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.cutSection(section, 1, 3);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, 'ad');
+  assert.equal(post.sections.length, 1, 'only 1 section remains');
+  assert.equal(post.sections.head.markers.length, 2, 'two markers remain');
+});
+
+test('#cutSection in head marker', (assert) => {
+  let post, section;
+  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
+    section = markupSection('p', [
+      marker('a'),
+      marker('bc')
+    ]);
+    post = buildPost([ section ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.cutSection(section, 2, 3);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, 'ab');
+  assert.equal(post.sections.length, 1, 'only 1 section remains');
+  assert.equal(post.sections.head.markers.length, 2, 'two markers remain');
+});
+
+test('#cutSection in tail marker', (assert) => {
+  let post, section;
+  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
+    section = markupSection('p', [
+      marker('a'),
+      marker('bc')
+    ]);
+    post = buildPost([ section ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  postEditor.cutSection(section, 0, 2);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, 'c');
+  assert.equal(post.sections.length, 1, 'only 1 section remains');
+  assert.equal(post.sections.head.markers.length, 1, 'two markers remain');
 });
