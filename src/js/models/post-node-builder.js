@@ -65,19 +65,21 @@ export default class PostNodeBuilder {
     return marker;
   }
 
-  createMarkup(tagName, attributes) {
+  // Attributes is an array of [key1, value1, key2, value2, ...]
+  createMarkup(tagName, attributes=[]) {
     tagName = normalizeTagName(tagName);
 
     let markup;
 
-    if (attributes) {
+    if (attributes.length) {
       // FIXME: This could also be cached
       markup = new Markup(tagName, attributes);
     } else {
-      if (this.markupCache[tagName]) {
-        markup = this.markupCache[tagName];
-      } else {
+      markup = this.markupCache[tagName];
+
+      if (!markup) {
         markup = new Markup(tagName, attributes);
+        this.markupCache[tagName] = markup;
       }
     }
 
