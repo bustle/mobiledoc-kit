@@ -151,3 +151,31 @@ test('#parse doc with custom card type', (assert) => {
     post
   );
 });
+
+test('#parse a mobile doc with list-section and list-item', (assert) => {
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [3, 'ul', [
+          [[[], 0, "first item"]],
+          [[[], 0, "second item"]]
+        ]]
+      ]
+    ]
+  };
+
+  const parsed = parser.parse(mobiledoc);
+
+  const items = [
+    builder.createListItem([builder.createMarker('first item')]),
+    builder.createListItem([builder.createMarker('second item')])
+  ];
+  const section = builder.createListSection('ul', items);
+  post.sections.append(section);
+  assert.deepEqual(
+    parsed,
+    post
+  );
+});

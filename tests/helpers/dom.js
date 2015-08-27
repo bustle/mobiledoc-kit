@@ -96,7 +96,7 @@ _buildDOM.text = (string) => {
 
 /**
  * Usage:
- * makeDOM(t =>
+ * build(t =>
  *   t('div', attributes={}, children=[
  *     t('b', {}, [
  *       t.text('I am a bold text node')
@@ -104,7 +104,7 @@ _buildDOM.text = (string) => {
  *   ])
  * );
  */
-function makeDOM(tree) {
+function build(tree) {
   return tree(_buildDOM);
 }
 
@@ -140,6 +140,7 @@ function getCursorPosition() {
 }
 
 function triggerDelete(editor) {
+  if (!editor) { throw new Error('Must pass `editor` to `triggerDelete`'); }
   if (isPhantom()) {
     // simulate deletion for phantomjs
     let event = { preventDefault() {} };
@@ -150,6 +151,7 @@ function triggerDelete(editor) {
 }
 
 function triggerEnter(editor) {
+  if (!editor) { throw new Error('Must pass `editor` to `triggerEnter`'); }
   if (isPhantom()) {
     // simulate event when testing with phantom
     let event = { preventDefault() {} };
@@ -169,7 +171,7 @@ const DOMHelper = {
   clearSelection,
   triggerEvent,
   triggerKeyEvent,
-  makeDOM,
+  build,
   KEY_CODES,
   getCursorPosition,
   getSelectedText,

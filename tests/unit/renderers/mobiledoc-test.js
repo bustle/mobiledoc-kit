@@ -134,3 +134,26 @@ test('renders a post with card', (assert) => {
     ]
   });
 });
+
+test('renders a post with a list', (assert) => {
+  const items = [
+    builder.createListItem([builder.createMarker('first item')]),
+    builder.createListItem([builder.createMarker('second item')])
+  ];
+  const section = builder.createListSection('ul', items);
+  const post = builder.createPost([section]);
+
+  const mobiledoc = render(post);
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [3, 'ul', [
+          [[[], 0, 'first item']],
+          [[[], 0, 'second item']]
+        ]]
+      ]
+    ]
+  });
+});

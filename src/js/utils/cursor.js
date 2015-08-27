@@ -3,30 +3,10 @@ import {
   isSelectionInElement,
   clearSelection
 } from '../utils/selection-utils';
-import {
-  detectParentNode,
-  isTextNode,
-  walkDOM
-} from '../utils/dom-utils';
-import Position from "./cursor/position";
-import Range from "./cursor/range";
 
-function findOffsetInParent(parentElement, targetElement, targetOffset) {
-  let offset = 0;
-  let found = false;
-  // FIXME: would be nice to exit this walk early after we find the end node
-  walkDOM(parentElement, (childElement) => {
-    if (found) { return; }
-    found = childElement === targetElement;
-
-    if (found) {
-      offset += targetOffset;
-    } else if (isTextNode(childElement)) {
-      offset += childElement.textContent.length;
-    }
-  });
-  return offset;
-}
+import { detectParentNode } from '../utils/dom-utils';
+import Position from './cursor/position';
+import Range from './cursor/range';
 
 function findSectionContaining(sections, childNode) {
   const { result: section } = detectParentNode(childNode, node => {
@@ -80,19 +60,7 @@ export default class Cursor {
   }
 
   get sectionOffsets() {
-    const { sections } = this.post;
-    const selection = this.selection;
-    const { rangeCount } = selection;
-    const range = rangeCount > 0 && selection.getRangeAt(0);
-
-    if (!range) {
-      return {};
-    }
-
-    let {leftNode:headNode, leftOffset:headOffset} = comparePosition(selection);
-    let headSection = findSectionContaining(sections, headNode);
-    let headSectionOffset = findOffsetInParent(headSection.renderNode.element, headNode, headOffset);
-
+    const {headSection, headSectionOffset} = this.offsets;
     return {headSection, headSectionOffset};
   }
 
@@ -144,7 +112,7 @@ export default class Cursor {
 
   // moves cursor to marker
   moveToMarker(headMarker, headOffset=0, tailMarker=headMarker, tailOffset=headOffset) {
-    if (!headMarker) { throw new Error('Cannot move cursor to section without a marker'); }
+    if (!headMarker) { throw new Error('Cannot move cursor to marker without a marker'); }
     const headElement = headMarker.renderNode.element;
     const tailElement = tailMarker.renderNode.element;
 

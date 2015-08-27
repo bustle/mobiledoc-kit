@@ -1,6 +1,8 @@
 import { MARKUP_SECTION_TYPE } from '../models/markup-section';
+import { LIST_ITEM_TYPE } from '../models/list-item';
 import {
-  filter
+  filter,
+  compact
 } from '../utils/array-utils';
 
 import { DIRECTION } from '../utils/key';
@@ -9,9 +11,18 @@ function isMarkupSection(section) {
   return section.type === MARKUP_SECTION_TYPE;
 }
 
+function isListItem(section) {
+  return section.type === LIST_ITEM_TYPE;
+}
+
+function isBlankAndListItem(section) {
+  return isListItem(section) && section.isBlank;
+}
+
 class PostEditor {
   constructor(editor) {
     this.editor = editor;
+    this.builder = this.editor.builder;
     this._completionWorkQueue = [];
     this._didRerender = false;
     this._didUpdate = false;
@@ -99,12 +110,11 @@ class PostEditor {
   }
 
   _coalesceMarkers(section) {
-    let {builder} = this.editor;
     filter(section.markers, m => m.isEmpty).forEach(m => {
       this.removeMarker(m);
     });
     if (section.markers.isEmpty) {
-      section.markers.append(builder.createBlankMarker());
+      section.markers.append(this.builder.createBlankMarker());
       section.renderNode.markDirty();
     }
   }
@@ -191,6 +201,18 @@ class PostEditor {
     };
   }
 
+  _convertListItemToMarkupSection(listItem) {
+    const listSection = listItem.parent;
+
+    const newSections = listItem.splitIntoSections();
+    const newMarkupSection = newSections[1];
+
+    this._replaceSection(listSection, compact(newSections));
+
+    const newCursorPosition = {marker: newMarkupSection.markers.head, offset: 0};
+    return newCursorPosition;
+  }
+
   /**
    * delete 1 character in the BACKWARD direction from the given position
    * @method _deleteBackwardFrom
@@ -206,10 +228,15 @@ class PostEditor {
       if (prevMarker) {
         return this._deleteBackwardFrom({marker: prevMarker, offset: prevMarker.length});
       } else {
-        const prevSection = marker.section.prev;
+        const section = marker.section;
 
-        if (prevSection) {
-          if (isMarkupSection(prevSection)) {
+        if (isListItem(section)) {
+          const newCursorPos = this._convertListItemToMarkupSection(section);
+          nextCursorMarker = newCursorPos.marker;
+          nextCursorOffset = newCursorPos.offset;
+        } else {
+          const prevSection = section.prev;
+          if (prevSection && isMarkupSection(prevSection)) {
             nextCursorMarker = prevSection.markers.tail;
             nextCursorOffset = nextCursorMarker.length;
 
@@ -225,7 +252,6 @@ class PostEditor {
               nextCursorOffset = 0;
             }
           }
-          // ELSE: FIXME: card section -- what should deleting into it do?
         }
       }
 
@@ -258,7 +284,7 @@ class PostEditor {
   }
 
   /**
-   * Split makers at two positions, once at the head, and if necessary once
+   * Split markers at two positions, once at the head, and if necessary once
    * at the tail. This method is designed to accept `editor.cursor.offsets`
    * as an argument.
    *
@@ -375,17 +401,40 @@ class PostEditor {
 
     const [beforeSection, afterSection] = section.splitAtMarker(headMarker, headMarkerOffset);
 
-    this._replaceSection(section, [beforeSection, afterSection]);
+    const newSections = [beforeSection, afterSection];
+    let replacementSections = [beforeSection, afterSection];
+
+    if (isBlankAndListItem(beforeSection) && isBlankAndListItem(section)) {
+      const isLastItemInList = section === section.parent.sections.tail;
+
+      if (isLastItemInList) {
+        // when hitting enter in a final empty list item, do not insert a new
+        // empty item
+        replacementSections.shift();
+      }
+    }
+
+    this._replaceSection(section, replacementSections);
 
     this.scheduleRerender();
     this.scheduleDidUpdate();
 
-    return [beforeSection, afterSection];
+    // FIXME we must return 2 sections because other code expects this to always return 2
+    return newSections;
   }
 
   _replaceSection(section, newSections) {
     let nextSection = section.next;
-    newSections.forEach(s => this.insertSectionBefore(s, nextSection));
+    let collection = section.parent.sections;
+
+    let nextNewSection = newSections[0];
+    if (isMarkupSection(nextNewSection) && isListItem(section)) {
+      // put the new section after the ListSection (section.parent) instead of after the ListItem
+      collection = section.parent.parent.sections;
+      nextSection = section.parent.next;
+    }
+
+    newSections.forEach(s => this.insertSectionBefore(collection, s, nextSection));
     this.removeSection(section);
   }
 
@@ -472,18 +521,20 @@ class PostEditor {
    *     let markerRange = editor.cursor.offsets;
    *     let sectionWithCursor = markerRange.headMarker.section;
    *     let section = editor.builder.createCardSection('my-image');
+   *     let collection = sectionWithCursor.parent.sections;
    *     editor.run((postEditor) => {
-   *       postEditor.insertSectionBefore(section, sectionWithCursor);
+   *       postEditor.insertSectionBefore(collection, section, sectionWithCursor);
    *     });
    *
    * @method insertSectionBefore
+   * @param {LinkedList} collection The list of sections to insert into
    * @param {Object} section The new section
    * @param {Object} beforeSection The section "before" is relative to
    * @public
    */
-  insertSectionBefore(section, beforeSection) {
-    this.editor.post.sections.insertBefore(section, beforeSection);
-    this.editor.post.renderNode.markDirty();
+  insertSectionBefore(collection, section, beforeSection) {
+    collection.insertBefore(section, beforeSection);
+    section.parent.renderNode.markDirty();
 
     this.scheduleRerender();
     this.scheduleDidUpdate();
@@ -500,13 +551,13 @@ class PostEditor {
    *       postEditor.removeSection(sectionWithCursor);
    *     });
    *
-   * @method insertSectionBefore
+   * @method removeSection
    * @param {Object} section The section to remove
    * @public
    */
   removeSection(section) {
     section.renderNode.scheduleForRemoval();
-    section.post.sections.remove(section);
+    section.parent.sections.remove(section);
 
     this.scheduleRerender();
     this.scheduleDidUpdate();

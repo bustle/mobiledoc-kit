@@ -1,5 +1,7 @@
 import Post from '../models/post';
 import MarkupSection from '../models/markup-section';
+import ListSection from '../models/list-section';
+import ListItem from '../models/list-item';
 import ImageSection from '../models/image';
 import Marker from '../models/marker';
 import Markup from '../models/markup';
@@ -37,8 +39,22 @@ export default class PostNodeBuilder {
 
   createBlankMarkupSection(tagName) {
     tagName = normalizeTagName(tagName);
-    let blankMarker = this.createBlankMarker();
+    const blankMarker = this.createBlankMarker();
     return this.createMarkupSection(tagName, [ blankMarker ]);
+  }
+
+  createListSection(tagName, items=[]) {
+    tagName = normalizeTagName(tagName);
+    const section = new ListSection(tagName, items);
+    section.builder = this;
+    return section;
+  }
+
+  createListItem(markers=[]) {
+    const tagName = normalizeTagName('li');
+    const item = new ListItem(tagName, markers);
+    item.builder = this;
+    return item;
   }
 
   createImageSection(url) {

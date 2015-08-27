@@ -5,8 +5,8 @@ export default class Post {
   constructor() {
     this.type = POST_TYPE;
     this.sections = new LinkedList({
-      adoptItem: s => s.post = this,
-      freeItem: s => s.post = null
+      adoptItem: s => s.post = s.parent = this,
+      freeItem: s => s.post = s.parent = null
     });
   }
 

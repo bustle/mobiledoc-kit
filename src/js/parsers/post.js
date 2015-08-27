@@ -1,15 +1,10 @@
 import { MARKUP_SECTION_TYPE } from '../models/markup-section';
+import { LIST_SECTION_TYPE } from '../models/list-section';
+import { LIST_ITEM_TYPE } from '../models/list-item';
 import SectionParser from 'content-kit-editor/parsers/section';
 import { forEach } from 'content-kit-editor/utils/array-utils';
 import { getAttributesArray, walkTextNodes } from '../utils/dom-utils';
-import { UNPRINTABLE_CHARACTER } from 'content-kit-editor/renderers/editor-dom';
 import Markup from 'content-kit-editor/models/markup';
-
-const sanitizeTextRegex = new RegExp(UNPRINTABLE_CHARACTER, 'g');
-
-function sanitizeText(text) {
-  return text.replace(sanitizeTextRegex, '');
-}
 
 export default class PostParser {
   constructor(builder) {
@@ -34,47 +29,67 @@ export default class PostParser {
     return this.sectionParser.parse(element);
   }
 
+  // walk up from the textNode until the rootNode, converting each
+  // parentNode into a markup
+  collectMarkups(textNode, rootNode) {
+    let markups = [];
+    let currentNode = textNode.parentNode;
+    while (currentNode && currentNode !== rootNode) {
+      let markup = this.markupFromNode(currentNode);
+      if (markup) {
+        markups.push(markup);
+      }
+
+      currentNode = currentNode.parentNode;
+    }
+    return markups;
+  }
+
+  // Turn an element node into a markup
+  markupFromNode(node) {
+    if (Markup.isValidElement(node)) {
+      let tagName = node.tagName;
+      let attributes = getAttributesArray(node);
+
+      return this.builder.createMarkup(tagName, attributes);
+    }
+  }
+
   // FIXME should move to the section parser?
   // FIXME the `collectMarkups` logic could simplify the section parser?
   reparseSection(section, renderTree) {
-    if (section.type !== MARKUP_SECTION_TYPE) {
-      // can only reparse markup sections
-      return;
+    switch (section.type) {
+      case LIST_SECTION_TYPE:
+        return this.reparseListSection(section, renderTree);
+      case LIST_ITEM_TYPE:
+        return this.reparseListItem(section, renderTree);
+      case MARKUP_SECTION_TYPE:
+        return this.reparseMarkupSection(section, renderTree);
+      default:
+        return; // can only parse the above types
     }
-    const sectionElement = section.renderNode.element;
+  }
 
-    // Turn an element node into a markup
-    const markupFromNode = (node) => {
-      if (Markup.isValidElement(node)) {
-        let tagName = node.tagName;
-        let attributes = getAttributesArray(node);
+  reparseMarkupSection(section, renderTree) {
+    return this._reparseSectionContainingMarkers(section, renderTree);
+  }
 
-        return this.builder.createMarkup(tagName, attributes);
-      }
-    };
+  reparseListItem(listItem, renderTree) {
+    return this._reparseSectionContainingMarkers(listItem, renderTree);
+  }
 
-    // walk up from the textNode until the rootNode, converting each
-    // parentNode into a markup
-    const  collectMarkups = (textNode, rootNode) =>{
-      let markups = [];
-      let currentNode = textNode.parentNode;
-      while (currentNode && currentNode !== rootNode) {
-        let markup = markupFromNode(currentNode);
-        if (markup) {
-          markups.push(markup);
-        }
+  reparseListSection(listSection, renderTree) {
+    listSection.items.forEach(li => this.reparseListItem(li, renderTree));
+  }
 
-        currentNode = currentNode.parentNode;
-      }
-      return markups;
-    };
-
+  _reparseSectionContainingMarkers(section, renderTree) {
+    const element = section.renderNode.element;
     let seenRenderNodes = [];
     let previousMarker;
 
-    walkTextNodes(sectionElement, (textNode) => {
-      const text = sanitizeText(textNode.textContent);
-      let markups = collectMarkups(textNode, sectionElement);
+    walkTextNodes(element, (textNode) => {
+      const text = textNode.textContent;
+      let markups = this.collectMarkups(textNode, element);
 
       let marker;
 
@@ -90,24 +105,14 @@ export default class PostParser {
       } else {
         marker = this.builder.createMarker(text, markups);
 
-        // create a cleaned render node to account for the fact that this
-        // render node comes from already-displayed DOM
-        // FIXME this should be cleaner
         renderNode = renderTree.buildRenderNode(marker);
         renderNode.element = textNode;
         renderNode.markClean();
 
-        if (previousMarker) {
-          // insert this marker after the previous one
-          section.markers.insertAfter(marker, previousMarker);
-          section.renderNode.childNodes.insertAfter(renderNode, previousMarker.renderNode);
-        } else {
-          // insert marker at the beginning of the section
-          section.markers.prepend(marker);
-          section.renderNode.childNodes.insertAfter(renderNode, null);
-        }
+        let previousRenderNode = previousMarker && previousMarker.renderNode;
+        section.markers.insertAfter(marker, previousMarker);
+        section.renderNode.childNodes.insertAfter(renderNode, previousRenderNode);
 
-        // find the nextMarkerElement, set it on the render node
         let parentNodeCount = marker.closedMarkups.length;
         let nextMarkerElement = textNode.parentNode;
         while (parentNodeCount--) {
@@ -120,18 +125,12 @@ export default class PostParser {
       previousMarker = marker;
     });
 
-    // remove any nodes that were not marked as seen
-    section.renderNode.childNodes.forEach(childRenderNode => {
-      if (seenRenderNodes.indexOf(childRenderNode) === -1) {
-        childRenderNode.scheduleForRemoval();
+    let renderNode = section.renderNode.childNodes.head;
+    while (renderNode) {
+      if (seenRenderNodes.indexOf(renderNode) === -1) {
+        renderNode.scheduleForRemoval();
       }
-    });
-
-    /** FIXME that we are reparsing and there are no markers should never
-     * happen. We manage the delete key on our own. */
-    if (section.markers.isEmpty) {
-      let marker = this.builder.createBlankMarker();
-      section.markers.append(marker);
+      renderNode = renderNode.next;
     }
   }
 }

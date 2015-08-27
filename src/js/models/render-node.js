@@ -1,5 +1,6 @@
-import LinkedItem from "content-kit-editor/utils/linked-item";
-import LinkedList from "content-kit-editor/utils/linked-list";
+import LinkedItem from 'content-kit-editor/utils/linked-item';
+import LinkedList from 'content-kit-editor/utils/linked-list';
+import { containsNode } from 'content-kit-editor/utils/dom-utils';
 
 export default class RenderNode extends LinkedItem {
   constructor(postNode) {
@@ -10,6 +11,13 @@ export default class RenderNode extends LinkedItem {
     this.postNode = postNode;
     this._childNodes = null;
     this.element = null;
+  }
+  isAttached() {
+    const rootElement = this.renderTree.node.element;
+    if (!this.element) {
+      throw new Error('Cannot check if a renderNode is attached without an element.');
+    }
+    return containsNode(rootElement, this.element);
   }
   get childNodes() {
     if (!this._childNodes) {

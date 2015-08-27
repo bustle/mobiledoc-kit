@@ -56,10 +56,16 @@ function commonItemLength(listA, listB) {
   return offset;
 }
 
+// return new array without falsy items like ruby's `compact`
+function compact(enumerable) {
+  return filter(enumerable, i => !!i);
+}
+
 export {
   detect,
   forEach,
   any,
   filter,
-  commonItemLength
+  commonItemLength,
+  compact
 };

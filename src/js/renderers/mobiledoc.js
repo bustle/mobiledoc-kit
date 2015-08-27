@@ -1,12 +1,19 @@
 import {visit, visitArray, compile} from "../utils/compiler";
 import { POST_TYPE } from "../models/post";
 import { MARKUP_SECTION_TYPE } from "../models/markup-section";
+import { LIST_SECTION_TYPE } from "../models/list-section";
+import { LIST_ITEM_TYPE } from "../models/list-item";
 import { IMAGE_SECTION_TYPE } from "../models/image";
 import { MARKER_TYPE } from "../models/marker";
 import { MARKUP_TYPE } from "../models/markup";
 import { CARD_TYPE } from "../models/card";
 
-export const MOBILEDOC_VERSION = '0.1';
+export const MOBILEDOC_VERSION = '0.2.0';
+
+export const MOBILEDOC_MARKUP_SECTION_TYPE = 1;
+export const MOBILEDOC_IMAGE_SECTION_TYPE = 2;
+export const MOBILEDOC_LIST_SECTION_TYPE = 3;
+export const MOBILEDOC_CARD_SECTION_TYPE = 10;
 
 let visitor = {
   [POST_TYPE](node, opcodes) {
@@ -15,6 +22,14 @@ let visitor = {
   },
   [MARKUP_SECTION_TYPE](node, opcodes) {
     opcodes.push(['openMarkupSection', node.tagName]);
+    visitArray(visitor, node.markers, opcodes);
+  },
+  [LIST_SECTION_TYPE](node, opcodes) {
+    opcodes.push(['openListSection', node.tagName]);
+    visitArray(visitor, node.items, opcodes);
+  },
+  [LIST_ITEM_TYPE](node, opcodes) {
+    opcodes.push(['openListItem']);
     visitArray(visitor, node.markers, opcodes);
   },
   [IMAGE_SECTION_TYPE](node, opcodes) {
@@ -43,13 +58,21 @@ let postOpcodeCompiler = {
   },
   openMarkupSection(tagName) {
     this.markers = [];
-    this.sections.push([1, tagName, this.markers]);
+    this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers]);
+  },
+  openListSection(tagName) {
+    this.items = [];
+    this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items]);
+  },
+  openListItem() {
+    this.markers = [];
+    this.items.push(this.markers);
   },
   openImageSection(url) {
-    this.sections.push([2, url]);
+    this.sections.push([MOBILEDOC_IMAGE_SECTION_TYPE, url]);
   },
   openCardSection(name, payload) {
-    this.sections.push([10, name, payload]);
+    this.sections.push([MOBILEDOC_CARD_SECTION_TYPE, name, payload]);
   },
   openPost() {
     this.markerTypes = [];

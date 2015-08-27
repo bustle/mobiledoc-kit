@@ -17,7 +17,7 @@ module('Unit: Parser: SectionParser', {
 });
 
 test('#parse parses simple dom', (assert) => {
-  let element = Helpers.dom.makeDOM(t =>
+  let element = Helpers.dom.build(t =>
     t('p', {}, [
       t.text('hello there'),
       t('b', {}, [
@@ -37,7 +37,7 @@ test('#parse parses simple dom', (assert) => {
 });
 
 test('#parse parses nested markups', (assert) => {
-  let element = Helpers.dom.makeDOM(t =>
+  let element = Helpers.dom.build(t =>
     t('p', {}, [
       t('b', {}, [
         t.text('i am bold'),
@@ -63,7 +63,7 @@ test('#parse parses nested markups', (assert) => {
 });
 
 test('#parse ignores non-markup elements like spans', (assert) => {
-  let element = Helpers.dom.makeDOM(t =>
+  let element = Helpers.dom.build(t =>
     t('p', {}, [
       t('span', {}, [
         t.text('i was in span')
@@ -80,7 +80,7 @@ test('#parse ignores non-markup elements like spans', (assert) => {
 });
 
 test('#parse reads attributes', (assert) => {
-  let element = Helpers.dom.makeDOM(t =>
+  let element = Helpers.dom.build(t =>
     t('p', {}, [
       t('a', {href: 'google.com'}, [
         t.text('i am a link')
@@ -96,7 +96,7 @@ test('#parse reads attributes', (assert) => {
 });
 
 test('#parse joins contiguous text nodes separated by non-markup elements', (assert) => {
-  let element = Helpers.dom.makeDOM(t =>
+  let element = Helpers.dom.build(t =>
     t('p', {}, [
       t('span', {}, [
         t.text('span 1')

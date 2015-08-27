@@ -3,7 +3,7 @@ import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
 
-const { test, module } = QUnit;
+const { test, module } = Helpers;
 
 let fixture, editor, editorElement;
 const mobileDocWith1Section = {
@@ -282,28 +282,33 @@ test('keystroke of delete when cursor is after only char in only marker of secti
   assert.hasElement('#editor p:eq(0):contains(X)', 'text is added back to section');
 });
 
-Helpers.skipInPhantom('keystroke of character in empty section adds character, moves cursor', (assert) => {
+test('keystroke of character in empty section adds character, moves cursor', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWithNoCharacter});
   editor.render(editorElement);
   const getTextNode = () => editor.element.
-                                  firstChild. // section
-                                  firstChild; // marker
+                                  childNodes[0]. // section
+                                  childNodes[0]; // marker
 
   let textNode = getTextNode();
   assert.ok(!!textNode, 'precond - gets text node');
   Helpers.dom.moveCursorTo(textNode, 0);
 
-  const key = "M";
-  const keyCode = key.charCodeAt(0);
-  Helpers.dom.triggerKeyEvent(document, 'keydown', keyCode, key);
+  const letter = 'M';
+  Helpers.dom.insertText(letter);
 
-  textNode = getTextNode();
-  assert.equal(textNode.textContent, key, 'adds character');
-  assert.equal(textNode.textContent.length, 1);
+  assert.equal(getTextNode().textContent, letter, 'adds character');
+  assert.equal(getTextNode().textContent.length, 1);
 
   assert.deepEqual(Helpers.dom.getCursorPosition(),
-                  {node: textNode, offset: 1},
-                  `cursor moves to end of ${key} text node`);
+                  {node: getTextNode(), offset: 1},
+                  `cursor moves to end of ${letter} text node`);
+
+  const otherLetter = 'X';
+  Helpers.dom.insertText(otherLetter);
+
+  assert.equal(getTextNode().textContent, `${letter}${otherLetter}`,
+               'adds character in the correct spot');
+  assert.equal(getTextNode().textContent.length, letter.length + otherLetter.length);
 });
 
 test('keystroke of delete at start of section joins with previous section', (assert) => {
