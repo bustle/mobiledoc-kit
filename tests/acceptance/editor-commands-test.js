@@ -60,6 +60,32 @@ test('highlight text, click "bold" button bolds text', (assert) => {
   });
 });
 
+test('highlight text, click "bold", type more text, re-select text, bold button is active', (assert) => {
+  let done = assert.async();
+
+  setTimeout(() => {
+    Helpers.toolbar.clickButton(assert, 'bold');
+    assert.hasElement('#editor strong:contains(IS A)');
+
+    let boldTag = $('#editor strong:contains(IS A)')[0];
+    let textNode = boldTag.childNodes[0];
+    assert.equal(textNode.textContent, 'IS A', 'precond - correct node');
+
+    Helpers.dom.moveCursorTo(textNode, 'IS'.length);
+    Helpers.dom.insertText('X');
+
+    assert.hasElement('strong:contains(ISX A)', 'adds text to bold');
+
+    Helpers.dom.selectText('ISX A', editorElement);
+    Helpers.dom.triggerEvent(document, 'mouseup');
+
+    setTimeout(() => {
+      Helpers.toolbar.assertActiveButton(assert, 'bold');
+      done();
+    });
+  });
+});
+
 test('highlight text, click "heading" button turns text into h2 header', (assert) => {
   const done = assert.async();
 
