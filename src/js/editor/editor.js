@@ -74,6 +74,13 @@ const defaults = {
   html: null
 };
 
+function runCallbacks(callbacks, args) {
+  let i;
+  for (i=0;i<callbacks.length;i++) {
+    callbacks[i].apply(null, args);
+  }
+}
+
 function bindContentEditableTypingListeners(editor) {
   // On 'PASTE' sanitize and insert
   editor.addEventListener(editor.element, 'paste', function(e) {
@@ -230,6 +237,10 @@ class Editor {
 
     this.builder = new PostNodeBuilder();
 
+    this._didUpdatePostCallbacks = [];
+    this._willRenderCallbacks = [];
+    this._didRenderCallbacks = [];
+
     // FIXME: This should merge onto this.options
     mergeWithOptions(this, defaults, options);
 
@@ -275,7 +286,9 @@ class Editor {
       postRenderNode.markDirty();
     }
 
+    runCallbacks(this._willRenderCallbacks, []);
     this._renderer.render(this._renderTree);
+    runCallbacks(this._didRenderCallbacks, []);
   }
 
   render(element) {
@@ -319,6 +332,9 @@ class Editor {
       showForTag: 'a'
     }));
 
+    // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
+    // postEditor.
+    this.run(() => {});
     this.rerender();
 
     if (this.autofocus) {
@@ -456,6 +472,9 @@ class Editor {
     this._reparseCurrentSection();
     this._removeDetachedSections();
 
+    // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
+    // postEditor.
+    this.run(() => {});
     this.rerender();
     this.trigger('update');
 
@@ -598,8 +617,21 @@ class Editor {
   run(callback) {
     let postEditor = new PostEditor(this);
     let result = callback(postEditor);
+    runCallbacks(this._didUpdatePostCallbacks, [postEditor]);
     postEditor.complete();
     return result;
+  }
+
+  didUpdatePost(callback) {
+    this._didUpdatePostCallbacks.push(callback);
+  }
+
+  willRender(callback) {
+    this._willRenderCallbacks.push(callback);
+  }
+
+  didRender(callback) {
+    this._didRenderCallbacks.push(callback);
   }
 }
 

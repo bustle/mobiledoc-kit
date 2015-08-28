@@ -297,7 +297,7 @@ function bootEditor(element, mobiledoc) {
     ContentKitDemo.syncCodePane(editor);
   }
 
-  editor.on('update', sync);
+  editor.willRender(sync);
   sync();
 }
 

@@ -58,6 +58,75 @@ test('rendering an editor adds EDITOR_ELEMENT_CLASS_NAME if not there', (assert)
   assert.ok(hasClass('abc') && hasClass('def'), 'preserves existing class names');
 });
 
+test('editor fires lifecycle hooks', (assert) => {
+  assert.expect(4);
+  let didCallUpdatePost, didCallWillRender, didCallDidRender;
+  editor = new Editor();
+  editor.didUpdatePost(postEditor => {
+    assert.ok(postEditor, 'Post editor provided');
+    assert.ok(!didCallWillRender && !didCallDidRender,
+              'didUpdatePost called before render hooks');
+    didCallUpdatePost = true;
+  });
+  editor.willRender(() => {
+    assert.ok(didCallUpdatePost && !didCallDidRender,
+              'willRender called between didUpdatePost, didRender');
+    didCallWillRender = true;
+  });
+  editor.didRender(() => {
+    assert.ok(didCallUpdatePost && didCallWillRender,
+              'didRender called last');
+    didCallDidRender = true;
+  });
+  editor.render(editorElement);
+});
+
+test('editor fires lifecycle hooks for edit', (assert) => {
+  assert.expect(4);
+  editor = new Editor();
+  editor.render(editorElement);
+
+  let didCallUpdatePost, didCallWillRender, didCallDidRender;
+  editor.didUpdatePost(postEditor => {
+    assert.ok(postEditor, 'Post editor provided');
+    assert.ok(!didCallWillRender && !didCallDidRender,
+              'didUpdatePost called before render hooks');
+    didCallUpdatePost = true;
+  });
+  editor.willRender(() => {
+    assert.ok(didCallUpdatePost && !didCallDidRender,
+              'willRender called between didUpdatePost, didRender');
+    didCallWillRender = true;
+  });
+  editor.didRender(() => {
+    assert.ok(didCallUpdatePost && didCallWillRender,
+              'didRender called last');
+    didCallDidRender = true;
+  });
+
+  editor.run(postEditor => {
+    postEditor.removeSection(editor.post.sections.head);
+  });
+});
+
+test('editor fires lifecycle hooks for noop edit', (assert) => {
+  assert.expect(1);
+  editor = new Editor();
+  editor.render(editorElement);
+
+  editor.didUpdatePost(postEditor => {
+    assert.ok(postEditor, 'Post editor provided');
+  });
+  editor.willRender(() => {
+    assert.ok(false, 'willRender should not be called');
+  });
+  editor.didRender(() => {
+    assert.ok(false, 'didRender should not be called');
+  });
+
+  editor.run(() => {});
+});
+
 test('editor fires update event', (assert) => {
   assert.expect(2);
   let done = assert.async();
