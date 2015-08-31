@@ -57,14 +57,7 @@ const defaults = {
   textFormatCommands: [
     new LinkCommand()
   ],
-  embedCommands: [
-    new ImageCommand(),
-    new CardCommand()
-  ],
-  autoTypingCommands: [
-    new UnorderedListCommand(),
-    new OrderedListCommand()
-  ],
+  autoTypingCommands: [],
   cards: [],
   cardOptions: {},
   unknownCardHandler: () => {
@@ -182,17 +175,6 @@ function bindDragAndDrop(editor) {
   editor.addEventListener(window, 'drop', function(e) {
     e.preventDefault(); // prevent page from redirecting
   });
-}
-
-function initEmbedCommands(editor) {
-  var commands = editor.embedCommands;
-  if(commands) {
-    editor.addView(new EmbedIntent({
-      editorContext: editor,
-      commands: commands,
-      rootElement: editor.element
-    }));
-  }
 }
 
 function makeButtons(editor) {
@@ -315,7 +297,8 @@ class Editor {
     bindSelectionEvent(this);
     bindKeyListeners(this);
     this.addEventListener(element, 'input', () => this.handleInput());
-    initEmbedCommands(this);
+
+    this._initEmbedCommands();
 
     this.addView(new TextFormatToolbar({
       editor: this,
@@ -385,7 +368,8 @@ class Editor {
           return;
         }
       }
-      cursorSection = postEditor.splitSection(offsets)[1];
+      const headPosition = offsets.head;
+      cursorSection = postEditor.splitSection(headPosition)[1];
     });
     this.cursor.moveToSection(cursorSection);
   }
@@ -636,6 +620,21 @@ class Editor {
 
   didRender(callback) {
     this._didRenderCallbacks.push(callback);
+  }
+
+  _initEmbedCommands() {
+    const commands = [
+      new ImageCommand(),
+      new CardCommand(),
+      new UnorderedListCommand(this),
+      new OrderedListCommand(this)
+    ];
+
+    this.addView(new EmbedIntent({
+      editorContext: this,
+      commands: commands,
+      rootElement: this.element
+    }));
   }
 }
 

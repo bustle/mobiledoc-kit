@@ -7,7 +7,13 @@ import Marker from '../models/marker';
 import Markup from '../models/markup';
 import Card from '../models/card';
 import { normalizeTagName } from '../utils/dom-utils';
-import { DEFAULT_TAG_NAME } from '../models/markup-section';
+import {
+  DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME
+} from '../models/markup-section';
+
+import {
+  DEFAULT_TAG_NAME as DEFAULT_LIST_SECTION_TAG_NAME
+} from '../models/list-section';
 
 export default class PostNodeBuilder {
   constructor() {
@@ -24,11 +30,10 @@ export default class PostNodeBuilder {
   }
 
   createBlankPost() {
-    let blankMarkupSection = this.createBlankMarkupSection('p');
-    return this.createPost([ blankMarkupSection ]);
+    return this.createPost([this.createMarkupSection()]);
   }
 
-  createMarkupSection(tagName=DEFAULT_TAG_NAME, markers=[], isGenerated=false) {
+  createMarkupSection(tagName=DEFAULT_MARKUP_SECTION_TAG_NAME, markers=[], isGenerated=false) {
     tagName = normalizeTagName(tagName);
     const section = new MarkupSection(tagName, markers);
     if (isGenerated) {
@@ -38,13 +43,7 @@ export default class PostNodeBuilder {
     return section;
   }
 
-  createBlankMarkupSection(tagName) {
-    tagName = normalizeTagName(tagName);
-    const blankMarker = this.createBlankMarker();
-    return this.createMarkupSection(tagName, [ blankMarker ]);
-  }
-
-  createListSection(tagName, items=[]) {
+  createListSection(tagName=DEFAULT_LIST_SECTION_TAG_NAME, items=[]) {
     tagName = normalizeTagName(tagName);
     const section = new ListSection(tagName, items);
     section.builder = this;
@@ -72,12 +71,6 @@ export default class PostNodeBuilder {
 
   createMarker(value, markups=[]) {
     const marker = new Marker(value, markups);
-    marker.builder = this;
-    return marker;
-  }
-
-  createBlankMarker() {
-    const marker = new Marker('');
     marker.builder = this;
     return marker;
   }

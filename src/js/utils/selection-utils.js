@@ -3,11 +3,6 @@ import {
   normalizeTagName
 } from './dom-utils';
 
-// TODO: remove, pass in Editor's current block set
-var RootTags = [
-  'p', 'h2', 'h3', 'blockquote', 'ul', 'ol'
-];
-
 var SelectionDirection = {
   LEFT_TO_RIGHT : 1,
   RIGHT_TO_LEFT : 2,
@@ -17,6 +12,28 @@ var SelectionDirection = {
 function clearSelection() {
   // FIXME-IE ensure this works on IE 9. It works on IE10.
   window.getSelection().removeAllRanges();
+}
+
+function comparePosition(selection) {
+  let { anchorNode, focusNode, anchorOffset, focusOffset } = selection;
+  let headNode, tailNode, headOffset, tailOffset;
+
+  const position = anchorNode.compareDocumentPosition(focusNode);
+
+  if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+    headNode = anchorNode; tailNode = focusNode;
+    headOffset = anchorOffset; tailOffset = focusOffset;
+  } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+    headNode = focusNode; tailNode = anchorNode;
+    headOffset = focusOffset; tailOffset = anchorOffset;
+  } else { // same node
+    headNode = anchorNode;
+    tailNode = focusNode;
+    headOffset = Math.min(anchorOffset, focusOffset);
+    tailOffset = Math.max(anchorOffset, focusOffset);
+  }
+
+  return {headNode, headOffset, tailNode, tailOffset};
 }
 
 function getDirectionOfSelection(selection) {
@@ -39,43 +56,9 @@ function getSelectionElement(selection) {
   return node && (node.nodeType === 3 ? node.parentNode : node);
 }
 
-function isSelectionInElement(element) {
-  const selection = window.getSelection();
-  const { rangeCount, anchorNode, focusNode } = selection;
-
-  const range = (rangeCount > 0) && selection.getRangeAt(0);
-  const hasSelection = range && !range.collapsed;
-
-  if (hasSelection) {
-    return containsNode(element, anchorNode) &&
-      containsNode(element, focusNode);
-  } else {
-    return false;
-  }
-}
-
-function getSelectionBlockElement(selection) {
-  selection = selection || window.getSelection();
-  var element = getSelectionElement();
-  let tag = element && normalizeTagName(element.tagName);
-  while (tag && RootTags.indexOf(tag) === -1) {
-    if (element.contentEditable === 'true') {
-      return null; // Stop traversing up dom when hitting an editor element
-    }
-    element = element.parentNode;
-    tag = element.tagName && normalizeTagName(element.tagName);
-  }
-  return element;
-}
-
 function getSelectionTagName() {
   var element = getSelectionElement();
   return element ? normalizeTagName(element.tagName) : null;
-}
-
-function getSelectionBlockTagName() {
-  var element = getSelectionBlockElement();
-  return element ? element.tagName && normalizeTagName(element.tagName) : null;
 }
 
 function tagsInSelection(selection) {
@@ -111,12 +94,11 @@ function selectNode(node) {
 export {
   getDirectionOfSelection,
   getSelectionElement,
-  getSelectionBlockElement,
   getSelectionTagName,
-  getSelectionBlockTagName,
   tagsInSelection,
   restoreRange,
   selectNode,
+  containsNode,
   clearSelection,
-  isSelectionInElement
+  comparePosition
 };

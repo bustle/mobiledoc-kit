@@ -1,43 +1,10 @@
-import { detect } from '../utils/array-utils';
 import {
-  isSelectionInElement,
-  clearSelection
+  containsNode,
+  clearSelection,
+  comparePosition
 } from '../utils/selection-utils';
-
-import { detectParentNode } from '../utils/dom-utils';
 import Position from './cursor/position';
 import Range from './cursor/range';
-
-function findSectionContaining(sections, childNode) {
-  const { result: section } = detectParentNode(childNode, node => {
-    return detect(sections, section => {
-      return section.renderNode.element === node;
-    });
-  });
-  return section;
-}
-
-function comparePosition(selection) {
-  let { anchorNode, focusNode, anchorOffset, focusOffset } = selection;
-  let leftNode, rightNode, leftOffset, rightOffset;
-
-  const position = anchorNode.compareDocumentPosition(focusNode);
-
-  if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
-    leftNode = anchorNode; rightNode = focusNode;
-    leftOffset = anchorOffset; rightOffset = focusOffset;
-  } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
-    leftNode = focusNode; rightNode = anchorNode;
-    leftOffset = focusOffset; rightOffset = anchorOffset;
-  } else { // same node
-    leftNode = anchorNode;
-    rightNode = focusNode;
-    leftOffset = Math.min(anchorOffset, focusOffset);
-    rightOffset = Math.max(anchorOffset, focusOffset);
-  }
-
-  return {leftNode, leftOffset, rightNode, rightOffset};
-}
 
 export default class Cursor {
   constructor(editor) {
@@ -46,61 +13,50 @@ export default class Cursor {
     this.post = editor.post;
   }
 
-  hasSelection() {
-    const parentElement = this.editor.element;
-    return isSelectionInElement(parentElement);
-  }
-
   clearSelection() {
     clearSelection();
   }
 
-  get selection() {
-    return window.getSelection();
+  /**
+   * @return {Boolean} true when there is either a collapsed cursor in the
+   * editor's element or a selection that is contained in the editor's element
+   */
+  hasCursor() {
+    return this._hasCollapsedSelection() || this._hasSelection();
   }
 
-  get sectionOffsets() {
-    const {headSection, headSectionOffset} = this.offsets;
-    return {headSection, headSectionOffset};
+  hasSelection() {
+    return this._hasSelection();
   }
 
+  /*
+   * @return {Range} Cursor#Range object
+   */
   get offsets() {
+    if (!this.hasCursor()) { return {}; }
+
     const { sections } = this.post;
     const { selection } = this;
 
-    if (selection.rangeCount === 0 || !selection.getRangeAt(0)) {
-      return {};
-    }
-
-    let {
-      leftNode, leftOffset, rightNode, rightOffset
+    const {
+      headNode, headOffset, tailNode, tailOffset
     } = comparePosition(selection);
 
-    let headPosition = Position.fromNode(
-      this.renderTree, sections, leftNode, leftOffset
+    const headPosition = Position.fromNode(
+      this.renderTree, sections, headNode, headOffset
     );
-    let tailPosition = Position.fromNode(
-      this.renderTree, sections, rightNode, rightOffset
+    const tailPosition = Position.fromNode(
+      this.renderTree, sections, tailNode, tailOffset
     );
 
     return Range.fromPositions(headPosition, tailPosition);
   }
 
   get activeSections() {
-    const { sections } = this.post;
-    const { selection } = this;
-    const { rangeCount } = selection;
-    const range = rangeCount > 0 && selection.getRangeAt(0);
+    if (!this.hasCursor()) { return []; }
 
-    if (!range) {
-      return [];
-    }
-
-    const { startContainer, endContainer } = range;
-    const headSection = findSectionContaining(sections, startContainer);
-    const tailSection = findSectionContaining(sections, endContainer);
-
-    return sections.readRange(headSection, tailSection);
+    const {head, tail} = this.offsets;
+    return this.post.sections.readRange(head.section, tail.section);
   }
 
   // moves cursor to the start of the section
@@ -109,7 +65,7 @@ export default class Cursor {
     if (marker) {
       this.moveToMarker(marker, offset);
     } else {
-      this.moveToNode(section.renderNode.element, offsetInSection);
+      this._moveToNode(section.renderNode.element, offsetInSection);
     }
   }
 
@@ -119,7 +75,7 @@ export default class Cursor {
     const headElement = headMarker.renderNode.element;
     const tailElement = tailMarker.renderNode.element;
 
-    this.moveToNode(headElement, headOffset, tailElement, tailOffset);
+    this._moveToNode(headElement, headOffset, tailElement, tailOffset);
   }
 
   selectSections(sections) {
@@ -143,20 +99,47 @@ export default class Cursor {
     this.moveToMarker(headMarker, headOffset, tailMarker, tailOffset);
   }
 
+  get selection() {
+    return window.getSelection();
+  }
+
   /**
+   * @private
    * @param {textNode} node
    * @param {integer} offset
    * @param {textNode} endNode (default: node)
    * @param {integer} endOffset (default: offset)
    */
-  moveToNode(node, offset=0, endNode=node, endOffset=offset) {
-    let r = document.createRange();
-    r.setStart(node, offset);
-    r.setEnd(endNode, endOffset);
-    const selection = this.selection;
-    if (selection.rangeCount > 0) {
-      selection.removeAllRanges();
-    }
-    selection.addRange(r);
+  _moveToNode(node, offset=0, endNode=node, endOffset=offset) {
+    this.clearSelection();
+
+    const range = document.createRange();
+    range.setStart(node, offset);
+    range.setEnd(endNode, endOffset);
+
+    this.selection.addRange(range);
+  }
+
+  _hasSelection() {
+    const element = this.editor.element;
+    const { _selectionRange } = this;
+    if (!_selectionRange || _selectionRange.collapsed) { return false; }
+
+    return containsNode(element, this.selection.anchorNode) &&
+           containsNode(element, this.selection.focusNode);
+  }
+
+  _hasCollapsedSelection() {
+    const { _selectionRange } = this;
+    if (!_selectionRange) { return false; }
+
+    const element = this.editor.element;
+    return containsNode(element, this.selection.anchorNode);
+  }
+
+  get _selectionRange() {
+    const { selection } = this;
+    if (selection.rangeCount === 0) { return null; }
+    return selection.getRangeAt(0);
   }
 }

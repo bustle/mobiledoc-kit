@@ -1,38 +1,10 @@
 import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
-import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
-const { module } = QUnit;
+const { test, module } = Helpers;
 
 let fixture, editor, editorElement;
-const mobileDocWith1Section = {
-  version: MOBILEDOC_VERSION,
-  sections: [
-    [],
-    [
-      [1, "P", [
-        [[], 0, "only section"]
-      ]]
-    ]
-  ]
-};
-const mobileDocWith3Sections = {
-  version: MOBILEDOC_VERSION,
-  sections: [
-    [],
-    [
-      [1, "P", [
-        [[], 0, "first section"]
-      ]],
-      [1, "P", [
-        [[], 0, ""]
-      ]],
-      [1, "P", [
-        [[], 0, "third section"]
-      ]]
-    ]
-  ]
-};
+let mobiledocWith1Section, mobiledocWith3Sections;
 
 module('Acceptance: Embed intent', {
   beforeEach() {
@@ -40,6 +12,18 @@ module('Acceptance: Embed intent', {
     editorElement = document.createElement('div');
     editorElement.setAttribute('id', 'editor');
     fixture.appendChild(editorElement);
+
+    const build = Helpers.mobiledoc.build;
+    mobiledocWith1Section = build(({post, markupSection, marker}) =>
+      post([markupSection('p', [marker('only section')])])
+    );
+    mobiledocWith3Sections = build(({post, markupSection, marker}) =>
+      post([
+        markupSection('p', [marker('first section')]),
+        markupSection('p'),
+        markupSection('p', [marker('third section')])
+      ])
+    );
   },
 
   afterEach() {
@@ -47,8 +31,8 @@ module('Acceptance: Embed intent', {
   }
 });
 
-Helpers.skipInPhantom('typing inserts empty section and displays embed-intent button', (assert) => {
-  editor = new Editor({mobiledoc: mobileDocWith1Section});
+test('typing inserts empty section and displays embed-intent button', (assert) => {
+  editor = new Editor({mobiledoc: mobiledocWith1Section});
   editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
   assert.hasNoElement('.ck-embed-intent', 'embed intent is hidden');
@@ -57,20 +41,21 @@ Helpers.skipInPhantom('typing inserts empty section and displays embed-intent bu
   Helpers.dom.triggerEnter(editor);
   Helpers.dom.triggerEvent(editorElement, 'keyup');
 
-  assert.ok($('.ck-embed-intent').is(':visible'), 'embed intent appears');
+  assert.hasElement('.ck-embed-intent');
 });
 
-Helpers.skipInPhantom('add image card between sections', (assert) => {
-  editor = new Editor({mobiledoc: mobileDocWith3Sections});
+test('add image card between sections', (assert) => {
+  const done = assert.async();
+
+  editor = new Editor({mobiledoc: mobiledocWith3Sections});
   editor.render(editorElement);
   assert.equal(editorElement.childNodes.length, 3, 'has 3 paragraphs to start');
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[1].firstChild, 0);
   Helpers.dom.triggerEvent(editorElement.childNodes[1].firstChild, 'click');
 
-  let done = assert.async();
   setTimeout(() => { // delay due to internal async
-    assert.ok($('.ck-embed-intent').is(':visible'), 'embed intent appears');
+    assert.hasElement('.ck-embed-intent', 'embed intent appears');
 
     Helpers.dom.triggerEvent($('.ck-embed-intent-btn')[0], 'click');
     Helpers.dom.triggerEvent($('button[title=image]')[0], 'click');
@@ -80,6 +65,43 @@ Helpers.skipInPhantom('add image card between sections', (assert) => {
     assert.equal(editor.element.childNodes[0].tagName, 'P');
     assert.equal(editor.element.childNodes[1].tagName, 'DIV');
     assert.equal(editor.element.childNodes[2].tagName, 'P');
+
     done();
-  }, 3);
+  });
+});
+
+test('inserting unordered list at cursor', (assert) => {
+  const done = assert.async();
+  const build = Helpers.mobiledoc.build;
+  const mobiledoc = build(({post, markupSection}) =>
+    post([markupSection()])
+  );
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor p', 'precond - has p');
+  const p = $('#editor p')[0];
+  Helpers.dom.moveCursorTo(p.childNodes[0], 0);
+  Helpers.dom.triggerEvent(document, 'click'); // make embed intent show
+
+  setTimeout(() => {
+    assert.hasElement('.ck-embed-intent-btn');
+    Helpers.dom.triggerEvent($('.ck-embed-intent-btn')[0], 'click'); // make toolbar show
+
+    setTimeout(() => {
+      Helpers.toolbar.assertVisible(assert, 'Unordered List');
+      Helpers.toolbar.clickButton(assert, 'Unordered List');
+
+      setTimeout(() => {
+        assert.hasNoElement('#editor p', 'p has been removed');
+        assert.hasElement('#editor ul li', 'adds a ul li');
+        assert.equal($('#editor ul li').text(), '', 'li has no text');
+
+        Helpers.dom.insertText('X');
+        assert.hasElement('#editor ul li:contains(X)', 'inserts text at correct spot');
+
+        done();
+      });
+    });
+  });
 });

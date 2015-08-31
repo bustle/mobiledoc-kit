@@ -1,15 +1,11 @@
 import ListCommand from './list';
-import { inherit } from 'content-kit-utils';
 
-function UnorderedListCommand() {
-  ListCommand.call(this, {
-    name: 'list',
-    tag: 'ul',
-    action: 'insertUnorderedList'
-  });
+export default class UnorderedListCommand extends ListCommand {
+  constructor(editor) {
+    super(editor, {
+      name: 'Unordered List',
+      tag: 'ul',
+      button: '<i>ul</i>'
+    });
+  }
 }
-inherit(UnorderedListCommand, ListCommand);
-
-UnorderedListCommand.prototype.autoFormatRegex =  /^[-*]\s/;
-
-export default UnorderedListCommand;

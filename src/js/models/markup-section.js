@@ -42,6 +42,7 @@ const MarkupSection = class MarkupSection extends Markerable {
 
     return this._redistributeMarkers(beforeSection, afterSection, marker, offset);
   }
+
 };
 
 export default MarkupSection;

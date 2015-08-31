@@ -1,15 +1,11 @@
 import ListCommand from './list';
-import { inherit } from 'content-kit-utils';
 
-function OrderedListCommand() {
-  ListCommand.call(this, {
-    name: 'ordered list',
-    tag: 'ol',
-    action: 'insertOrderedList'
-  });
+export default class UnorderedListCommand extends ListCommand {
+  constructor(editor) {
+    super(editor, {
+      name: 'Ordered List',
+      tag: 'ol',
+      button: '<i>ol</i>'
+    });
+  }
 }
-inherit(OrderedListCommand, ListCommand);
-
-OrderedListCommand.prototype.autoFormatRegex = /^1\.\s/;
-
-export default OrderedListCommand;
