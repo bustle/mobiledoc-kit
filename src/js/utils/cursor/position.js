@@ -4,6 +4,8 @@ import { MARKUP_SECTION_TYPE } from 'content-kit-editor/models/markup-section';
 import { LIST_ITEM_TYPE } from 'content-kit-editor/models/list-item';
 import { MARKER_TYPE } from 'content-kit-editor/models/marker';
 
+// FIXME This assumes that all sections are children of the Post,
+// but that isn't a valid assumption.
 function findSectionContaining(sections, childNode) {
   const { result: section } = detectParentNode(childNode, node => {
     return detect(sections, section => {
@@ -19,27 +21,22 @@ function findSectionFromNode(node, renderTree) {
 }
 
 const Position = class Position {
-  constructor(section, offsetInSection=0) {
-    let marker = null,
-        offsetInMarker = null;
-
-    if (section !== null && offsetInSection !== null) {
-      let markerPosition = section.markerPositionAtOffset(
-        offsetInSection
-      );
-      marker = markerPosition.marker;
-      offsetInMarker = markerPosition.offset;
-    }
-
+  constructor(section, offset=0) {
     this.section = section;
-    this.offsetInSection = offsetInSection;
-    this.marker = marker;
-    this.offsetInMarker = offsetInMarker;
+    this.offset = offset;
+  }
+
+  get marker() {
+    return this.markerPosition.marker;
+  }
+
+  get offsetInMarker() {
+    return this.markerPosition.offset;
   }
 
   isEqual(position) {
     return this.section === position.section &&
-           this.offsetInSection === position.offsetInSection;
+           this.offset  === position.offset;
   }
 
   static fromNode(renderTree, sections, node, offsetInNode) {
@@ -61,7 +58,7 @@ const Position = class Position {
         case MARKER_TYPE:
           let marker = renderNode.postNode;
           section = marker.section;
-          offsetInSection = marker.offsetInParent(offsetInNode);
+          offsetInSection = section.offsetOfMarker(marker, offsetInNode);
           break;
       }
     }
@@ -77,6 +74,15 @@ const Position = class Position {
 
     return new Position(section, offsetInSection);
   }
+
+  /**
+   * @private
+   */
+  get markerPosition() {
+    if (!this.section) { throw new Error('cannot get markerPosition without a section'); }
+    return this.section.markerPositionAtOffset(this.offset);
+  }
+
 };
 
 export default Position;

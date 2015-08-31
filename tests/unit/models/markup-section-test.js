@@ -80,8 +80,8 @@ test('#splitMarker does not remove an existing marker when the offset and endOff
 });
 
 test('#isBlank returns true if the text length is zero for two markers', (assert) => {
-  const m1 = builder.createBlankMarker();
-  const m2 = builder.createBlankMarker();
+  const m1 = builder.createMarker('');
+  const m2 = builder.createMarker('');
   const s = builder.createMarkupSection('p', [m1,m2]);
   assert.ok(s.isBlank, 'section with two blank markers is blank');
 });

@@ -12,10 +12,10 @@ export default class Range {
     return this.tail.section;
   }
   get headSectionOffset() {
-    return this.head.offsetInSection;
+    return this.head.offset;
   }
   get tailSectionOffset() {
-    return this.tail.offsetInSection;
+    return this.tail.offset;
   }
   get isCollapsed() {
     return this.head.isEqual(this.tail);

@@ -30,8 +30,8 @@ test('can render an editor via dom node reference', (assert) => {
   assert.ok(editor.post);
   assert.equal(editor.post.sections.length, 1);
   assert.equal(editor.post.sections.head.tagName, 'p');
-  assert.equal(editor.post.sections.head.markers.length, 1);
-  assert.equal(editor.post.sections.head.markers.head.value, '');
+  assert.equal(editor.post.sections.head.markers.length, 0);
+  assert.equal(editor.post.sections.head.text, '');
 });
 
 test('creating an editor with DOM node throws', (assert) => {

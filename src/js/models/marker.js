@@ -50,32 +50,6 @@ const Marker = class Marker extends LinkedItem {
     this.markups.push(markup);
   }
 
-  // find the value of the absolute offset in this marker's parent section
-  offsetInParent(offset) {
-    const parent = this.section;
-    const markers = parent.markers;
-
-    let foundMarker = false;
-    let parentOffset = 0;
-    let marker = markers.head;
-    var length;
-    while (marker && !foundMarker) {
-      length = marker.length;
-      if (marker === this) {
-        foundMarker = true;
-        length = offset;
-      }
-
-      parentOffset += length;
-      marker = marker.next;
-    }
-
-    if (!foundMarker) {
-      throw new Error('offsetInParent could not find offset for marker');
-    }
-    return parentOffset;
-  }
-
   removeMarkup(markup) {
     const index = this.markups.indexOf(markup);
     if (index !== -1) {

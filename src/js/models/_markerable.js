@@ -35,6 +35,31 @@ export default class Markerable extends LinkedItem {
   }
 
   /**
+   * @param {Marker}
+   * @param {Number} markerOffset The offset relative to the start of the marker
+   *
+   * @return {Number} The offset relative to the start of this section
+   */
+  offsetOfMarker(marker, markerOffset) {
+    if (marker.section !== this) {
+      throw new Error(`Cannot get offsetOfMarker for marker that is not child of this`);
+    }
+    // FIXME it is possible, when we get a cursor position before having finished reparsing,
+    // for markerOffset to be > marker.length. We shouldn't rely on this functionality.
+
+    let offset = 0;
+    let currentMarker = this.markers.head;
+    while (currentMarker && currentMarker !== marker.next) {
+      let length = currentMarker === marker ? markerOffset :
+                                              currentMarker.length;
+      offset += length;
+      currentMarker = currentMarker.next;
+    }
+
+    return offset;
+  }
+
+  /**
    * Splits the marker at the offset, filters empty markers from the result,
    * and replaces this marker with the new non-empty ones
    * @param {Marker} marker the marker to split
@@ -43,11 +68,6 @@ export default class Markerable extends LinkedItem {
   splitMarker(marker, offset, endOffset=marker.length) {
     const newMarkers = filter(marker.split(offset, endOffset), m => !m.isEmpty);
     this.markers.splice(marker, 1, newMarkers);
-    if (this.markers.length === 0) {
-      let blankMarker = this.builder.createBlankMarker();
-      this.markers.append(blankMarker);
-      newMarkers.push(blankMarker);
-    }
     return newMarkers;
   }
 
@@ -73,6 +93,11 @@ export default class Markerable extends LinkedItem {
 
   splitAtMarker(/*marker, offset=0*/) {
     throw new Error('splitAtMarker must be implemented by sub-class');
+  }
+
+  splitAtPosition(position) {
+    const {marker, offsetInMarker} = position;
+    return this.splitAtMarker(marker, offsetInMarker);
   }
 
   markerPositionAtOffset(offset) {

@@ -2,7 +2,7 @@ import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
-const { test, module } = QUnit;
+const { test, module } = Helpers;
 
 let fixture, editor, editorElement;
 

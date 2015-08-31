@@ -1,40 +1,36 @@
 import TextFormatCommand from './text-format';
-import { getSelectionBlockElement, selectNode, getSelectionTagName } from '../utils/selection-utils';
-import { inherit } from 'content-kit-utils';
 
-function ListCommand(options) {
-  TextFormatCommand.call(this, options);
+export default class ListCommand extends TextFormatCommand {
+  constructor(editor, options) {
+    super(options);
+    this.editor = editor;
+  }
+
+  isActive() {
+    return false;
+  }
+
+  exec() {
+    const { editor } = this,
+          { cursor } = editor;
+
+    const { head: {section:currentSection} } = cursor.offsets;
+
+    const listItem = editor.run(postEditor => {
+      const { builder } = postEditor;
+      const tagName = this.tag;
+      const listSection = builder.createListSection(tagName);
+      const listItem = builder.createListItem();
+      listSection.items.append(listItem);
+
+      postEditor.replaceSection(currentSection, listSection);
+      return listItem;
+    });
+
+    editor.cursor.moveToSection(listItem);
+  }
+
+  unexec() {
+    throw new Error('Cannot unexec a ListCommand');
+  }
 }
-inherit(ListCommand, TextFormatCommand);
-
-ListCommand.prototype.exec = function() {
-  ListCommand._super.prototype.exec.call(this);
-
-  // After creation, lists need to be unwrapped
-  // TODO: eventually can remove this when direct model manipulation is ready
-  var listElement = getSelectionBlockElement();
-  var wrapperNode = listElement.parentNode;
-  if (wrapperNode.firstChild === listElement) {
-    var editorNode = wrapperNode.parentNode;
-    editorNode.insertBefore(listElement, wrapperNode);
-    editorNode.removeChild(wrapperNode);
-    selectNode(listElement);
-  }
-};
-
-ListCommand.prototype.checkAutoFormat = function(node) {
-  // Creates unordered lists when node starts with '- '
-  // or ordered list if node starts with '1. '
-  var regex = this.autoFormatRegex, text;
-  if (node && regex) {
-    text = node.textContent;
-    if ('li' !== getSelectionTagName() && regex.test(text)) {
-      this.exec();
-      window.getSelection().anchorNode.textContent = text.replace(regex, '');
-      return true;
-    }
-  }
-  return false;
-};
-
-export default ListCommand;

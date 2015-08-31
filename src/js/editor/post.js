@@ -252,7 +252,7 @@ class PostEditor {
    */
   _deleteForwardFrom({marker, offset}) {
     const nextCursorSection = marker.section,
-          nextCursorOffset = marker.offsetInParent(offset);
+          nextCursorOffset = nextCursorSection.offsetOfMarker(marker, offset);
 
     if (offset === marker.length) {
       const nextMarker = marker.next;
@@ -307,7 +307,7 @@ class PostEditor {
    */
   _deleteBackwardFrom({marker, offset}) {
     let nextCursorSection = marker.section,
-        nextCursorOffset = marker.offsetInParent(offset);
+        nextCursorOffset = nextCursorSection.offsetOfMarker(marker, offset);
 
     if (offset === 0) {
       const prevMarker = marker.prev;
@@ -336,7 +336,7 @@ class PostEditor {
             nextCursorSection = prevSection;
 
             if (beforeMarker) {
-              nextCursorOffset = beforeMarker.offsetInParent(beforeMarker.length);
+              nextCursorOffset = prevSection.offsetOfMarker(beforeMarker, beforeMarker.length);
             } else {
               nextCursorOffset = 0;
             }
@@ -491,20 +491,16 @@ class PostEditor {
    *
    * The return value will be the two new sections. One or both of these
    * sections can be blank (contain only a blank marker), for example if the
-   * headMaOffset is 0.
+   * headMarkerOffset is 0.
    *
-   * @method splitMarkers
-   * @param {Object} markerRange Object with offsets, {headSection, headSectionOffset}
-   * @return {Array} of new sections, one for the first half and one for the second
+   * @method splitSection
+   * @param {Position} position
+   * @return {Array} new sections, one for the first half and one for the second
    * @public
    */
-  splitSection({headSection: section, headSectionOffset}) {
-    let {
-      marker: headMarker,
-      offset: headMarkerOffset
-    } = section.markerPositionAtOffset(headSectionOffset);
-
-    const [beforeSection, afterSection] = section.splitAtMarker(headMarker, headMarkerOffset);
+  splitSection(position) {
+    const section = position.section;
+    const [beforeSection, afterSection] = section.splitAtPosition(position);
     this._coalesceMarkers(beforeSection);
     this._coalesceMarkers(afterSection);
 
@@ -528,6 +524,14 @@ class PostEditor {
 
     // FIXME we must return 2 sections because other code expects this to always return 2
     return newSections;
+  }
+
+  /**
+   * @public
+   * FIXME: add tests for this
+   */
+  replaceSection(section, newSection) {
+    return this._replaceSection(section, [newSection]);
   }
 
   _replaceSection(section, newSections) {

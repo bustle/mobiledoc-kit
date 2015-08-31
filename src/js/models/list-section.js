@@ -1,10 +1,11 @@
 import { normalizeTagName } from '../utils/dom-utils';
 import LinkedList from '../utils/linked-list';
 
+export const DEFAULT_TAG_NAME = 'ul';
 export const LIST_SECTION_TYPE = 'list-section';
 
 export default class ListSection {
-  constructor(tagName, items=[]) {
+  constructor(tagName=DEFAULT_TAG_NAME, items=[]) {
     this.tagName = normalizeTagName(tagName);
     this.type = LIST_SECTION_TYPE;
 
