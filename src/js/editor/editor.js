@@ -354,14 +354,14 @@ class Editor {
       this.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
     } else {
       let results = this.run(postEditor => {
-        const {headMarker, headMarkerOffset} = offsets;
+        const {headSection, headSectionOffset} = offsets;
         const key = Key.fromEvent(event);
 
-        const deletePosition = {marker: headMarker, offset: headMarkerOffset},
+        const deletePosition = {section: headSection, offset: headSectionOffset},
               direction = key.direction;
         return postEditor.deleteFrom(deletePosition, direction);
       });
-      this.cursor.moveToMarker(results.currentMarker, results.currentOffset);
+      this.cursor.moveToSection(results.currentSection, results.currentOffset);
     }
   }
 
@@ -380,6 +380,10 @@ class Editor {
     this.run((postEditor) => {
       if (this.cursor.hasSelection()) {
         postEditor.deleteRange(offsets);
+        if (offsets.headSection.isBlank) {
+          cursorSection = offsets.headSection;
+          return;
+        }
       }
       cursorSection = postEditor.splitSection(offsets)[1];
     });

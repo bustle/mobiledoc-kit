@@ -1,24 +1,8 @@
 import { detect } from 'content-kit-editor/utils/array-utils';
 import { detectParentNode } from 'content-kit-editor/utils/dom-utils';
-
-// attempts to find a marker by walking up from the childNode
-// and checking to find an element in the renderTree
-// If a marker is found, return the marker's parent.
-// This ensures we get the deepest section when there are nested
-// sections (like ListItem < ListSection)
-// FIXME obviously we would like to do this more declaratively,
-// and not have two ways of finding the current focused section
-function findSectionFromRenderTree(renderTree, childNode) {
-  let currentNode = childNode;
-  while (currentNode) {
-    let renderNode = renderTree.getElementRenderNode(currentNode);
-    if (renderNode) {
-      let marker = renderNode.postNode;
-      return marker.parent;
-    }
-    currentNode = currentNode.parentNode;
-  }
-}
+import { MARKUP_SECTION_TYPE } from 'content-kit-editor/models/markup-section';
+import { LIST_ITEM_TYPE } from 'content-kit-editor/models/list-item';
+import { MARKER_TYPE } from 'content-kit-editor/models/marker';
 
 function findSectionContaining(sections, childNode) {
   const { result: section } = detectParentNode(childNode, node => {
@@ -27,6 +11,11 @@ function findSectionContaining(sections, childNode) {
     });
   });
   return section;
+}
+
+function findSectionFromNode(node, renderTree) {
+  const renderNode = renderTree.getElementRenderNode(node);
+  return renderNode && renderNode.postNode;
 }
 
 const Position = class Position {
@@ -54,24 +43,32 @@ const Position = class Position {
   }
 
   static fromNode(renderTree, sections, node, offsetInNode) {
-    // Only markers are registered into the element/renderNode map
-    let markerRenderNode = renderTree.getElementRenderNode(node);
+    // Sections and markers are registered into the element/renderNode map
+    let renderNode = renderTree.getElementRenderNode(node),
+        section = null,
+        offsetInSection = null;
 
-    let section = null, offsetInSection = null;
-    if (markerRenderNode) {
-      let marker = markerRenderNode.postNode;
-      section = marker.section;
-      offsetInSection = marker.offsetInParent(offsetInNode);
+    if (renderNode) {
+      switch (renderNode.postNode.type) {
+        case MARKUP_SECTION_TYPE:
+          section = renderNode.postNode;
+          offsetInSection = offsetInNode;
+          break;
+        case LIST_ITEM_TYPE:
+          section = renderNode.postNode;
+          offsetInSection = offsetInNode;
+          break;
+        case MARKER_TYPE:
+          let marker = renderNode.postNode;
+          section = marker.section;
+          offsetInSection = marker.offsetInParent(offsetInNode);
+          break;
+      }
     }
 
     if (!section) {
-      // The selection should contain two text nodes, but may contain a P
-      // tag if the section only has a blank br marker or on
-      // Chrome/Safari using shift+<Up arrow> can create a selection with
-      // a tag rather than a text node. This fixes that.
-      // See https://github.com/bustlelabs/content-kit-editor/issues/56
-      section = findSectionFromRenderTree(renderTree, node) ||
-        findSectionContaining(sections, node);
+      section = findSectionFromNode(node.parentNode, renderTree) ||
+                findSectionContaining(sections, node);
 
       if (section) {
         offsetInSection = 0;

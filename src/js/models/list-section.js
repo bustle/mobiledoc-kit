@@ -1,15 +1,12 @@
-import Section from './markup-section';
+import { normalizeTagName } from '../utils/dom-utils';
 import LinkedList from '../utils/linked-list';
 
 export const LIST_SECTION_TYPE = 'list-section';
 
-export default class ListSection extends Section {
+export default class ListSection {
   constructor(tagName, items=[]) {
-    super(tagName);
+    this.tagName = normalizeTagName(tagName);
     this.type = LIST_SECTION_TYPE;
-
-    // remove the inherited `markers` because they do nothing on a ListSection but confuse
-    this.markers = undefined;
 
     this.items = new LinkedList({
       adoptItem: i => i.section = i.parent = this,

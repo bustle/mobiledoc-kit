@@ -4,6 +4,7 @@ import {
   MOBILEDOC_LIST_SECTION_TYPE,
   MOBILEDOC_CARD_SECTION_TYPE
 } from '../renderers/mobiledoc';
+import { filter } from "../utils/array-utils";
 
 /*
  * input mobiledoc: [ markers, elements ]
@@ -27,8 +28,6 @@ export default class MobiledocParser {
 
     if (post.sections.isEmpty) {
       let section = this.builder.createMarkupSection('p');
-      let marker = this.builder.createBlankMarker();
-      section.markers.append(marker);
       post.sections.append(section);
     }
 
@@ -81,10 +80,11 @@ export default class MobiledocParser {
     const section = this.builder.createMarkupSection(tagName);
     post.sections.append(section);
     this.parseMarkers(markers, section);
-    if (section.markers.isEmpty) {
-      let marker = this.builder.createBlankMarker();
-      section.markers.append(marker);
-    }
+    // Strip blank markers after the have been created. This ensures any
+    // markup they include has been correctly populated.
+    filter(section.markers, m => m.isEmpty).forEach(m => {
+      section.markers.remove(m);
+    });
   }
 
   parseListSection([type, tagName, items], post) {

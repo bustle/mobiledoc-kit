@@ -295,4 +295,26 @@ Helpers.skipInPhantom('keystroke of printable character while text is selected d
   });
 });
 
-// test selecting text that includes entire sections deletes the sections
+test('selecting all text across sections and hitting enter deletes and moves cursor to empty section', (assert) => {
+  const done = assert.async();
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.render(editorElement);
+
+  let firstSection = $('#editor p:eq(0)')[0],
+      secondSection = $('#editor p:eq(1)')[0];
+
+  Helpers.dom.selectText('first section', firstSection,
+                         'second section', secondSection);
+
+  Helpers.dom.triggerEnter(editor);
+
+  setTimeout(() => {
+    assert.equal($('#editor p').length, 1, 'single section');
+    assert.equal($('#editor p:eq(0)').text(), '', 'blank text');
+
+    assert.deepEqual(Helpers.dom.getCursorPosition(),
+                    {node: $('#editor p')[0], offset: 0},
+                    'cursor is at start of second section');
+    done();
+  });
+});

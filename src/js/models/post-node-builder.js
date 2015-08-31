@@ -7,6 +7,7 @@ import Marker from '../models/marker';
 import Markup from '../models/markup';
 import Card from '../models/card';
 import { normalizeTagName } from '../utils/dom-utils';
+import { DEFAULT_TAG_NAME } from '../models/markup-section';
 
 export default class PostNodeBuilder {
   constructor() {
@@ -27,7 +28,7 @@ export default class PostNodeBuilder {
     return this.createPost([ blankMarkupSection ]);
   }
 
-  createMarkupSection(tagName, markers=[], isGenerated=false) {
+  createMarkupSection(tagName=DEFAULT_TAG_NAME, markers=[], isGenerated=false) {
     tagName = normalizeTagName(tagName);
     const section = new MarkupSection(tagName, markers);
     if (isGenerated) {

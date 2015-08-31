@@ -106,8 +106,11 @@ export default class Cursor {
   // moves cursor to the start of the section
   moveToSection(section, offsetInSection=0) {
     const {marker, offset} = section.markerPositionAtOffset(offsetInSection);
-    if (!marker) { throw new Error('Cannot move cursor to section without a marker'); }
-    this.moveToMarker(marker, offset);
+    if (marker) {
+      this.moveToMarker(marker, offset);
+    } else {
+      this.moveToNode(section.renderNode.element, offsetInSection);
+    }
   }
 
   // moves cursor to marker

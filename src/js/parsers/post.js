@@ -107,6 +107,7 @@ export default class PostParser {
 
         renderNode = renderTree.buildRenderNode(marker);
         renderNode.element = textNode;
+        renderNode.renderTree.elements.set(textNode, renderNode);
         renderNode.markClean();
 
         let previousRenderNode = previousMarker && previousMarker.renderNode;
