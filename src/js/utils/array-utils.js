@@ -61,11 +61,20 @@ function compact(enumerable) {
   return filter(enumerable, i => !!i);
 }
 
+function reduce(enumerable, callback, initialValue) {
+  let previousValue = initialValue;
+  forEach(enumerable, (val, index) => {
+    previousValue = callback(previousValue, val, index);
+  });
+  return previousValue;
+}
+
 export {
   detect,
   forEach,
   any,
   filter,
   commonItemLength,
-  compact
+  compact,
+  reduce
 };

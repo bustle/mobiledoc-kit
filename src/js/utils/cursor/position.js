@@ -1,6 +1,7 @@
 import { detect } from 'content-kit-editor/utils/array-utils';
 import { detectParentNode } from 'content-kit-editor/utils/dom-utils';
 import { MARKUP_SECTION_TYPE } from 'content-kit-editor/models/markup-section';
+import { LIST_ITEM_TYPE } from 'content-kit-editor/models/list-item';
 import { MARKER_TYPE } from 'content-kit-editor/models/marker';
 
 function findSectionContaining(sections, childNode) {
@@ -10,6 +11,11 @@ function findSectionContaining(sections, childNode) {
     });
   });
   return section;
+}
+
+function findSectionFromNode(node, renderTree) {
+  const renderNode = renderTree.getElementRenderNode(node);
+  return renderNode && renderNode.postNode;
 }
 
 const Position = class Position {
@@ -48,6 +54,10 @@ const Position = class Position {
           section = renderNode.postNode;
           offsetInSection = offsetInNode;
           break;
+        case LIST_ITEM_TYPE:
+          section = renderNode.postNode;
+          offsetInSection = offsetInNode;
+          break;
         case MARKER_TYPE:
           let marker = renderNode.postNode;
           section = marker.section;
@@ -57,7 +67,8 @@ const Position = class Position {
     }
 
     if (!section) {
-      section = findSectionContaining(sections, node);
+      section = findSectionFromNode(node.parentNode, renderTree) ||
+                findSectionContaining(sections, node);
 
       if (section) {
         offsetInSection = 0;

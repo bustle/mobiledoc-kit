@@ -221,14 +221,22 @@ class PostEditor {
         return this._deleteForwardFrom(result);
       }
     } else {
-      if (direction === DIRECTION.BACKWARD && section.prev) {
-        let prevSection = section.prev;
-        prevSection.join(section);
-        prevSection.renderNode.markDirty();
-        this.removeSection(section);
-        this.scheduleRerender();
-        this.scheduleDidUpdate();
-        return { currentSection: prevSection, currentOffset: prevSection.text.length };
+      if (direction === DIRECTION.BACKWARD) {
+        if (isMarkupSection(section) && section.prev) {
+          let prevSection = section.prev;
+          prevSection.join(section);
+          prevSection.renderNode.markDirty();
+          this.removeSection(section);
+          this.scheduleRerender();
+          this.scheduleDidUpdate();
+          return { currentSection: prevSection, currentOffset: prevSection.text.length };
+        } else if (isListItem(section)) {
+          this.scheduleRerender();
+          this.scheduleDidUpdate();
+
+          const results = this._convertListItemToMarkupSection(section);
+          return {currentSection: results.section, currentOffset: results.offset};
+        }
       } else if (section.prev || section.next) {
         let nextSection = section.next || section.post.tail;
         this.removeSection(section);
