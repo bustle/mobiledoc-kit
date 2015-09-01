@@ -47,7 +47,7 @@
     "content-kit-utils": "^0.2.0",
     "jquery": "^2.1.4",
     "mobiledoc-dom-renderer": "^0.1.12",
-    "mobiledoc-html-renderer": "^0.1.6",
+    "mobiledoc-html-renderer": "^0.1.7",
     "testem": "^0.8.4"
   }
 }
