@@ -1,23 +1,37 @@
 import Command from './base';
+import { any } from '../utils/array-utils';
 
 export default class TextFormatCommand extends Command {
-  constructor(options={}) {
+  constructor(editor, options={}) {
     super(options);
-
+    this.editor = editor;
     this.tag = options.tag;
-    this.mappedTags = options.mappedTags || [];
-    if (this.tag) {
-      this.mappedTags.push(this.tag);
-    }
-    this.action = options.action || this.name;
-    this.removeAction = options.removeAction || this.action;
   }
 
-  exec(value) {
-    document.execCommand(this.action, false, value || null);
+  get markup() {
+    if (this._markup) { return this._markup; }
+    const { builder } = this.editor;
+    this._markup = builder.createMarkup(this.tag);
+    return this._markup;
   }
 
-  unexec(value) {
-    document.execCommand(this.removeAction, false, value || null);
+  isActive() {
+    return any(this.editor.activeMarkers, m => m.hasMarkup(this.markup));
+  }
+
+  exec() {
+    const range = this.editor.cursor.offsets;
+    const markers = this.editor.run((postEditor) => {
+      return postEditor.applyMarkupToMarkers(range, this.markup);
+    });
+    this.editor.selectMarkers(markers);
+  }
+
+  unexec() {
+    const range = this.editor.cursor.offsets;
+    const markers = this.editor.run((postEditor) => {
+      return postEditor.removeMarkupFromMarkers(range, this.markup);
+    });
+    this.editor.selectMarkers(markers);
   }
 }

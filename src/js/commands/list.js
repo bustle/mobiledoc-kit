@@ -2,8 +2,7 @@ import TextFormatCommand from './text-format';
 
 export default class ListCommand extends TextFormatCommand {
   constructor(editor, options) {
-    super(options);
-    this.editor = editor;
+    super(editor, options);
   }
 
   isActive() {

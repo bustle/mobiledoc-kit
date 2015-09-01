@@ -1,21 +1,13 @@
 import TextFormatCommand from './text-format';
-import {
-  any
-} from '../utils/array-utils';
+import { any } from '../utils/array-utils';
 
 class FormatBlockCommand extends TextFormatCommand {
   constructor(editor, options={}) {
-    super(options);
-    this.editor = editor;
+    super(editor, options);
   }
 
   isActive() {
-    const editor = this.editor;
-    const activeSections = editor.activeSections;
-
-    return any(activeSections, section => {
-      return any(this.mappedTags, t => section.tagName === t);
-    });
+    return any(this.editor.activeSections, s => s.tagName === this.tag);
   }
 
   exec() {

@@ -1,6 +1,6 @@
 import View from './view';
+import Prompt from './prompt';
 import ToolbarButton from './toolbar-button';
-import { tagsInSelection } from '../utils/selection-utils';
 import { createDiv, swapElements, positionElementToRightOf, positionElementCenteredAbove } from '../utils/element-utils';
 
 var ToolbarDirection = {
@@ -8,36 +8,16 @@ var ToolbarDirection = {
   RIGHT : 2
 };
 
-function selectionContainsButtonsTag(selectedTags, buttonsTags) {
-  return selectedTags.filter(function(tag) {
-    return buttonsTags.indexOf(tag) > -1;
-  }).length;
-}
-
-function updateButtonsForSelection(buttons, selection) {
-  var selectedTags = tagsInSelection(selection);
-  var len = buttons.length;
-  var i, button;
-
-  for (i = 0; i < len; i++) {
-    button = buttons[i];
-    if (selectionContainsButtonsTag(selectedTags, button.command.mappedTags)) {
-      button.setActive();
-    } else {
-      button.setInactive();
-    }
-  }
-}
-
 class Toolbar extends View {
   constructor(options={}) {
     options.classNames = ['ck-toolbar'];
     super(options);
 
+    this.prompt = new Prompt({toolbar:this});
+
     this.setDirection(options.direction || ToolbarDirection.TOP);
     this.editor = options.editor || null;
     this.embedIntent = options.embedIntent || null;
-    this.activePrompt = null;
     this.buttons = [];
 
     this.contentElement = createDiv('ck-toolbar-content');
@@ -68,11 +48,11 @@ class Toolbar extends View {
   addCommand(command) {
     command.editor = this.editor;
     command.embedIntent = this.embedIntent;
-    let button = new ToolbarButton({command: command, toolbar: this});
-    this.addButton(button);
+    this.addButton(new ToolbarButton({command: command, toolbar: this}));
   }
 
   addButton(button) {
+    button.toolbar = this;
     this.buttons.push(button);
     this.buttonContainerElement.appendChild(button.element);
   }
@@ -80,26 +60,17 @@ class Toolbar extends View {
   displayPrompt(prompt) {
     swapElements(this.promptContainerElement, this.buttonContainerElement);
     this.promptContainerElement.appendChild(prompt.element);
-    prompt.show(() => {
-      this.dismissPrompt();
-      this.updateForSelection();
-    });
-    this.activePrompt = prompt;
   }
 
   dismissPrompt() {
-    let activePrompt = this.activePrompt;
-    if (activePrompt) {
-      activePrompt.hide();
-      swapElements(this.buttonContainerElement, this.promptContainerElement);
-      this.activePrompt = null;
-    }
+    swapElements(this.buttonContainerElement, this.promptContainerElement);
+    this.updateForSelection();
   }
 
   updateForSelection(selection=window.getSelection()) {
+    if (!this.isShowing) { return; }
     if (!selection.isCollapsed) {
       this.positionToContent(selection.getRangeAt(0));
-      updateButtonsForSelection(this.buttons, selection);
     }
   }
 
@@ -125,6 +96,12 @@ class Toolbar extends View {
     } else {
       this.removeClass('right');
     }
+  }
+
+  destroy() {
+    this.buttons.forEach(b => b.destroy());
+    this.prompt.destroy();
+    super.destroy();
   }
 }
 

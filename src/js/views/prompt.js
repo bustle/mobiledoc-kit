@@ -18,35 +18,42 @@ class Prompt extends View {
   constructor(options) {
     options.tagName = 'input';
     super(options);
+    this.toolbar = options.toolbar;
 
-    var prompt = this;
-
-    prompt.command = options.command;
-    prompt.element.placeholder = options.placeholder || '';
-    this.addEventListener(prompt.element, 'click', (e) => {
+    this.element.placeholder = options.placeholder || '';
+    this.addEventListener(this.element, 'click', (e) => {
       // prevents closing prompt when clicking input
       e.stopPropagation();
     });
-    this.addEventListener(prompt.element, 'keyup', (e) => {
-      const entry = prompt.element.value;
+    this.addEventListener(this.element, 'keyup', (e) => {
+      const entry = this.element.value;
 
-      if (entry && prompt.range && !e.shiftKey && e.which === Keycodes.ENTER) {
-        restoreRange(prompt.range);
-        this.command.exec(entry);
-        if (this.onComplete) { this.onComplete(); }
+      if (entry && this.range && !e.shiftKey && e.which === Keycodes.ENTER) {
+        restoreRange(this.range);
+        this.doComplete(entry);
       }
     });
 
     this.addEventListener(window, 'resize', () => {
       var activeHilite = hiliter.parentNode;
-      var range = prompt.range;
+      var range = this.range;
       if(activeHilite && range) {
         positionHiliteRange(range);
       }
     });
   }
 
-  show(callback) {
+  doComplete(value) {
+    this.hide();
+    this.onComplete(value);
+    this.toolbar.hide();
+  }
+
+  show(callback=() => {}) {
+    const { toolbar } = this;
+    toolbar.displayPrompt(this);
+
+    this.onComplete = callback;
     var element = this.element;
     var selection = window.getSelection();
     var range = selection && selection.rangeCount && selection.getRangeAt(0);
@@ -60,9 +67,6 @@ class Prompt extends View {
         // defer focus (disrupts mouseup events)
         element.focus();
       });
-      if (callback) {
-        this.onComplete = callback;
-      }
     }
   }
 
@@ -70,6 +74,7 @@ class Prompt extends View {
     if (hiliter.parentNode) {
       container.removeChild(hiliter);
     }
+    this.toolbar.dismissPrompt();
   }
 }
 

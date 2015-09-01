@@ -30,10 +30,9 @@ class View {
   }
 
   hide() {
-    var view = this;
-    if(view.isShowing) {
-      view.container.removeChild(view.element);
-      view.isShowing = false;
+    if (this.isShowing) {
+      this.container.removeChild(this.element);
+      this.isShowing = false;
       return true;
     }
   }
