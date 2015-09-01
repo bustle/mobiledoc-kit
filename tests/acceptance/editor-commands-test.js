@@ -2,7 +2,7 @@ import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
-const { test, module } = QUnit;
+const { test, module } = Helpers;
 
 let fixture, editor, editorElement, selectedText;
 
@@ -120,12 +120,13 @@ test('highlighting heading text activates toolbar button', (assert) => {
   const done = assert.async();
 
   setTimeout(() => {
-    Helpers.toolbar.assertVisible(assert);
+    assert.toolbarVisible();
+    assert.inactiveButton('heading');
     Helpers.toolbar.assertInactiveButton(assert, 'heading');
 
     Helpers.toolbar.clickButton(assert, 'heading');
 
-    Helpers.toolbar.assertActiveButton(assert, 'heading');
+    assert.activeButton('heading');
 
     // FIXME must actually trigger the mouseup
     Helpers.dom.clearSelection();
@@ -222,14 +223,43 @@ Helpers.skipInPhantom('highlight text, click "link" button shows input for URL, 
 
   setTimeout(() => {
     Helpers.toolbar.clickButton(assert, 'link');
-    let input = assert.hasElement('.ck-toolbar-prompt input');
-    let url = 'http://google.com';
+    const input = assert.hasElement('.ck-toolbar-prompt input');
+    const url = 'http://google.com';
     $(input).val(url);
     Helpers.dom.triggerKeyEvent(input[0], 'keyup');
+ 
+    assert.toolbarHidden();
 
-    assert.hasElement(`#editor a[href="${url}"]:contains(${selectedText})`);
+    setTimeout(() => {
+      assert.hasElement(`#editor a[href="${url}"]:contains(${selectedText})`);
 
-    done();
+      Helpers.dom.insertText('X');
+
+      assert.hasElement(`#editor p:contains(${selectedText}X)`,
+                        'inserts text after selected text');
+      assert.hasNoElement(`#editor a:contains(${selectedText}X)`,
+                        'inserted text does not extend "a" tag');
+
+      Helpers.dom.insertText('X');
+      assert.hasElement(`#editor p:contains(${selectedText}XX)`,
+                        'inserts text after selected text again');
+
+      Helpers.dom.selectText(selectedText, editorElement);
+      Helpers.dom.triggerEvent(document, 'mouseup');
+
+      setTimeout(() => {
+        assert.toolbarVisible();
+        assert.activeButton('link');
+
+        Helpers.toolbar.clickButton(assert, 'link');
+
+        assert.hasNoElement(`#editor a`, 'a tag is gone after unlinking');
+        // test that typing in the link adds more text to it
+        // test that the toolbar displays the link status, can un-link
+
+        done();
+      });
+    });
   });
 });
 

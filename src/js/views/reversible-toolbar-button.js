@@ -25,10 +25,18 @@ class ReversibleToolbarButton {
     e.stopPropagation();
 
     if (this.active) {
-      this.command.unexec();
+      this.unexec();
     } else {
-      this.command.exec();
+      this.exec();
     }
+  }
+
+  exec(...args) {
+    this.command.exec(...args);
+  }
+
+  unexec(...args) {
+    this.command.unexec(...args);
   }
 
   updateActiveState() {
@@ -54,6 +62,10 @@ class ReversibleToolbarButton {
 
   get active() {
     return this._active;
+  }
+
+  destroy() {
+    this.removeAllEventListeners();
   }
 }
 

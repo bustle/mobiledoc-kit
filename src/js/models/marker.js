@@ -5,7 +5,9 @@ import {
 } from '../utils/dom-utils';
 import {
   detect,
-  commonItemLength
+  commonItemLength,
+  forEach,
+  filter
 } from 'content-kit-editor/utils/array-utils';
 import LinkedItem from "content-kit-editor/utils/linked-item";
 
@@ -50,7 +52,22 @@ const Marker = class Marker extends LinkedItem {
     this.markups.push(markup);
   }
 
-  removeMarkup(markup) {
+  removeMarkup(markupOrMarkupCallback) {
+    let callback;
+    if (typeof markupOrMarkupCallback === 'function') {
+      callback = markupOrMarkupCallback;
+    } else {
+      let markup = markupOrMarkupCallback;
+      callback = (_markup) => _markup === markup;
+    }
+
+    forEach(
+      filter(this.markups, callback),
+      m => this._removeMarkup(m)
+    );
+  }
+
+  _removeMarkup(markup) {
     const index = this.markups.indexOf(markup);
     if (index !== -1) {
       this.markups.splice(index, 1);

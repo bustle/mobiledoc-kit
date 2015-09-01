@@ -1,7 +1,12 @@
 import { triggerEvent } from './dom';
 
+function _getToolbarButton(name) {
+  const btnSelector = `.ck-toolbar-btn[title="${name}"]`;
+  return $(btnSelector);
+}
+
 function getToolbarButton(assert, name) {
-  let btnSelector = `.ck-toolbar-btn[title="${name}"]`;
+  const btnSelector = `.ck-toolbar-btn[title="${name}"]`;
   return assert.hasElement(btnSelector);
 }
 
@@ -30,6 +35,7 @@ function assertInactiveButton(assert, buttonTitle) {
 
 const ToolbarHelpers = {
   getToolbarButton,
+  _getToolbarButton,
   assertVisible,
   assertHidden,
   assertActiveButton,

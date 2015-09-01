@@ -12,8 +12,8 @@ export default class TextFormatToolbar extends Toolbar {
   }
 
   handleResize() {
-    if(this.isShowing) {
-      let activePromptRange = this.activePrompt && this.activePrompt.range;
+    if (this.isShowing) {
+      const activePromptRange = this.activePrompt && this.activePrompt.range;
       this.positionToContent(activePromptRange ? activePromptRange : window.getSelection().getRangeAt(0));
     }
   }

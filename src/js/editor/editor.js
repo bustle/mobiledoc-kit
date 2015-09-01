@@ -4,6 +4,7 @@ import EmbedIntent from '../views/embed-intent';
 import PostEditor from './post';
 
 import ReversibleToolbarButton from '../views/reversible-toolbar-button';
+import ReversiblePromptButton from '../views/reversible-prompt-button';
 import BoldCommand from '../commands/bold';
 import ItalicCommand from '../commands/italic';
 import LinkCommand from '../commands/link';
@@ -54,10 +55,6 @@ const defaults = {
   // causing the stickyToolbar to accidentally be auto-activated
   // in tests
   stickyToolbar: false, // !!('ontouchstart' in window),
-  textFormatCommands: [
-    new LinkCommand()
-  ],
-  autoTypingCommands: [],
   cards: [],
   cardOptions: {},
   unknownCardHandler: () => {
@@ -86,25 +83,6 @@ function bindContentEditableTypingListeners(editor) {
     }
     e.preventDefault();
     return false;
-  });
-}
-
-function bindAutoTypingListeners(editor) {
-  // Watch typing patterns for auto format commands (e.g. lists '- ', '1. ')
-  editor.addEventListener(editor.element, 'keyup', function(e) {
-    var commands = editor.autoTypingCommands;
-    var count = commands && commands.length;
-    var selection, i;
-
-    if (count) {
-      selection = window.getSelection();
-      for (i = 0; i < count; i++) {
-        if (commands[i].checkAutoFormat(selection.anchorNode)) {
-          e.stopPropagation();
-          return;
-        }
-      }
-    }
   });
 }
 
@@ -193,12 +171,16 @@ function makeButtons(editor) {
   const italicCommand = new ItalicCommand(editor);
   const italicButton = new ReversibleToolbarButton(italicCommand, editor);
 
+  const linkCommand = new LinkCommand(editor);
+  const linkButton = new ReversiblePromptButton(linkCommand, editor);
+
   return [
     headingButton,
     subheadingButton,
     quoteButton,
     boldButton,
-    italicButton
+    italicButton,
+    linkButton
   ];
 }
 
@@ -292,7 +274,6 @@ class Editor {
     clearChildNodes(element);
 
     bindContentEditableTypingListeners(this);
-    bindAutoTypingListeners(this);
     bindDragAndDrop(this);
     bindSelectionEvent(this);
     bindKeyListeners(this);
@@ -300,15 +281,14 @@ class Editor {
 
     this._initEmbedCommands();
 
-    this.addView(new TextFormatToolbar({
+    this.toolbar = new TextFormatToolbar({
       editor: this,
       rootElement: element,
-      // FIXME -- eventually all the commands should migrate to being buttons
-      // that can be added
-      commands: this.textFormatCommands,
+      commands: [],
       buttons: makeButtons(this),
       sticky: this.stickyToolbar
-    }));
+    });
+    this.addView(this.toolbar);
 
     this.addView(new Tooltip({
       rootElement: element,

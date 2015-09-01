@@ -25,6 +25,11 @@ class Markup {
     }
   }
 
+  hasTag(tagName) {
+    tagName = normalizeTagName(tagName);
+    return this.tagName === tagName;
+  }
+
   static isValidElement(element) {
     let tagName = normalizeTagName(element.tagName);
     return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;

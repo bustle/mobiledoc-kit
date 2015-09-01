@@ -610,10 +610,10 @@ class PostEditor {
    * @return {Array} of markers that are inside the split
    * @public
    */
-  removeMarkupFromMarkers(markerRange, markup) {
+  removeMarkupFromMarkers(markerRange, markupOrMarkupCallback) {
     const markers = this.splitMarkers(markerRange);
     markers.forEach(marker => {
-      marker.removeMarkup(markup);
+      marker.removeMarkup(markupOrMarkupCallback);
       marker.section.renderNode.markDirty();
     });
 

@@ -1,11 +1,16 @@
 import { detect } from 'content-kit-editor/utils/array-utils';
-import { detectParentNode } from 'content-kit-editor/utils/dom-utils';
+import {
+  detectParentNode,
+  isTextNode,
+  walkTextNodes
+} from 'content-kit-editor/utils/dom-utils';
 import { MARKUP_SECTION_TYPE } from 'content-kit-editor/models/markup-section';
 import { LIST_ITEM_TYPE } from 'content-kit-editor/models/list-item';
 import { MARKER_TYPE } from 'content-kit-editor/models/marker';
 
 // FIXME This assumes that all sections are children of the Post,
-// but that isn't a valid assumption.
+// but that isn't a valid assumption, some sections (ListItem) are
+// grand-children of the post.
 function findSectionContaining(sections, childNode) {
   const { result: section } = detectParentNode(childNode, node => {
     return detect(sections, section => {
@@ -17,7 +22,32 @@ function findSectionContaining(sections, childNode) {
 
 function findSectionFromNode(node, renderTree) {
   const renderNode = renderTree.getElementRenderNode(node);
-  return renderNode && renderNode.postNode;
+  const postNode = renderNode && renderNode.postNode;
+  return postNode;
+}
+
+// cursorElement is the DOM element that the browser reports that the cursor
+// is on
+function findOffsetInSection(sectionElement, cursorElement, offsetInElement) {
+  if (!isTextNode(cursorElement)) {
+    // if the cursor element is not a text node, assume that the cursor is
+    // on the section element itself and return 0
+    return 0;
+  }
+
+  let offset = 0, found = false;
+  walkTextNodes(sectionElement, (textNode) => {
+    if (found) { return; }
+
+    if (textNode === cursorElement) {
+      found = true;
+      offset += offsetInElement;
+    } else {
+      offset += textNode.textContent.length;
+    }
+  });
+
+  return offset;
 }
 
 const Position = class Position {
@@ -68,7 +98,10 @@ const Position = class Position {
                 findSectionContaining(sections, node);
 
       if (section) {
-        offsetInSection = 0;
+        const sectionElement = section.renderNode.element;
+        offsetInSection = findOffsetInSection(sectionElement, node, offsetInNode);
+      } else {
+        throw new Error('Unable to determine section for cursor');
       }
     }
 
