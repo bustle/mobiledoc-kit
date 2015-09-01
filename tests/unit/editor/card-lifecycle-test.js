@@ -1,29 +1,28 @@
-const { module, test } = QUnit;
-
 import Helpers from '../../test-helpers';
 import { Editor } from 'content-kit-editor';
 import { containsNode } from 'content-kit-editor/utils/dom-utils';
-import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 let editorElement, editor;
+
+const { module, test } = Helpers;
 
 module('Unit: Editor: Card Lifecycle', {
   beforeEach() {
     editorElement = document.createElement('div');
+    editorElement.setAttribute('id', 'editor');
+    $('#qunit-fixture').append(editorElement);
   },
   afterEach() {
     if (editor) {
       editor.destroy();
+      editor = null;
     }
-    editor = null;
   }
 });
 
 test('rendering a mobiledoc for editing calls card#setup', (assert) => {
   assert.expect(4);
 
-  const payload = {
-    foo: 'bar'
-  };
+  const payload = { foo: 'bar' };
   const cardOptions = { boo: 'baz' };
 
   const card = {
@@ -32,31 +31,20 @@ test('rendering a mobiledoc for editing calls card#setup', (assert) => {
       setup(element, options, env, setupPayload) {
         assert.ok(containsNode(editorElement, element),
                   'card element is part of the editor element');
-        assert.deepEqual(payload, setupPayload,
+        assert.deepEqual(setupPayload, payload,
                          'the payload is passed to the card');
         assert.equal(env.name, 'test-card',
                      'env.name is correct');
         assert.deepEqual(options, cardOptions, 'correct cardOptions');
       },
-      teardown() {
-      }
+      teardown() {}
     }
   };
 
-  const mobiledoc = {
-    version: MOBILEDOC_VERSION,
-    sections: [
-      [],
-      [
-        [10, 'test-card', payload]
-      ]
-    ]
-  };
-  editor = new Editor({
-    mobiledoc,
-    cards: [card],
-    cardOptions
-  });
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) =>
+    post([cardSection('test-card', payload)])
+  );
+  editor = new Editor({mobiledoc, cards: [card], cardOptions});
   editor.render(editorElement);
 });
 
@@ -69,15 +57,9 @@ test('rendering a mobiledoc for editing calls #unknownCardHandler when it encoun
     assert.equal(env.name, cardName, 'includes card name in env');
   };
 
-  const mobiledoc = {
-    version: MOBILEDOC_VERSION,
-    sections: [
-      [],
-      [
-        [10, cardName, {}]
-      ]
-    ]
-  };
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) =>
+    post([cardSection(cardName)])
+  );
 
   editor = new Editor({mobiledoc, unknownCardHandler});
   editor.render(editorElement);
@@ -122,119 +104,127 @@ test('rendered card can fire edit hook to enter editing mode', (assert) => {
     }
   };
 
-  const mobiledoc = {
-    version: MOBILEDOC_VERSION,
-    sections: [
-      [],
-      [
-        [10, 'test-card', payload]
-      ]
-    ]
-  };
-  editor = new Editor({
-    mobiledoc,
-    cards: [card],
-    cardOptions
-  });
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) =>
+    post([cardSection('test-card', payload)])
+  );
+
+  editor = new Editor({ mobiledoc, cards: [card], cardOptions });
   editor.render(editorElement);
 
   Helpers.dom.triggerEvent(span, 'click');
 });
 
 test('rendered card can fire edit hook to enter editing mode, then save', (assert) => {
-  assert.expect(3);
+  const setupPayloads = [];
+  const payload = { foo: 'bar' };
+  const newPayload = {some: 'new values'};
+  let cardEnv;
 
-  let setupPayloads = [];
-  let newPayload = {some: 'new values'};
-  let doEdit, doSave;
   const card = {
     name: 'test-card',
     display: {
       setup(element, options, env, setupPayload) {
+        cardEnv = env;
         setupPayloads.push(setupPayload);
-        doEdit = () => {
-          env.edit();
-        };
       }
     },
     edit: {
-      setup(element, options, env) {
-        assert.ok(env.save,
-                  'env exposes save hook');
-        doSave = () => {
-          env.save(newPayload);
-        };
-      }
+      setup() {}
     }
   };
 
-  const payload = { foo: 'bar' };
-  const mobiledoc = {
-    version: MOBILEDOC_VERSION,
-    sections: [
-      [],
-      [
-        [10, 'test-card', payload]
-      ]
-    ]
-  };
-  editor = new Editor({
-    mobiledoc,
-    cards: [card]
-  });
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) =>
+    post([cardSection('test-card', payload)])
+  );
+  editor = new Editor({ mobiledoc, cards: [card] });
   editor.render(editorElement);
 
-  doEdit();
-  doSave();
-  let [firstPayload, secondPayload] = setupPayloads;
+  assert.ok(cardEnv.edit, 'precond - card env has edit hook');
+  assert.ok(cardEnv.save, 'precond - card env has save hook');
+
+  cardEnv.edit();
+  cardEnv.save(newPayload);
+
+  const [firstPayload, secondPayload] = setupPayloads;
   assert.equal(firstPayload, payload, 'first display with mobiledoc payload');
   assert.equal(secondPayload, newPayload, 'second display with new payload');
 });
 
 test('rendered card can fire edit hook to enter editing mode, then cancel', (assert) => {
-  assert.expect(3);
+  const setupPayloads = [];
+  let cardEnv;
 
-  let setupPayloads = [];
-  let doEdit, doCancel;
   const card = {
     name: 'test-card',
     display: {
       setup(element, options, env, setupPayload) {
         setupPayloads.push(setupPayload);
-        doEdit = () => {
-          env.edit();
-        };
+        cardEnv = env;
       }
     },
     edit: {
-      setup(element, options, env) {
-        assert.ok(env.cancel, 'env exposes cancel hook');
-        doCancel = () => {
-          env.cancel();
-        };
-      }
+      setup() {}
     }
   };
 
   const payload = { foo: 'bar' };
-  const mobiledoc = {
-    version: MOBILEDOC_VERSION,
-    sections: [
-      [],
-      [
-        [10, 'test-card', payload]
-      ]
-    ]
-  };
-  editor = new Editor({
-    mobiledoc,
-    cards: [card]
-  });
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) =>
+    post([cardSection('test-card',payload)])
+  );
+  editor = new Editor({ mobiledoc, cards: [card] });
   editor.render(editorElement);
 
-  doEdit();
-  doCancel();
+  assert.ok(cardEnv.edit, 'precond - env has #edit');
+  assert.ok(cardEnv.cancel, 'precond - env has #cancel');
+
+  cardEnv.edit();
+  cardEnv.cancel();
+
   let [firstPayload, secondPayload] = setupPayloads;
   assert.equal(firstPayload, payload, 'first display with mobiledoc payload');
   assert.equal(secondPayload, payload, 'second display with mobiledoc payload');
+});
+
+test('#remove hook destroys card, removes it from DOM and AT', (assert) => {
+  let callbacks = [];
+  const cardEl = document.createElement('div');
+  cardEl.setAttribute('id', 'the-card-el');
+  let cardEnv;
+
+  const card = {
+    name: 'removable-card',
+    display: {
+      setup(element, options, env) {
+        cardEnv = env;
+        callbacks.push('setup');
+        element.appendChild(cardEl);
+      },
+      teardown() {
+        callbacks.push('teardown');
+      }
+    }
+  };
+
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, cardSection}) =>
+      post([markupSection(), cardSection('removable-card')]) 
+  );
+
+  editor = new Editor({mobiledoc, cards:[card]});
+  editor.render(editorElement);
+
+  assert.deepEqual(callbacks, ['setup'], 'setup callback called');
+  assert.hasElement('#editor #the-card-el', 'renders card');
+  assert.ok(cardEnv.remove, 'card env has #remove hook');
+
+  const post = editor.post;
+  assert.equal(post.sections.length, 2, 'precond - post has 2 sections');
+
+  cardEnv.remove();
+
+  assert.deepEqual(callbacks, ['setup', 'teardown'],
+                   'teardown called when removing');
+  assert.hasNoElement('#editor #the-card-el', 'removes card element');
+  assert.equal(post.sections.length, 1,
+               'removes the card section from the post');
 });

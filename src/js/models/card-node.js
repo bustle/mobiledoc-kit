@@ -27,14 +27,15 @@ export default class CardNode {
   get env() {
     return {
       name: this.card.name,
-      edit: () => { this.edit(); },
+      edit: () => this.edit(),
       save: (payload) => {
         this.section.payload = payload;
 
         this.editor.didUpdate();
         this.display();
       },
-      cancel: () => { this.display(); }
+      cancel: () => this.display(),
+      remove: () => this.remove()
     };
   }
 
@@ -44,6 +45,10 @@ export default class CardNode {
 
   edit() {
     this.render('edit');
+  }
+
+  remove() {
+    this.editor.run(postEditor => postEditor.removeSection(this.section));
   }
 
   teardown() {
