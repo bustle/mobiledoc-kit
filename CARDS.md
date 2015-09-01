@@ -73,6 +73,9 @@ var exampleCard = {
     the payload.
   * `env.edit()` is available to the `display` setup, and when called swaps
     the instance to edit mode.
+  * `env.remove()` remove this card. This calls the current mode's `teardown()`
+    hook and removes the card from DOM and from the post abstract.
+    the instance to edit mode.
 * `payload` is the payload for this card instance. It was either loaded from
   a Mobiledoc or generated and passed into an `env.save` call.
 
@@ -97,9 +100,9 @@ var displayTextCard = {
     setup(element, options, env, payload) {
       $('<div>').text(payload.text).appendTo(element);
       if (env.edit) {
-        let button = $('<button>Edit</button>');
-        button.on('click', env.edit);
+        $('<button>Edit</button>').appendTo(element).on('click', env.edit);
       }
+      $('<button>Remove</button>').appendTo(element).on('click', env.remove);
     }
   },
   edit: {
@@ -109,10 +112,10 @@ var displayTextCard = {
       if (payload.text) {
         input.val(payload.text);
       }
-      $('<button>Save</button>').on('click', function() {
+      $('<button>Save</button>').appendTo(element).on('click', function() {
         env.save(input.val());
       });
-      $('<button>Cancel</button>').on('click', env.cancel);
+      $('<button>Cancel</button>').appendTo(element).on('click', env.cancel);
     }
   }
 };
