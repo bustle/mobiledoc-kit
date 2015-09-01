@@ -10,7 +10,8 @@ module.exports = function() {
   var rendererDir = path.join(
     path.dirname(
       require.resolve('mobiledoc-dom-renderer')
-    )
+    ),
+    'dist', 'global'
   );
   // find the global build relative to the commonjs `main` entrypoint
   var htmlrendererDir = path.join(
