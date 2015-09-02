@@ -1,17 +1,17 @@
-import RenderNode from "content-kit-editor/models/render-node";
-import CardNode from "content-kit-editor/models/card-node";
+import RenderNode from 'content-kit-editor/models/render-node';
+import CardNode from 'content-kit-editor/models/card-node';
 import { detect } from 'content-kit-editor/utils/array-utils';
-import { POST_TYPE } from "../models/post";
-import { MARKUP_SECTION_TYPE } from "../models/markup-section";
-import { LIST_SECTION_TYPE } from "../models/list-section";
-import { LIST_ITEM_TYPE } from "../models/list-item";
-import { MARKER_TYPE } from "../models/marker";
-import { IMAGE_SECTION_TYPE } from "../models/image";
-import { CARD_TYPE } from "../models/card";
+import { POST_TYPE } from '../models/post';
+import { MARKUP_SECTION_TYPE } from '../models/markup-section';
+import { LIST_SECTION_TYPE } from '../models/list-section';
+import { LIST_ITEM_TYPE } from '../models/list-item';
+import { MARKER_TYPE } from '../models/marker';
+import { IMAGE_SECTION_TYPE } from '../models/image';
+import { CARD_TYPE } from '../models/card';
 import { startsWith, endsWith } from '../utils/string-utils';
+import { addClassName } from '../utils/dom-utils';
 
-export const UNPRINTABLE_CHARACTER = "\u200C";
-export const NO_BREAK_SPACE = "\u00A0";
+export const NO_BREAK_SPACE = '\u00A0';
 const SPACE = ' ';
 
 function createElementFromMarkup(doc, markup) {
@@ -46,6 +46,13 @@ function renderListSection(section) {
 
 function renderListItem() {
   return document.createElement('li');
+}
+
+function renderCard() {
+  const element = document.createElement('div');
+  element.contentEditable = false;
+  addClassName(element, 'ck-card');
+  return element;
 }
 
 function getNextMarkerElement(renderNode) {
@@ -228,30 +235,21 @@ class Visitor {
   }
 
   [CARD_TYPE](renderNode, section) {
+    const originalElement = renderNode.element;
     const {editor, options} = this;
     const card = detect(this.cards, card => card.name === section.name);
-
-    const env = { name: section.name };
-    const element = document.createElement('div');
-    element.contentEditable = 'false';
+    const element = renderCard();
     renderNode.element = element;
-    if (renderNode.prev) {
-      let previousElement = renderNode.prev.element;
-      let nextElement = previousElement.nextSibling;
-      if (nextElement) {
-        nextElement.parentNode.insertBefore(element, nextElement);
-      }
-    }
-    if (!element.parentNode) {
-      renderNode.parent.element.appendChild(element);
-    }
+
+    attachRenderNodeElementToDOM(renderNode, element, originalElement);
 
     if (card) {
-      let cardNode = new CardNode(editor, card, section, renderNode.element, options);
+      const cardNode = new CardNode(editor, card, section, element, options);
       renderNode.cardNode = cardNode;
       cardNode.display();
     } else {
-      this.unknownCardHandler(renderNode.element, options, env, section.payload);
+      const env = { name: section.name };
+      this.unknownCardHandler(element, options, env, section.payload);
     }
   }
 }
