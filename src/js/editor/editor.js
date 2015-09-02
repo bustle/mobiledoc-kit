@@ -329,27 +329,19 @@ class Editor {
   }
 
   handleNewline(event) {
-    let offsets = this.cursor.offsets;
+    if (!this.cursor.hasCursor()) { return ;}
 
-    // if there's no left/right nodes, we are probably not in the editor,
-    // or we have selected some non-marker thing like a card
-    if (!offsets.headSection || !offsets.tailSection) {
-      return;
-    }
-
+    const range = this.cursor.offsets;
     event.preventDefault();
 
-    let cursorSection;
-    this.run((postEditor) => {
-      if (this.cursor.hasSelection()) {
-        postEditor.deleteRange(offsets);
-        if (offsets.headSection.isBlank) {
-          cursorSection = offsets.headSection;
-          return;
+    const cursorSection = this.run((postEditor) => {
+      if (!range.isCollapsed) {
+        postEditor.deleteRange(range);
+        if (range.head.section.isBlank) {
+          return range.head.section;
         }
       }
-      const headPosition = offsets.head;
-      cursorSection = postEditor.splitSection(headPosition)[1];
+      return postEditor.splitSection(range.head)[1];
     });
     this.cursor.moveToSection(cursorSection);
   }

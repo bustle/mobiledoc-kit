@@ -416,3 +416,44 @@ test('selecting text that starts in a list item and ends in a markup section', (
     done();
   });
 });
+
+test('selecting text that includes a card section and deleting deletes card section', (assert) => {
+  const done = assert.async();
+  const build = Helpers.mobiledoc.build;
+  const mobiledoc = build(({post, markupSection, cardSection, marker}) =>
+    post([
+      markupSection('p', [marker('abc')]),
+      cardSection('simple-card'),
+      markupSection('p', [marker('def')])
+    ])
+  );
+  const cards = [{
+    name: 'simple-card',
+    display: {
+      setup(element) {
+        const span = document.createElement('span');
+        span.setAttribute('id', 'card-el');
+        element.appendChild(span);
+      }
+    }
+  }];
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  assert.hasElement('#card-el', 'precond - card el is rendered');
+
+  Helpers.dom.selectText('bc', editorElement, 'de', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    Helpers.dom.triggerDelete(editor);
+
+    assert.hasElement('#editor p:contains(af)', 'combines sides of selection');
+
+    assert.hasNoElement('#editor span#card-el', 'card el is removed');
+    assert.hasNoElement('#editor p:contains(abc)', 'previous section 1 is removed');
+    assert.hasNoElement('#editor p:contains(def)', 'previous section 2 is removed');
+
+    done();
+  });
+});

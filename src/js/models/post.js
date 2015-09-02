@@ -98,19 +98,58 @@ export default class Post {
     }
   }
 
+  // return an array of all top-level sections (direct children of `post`)
+  // that are wholly contained by the range.
+  sectionsContainedBy(range) {
+    const {head, tail} = range;
+    let containedSections = [];
+
+    const findParent = (child, conditionFn) => {
+      while (child) {
+        if (conditionFn(child)) { return child; }
+        child = child.parent;
+      }
+    };
+
+    let headTopLevelSection = findParent(head.section, s => !!s.post);
+    let tailTopLevelSection = findParent(tail.section, s => !!s.post);
+
+    let currentSection = headTopLevelSection.next;
+    while (currentSection && currentSection !== tailTopLevelSection) {
+      containedSections.push(currentSection);
+      currentSection = currentSection.next;
+    }
+
+    return containedSections;
+  }
+
   // return the next section that has markers afer this one
   _nextMarkerableSection(section) {
-    if (section.next) {
-      let next = section.next;
-      if (next.markers) {
+    if (!section) { return null; }
+    const isMarkerable = s => !!s.markers;
+    const hasChildren  = s => !!s.items;
+    const firstChild   = s => s.items.head;
+    const isChild      = s => s.parent && !s.post;
+    const parent       = s => s.parent;
+
+    let next = section.next;
+    if (next) {
+      if (isMarkerable(next)) {
         return next;
-      } else if (next.items) {
-        next = next.items.head;
-        return next;
+      } else if (hasChildren(next)) { // e.g. a ListSection
+        return firstChild(next);
+      } else {
+        // e.g. a cardSection that has no children or parent but
+        // may have a markerable after it in the AT
+        return this._nextMarkerableSection(next);
       }
-    } else if (section.parent && section.parent.next) {
-      // FIXME the parent isn't guaranteed to be markerable
-      return section.parent.next;
+    } else {
+      if (isChild(section)) {
+        // if there is no section after this, but this section is a child
+        // (e.g. a ListItem inside a ListSection), check for a markerable
+        // section after its parent
+        return this._nextMarkerableSection(parent(section));
+      }
     }
   }
 }

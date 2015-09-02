@@ -67,21 +67,23 @@ class PostEditor {
     if (headSection === tailSection) {
       this.cutSection(headSection, headSectionOffset, tailSectionOffset);
     } else {
-      let removedSections = [];
+      let removedSections = post.sectionsContainedBy(range);
       post.walkMarkerableSections(range, section => {
         switch (section) {
           case headSection:
             this.cutSection(section, headSectionOffset, section.text.length);
             break;
           case tailSection:
-            tailSection.markersFor(tailSectionOffset, section.text.length).forEach(m => {
+            section.markersFor(tailSectionOffset, section.text.length).forEach(m => {
               headSection.markers.append(m);
             });
             headSection.renderNode.markDirty(); // May have added nodes
-            removedSections.push(tailSection);
+            removedSections.push(section);
             break;
           default:
-            removedSections.push(section);
+            if (removedSections.indexOf(section) === -1) {
+              removedSections.push(section);
+            }
           }
       });
       removedSections.forEach(section => this.removeSection(section) );
@@ -659,12 +661,22 @@ class PostEditor {
    * @public
    */
   removeSection(section) {
+    const parent = section.parent;
+    const parentIsRemoved = parent.renderNode.isRemoved;
+
+    if (parentIsRemoved) {
+      // This can happen if we remove a list section and later
+      // try to remove one of the section's list items;
+      return;
+    }
+
     section.renderNode.scheduleForRemoval();
 
-    const parent = section.parent;
     parent.sections.remove(section);
 
     if (parent.isBlank) {
+      // If we removed the last child from a parent (e.g. the last li in a ul),
+      // also remove the parent
       this.removeSection(parent);
     }
 

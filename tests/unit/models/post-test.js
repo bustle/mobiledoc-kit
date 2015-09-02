@@ -1,4 +1,5 @@
 import Helpers from '../../test-helpers';
+import { Position, Range } from 'content-kit-editor/utils/cursor';
 
 const {module, test} = Helpers;
 
@@ -68,4 +69,35 @@ test('#markersFrom finds markers across non-homogeneous sections', (assert) => {
                     's2m1', 's2m2', 's2m3',
                     's3m1', 's3m2'         ],
                    'iterates correct markers');
+});
+
+test('#walkMarkerableSections skips non-markerable sections', (assert) => {
+  const post = Helpers.postAbstract.build(builder => {
+    const {post, markupSection, marker, cardSection} = builder;
+
+    return post([
+      markupSection('p', ['s1m1'].map(t => marker(t))),
+      markupSection('p', ['s2m1'].map(t => marker(t))),
+      cardSection('simple-card'),
+      markupSection('p', ['s3m1'].map(t => marker(t))),
+      markupSection('p', ['s4m1'].map(t => marker(t)))
+    ]);
+  });
+
+  let foundSections = [];
+
+  const s1 = post.sections.objectAt(0);
+  const s4 = post.sections.objectAt(4);
+
+  assert.equal(s1.text, 's1m1', 'precond - find s1');
+  assert.equal(s4.text, 's4m1', 'precond - find s4');
+
+  const range = new Range(new Position(s1, 0), new Position(s4, 0));
+
+  post.walkMarkerableSections(range, s => foundSections.push(s));
+
+  assert.deepEqual(foundSections.map(s => s.text),
+                   ['s1m1', 's2m1', 's3m1', 's4m1'],
+                   'iterates correct sections');
+
 });
