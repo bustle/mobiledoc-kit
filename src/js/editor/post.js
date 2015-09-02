@@ -30,28 +30,20 @@ class PostEditor {
   }
 
   /**
-   * Remove a range of markers from the post.
+   * Remove a range from the post
    *
    * Usage:
    *
-   *     let marker = editor.post.sections.head.markers.head;
+   *     const range = editor.cursor.offsets;
    *     editor.run((postEditor) => {
-   *       postEditor.deleteRange({
-   *         headSection: section,
-   *         headSectionOffset: 2,
-   *         tailSection: section,
-   *         tailSectionOffset: 4,
-   *       });
+   *       postEditor.deleteRange(range);
    *     });
    *
-   * `deleteRange` accepts the value of `this.cursor.offsets` for deletion.
-   *
    * @method deleteRange
-   * @param {Object} markerRange Object with offsets, {headSection, headSectionOffset, tailSection, tailSectionOffset}
-   * @return {Object} {currentSection, currentOffset} for cursor
+   * @param {Range} range Cursor Range object with head and tail Positions
    * @public
    */
-  deleteRange(markerRange) {
+  deleteRange(range) {
     // types of selection deletion:
     //   * a selection starts at the beginning of a section
     //     -- cursor should end up at the beginning of that section
@@ -66,17 +58,17 @@ class PostEditor {
     //     -- mark the end section for removal
     //     -- cursor goes at end of marker before the selection start
 
-    // markerRange should be akin to this.cursor.offset
     const {
-      headSection, headSectionOffset, tailSection, tailSectionOffset
-    } = markerRange;
+      head: {section: headSection, offset: headSectionOffset},
+      tail: {section: tailSection, offset: tailSectionOffset}
+    } = range;
     const { post } = this.editor;
 
     if (headSection === tailSection) {
       this.cutSection(headSection, headSectionOffset, tailSectionOffset);
     } else {
       let removedSections = [];
-      post.sections.walk(headSection, tailSection, section => {
+      post.walkMarkerableSections(range, section => {
         switch (section) {
           case headSection:
             this.cutSection(section, headSectionOffset, section.text.length);
@@ -656,8 +648,8 @@ class PostEditor {
    *
    * Usage:
    *
-   *     let markerRange = editor.cursor.offsets;
-   *     let sectionWithCursor = markerRange.headMarker.section;
+   *     const range = editor.cursor.offsets;
+   *     const sectionWithCursor = range.head.section;
    *     editor.run((postEditor) => {
    *       postEditor.removeSection(sectionWithCursor);
    *     });
@@ -668,7 +660,13 @@ class PostEditor {
    */
   removeSection(section) {
     section.renderNode.scheduleForRemoval();
-    section.parent.sections.remove(section);
+
+    const parent = section.parent;
+    parent.sections.remove(section);
+
+    if (parent.isBlank) {
+      this.removeSection(parent);
+    }
 
     this.scheduleRerender();
     this.scheduleDidUpdate();

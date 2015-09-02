@@ -318,3 +318,101 @@ test('selecting all text across sections and hitting enter deletes and moves cur
     done();
   });
 });
+
+test('selecting text across markup and list sections', (assert) => {
+  const done = assert.async();
+  const build = Helpers.mobiledoc.build;
+  const mobiledoc = build(({post, markupSection, listSection, listItem, marker}) =>
+    post([
+      markupSection('p', [marker('abc')]),
+      listSection('ul', [
+        listItem([marker('123')]),
+        listItem([marker('456')])
+      ])
+    ])
+  );
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.selectText('bc', editorElement, '12', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    Helpers.dom.triggerDelete(editor);
+
+    assert.hasElement('#editor p:contains(a3)',
+                      'combines partially-selected list item onto markup section');
+
+    assert.hasNoElement('#editor p:contains(bc)', 'deletes selected text "bc"');
+    assert.hasNoElement('#editor p:contains(12)', 'deletes selected text "12"');
+
+    assert.hasElement('#editor li:contains(6)', 'leaves remaining text in list item');
+    done();
+  });
+});
+
+test('selecting text that covers a list section', (assert) => {
+  const done = assert.async();
+  const build = Helpers.mobiledoc.build;
+  const mobiledoc = build(({post, markupSection, listSection, listItem, marker}) =>
+    post([
+      markupSection('p', [marker('abc')]),
+      listSection('ul', [
+        listItem([marker('123')]),
+        listItem([marker('456')])
+      ]),
+      markupSection('p', [marker('def')])
+    ])
+  );
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.selectText('bc', editorElement, 'de', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    Helpers.dom.triggerDelete(editor);
+
+    assert.hasElement('#editor p:contains(af)',
+                      'combines sides of selection');
+
+    assert.hasNoElement('#editor li:contains(123)', 'deletes li 1');
+    assert.hasNoElement('#editor li:contains(456)', 'deletes li 2');
+    assert.hasNoElement('#editor ul', 'removes ul');
+
+    done();
+  });
+});
+
+test('selecting text that starts in a list item and ends in a markup section', (assert) => {
+  const done = assert.async();
+  const build = Helpers.mobiledoc.build;
+  const mobiledoc = build(({post, markupSection, listSection, listItem, marker}) =>
+    post([
+      listSection('ul', [
+        listItem([marker('123')]),
+        listItem([marker('456')])
+      ]),
+      markupSection('p', [marker('def')])
+    ])
+  );
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.selectText('23', editorElement, 'de', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    Helpers.dom.triggerDelete(editor);
+
+    assert.hasElement('#editor li:contains(1f)',
+                      'combines sides of selection');
+
+    assert.hasNoElement('#editor li:contains(123)', 'deletes li 1');
+    assert.hasNoElement('#editor li:contains(456)', 'deletes li 2');
+    assert.hasNoElement('#editor p:contains(def)', 'deletes p content');
+    assert.hasNoElement('#editor p', 'removes p entirely');
+
+    done();
+  });
+});

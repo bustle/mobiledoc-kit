@@ -5,6 +5,7 @@ import { Editor } from 'content-kit-editor';
 import Helpers from '../../test-helpers';
 import { DIRECTION } from 'content-kit-editor/utils/key';
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
+import {Position, Range} from 'content-kit-editor/utils/cursor';
 
 const { FORWARD } = DIRECTION;
 
@@ -13,6 +14,13 @@ const { module, test } = window.QUnit;
 let editor, editorElement;
 
 let builder, postEditor, mockEditor;
+
+function makeRange(headSection, headOffset, tailSection, tailOffset) {
+  return new Range(
+    new Position(headSection, headOffset),
+    new Position(tailSection, tailOffset)
+  );
+}
 
 function getSection(sectionIndex) {
   return editor.post.sections.objectAt(sectionIndex);
@@ -211,12 +219,9 @@ test('#deleteRange when within the same marker', (assert) => {
 
   renderBuiltAbstract(post);
 
-  postEditor.deleteRange({
-    headSection: section,
-    headSectionOffset: 3,
-    tailSection: section,
-    tailSectionOffset: 4
-  });
+  const range = makeRange(section, 3, section, 4);
+
+  postEditor.deleteRange(range);
 
   postEditor.complete();
 
@@ -237,13 +242,8 @@ test('#deleteRange when same section, different markers, same markups', (assert)
 
   renderBuiltAbstract(post);
 
-  postEditor.deleteRange({
-    headSection: section,
-    headSectionOffset: 3,
-    tailSection: section,
-    tailSectionOffset: 4
-  });
-
+  const range = makeRange(section, 3, section, 4);
+  postEditor.deleteRange(range);
   postEditor.complete();
 
   assert.equal(post.sections.head.text, 'abcdef');
@@ -264,13 +264,8 @@ test('#deleteRange when same section, different markers, different markups', (as
 
   renderBuiltAbstract(post);
 
-  postEditor.deleteRange({
-    headSection: section,
-    headSectionOffset: 3,
-    tailSection: section,
-    tailSectionOffset: 4
-  });
-
+  const range = makeRange(section, 3, section, 4);
+  postEditor.deleteRange(range);
   postEditor.complete();
 
   assert.equal(post.sections.head.text, 'abcdef');
@@ -291,13 +286,8 @@ test('#deleteRange across contiguous sections', (assert) => {
 
   renderBuiltAbstract(post);
 
-  postEditor.deleteRange({
-    headSection: s1,
-    headSectionOffset: 3,
-    tailSection: s2,
-    tailSectionOffset: 1
-  });
-
+  const range = makeRange(s1, 3, s2, 1);
+  postEditor.deleteRange(range);
   postEditor.complete();
 
   assert.equal(post.sections.head.text, 'abcdef');
@@ -315,13 +305,8 @@ test('#deleteRange across entire sections', (assert) => {
 
   renderBuiltAbstract(post);
 
-  postEditor.deleteRange({
-    headSection: s1,
-    headSectionOffset: 3,
-    tailSection: s3,
-    tailSectionOffset: 0
-  });
-
+  const range = makeRange(s1, 3, s3, 0);
+  postEditor.deleteRange(range);
   postEditor.complete();
 
   assert.equal(post.sections.head.text, 'abcdef');
@@ -338,12 +323,8 @@ test('#deleteRange across all content', (assert) => {
 
   renderBuiltAbstract(post);
 
-  postEditor.deleteRange({
-    headSection: s1,
-    headSectionOffset: 0,
-    tailSection: s2,
-    tailSectionOffset: 3
-  });
+  const range = makeRange(s1, 0, s2, 3);
+  postEditor.deleteRange(range);
 
   postEditor.complete();
 
