@@ -18,6 +18,10 @@ export default class ListSection {
     items.forEach(i => this.items.append(i));
   }
 
+  get isBlank() {
+    return this.items.isEmpty;
+  }
+
   // returns [prevListSection, newMarkupSection, nextListSection]
   // prevListSection and nextListSection may be undefined
   splitAtListItem(listItem) {

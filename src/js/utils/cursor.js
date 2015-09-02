@@ -6,7 +6,9 @@ import {
 import Position from './cursor/position';
 import Range from './cursor/range';
 
-export default class Cursor {
+export {Position, Range};
+
+const Cursor = class Cursor {
   constructor(editor) {
     this.editor = editor;
     this.renderTree = editor._renderTree;
@@ -142,4 +144,6 @@ export default class Cursor {
     if (selection.rangeCount === 0) { return null; }
     return selection.getRangeAt(0);
   }
-}
+};
+
+export default Cursor;

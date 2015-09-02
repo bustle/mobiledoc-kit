@@ -1,5 +1,6 @@
 export const POST_TYPE = 'post';
-import LinkedList from "content-kit-editor/utils/linked-list";
+import LinkedList from 'content-kit-editor/utils/linked-list';
+import { compact } from 'content-kit-editor/utils/array-utils';
 
 export default class Post {
   constructor() {
@@ -37,13 +38,8 @@ export default class Post {
 
     let currentSection = firstSection;
     let removedSections = [],
-        changedSections = [];
-    if (firstSection) {
-      changedSections.push(firstSection);
-    }
-    if (lastSection) {
-      changedSections.push(lastSection);
-    }
+        changedSections = compact([firstSection, lastSection]);
+
     if (markers.length !== 0) {
       markers.forEach(marker => {
         if (marker.section !== currentSection) { // this marker is in a section we haven't seen yet
@@ -80,10 +76,41 @@ export default class Post {
       } else if (currentMarker.next) {
         currentMarker = currentMarker.next;
       } else {
-        let nextSection = currentMarker.section.next;
+        let nextSection = this._nextMarkerableSection(currentMarker.section);
         // FIXME: This will fail across cards
         currentMarker = nextSection && nextSection.markers.head;
       }
+    }
+  }
+
+  walkMarkerableSections(range, callback) {
+    const {head, tail} = range;
+
+    let currentSection = head.section;
+    while (currentSection) {
+      callback(currentSection);
+
+      if (currentSection === tail.section) {
+        break;
+      } else {
+        currentSection = this._nextMarkerableSection(currentSection);
+      }
+    }
+  }
+
+  // return the next section that has markers afer this one
+  _nextMarkerableSection(section) {
+    if (section.next) {
+      let next = section.next;
+      if (next.markers) {
+        return next;
+      } else if (next.items) {
+        next = next.items.head;
+        return next;
+      }
+    } else if (section.parent && section.parent.next) {
+      // FIXME the parent isn't guaranteed to be markerable
+      return section.parent.next;
     }
   }
 }
