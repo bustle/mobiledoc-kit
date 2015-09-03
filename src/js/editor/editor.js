@@ -29,25 +29,17 @@ import RenderTree from 'content-kit-editor/models/render-tree';
 import MobiledocRenderer from '../renderers/mobiledoc';
 
 import { mergeWithOptions } from 'content-kit-utils';
-import {
-  clearChildNodes,
-  addClassName,
-  parseHTML
-} from '../utils/dom-utils';
-import {
-  forEach,
-  filter
-} from '../utils/array-utils';
+import { clearChildNodes, addClassName, parseHTML } from '../utils/dom-utils';
+import { forEach, filter } from '../utils/array-utils';
 import { getData, setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
 import Cursor from '../utils/cursor';
 import PostNodeBuilder from '../models/post-node-builder';
 import {
-  DEFAULT_TEXT_EXPANSIONS,
-  findExpansion,
-  validateExpansion
+  DEFAULT_TEXT_EXPANSIONS, findExpansion, validateExpansion
 } from './text-expansions';
+import { capitalize } from '../utils/string-utils';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
 
@@ -73,94 +65,6 @@ function runCallbacks(callbacks, args) {
   for (i=0;i<callbacks.length;i++) {
     callbacks[i].apply(null, args);
   }
-}
-
-function bindContentEditableTypingListeners(editor) {
-  // On 'PASTE' sanitize and insert
-  editor.addEventListener(editor.element, 'paste', function(e) {
-    var data = e.clipboardData;
-    var pastedHTML = data && data.getData && data.getData('text/html');
-    var sanitizedHTML = pastedHTML && editor._renderer.rerender(pastedHTML);
-    if (sanitizedHTML) {
-      document.execCommand('insertHTML', false, sanitizedHTML);
-      editor.rerender();
-    }
-    e.preventDefault();
-    return false;
-  });
-}
-
-function bindSelectionEvent(editor) {
-  /**
-   * The following events/sequences can create a selection and are handled:
-   *  * mouseup -- can happen anywhere in document, must wait until next tick to read selection
-   *  * keyup when key is a movement key and shift is pressed -- in editor element
-   *  * keyup when key combo was cmd-A (alt-A) aka "select all"
-   *  * keyup when key combo was cmd-Z (browser restores selection if there was one)
-   *
-   * These cases can create a selection and are not handled:
-   *  * ctrl-click -> context menu -> click "select all"
-   */
-
-  const toggleSelection = () => {
-    return editor.cursor.hasSelection() ? editor.reportSelection() :
-                                          editor.reportNoSelection();
-  };
-
-  // mouseup will not properly report a selection until the next tick, so add a timeout:
-  const mouseupHandler = () => setTimeout(toggleSelection);
-  editor.addEventListener(document, 'mouseup', mouseupHandler);
-
-  const keyupHandler = toggleSelection;
-  editor.addEventListener(editor.element, 'keyup', keyupHandler);
-}
-
-function bindKeyListeners(editor) {
-  if (!editor.isEditable) {
-    return;
-  }
-  editor.addEventListener(document, 'keyup', (event) => {
-    const key = Key.fromEvent(event);
-    if (key.isEscape()) {
-      editor.trigger('escapeKey');
-    }
-  });
-
-  editor.addEventListener(editor.element, 'keydown', (event) => {
-    editor.handleExpansion(event);
-  });
-
-  editor.addEventListener(document, 'keydown', (event) => {
-    if (!editor.isEditable) {
-      return;
-    }
-    const key = Key.fromEvent(event);
-
-    if (key.isDelete()) {
-      editor.handleDeletion(event);
-      event.preventDefault();
-    } else if (key.isEnter()) {
-      editor.handleNewline(event);
-    } else if (key.isPrintable()) {
-      if (editor.cursor.hasSelection()) {
-        let offsets = editor.cursor.offsets;
-        editor.run((postEditor) => {
-          postEditor.deleteRange(editor.cursor.offsets);
-        });
-        editor.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
-      }
-    }
-  });
-}
-
-function bindDragAndDrop(editor) {
-  // TODO. For now, just prevent redirect when dropping something on the page
-  editor.addEventListener(window, 'dragover', function(e) {
-    e.preventDefault(); // prevents showing cursor where to drop
-  });
-  editor.addEventListener(window, 'drop', function(e) {
-    e.preventDefault(); // prevent page from redirecting
-  });
 }
 
 function makeButtons(editor) {
@@ -289,27 +193,11 @@ class Editor {
 
     clearChildNodes(element);
 
-    bindContentEditableTypingListeners(this);
-    bindDragAndDrop(this);
-    bindSelectionEvent(this);
-    bindKeyListeners(this);
-    this.addEventListener(element, 'input', () => this.handleInput());
-
+    this._setupListeners();
     this._initEmbedCommands();
 
-    this.toolbar = new TextFormatToolbar({
-      editor: this,
-      rootElement: element,
-      commands: [],
-      buttons: makeButtons(this),
-      sticky: this.stickyToolbar
-    });
-    this.addView(this.toolbar);
-
-    this.addView(new Tooltip({
-      rootElement: element,
-      showForTag: 'a'
-    }));
+    this._addToolbar();
+    this._addTooltip();
 
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
     // postEditor.
@@ -319,6 +207,20 @@ class Editor {
     if (this.autofocus) {
       element.focus();
     }
+  }
+
+  _addToolbar() {
+    this.addView(new TextFormatToolbar({
+      editor: this,
+      rootElement: this.element,
+      commands: [],
+      buttons: makeButtons(this),
+      sticky: this.stickyToolbar
+    }));
+  }
+
+  _addTooltip() {
+    this.addView(new Tooltip({rootElement: this.element, showForTag: 'a'}));
   }
 
   get expansions() {
@@ -639,6 +541,93 @@ class Editor {
       commands: commands,
       rootElement: this.element
     }));
+  }
+
+  _setupListeners() {
+    const elementEvents = ['keydown', 'keyup', 'input', 'dragover', 'drop', 'paste'];
+    const documentEvents = ['mouseup'];
+
+    elementEvents.forEach(eventName => {
+      this.addEventListener(this.element, eventName,
+        (...args) => this.handleEvent(eventName, ...args)
+      );
+    });
+
+    documentEvents.forEach(eventName => {
+      this.addEventListener(document, eventName,
+        (...args) => this.handleEvent(eventName, ...args)
+      );
+    });
+  }
+
+  handleEvent(eventName, ...args) {
+    const methodName = `handle${capitalize(eventName)}`;
+    if (!this[methodName]) { throw new Error(`No handler for ${eventName}`); }
+    this[methodName](...args);
+  }
+
+  handleMouseup() {
+    // mouseup does not correctly report a selection until the next tick
+    setTimeout(() => this._reportSelectionState());
+  }
+
+  handleKeyup(event) {
+    const key = Key.fromEvent(event);
+
+    if (key.isEscape()) { this.trigger('escapeKey'); }
+    this._reportSelectionState();
+  }
+
+  /*
+     The following events/sequences can create a selection and are handled:
+       * mouseup -- can happen anywhere in document, must wait until next tick to read selection
+       * keyup when key is a movement key and shift is pressed -- in editor element
+       * keyup when key combo was cmd-A (alt-A) aka "select all"
+       * keyup when key combo was cmd-Z (browser may restore selection)
+     These cases can create a selection and are not handled:
+       * ctrl-click -> context menu -> click "select all"
+   */
+  _reportSelectionState() {
+    if (this.cursor.hasSelection()) {
+      this.reportSelection();
+    } else {
+      this.reportNoSelection();
+    }
+  }
+
+  handleDragover(e) {
+    e.preventDefault(); // FIXME for now, just prevent default
+  }
+
+  handleDrop(e) {
+    e.preventDefault(); // FIXME for now, just prevent default
+  }
+
+  handleKeydown(event) {
+    if (!this.isEditable) { return; }
+
+    const key = Key.fromEvent(event);
+
+    if (key.isDelete()) {
+      this.handleDeletion(event);
+      event.preventDefault();
+    } else if (key.isEnter()) {
+      this.handleNewline(event);
+    } else if (key.isPrintable()) {
+      if (this.cursor.hasSelection()) {
+        let offsets = this.cursor.offsets;
+        this.run((postEditor) => {
+          postEditor.deleteRange(this.cursor.offsets);
+        });
+        this.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
+      }
+    }
+
+    this.handleExpansion(event);
+  }
+
+  handlePaste(event) {
+    event.preventDefault(); // FIXME for now, just prevent pasting
   }
 }
 

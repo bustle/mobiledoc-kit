@@ -146,7 +146,7 @@ function triggerDelete(editor) {
     let event = { preventDefault() {} };
     editor.handleDeletion(event);
   } else {
-    triggerKeyEvent(document, 'keydown', KEY_CODES.BACKSPACE);
+    triggerKeyEvent(editor.element, 'keydown', KEY_CODES.BACKSPACE);
   }
 }
 
@@ -157,7 +157,7 @@ function triggerEnter(editor) {
     let event = { preventDefault() {} };
     editor.handleNewline(event);
   } else {
-    triggerKeyEvent(document, 'keydown', KEY_CODES.ENTER);
+    triggerKeyEvent(editor.element, 'keydown', KEY_CODES.ENTER);
   }
 }
 
