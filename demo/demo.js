@@ -291,14 +291,9 @@ function bootEditor(element, mobiledoc) {
       }
     }
   });
+  var didRenderCallback = function() {ContentKitDemo.syncCodePane(editor);};
+  editor.didRender(didRenderCallback);
   editor.render(element);
-
-  function sync() {
-    ContentKitDemo.syncCodePane(editor);
-  }
-
-  editor.willRender(sync);
-  sync();
 }
 
 function readMobiledoc(string) {
