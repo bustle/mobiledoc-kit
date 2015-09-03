@@ -12,7 +12,7 @@ import { startsWith, endsWith } from '../utils/string-utils';
 import { addClassName } from '../utils/dom-utils';
 
 export const NO_BREAK_SPACE = '\u00A0';
-const SPACE = ' ';
+export const SPACE = ' ';
 
 function createElementFromMarkup(doc, markup) {
   var element = doc.createElement(markup.tagName);

@@ -116,6 +116,10 @@ export default class Markerable extends LinkedItem {
     return {marker:currentMarker, offset:currentOffset};
   }
 
+  textUntil(offset) {
+    return this.text.slice(0, offset);
+  }
+
   get text() {
     return reduce(this.markers, (prev, m) => prev + m.value, '');
   }

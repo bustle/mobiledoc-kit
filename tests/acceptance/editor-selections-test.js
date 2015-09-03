@@ -67,7 +67,7 @@ test('selecting an entire section and deleting removes it', (assert) => {
   assert.hasNoElement('p:contains(second section)', 'deletes contents of second section');
   assert.equal($('#editor p').length, 2, 'still has 2 sections');
 
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor p:eq(1):contains(X)', 'inserts text in correct spot');
 

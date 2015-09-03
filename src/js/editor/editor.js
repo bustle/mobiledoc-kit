@@ -43,6 +43,11 @@ import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
 import Cursor from '../utils/cursor';
 import PostNodeBuilder from '../models/post-node-builder';
+import {
+  DEFAULT_TEXT_EXPANSIONS,
+  findExpansion,
+  validateExpansion
+} from './text-expansions';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
 
@@ -50,7 +55,6 @@ const defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
-  post: null,
   // FIXME PhantomJS has 'ontouchstart' in window,
   // causing the stickyToolbar to accidentally be auto-activated
   // in tests
@@ -99,8 +103,8 @@ function bindSelectionEvent(editor) {
    */
 
   const toggleSelection = () => {
-    return editor.cursor.hasSelection() ? editor.hasSelection() :
-                                          editor.hasNoSelection();
+    return editor.cursor.hasSelection() ? editor.reportSelection() :
+                                          editor.reportNoSelection();
   };
 
   // mouseup will not properly report a selection until the next tick, so add a timeout:
@@ -120,6 +124,10 @@ function bindKeyListeners(editor) {
     if (key.isEscape()) {
       editor.trigger('escapeKey');
     }
+  });
+
+  editor.addEventListener(editor.element, 'keydown', (event) => {
+    editor.handleExpansion(event);
   });
 
   editor.addEventListener(document, 'keydown', (event) => {
@@ -199,8 +207,6 @@ class Editor {
     this._views = [];
     this.isEditable = null;
 
-    this.builder = new PostNodeBuilder();
-
     this._didUpdatePostCallbacks = [];
     this._willRenderCallbacks = [];
     this._didRenderCallbacks = [];
@@ -210,20 +216,12 @@ class Editor {
 
     this.cards.push(ImageCard);
 
+    DEFAULT_TEXT_EXPANSIONS.forEach(e => this.registerExpansion(e));
+
     this._parser   = new PostParser(this.builder);
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
-    if (this.mobiledoc) {
-      this.post = new MobiledocParser(this.builder).parse(this.mobiledoc);
-    } else if (this.html) {
-      if (typeof this.html === 'string') {
-        this.html = parseHTML(this.html);
-      }
-      this.post = new DOMParser(this.builder).parse(this.html);
-    } else {
-      this.post = this.builder.createBlankPost();
-    }
-
+    this.post = this.loadPost();
     this._renderTree = this.prepareRenderTree(this.post);
   }
 
@@ -231,11 +229,29 @@ class Editor {
     this._views.push(view);
   }
 
+  get builder() {
+    if (!this._builder) { this._builder = new PostNodeBuilder(); }
+    return this._builder;
+  }
+
   prepareRenderTree(post) {
     let renderTree = new RenderTree();
     let node = renderTree.buildRenderNode(post);
     renderTree.node = node;
     return renderTree;
+  }
+
+  loadPost() {
+    if (this.mobiledoc) {
+      return new MobiledocParser(this.builder).parse(this.mobiledoc);
+    } else if (this.html) {
+      if (typeof this.html === 'string') {
+        this.html = parseHTML(this.html);
+      }
+      return new DOMParser(this.builder).parse(this.html);
+    } else {
+      return this.builder.createBlankPost();
+    }
   }
 
   rerender() {
@@ -305,6 +321,26 @@ class Editor {
     }
   }
 
+  get expansions() {
+    if (!this._expansions) { this._expansions = []; }
+    return this._expansions;
+  }
+
+  registerExpansion(expansion) {
+    if (!validateExpansion(expansion)) {
+      throw new Error('Expansion is not valid');
+    }
+    this.expansions.push(expansion);
+  }
+
+  handleExpansion(event) {
+    const expansion = findExpansion(this.expansions, event, this);
+    if (expansion) {
+      event.preventDefault();
+      expansion.run(this);
+    }
+  }
+
   handleDeletion(event) {
     event.preventDefault();
 
@@ -346,7 +382,7 @@ class Editor {
     this.cursor.moveToSection(cursorSection);
   }
 
-  hasSelection() {
+  reportSelection() {
     if (!this._hasSelection) {
       this.trigger('selection');
     } else {
@@ -355,7 +391,7 @@ class Editor {
     this._hasSelection = true;
   }
 
-  hasNoSelection() {
+  reportNoSelection() {
     if (this._hasSelection) {
       this.trigger('selectionEnded');
     }
@@ -366,7 +402,7 @@ class Editor {
     if (this._hasSelection) {
       // FIXME perhaps restore cursor position to end of the selection?
       this.cursor.clearSelection();
-      this.hasNoSelection();
+      this.reportNoSelection();
     }
   }
 
@@ -376,12 +412,12 @@ class Editor {
 
   selectSections(sections) {
     this.cursor.selectSections(sections);
-    this.hasSelection();
+    this.reportSelection();
   }
 
   selectMarkers(markers) {
     this.cursor.selectMarkers(markers);
-    this.hasSelection();
+    this.reportSelection();
   }
 
   get cursor() {
@@ -571,8 +607,8 @@ class Editor {
    * @public
    */
   run(callback) {
-    let postEditor = new PostEditor(this);
-    let result = callback(postEditor);
+    const postEditor = new PostEditor(this);
+    const result = callback(postEditor);
     runCallbacks(this._didUpdatePostCallbacks, [postEditor]);
     postEditor.complete();
     return result;

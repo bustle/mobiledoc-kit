@@ -173,7 +173,7 @@ test('hitting enter at end of a section creates new empty section', (assert) => 
   assert.hasElement('#editor p:eq(0):contains(only section)', 'has same first section text');
   assert.hasElement('#editor p:eq(1):contains()', 'second section has no text');
 
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor p:eq(1):contains(X)', 'text is inserted in the new section');
 });
@@ -191,7 +191,7 @@ test('hitting enter in a section creates a new basic section', (assert) => {
 
   Helpers.dom.moveCursorTo($('#editor h2')[0].childNodes[0], 'abc'.length);
   Helpers.dom.triggerEnter(editor);
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor h2:contains(abc)', 'h2 still there');
   assert.hasElement('#editor p:contains(X)', 'p tag instead of h2 generated');
@@ -308,7 +308,7 @@ test('keystroke of delete when cursor is after only char in only marker of secti
 
   assert.hasElement('#editor p:eq(0):contains()', 'first p is empty');
 
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
   assert.hasElement('#editor p:eq(0):contains(X)', 'text is added back to section');
 });
 
@@ -324,7 +324,7 @@ test('keystroke of character in empty section adds character, moves cursor', (as
   Helpers.dom.moveCursorTo(textNode, 0);
 
   const letter = 'M';
-  Helpers.dom.insertText(letter);
+  Helpers.dom.insertText(editor, letter);
 
   assert.equal(getTextNode().textContent, letter, 'adds character');
   assert.equal(getTextNode().textContent.length, 1);
@@ -334,7 +334,7 @@ test('keystroke of character in empty section adds character, moves cursor', (as
                   `cursor moves to end of ${letter} text node`);
 
   const otherLetter = 'X';
-  Helpers.dom.insertText(otherLetter);
+  Helpers.dom.insertText(editor, otherLetter);
 
   assert.equal(getTextNode().textContent, `${letter}${otherLetter}`,
                'adds character in the correct spot');
@@ -490,7 +490,7 @@ test('deleting when after deletion there is a trailing space positions cursor at
   assert.equal($('#editor p:eq(0)').text(), `first${NO_BREAK_SPACE}`, 'precond - correct text after deleting last char before space');
 
   let text = 'e';
-  Helpers.dom.insertText(text);
+  Helpers.dom.insertText(editor, text);
 
   setTimeout(() => {
     assert.equal($('#editor p:eq(0)').text(), `first ${text}`, 'character is placed after space');
@@ -510,7 +510,7 @@ test('deleting when after deletion there is a leading space positions cursor at 
 
   assert.equal($('#editor p:eq(1)').text(), `${NO_BREAK_SPACE}section`, 'correct text after deletion');
   let text = 'e';
-  Helpers.dom.insertText(text);
+  Helpers.dom.insertText(editor, text);
 
   setTimeout(() => {
     assert.equal($('#editor p:eq(1)').text(), `${text} section`, 'correct text after insertion');
