@@ -67,14 +67,16 @@ class Toolbar extends View {
     this.updateForSelection();
   }
 
-  updateForSelection(selection=window.getSelection()) {
+  updateForSelection() {
     if (!this.isShowing) { return; }
-    if (!selection.isCollapsed) {
-      this.positionToContent(selection.getRangeAt(0));
+    const selection = window.getSelection(),
+          range     = selection && selection.getRangeAt(0);
+    if (!range.collapsed) {
+      this.positionToContent(range);
     }
   }
 
-  positionToContent(content) {
+  positionToContent(content=window.getSelection().getRangeAt(0)) {
     var directions = ToolbarDirection;
     var positioningMethod, position, sideEdgeOffset;
     switch(this.direction) {

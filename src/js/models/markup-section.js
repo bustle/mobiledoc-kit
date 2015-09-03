@@ -37,6 +37,8 @@ const MarkupSection = class MarkupSection extends Markerable {
   splitAtMarker(marker, offset=0) {
     let [beforeSection, afterSection] = [
       this.builder.createMarkupSection(this.tagName, []),
+      // FIXME we probably want to make it so that we create a new default markup
+      // section instead of copying the same tagname to the section below
       this.builder.createMarkupSection(this.tagName, [])
     ];
 

@@ -262,7 +262,7 @@ class Editor {
 
     this.element = element;
 
-    this.applyClassName(EDITOR_ELEMENT_CLASS_NAME);
+    addClassName(this.element, EDITOR_ELEMENT_CLASS_NAME);
     this.applyPlaceholder();
 
     element.spellcheck = this.spellcheck;
@@ -386,10 +386,6 @@ class Editor {
 
   get cursor() {
     return new Cursor(this);
-  }
-
-  applyClassName(className) {
-    addClassName(this.element, className);
   }
 
   applyPlaceholder() {

@@ -13,14 +13,13 @@ export default class TextFormatToolbar extends Toolbar {
 
   handleResize() {
     if (this.isShowing) {
-      const activePromptRange = this.activePrompt && this.activePrompt.range;
-      this.positionToContent(activePromptRange ? activePromptRange : window.getSelection().getRangeAt(0));
+      this.positionToContent();
     }
   }
 
   handleSelection() {
     this.show();
-    this.updateForSelection(window.getSelection());
+    this.updateForSelection();
   }
 
   handleSelectionEnded() {

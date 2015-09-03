@@ -1,8 +1,10 @@
 import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
+import { addClassName, removeClassName } from '../utils/dom-utils';
 
 const ELEMENT_TYPE = 'button';
 const BUTTON_CLASS_NAME = 'ck-toolbar-btn';
+const ACTIVE_CLASS_NAME = 'active';
 
 class ReversibleToolbarButton {
   constructor(command, editor) {
@@ -53,11 +55,8 @@ class ReversibleToolbarButton {
 
   set active(val) {
     this._active = val;
-    if (this._active) {
-      this.element.className = BUTTON_CLASS_NAME + ' active';
-    } else {
-      this.element.className = BUTTON_CLASS_NAME;
-    }
+    let method = this._active ? addClassName : removeClassName;
+    method(this.element, ACTIVE_CLASS_NAME);
   }
 
   get active() {
