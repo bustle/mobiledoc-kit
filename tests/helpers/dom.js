@@ -161,8 +161,16 @@ function triggerEnter(editor) {
   }
 }
 
-function insertText(string) {
-  document.execCommand('insertText', false, string);
+function insertText(editor, string) {
+  if (!string && editor) { throw new Error('Must pass `editor` to `insertText`'); }
+
+  string.split('').forEach(letter => {
+    const keyEvent = {keyCode: letter.charCodeAt(0), preventDefault: () =>{}};
+    editor.triggerEvent(editor.element, 'keydown', keyEvent);
+    document.execCommand('insertText', false, letter);
+    editor.triggerEvent(editor.element, 'input');
+    editor.triggerEvent(editor.element, 'keyup', keyEvent);
+  });
 }
 
 const DOMHelper = {

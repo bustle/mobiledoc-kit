@@ -114,10 +114,3 @@ test('#parse joins contiguous text nodes separated by non-markup elements', (ass
 
   assert.equal(m1.value, 'span 1span 2');
 });
-
-// test: a section can parse dom
-
-// test: a section can clear a range:
-//   * truncating the markers on the boundaries
-//   * removing the intermediate markers
-//   * connecting (but not joining) the truncated boundary markers

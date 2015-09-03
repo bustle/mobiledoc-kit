@@ -97,7 +97,7 @@ test('inserting unordered list at cursor', (assert) => {
         assert.hasElement('#editor ul li', 'adds a ul li');
         assert.equal($('#editor ul li').text(), '', 'li has no text');
 
-        Helpers.dom.insertText('X');
+        Helpers.dom.insertText(editor, 'X');
         assert.hasElement('#editor ul li:contains(X)', 'inserts text at correct spot');
 
         done();

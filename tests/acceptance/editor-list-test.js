@@ -37,7 +37,7 @@ test('can type in middle of a list item', (assert) => {
   assert.ok(!!listItem, 'precond - has li');
 
   Helpers.dom.moveCursorTo(listItem.childNodes[0], 'first'.length);
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor li:contains(firstX item)', 'inserts text at right spot');
 });
@@ -49,7 +49,7 @@ test('can type at end of a list item', (assert) => {
   assert.ok(!!listItem, 'precond - has li');
 
   Helpers.dom.moveCursorTo(listItem.childNodes[0], 'first item'.length);
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor li:contains(first itemX)', 'inserts text at right spot');
 });
@@ -61,7 +61,7 @@ test('can type at start of a list item', (assert) => {
   assert.ok(!!listItem, 'precond - has li');
 
   Helpers.dom.moveCursorTo(listItem.childNodes[0], 0);
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor li:contains(Xfirst item)', 'inserts text at right spot');
 });
@@ -95,8 +95,8 @@ test('can exit list section altogether by deleting', (assert) => {
   assert.hasNoElement('#editor li:contains(second item)', 'second li is gone');
   assert.hasElement('#editor p:contains(second item)', 'second li becomes p');
 
-  Helpers.dom.insertText('X');
-  
+  Helpers.dom.insertText(editor, 'X');
+
   assert.hasElement('#editor p:contains(Xsecond item)', 'new text is in right spot');
 });
 
@@ -142,7 +142,7 @@ test('can hit enter at end of list item to add new item', (assert) => {
   let newLi = $('#editor li:eq(1)');
   assert.equal(newLi.text(), '', 'new li has no text');
 
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
   assert.hasElement('#editor li:contains(X)', 'text goes in right spot');
 
   const liCount = $('#editor li').length;
@@ -179,7 +179,7 @@ test('hitting enter to add list item, deleting to remove it, adding new list ite
   assert.equal($('#editor li').length, 2, 'removes newly added li after enter on last list item');
   assert.equal($('#editor p').length, 2, 'adds a second p section');
 
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor p:eq(0):contains(X)', 'inserts text in right spot');
 });
@@ -203,6 +203,6 @@ test('hitting enter at empty last list item exists list', (assert) => {
   assert.equal($('#editor p').length, 1, 'adds 1 new p');
   assert.equal($('#editor p').text(), '', 'p has no text');
 
-  Helpers.dom.insertText('X');
+  Helpers.dom.insertText(editor, 'X');
   assert.hasElement('#editor p:contains(X)', 'text goes in right spot');
 });

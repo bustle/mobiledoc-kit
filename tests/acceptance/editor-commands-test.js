@@ -72,7 +72,7 @@ test('highlight text, click "bold", type more text, re-select text, bold button 
     assert.equal(textNode.textContent, 'IS A', 'precond - correct node');
 
     Helpers.dom.moveCursorTo(textNode, 'IS'.length);
-    Helpers.dom.insertText('X');
+    Helpers.dom.insertText(editor, 'X');
 
     assert.hasElement('strong:contains(ISX A)', 'adds text to bold');
 
@@ -233,14 +233,14 @@ Helpers.skipInPhantom('highlight text, click "link" button shows input for URL, 
     setTimeout(() => {
       assert.hasElement(`#editor a[href="${url}"]:contains(${selectedText})`);
 
-      Helpers.dom.insertText('X');
+      Helpers.dom.insertText(editor, 'X');
 
       assert.hasElement(`#editor p:contains(${selectedText}X)`,
                         'inserts text after selected text');
       assert.hasNoElement(`#editor a:contains(${selectedText}X)`,
                         'inserted text does not extend "a" tag');
 
-      Helpers.dom.insertText('X');
+      Helpers.dom.insertText(editor, 'X');
       assert.hasElement(`#editor p:contains(${selectedText}XX)`,
                         'inserts text after selected text again');
 
