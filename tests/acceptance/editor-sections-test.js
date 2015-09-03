@@ -178,6 +178,25 @@ test('hitting enter at end of a section creates new empty section', (assert) => 
   assert.hasElement('#editor p:eq(1):contains(X)', 'text is inserted in the new section');
 });
 
+test('hitting enter in a section creates a new basic section', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) =>
+    post([
+      markupSection('h2', [marker('abc')])
+    ])
+  );
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+  assert.hasElement('#editor h2:contains(abc)', 'precond - h2 is there');
+  assert.hasNoElement('#editor p', 'precond - no p tag');
+
+  Helpers.dom.moveCursorTo($('#editor h2')[0].childNodes[0], 'abc'.length);
+  Helpers.dom.triggerEnter(editor);
+  Helpers.dom.insertText('X');
+
+  assert.hasElement('#editor h2:contains(abc)', 'h2 still there');
+  assert.hasElement('#editor p:contains(X)', 'p tag instead of h2 generated');
+});
+
 // Phantom does not recognize toggling contenteditable off
 Helpers.skipInPhantom('deleting across 2 sections does nothing if editing is disabled', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWith2Sections});
