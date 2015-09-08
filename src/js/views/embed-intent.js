@@ -3,6 +3,11 @@ import Toolbar from './toolbar';
 import { positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
 import Keycodes from '../utils/keycodes';
 
+import UnorderedListCommand from '../commands/unordered-list';
+import OrderedListCommand from '../commands/ordered-list';
+import ImageCommand from '../commands/image';
+import CardCommand from '../commands/card';
+
 var LayoutStyle = {
   GUTTER   : 1,
   CENTERED : 2
@@ -22,11 +27,18 @@ class EmbedIntent extends View {
     const rootElement = this.rootElement = options.rootElement;
 
     this.isActive = false;
-    this.editorContext = options.editorContext;
+    this.editor = options.editor;
     this.button = document.createElement('button');
     this.button.className = 'ck-embed-intent-btn';
     this.button.title = 'Insert image or embed...';
     this.element.appendChild(this.button);
+
+    const commands = [
+      new ImageCommand(),
+      new CardCommand(),
+      new UnorderedListCommand(this.editor),
+      new OrderedListCommand(this.editor)
+    ];
 
     this.addEventListener(this.button, 'click', (e) => {
       if (this.isActive) {
@@ -40,18 +52,18 @@ class EmbedIntent extends View {
     this.toolbar = new Toolbar({
       container: this.element,
       embedIntent: this,
-      editor: this.editorContext,
-      commands: options.commands,
+      editor: this.editor,
+      commands: commands,
       direction: Toolbar.Direction.RIGHT
     });
 
     const embedIntentHandler = () => {
-      const {editorContext:editor} = this;
+      const { editor } = this;
       if (this._isDestroyed || editor._isDestroyed) {
         return;
       }
 
-      const {headSection, isCollapsed} = this.editorContext.cursor.offsets;
+      const {headSection, isCollapsed} = this.editor.cursor.offsets;
       const headRenderNode = headSection && headSection.renderNode && headSection.renderNode.element;
 
       if (headRenderNode && headSection.isBlank && isCollapsed) {

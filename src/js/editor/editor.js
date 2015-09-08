@@ -3,19 +3,6 @@ import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
 import PostEditor from './post';
 
-import ReversibleToolbarButton from '../views/reversible-toolbar-button';
-import ReversiblePromptButton from '../views/reversible-prompt-button';
-import BoldCommand from '../commands/bold';
-import ItalicCommand from '../commands/italic';
-import LinkCommand from '../commands/link';
-import QuoteCommand from '../commands/quote';
-import HeadingCommand from '../commands/heading';
-import SubheadingCommand from '../commands/subheading';
-import UnorderedListCommand from '../commands/unordered-list';
-import OrderedListCommand from '../commands/ordered-list';
-import ImageCommand from '../commands/image';
-import CardCommand from '../commands/card';
-
 import ImageCard from '../cards/image';
 
 import Key from '../utils/key';
@@ -68,35 +55,6 @@ function runCallbacks(callbacks, args) {
   for (i=0;i<callbacks.length;i++) {
     callbacks[i].apply(null, args);
   }
-}
-
-function makeButtons(editor) {
-  const headingCommand = new HeadingCommand(editor);
-  const headingButton = new ReversibleToolbarButton(headingCommand, editor);
-
-  const subheadingCommand = new SubheadingCommand(editor);
-  const subheadingButton = new ReversibleToolbarButton(subheadingCommand, editor);
-
-  const quoteCommand = new QuoteCommand(editor);
-  const quoteButton = new ReversibleToolbarButton(quoteCommand, editor);
-
-  const boldCommand = new BoldCommand(editor);
-  const boldButton = new ReversibleToolbarButton(boldCommand, editor);
-
-  const italicCommand = new ItalicCommand(editor);
-  const italicButton = new ReversibleToolbarButton(italicCommand, editor);
-
-  const linkCommand = new LinkCommand(editor);
-  const linkButton = new ReversiblePromptButton(linkCommand, editor);
-
-  return [
-    headingButton,
-    subheadingButton,
-    quoteButton,
-    boldButton,
-    italicButton,
-    linkButton
-  ];
 }
 
 /**
@@ -198,8 +156,8 @@ class Editor {
     clearChildNodes(element);
 
     this._setupListeners();
-    this._initEmbedCommands();
 
+    this._addEmbedIntent();
     this._addToolbar();
     this._addTooltip();
 
@@ -218,7 +176,6 @@ class Editor {
       editor: this,
       rootElement: this.element,
       commands: [],
-      buttons: makeButtons(this),
       sticky: this.stickyToolbar
     }));
   }
@@ -549,17 +506,9 @@ class Editor {
     this._didRenderCallbacks.push(callback);
   }
 
-  _initEmbedCommands() {
-    const commands = [
-      new ImageCommand(),
-      new CardCommand(),
-      new UnorderedListCommand(this),
-      new OrderedListCommand(this)
-    ];
-
+  _addEmbedIntent() {
     this.addView(new EmbedIntent({
-      editorContext: this,
-      commands: commands,
+      editor: this,
       rootElement: this.element
     }));
   }
