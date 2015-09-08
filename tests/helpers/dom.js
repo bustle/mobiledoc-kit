@@ -3,6 +3,7 @@ const TEXT_NODE = 3;
 import { clearSelection } from 'content-kit-editor/utils/selection-utils';
 import { walkDOMUntil } from 'content-kit-editor/utils/dom-utils';
 import KEY_CODES from 'content-kit-editor/utils/keycodes';
+import { MODIFIERS }  from 'content-kit-editor/utils/key';
 import isPhantom from './is-phantom';
 
 function selectRange(startNode, startOffset, endNode, endOffset) {
@@ -173,6 +174,18 @@ function insertText(editor, string) {
   });
 }
 
+// triggers a key sequence like cmd-B on the editor, to test out
+// registered keyCommands
+function triggerKeyCommand(editor, string, modifier) {
+  const keyEvent = {
+    preventDefault() {},
+    keyCode: string.toUpperCase().charCodeAt(0),
+    metaKey: modifier === MODIFIERS.META,
+    ctrlKey: modifier === MODIFIERS.CTRL
+  };
+  editor.triggerEvent(editor.element, 'keydown', keyEvent);
+}
+
 const DOMHelper = {
   moveCursorTo,
   selectText,
@@ -185,7 +198,8 @@ const DOMHelper = {
   getSelectedText,
   triggerDelete,
   triggerEnter,
-  insertText
+  insertText,
+  triggerKeyCommand
 };
 
 export { triggerEvent };

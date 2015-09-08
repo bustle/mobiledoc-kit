@@ -4,6 +4,11 @@ export const DIRECTION = {
   BACKWARD: 2
 };
 
+export const MODIFIERS = {
+  META: 1, // also called "command" on OS X
+  CTRL: 2
+};
+
 /**
  * An abstraction around a KeyEvent
  * that key listeners in the editor can use
@@ -44,12 +49,27 @@ const Key = class Key {
     return this.keyCode === Keycodes.ENTER;
   }
 
+  hasModifier(modifier) {
+    switch (modifier) {
+      case MODIFIERS.META:
+        return this.metaKey;
+      case MODIFIERS.CTRL:
+        return this.ctrlKey;
+      default:
+        throw new Error(`Cannot check for unknown modifier ${modifier}`);
+    }
+  }
+
   get ctrlKey() {
     return this.event.ctrlKey;
   }
 
   get metaKey() {
     return this.event.metaKey;
+  }
+
+  isChar(string) {
+    return this.keyCode === string.toUpperCase().charCodeAt(0);
   }
 
   /**
