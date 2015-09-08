@@ -159,6 +159,7 @@ class Visitor {
     renderNode.element = element;
 
     attachRenderNodeElementToDOM(renderNode, element, originalElement);
+    renderNode.renderTree.elements.set(element, renderNode);
 
     if (section.markers.length) {
       const visitAll = true;
@@ -207,9 +208,9 @@ class Visitor {
       parentElement = renderNode.parent.element;
     }
 
-    let markerNode = renderMarker(marker, parentElement, renderNode.prev);
-    renderNode.renderTree.elements.set(markerNode, renderNode);
-    renderNode.element = markerNode;
+    const element = renderMarker(marker, parentElement, renderNode.prev);
+    renderNode.renderTree.elements.set(element, renderNode);
+    renderNode.element = element;
   }
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
@@ -243,6 +244,7 @@ class Visitor {
 
     attachRenderNodeElementToDOM(renderNode, element, originalElement);
 
+    renderNode.renderTree.elements.set(element, renderNode); 
     if (card) {
       const cardNode = new CardNode(editor, card, section, element, options);
       renderNode.cardNode = cardNode;

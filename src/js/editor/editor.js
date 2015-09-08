@@ -561,6 +561,8 @@ class Editor {
   }
 
   handleEvent(eventName, ...args) {
+    if (this.cursor.isInCard()) { return; }
+
     const methodName = `handle${capitalize(eventName)}`;
     if (!this[methodName]) { throw new Error(`No handler for ${eventName}`); }
     this[methodName](...args);
