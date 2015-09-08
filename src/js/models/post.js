@@ -1,6 +1,7 @@
 export const POST_TYPE = 'post';
 import LinkedList from 'content-kit-editor/utils/linked-list';
-import { compact } from 'content-kit-editor/utils/array-utils';
+import { forEach, compact } from 'content-kit-editor/utils/array-utils';
+import Set from 'content-kit-editor/utils/set';
 
 export default class Post {
   constructor() {
@@ -62,6 +63,7 @@ export default class Post {
 
     return {changedSections, removedSections};
   }
+
   /**
    * Invoke `callbackFn` for all markers between the headMarker and tailMarker (inclusive),
    * across sections
@@ -81,6 +83,19 @@ export default class Post {
         currentMarker = nextSection && nextSection.markers.head;
       }
     }
+  }
+
+  markupsInRange(range) {
+    const markups = new Set();
+
+    this.walkMarkerableSections(range, (section) => {
+      forEach(
+        section.markupsInRange(range.trimTo(section)),
+        m => markups.add(m)
+      );
+    });
+
+    return markups.toArray();
   }
 
   walkMarkerableSections(range, callback) {

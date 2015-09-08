@@ -10,28 +10,25 @@ export default class TextFormatCommand extends Command {
 
   get markup() {
     if (this._markup) { return this._markup; }
-    const { builder } = this.editor;
-    this._markup = builder.createMarkup(this.tag);
+    this._markup = this.editor.builder.createMarkup(this.tag);
     return this._markup;
   }
 
   isActive() {
-    return any(this.editor.activeMarkers, m => m.hasMarkup(this.markup));
+    return any(this.editor.markupsInSelection, m => m === this.markup);
   }
 
   exec() {
-    const range = this.editor.cursor.offsets;
-    const markers = this.editor.run((postEditor) => {
-      return postEditor.applyMarkupToMarkers(range, this.markup);
-    });
-    this.editor.selectMarkers(markers);
+    const range = this.editor.cursor.offsets, { markup } = this;
+    this.editor.run(
+      postEditor => postEditor.applyMarkupToRange(range, markup));
+    this.editor.selectRange(range);
   }
 
   unexec() {
-    const range = this.editor.cursor.offsets;
-    const markers = this.editor.run((postEditor) => {
-      return postEditor.removeMarkupFromMarkers(range, this.markup);
-    });
-    this.editor.selectMarkers(markers);
+    const range = this.editor.cursor.offsets, { markup } = this;
+    this.editor.run(
+      postEditor => postEditor.removeMarkupFromRange(range, markup));
+    this.editor.selectRange(range);
   }
 }

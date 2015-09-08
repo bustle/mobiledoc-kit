@@ -11,36 +11,23 @@ export default class LinkCommand extends TextFormatCommand {
   }
 
   isActive() {
-    return any(this.editor.activeMarkers, m => m.hasMarkup(this.tag));
+    return any(this.editor.markupsInSelection, m => m.hasTag(this.tag));
   }
 
   exec(url) {
     const range = this.editor.cursor.offsets;
-
-    let markers = this.editor.run(postEditor => {
+    this.editor.run(postEditor => {
       const markup = postEditor.builder.createMarkup('a', ['href', url]);
-      return postEditor.applyMarkupToMarkers(range, markup);
+      postEditor.applyMarkupToRange(range, markup);
     });
-
-    if (markers.length) {
-      let lastMarker = markers[markers.length - 1];
-      this.editor.cursor.moveToMarker(lastMarker, lastMarker.length);
-    } /* else {
-      // FIXME should handle the case when linking creating no new markers
-      // this.editor.cursor.moveToSection(range.head.section);
-    } */
+    this.editor.moveToPosition(range.tail);
   }
 
   unexec() {
     const range = this.editor.cursor.offsets;
-
-    const markers = this.editor.run(postEditor => {
-      return postEditor.removeMarkupFromMarkers(
-        range,
-        markup => markup.hasTag('a')
-      );
+    this.editor.run(postEditor => {
+      postEditor.removeMarkupFromRange(range, markup => markup.hasTag('a'));
     });
-
-    this.editor.selectMarkers(markers);
+    this.editor.selectRange(range);
   }
 }

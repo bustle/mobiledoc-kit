@@ -145,18 +145,6 @@ class PostEditor {
     }
   }
 
-  removeMarkerRange(headMarker, tailMarker) {
-    let marker = headMarker;
-    while (marker) {
-      let nextMarker = marker.next;
-      this.removeMarker(marker);
-      if (marker === tailMarker) {
-        break;
-      }
-      marker = nextMarker;
-    }
-  }
-
   _coalesceMarkers(section) {
     filter(section.markers, m => m.isEmpty).forEach(marker => {
       this.removeMarker(marker);
@@ -357,8 +345,8 @@ class PostEditor {
 
   /**
    * Split markers at two positions, once at the head, and if necessary once
-   * at the tail. This method is designed to accept `editor.cursor.offsets`
-   * as an argument.
+   * at the tail. This method is designed to accept a range
+   * (e.g. `editor.cursor.offsets`) as an argument.
    *
    * Usage:
    *
@@ -371,18 +359,23 @@ class PostEditor {
    * provided. Markers on the outside of the split may also have been modified.
    *
    * @method splitMarkers
-   * @param {Object} markerRange Object with offsets, {headMarker, headMarkerOffset, tailMarker, tailMarkerOffset}
+   * @param {Range} markerRange
    * @return {Array} of markers that are inside the split
    * @public
    */
-  splitMarkers({headMarker, headMarkerOffset, tailMarker, tailMarkerOffset}) {
+  splitMarkers(range) {
     const { post } = this.editor;
+    const {
+      headSection,
+      tailSection,
+      headMarker,
+      headMarkerOffset,
+      tailMarker,
+      tailMarkerOffset
+    } = range;
     let selectedMarkers = [];
 
-    let headSection = headMarker.section;
-    let tailSection = tailMarker.section;
-
-    // These render will be removed by the split functions. Mark them
+    // These render nodes will be removed by the split functions. Mark them
     // for removal before doing that. FIXME this seems prime for
     // refactoring onto the postEditor as a split function
     headMarker.renderNode.scheduleForRemoval();
@@ -550,10 +543,10 @@ class PostEditor {
    *
    * Usage:
    *
-   *     let markerRange = editor.cursor.offsets;
-   *     let strongMarkup = editor.builder.createMarkup('strong');
+   *     const range = editor.cursor.offsets;
+   *     const strongMarkup = editor.builder.createMarkup('strong');
    *     editor.run((postEditor) => {
-   *       postEditor.applyMarkupToMarkers(markerRange, strongMarkup);
+   *       postEditor.applyMarkupToRange(range, strongMarkup);
    *     });
    *     // Will result some markers possibly being split, and the markup
    *     // being applied to all markers between the split.
@@ -561,13 +554,13 @@ class PostEditor {
    * The return value will be all markers between the split, the same return
    * value as `splitMarkers`.
    *
-   * @method applyMarkupToMarkers
-   * @param {Object} markerRange Object with offsets
-   * @param {Object} markup A markup post abstract node
+   * @method applyMarkupToRange
+   * @param {Range} markerRange
+   * @param {Markup} markup A markup post abstract node
    * @return {Array} of markers that are inside the split
    * @public
    */
-  applyMarkupToMarkers(markerRange, markup) {
+  applyMarkupToRange(markerRange, markup) {
     const markers = this.splitMarkers(markerRange);
     markers.forEach(marker => {
       marker.addMarkup(markup);
@@ -587,10 +580,10 @@ class PostEditor {
    *
    * Usage:
    *
-   *     let markerRange = editor.cursor.offsets;
-   *     let markup = markerRange.headMarker.markups[0];
+   *     const range = editor.cursor.offsets;
+   *     const markup = markerRange.headMarker.markups[0];
    *     editor.run((postEditor) => {
-   *       postEditor.removeMarkupFromMarkers(markerRange, markup);
+   *       postEditor.removeMarkupFromRange(range, markup);
    *     });
    *     // Will result some markers possibly being split, and the markup
    *     // being removed from all markers between the split.
@@ -598,14 +591,14 @@ class PostEditor {
    * The return value will be all markers between the split, the same return
    * value as `splitMarkers`.
    *
-   * @method removeMarkupFromMarkers
-   * @param {Object} markerRange Object with offsets
-   * @param {Object} markup A markup post abstract node
+   * @method removeMarkupFromRange
+   * @param {Range} range Object with offsets
+   * @param {Markup} markup A markup post abstract node
    * @return {Array} of markers that are inside the split
    * @public
    */
-  removeMarkupFromMarkers(markerRange, markupOrMarkupCallback) {
-    const markers = this.splitMarkers(markerRange);
+  removeMarkupFromRange(range, markupOrMarkupCallback) {
+    const markers = this.splitMarkers(range);
     markers.forEach(marker => {
       marker.removeMarkup(markupOrMarkupCallback);
       marker.section.renderNode.markDirty();

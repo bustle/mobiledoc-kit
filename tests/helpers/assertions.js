@@ -42,4 +42,8 @@ export default function registerAssertions() {
     const btn = _getToolbarButton(name);
     QUnit.assert.ok(btn.is('.active'), message);
   };
+
+  QUnit.assert.inArray = function(element, array, message=`has "${element}" in "${array}"`) {
+    QUnit.assert.ok(array.indexOf(element) !== -1, message);
+  };
 }

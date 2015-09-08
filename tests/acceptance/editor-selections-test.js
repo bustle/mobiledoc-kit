@@ -457,3 +457,30 @@ test('selecting text that includes a card section and deleting deletes card sect
     done();
   });
 });
+
+test('selecting text that touches bold text should not be considered bold by the toolbar', (assert) => {
+  const done = assert.async();
+
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.selectText('b', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    Helpers.toolbar.clickButton(assert, 'bold');
+
+    assert.hasElement('#editor strong:contains(b)', 'precond - bold text');
+
+    Helpers.dom.selectText('c', editorElement);
+    Helpers.dom.triggerEvent(document, 'mouseup');
+
+    setTimeout(() => {
+      assert.inactiveButton('bold', 'when selecting text next to bold text, bold button is inactive');
+      done();
+    });
+  });
+});

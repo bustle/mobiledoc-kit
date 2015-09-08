@@ -295,9 +295,18 @@ class Editor {
     this.reportSelection();
   }
 
-  selectMarkers(markers) {
-    this.cursor.selectMarkers(markers);
-    this.reportSelection();
+  selectRange(range){
+    this.cursor.selectRange(range);
+    if (range.isCollapsed) {
+      this.reportNoSelection();
+    } else {
+      this.reportSelection();
+    }
+  }
+
+  moveToPosition(position) {
+    this.cursor.moveToPosition(position);
+    this.reportNoSelection();
   }
 
   get cursor() {
@@ -371,21 +380,13 @@ class Editor {
     return this.cursor.activeSections;
   }
 
-  get activeMarkers() {
-    const {
-      headMarker,
-      tailMarker
-    } = this.cursor.offsets;
-
-    let activeMarkers = [];
-
-    if (headMarker && tailMarker) {
-      this.post.markersFrom(headMarker, tailMarker, m => {
-        activeMarkers.push(m);
-      });
+  get markupsInSelection() {
+    if (this.cursor.hasSelection()) {
+      const range = this.cursor.offsets;
+      return this.post.markupsInRange(range);
+    } else {
+      return [];
     }
-
-    return activeMarkers;
   }
 
   /*

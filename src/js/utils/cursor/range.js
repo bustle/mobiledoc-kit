@@ -1,7 +1,31 @@
+import Position from './position';
+
 export default class Range {
   constructor(head, tail) {
     this.head = head;
     this.tail = tail;
+  }
+
+  /**
+   * @param {Markerable} section
+   * @return {Range} A range that is constrained to only the part that
+   * includes the section.
+   * FIXME -- if the section isn't the head or tail, it's assumed to be
+   * wholly contained. It's possible to call `trimTo` with a selection that is
+   * outside of the range, though, which would invalidate that assumption.
+   */
+  trimTo(section) {
+    const length = section.length;
+
+    let headOffset = section === this.head.section ?
+      Math.min(this.head.offset, length) : 0;
+    let tailOffset = section === this.tail.section ?
+      Math.min(this.tail.offset, length) : length;
+
+    return new Range(
+      new Position(section, headOffset),
+      new Position(section, tailOffset)
+    );
   }
 
   // "legacy" APIs

@@ -84,21 +84,22 @@ const Cursor = class Cursor {
     const headSection = sections[0],
           tailSection = sections[sections.length - 1];
 
-    const headMarker = headSection.markers.head,
-          tailMarker = tailSection.markers.tail;
-
-    const headMarkerOffset = 0,
-          tailMarkerOffset = tailMarker.length;
-
-    this.moveToMarker(headMarker, headMarkerOffset, tailMarker, tailMarkerOffset);
+    const range = new Range(
+      new Position(headSection, 0),
+      new Position(tailSection, tailSection.text.length)
+    );
+    this.selectRange(range);
   }
 
-  selectMarkers(markers) {
-    const headMarker = markers[0],
-          tailMarker = markers[markers.length - 1],
-          headOffset = 0,
-          tailOffset = tailMarker.length;
-    this.moveToMarker(headMarker, headOffset, tailMarker, tailOffset);
+  selectRange(range) {
+    const {
+      headMarker,
+      headMarkerOffset,
+      tailMarker,
+      tailMarkerOffset
+    } = range;
+    this.moveToMarker(
+      headMarker, headMarkerOffset, tailMarker, tailMarkerOffset);
   }
 
   get selection() {
@@ -107,6 +108,10 @@ const Cursor = class Cursor {
 
   selectedText() {
     return this.selection.toString();
+  }
+
+  moveToPosition(position) {
+    this.selectRange(new Range(position, position));
   }
 
   /**
