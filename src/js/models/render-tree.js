@@ -6,6 +6,9 @@ export default class RenderTree {
     this.node = node;
     this.elements = new ElementMap();
   }
+  get rootElement() {
+    return this.node.element;
+  }
   getElementRenderNode(element) {
     return this.elements.get(element);
   }

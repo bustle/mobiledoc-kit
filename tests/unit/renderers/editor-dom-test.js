@@ -76,9 +76,15 @@ test("renders a dirty post with un-rendered sections", (assert) => {
   {
     name: 'card',
     section: (builder) => builder.createCardSection('new-card')
+  },
+  {
+    name: 'list-section',
+    section: (builder) => builder.createListSection('ul', [
+      builder.createListItem([builder.createMarker('item')])
+    ])
   }
 ].forEach((testInfo) => {
-  test(`remove nodes with ${testInfo.name} section`, (assert) => {
+  test(`removes nodes with ${testInfo.name} section`, (assert) => {
     let post = builder.createPost();
     let section = testInfo.section(builder);
     post.sections.append(section);
@@ -561,6 +567,32 @@ test('removes list sections', (assert) => {
   render(renderTree);
 
   assert.equal(node.element.innerHTML, expectedHTML, 'removes list section');
+});
+
+test('includes card sections in renderTree element map', (assert) => {
+  const post = Helpers.postAbstract.build(({post, cardSection}) =>
+    post([cardSection('simple-card')])
+  );
+  const cards = [{
+    name: 'simple-card',
+    display: {
+      setup(element) {
+        element.setAttribute('id', 'simple-card');
+      }
+    }
+  }];
+
+  const node = new RenderNode(post);
+  const renderTree = new RenderTree(node);
+  node.renderTree = renderTree;
+  render(renderTree, cards);
+
+  $('#qunit-fixture')[0].appendChild(node.element);
+
+  const element = $('#simple-card')[0];
+  assert.ok(!!element, 'precond - simple card is rendered');
+  assert.ok(!!renderTree.getElementRenderNode(element),
+            'has render node for card element');
 });
 
 /*

@@ -1,52 +1,41 @@
-import { detect } from 'content-kit-editor/utils/array-utils';
-import {
-  detectParentNode,
-  isTextNode,
-  walkTextNodes
-} from 'content-kit-editor/utils/dom-utils';
+import { isTextNode, walkTextNodes } from 'content-kit-editor/utils/dom-utils';
 import { MARKUP_SECTION_TYPE } from 'content-kit-editor/models/markup-section';
 import { LIST_ITEM_TYPE } from 'content-kit-editor/models/list-item';
-import { MARKER_TYPE } from 'content-kit-editor/models/marker';
+import { CARD_TYPE } from 'content-kit-editor/models/card';
 
-// FIXME This assumes that all sections are children of the Post,
-// but that isn't a valid assumption, some sections (ListItem) are
-// grand-children of the post.
-function findSectionContaining(sections, childNode) {
-  const { result: section } = detectParentNode(childNode, node => {
-    return detect(sections, section => {
-      return section.renderNode.element === node;
-    });
-  });
-  return section;
+function isSection(postNode) {
+  if (!(postNode && postNode.type)) { return false; }
+  return postNode.type === MARKUP_SECTION_TYPE ||
+    postNode.type === LIST_ITEM_TYPE ||
+    postNode.type === CARD_TYPE;
 }
 
-function findSectionFromNode(node, renderTree) {
-  const renderNode = renderTree.getElementRenderNode(node);
-  const postNode = renderNode && renderNode.postNode;
-  return postNode;
+function isCardSection(section) {
+  return section.type === CARD_TYPE;
 }
 
-// cursorElement is the DOM element that the browser reports that the cursor
-// is on
-function findOffsetInSection(sectionElement, cursorElement, offsetInElement) {
-  if (!isTextNode(cursorElement)) {
-    // if the cursor element is not a text node, assume that the cursor is
-    // on the section element itself and return 0
-    return 0;
+function findParentSectionFromNode(renderTree, node) {
+  let renderNode;
+  while (node && node !== renderTree.rootElement) {
+    renderNode = renderTree.getElementRenderNode(node);
+    if (renderNode && isSection(renderNode.postNode)) {
+      return renderNode.postNode;
+    }
+    node = node.parentNode;
   }
+}
 
+function findOffsetInElement(elementNode, textNode, offsetInTextNode) {
   let offset = 0, found = false;
-  walkTextNodes(sectionElement, (textNode) => {
+  walkTextNodes(elementNode, _textNode => {
     if (found) { return; }
-
-    if (textNode === cursorElement) {
+    if (_textNode === textNode) {
       found = true;
-      offset += offsetInElement;
+      offset += offsetInTextNode;
     } else {
-      offset += textNode.textContent.length;
+      offset += _textNode.textContent.length;
     }
   });
-
   return offset;
 }
 
@@ -54,6 +43,7 @@ const Position = class Position {
   constructor(section, offset=0) {
     this.section = section;
     this.offset = offset;
+    this._inCard = isCardSection(section);
   }
 
   get marker() {
@@ -69,42 +59,52 @@ const Position = class Position {
            this.offset  === position.offset;
   }
 
-  static fromNode(renderTree, sections, node, offsetInNode) {
-    // Sections and markers are registered into the element/renderNode map
-    let renderNode = renderTree.getElementRenderNode(node),
-        section = null,
-        offsetInSection = null;
+  static fromNode(renderTree, node, offset) {
+    if (isTextNode(node)) {
+      return Position.fromTextNode(renderTree, node, offset);
+    } else {
+      return Position.fromElementNode(renderTree, node, offset);
+    }
+  }
+
+  static fromTextNode(renderTree, textNode, offsetInNode) {
+    const renderNode = renderTree.getElementRenderNode(textNode);
+    let section, offsetInSection;
 
     if (renderNode) {
-      switch (renderNode.postNode.type) {
-        case MARKUP_SECTION_TYPE:
-          section = renderNode.postNode;
-          offsetInSection = offsetInNode;
-          break;
-        case LIST_ITEM_TYPE:
-          section = renderNode.postNode;
-          offsetInSection = offsetInNode;
-          break;
-        case MARKER_TYPE:
-          let marker = renderNode.postNode;
-          section = marker.section;
-          offsetInSection = section.offsetOfMarker(marker, offsetInNode);
-          break;
-      }
-    }
+      let marker = renderNode.postNode;
+      section = marker.section;
 
-    if (!section) {
-      section = findSectionFromNode(node.parentNode, renderTree) ||
-                findSectionContaining(sections, node);
+      if (!section) { throw new Error(`Could not find parent section for mapped text node "${textNode.textContent}"`); }
+      offsetInSection = section.offsetOfMarker(marker, offsetInNode);
+    } else {
+      // all text nodes should be rendered by markers except:
+      //   * text nodes inside cards
+      //   * text nodes created by the browser during text input
+      // both of these should have rendered parent sections, though
+      section = findParentSectionFromNode(renderTree, textNode);
+      if (!section) { throw new Error(`Could not find parent section for un-mapped text node "${textNode.textContent}"`); }
 
-      if (section) {
-        const sectionElement = section.renderNode.element;
-        offsetInSection = findOffsetInSection(sectionElement, node, offsetInNode);
+      if (isCardSection(section)) {
+        offsetInSection = 0; // we don't care about offsets in card sections
       } else {
-        throw new Error('Unable to determine section for cursor');
+        offsetInSection = findOffsetInElement(section.renderNode.element,
+                                              textNode, offsetInNode);
       }
     }
 
+    return new Position(section, offsetInSection);
+  }
+
+  static fromElementNode(renderTree, elementNode) {
+    let section, offsetInSection = 0;
+
+    section = findParentSectionFromNode(renderTree, elementNode);
+    if (!section) { throw new Error('Could not find parent section from element node'); }
+
+    // FIXME We assume that offsetInSection will always be 0 because we assume
+    // that only empty br tags (offsetInSection=0) will be those that cause
+    // us to call `fromElementNode`. This may not be a reliable assumption.
     return new Position(section, offsetInSection);
   }
 

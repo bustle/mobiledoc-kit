@@ -27,6 +27,11 @@ const Cursor = class Cursor {
     return this._hasCollapsedSelection() || this._hasSelection();
   }
 
+  isInCard() {
+    const {head, tail} = this.offsets;
+    return head && tail && (head._inCard || tail._inCard);
+  }
+
   hasSelection() {
     return this._hasSelection();
   }
@@ -37,21 +42,16 @@ const Cursor = class Cursor {
   get offsets() {
     if (!this.hasCursor()) { return {}; }
 
-    const { sections } = this.post;
-    const { selection } = this;
+    const { selection, renderTree } = this;
 
     const {
       headNode, headOffset, tailNode, tailOffset
     } = comparePosition(selection);
 
-    const headPosition = Position.fromNode(
-      this.renderTree, sections, headNode, headOffset
-    );
-    const tailPosition = Position.fromNode(
-      this.renderTree, sections, tailNode, tailOffset
-    );
+    const headPosition = Position.fromNode(renderTree, headNode, headOffset);
+    const tailPosition = Position.fromNode(renderTree, tailNode, tailOffset);
 
-    return Range.fromPositions(headPosition, tailPosition);
+    return new Range(headPosition, tailPosition);
   }
 
   get activeSections() {

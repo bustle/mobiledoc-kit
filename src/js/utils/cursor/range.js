@@ -32,8 +32,4 @@ export default class Range {
   get tailMarkerOffset() {
     return this.tail.offsetInMarker;
   }
-
-  static fromPositions(head, tail) {
-    return new Range(head, tail);
-  }
 }

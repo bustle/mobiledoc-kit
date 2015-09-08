@@ -1,20 +1,14 @@
 import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
-import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
-const { test, module } = QUnit;
+const { test, module } = Helpers;
 
 let fixture, editor, editorElement;
+const cardText = 'card text';
 
-const mobiledoc = {
-  version: MOBILEDOC_VERSION,
-  sections: [
-    [],
-    [
-      [10, 'simple-card']
-    ]
-  ]
-};
+const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
+  return post([cardSection('simple-card')]);
+});
 
 const simpleCard = {
   name: 'simple-card',
@@ -23,6 +17,7 @@ const simpleCard = {
       let button = document.createElement('button');
       button.setAttribute('id', 'display-button');
       element.appendChild(button);
+      element.appendChild(document.createTextNode(cardText));
       button.onclick = env.edit;
       return {button};
     },
@@ -81,3 +76,19 @@ test('changing to display state triggers update on editor', (assert) => {
                'update is triggered after switching to display mode');
 });
 
+test('editor listeners are quieted for card actions', (assert) => {
+  const done = assert.async();
+
+  const cards = [simpleCard];
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  Helpers.dom.selectText(cardText, editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    // FIXME should have a better assertion here
+    assert.ok(true, 'made it here with no javascript errors');
+    done();
+  });
+});
