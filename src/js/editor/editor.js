@@ -39,6 +39,9 @@ import PostNodeBuilder from '../models/post-node-builder';
 import {
   DEFAULT_TEXT_EXPANSIONS, findExpansion, validateExpansion
 } from './text-expansions';
+import {
+  DEFAULT_KEY_COMMANDS, findKeyCommand, validateKeyCommand
+} from './key-commands';
 import { capitalize } from '../utils/string-utils';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
@@ -121,6 +124,7 @@ class Editor {
     this.cards.push(ImageCard);
 
     DEFAULT_TEXT_EXPANSIONS.forEach(e => this.registerExpansion(e));
+    DEFAULT_KEY_COMMANDS.forEach(kc => this.registerKeyCommand(kc));
 
     this._parser   = new PostParser(this.builder);
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
@@ -228,11 +232,23 @@ class Editor {
     return this._expansions;
   }
 
+  get keyCommands() {
+    if (!this._keyCommands) { this._keyCommands = []; }
+    return this._keyCommands;
+  }
+
   registerExpansion(expansion) {
     if (!validateExpansion(expansion)) {
       throw new Error('Expansion is not valid');
     }
     this.expansions.push(expansion);
+  }
+
+  registerKeyCommand(keyCommand) {
+    if (!validateKeyCommand(keyCommand)) {
+      throw new Error('Key Command is not valid');
+    }
+    this.keyCommands.push(keyCommand);
   }
 
   handleExpansion(event) {
@@ -282,6 +298,11 @@ class Editor {
       return postEditor.splitSection(range.head)[1];
     });
     this.cursor.moveToSection(cursorSection);
+  }
+
+  // FIXME it might be nice to use the toolbar's prompt instead
+  showPrompt(message, defaultValue, callback) {
+    callback(window.prompt(message, defaultValue));
   }
 
   reportSelection() {
@@ -617,15 +638,22 @@ class Editor {
       this.handleNewline(event);
     } else if (key.isPrintable()) {
       if (this.cursor.hasSelection()) {
-        let offsets = this.cursor.offsets;
-        this.run((postEditor) => {
-          postEditor.deleteRange(this.cursor.offsets);
-        });
+        const offsets = this.cursor.offsets;
+        this.run(postEditor => postEditor.deleteRange(offsets));
         this.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
       }
     }
 
     this.handleExpansion(event);
+    this.handleKeyCommand(event);
+  }
+
+  handleKeyCommand(event) {
+    const keyCommand = findKeyCommand(this.keyCommands, event);
+    if (keyCommand) {
+      event.preventDefault();
+      keyCommand.run(this);
+    }
   }
 
   handlePaste(event) {

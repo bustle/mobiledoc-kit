@@ -105,6 +105,10 @@ const Cursor = class Cursor {
     return window.getSelection();
   }
 
+  selectedText() {
+    return this.selection.toString();
+  }
+
   /**
    * @private
    * @param {textNode} node
