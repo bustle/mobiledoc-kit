@@ -1,5 +1,5 @@
 import Helpers from '../../test-helpers';
-import { Position, Range } from 'content-kit-editor/utils/cursor';
+import Range from 'content-kit-editor/utils/cursor/range';
 
 const {module, test} = Helpers;
 
@@ -9,10 +9,6 @@ module('Unit: Post', {
   afterEach() {
   }
 });
-
-function makeRange(s1, o1, s2, o2) {
-  return new Range(new Position(s1, o1), new Position(s2, o2));
-}
 
 test('#markersFrom finds markers across markup sections', (assert) => {
   const post = Helpers.postAbstract.build(({post, markupSection, marker}) =>
@@ -96,7 +92,7 @@ test('#walkMarkerableSections skips non-markerable sections', (assert) => {
   assert.equal(s1.text, 's1m1', 'precond - find s1');
   assert.equal(s4.text, 's4m1', 'precond - find s4');
 
-  const range = new Range(new Position(s1, 0), new Position(s4, 0));
+  const range = Range.create(s1, 0, s4, 0);
 
   post.walkMarkerableSections(range, s => foundSections.push(s));
 
@@ -139,27 +135,27 @@ test('#markupsInRange returns all markups', (assert) => {
   assert.equal(s2.text, 'link 1', 'precond s2');
   assert.equal(s3.text, 'link 2', 'precond s3');
 
-  const collapsedRange = makeRange(s1, 0, s1, 0);
+  const collapsedRange = Range.create(s1, 0, s1, 0);
   assert.equal(post.markupsInRange(collapsedRange).length, 0,
                'no markups in collapsed range');
 
-  const simpleRange = makeRange(s1, 0, s1, 'plain text'.length);
+  const simpleRange = Range.create(s1, 0, s1, 'plain text'.length);
   assert.equal(post.markupsInRange(simpleRange).length, 0,
                'no markups in simple range');
 
-  const singleMarkerRange = makeRange(s1, 'plain textb'.length,
+  const singleMarkerRange = Range.create(s1, 'plain textb'.length,
                                       s1, 'plain textbold'.length);
   found = post.markupsInRange(singleMarkerRange);
   assert.equal(found.length, 1, 'finds markup in marker');
   assert.inArray(b, found, 'finds b');
 
-  const singleSectionRange = makeRange(s1, 0, s1, s1.text.length);
+  const singleSectionRange = Range.create(s1, 0, s1, s1.text.length);
   found = post.markupsInRange(singleSectionRange);
   assert.equal(found.length, 2, 'finds both markups in section');
   assert.inArray(b, found, 'finds b');
   assert.inArray(i, found, 'finds i');
 
-  const multiSectionRange = makeRange(s1, 'plain textbold te'.length,
+  const multiSectionRange = Range.create(s1, 'plain textbold te'.length,
                                       s2, 'link'.length);
   found = post.markupsInRange(multiSectionRange);
   assert.equal(found.length, 3, 'finds all markups in multi-section range');
@@ -167,11 +163,110 @@ test('#markupsInRange returns all markups', (assert) => {
   assert.inArray(i, found, 'finds i');
   assert.inArray(a1, found, 'finds a1');
 
-  const rangeSpanningCard = makeRange(s1, 0, s3, 'link'.length);
+  const rangeSpanningCard = Range.create(s1, 0, s3, 'link'.length);
   found = post.markupsInRange(rangeSpanningCard);
   assert.equal(found.length, 4, 'finds all markups in spanning section range');
   assert.inArray(b, found, 'finds b');
   assert.inArray(i, found, 'finds i');
   assert.inArray(a1, found, 'finds a1');
   assert.inArray(a2, found, 'finds a2');
+});
+
+test('#markersContainedByRange when range is single marker', (assert) => {
+  let found;
+  const post = Helpers.postAbstract.build(({post, marker, markupSection}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+
+  const innerRange = Range.create(post.sections.head, 1, post.sections.head, 2);
+  found = post.markersContainedByRange(innerRange);
+  assert.equal(found.length, 0, '0 markers in innerRange');
+
+  const outerRange = Range.create(post.sections.head, 0, post.sections.head, 3);
+  found = post.markersContainedByRange(outerRange);
+  assert.equal(found.length, 1, '1 marker in outerRange');
+  assert.ok(found[0] === post.sections.head.markers.head, 'finds right marker');
+});
+
+test('#markersContainedByRange when range is single section', (assert) => {
+  let found;
+  const post = Helpers.postAbstract.build(({post, marker, markupSection}) => {
+    return post([markupSection('p', [
+      marker('abc'), marker('def'), marker('ghi')
+    ])]);
+  });
+
+  const section = post.sections.head;
+
+  const innerRange = Range.create(section, 2, section, 4);
+  found = post.markersContainedByRange(innerRange);
+  assert.equal(found.length, 0, '0 markers in innerRange');
+
+  const middleRange = Range.create(section, 2, section, 7);
+  found = post.markersContainedByRange(middleRange);
+  assert.equal(found.length, 1, '1 markers in middleRange');
+  assert.ok(found[0] === section.markers.objectAt(1), 'finds right marker');
+
+  const middleRangeLeftFencepost = Range.create(section, 3, section, 7);
+  found = post.markersContainedByRange(middleRangeLeftFencepost);
+  assert.equal(found.length, 1, '1 markers in middleRangeLeftFencepost');
+  assert.ok(found[0] === section.markers.objectAt(1), 'finds right marker');
+
+  const middleRangeRightFencepost = Range.create(section, 2, section, 6);
+  found = post.markersContainedByRange(middleRangeRightFencepost);
+  assert.equal(found.length, 1, '1 markers in middleRangeRightFencepost');
+  assert.ok(found[0] === section.markers.objectAt(1), 'finds right marker');
+
+  const middleRangeBothFencepost = Range.create(section, 3, section, 6);
+  found = post.markersContainedByRange(middleRangeBothFencepost);
+  assert.equal(found.length, 1, '1 markers in middleRangeBothFencepost');
+  assert.ok(found[0] === section.markers.objectAt(1), 'finds right marker');
+
+  const outerRange = Range.create(section, 0, section, section.length);
+  found = post.markersContainedByRange(outerRange);
+  assert.equal(found.length, section.markers.length, 'all markers in outerRange');
+});
+
+test('#markersContainedByRange when range is contiguous sections', (assert) => {
+  let found;
+  const post = Helpers.postAbstract.build(({post, marker, markupSection}) => {
+    return post([
+      markupSection('p', [marker('abc'), marker('def'), marker('ghi')]),
+      markupSection('p', [marker('123'), marker('456'), marker('789')])
+    ]);
+  });
+
+  const headSection = post.sections.head, tailSection = post.sections.tail;
+
+  const innerRange = Range.create(headSection, 7, tailSection, 2);
+  found = post.markersContainedByRange(innerRange);
+  assert.equal(found.length, 0, '0 markers in innerRange');
+
+  const middleRange = Range.create(headSection, 5, tailSection, 4);
+  found = post.markersContainedByRange(middleRange);
+  assert.equal(found.length, 2, '2 markers in middleRange');
+  assert.ok(found[0] === headSection.markers.objectAt(2), 'finds right head marker');
+  assert.ok(found[1] === tailSection.markers.objectAt(0), 'finds right tail marker');
+
+  const middleRangeLeftFencepost = Range.create(headSection, 6, tailSection, 2);
+  found = post.markersContainedByRange(middleRangeLeftFencepost);
+  assert.equal(found.length, 1, '1 markers in middleRangeLeftFencepost');
+  assert.ok(found[0] === headSection.markers.objectAt(2), 'finds right head marker');
+
+  const middleRangeRightFencepost = Range.create(headSection, 7, tailSection, 3);
+  found = post.markersContainedByRange(middleRangeRightFencepost);
+  assert.equal(found.length, 1, '1 markers in middleRangeRightFencepost');
+  assert.ok(found[0] === tailSection.markers.objectAt(0), 'finds right marker');
+
+  const middleRangeBothFencepost = Range.create(headSection, 6, tailSection, 3);
+  found = post.markersContainedByRange(middleRangeBothFencepost);
+  assert.equal(found.length, 2, '2 markers in middleRangeBothFencepost');
+  assert.ok(found[0] === headSection.markers.objectAt(2), 'finds right head marker');
+  assert.ok(found[1] === tailSection.markers.objectAt(0), 'finds right tail marker');
+
+  const outerRange = Range.create(headSection, 0, tailSection, tailSection.length);
+  found = post.markersContainedByRange(outerRange);
+  assert.equal(found.length,
+               headSection.markers.length + tailSection.markers.length,
+               'all markers in outerRange');
 });

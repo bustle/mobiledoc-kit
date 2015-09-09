@@ -154,8 +154,8 @@ export default class Markerable extends LinkedItem {
     return markups.toArray();
   }
 
-  // calls the callback with (marker, {markerHead, markerTail})
-  // for each marker that is wholly or partially contained in the range
+  // calls the callback with (marker, {markerHead, markerTail, isContained})
+  // for each marker that is wholly or partially contained in the range.
   _markersInRange(range, callback) {
     const { head, tail } = range;
     if (head.section !== this || tail.section !== this) {
@@ -172,8 +172,9 @@ export default class Markerable extends LinkedItem {
         let markerHead = Math.max(headOffset - currentHead, 0);
         let markerTail = currentMarker.length -
           Math.max(currentTail - tailOffset, 0);
+        let isContained = markerHead === 0 && markerTail === currentMarker.length;
 
-        callback(currentMarker, {markerHead, markerTail});
+        callback(currentMarker, {markerHead, markerTail, isContained});
       }
 
       currentHead += currentMarker.length;

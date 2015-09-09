@@ -12,25 +12,21 @@ export default class Post {
     });
   }
 
-  markersInRange({headMarker, headMarkerOffset, tailMarker, tailMarkerOffset}) {
-    let offset = 0;
-    let foundMarkers = [];
-    let toEnd = tailMarkerOffset === undefined;
-    if (toEnd) { tailMarkerOffset = 0; }
+  /**
+   * @param {Range} range
+   * @return {Array} markers that are completely contained by the range
+   */
+  markersContainedByRange(range) {
+    const markers = [];
 
-    this.markersFrom(headMarker, tailMarker, marker => {
-      if (toEnd) {
-        tailMarkerOffset += marker.length;
-      }
-
-      if (offset >= headMarkerOffset && offset < tailMarkerOffset) {
-        foundMarkers.push(marker);
-      }
-
-      offset += marker.length;
+    this.walkMarkerableSections(range, section => {
+      section._markersInRange(
+        range.trimTo(section),
+        (m, {isContained}) => { if (isContained) { markers.push(m); } }
+      );
     });
 
-    return foundMarkers;
+    return markers;
   }
 
   cutMarkers(markers) {

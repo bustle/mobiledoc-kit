@@ -6,6 +6,13 @@ export default class Range {
     this.tail = tail;
   }
 
+  static create(headSection, headOffset, tailSection, tailOffset) {
+    return new Range(
+      new Position(headSection, headOffset),
+      new Position(tailSection, tailOffset)
+    );
+  }
+
   /**
    * @param {Markerable} section
    * @return {Range} A range that is constrained to only the part that
@@ -22,10 +29,7 @@ export default class Range {
     let tailOffset = section === this.tail.section ?
       Math.min(this.tail.offset, length) : length;
 
-    return new Range(
-      new Position(section, headOffset),
-      new Position(section, tailOffset)
-    );
+    return Range.create(section, headOffset, section, tailOffset);
   }
 
   // "legacy" APIs
