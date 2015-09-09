@@ -63,43 +63,35 @@ const Cursor = class Cursor {
 
   // moves cursor to the start of the section
   moveToSection(section, offsetInSection=0) {
-    const {marker, offset} = section.markerPositionAtOffset(offsetInSection);
-    if (marker) {
-      this.moveToMarker(marker, offset);
-    } else {
-      this._moveToNode(section.renderNode.element, offsetInSection);
-    }
-  }
-
-  // moves cursor to marker
-  moveToMarker(headMarker, headOffset=0, tailMarker=headMarker, tailOffset=headOffset) {
-    if (!headMarker) { throw new Error('Cannot move cursor to marker without a marker'); }
-    const headElement = headMarker.renderNode.element;
-    const tailElement = tailMarker.renderNode.element;
-
-    this._moveToNode(headElement, headOffset, tailElement, tailOffset);
+    this.moveToPosition(new Position(section, offsetInSection));
   }
 
   selectSections(sections) {
-    const headSection = sections[0],
-          tailSection = sections[sections.length - 1];
-
-    const range = new Range(
-      new Position(headSection, 0),
-      new Position(tailSection, tailSection.text.length)
-    );
+    const headSection = sections[0], tailSection = sections[sections.length - 1];
+    const range = Range.create(headSection, 0, tailSection, tailSection.length);
     this.selectRange(range);
   }
 
+  _findNodeForPosition(position) {
+    const { section } = position;
+    let node, offset;
+    if (section.isBlank) {
+      node = section.renderNode.element;
+      offset = 0;
+    } else {
+      const {marker, offsetInMarker} = position;
+      node = marker.renderNode.element;
+      offset = offsetInMarker;
+    }
+
+    return {node, offset};
+  }
+
   selectRange(range) {
-    const {
-      headMarker,
-      headMarkerOffset,
-      tailMarker,
-      tailMarkerOffset
-    } = range;
-    this.moveToMarker(
-      headMarker, headMarkerOffset, tailMarker, tailMarkerOffset);
+    const { head, tail } = range;
+    const { node:headNode, offset:headOffset } = this._findNodeForPosition(head),
+          { node:tailNode, offset:tailOffset } = this._findNodeForPosition(tail);
+    this._moveToNode(headNode, headOffset, tailNode, tailOffset);
   }
 
   get selection() {

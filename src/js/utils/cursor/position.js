@@ -46,6 +46,10 @@ const Position = class Position {
     this._inCard = isCardSection(section);
   }
 
+  clone() {
+    return new Position(this.section, this.offset);
+  }
+
   get marker() {
     return this.markerPosition.marker;
   }

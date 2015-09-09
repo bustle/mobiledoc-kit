@@ -134,7 +134,7 @@ export default class Post {
     return containedSections;
   }
 
-  // return the next section that has markers afer this one
+  // return the next section that has markers after this one
   _nextMarkerableSection(section) {
     if (!section) { return null; }
     const isMarkerable = s => !!s.markers;
@@ -143,7 +143,7 @@ export default class Post {
     const isChild      = s => s.parent && !s.post;
     const parent       = s => s.parent;
 
-    let next = section.next;
+    const next = section.next;
     if (next) {
       if (isMarkerable(next)) {
         return next;

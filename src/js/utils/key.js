@@ -1,7 +1,7 @@
 import Keycodes from './keycodes';
 export const DIRECTION = {
   FORWARD: 1,
-  BACKWARD: 2
+  BACKWARD: -1 
 };
 
 export const MODIFIERS = {
