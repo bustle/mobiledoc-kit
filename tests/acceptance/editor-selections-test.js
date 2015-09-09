@@ -484,3 +484,33 @@ test('selecting text that touches bold text should not be considered bold by the
     });
   });
 });
+
+// https://github.com/bustlelabs/content-kit-editor/issues/121
+test('selecting text that includes a 1-character marker and unbolding it', (assert) => {
+  const done = assert.async();
+
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, markup}) => {
+    const b = markup('strong');
+    return post([markupSection('p', [
+      marker('a'),
+      marker('b',[b]),
+      marker('c')
+    ])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor strong:contains(b)', 'precond - bold');
+
+  Helpers.dom.selectText('b', editorElement, 'c', editorElement);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    assert.activeButton('bold');
+    Helpers.toolbar.clickButton(assert, 'bold');
+
+    assert.hasNoElement('#editor strong', 'bold text is unboldened');
+
+    done();
+  });
+});

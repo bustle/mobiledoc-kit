@@ -5,22 +5,15 @@ import { Editor } from 'content-kit-editor';
 import Helpers from '../../test-helpers';
 import { DIRECTION } from 'content-kit-editor/utils/key';
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
-import {Position, Range} from 'content-kit-editor/utils/cursor';
+import Range from 'content-kit-editor/utils/cursor/range';
 
 const { FORWARD } = DIRECTION;
 
-const { module, test } = window.QUnit;
+const { module, test } = Helpers;
 
 let editor, editorElement;
 
 let builder, postEditor, mockEditor;
-
-function makeRange(headSection, headOffset, tailSection, tailOffset) {
-  return new Range(
-    new Position(headSection, headOffset),
-    new Position(tailSection, tailOffset)
-  );
-}
 
 function getSection(sectionIndex) {
   return editor.post.sections.objectAt(sectionIndex);
@@ -219,7 +212,7 @@ test('#deleteRange when within the same marker', (assert) => {
 
   renderBuiltAbstract(post);
 
-  const range = makeRange(section, 3, section, 4);
+  const range = Range.create(section, 3, section, 4);
 
   postEditor.deleteRange(range);
 
@@ -242,7 +235,7 @@ test('#deleteRange when same section, different markers, same markups', (assert)
 
   renderBuiltAbstract(post);
 
-  const range = makeRange(section, 3, section, 4);
+  const range = Range.create(section, 3, section, 4);
   postEditor.deleteRange(range);
   postEditor.complete();
 
@@ -264,7 +257,7 @@ test('#deleteRange when same section, different markers, different markups', (as
 
   renderBuiltAbstract(post);
 
-  const range = makeRange(section, 3, section, 4);
+  const range = Range.create(section, 3, section, 4);
   postEditor.deleteRange(range);
   postEditor.complete();
 
@@ -286,7 +279,7 @@ test('#deleteRange across contiguous sections', (assert) => {
 
   renderBuiltAbstract(post);
 
-  const range = makeRange(s1, 3, s2, 1);
+  const range = Range.create(s1, 3, s2, 1);
   postEditor.deleteRange(range);
   postEditor.complete();
 
@@ -305,7 +298,7 @@ test('#deleteRange across entire sections', (assert) => {
 
   renderBuiltAbstract(post);
 
-  const range = makeRange(s1, 3, s3, 0);
+  const range = Range.create(s1, 3, s3, 0);
   postEditor.deleteRange(range);
   postEditor.complete();
 
@@ -323,7 +316,7 @@ test('#deleteRange across all content', (assert) => {
 
   renderBuiltAbstract(post);
 
-  const range = makeRange(s1, 0, s2, 3);
+  const range = Range.create(s1, 0, s2, 3);
   postEditor.deleteRange(range);
 
   postEditor.complete();
@@ -351,7 +344,7 @@ test('#cutSection with one marker', (assert) => {
   assert.equal(post.sections.head.markers.length, 2, 'two markers remain');
 });
 
-test('#cutSection at bounderies across markers', (assert) => {
+test('#cutSection at boundaries across markers', (assert) => {
   let post, section;
   Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
     section = markupSection('p', [
@@ -414,4 +407,65 @@ test('#cutSection in tail marker', (assert) => {
   assert.equal(post.sections.head.text, 'c');
   assert.equal(post.sections.length, 1, 'only 1 section remains');
   assert.equal(post.sections.head.markers.length, 1, 'two markers remain');
+});
+
+test('#splitMarkers when headMarker = tailMarker', (assert) => {
+  let post, section;
+  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
+    section = markupSection('p', [
+      marker('abcd')
+    ]);
+    post = buildPost([ section ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  const range = Range.create(section, 1, section, 3);
+  const markers = postEditor.splitMarkers(range);
+  postEditor.complete();
+
+  assert.equal(markers.length, 1, 'markers');
+  assert.equal(markers[0].value, 'bc', 'marker 0');
+});
+
+test('#splitMarkers when head section = tail section, but different markers', (assert) => {
+  const post = Helpers.postAbstract.build(({marker, markupSection, post}) =>
+    post([
+      markupSection('p', [marker('abc'), marker('def')])
+    ])
+  );
+
+  renderBuiltAbstract(post);
+
+  const section = post.sections.head;
+  const range = Range.create(section, 2, section, 5);
+  const markers = postEditor.splitMarkers(range);
+  postEditor.complete();
+
+  assert.equal(markers.length, 2, 'markers');
+  assert.equal(markers[0].value, 'c', 'marker 0');
+  assert.equal(markers[1].value, 'de', 'marker 1');
+});
+
+// see https://github.com/bustlelabs/content-kit-editor/issues/121
+test('#splitMarkers when single-character marker at start', (assert) => {
+  let post, section;
+  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
+    section = markupSection('p', [
+      marker('a'),
+      marker('b'),
+      marker('c')
+    ]);
+    post = buildPost([ section ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  const range = Range.create(section, 1, section, 3);
+  const markers = postEditor.splitMarkers(range);
+  postEditor.complete();
+
+  assert.equal(markers.length, 2, 'markers');
+  assert.equal(markers[0].value, 'b', 'marker 0');
+  assert.equal(markers[1].value, 'c', 'marker 1');
 });

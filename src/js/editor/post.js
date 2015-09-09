@@ -373,7 +373,6 @@ class PostEditor {
       tailMarker,
       tailMarkerOffset
     } = range;
-    let selectedMarkers = [];
 
     // These render nodes will be removed by the split functions. Mark them
     // for removal before doing that. FIXME this seems prime for
@@ -384,51 +383,16 @@ class PostEditor {
     tailMarker.section.renderNode.markDirty();
 
     if (headMarker === tailMarker) {
-      let markers = headSection.splitMarker(headMarker, headMarkerOffset, tailMarkerOffset);
-      selectedMarkers = post.markersInRange({
-        headMarker: markers[0],
-        tailMarker: markers[markers.length-1],
-        headMarkerOffset,
-        tailMarkerOffset
-      });
+      headSection.splitMarker(headMarker, headMarkerOffset, tailMarkerOffset);
     } else {
-      let newHeadMarkers = headSection.splitMarker(headMarker, headMarkerOffset);
-      let selectedHeadMarkers = post.markersInRange({
-        headMarker: newHeadMarkers[0],
-        tailMarker: newHeadMarkers[newHeadMarkers.length-1],
-        headMarkerOffset
-      });
-
-      let newTailMarkers = tailSection.splitMarker(tailMarker, 0, tailMarkerOffset);
-      let selectedTailMarkers = post.markersInRange({
-        headMarker: newTailMarkers[0],
-        tailMarker: newTailMarkers[newTailMarkers.length-1],
-        headMarkerOffset: 0,
-        tailMarkerOffset
-      });
-
-      let newHeadMarker = selectedHeadMarkers[0],
-          newTailMarker = selectedTailMarkers[selectedTailMarkers.length - 1];
-
-      let newMarkers = [];
-      if (newHeadMarker) {
-        newMarkers.push(newHeadMarker);
-      }
-      if (newTailMarker) {
-        newMarkers.push(newTailMarker);
-      }
-
-      if (newMarkers.length) {
-        this.editor.post.markersFrom(newMarkers[0], newMarkers[newMarkers.length-1], m => {
-          selectedMarkers.push(m);
-        });
-      }
+      headSection.splitMarker(headMarker, headMarkerOffset);
+      tailSection.splitMarker(tailMarker, 0, tailMarkerOffset);
     }
 
     this.scheduleRerender();
     this.scheduleDidUpdate();
 
-    return selectedMarkers;
+    return post.markersContainedByRange(range);
   }
 
   splitMarker(marker, offset) {
