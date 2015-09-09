@@ -110,10 +110,10 @@ To change the post in code, use the `editor.run` API. For example, the
 following usage would mark currently selected text as bold:
 
 ```js
-let strongMarkup = editor.builder.createMarkup('strong');
-let markerRange = editor.cursor.offsets;
+const strongMarkup = editor.builder.createMarkup('strong');
+const range = editor.cursor.offsets;
 editor.run((postEditor) => {
-  postEditor.applyMarkupToMarkers(markerRange, strongMarkup);
+  postEditor.applyMarkupToRange(range, strongMarkup);
 });
 ```
 

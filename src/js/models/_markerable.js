@@ -1,5 +1,6 @@
 import { normalizeTagName } from '../utils/dom-utils';
 import { forEach, filter, reduce } from '../utils/array-utils';
+import Set from '../utils/set';
 
 import LinkedItem from '../utils/linked-item';
 import LinkedList from '../utils/linked-list';
@@ -124,25 +125,62 @@ export default class Markerable extends LinkedItem {
     return reduce(this.markers, (prev, m) => prev + m.value, '');
   }
 
+  get length() {
+    return this.text.length;
+  }
+
+  /**
+   * @return {Array} New markers that match the boundaries of the
+   * range.
+   */
   markersFor(headOffset, tailOffset) {
+    const range = {head: {section:this, offset:headOffset},
+                   tail: {section:this, offset:tailOffset}};
+
     let markers = [];
-    let adjustedHead = 0, adjustedTail = 0;
-    this.markers.forEach(m => {
-      adjustedTail += m.length;
-
-      // if current 'window' of [adjustedHead..adjustedTail] is within
-      // [headOffset..tailOffset] range
-      if (adjustedTail > headOffset && adjustedHead < tailOffset) {
-        let head = Math.max(headOffset - adjustedHead, 0);
-        let tail = m.length - Math.max(adjustedTail - tailOffset, 0);
-        let cloned = m.clone();
-
-        cloned.value = m.value.slice(head, tail);
-        markers.push(cloned);
-      }
-      adjustedHead += m.length;
+    this._markersInRange(range, (marker, {markerHead, markerTail}) => {
+      const cloned = marker.clone();
+      cloned.value = marker.value.slice(markerHead, markerTail);
+      markers.push(cloned);
     });
     return markers;
+  }
+
+  markupsInRange(range) {
+    const markups = new Set();
+    this._markersInRange(range, marker => {
+      marker.markups.forEach(m => markups.add(m));
+    });
+    return markups.toArray();
+  }
+
+  // calls the callback with (marker, {markerHead, markerTail})
+  // for each marker that is wholly or partially contained in the range
+  _markersInRange(range, callback) {
+    const { head, tail } = range;
+    if (head.section !== this || tail.section !== this) {
+      throw new Error('Cannot call #_markersInRange if range expands beyond this');
+    }
+    const {offset:headOffset} = head, {offset:tailOffset} = tail;
+
+    let currentHead = 0, currentTail = 0, currentMarker = this.markers.head;
+
+    while (currentMarker) {
+      currentTail += currentMarker.length;
+
+      if (currentTail > headOffset && currentHead < tailOffset) {
+        let markerHead = Math.max(headOffset - currentHead, 0);
+        let markerTail = currentMarker.length -
+          Math.max(currentTail - tailOffset, 0);
+
+        callback(currentMarker, {markerHead, markerTail});
+      }
+
+      currentHead += currentMarker.length;
+      currentMarker = currentMarker.next;
+
+      if (currentHead > tailOffset) { break; }
+    }
   }
 
   // mutates this by appending the other section's (cloned) markers to it
