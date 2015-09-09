@@ -1,5 +1,7 @@
 import { MARKUP_SECTION_TYPE } from '../models/markup-section';
 import { LIST_ITEM_TYPE } from '../models/list-item';
+import { LIST_SECTION_TYPE } from '../models/list-section';
+import Position from '../utils/cursor/position';
 import {
   filter,
   compact
@@ -17,6 +19,25 @@ function isListItem(section) {
 
 function isBlankAndListItem(section) {
   return isListItem(section) && section.isBlank;
+}
+
+function isMarkerable(section) {
+  return !!section.markers;
+}
+
+function isListSection(section) {
+  return section.type === LIST_SECTION_TYPE;
+}
+
+// finds the immediately preceding section that is markerable
+function findPreviousMarkerableSection(section) {
+  const prev = section.prev;
+  if (!prev) { return null; }
+  if (isMarkerable(prev)) {
+    return prev;
+  } else if (isListSection(prev)) {
+    return prev.items.tail;
+  }
 }
 
 class PostEditor {
@@ -188,59 +209,68 @@ class PostEditor {
    * marker.
    *
    * @method deleteFrom
-   * @param {Object} position object with {section, offset} the marker and offset to delete from
+   * @param {Position} position object with {section, offset} the marker and offset to delete from
    * @param {Number} direction The direction to delete in (default is BACKWARD)
-   * @return {Object} {currentSection, currentOffset} for positioning the cursor
+   * @return {Position} for positioning the cursor
    * @public
    */
-  deleteFrom({section, offset}, direction=DIRECTION.BACKWARD) {
-    if (section.markers.length) {
-      // {{marker, offset}}
-      let result = section.markerPositionAtOffset(offset);
-      if (direction === DIRECTION.BACKWARD) {
-        return this._deleteBackwardFrom(result);
-      } else {
-        return this._deleteForwardFrom(result);
-      }
+  deleteFrom(position, direction=DIRECTION.BACKWARD) {
+    if (direction === DIRECTION.BACKWARD) {
+      return this._deleteBackwardFrom(position);
     } else {
-      if (direction === DIRECTION.BACKWARD) {
-        if (isMarkupSection(section) && section.prev) {
-          let prevSection = section.prev;
-          prevSection.join(section);
-          prevSection.renderNode.markDirty();
-          this.removeSection(section);
-          this.scheduleRerender();
-          this.scheduleDidUpdate();
-          return { currentSection: prevSection, currentOffset: prevSection.text.length };
-        } else if (isListItem(section)) {
-          this.scheduleRerender();
-          this.scheduleDidUpdate();
+      return this._deleteForwardFrom(position);
+    }
+  }
 
-          const results = this._convertListItemToMarkupSection(section);
-          return {currentSection: results.section, currentOffset: results.offset};
-        }
-      } else if (section.prev || section.next) {
-        let nextSection = section.next || section.post.tail;
+  _joinPositionToPreviousSection(position) {
+    const {section } = position;
+    let nextPosition = position.clone();
+
+    if (!isMarkerable(section)) {
+      throw new Error('Cannot join non-markerable section to previous section');
+    } else if (isListItem(section)) {
+      nextPosition = this._convertListItemToMarkupSection(section);
+    } else {
+      const prevSection = findPreviousMarkerableSection(section);
+
+      if (prevSection) {
+        const { beforeMarker } = prevSection.join(section);
+        prevSection.renderNode.markDirty();
         this.removeSection(section);
-        return { currentSection: nextSection, currentOffset: 0 };
+
+        nextPosition.section = prevSection;
+        nextPosition.offset = beforeMarker ?
+          prevSection.offsetOfMarker(beforeMarker, beforeMarker.length) : 0;
       }
     }
+
+    this.scheduleRerender();
+    this.scheduleDidUpdate();
+
+    return nextPosition;
   }
 
   /**
    * delete 1 character in the FORWARD direction from the given position
    * @method _deleteForwardFrom
+   * @param {Position} position
    * @private
    */
-  _deleteForwardFrom({marker, offset}) {
-    const nextCursorSection = marker.section,
-          nextCursorOffset = nextCursorSection.offsetOfMarker(marker, offset);
+  _deleteForwardFrom(position) {
+    return this._deleteForwardFromMarkerPosition(position);
+  }
+
+  _deleteForwardFromMarkerPosition(markerPosition) {
+    const {marker, offset} = markerPosition;
+    const {section} = marker;
+    let nextPosition = new Position(section, section.offsetOfMarker(marker, offset));
 
     if (offset === marker.length) {
       const nextMarker = marker.next;
 
       if (nextMarker) {
-        this._deleteForwardFrom({marker: nextMarker, offset: 0});
+        const nextMarkerPosition = {marker: nextMarker, offset: 0};
+        return this._deleteForwardFromMarkerPosition(nextMarkerPosition);
       } else {
         const nextSection = marker.section.next;
         if (nextSection && isMarkupSection(nextSection)) {
@@ -261,10 +291,7 @@ class PostEditor {
     this.scheduleRerender();
     this.scheduleDidUpdate();
 
-    return {
-      currentSection: nextCursorSection,
-      currentOffset: nextCursorOffset
-    };
+    return nextPosition;
   }
 
   _convertListItemToMarkupSection(listItem) {
@@ -275,72 +302,35 @@ class PostEditor {
 
     this._replaceSection(listSection, compact(newSections));
 
-    const newCursorPosition = {
-      section: newMarkupSection,
-      offset: 0
-    };
-    return newCursorPosition;
+    return new Position(newMarkupSection, 0);
   }
 
   /**
    * delete 1 character in the BACKWARD direction from the given position
    * @method _deleteBackwardFrom
+   * @param {Position} position
    * @private
    */
-  _deleteBackwardFrom({marker, offset}) {
-    let nextCursorSection = marker.section,
-        nextCursorOffset = nextCursorSection.offsetOfMarker(marker, offset);
+  _deleteBackwardFrom(position) {
+    const { offset:sectionOffset } = position;
 
-    if (offset === 0) {
-      const prevMarker = marker.prev;
-
-      if (prevMarker) {
-        return this._deleteBackwardFrom({marker: prevMarker, offset: prevMarker.length});
-      } else {
-        const section = marker.section;
-
-        if (isListItem(section)) {
-          const newCursorPos = this._convertListItemToMarkupSection(section);
-          nextCursorSection = newCursorPos.section;
-          nextCursorOffset = newCursorPos.offset;
-        } else {
-          const prevSection = section.prev;
-          if (prevSection && isMarkupSection(prevSection)) {
-            nextCursorSection = prevSection;
-            nextCursorOffset = prevSection.text.length;
-
-            let {
-              beforeMarker
-            } = prevSection.join(marker.section);
-            prevSection.renderNode.markDirty();
-            this.removeSection(marker.section);
-
-            nextCursorSection = prevSection;
-
-            if (beforeMarker) {
-              nextCursorOffset = prevSection.offsetOfMarker(beforeMarker, beforeMarker.length);
-            } else {
-              nextCursorOffset = 0;
-            }
-          }
-        }
-      }
-
-    } else if (offset <= marker.length) {
-      const offsetToDeleteAt = offset - 1;
-      marker.deleteValueAtOffset(offsetToDeleteAt);
-      nextCursorOffset--;
-      marker.renderNode.markDirty();
-      this._coalesceMarkers(marker.section);
+    if (sectionOffset === 0) {
+      return this._joinPositionToPreviousSection(position);
     }
 
+    let nextPosition = position.clone();
+    const { marker, offset:markerOffset } = position.markerPosition;
+
+    const offsetToDeleteAt = markerOffset - 1;
+
+    marker.deleteValueAtOffset(offsetToDeleteAt);
+    nextPosition.offset -= 1;
+    marker.renderNode.markDirty();
+    this._coalesceMarkers(marker.section);
     this.scheduleRerender();
     this.scheduleDidUpdate();
 
-    return {
-      currentSection: nextCursorSection,
-      currentOffset: nextCursorOffset
-    };
+    return nextPosition;
   }
 
   /**

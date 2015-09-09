@@ -77,6 +77,9 @@ const Marker = class Marker extends LinkedItem {
   // delete the character at this offset,
   // update the value with the new value
   deleteValueAtOffset(offset) {
+    if (offset < 0 || offset > this.length) {
+      throw new Error(`Invalid offset "${offset}"`);
+    }
     const [ left, right ] = [
       this.value.slice(0, offset),
       this.value.slice(offset+1)

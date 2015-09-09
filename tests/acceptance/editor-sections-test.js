@@ -348,7 +348,7 @@ test('keystroke of delete at start of section joins with previous section', (ass
   let secondSectionTextNode = editor.element.childNodes[1].firstChild;
 
   assert.equal(secondSectionTextNode.textContent, 'second section',
-               'finds section section text node');
+               'precond - section section text node');
 
   Helpers.dom.moveCursorTo(secondSectionTextNode, 0);
   Helpers.dom.triggerDelete(editor);
@@ -361,10 +361,10 @@ test('keystroke of delete at start of section joins with previous section', (ass
                'first sectionsecond section',
                'joins two sections');
 
-  assert.deepEqual(Helpers.dom.getCursorPosition(),
-                  {node: secondSectionTextNode,
-                   offset: secondSectionTextNode.textContent.length},
-                  'cursor moves to end of first section');
+  Helpers.dom.insertText(editor, 'X');
+
+  assert.hasElement('#editor p:contains(first sectionXsecond section)',
+                    'inserts text at correct spot');
 });
 
 

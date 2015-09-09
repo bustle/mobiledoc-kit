@@ -219,23 +219,17 @@ class Editor {
   handleDeletion(event) {
     event.preventDefault();
 
-    const offsets = this.cursor.offsets;
+    const range = this.cursor.offsets;
 
     if (this.cursor.hasSelection()) {
-      this.run(postEditor => {
-        postEditor.deleteRange(offsets);
-      });
-      this.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
+      this.run(postEditor => postEditor.deleteRange(range));
+      this.cursor.moveToPosition(range.head);
     } else {
-      let results = this.run(postEditor => {
-        const {headSection, headSectionOffset} = offsets;
-        const key = Key.fromEvent(event);
-
-        const deletePosition = {section: headSection, offset: headSectionOffset},
-              direction = key.direction;
-        return postEditor.deleteFrom(deletePosition, direction);
+      const key = Key.fromEvent(event);
+      const nextPosition = this.run(postEditor => { 
+        return postEditor.deleteFrom(range.head, key.direction);
       });
-      this.cursor.moveToSection(results.currentSection, results.currentOffset);
+      this.cursor.moveToPosition(nextPosition);
     }
   }
 
@@ -588,9 +582,9 @@ class Editor {
       this.handleNewline(event);
     } else if (key.isPrintable()) {
       if (this.cursor.hasSelection()) {
-        const offsets = this.cursor.offsets;
-        this.run(postEditor => postEditor.deleteRange(offsets));
-        this.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
+        const range = this.cursor.offsets;
+        this.run(postEditor => postEditor.deleteRange(range));
+        this.cursor.moveToPosition(range.head);
       }
     }
 

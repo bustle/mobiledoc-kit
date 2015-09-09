@@ -5,8 +5,9 @@ const { module, test } = Helpers;
 
 let editor, editorElement;
 
-function createEditorWithListMobiledoc() {
-  const mobiledoc = Helpers.mobiledoc.build(({post, listSection, listItem, marker}) =>
+
+function listMobileDoc() {
+  return Helpers.mobiledoc.build(({post, listSection, listItem, marker}) =>
     post([
       listSection('ul', [
         listItem([marker('first item')]),
@@ -14,9 +15,15 @@ function createEditorWithListMobiledoc() {
       ])
     ])
   );
+}
 
+function createEditorWithMobiledoc(mobiledoc) {
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
+}
+
+function createEditorWithListMobiledoc() {
+  createEditorWithMobiledoc(listMobileDoc());
 }
 
 module('Acceptance: Editor: Lists', {
@@ -176,7 +183,8 @@ test('hitting enter to add list item, deleting to remove it, adding new list ite
 
   Helpers.dom.triggerEnter(editor);
 
-  assert.equal($('#editor li').length, 2, 'removes newly added li after enter on last list item');
+  assert.equal($('#editor li').length, 2,
+               'removes newly added li after enter on last list item');
   assert.equal($('#editor p').length, 2, 'adds a second p section');
 
   Helpers.dom.insertText(editor, 'X');
@@ -205,4 +213,45 @@ test('hitting enter at empty last list item exists list', (assert) => {
 
   Helpers.dom.insertText(editor, 'X');
   assert.hasElement('#editor p:contains(X)', 'text goes in right spot');
+});
+
+// https://github.com/bustlelabs/content-kit-editor/issues/117
+test('deleting at start of non-empty section after list item joins it with list item', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(builder => {
+    const {post, markupSection, marker, listSection, listItem} = builder;
+    return post([
+      listSection('ul', [listItem([marker('abc')])]),
+      markupSection('p', [marker('def')])
+    ]);
+  });
+  createEditorWithMobiledoc(mobiledoc);
+
+  const p = $('#editor p:contains(def)')[0];
+  Helpers.dom.moveCursorTo(p.childNodes[0], 0);
+  Helpers.dom.triggerDelete(editor);
+
+  assert.hasNoElement('#editor p');
+  assert.hasElement('#editor li:contains(abcdef)');
+});
+
+// https://github.com/bustlelabs/content-kit-editor/issues/117
+test('deleting at start of empty section after list item joins it with list item', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(builder => {
+    const {post, markupSection, marker, listSection, listItem} = builder;
+    return post([
+      listSection('ul', [listItem([marker('abc')])]),
+      markupSection('p')
+    ]);
+  });
+  createEditorWithMobiledoc(mobiledoc);
+
+  const node = $('#editor p br')[0];
+  Helpers.dom.moveCursorTo(node, 0);
+  Helpers.dom.triggerDelete(editor);
+
+  assert.hasNoElement('#editor p', 'removes p');
+
+  Helpers.dom.insertText(editor, 'X');
+
+  assert.hasElement('#editor li:contains(abcX)', 'inserts text at right spot');
 });

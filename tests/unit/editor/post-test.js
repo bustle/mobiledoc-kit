@@ -6,6 +6,7 @@ import Helpers from '../../test-helpers';
 import { DIRECTION } from 'content-kit-editor/utils/key';
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import Range from 'content-kit-editor/utils/cursor/range';
+import Position from 'content-kit-editor/utils/cursor/position';
 
 const { FORWARD } = DIRECTION;
 
@@ -65,11 +66,13 @@ test('#deleteFrom in middle of marker deletes char before offset', (assert) => {
     ]) 
   );
 
-  const nextPosition = postEditor.deleteFrom({section: getSection(0), offset:4});
+  const position = new Position(getSection(0), 4);
+  const nextPosition = postEditor.deleteFrom(position);
   postEditor.complete();
 
   assert.equal(getMarker(0, 0).value, 'abcdef');
-  assert.deepEqual(nextPosition, {currentSection: getSection(0), currentOffset: 3});
+  assert.ok(nextPosition.section === getSection(0), 'correct position section');
+  assert.equal(nextPosition.offset, 3, 'correct position offset');
 });
 
 
@@ -80,11 +83,13 @@ test('#deleteFrom (forward) in middle of marker deletes char after offset', (ass
     ])
   );
 
-  const nextPosition = postEditor.deleteFrom({section: getSection(0), offset:3}, FORWARD);
+  const position = new Position(getSection(0), 3);
+  const nextPosition = postEditor.deleteFrom(position, FORWARD);
   postEditor.complete();
 
   assert.equal(getMarker(0, 0).value, 'abcdef');
-  assert.deepEqual(nextPosition, {currentSection: getSection(0), currentOffset: 3});
+  assert.ok(nextPosition.section === getSection(0), 'correct position section');
+  assert.equal(nextPosition.offset, 3, 'correct position offset');
 });
 
 test('#deleteFrom offset 0 joins section with previous if first marker', (assert) => {
@@ -95,7 +100,8 @@ test('#deleteFrom offset 0 joins section with previous if first marker', (assert
     ])
   );
 
-  const nextPosition = postEditor.deleteFrom({section: getSection(1), offset:0});
+  const position = new Position(getSection(1), 0);
+  const nextPosition = postEditor.deleteFrom(position);
   postEditor.complete();
 
   assert.equal(editor.post.sections.length, 1,
@@ -103,13 +109,9 @@ test('#deleteFrom offset 0 joins section with previous if first marker', (assert
   assert.equal(getSection(0).markers.length, 2,
                'joined section has 2 markers');
 
-  let newMarkers = getSection(0).markers.toArray();
-  let newValues = newMarkers.map(m => m.value);
-
-  assert.deepEqual(newValues, ['abc','def'], 'new markers have correct values');
-
-  assert.deepEqual(nextPosition,
-                   {currentSection: getSection(0), currentOffset: newValues[0].length});
+  assert.equal(getSection(0).text, 'abcdef', 'text is joined');
+  assert.ok(nextPosition.section === getSection(0), 'correct position section');
+  assert.equal(nextPosition.offset, 'abc'.length, 'correct position offset');
 });
 
 test('#deleteFrom (FORWARD) end of marker joins section with next if last marker', (assert) => {
@@ -121,8 +123,8 @@ test('#deleteFrom (FORWARD) end of marker joins section with next if last marker
   );
 
   let section = getSection(0);
-  const nextPosition = postEditor.deleteFrom({section, offset: 3},
-                                             FORWARD);
+  const position = new Position(section, 3);
+  const nextPosition = postEditor.deleteFrom(position, FORWARD);
   postEditor.complete();
 
   assert.equal(editor.post.sections.length, 1,
@@ -130,13 +132,9 @@ test('#deleteFrom (FORWARD) end of marker joins section with next if last marker
   assert.equal(getSection(0).markers.length, 2,
                'joined section has 2 markers');
 
-  let newMarkers = getSection(0).markers.toArray();
-  let newValues = newMarkers.map(m => m.value);
-
-  assert.deepEqual(newValues, ['abc','def'], 'new markers have correct values');
-
-  assert.deepEqual(nextPosition,
-                   {currentSection: getSection(0), currentOffset: newValues[0].length});
+  assert.equal(getSection(0).text, 'abcdef', 'text is joined');
+  assert.ok(nextPosition.section === getSection(0), 'correct position section');
+  assert.equal(nextPosition.offset, 'abc'.length, 'correct position offset');
 });
 
 test('#deleteFrom offset 0 deletes last character of previous marker when there is one', (assert) => {
@@ -146,16 +144,13 @@ test('#deleteFrom offset 0 deletes last character of previous marker when there 
     ])
   );
 
-  const nextPosition = postEditor.deleteFrom({section: getSection(0), offset:3});
+  const position = new Position(getSection(0), 3);
+  const nextPosition = postEditor.deleteFrom(position);
   postEditor.complete();
 
-  let markers = getSection(0).markers.toArray();
-  let values = markers.map(m => m.value);
-
-  assert.deepEqual(values, ['ab', 'def'], 'markers have correct values');
-
-  assert.deepEqual(nextPosition,
-                   {currentSection: getSection(0), currentOffset: values[0].length});
+  assert.equal(getSection(0).text, 'abdef', 'text is deleted');
+  assert.ok(nextPosition.section === getSection(0), 'correct position section');
+  assert.equal(nextPosition.offset, 'ab'.length, 'correct position offset');
 });
 
 test('#deleteFrom (FORWARD) end of marker deletes first character of next marker when there is one', (assert) => {
@@ -166,17 +161,13 @@ test('#deleteFrom (FORWARD) end of marker deletes first character of next marker
   );
 
   let section = getSection(0);
-  const nextPosition = postEditor.deleteFrom({section, offset: 3},
-                                            FORWARD);
+  const position = new Position(section, 3);
+  const nextPosition = postEditor.deleteFrom(position, FORWARD);
   postEditor.complete();
 
-  let markers = getSection(0).markers.toArray();
-  let values = markers.map(m => m.value);
-
-  assert.deepEqual(values, ['abc', 'ef'], 'markers have correct values');
-
-  assert.deepEqual(nextPosition,
-                   {currentSection: getSection(0), currentOffset: values[0].length});
+  assert.equal(getSection(0).text, 'abcef', 'text is correct');
+  assert.ok(nextPosition.section === getSection(0), 'correct position section');
+  assert.equal(nextPosition.offset, 'abc'.length, 'correct position offset');
 });
 
 
@@ -213,9 +204,7 @@ test('#deleteRange when within the same marker', (assert) => {
   renderBuiltAbstract(post);
 
   const range = Range.create(section, 3, section, 4);
-
   postEditor.deleteRange(range);
-
   postEditor.complete();
 
   assert.equal(post.sections.head.text, 'abcdef');
