@@ -265,7 +265,7 @@ test('selecting text across sections and hitting enter deletes and moves cursor 
   });
 });
 
-Helpers.skipInPhantom('keystroke of printable character while text is selected deletes the text', (assert) => {
+test('keystroke of printable character while text is selected deletes the text', (assert) => {
   const done = assert.async();
   editor = new Editor({mobiledoc: mobileDocWith2Sections});
   editor.render(editorElement);
@@ -284,11 +284,9 @@ Helpers.skipInPhantom('keystroke of printable character while text is selected d
     Helpers.dom.selectText('section', firstSectionTextNode,
                           'secon', secondSectionTextNode);
 
-    const key = 'A';
-    const charCodeA = 65;
-    Helpers.dom.triggerKeyEvent(document, 'keydown', charCodeA, key);
+    Helpers.dom.insertText(editor, 'X');
 
-    assert.ok($(`#editor h2:contains(first ${key}d section)`).length,
+    assert.ok($(`#editor h2:contains(first Xd section)`).length,
               'updates the section');
 
     done();

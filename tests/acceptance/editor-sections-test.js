@@ -198,7 +198,7 @@ test('hitting enter in a section creates a new basic section', (assert) => {
 });
 
 // Phantom does not recognize toggling contenteditable off
-Helpers.skipInPhantom('deleting across 2 sections does nothing if editing is disabled', (assert) => {
+test('deleting across 2 sections does nothing if editing is disabled', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWith2Sections});
   editor.render(editorElement);
   editor.disableEditing();

@@ -6,7 +6,8 @@ export const DIRECTION = {
 
 export const MODIFIERS = {
   META: 1, // also called "command" on OS X
-  CTRL: 2
+  CTRL: 2,
+  SHIFT: 3
 };
 
 /**
@@ -49,12 +50,18 @@ const Key = class Key {
     return this.keyCode === Keycodes.ENTER;
   }
 
+  isShift() {
+    return this.hasModifier(MODIFIERS.SHIFT);
+  }
+
   hasModifier(modifier) {
     switch (modifier) {
       case MODIFIERS.META:
         return this.metaKey;
       case MODIFIERS.CTRL:
         return this.ctrlKey;
+      case MODIFIERS.SHIFT:
+        return this.shiftKey;
       default:
         throw new Error(`Cannot check for unknown modifier ${modifier}`);
     }
