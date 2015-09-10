@@ -117,17 +117,7 @@ function getSelectedText() {
     // FIXME?
     throw new Error('Unable to get selected text for multiple ranges');
   } else {
-    const {
-      anchorNode, anchorOffset,
-      focusNode, focusOffset
-    } = selection;
-
-    if (anchorNode !== focusNode) {
-      // FIXME
-      throw new Error('Unable to get selected text when multiple nodes are selected');
-    } else {
-      return anchorNode.textContent.slice(anchorOffset, focusOffset);
-    }
+    return selection.toString();
   }
 }
 
