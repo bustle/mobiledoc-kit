@@ -1,7 +1,7 @@
 import Keycodes from '../utils/keycodes';
 import Key from '../utils/key';
 import { detect } from '../utils/array-utils';
-import { MARKUP_SECTION_TYPE } from '../models/markup-section';
+import { MARKUP_SECTION_TYPE } from '../models/types';
 
 const { SPACE } = Keycodes;
 

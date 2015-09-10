@@ -1,11 +1,9 @@
 import Markerable from './_markerable';
-
-export const LIST_ITEM_TYPE = 'list-item';
+import { LIST_ITEM_TYPE } from './types';
 
 export default class ListItem extends Markerable {
   constructor(tagName, markers=[]) {
-    super(tagName, markers);
-    this.type = LIST_ITEM_TYPE;
+    super(LIST_ITEM_TYPE, tagName, markers);
   }
 
   splitAtMarker(marker, offset=0) {

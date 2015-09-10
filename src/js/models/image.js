@@ -1,8 +1,9 @@
-export const IMAGE_SECTION_TYPE = 'image-section';
+import { IMAGE_SECTION_TYPE } from './types';
+import Section from './_section';
 
-export default class Image {
+export default class Image extends Section {
   constructor() {
-    this.type = IMAGE_SECTION_TYPE;
+    super(IMAGE_SECTION_TYPE);
     this.src = null;
   }
 }

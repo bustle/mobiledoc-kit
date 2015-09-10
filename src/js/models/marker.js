@@ -1,15 +1,8 @@
-export const MARKER_TYPE = 'marker';
+import { MARKER_TYPE } from './types';
 
-import {
-  normalizeTagName
-} from '../utils/dom-utils';
-import {
-  detect,
-  commonItemLength,
-  forEach,
-  filter
-} from 'content-kit-editor/utils/array-utils';
-import LinkedItem from "content-kit-editor/utils/linked-item";
+import { normalizeTagName } from '../utils/dom-utils';
+import { detect, commonItemLength, forEach, filter } from '../utils/array-utils';
+import LinkedItem from '../utils/linked-item';
 
 const Marker = class Marker extends LinkedItem {
   constructor(value='', markups=[]) {
@@ -17,10 +10,7 @@ const Marker = class Marker extends LinkedItem {
     this.value = value;
     this.markups = [];
     this.type = MARKER_TYPE;
-
-    if (markups && markups.length) {
-      markups.forEach(m => this.addMarkup(m));
-    }
+    markups.forEach(m => this.addMarkup(m));
   }
 
   clone() {

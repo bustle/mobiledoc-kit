@@ -197,7 +197,6 @@ test('hitting enter in a section creates a new basic section', (assert) => {
   assert.hasElement('#editor p:contains(X)', 'p tag instead of h2 generated');
 });
 
-// Phantom does not recognize toggling contenteditable off
 test('deleting across 2 sections does nothing if editing is disabled', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWith2Sections});
   editor.render(editorElement);

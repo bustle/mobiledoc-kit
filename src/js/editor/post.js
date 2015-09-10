@@ -1,12 +1,6 @@
-import { MARKUP_SECTION_TYPE } from '../models/markup-section';
-import { LIST_ITEM_TYPE } from '../models/list-item';
-import { LIST_SECTION_TYPE } from '../models/list-section';
+import { MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
-import {
-  filter,
-  compact
-} from '../utils/array-utils';
-
+import { filter, compact } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 
 function isMarkupSection(section) {
@@ -23,21 +17,6 @@ function isBlankAndListItem(section) {
 
 function isMarkerable(section) {
   return !!section.markers;
-}
-
-function isListSection(section) {
-  return section.type === LIST_SECTION_TYPE;
-}
-
-// finds the immediately preceding section that is markerable
-function findPreviousMarkerableSection(section) {
-  const prev = section.prev;
-  if (!prev) { return null; }
-  if (isMarkerable(prev)) {
-    return prev;
-  } else if (isListSection(prev)) {
-    return prev.items.tail;
-  }
 }
 
 class PostEditor {
@@ -231,7 +210,7 @@ class PostEditor {
     } else if (isListItem(section)) {
       nextPosition = this._convertListItemToMarkupSection(section);
     } else {
-      const prevSection = findPreviousMarkerableSection(section);
+      const prevSection = section.immediatelyPreviousMarkerableSection();
 
       if (prevSection) {
         const { beforeMarker } = prevSection.join(section);

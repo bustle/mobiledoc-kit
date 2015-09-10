@@ -1,21 +1,22 @@
-import {visit, visitArray, compile} from "../utils/compiler";
-import { POST_TYPE } from "../models/post";
-import { MARKUP_SECTION_TYPE } from "../models/markup-section";
-import { LIST_SECTION_TYPE } from "../models/list-section";
-import { LIST_ITEM_TYPE } from "../models/list-item";
-import { IMAGE_SECTION_TYPE } from "../models/image";
-import { MARKER_TYPE } from "../models/marker";
-import { MARKUP_TYPE } from "../models/markup";
-import { CARD_TYPE } from "../models/card";
+import {visit, visitArray, compile} from '../utils/compiler';
+import {
+  POST_TYPE,
+  MARKUP_SECTION_TYPE,
+  LIST_SECTION_TYPE,
+  LIST_ITEM_TYPE,
+  MARKER_TYPE,
+  MARKUP_TYPE,
+  IMAGE_SECTION_TYPE,
+  CARD_TYPE
+} from '../models/types';
 
 export const MOBILEDOC_VERSION = '0.2.0';
-
 export const MOBILEDOC_MARKUP_SECTION_TYPE = 1;
 export const MOBILEDOC_IMAGE_SECTION_TYPE = 2;
 export const MOBILEDOC_LIST_SECTION_TYPE = 3;
 export const MOBILEDOC_CARD_SECTION_TYPE = 10;
 
-let visitor = {
+const visitor = {
   [POST_TYPE](node, opcodes) {
     opcodes.push(['openPost']);
     visitArray(visitor, node.sections, opcodes);
@@ -47,7 +48,7 @@ let visitor = {
   }
 };
 
-let postOpcodeCompiler = {
+const postOpcodeCompiler = {
   openMarker(closeCount, value) {
     this.markupMarkerIds = [];
     this.markers.push([

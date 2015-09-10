@@ -1,13 +1,12 @@
-import { normalizeTagName } from '../utils/dom-utils';
 import { forEach, filter, reduce } from '../utils/array-utils';
 import Set from '../utils/set';
 
-import LinkedItem from '../utils/linked-item';
 import LinkedList from '../utils/linked-list';
+import Section from './_section';
 
-export default class Markerable extends LinkedItem {
-  constructor(tagName, markers=[]) {
-    super();
+export default class Markerable extends Section {
+  constructor(type, tagName, markers=[]) {
+    super(type);
     this.tagName = tagName;
     this.markers = new LinkedList({
       adoptItem: m => m.section = m.parent = this,
@@ -15,14 +14,6 @@ export default class Markerable extends LinkedItem {
     });
 
     markers.forEach(m => this.markers.append(m));
-  }
-
-  set tagName(val) {
-    this._tagName = normalizeTagName(val);
-  }
-
-  get tagName() {
-    return this._tagName;
   }
 
   get isBlank() {

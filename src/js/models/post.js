@@ -1,4 +1,4 @@
-export const POST_TYPE = 'post';
+import { POST_TYPE } from './types';
 import LinkedList from 'content-kit-editor/utils/linked-list';
 import { forEach, compact } from 'content-kit-editor/utils/array-utils';
 import Set from 'content-kit-editor/utils/set';
