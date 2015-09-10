@@ -236,7 +236,44 @@ class PostEditor {
    * @private
    */
   _deleteForwardFrom(position) {
-    return this._deleteForwardFromMarkerPosition(position);
+    const { section, offset } = position;
+    if (section.isBlank) {
+      // remove this section, focus on start of next markerable section
+      const nextPosition = position.clone();
+      const next = section.immediatelyNextMarkerableSection();
+      if (next) {
+        this.removeSection(section);
+        nextPosition.section = next;
+        nextPosition.offset = 0;
+      }
+      return nextPosition;
+    } else if (offset === section.length) {
+      // join next markerable section to this one
+      return this._joinPositionToNextSection(position);
+    } else {
+      return this._deleteForwardFromMarkerPosition(position.markerPosition);
+    }
+  }
+
+  _joinPositionToNextSection(position) {
+    const { section } = position;
+    let nextPosition = position.clone();
+
+    if (!isMarkerable(section)) {
+      throw new Error('Cannot join non-markerable section to next section');
+    } else {
+      const next = section.immediatelyNextMarkerableSection();
+      if (next) {
+        section.join(next);
+        section.renderNode.markDirty();
+        this.removeSection(next);
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+      }
+    }
+
+    return nextPosition;
   }
 
   _deleteForwardFromMarkerPosition(markerPosition) {

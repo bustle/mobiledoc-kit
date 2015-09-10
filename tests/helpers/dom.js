@@ -39,6 +39,7 @@ function selectText(startText,
 }
 
 function moveCursorTo(node, offset=0, endNode=node, endOffset=offset) {
+  if (!node) { throw new Error('Cannot moveCursorTo node without node'); }
   selectRange(node, offset, endNode, endOffset);
 }
 
