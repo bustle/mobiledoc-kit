@@ -458,3 +458,133 @@ test('#splitMarkers when single-character marker at start', (assert) => {
   assert.equal(markers[0].value, 'b', 'marker 0');
   assert.equal(markers[1].value, 'c', 'marker 1');
 });
+
+test('#replaceSection one markup section with another', (assert) => {
+  let _section1, _section2;
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    _section1 = markupSection('p', [marker('abc')]);
+    _section2 = markupSection('p', [marker('123')]);
+    return post([_section1]);
+  });
+  renderBuiltAbstract(post);
+
+  assert.equal(post.sections.head.text, 'abc', 'precond - section text');
+  assert.equal(post.sections.length, 1, 'precond - only 1 section');
+  postEditor.replaceSection(_section1, _section2);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, '123', 'section replaced');
+  assert.equal(post.sections.length, 1, 'only 1 section');
+});
+
+test('#replaceSection markup section with list section', (assert) => {
+  let _section1, _section2;
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, listSection, listItem, marker}) => {
+    _section1 = markupSection('p', [marker('abc')]);
+    _section2 = listSection('ul', [listItem([marker('123')])]);
+    return post([_section1]);
+  });
+  renderBuiltAbstract(post);
+
+  assert.equal(post.sections.head.text, 'abc', 'precond - section text');
+  assert.equal(post.sections.length, 1, 'precond - only 1 section');
+  postEditor.replaceSection(_section1, _section2);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.items.head.text, '123', 'section replaced');
+  assert.equal(post.sections.length, 1, 'only 1 section');
+});
+
+test('#replaceSection solo list item with markup section removes list section', (assert) => {
+  let _section1, _section2;
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, listSection, listItem, marker}) => {
+    _section1 = listItem([marker('abc')]);
+    _section2 = markupSection('p', [marker('123')]);
+    return post([listSection('ul', [_section1])]);
+  });
+  renderBuiltAbstract(post);
+
+  assert.equal(post.sections.head.items.head.text, 'abc', 'precond - list item text');
+  assert.equal(post.sections.length, 1, 'precond - only 1 section');
+  postEditor.replaceSection(_section1, _section2);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, '123', 'section replaced');
+  assert.equal(post.sections.length, 1, 'only 1 section');
+});
+
+/*
+ * FIXME, this test should be made to pass, but it is not a situation that we
+ * run into in the actual life of the editor right now.
+
+test('#replaceSection middle list item with markup section cuts list into two', (assert) => {
+  let _section1, _section2;
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, listSection, listItem, marker}) => {
+    _section1 = listItem([marker('li 2')]);
+    _section2 = markupSection('p', [marker('123')]);
+    return post([listSection('ul', [
+      listItem([marker('li 1')]),
+      _section1,
+      listItem([marker('li 3')])
+    ])]);
+  });
+  renderBuiltAbstract(post);
+
+  assert.equal(post.sections.head.items.length, 3, 'precond - 3 lis');
+  assert.equal(post.sections.head.items.objectAt(1).text, 'li 2', 'precond - list item text');
+  assert.equal(post.sections.length, 1, 'precond - only 1 section');
+  postEditor.replaceSection(_section1, _section2);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 3, '3 sections');
+  assert.equal(post.sections.head.items.length, 1, '1 li in 1st ul');
+  assert.equal(post.sections.objectAt(1).text, '123', 'new section text is there');
+  assert.equal(post.sections.tail.items.length, 1, '1 li in last ul');
+});
+
+*/
+
+test('#replaceSection last list item with markup section when multiple list items appends after list section', (assert) => {
+  let _section1, _section2;
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, listSection, listItem, marker}) => {
+    _section1 = listItem([marker('abc')]);
+    _section2 = markupSection('p', [marker('123')]);
+    return post([listSection('ul', [
+      listItem([marker('before li')]),
+      _section1
+    ])]);
+  });
+  renderBuiltAbstract(post);
+
+  assert.equal(post.sections.head.items.length, 2, 'precond - 2 lis');
+  assert.equal(post.sections.head.items.tail.text, 'abc', 'precond - list item text');
+  assert.equal(post.sections.length, 1, 'precond - only 1 section');
+  postEditor.replaceSection(_section1, _section2);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.items.length, 1, 'only 1 li');
+  assert.equal(post.sections.head.items.head.text, 'before li', 'first li remains');
+  assert.equal(post.sections.length, 2, '2 sections');
+  assert.equal(post.sections.tail.text, '123', 'new section text is there');
+});
+
+test('#replaceSection when section is null appends new section', (assert) => {
+  let newEmptySection;
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection}) => {
+    newEmptySection = markupSection('p');
+    return post();
+  });
+  renderBuiltAbstract(post);
+
+  assert.equal(post.sections.length, 0, 'precond - no sections');
+  postEditor.replaceSection(null, newEmptySection);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, 'has 1 section');
+  assert.equal(post.sections.head.text, '', 'no text in new section');
+});

@@ -6,6 +6,23 @@ const { test, module } = Helpers;
 let fixture, editor, editorElement;
 let mobiledocWith1Section, mobiledocWith3Sections;
 
+const embedIntentSelector = '.ck-embed-intent-btn';
+
+function assertHasEmbedIntent(assert, message='shows embed intent') {
+  assert.hasElement(embedIntentSelector, message);
+}
+
+function assertHasNoEmbedIntent(assert, message='hides embed intent') {
+  assert.hasNoElement(embedIntentSelector, message);
+}
+
+function clickEmbedIntent() {
+  const embedIntent = $(embedIntentSelector)[0];
+  if (!embedIntent) { throw new Error('Could not find embed intent btn'); }
+  Helpers.dom.triggerEvent(embedIntent, 'click');
+
+}
+
 module('Acceptance: Embed intent', {
   beforeEach() {
     fixture = document.getElementById('qunit-fixture');
@@ -34,14 +51,16 @@ module('Acceptance: Embed intent', {
 test('typing inserts empty section and displays embed-intent button', (assert) => {
   editor = new Editor({mobiledoc: mobiledocWith1Section});
   editor.render(editorElement);
-  assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
-  assert.hasNoElement('.ck-embed-intent', 'embed intent is hidden');
+
+  assert.hasElement('#editor p', 'precond - p');
+
+  assertHasNoEmbedIntent(assert);
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 12);
   Helpers.dom.triggerEnter(editor);
   Helpers.dom.triggerEvent(editorElement, 'keyup');
 
-  assert.hasElement('.ck-embed-intent');
+  assertHasEmbedIntent(assert);
 });
 
 test('add image card between sections', (assert) => {
@@ -49,22 +68,23 @@ test('add image card between sections', (assert) => {
 
   editor = new Editor({mobiledoc: mobiledocWith3Sections});
   editor.render(editorElement);
-  assert.equal(editorElement.childNodes.length, 3, 'has 3 paragraphs to start');
+  assert.equal($('#editor p').length, 3, 'precond - 3 p');
+  assert.hasNoElement('#editor .ck-card', 'precond - no card');
 
   Helpers.dom.moveCursorTo(editorElement.childNodes[1].firstChild, 0);
   Helpers.dom.triggerEvent(editorElement.childNodes[1].firstChild, 'click');
 
   setTimeout(() => { // delay due to internal async
-    assert.hasElement('.ck-embed-intent', 'embed intent appears');
+    assertHasEmbedIntent(assert);
+    clickEmbedIntent();
 
-    Helpers.dom.triggerEvent($('.ck-embed-intent-btn')[0], 'click');
-    Helpers.dom.triggerEvent($('button[title=image]')[0], 'click');
+    Helpers.toolbar.assertVisible(assert, 'image');
+    Helpers.toolbar.clickButton(assert, 'image');
 
-    assert.hasNoElement('.ck-embed-intent', 'embed intent is hidden');
-    assert.equal(editorElement.childNodes.length, 3, 'has 3 sections after card insertion');
-    assert.equal(editor.element.childNodes[0].tagName, 'P');
-    assert.equal(editor.element.childNodes[1].tagName, 'DIV');
-    assert.equal(editor.element.childNodes[2].tagName, 'P');
+    assertHasNoEmbedIntent(assert, 'embed intent hidden after making selection');
+
+    assert.equal($('#editor p').length, 2, '2 p after card');
+    assert.hasElement('#editor .ck-card', 'has card');
 
     done();
   });
@@ -73,9 +93,7 @@ test('add image card between sections', (assert) => {
 test('inserting unordered list at cursor', (assert) => {
   const done = assert.async();
   const build = Helpers.mobiledoc.build;
-  const mobiledoc = build(({post, markupSection}) =>
-    post([markupSection()])
-  );
+  const mobiledoc = build(({post, markupSection}) => post([markupSection()]));
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
@@ -85,8 +103,8 @@ test('inserting unordered list at cursor', (assert) => {
   Helpers.dom.triggerEvent(document, 'click'); // make embed intent show
 
   setTimeout(() => {
-    assert.hasElement('.ck-embed-intent-btn');
-    Helpers.dom.triggerEvent($('.ck-embed-intent-btn')[0], 'click'); // make toolbar show
+    assertHasEmbedIntent(assert);
+    clickEmbedIntent();
 
     setTimeout(() => {
       Helpers.toolbar.assertVisible(assert, 'Unordered List');
@@ -99,6 +117,37 @@ test('inserting unordered list at cursor', (assert) => {
 
         Helpers.dom.insertText(editor, 'X');
         assert.hasElement('#editor ul li:contains(X)', 'inserts text at correct spot');
+
+        done();
+      });
+    });
+  });
+});
+
+test('clicking in empty mobiledoc shows embed intent', (assert) => {
+  const done = assert.async();
+  const mobiledoc = Helpers.mobiledoc.build(({post}) => post());
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor', 'precond - editor');
+  assert.hasNoElement('#editor p', 'precond - editor has no p');
+
+  Helpers.dom.moveCursorTo($('#editor')[0]);
+  Helpers.dom.triggerEvent(document, 'click');
+
+  setTimeout(() => {
+    assertHasEmbedIntent(assert, 'shows embed intent');
+    clickEmbedIntent();
+
+    setTimeout(() => {
+      Helpers.toolbar.assertVisible(assert, 'Unordered List');
+      Helpers.toolbar.clickButton(assert, 'Unordered List');
+
+      setTimeout(() => {
+        assert.hasElement('#editor ul', 'adds list');
+        Helpers.dom.insertText(editor, 'X');
+        assert.hasElement('#editor ul li:contains(X)', 'inserts text');
 
         done();
       });

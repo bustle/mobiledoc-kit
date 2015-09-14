@@ -28,6 +28,8 @@ const Cursor = class Cursor {
   }
 
   isInCard() {
+    if (!this.hasCursor()) { return false; }
+
     const {head, tail} = this.offsets;
     return head && tail && (head._inCard || tail._inCard);
   }
@@ -40,7 +42,7 @@ const Cursor = class Cursor {
    * @return {Range} Cursor#Range object
    */
   get offsets() {
-    if (!this.hasCursor()) { return {}; }
+    if (!this.hasCursor()) { return Range.emptyRange(); }
 
     const { selection, renderTree } = this;
 

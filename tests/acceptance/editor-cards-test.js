@@ -92,3 +92,34 @@ test('editor listeners are quieted for card actions', (assert) => {
     done();
   });
 });
+
+test('removing last card from mobiledoc allows additional editing', (assert) => {
+  const done = assert.async();
+  let button;
+  const cards = [{
+    name: 'simple-card',
+    display: {
+      setup(element, options, env) {
+        button = $('<button>Click me</button>');
+        button.on('click', env.remove);
+        $(element).append(button);
+      }
+    }
+  }];
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor button:contains(Click me)', 'precond - button');
+
+  button.click();
+
+  setTimeout(() => {
+    assert.hasNoElement('#editor button:contains(Click me)', 'button is removed');
+    assert.hasNoElement('#editor p');
+    Helpers.dom.moveCursorTo($('#editor')[0]);
+    Helpers.dom.insertText(editor, 'X');
+    assert.hasElement('#editor p:contains(X)');
+
+    done();
+  });
+});

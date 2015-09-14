@@ -71,14 +71,14 @@ function walkDOMUntil(topNode, conditionFn=() => {}) {
   }
 }
 
-// see https://github.com/webmodules/node-contains/blob/master/index.js
+/**
+ * @return {Boolean} true when the child node is contained by (and not
+ * the same as) the parent node
+ *  see https://github.com/webmodules/node-contains/blob/master/index.js
+ */
 function containsNode(parentNode, childNode) {
-  const isSame = () => parentNode === childNode;
-  const isContainedBy = () => {
-    const position = parentNode.compareDocumentPosition(childNode);
-    return !!(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
-  };
-  return isSame() || isContainedBy();
+  const position = parentNode.compareDocumentPosition(childNode);
+  return !!(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
 }
 
 /**
@@ -125,6 +125,29 @@ function normalizeTagName(tagName) {
   return tagName.toLowerCase();
 }
 
+/*
+ * @param {Node} elementNode not a text node
+ * @param {Node} textNode a text node
+ * @param {Number} offsetInTextNode optional, the offset relative to the text node
+ * @return {Number} The offset relative to all the text nodes in the element node
+ */
+function findOffsetInElement(elementNode, textNode, offsetInTextNode=0) {
+  let offset = 0, found = false;
+  walkTextNodes(elementNode, _textNode => {
+    if (found) { return; }
+    if (_textNode === textNode) {
+      found = true;
+      offset += offsetInTextNode;
+    } else {
+      offset += _textNode.textContent.length;
+    }
+  });
+  if (!found) {
+    throw new Error('Unable to find offset of text node in element, it is not a child.');
+  }
+  return offset;
+}
+
 function parseHTML(html) {
   var div = document.createElement('div');
   div.innerHTML = html;
@@ -144,5 +167,6 @@ export {
   removeClassName,
   normalizeTagName,
   isTextNode,
-  parseHTML
+  parseHTML,
+  findOffsetInElement
 };

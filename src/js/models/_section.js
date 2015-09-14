@@ -1,4 +1,4 @@
-import { LIST_ITEM_TYPE, LIST_SECTION_TYPE } from './types';
+import { LIST_ITEM_TYPE } from './types';
 import { normalizeTagName } from '../utils/dom-utils';
 import LinkedItem from '../utils/linked-item';
 
@@ -6,12 +6,24 @@ function isMarkerable(section) {
   return !!section.markers;
 }
 
-function isListSection(section) {
-  return section.type === LIST_SECTION_TYPE;
+function getParentSection(section) {
+  return section.parent;
 }
 
-function isListItem(section) {
+function hasSubsections(section) {
+  return !!section.sections;
+}
+
+function isSubsection(section) {
   return section.type === LIST_ITEM_TYPE;
+}
+
+function firstMarkerableChild(section) {
+  return section.items.head;
+}
+
+function lastMarkerableChild(section) {
+  return section.items.tail;
 }
 
 export default class Section extends LinkedItem {
@@ -34,13 +46,13 @@ export default class Section extends LinkedItem {
     if (next) {
       if (isMarkerable(next)) {
         return next;
-      } else if (isListSection(next)) {
-        const firstListItem = next.items.head;
-        return firstListItem;
+      } else if (hasSubsections(next)) {
+        const firstChild = firstMarkerableChild(next);
+        return firstChild;
       }
-    } else if (isListItem(this)) {
-      const listSection = this.parent;
-      return listSection.immediatelyNextMarkerableSection();
+    } else if (isSubsection(this)) {
+      const parentSection = getParentSection(this);
+      return parentSection.immediatelyNextMarkerableSection();
     }
   }
 
@@ -49,9 +61,9 @@ export default class Section extends LinkedItem {
     if (!prev) { return null; }
     if (isMarkerable(prev)) {
       return prev;
-    } else if (isListSection(prev)) {
-      const lastListItem = prev.items.tail;
-      return lastListItem;
+    } else if (hasSubsections(prev)) {
+      const lastChild = lastMarkerableChild(prev);
+      return lastChild;
     }
   }
 }

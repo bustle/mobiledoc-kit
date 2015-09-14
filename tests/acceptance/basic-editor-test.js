@@ -1,7 +1,7 @@
 import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
 
-const { test, module } = QUnit;
+const { test, module } = Helpers;
 
 let fixture, editor, editorElement;
 
@@ -59,6 +59,7 @@ test('#disableEditing and #enableEditing toggle contenteditable', (assert) => {
 });
 
 test('clicking outside the editor does not raise an error', (assert) => {
+  const done = assert.async();
   editor = new Editor({autofocus: false});
   editor.render(editorElement);
 
@@ -73,11 +74,26 @@ test('clicking outside the editor does not raise an error', (assert) => {
   // Embed intent uses setTimeout, so this assertion must
   // setTimeout after it to catch the exception during failure
   // cases.
-  let done = assert.async();
   setTimeout(() => {
     assert.ok(true, 'can click external item without error');
-    done();
     secondEditor.destroy();
     document.body.removeChild(secondEditorElement);
-  }, 1);
+
+    done();
+  });
+});
+
+test('typing in empty post correctly adds a section to it', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post}) => post());
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor');
+  assert.hasNoElement('#editor p');
+
+  Helpers.dom.moveCursorTo($('#editor')[0]);
+  Helpers.dom.insertText(editor, 'X');
+  assert.hasElement('#editor p:contains(X)');
+  Helpers.dom.insertText(editor, 'Y');
+  assert.hasElement('#editor p:contains(XY)', 'inserts text at correct spot');
 });

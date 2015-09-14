@@ -1,4 +1,6 @@
-import { isTextNode, walkTextNodes } from 'content-kit-editor/utils/dom-utils';
+import {
+  isTextNode, findOffsetInElement
+} from 'content-kit-editor/utils/dom-utils';
 import {
   MARKUP_SECTION_TYPE, LIST_ITEM_TYPE, CARD_TYPE
 } from 'content-kit-editor/models/types';
@@ -25,25 +27,24 @@ function findParentSectionFromNode(renderTree, node) {
   }
 }
 
-function findOffsetInElement(elementNode, textNode, offsetInTextNode) {
-  let offset = 0, found = false;
-  walkTextNodes(elementNode, _textNode => {
-    if (found) { return; }
-    if (_textNode === textNode) {
-      found = true;
-      offset += offsetInTextNode;
-    } else {
-      offset += _textNode.textContent.length;
-    }
-  });
-  return offset;
-}
-
 const Position = class Position {
   constructor(section, offset=0) {
     this.section = section;
     this.offset = offset;
     this._inCard = isCardSection(section);
+  }
+
+  static emptyPosition() {
+    return {
+      section: null,
+      offset: 0,
+      _inCard: false,
+      marker: null,
+      offsetInTextNode: 0,
+      _isEmpty: true,
+      isEqual(other) { return other._isEmpty; },
+      markerPosition: {}
+    };
   }
 
   clone() {
@@ -67,7 +68,7 @@ const Position = class Position {
     if (isTextNode(node)) {
       return Position.fromTextNode(renderTree, node, offset);
     } else {
-      return Position.fromElementNode(renderTree, node, offset);
+      return Position.fromElementNode(renderTree, node);
     }
   }
 
@@ -76,7 +77,7 @@ const Position = class Position {
     let section, offsetInSection;
 
     if (renderNode) {
-      let marker = renderNode.postNode;
+      const marker = renderNode.postNode;
       section = marker.section;
 
       if (!section) { throw new Error(`Could not find parent section for mapped text node "${textNode.textContent}"`); }
@@ -101,6 +102,13 @@ const Position = class Position {
   }
 
   static fromElementNode(renderTree, elementNode) {
+    // The browser may change the reported selection to equal the editor's root
+    // element if the user clicks an element that is immediately removed,
+    // which can happen when clicking to remove a card.
+    if (elementNode === renderTree.rootElement) {
+      return Position.emptyPosition();
+    }
+
     let section, offsetInSection = 0;
 
     section = findParentSectionFromNode(renderTree, elementNode);

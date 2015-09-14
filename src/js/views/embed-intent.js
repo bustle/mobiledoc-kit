@@ -1,7 +1,6 @@
 import View from './view';
 import Toolbar from './toolbar';
 import { positionElementToLeftOf, positionElementCenteredIn } from '../utils/element-utils';
-import Keycodes from '../utils/keycodes';
 
 import UnorderedListCommand from '../commands/unordered-list';
 import OrderedListCommand from '../commands/ordered-list';
@@ -24,7 +23,7 @@ class EmbedIntent extends View {
   constructor(options={}) {
     options.classNames = ['ck-embed-intent'];
     super(options);
-    const rootElement = this.rootElement = options.rootElement;
+    this.rootElement = options.rootElement;
 
     this.isActive = false;
     this.editor = options.editor;
@@ -59,44 +58,35 @@ class EmbedIntent extends View {
 
     const embedIntentHandler = () => {
       const { editor } = this;
-      if (this._isDestroyed || editor._isDestroyed) {
-        return;
+      if (this._isDestroyed || editor._isDestroyed) { return; }
+
+      let showElement;
+
+      const { headSection } = this.editor.cursor.offsets;
+      const headElement = headSection &&
+        headSection.renderNode && headSection.renderNode.element;
+      if (headElement && headSection.isBlank) {
+        showElement = headElement;
+      } else if (editor.post.isBlank) {
+        showElement = editor.post.renderNode.element;
       }
 
-      const {headSection, isCollapsed} = this.editor.cursor.offsets;
-      const headRenderNode = headSection && headSection.renderNode && headSection.renderNode.element;
-
-      if (headRenderNode && headSection.isBlank && isCollapsed) {
-        this.showAt(headRenderNode);
+      if (showElement) {
+        this.showAt(showElement);
       } else {
         this.hide();
       }
     };
 
-    this.addEventListener(rootElement, 'keyup', embedIntentHandler);
+    this.addEventListener(this.rootElement, 'keyup', embedIntentHandler);
     this.addEventListener(document, 'click', () => {
-      setTimeout(() => {
-        embedIntentHandler();
-      });
+      setTimeout(embedIntentHandler);
     });
-
-    this.addEventListener(document, 'keyup', (e) => {
-      if (e.keyCode === Keycodes.ESC) {
-        this.hide();
-      }
-    });
-
-    this.addEventListener(window, 'resize', () => {
-      if(this.isShowing) {
-        this.reposition();
-      }
-    });
+    this.addEventListener(window, 'resize', () => { this.reposition(); });
   }
 
   hide() {
-    if (super.hide()) {
-      this.deactivate();
-    }
+    if (super.hide()) { this.deactivate(); }
   }
 
   showAt(node) {
@@ -107,6 +97,7 @@ class EmbedIntent extends View {
   }
 
   reposition() {
+    if (!this.isShowing) { return; }
     if (computeLayoutStyle(this.rootElement) === LayoutStyle.GUTTER) {
       positionElementToLeftOf(this.element, this.atNode);
     } else {
@@ -115,19 +106,19 @@ class EmbedIntent extends View {
   }
 
   activate() {
-    if (!this.isActive) {
-      this.addClass('activated');
-      this.toolbar.show();
-      this.isActive = true;
-    }
+    if (this.isActive) { return; }
+
+    this.addClass('activated');
+    this.toolbar.show();
+    this.isActive = true;
   }
 
   deactivate() {
-    if (this.isActive) {
-      this.removeClass('activated');
-      this.toolbar.hide();
-      this.isActive = false;
-    }
+    if (!this.isActive) { return; }
+
+    this.removeClass('activated');
+    this.toolbar.hide();
+    this.isActive = false;
   }
 
   destroy() {

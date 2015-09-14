@@ -26,11 +26,6 @@ export default class MobiledocParser {
     this.markerTypes = this.parseMarkerTypes(markerTypes);
     this.parseSections(sections, post);
 
-    if (post.sections.isEmpty) {
-      let section = this.builder.createMarkupSection('p');
-      post.sections.append(section);
-    }
-
     return post;
   }
 

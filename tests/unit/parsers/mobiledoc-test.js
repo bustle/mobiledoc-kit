@@ -21,29 +21,26 @@ module('Unit: Parsers: Mobiledoc', {
 });
 
 test('#parse empty doc returns an empty post', (assert) => {
-  let mobiledoc = {
+  const mobiledoc = {
     version: MOBILEDOC_VERSION,
     sections: [[], []]
   };
 
-  let section = builder.createMarkupSection('P');
-  post.sections.append(section);
-  assert.deepEqual(parser.parse(mobiledoc),
-                   post);
+  const parsed = parser.parse(mobiledoc);
+  assert.equal(parsed.sections.length, 0, '0 sections');
 });
 
 test('#parse empty markup section returns an empty post', (assert) => {
-  let mobiledoc = {
+  const mobiledoc = {
     version: MOBILEDOC_VERSION,
     sections: [[], [
-      [1, 'h2', []]
+      [1, 'p', []]
     ]]
   };
 
-  let section = builder.createMarkupSection('h2');
+  const section = builder.createMarkupSection('p');
   post.sections.append(section);
-  assert.deepEqual(parser.parse(mobiledoc),
-                   post);
+  assert.deepEqual(parser.parse(mobiledoc), post);
 });
 
 test('#parse doc without marker types', (assert) => {

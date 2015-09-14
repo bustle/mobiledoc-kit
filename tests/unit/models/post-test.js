@@ -3,12 +3,7 @@ import Range from 'content-kit-editor/utils/cursor/range';
 
 const {module, test} = Helpers;
 
-module('Unit: Post', {
-  beforeEach() {
-  },
-  afterEach() {
-  }
-});
+module('Unit: Post');
 
 test('#markersFrom finds markers across markup sections', (assert) => {
   const post = Helpers.postAbstract.build(({post, markupSection, marker}) =>
@@ -269,4 +264,15 @@ test('#markersContainedByRange when range is contiguous sections', (assert) => {
   assert.equal(found.length,
                headSection.markers.length + tailSection.markers.length,
                'all markers in outerRange');
+});
+
+test('#isBlank is true when there are no sections', (assert) => {
+  let _post, _section;
+  Helpers.postAbstract.build(({post, markupSection}) => {
+    _post = post();
+    _section = markupSection();
+  });
+  assert.ok(_post.isBlank);
+  _post.sections.append(_section);
+  assert.ok(!_post.isBlank);
 });
