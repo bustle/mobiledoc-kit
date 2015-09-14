@@ -1,12 +1,10 @@
-import LinkedItem from "content-kit-editor/utils/linked-item";
+import Section from './_section';
+import { CARD_TYPE } from './types';
 
-export const CARD_TYPE = 'card-section';
-
-export default class Card extends LinkedItem {
+export default class Card extends Section {
   constructor(name, payload) {
-    super();
+    super(CARD_TYPE);
     this.name = name;
     this.payload = payload;
-    this.type = CARD_TYPE;
   }
 }

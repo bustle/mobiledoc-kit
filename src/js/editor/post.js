@@ -1,12 +1,6 @@
-import { MARKUP_SECTION_TYPE } from '../models/markup-section';
-import { LIST_ITEM_TYPE } from '../models/list-item';
-import { LIST_SECTION_TYPE } from '../models/list-section';
+import { MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
-import {
-  filter,
-  compact
-} from '../utils/array-utils';
-
+import { filter, compact } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 
 function isMarkupSection(section) {
@@ -23,21 +17,6 @@ function isBlankAndListItem(section) {
 
 function isMarkerable(section) {
   return !!section.markers;
-}
-
-function isListSection(section) {
-  return section.type === LIST_SECTION_TYPE;
-}
-
-// finds the immediately preceding section that is markerable
-function findPreviousMarkerableSection(section) {
-  const prev = section.prev;
-  if (!prev) { return null; }
-  if (isMarkerable(prev)) {
-    return prev;
-  } else if (isListSection(prev)) {
-    return prev.items.tail;
-  }
 }
 
 class PostEditor {
@@ -231,7 +210,7 @@ class PostEditor {
     } else if (isListItem(section)) {
       nextPosition = this._convertListItemToMarkupSection(section);
     } else {
-      const prevSection = findPreviousMarkerableSection(section);
+      const prevSection = section.immediatelyPreviousMarkerableSection();
 
       if (prevSection) {
         const { beforeMarker } = prevSection.join(section);
@@ -257,7 +236,44 @@ class PostEditor {
    * @private
    */
   _deleteForwardFrom(position) {
-    return this._deleteForwardFromMarkerPosition(position);
+    const { section, offset } = position;
+    if (section.isBlank) {
+      // remove this section, focus on start of next markerable section
+      const nextPosition = position.clone();
+      const next = section.immediatelyNextMarkerableSection();
+      if (next) {
+        this.removeSection(section);
+        nextPosition.section = next;
+        nextPosition.offset = 0;
+      }
+      return nextPosition;
+    } else if (offset === section.length) {
+      // join next markerable section to this one
+      return this._joinPositionToNextSection(position);
+    } else {
+      return this._deleteForwardFromMarkerPosition(position.markerPosition);
+    }
+  }
+
+  _joinPositionToNextSection(position) {
+    const { section } = position;
+    let nextPosition = position.clone();
+
+    if (!isMarkerable(section)) {
+      throw new Error('Cannot join non-markerable section to next section');
+    } else {
+      const next = section.immediatelyNextMarkerableSection();
+      if (next) {
+        section.join(next);
+        section.renderNode.markDirty();
+        this.removeSection(next);
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+      }
+    }
+
+    return nextPosition;
   }
 
   _deleteForwardFromMarkerPosition(markerPosition) {

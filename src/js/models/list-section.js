@@ -1,13 +1,14 @@
-import { normalizeTagName } from '../utils/dom-utils';
 import LinkedList from '../utils/linked-list';
+import { LIST_SECTION_TYPE } from './types';
+import Section from './_section';
 
 export const DEFAULT_TAG_NAME = 'ul';
-export const LIST_SECTION_TYPE = 'list-section';
 
-export default class ListSection {
+export default class ListSection extends Section {
   constructor(tagName=DEFAULT_TAG_NAME, items=[]) {
-    this.tagName = normalizeTagName(tagName);
-    this.type = LIST_SECTION_TYPE;
+    super(LIST_SECTION_TYPE);
+
+    this.tagName = tagName;
 
     this.items = new LinkedList({
       adoptItem: i => i.section = i.parent = this,

@@ -1,7 +1,7 @@
 import View from './view';
 import { restoreRange } from '../utils/selection-utils';
 import { createDiv, positionElementToRect } from '../utils/element-utils';
-import Keycodes from '../utils/keycodes';
+import Key from '../utils/key';
 
 var container = document.body;
 var hiliter = createDiv('ck-editor-hilite');
@@ -26,9 +26,10 @@ class Prompt extends View {
       e.stopPropagation();
     });
     this.addEventListener(this.element, 'keyup', (e) => {
+      const key = Key.fromEvent(e);
       const entry = this.element.value;
 
-      if (entry && this.range && !e.shiftKey && e.which === Keycodes.ENTER) {
+      if (entry && this.range && !key.isShift() && key.isEnter()) {
         restoreRange(this.range);
         this.doComplete(entry);
       }

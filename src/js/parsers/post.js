@@ -1,6 +1,9 @@
-import { MARKUP_SECTION_TYPE } from '../models/markup-section';
-import { LIST_SECTION_TYPE } from '../models/list-section';
-import { LIST_ITEM_TYPE } from '../models/list-item';
+import {
+  MARKUP_SECTION_TYPE,
+  LIST_SECTION_TYPE,
+  LIST_ITEM_TYPE
+} from '../models/types';
+
 import SectionParser from 'content-kit-editor/parsers/section';
 import { forEach } from 'content-kit-editor/utils/array-utils';
 import { getAttributesArray, walkTextNodes } from '../utils/dom-utils';

@@ -226,7 +226,7 @@ Helpers.skipInPhantom('highlight text, click "link" button shows input for URL, 
     const input = assert.hasElement('.ck-toolbar-prompt input');
     const url = 'http://google.com';
     $(input).val(url);
-    Helpers.dom.triggerKeyEvent(input[0], 'keyup');
+    Helpers.dom.triggerEnterKeyupEvent(input[0]);
  
     assert.toolbarHidden();
 

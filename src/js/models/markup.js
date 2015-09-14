@@ -1,7 +1,6 @@
-import {
-  normalizeTagName
-} from '../utils/dom-utils';
-export const MARKUP_TYPE = 'markup';
+import { normalizeTagName } from '../utils/dom-utils';
+import { MARKUP_TYPE } from './types';
+
 export const VALID_MARKUP_TAGNAMES = [
   'b',
   'i',

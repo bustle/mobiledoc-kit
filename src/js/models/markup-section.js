@@ -1,25 +1,15 @@
 import Markerable from './_markerable';
 import { normalizeTagName } from '../utils/dom-utils';
+import { MARKUP_SECTION_TYPE } from './types';
 
 export const VALID_MARKUP_SECTION_TAGNAMES = [
   'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'
 ].map(normalizeTagName);
 export const DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[0];
 
-export const MARKUP_SECTION_TYPE = 'markup-section';
-
 const MarkupSection = class MarkupSection extends Markerable {
   constructor(tagName=DEFAULT_TAG_NAME, markers=[]) {
-    super(tagName, markers);
-    this.type = MARKUP_SECTION_TYPE;
-  }
-
-  set tagName(val) {
-    this._tagName = normalizeTagName(val);
-  }
-
-  get tagName() {
-    return this._tagName;
+    super(MARKUP_SECTION_TYPE, tagName, markers);
   }
 
   setTagName(newTagName) {

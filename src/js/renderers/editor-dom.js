@@ -1,13 +1,15 @@
 import RenderNode from 'content-kit-editor/models/render-node';
 import CardNode from 'content-kit-editor/models/card-node';
 import { detect } from 'content-kit-editor/utils/array-utils';
-import { POST_TYPE } from '../models/post';
-import { MARKUP_SECTION_TYPE } from '../models/markup-section';
-import { LIST_SECTION_TYPE } from '../models/list-section';
-import { LIST_ITEM_TYPE } from '../models/list-item';
-import { MARKER_TYPE } from '../models/marker';
-import { IMAGE_SECTION_TYPE } from '../models/image';
-import { CARD_TYPE } from '../models/card';
+import {
+  POST_TYPE,
+  MARKUP_SECTION_TYPE,
+  LIST_SECTION_TYPE,
+  LIST_ITEM_TYPE,
+  MARKER_TYPE,
+  IMAGE_SECTION_TYPE,
+  CARD_TYPE
+} from '../models/types';
 import { startsWith, endsWith } from '../utils/string-utils';
 import { addClassName } from '../utils/dom-utils';
 

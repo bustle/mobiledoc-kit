@@ -3,8 +3,7 @@ const TEXT_NODE = 3;
 import { clearSelection } from 'content-kit-editor/utils/selection-utils';
 import { walkDOMUntil } from 'content-kit-editor/utils/dom-utils';
 import KEY_CODES from 'content-kit-editor/utils/keycodes';
-import { MODIFIERS }  from 'content-kit-editor/utils/key';
-import isPhantom from './is-phantom';
+import { DIRECTION, MODIFIERS }  from 'content-kit-editor/utils/key';
 
 function selectRange(startNode, startOffset, endNode, endOffset) {
   clearSelection();
@@ -40,6 +39,7 @@ function selectText(startText,
 }
 
 function moveCursorTo(node, offset=0, endNode=node, endOffset=offset) {
+  if (!node) { throw new Error('Cannot moveCursorTo node without node'); }
   selectRange(node, offset, endNode, endOffset);
 }
 
@@ -76,12 +76,11 @@ function createKeyEvent(eventType, keyCode) {
   return oEvent;
 }
 
-function triggerKeyEvent(node, eventType, keyCode=KEY_CODES.ENTER, character=null) {
+function triggerEnterKeyupEvent(node) {
+  const keyCode = KEY_CODES.ENTER;
+  const eventType = 'keyup';
   let oEvent = createKeyEvent(eventType, keyCode);
   node.dispatchEvent(oEvent);
-  if (character) {
-    document.execCommand('insertText', false, character);
-  }
 }
 
 function _buildDOM(tagName, attributes={}, children=[]) {
@@ -130,26 +129,22 @@ function getCursorPosition() {
   };
 }
 
-function triggerDelete(editor) {
+function triggerDelete(editor, direction=DIRECTION.BACKWARD) {
   if (!editor) { throw new Error('Must pass `editor` to `triggerDelete`'); }
-  if (isPhantom()) {
-    // simulate deletion for phantomjs
-    let event = { preventDefault() {} };
-    editor.handleDeletion(event);
-  } else {
-    triggerKeyEvent(editor.element, 'keydown', KEY_CODES.BACKSPACE);
-  }
+  const keyCode = direction === DIRECTION.BACKWARD ? KEY_CODES.BACKSPACE :
+                                                     KEY_CODES.DELETE;
+  const event = { keyCode, preventDefault() {} };
+  editor.triggerEvent(editor.element, 'keydown', event);
+}
+
+function triggerForwardDelete(editor) {
+  return triggerDelete(editor, DIRECTION.FORWARD);
 }
 
 function triggerEnter(editor) {
   if (!editor) { throw new Error('Must pass `editor` to `triggerEnter`'); }
-  if (isPhantom()) {
-    // simulate event when testing with phantom
-    let event = { preventDefault() {} };
-    editor.handleNewline(event);
-  } else {
-    triggerKeyEvent(editor.element, 'keydown', KEY_CODES.ENTER);
-  }
+  const event = { preventDefault() {}, keyCode: KEY_CODES.ENTER };
+  editor.triggerEvent(editor.element, 'keydown', event);
 }
 
 function insertText(editor, string) {
@@ -181,12 +176,13 @@ const DOMHelper = {
   selectText,
   clearSelection,
   triggerEvent,
-  triggerKeyEvent,
+  triggerEnterKeyupEvent,
   build,
   KEY_CODES,
   getCursorPosition,
   getSelectedText,
   triggerDelete,
+  triggerForwardDelete,
   triggerEnter,
   insertText,
   triggerKeyCommand

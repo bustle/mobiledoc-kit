@@ -1,7 +1,7 @@
 import { isTextNode, walkTextNodes } from 'content-kit-editor/utils/dom-utils';
-import { MARKUP_SECTION_TYPE } from 'content-kit-editor/models/markup-section';
-import { LIST_ITEM_TYPE } from 'content-kit-editor/models/list-item';
-import { CARD_TYPE } from 'content-kit-editor/models/card';
+import {
+  MARKUP_SECTION_TYPE, LIST_ITEM_TYPE, CARD_TYPE
+} from 'content-kit-editor/models/types';
 
 function isSection(postNode) {
   if (!(postNode && postNode.type)) { return false; }
