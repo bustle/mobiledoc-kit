@@ -303,6 +303,7 @@ define("mobiledoc-dom-renderer/dom-renderer", ["exports", "mobiledoc-dom-rendere
         var rendered = undefined;
         switch (type) {
           case 1:
+            // markup section
             rendered = this.renderMarkupSection(section);
             (0, _mobiledocDomRendererUtils.appendChild)(this.root, rendered);
             break;
@@ -310,7 +311,13 @@ define("mobiledoc-dom-renderer/dom-renderer", ["exports", "mobiledoc-dom-rendere
             rendered = this.renderImageSection(section);
             (0, _mobiledocDomRendererUtils.appendChild)(this.root, rendered);
             break;
+          case 3:
+            // list section
+            rendered = this.renderListSection(section);
+            (0, _mobiledocDomRendererUtils.appendChild)(this.root, rendered);
+            break;
           case 10:
+            // card section
             rendered = this.renderCardSection(section);
             (0, _mobiledocDomRendererUtils.appendChild)(this.root, rendered);
             break;
@@ -319,12 +326,36 @@ define("mobiledoc-dom-renderer/dom-renderer", ["exports", "mobiledoc-dom-rendere
         }
       }
     }, {
-      key: "renderImageSection",
-      value: function renderImageSection(_ref4) {
-        var _ref42 = _slicedToArray(_ref4, 2);
+      key: "renderListSection",
+      value: function renderListSection(_ref4) {
+        var _this2 = this;
+
+        var _ref42 = _slicedToArray(_ref4, 3);
 
         var type = _ref42[0];
-        var src = _ref42[1];
+        var tagName = _ref42[1];
+        var listItems = _ref42[2];
+
+        var element = (0, _mobiledocDomRendererUtils.createElement)(tagName);
+        listItems.forEach(function (li) {
+          element.appendChild(_this2.renderListItem(li));
+        });
+        return element;
+      }
+    }, {
+      key: "renderListItem",
+      value: function renderListItem(markers) {
+        var element = (0, _mobiledocDomRendererUtils.createElement)('li');
+        this._renderMarkersOnElement(element, markers);
+        return element;
+      }
+    }, {
+      key: "renderImageSection",
+      value: function renderImageSection(_ref5) {
+        var _ref52 = _slicedToArray(_ref5, 2);
+
+        var type = _ref52[0];
+        var src = _ref52[1];
 
         var element = (0, _mobiledocDomRendererUtils.createElement)('img');
         element.src = src;
@@ -332,12 +363,12 @@ define("mobiledoc-dom-renderer/dom-renderer", ["exports", "mobiledoc-dom-rendere
       }
     }, {
       key: "renderCardSection",
-      value: function renderCardSection(_ref5) {
-        var _ref52 = _slicedToArray(_ref5, 3);
+      value: function renderCardSection(_ref6) {
+        var _ref62 = _slicedToArray(_ref6, 3);
 
-        var type = _ref52[0];
-        var name = _ref52[1];
-        var payload = _ref52[2];
+        var type = _ref62[0];
+        var name = _ref62[1];
+        var payload = _ref62[2];
 
         var card = this.cards[name];
         if (!card) {
@@ -349,14 +380,20 @@ define("mobiledoc-dom-renderer/dom-renderer", ["exports", "mobiledoc-dom-rendere
       }
     }, {
       key: "renderMarkupSection",
-      value: function renderMarkupSection(_ref6) {
-        var _ref62 = _slicedToArray(_ref6, 3);
+      value: function renderMarkupSection(_ref7) {
+        var _ref72 = _slicedToArray(_ref7, 3);
 
-        var type = _ref62[0];
-        var tagName = _ref62[1];
-        var markers = _ref62[2];
+        var type = _ref72[0];
+        var tagName = _ref72[1];
+        var markers = _ref72[2];
 
         var element = (0, _mobiledocDomRendererUtils.createElement)(tagName);
+        this._renderMarkersOnElement(element, markers);
+        return element;
+      }
+    }, {
+      key: "_renderMarkersOnElement",
+      value: function _renderMarkersOnElement(element, markers) {
         var elements = [element];
         var currentElement = element;
 
@@ -384,8 +421,6 @@ define("mobiledoc-dom-renderer/dom-renderer", ["exports", "mobiledoc-dom-rendere
             currentElement = elements[elements.length - 1];
           }
         }
-
-        return element;
       }
     }]);
 
@@ -425,4 +460,4 @@ define("mobiledoc-dom-renderer/utils", ["exports"], function (exports) {
   }
 });
 require("mobiledoc-dom-renderer")["registerGlobal"](window, document);
-})();
+})();//# sourceMappingURL=mobiledoc-dom-renderer.map

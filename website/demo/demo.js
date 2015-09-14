@@ -88,10 +88,13 @@ var selfieCard = {
 var simpleCard = {
   name: 'simple-card',
   display: {
-    setup: function(element) {
+    setup: function(element, options, env) {
       var card = document.createElement('span');
       card.innerHTML = 'Hello, world';
       element.appendChild(card);
+      var button = $('<button>Remove card</button>');
+      button.on('click', env.remove);
+      $(element).append(button);
     }
   }
 };
@@ -195,7 +198,12 @@ var ContentKitDemo = exports.ContentKitDemo = {
       'image': ContentKit.ImageCard
     };
     var renderer = new MobiledocDOMRenderer();
-    var rendered = renderer.render(mobiledoc, document.createElement('div'), cards);
+    var rendered;
+    try {
+      rendered = renderer.render(mobiledoc, document.createElement('div'), cards);
+    } catch (e) {
+      rendered = document.createTextNode('Error rendering: ' + e);
+    }
 
     $('#rendered-mobiledoc').empty();
     $('#rendered-mobiledoc')[0].appendChild(rendered);
@@ -234,7 +242,14 @@ var ContentKitDemo = exports.ContentKitDemo = {
     };
 
     var htmlRenderer = new MobiledocHTMLRenderer();
-    $('#rendered-mobiledoc-html').html(displayHTML(htmlRenderer.render(mobiledoc)));
+    var renderedHTML;
+    try {
+      renderedHTML = htmlRenderer.render(mobiledoc);
+    } catch (e) {
+      renderedHTML = 'Error rendering: ' + e;
+    }
+
+    $('#rendered-mobiledoc-html').html(displayHTML(renderedHTML));
 
     var editorHTML = debugNodeHTML($('#editor')[0]);
     $('#editor-html').html(editorHTML);
@@ -272,6 +287,7 @@ function bootEditor(element, mobiledoc) {
   editor = new ContentKit.Editor({
     autofocus: false,
     mobiledoc: mobiledoc,
+    placeholder: 'Write something here...',
     cards: [simpleCard, cardWithEditMode, cardWithInput, selfieCard],
     cardOptions: {
       image: {
@@ -279,14 +295,9 @@ function bootEditor(element, mobiledoc) {
       }
     }
   });
+  var didRenderCallback = function() {ContentKitDemo.syncCodePane(editor);};
+  editor.didRender(didRenderCallback);
   editor.render(element);
-
-  function sync() {
-    ContentKitDemo.syncCodePane(editor);
-  }
-
-  editor.on('update', sync);
-  sync();
 }
 
 function readMobiledoc(string) {
@@ -324,6 +335,31 @@ var sampleMobiledocs = {
         ]],
         [1, "P", [
           [[], 0, "hello world"]
+        ]]
+      ]
+    ]
+  },
+
+  emptyMobiledoc: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      []
+    ]
+  },
+
+  simpleMobiledocWithList: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, "H2", [
+          [[], 0, "To do today:"]
+        ]],
+        [3, 'ul', [
+          [[[], 0, 'buy milk']],
+          [[[], 0, 'water plants']],
+          [[[], 0, 'world domination']]
         ]]
       ]
     ]
@@ -384,9 +420,6 @@ var sampleMobiledocs = {
     sections: [
       [],
       [
-        [1, "H2", [
-          [[], 0, "Simple Card"]
-        ]],
         [10, "simple-card"]
       ]
     ]
@@ -413,7 +446,10 @@ var sampleMobiledocs = {
         [1, "H2", [
           [[], 0, "Input Card"]
         ]],
-        [10, "input-card"]
+        [10, "input-card"],
+        [1, "P", [
+          [[], 0, "Text after the card."]
+        ]]
       ]
     ]
   },

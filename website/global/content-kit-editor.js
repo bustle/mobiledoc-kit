@@ -345,10 +345,8 @@ define("content-kit-editor/commands/base", ["exports"], function (exports) {
 
   exports["default"] = Command;
 });
-define('content-kit-editor/commands/bold', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorUtilsArrayUtils) {
+define('content-kit-editor/commands/bold', ['exports', 'content-kit-editor/commands/text-format'], function (exports, _contentKitEditorCommandsTextFormat) {
   'use strict';
-
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
   var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
@@ -362,51 +360,12 @@ define('content-kit-editor/commands/bold', ['exports', 'content-kit-editor/comma
     function BoldCommand(editor) {
       _classCallCheck(this, BoldCommand);
 
-      _get(Object.getPrototypeOf(BoldCommand.prototype), 'constructor', this).call(this, {
+      _get(Object.getPrototypeOf(BoldCommand.prototype), 'constructor', this).call(this, editor, {
+        tag: 'strong',
         name: 'bold',
         button: '<i class="ck-icon-bold"></i>'
       });
-      this.editor = editor;
-      var builder = this.editor.builder;
-
-      this.markup = builder.createMarkup('strong');
     }
-
-    _createClass(BoldCommand, [{
-      key: 'exec',
-      value: function exec() {
-        var _this = this;
-
-        var markerRange = this.editor.cursor.offsets;
-        if (!markerRange.leftRenderNode || !markerRange.rightRenderNode) {
-          return;
-        }
-        var markers = this.editor.run(function (postEditor) {
-          return postEditor.applyMarkupToMarkers(markerRange, _this.markup);
-        });
-        this.editor.selectMarkers(markers);
-      }
-    }, {
-      key: 'unexec',
-      value: function unexec() {
-        var _this2 = this;
-
-        var markerRange = this.editor.cursor.offsets;
-        var markers = this.editor.run(function (postEditor) {
-          return postEditor.removeMarkupFromMarkers(markerRange, _this2.markup);
-        });
-        this.editor.selectMarkers(markers);
-      }
-    }, {
-      key: 'isActive',
-      value: function isActive() {
-        var _this3 = this;
-
-        return (0, _contentKitEditorUtilsArrayUtils.any)(this.editor.activeMarkers, function (m) {
-          return m.hasMarkup(_this3.markup);
-        });
-      }
-    }]);
 
     return BoldCommand;
   })(_contentKitEditorCommandsTextFormat['default']);
@@ -477,8 +436,7 @@ define('content-kit-editor/commands/format-block', ['exports', 'content-kit-edit
 
       _classCallCheck(this, FormatBlockCommand);
 
-      _get(Object.getPrototypeOf(FormatBlockCommand.prototype), 'constructor', this).call(this, options);
-      this.editor = editor;
+      _get(Object.getPrototypeOf(FormatBlockCommand.prototype), 'constructor', this).call(this, editor, options);
     }
 
     _createClass(FormatBlockCommand, [{
@@ -486,13 +444,8 @@ define('content-kit-editor/commands/format-block', ['exports', 'content-kit-edit
       value: function isActive() {
         var _this = this;
 
-        var editor = this.editor;
-        var activeSections = editor.activeSections;
-
-        return (0, _contentKitEditorUtilsArrayUtils.any)(activeSections, function (section) {
-          return (0, _contentKitEditorUtilsArrayUtils.any)(_this.mappedTags, function (t) {
-            return section.tagName === t;
-          });
+        return (0, _contentKitEditorUtilsArrayUtils.any)(this.editor.activeSections, function (s) {
+          return s.tagName === _this.tag;
         });
       }
     }, {
@@ -587,17 +540,17 @@ define('content-kit-editor/commands/image', ['exports', 'content-kit-editor/comm
     _createClass(ImageCommand, [{
       key: 'exec',
       value: function exec() {
-        var headMarker = this.editor.cursor.offsets.headMarker;
+        var beforeSection = this.editor.cursor.offsets.headSection;
 
-        var beforeSection = headMarker.section;
         var afterSection = beforeSection.next;
         var section = this.editor.builder.createCardSection('image');
+        var collection = beforeSection.parent.sections;
 
         this.editor.run(function (postEditor) {
           if (beforeSection.isBlank) {
             postEditor.removeSection(beforeSection);
           }
-          postEditor.insertSectionBefore(section, afterSection);
+          postEditor.insertSectionBefore(collection, section, afterSection);
         });
       }
     }]);
@@ -607,10 +560,8 @@ define('content-kit-editor/commands/image', ['exports', 'content-kit-editor/comm
 
   exports['default'] = ImageCommand;
 });
-define('content-kit-editor/commands/italic', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorUtilsArrayUtils) {
+define('content-kit-editor/commands/italic', ['exports', 'content-kit-editor/commands/text-format'], function (exports, _contentKitEditorCommandsTextFormat) {
   'use strict';
-
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
   var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
@@ -624,150 +575,165 @@ define('content-kit-editor/commands/italic', ['exports', 'content-kit-editor/com
     function ItalicCommand(editor) {
       _classCallCheck(this, ItalicCommand);
 
-      _get(Object.getPrototypeOf(ItalicCommand.prototype), 'constructor', this).call(this, {
+      _get(Object.getPrototypeOf(ItalicCommand.prototype), 'constructor', this).call(this, editor, {
+        tag: 'em',
         name: 'italic',
         button: '<i class="ck-icon-italic"></i>'
       });
-      this.editor = editor;
-      var builder = this.editor.builder;
-
-      this.markup = builder.createMarkup('em');
     }
-
-    _createClass(ItalicCommand, [{
-      key: 'exec',
-      value: function exec() {
-        var _this = this;
-
-        var markerRange = this.editor.cursor.offsets;
-        if (!markerRange.leftRenderNode || !markerRange.rightRenderNode) {
-          return;
-        }
-        var markers = this.editor.run(function (postEditor) {
-          return postEditor.applyMarkupToMarkers(markerRange, _this.markup);
-        });
-        this.editor.selectMarkers(markers);
-      }
-    }, {
-      key: 'unexec',
-      value: function unexec() {
-        var _this2 = this;
-
-        var markerRange = this.editor.cursor.offsets;
-        var markers = this.editor.run(function (postEditor) {
-          return postEditor.removeMarkupFromMarkers(markerRange, _this2.markup);
-        });
-        this.editor.selectMarkers(markers);
-      }
-    }, {
-      key: 'isActive',
-      value: function isActive() {
-        var _this3 = this;
-
-        return (0, _contentKitEditorUtilsArrayUtils.any)(this.editor.activeMarkers, function (m) {
-          return m.hasMarkup(_this3.markup);
-        });
-      }
-    }]);
 
     return ItalicCommand;
   })(_contentKitEditorCommandsTextFormat['default']);
 
   exports['default'] = ItalicCommand;
 });
-define('content-kit-editor/commands/link', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/views/prompt', 'content-kit-editor/utils/selection-utils', 'content-kit-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorViewsPrompt, _contentKitEditorUtilsSelectionUtils, _contentKitUtils) {
+define('content-kit-editor/commands/link', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorUtilsArrayUtils) {
   'use strict';
 
-  var RegExpHttp = /^https?:\/\//i;
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function LinkCommand() {
-    _contentKitEditorCommandsTextFormat['default'].call(this, {
-      name: 'link',
-      tag: 'a',
-      action: 'createLink',
-      removeAction: 'unlink',
-      button: '<i class="ck-icon-link"></i>',
-      prompt: new _contentKitEditorViewsPrompt['default']({
-        command: this,
-        placeholder: 'Enter a url, press return...'
-      })
-    });
-  }
-  (0, _contentKitUtils.inherit)(LinkCommand, _contentKitEditorCommandsTextFormat['default']);
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-  LinkCommand.prototype.exec = function (url) {
-    if (!url) {
-      return LinkCommand._super.prototype.unexec.call(this);
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var LinkCommand = (function (_TextFormatCommand) {
+    _inherits(LinkCommand, _TextFormatCommand);
+
+    function LinkCommand(editor) {
+      _classCallCheck(this, LinkCommand);
+
+      _get(Object.getPrototypeOf(LinkCommand.prototype), 'constructor', this).call(this, editor, {
+        name: 'link',
+        tag: 'a',
+        button: '<i class="ck-icon-link"></i>'
+      });
     }
 
-    if (this.tag === (0, _contentKitEditorUtilsSelectionUtils.getSelectionTagName)()) {
-      this.unexec();
-    } else {
-      if (!RegExpHttp.test(url)) {
-        url = 'http://' + url;
+    _createClass(LinkCommand, [{
+      key: 'isActive',
+      value: function isActive() {
+        var _this = this;
+
+        return (0, _contentKitEditorUtilsArrayUtils.any)(this.editor.markupsInSelection, function (m) {
+          return m.hasTag(_this.tag);
+        });
       }
-      LinkCommand._super.prototype.exec.call(this, url);
-    }
-  };
+    }, {
+      key: 'exec',
+      value: function exec(url) {
+        var range = this.editor.cursor.offsets;
+        this.editor.run(function (postEditor) {
+          var markup = postEditor.builder.createMarkup('a', ['href', url]);
+          postEditor.applyMarkupToRange(range, markup);
+        });
+        this.editor.moveToPosition(range.tail);
+      }
+    }, {
+      key: 'unexec',
+      value: function unexec() {
+        var range = this.editor.cursor.offsets;
+        this.editor.run(function (postEditor) {
+          postEditor.removeMarkupFromRange(range, function (markup) {
+            return markup.hasTag('a');
+          });
+        });
+        this.editor.selectRange(range);
+      }
+    }]);
+
+    return LinkCommand;
+  })(_contentKitEditorCommandsTextFormat['default']);
 
   exports['default'] = LinkCommand;
 });
-define('content-kit-editor/commands/list', ['exports', 'content-kit-editor/commands/text-format', 'content-kit-editor/utils/selection-utils', 'content-kit-utils'], function (exports, _contentKitEditorCommandsTextFormat, _contentKitEditorUtilsSelectionUtils, _contentKitUtils) {
+define('content-kit-editor/commands/list', ['exports', 'content-kit-editor/commands/text-format'], function (exports, _contentKitEditorCommandsTextFormat) {
   'use strict';
 
-  function ListCommand(options) {
-    _contentKitEditorCommandsTextFormat['default'].call(this, options);
-  }
-  (0, _contentKitUtils.inherit)(ListCommand, _contentKitEditorCommandsTextFormat['default']);
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  ListCommand.prototype.exec = function () {
-    ListCommand._super.prototype.exec.call(this);
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-    // After creation, lists need to be unwrapped
-    // TODO: eventually can remove this when direct model manipulation is ready
-    var listElement = (0, _contentKitEditorUtilsSelectionUtils.getSelectionBlockElement)();
-    var wrapperNode = listElement.parentNode;
-    if (wrapperNode.firstChild === listElement) {
-      var editorNode = wrapperNode.parentNode;
-      editorNode.insertBefore(listElement, wrapperNode);
-      editorNode.removeChild(wrapperNode);
-      (0, _contentKitEditorUtilsSelectionUtils.selectNode)(listElement);
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var ListCommand = (function (_TextFormatCommand) {
+    _inherits(ListCommand, _TextFormatCommand);
+
+    function ListCommand(editor, options) {
+      _classCallCheck(this, ListCommand);
+
+      _get(Object.getPrototypeOf(ListCommand.prototype), 'constructor', this).call(this, editor, options);
     }
-  };
 
-  ListCommand.prototype.checkAutoFormat = function (node) {
-    // Creates unordered lists when node starts with '- '
-    // or ordered list if node starts with '1. '
-    var regex = this.autoFormatRegex,
-        text;
-    if (node && regex) {
-      text = node.textContent;
-      if ('li' !== (0, _contentKitEditorUtilsSelectionUtils.getSelectionTagName)() && regex.test(text)) {
-        this.exec();
-        window.getSelection().anchorNode.textContent = text.replace(regex, '');
-        return true;
+    _createClass(ListCommand, [{
+      key: 'isActive',
+      value: function isActive() {
+        return false;
       }
-    }
-    return false;
-  };
+    }, {
+      key: 'exec',
+      value: function exec() {
+        var _this = this;
+
+        var editor = this.editor;
+        var cursor = editor.cursor;
+        var currentSection = cursor.offsets.head.section;
+
+        var listItem = editor.run(function (postEditor) {
+          var builder = postEditor.builder;
+
+          var tagName = _this.tag;
+          var listSection = builder.createListSection(tagName);
+          var listItem = builder.createListItem();
+          listSection.items.append(listItem);
+
+          postEditor.replaceSection(currentSection, listSection);
+          return listItem;
+        });
+
+        editor.cursor.moveToSection(listItem);
+      }
+    }, {
+      key: 'unexec',
+      value: function unexec() {
+        throw new Error('Cannot unexec a ListCommand');
+      }
+    }]);
+
+    return ListCommand;
+  })(_contentKitEditorCommandsTextFormat['default']);
 
   exports['default'] = ListCommand;
 });
-define('content-kit-editor/commands/ordered-list', ['exports', 'content-kit-editor/commands/list', 'content-kit-utils'], function (exports, _contentKitEditorCommandsList, _contentKitUtils) {
+define('content-kit-editor/commands/ordered-list', ['exports', 'content-kit-editor/commands/list'], function (exports, _contentKitEditorCommandsList) {
   'use strict';
 
-  function OrderedListCommand() {
-    _contentKitEditorCommandsList['default'].call(this, {
-      name: 'ordered list',
-      tag: 'ol',
-      action: 'insertOrderedList'
-    });
-  }
-  (0, _contentKitUtils.inherit)(OrderedListCommand, _contentKitEditorCommandsList['default']);
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-  OrderedListCommand.prototype.autoFormatRegex = /^1\.\s/;
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  exports['default'] = OrderedListCommand;
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var UnorderedListCommand = (function (_ListCommand) {
+    _inherits(UnorderedListCommand, _ListCommand);
+
+    function UnorderedListCommand(editor) {
+      _classCallCheck(this, UnorderedListCommand);
+
+      _get(Object.getPrototypeOf(UnorderedListCommand.prototype), 'constructor', this).call(this, editor, {
+        name: 'Ordered List',
+        tag: 'ol',
+        button: '<i>ol</i>'
+      });
+    }
+
+    return UnorderedListCommand;
+  })(_contentKitEditorCommandsList['default']);
+
+  exports['default'] = UnorderedListCommand;
 });
 define('content-kit-editor/commands/quote', ['exports', 'content-kit-editor/commands/format-block'], function (exports, _contentKitEditorCommandsFormatBlock) {
   'use strict';
@@ -823,7 +789,7 @@ define('content-kit-editor/commands/subheading', ['exports', 'content-kit-editor
 
   exports['default'] = SubheadingCommand;
 });
-define('content-kit-editor/commands/text-format', ['exports', 'content-kit-editor/commands/base'], function (exports, _contentKitEditorCommandsBase) {
+define('content-kit-editor/commands/text-format', ['exports', 'content-kit-editor/commands/base', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorCommandsBase, _contentKitEditorUtilsArrayUtils) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -837,31 +803,53 @@ define('content-kit-editor/commands/text-format', ['exports', 'content-kit-edito
   var TextFormatCommand = (function (_Command) {
     _inherits(TextFormatCommand, _Command);
 
-    function TextFormatCommand() {
-      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    function TextFormatCommand(editor) {
+      var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       _classCallCheck(this, TextFormatCommand);
 
       _get(Object.getPrototypeOf(TextFormatCommand.prototype), 'constructor', this).call(this, options);
-
+      this.editor = editor;
       this.tag = options.tag;
-      this.mappedTags = options.mappedTags || [];
-      if (this.tag) {
-        this.mappedTags.push(this.tag);
-      }
-      this.action = options.action || this.name;
-      this.removeAction = options.removeAction || this.action;
     }
 
     _createClass(TextFormatCommand, [{
+      key: 'isActive',
+      value: function isActive() {
+        var _this = this;
+
+        return (0, _contentKitEditorUtilsArrayUtils.any)(this.editor.markupsInSelection, function (m) {
+          return m === _this.markup;
+        });
+      }
+    }, {
       key: 'exec',
-      value: function exec(value) {
-        document.execCommand(this.action, false, value || null);
+      value: function exec() {
+        var range = this.editor.cursor.offsets;var markup = this.markup;
+
+        this.editor.run(function (postEditor) {
+          return postEditor.applyMarkupToRange(range, markup);
+        });
+        this.editor.selectRange(range);
       }
     }, {
       key: 'unexec',
-      value: function unexec(value) {
-        document.execCommand(this.removeAction, false, value || null);
+      value: function unexec() {
+        var range = this.editor.cursor.offsets;var markup = this.markup;
+
+        this.editor.run(function (postEditor) {
+          return postEditor.removeMarkupFromRange(range, markup);
+        });
+        this.editor.selectRange(range);
+      }
+    }, {
+      key: 'markup',
+      get: function get() {
+        if (this._markup) {
+          return this._markup;
+        }
+        this._markup = this.editor.builder.createMarkup(this.tag);
+        return this._markup;
       }
     }]);
 
@@ -870,23 +858,34 @@ define('content-kit-editor/commands/text-format', ['exports', 'content-kit-edito
 
   exports['default'] = TextFormatCommand;
 });
-define('content-kit-editor/commands/unordered-list', ['exports', 'content-kit-editor/commands/list', 'content-kit-utils'], function (exports, _contentKitEditorCommandsList, _contentKitUtils) {
+define('content-kit-editor/commands/unordered-list', ['exports', 'content-kit-editor/commands/list'], function (exports, _contentKitEditorCommandsList) {
   'use strict';
 
-  function UnorderedListCommand() {
-    _contentKitEditorCommandsList['default'].call(this, {
-      name: 'list',
-      tag: 'ul',
-      action: 'insertUnorderedList'
-    });
-  }
-  (0, _contentKitUtils.inherit)(UnorderedListCommand, _contentKitEditorCommandsList['default']);
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-  UnorderedListCommand.prototype.autoFormatRegex = /^[-*]\s/;
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var UnorderedListCommand = (function (_ListCommand) {
+    _inherits(UnorderedListCommand, _ListCommand);
+
+    function UnorderedListCommand(editor) {
+      _classCallCheck(this, UnorderedListCommand);
+
+      _get(Object.getPrototypeOf(UnorderedListCommand.prototype), 'constructor', this).call(this, editor, {
+        name: 'Unordered List',
+        tag: 'ul',
+        button: '<i>ul</i>'
+      });
+    }
+
+    return UnorderedListCommand;
+  })(_contentKitEditorCommandsList['default']);
 
   exports['default'] = UnorderedListCommand;
 });
-define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/editor/post', 'content-kit-editor/views/reversible-toolbar-button', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/card', 'content-kit-editor/cards/image', 'content-kit-editor/utils/key', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/post', 'content-kit-editor/parsers/dom', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/models/cursor', 'content-kit-editor/models/post-node-builder'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorEditorPost, _contentKitEditorViewsReversibleToolbarButton, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsCard, _contentKitEditorCardsImage, _contentKitEditorUtilsKey, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersPost, _contentKitEditorParsersDom, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorModelsCursor, _contentKitEditorModelsPostNodeBuilder) {
+define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views/text-format-toolbar', 'content-kit-editor/views/tooltip', 'content-kit-editor/views/embed-intent', 'content-kit-editor/editor/post', 'content-kit-editor/cards/image', 'content-kit-editor/utils/key', 'content-kit-editor/utils/event-emitter', 'content-kit-editor/parsers/mobiledoc', 'content-kit-editor/parsers/post', 'content-kit-editor/parsers/dom', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/render-tree', 'content-kit-editor/renderers/mobiledoc', 'content-kit-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/utils/cursor', 'content-kit-editor/models/post-node-builder', 'content-kit-editor/editor/text-expansions', 'content-kit-editor/editor/key-commands', 'content-kit-editor/utils/string-utils'], function (exports, _contentKitEditorViewsTextFormatToolbar, _contentKitEditorViewsTooltip, _contentKitEditorViewsEmbedIntent, _contentKitEditorEditorPost, _contentKitEditorCardsImage, _contentKitEditorUtilsKey, _contentKitEditorUtilsEventEmitter, _contentKitEditorParsersMobiledoc, _contentKitEditorParsersPost, _contentKitEditorParsersDom, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsRenderTree, _contentKitEditorRenderersMobiledoc, _contentKitUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorUtilsCursor, _contentKitEditorModelsPostNodeBuilder, _contentKitEditorEditorTextExpansions, _contentKitEditorEditorKeyCommands, _contentKitEditorUtilsStringUtils) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -900,14 +899,10 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     placeholder: 'Write here...',
     spellcheck: true,
     autofocus: true,
-    post: null,
     // FIXME PhantomJS has 'ontouchstart' in window,
     // causing the stickyToolbar to accidentally be auto-activated
     // in tests
     stickyToolbar: false, // !!('ontouchstart' in window),
-    textFormatCommands: [new _contentKitEditorCommandsLink['default']()],
-    embedCommands: [new _contentKitEditorCommandsImage['default'](), new _contentKitEditorCommandsCard['default']()],
-    autoTypingCommands: [new _contentKitEditorCommandsUnorderedList['default'](), new _contentKitEditorCommandsOrderedList['default']()],
     cards: [],
     cardOptions: {},
     unknownCardHandler: function unknownCardHandler() {
@@ -917,138 +912,11 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     html: null
   };
 
-  function bindContentEditableTypingListeners(editor) {
-    // On 'PASTE' sanitize and insert
-    editor.addEventListener(editor.element, 'paste', function (e) {
-      var data = e.clipboardData;
-      var pastedHTML = data && data.getData && data.getData('text/html');
-      var sanitizedHTML = pastedHTML && editor._renderer.rerender(pastedHTML);
-      if (sanitizedHTML) {
-        document.execCommand('insertHTML', false, sanitizedHTML);
-        editor.rerender();
-      }
-      e.preventDefault();
-      return false;
-    });
-  }
-
-  function bindAutoTypingListeners(editor) {
-    // Watch typing patterns for auto format commands (e.g. lists '- ', '1. ')
-    editor.addEventListener(editor.element, 'keyup', function (e) {
-      var commands = editor.autoTypingCommands;
-      var count = commands && commands.length;
-      var selection, i;
-
-      if (count) {
-        selection = window.getSelection();
-        for (i = 0; i < count; i++) {
-          if (commands[i].checkAutoFormat(selection.anchorNode)) {
-            e.stopPropagation();
-            return;
-          }
-        }
-      }
-    });
-  }
-
-  function bindSelectionEvent(editor) {
-    /**
-     * The following events/sequences can create a selection and are handled:
-     *  * mouseup -- can happen anywhere in document, must wait until next tick to read selection
-     *  * keyup when key is a movement key and shift is pressed -- in editor element
-     *  * keyup when key combo was cmd-A (alt-A) aka "select all"
-     *  * keyup when key combo was cmd-Z (browser restores selection if there was one)
-     *
-     * These cases can create a selection and are not handled:
-     *  * ctrl-click -> context menu -> click "select all"
-     */
-
-    var toggleSelection = function toggleSelection() {
-      return editor.cursor.hasSelection() ? editor.hasSelection() : editor.hasNoSelection();
-    };
-
-    // mouseup will not properly report a selection until the next tick, so add a timeout:
-    var mouseupHandler = function mouseupHandler() {
-      return setTimeout(toggleSelection);
-    };
-    editor.addEventListener(document, 'mouseup', mouseupHandler);
-
-    var keyupHandler = toggleSelection;
-    editor.addEventListener(editor.element, 'keyup', keyupHandler);
-  }
-
-  function bindKeyListeners(editor) {
-    if (!editor.isEditable) {
-      return;
+  function runCallbacks(callbacks, args) {
+    var i = undefined;
+    for (i = 0; i < callbacks.length; i++) {
+      callbacks[i].apply(null, args);
     }
-    editor.addEventListener(document, 'keyup', function (event) {
-      var key = _contentKitEditorUtilsKey['default'].fromEvent(event);
-      if (key.isEscape()) {
-        editor.trigger('escapeKey');
-      }
-    });
-
-    editor.addEventListener(document, 'keydown', function (event) {
-      if (!editor.isEditable) {
-        return;
-      }
-      var key = _contentKitEditorUtilsKey['default'].fromEvent(event);
-
-      if (key.isDelete()) {
-        editor.handleDeletion(event);
-        event.preventDefault();
-      } else if (key.isEnter()) {
-        editor.handleNewline(event);
-      } else if (key.isPrintable()) {
-        if (editor.cursor.hasSelection()) {
-          var offsets = editor.cursor.offsets;
-          editor.run(function (postEditor) {
-            postEditor.deleteRange(editor.cursor.offsets);
-          });
-          editor.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
-        }
-      }
-    });
-  }
-
-  function bindDragAndDrop(editor) {
-    // TODO. For now, just prevent redirect when dropping something on the page
-    editor.addEventListener(window, 'dragover', function (e) {
-      e.preventDefault(); // prevents showing cursor where to drop
-    });
-    editor.addEventListener(window, 'drop', function (e) {
-      e.preventDefault(); // prevent page from redirecting
-    });
-  }
-
-  function initEmbedCommands(editor) {
-    var commands = editor.embedCommands;
-    if (commands) {
-      editor.addView(new _contentKitEditorViewsEmbedIntent['default']({
-        editorContext: editor,
-        commands: commands,
-        rootElement: editor.element
-      }));
-    }
-  }
-
-  function makeButtons(editor) {
-    var headingCommand = new _contentKitEditorCommandsHeading['default'](editor);
-    var headingButton = new _contentKitEditorViewsReversibleToolbarButton['default'](headingCommand, editor);
-
-    var subheadingCommand = new _contentKitEditorCommandsSubheading['default'](editor);
-    var subheadingButton = new _contentKitEditorViewsReversibleToolbarButton['default'](subheadingCommand, editor);
-
-    var quoteCommand = new _contentKitEditorCommandsQuote['default'](editor);
-    var quoteButton = new _contentKitEditorViewsReversibleToolbarButton['default'](quoteCommand, editor);
-
-    var boldCommand = new _contentKitEditorCommandsBold['default'](editor);
-    var boldButton = new _contentKitEditorViewsReversibleToolbarButton['default'](boldCommand, editor);
-
-    var italicCommand = new _contentKitEditorCommandsItalic['default'](editor);
-    var italicButton = new _contentKitEditorViewsReversibleToolbarButton['default'](italicCommand, editor);
-
-    return [headingButton, subheadingButton, quoteButton, boldButton, italicButton];
   }
 
   /**
@@ -1060,6 +928,8 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
   var Editor = (function () {
     function Editor() {
+      var _this = this;
+
       var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
       _classCallCheck(this, Editor);
@@ -1071,27 +941,26 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       this._views = [];
       this.isEditable = null;
 
-      this.builder = new _contentKitEditorModelsPostNodeBuilder['default']();
+      this._didUpdatePostCallbacks = [];
+      this._willRenderCallbacks = [];
+      this._didRenderCallbacks = [];
 
       // FIXME: This should merge onto this.options
       (0, _contentKitUtils.mergeWithOptions)(this, defaults, options);
 
       this.cards.push(_contentKitEditorCardsImage['default']);
 
+      _contentKitEditorEditorTextExpansions.DEFAULT_TEXT_EXPANSIONS.forEach(function (e) {
+        return _this.registerExpansion(e);
+      });
+      _contentKitEditorEditorKeyCommands.DEFAULT_KEY_COMMANDS.forEach(function (kc) {
+        return _this.registerKeyCommand(kc);
+      });
+
       this._parser = new _contentKitEditorParsersPost['default'](this.builder);
       this._renderer = new _contentKitEditorRenderersEditorDom['default'](this, this.cards, this.unknownCardHandler, this.cardOptions);
 
-      if (this.mobiledoc) {
-        this.post = new _contentKitEditorParsersMobiledoc['default'](this.builder).parse(this.mobiledoc);
-      } else if (this.html) {
-        if (typeof this.html === 'string') {
-          this.html = (0, _contentKitEditorUtilsDomUtils.parseHTML)(this.html);
-        }
-        this.post = new _contentKitEditorParsersDom['default'](this.builder).parse(this.html);
-      } else {
-        this.post = this.builder.createBlankPost();
-      }
-
+      this.post = this.loadPost();
       this._renderTree = this.prepareRenderTree(this.post);
     }
 
@@ -1109,6 +978,20 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         return renderTree;
       }
     }, {
+      key: 'loadPost',
+      value: function loadPost() {
+        if (this.mobiledoc) {
+          return new _contentKitEditorParsersMobiledoc['default'](this.builder).parse(this.mobiledoc);
+        } else if (this.html) {
+          if (typeof this.html === 'string') {
+            this.html = (0, _contentKitEditorUtilsDomUtils.parseHTML)(this.html);
+          }
+          return new _contentKitEditorParsersDom['default'](this.builder).parse(this.html);
+        } else {
+          return this.builder.createBlankPost();
+        }
+      }
+    }, {
       key: 'rerender',
       value: function rerender() {
         var postRenderNode = this.post.renderNode;
@@ -1122,20 +1005,20 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
           postRenderNode.markDirty();
         }
 
+        runCallbacks(this._willRenderCallbacks, []);
         this._renderer.render(this._renderTree);
+        runCallbacks(this._didRenderCallbacks, []);
       }
     }, {
       key: 'render',
       value: function render(element) {
-        var _this = this;
-
         if (this.element) {
           throw new Error('Cannot render an editor twice. Use `rerender` to update the rendering of an existing editor instance');
         }
 
         this.element = element;
 
-        this.applyClassName(EDITOR_ELEMENT_CLASS_NAME);
+        (0, _contentKitEditorUtilsDomUtils.addClassName)(this.element, EDITOR_ELEMENT_CLASS_NAME);
         this.applyPlaceholder();
 
         element.spellcheck = this.spellcheck;
@@ -1146,31 +1029,15 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
         (0, _contentKitEditorUtilsDomUtils.clearChildNodes)(element);
 
-        bindContentEditableTypingListeners(this);
-        bindAutoTypingListeners(this);
-        bindDragAndDrop(this);
-        bindSelectionEvent(this);
-        bindKeyListeners(this);
-        this.addEventListener(element, 'input', function () {
-          return _this.handleInput();
-        });
-        initEmbedCommands(this);
+        this._setupListeners();
 
-        this.addView(new _contentKitEditorViewsTextFormatToolbar['default']({
-          editor: this,
-          rootElement: element,
-          // FIXME -- eventually all the commands should migrate to being buttons
-          // that can be added
-          commands: this.textFormatCommands,
-          buttons: makeButtons(this),
-          sticky: this.stickyToolbar
-        }));
+        this._addEmbedIntent();
+        this._addToolbar();
+        this._addTooltip();
 
-        this.addView(new _contentKitEditorViewsTooltip['default']({
-          rootElement: element,
-          showForTag: 'a'
-        }));
-
+        // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
+        // postEditor.
+        this.run(function () {});
         this.rerender();
 
         if (this.autofocus) {
@@ -1178,58 +1045,100 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         }
       }
     }, {
+      key: '_addToolbar',
+      value: function _addToolbar() {
+        this.addView(new _contentKitEditorViewsTextFormatToolbar['default']({
+          editor: this,
+          rootElement: this.element,
+          commands: [],
+          sticky: this.stickyToolbar
+        }));
+      }
+    }, {
+      key: '_addTooltip',
+      value: function _addTooltip() {
+        this.addView(new _contentKitEditorViewsTooltip['default']({ rootElement: this.element, showForTag: 'a' }));
+      }
+    }, {
+      key: 'registerExpansion',
+      value: function registerExpansion(expansion) {
+        if (!(0, _contentKitEditorEditorTextExpansions.validateExpansion)(expansion)) {
+          throw new Error('Expansion is not valid');
+        }
+        this.expansions.push(expansion);
+      }
+    }, {
+      key: 'registerKeyCommand',
+      value: function registerKeyCommand(keyCommand) {
+        if (!(0, _contentKitEditorEditorKeyCommands.validateKeyCommand)(keyCommand)) {
+          throw new Error('Key Command is not valid');
+        }
+        this.keyCommands.push(keyCommand);
+      }
+    }, {
+      key: 'handleExpansion',
+      value: function handleExpansion(event) {
+        var expansion = (0, _contentKitEditorEditorTextExpansions.findExpansion)(this.expansions, event, this);
+        if (expansion) {
+          event.preventDefault();
+          expansion.run(this);
+        }
+      }
+    }, {
       key: 'handleDeletion',
       value: function handleDeletion(event) {
+        var _this2 = this;
+
         event.preventDefault();
 
-        var offsets = this.cursor.offsets;
+        var range = this.cursor.offsets;
 
         if (this.cursor.hasSelection()) {
           this.run(function (postEditor) {
-            postEditor.deleteRange(offsets);
+            return postEditor.deleteRange(range);
           });
-          this.cursor.moveToSection(offsets.headSection, offsets.headSectionOffset);
+          this.cursor.moveToPosition(range.head);
         } else {
-          var results = this.run(function (postEditor) {
-            var headMarker = offsets.headMarker;
-            var headOffset = offsets.headOffset;
-
+          (function () {
             var key = _contentKitEditorUtilsKey['default'].fromEvent(event);
-
-            var deletePosition = { marker: headMarker, offset: headOffset },
-                direction = key.direction;
-            return postEditor.deleteFrom(deletePosition, direction);
-          });
-          this.cursor.moveToMarker(results.currentMarker, results.currentOffset);
+            var nextPosition = _this2.run(function (postEditor) {
+              return postEditor.deleteFrom(range.head, key.direction);
+            });
+            _this2.cursor.moveToPosition(nextPosition);
+          })();
         }
       }
     }, {
       key: 'handleNewline',
       value: function handleNewline(event) {
-        var _this2 = this;
-
-        var offsets = this.cursor.offsets;
-
-        // if there's no left/right nodes, we are probably not in the editor,
-        // or we have selected some non-marker thing like a card
-        if (!offsets.leftRenderNode || !offsets.rightRenderNode) {
+        if (!this.cursor.hasCursor()) {
           return;
         }
 
+        var range = this.cursor.offsets;
         event.preventDefault();
 
-        var cursorSection = undefined;
-        this.run(function (postEditor) {
-          if (_this2.cursor.hasSelection()) {
-            postEditor.deleteRange(offsets);
+        var cursorSection = this.run(function (postEditor) {
+          if (!range.isCollapsed) {
+            postEditor.deleteRange(range);
+            if (range.head.section.isBlank) {
+              return range.head.section;
+            }
           }
-          cursorSection = postEditor.splitSection(offsets)[1];
+          return postEditor.splitSection(range.head)[1];
         });
         this.cursor.moveToSection(cursorSection);
       }
+
+      // FIXME it might be nice to use the toolbar's prompt instead
     }, {
-      key: 'hasSelection',
-      value: function hasSelection() {
+      key: 'showPrompt',
+      value: function showPrompt(message, defaultValue, callback) {
+        callback(window.prompt(message, defaultValue));
+      }
+    }, {
+      key: 'reportSelection',
+      value: function reportSelection() {
         if (!this._hasSelection) {
           this.trigger('selection');
         } else {
@@ -1238,8 +1147,8 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         this._hasSelection = true;
       }
     }, {
-      key: 'hasNoSelection',
-      value: function hasNoSelection() {
+      key: 'reportNoSelection',
+      value: function reportNoSelection() {
         if (this._hasSelection) {
           this.trigger('selectionEnded');
         }
@@ -1251,7 +1160,7 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         if (this._hasSelection) {
           // FIXME perhaps restore cursor position to end of the selection?
           this.cursor.clearSelection();
-          this.hasNoSelection();
+          this.reportNoSelection();
         }
       }
     }, {
@@ -1263,18 +1172,23 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       key: 'selectSections',
       value: function selectSections(sections) {
         this.cursor.selectSections(sections);
-        this.hasSelection();
+        this.reportSelection();
       }
     }, {
-      key: 'selectMarkers',
-      value: function selectMarkers(markers) {
-        this.cursor.selectMarkers(markers);
-        this.hasSelection();
+      key: 'selectRange',
+      value: function selectRange(range) {
+        this.cursor.selectRange(range);
+        if (range.isCollapsed) {
+          this.reportNoSelection();
+        } else {
+          this.reportSelection();
+        }
       }
     }, {
-      key: 'applyClassName',
-      value: function applyClassName(className) {
-        (0, _contentKitEditorUtilsDomUtils.addClassName)(this.element, className);
+      key: 'moveToPosition',
+      value: function moveToPosition(position) {
+        this.cursor.moveToPosition(position);
+        this.reportNoSelection();
       }
     }, {
       key: 'applyPlaceholder',
@@ -1311,81 +1225,35 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
     }, {
       key: 'reparse',
       value: function reparse() {
-        var _this3 = this;
+        var _cursor$offsets = this.cursor.offsets;
+        var headSection = _cursor$offsets.headSection;
+        var headSectionOffset = _cursor$offsets.headSectionOffset;
 
-        // find added sections
-        var sectionsInDOM = [];
-        var newSections = [];
-        var previousSection = undefined;
+        if (headSectionOffset === 0) {
+          // FIXME if the offset is 0, the user is typing the first character
+          // in an empty section, so we need to move the cursor 1 letter forward
+          headSectionOffset = 1;
+        }
 
-        (0, _contentKitEditorUtilsArrayUtils.forEach)(this.element.childNodes, function (node) {
-          // FIXME: this is kind of slow
-          var sectionRenderNode = (0, _contentKitEditorUtilsArrayUtils.detect)(_this3._renderTree.node.childNodes, function (renderNode) {
-            return renderNode.element === node;
-          });
-          if (!sectionRenderNode) {
-            var _section = _this3._parser.parseSection(node);
-            newSections.push(_section);
+        this._reparseCurrentSection();
+        this._removeDetachedSections();
 
-            // create a clean "already-rendered" node to represent the fact that
-            // this (new) section is already in DOM
-            sectionRenderNode = _this3._renderTree.buildRenderNode(_section);
-            sectionRenderNode.element = node;
-            sectionRenderNode.markClean();
-
-            var previousSectionRenderNode = previousSection && previousSection.renderNode;
-            _this3.post.sections.insertAfter(_section, previousSection);
-            _this3._renderTree.node.childNodes.insertAfter(sectionRenderNode, previousSectionRenderNode);
-          }
-
-          // may cause duplicates to be included
-          var section = sectionRenderNode.postNode;
-          sectionsInDOM.push(section);
-          previousSection = section;
-        });
-
-        // remove deleted nodes
-        var deletedSections = [];
-        (0, _contentKitEditorUtilsArrayUtils.forEach)(this.post.sections, function (section) {
-          if (!section.renderNode) {
-            throw new Error('All sections are expected to have a renderNode');
-          }
-
-          if (sectionsInDOM.indexOf(section) === -1) {
-            deletedSections.push(section);
-          }
-        });
-        (0, _contentKitEditorUtilsArrayUtils.forEach)(deletedSections, function (s) {
-          return s.renderNode.scheduleForRemoval();
-        });
-
-        // reparse the new section(s) with the cursor
-        // to ensure that we catch any changed html that the browser might have
-        // added
-        var sectionsWithCursor = this.cursor.activeSections;
-        (0, _contentKitEditorUtilsArrayUtils.forEach)(sectionsWithCursor, function (section) {
-          if (newSections.indexOf(section) === -1) {
-            _this3.reparseSection(section);
-          }
-        });
-
-        var _cursor$sectionOffsets = this.cursor.sectionOffsets;
-        var headSection = _cursor$sectionOffsets.headSection;
-        var headSectionOffset = _cursor$sectionOffsets.headSectionOffset;
-
-        // The cursor will lose its textNode if we have reparsed (and thus will rerender, below)
-        // its section. Ensure the cursor is placed where it should be after render.
-        //
-        // New sections are presumed clean, and thus do not get rerendered and lose
-        // their cursor position.
-        var resetCursor = sectionsWithCursor.indexOf(headSection) !== -1;
-
+        // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
+        // postEditor.
+        this.run(function () {});
         this.rerender();
         this.trigger('update');
 
-        if (resetCursor) {
-          this.cursor.moveToSection(headSection, headSectionOffset);
-        }
+        this.cursor.moveToSection(headSection, headSectionOffset);
+      }
+    }, {
+      key: '_removeDetachedSections',
+      value: function _removeDetachedSections() {
+        (0, _contentKitEditorUtilsArrayUtils.forEach)((0, _contentKitEditorUtilsArrayUtils.filter)(this.post.sections, function (s) {
+          return !s.renderNode.isAttached();
+        }), function (s) {
+          return s.renderNode.scheduleForRemoval();
+        });
       }
 
       /*
@@ -1424,9 +1292,11 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         section.renderNode.markDirty();
       }
     }, {
-      key: 'reparseSection',
-      value: function reparseSection(section) {
-        this._parser.reparseSection(section, this._renderTree);
+      key: '_reparseCurrentSection',
+      value: function _reparseCurrentSection() {
+        var currentSection = this.cursor.offsets.headSection;
+
+        this._parser.reparseSection(currentSection, this._renderTree);
       }
     }, {
       key: 'serialize',
@@ -1461,7 +1331,9 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       key: 'disableEditing',
       value: function disableEditing() {
         this.isEditable = false;
-        this.element.setAttribute('contentEditable', false);
+        if (this.element) {
+          this.element.setAttribute('contentEditable', false);
+        }
       }
 
       /**
@@ -1475,7 +1347,9 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       key: 'enableEditing',
       value: function enableEditing() {
         this.isEditable = true;
-        this.element.setAttribute('contentEditable', true);
+        if (this.element) {
+          this.element.setAttribute('contentEditable', true);
+        }
       }
 
       /**
@@ -1509,13 +1383,216 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
       value: function run(callback) {
         var postEditor = new _contentKitEditorEditorPost['default'](this);
         var result = callback(postEditor);
+        runCallbacks(this._didUpdatePostCallbacks, [postEditor]);
         postEditor.complete();
         return result;
       }
     }, {
+      key: 'didUpdatePost',
+      value: function didUpdatePost(callback) {
+        this._didUpdatePostCallbacks.push(callback);
+      }
+    }, {
+      key: 'willRender',
+      value: function willRender(callback) {
+        this._willRenderCallbacks.push(callback);
+      }
+    }, {
+      key: 'didRender',
+      value: function didRender(callback) {
+        this._didRenderCallbacks.push(callback);
+      }
+    }, {
+      key: '_addEmbedIntent',
+      value: function _addEmbedIntent() {
+        this.addView(new _contentKitEditorViewsEmbedIntent['default']({
+          editor: this,
+          rootElement: this.element
+        }));
+      }
+    }, {
+      key: '_setupListeners',
+      value: function _setupListeners() {
+        var _this3 = this;
+
+        var elementEvents = ['keydown', 'keyup', 'input', 'dragover', 'drop', 'paste'];
+        var documentEvents = ['mouseup'];
+
+        elementEvents.forEach(function (eventName) {
+          _this3.addEventListener(_this3.element, eventName, function () {
+            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+              args[_key] = arguments[_key];
+            }
+
+            return _this3.handleEvent.apply(_this3, [eventName].concat(args));
+          });
+        });
+
+        documentEvents.forEach(function (eventName) {
+          _this3.addEventListener(document, eventName, function () {
+            for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+              args[_key2] = arguments[_key2];
+            }
+
+            return _this3.handleEvent.apply(_this3, [eventName].concat(args));
+          });
+        });
+      }
+    }, {
+      key: 'handleEvent',
+      value: function handleEvent(eventName) {
+        if (this.cursor.isInCard()) {
+          return;
+        }
+
+        var methodName = 'handle' + (0, _contentKitEditorUtilsStringUtils.capitalize)(eventName);
+        if (!this[methodName]) {
+          throw new Error('No handler for ' + eventName);
+        }
+
+        for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+          args[_key3 - 1] = arguments[_key3];
+        }
+
+        this[methodName].apply(this, args);
+      }
+    }, {
+      key: 'handleMouseup',
+      value: function handleMouseup() {
+        var _this4 = this;
+
+        // mouseup does not correctly report a selection until the next tick
+        setTimeout(function () {
+          return _this4._reportSelectionState();
+        });
+      }
+    }, {
+      key: 'handleKeyup',
+      value: function handleKeyup(event) {
+        var key = _contentKitEditorUtilsKey['default'].fromEvent(event);
+
+        if (key.isEscape()) {
+          this.trigger('escapeKey');
+        }
+        this._reportSelectionState();
+      }
+
+      /*
+         The following events/sequences can create a selection and are handled:
+           * mouseup -- can happen anywhere in document, must wait until next tick to read selection
+           * keyup when key is a movement key and shift is pressed -- in editor element
+           * keyup when key combo was cmd-A (alt-A) aka "select all"
+           * keyup when key combo was cmd-Z (browser may restore selection)
+         These cases can create a selection and are not handled:
+           * ctrl-click -> context menu -> click "select all"
+       */
+    }, {
+      key: '_reportSelectionState',
+      value: function _reportSelectionState() {
+        if (this.cursor.hasSelection()) {
+          this.reportSelection();
+        } else {
+          this.reportNoSelection();
+        }
+      }
+    }, {
+      key: 'handleDragover',
+      value: function handleDragover(e) {
+        e.preventDefault(); // FIXME for now, just prevent default
+      }
+    }, {
+      key: 'handleDrop',
+      value: function handleDrop(e) {
+        e.preventDefault(); // FIXME for now, just prevent default
+      }
+    }, {
+      key: '_insertEmptyMarkupSectionAtCursor',
+      value: function _insertEmptyMarkupSectionAtCursor() {
+        var _this5 = this;
+
+        var section = this.run(function (postEditor) {
+          var section = postEditor.builder.createMarkupSection('p');
+          postEditor.insertSectionBefore(_this5.post.sections, section);
+          return section;
+        });
+        this.cursor.moveToSection(section);
+      }
+    }, {
+      key: 'handleKeydown',
+      value: function handleKeydown(event) {
+        var _this6 = this;
+
+        if (!this.isEditable) {
+          return;
+        }
+        if (this.post.isBlank) {
+          this._insertEmptyMarkupSectionAtCursor();
+        }
+
+        var key = _contentKitEditorUtilsKey['default'].fromEvent(event);
+
+        if (key.isDelete()) {
+          this.handleDeletion(event);
+          event.preventDefault();
+        } else if (key.isEnter()) {
+          this.handleNewline(event);
+        } else if (key.isPrintable()) {
+          if (this.cursor.hasSelection()) {
+            (function () {
+              var range = _this6.cursor.offsets;
+              _this6.run(function (postEditor) {
+                return postEditor.deleteRange(range);
+              });
+              _this6.cursor.moveToPosition(range.head);
+            })();
+          }
+        }
+
+        this.handleExpansion(event);
+        this.handleKeyCommand(event);
+      }
+    }, {
+      key: 'handleKeyCommand',
+      value: function handleKeyCommand(event) {
+        var keyCommand = (0, _contentKitEditorEditorKeyCommands.findKeyCommand)(this.keyCommands, event);
+        if (keyCommand) {
+          event.preventDefault();
+          keyCommand.run(this);
+        }
+      }
+    }, {
+      key: 'handlePaste',
+      value: function handlePaste(event) {
+        event.preventDefault(); // FIXME for now, just prevent pasting
+      }
+    }, {
+      key: 'builder',
+      get: function get() {
+        if (!this._builder) {
+          this._builder = new _contentKitEditorModelsPostNodeBuilder['default']();
+        }
+        return this._builder;
+      }
+    }, {
+      key: 'expansions',
+      get: function get() {
+        if (!this._expansions) {
+          this._expansions = [];
+        }
+        return this._expansions;
+      }
+    }, {
+      key: 'keyCommands',
+      get: function get() {
+        if (!this._keyCommands) {
+          this._keyCommands = [];
+        }
+        return this._keyCommands;
+      }
+    }, {
       key: 'cursor',
       get: function get() {
-        return new _contentKitEditorModelsCursor['default'](this);
+        return new _contentKitEditorUtilsCursor['default'](this);
       }
     }, {
       key: 'activeSections',
@@ -1523,21 +1600,14 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
         return this.cursor.activeSections;
       }
     }, {
-      key: 'activeMarkers',
+      key: 'markupsInSelection',
       get: function get() {
-        var _cursor$offsets = this.cursor.offsets;
-        var startMarker = _cursor$offsets.startMarker;
-        var endMarker = _cursor$offsets.endMarker;
-
-        if (!(startMarker && endMarker)) {
+        if (this.cursor.hasSelection()) {
+          var range = this.cursor.offsets;
+          return this.post.markupsInRange(range);
+        } else {
           return [];
         }
-
-        var activeMarkers = [];
-        this.post.markersFrom(startMarker, endMarker, function (m) {
-          return activeMarkers.push(m);
-        });
-        return activeMarkers;
       }
     }]);
 
@@ -1549,7 +1619,90 @@ define('content-kit-editor/editor/editor', ['exports', 'content-kit-editor/views
 
   exports['default'] = Editor;
 });
-define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/markup-section', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/key'], function (exports, _contentKitEditorModelsMarkupSection, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsKey) {
+define('content-kit-editor/editor/key-commands', ['exports', 'content-kit-editor/utils/key', 'content-kit-editor/utils/array-utils', 'content-kit-editor/commands/link', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic'], function (exports, _contentKitEditorUtilsKey, _contentKitEditorUtilsArrayUtils, _contentKitEditorCommandsLink, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic) {
+  'use strict';
+
+  exports.validateKeyCommand = validateKeyCommand;
+  exports.findKeyCommand = findKeyCommand;
+
+  function runSelectionCommand(editor, CommandKlass) {
+    if (editor.cursor.hasSelection()) {
+      var cmd = new CommandKlass(editor);
+      if (cmd.isActive()) {
+        cmd.unexec();
+      } else {
+        cmd.exec();
+      }
+    }
+  }
+
+  var DEFAULT_KEY_COMMANDS = [{
+    modifier: _contentKitEditorUtilsKey.MODIFIERS.META,
+    str: 'B',
+    run: function run(editor) {
+      runSelectionCommand(editor, _contentKitEditorCommandsBold['default']);
+    }
+  }, {
+    modifier: _contentKitEditorUtilsKey.MODIFIERS.CTRL,
+    str: 'B',
+    run: function run(editor) {
+      runSelectionCommand(editor, _contentKitEditorCommandsBold['default']);
+    }
+  }, {
+    modifier: _contentKitEditorUtilsKey.MODIFIERS.META,
+    str: 'I',
+    run: function run(editor) {
+      runSelectionCommand(editor, _contentKitEditorCommandsItalic['default']);
+    }
+  }, {
+    modifier: _contentKitEditorUtilsKey.MODIFIERS.CTRL,
+    str: 'I',
+    run: function run(editor) {
+      runSelectionCommand(editor, _contentKitEditorCommandsItalic['default']);
+    }
+  }, {
+    modifier: _contentKitEditorUtilsKey.MODIFIERS.META,
+    str: 'K',
+    run: function run(editor) {
+      if (!editor.cursor.hasSelection()) {
+        return;
+      }
+
+      var selectedText = editor.cursor.selectedText();
+      var defaultUrl = '';
+      if (selectedText.indexOf('http') !== -1) {
+        defaultUrl = selectedText;
+      }
+
+      editor.showPrompt('Enter a URL', defaultUrl, function (url) {
+        if (!url) {
+          return;
+        }
+
+        var linkCommand = new _contentKitEditorCommandsLink['default'](editor);
+        linkCommand.exec(url);
+      });
+    }
+  }];
+
+  exports.DEFAULT_KEY_COMMANDS = DEFAULT_KEY_COMMANDS;
+
+  function validateKeyCommand(keyCommand) {
+    return !!keyCommand.modifier && !!keyCommand.str && !!keyCommand.run;
+  }
+
+  function findKeyCommand(keyCommands, keyEvent) {
+    var key = _contentKitEditorUtilsKey['default'].fromEvent(keyEvent);
+
+    return (0, _contentKitEditorUtilsArrayUtils.detect)(keyCommands, function (_ref) {
+      var modifier = _ref.modifier;
+      var str = _ref.str;
+
+      return key.hasModifier(modifier) && key.isChar(str);
+    });
+  }
+});
+define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/types', 'content-kit-editor/utils/cursor/position', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/key'], function (exports, _contentKitEditorModelsTypes, _contentKitEditorUtilsCursorPosition, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsKey) {
   'use strict';
 
   var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
@@ -1559,7 +1712,19 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   function isMarkupSection(section) {
-    return section.type === _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE;
+    return section.type === _contentKitEditorModelsTypes.MARKUP_SECTION_TYPE;
+  }
+
+  function isListItem(section) {
+    return section.type === _contentKitEditorModelsTypes.LIST_ITEM_TYPE;
+  }
+
+  function isBlankAndListItem(section) {
+    return isListItem(section) && section.isBlank;
+  }
+
+  function isMarkerable(section) {
+    return !!section.markers;
   }
 
   var PostEditor = (function () {
@@ -1567,6 +1732,7 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
       _classCallCheck(this, PostEditor);
 
       this.editor = editor;
+      this.builder = this.editor.builder;
       this._completionWorkQueue = [];
       this._didRerender = false;
       this._didUpdate = false;
@@ -1574,31 +1740,23 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
     }
 
     /**
-     * Remove a range of markers from the post.
+     * Remove a range from the post
      *
      * Usage:
      *
-     *     let marker = editor.post.sections.head.markers.head;
+     *     const range = editor.cursor.offsets;
      *     editor.run((postEditor) => {
-     *       postEditor.deleteRange({
-     *         headMarker: marker,
-     *         headOffset: 2,
-     *         tailMarker: marker,
-     *         tailOffset: 4,
-     *       });
+     *       postEditor.deleteRange(range);
      *     });
      *
-     * `deleteRange` accepts the value of `this.cursor.offsets` for deletion.
-     *
      * @method deleteRange
-     * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
-     * @return {Object} {currentMarker, currentOffset} for cursor
+     * @param {Range} range Cursor Range object with head and tail Positions
      * @public
      */
 
     _createClass(PostEditor, [{
       key: 'deleteRange',
-      value: function deleteRange(markerRange) {
+      value: function deleteRange(range) {
         var _this = this;
 
         // types of selection deletion:
@@ -1615,31 +1773,35 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
         //     -- mark the end section for removal
         //     -- cursor goes at end of marker before the selection start
 
-        // markerRange should be akin to this.cursor.offset
-        var headSection = markerRange.headSection;
-        var headSectionOffset = markerRange.headSectionOffset;
-        var tailSection = markerRange.tailSection;
-        var tailSectionOffset = markerRange.tailSectionOffset;
+        var _range$head = range.head;
+        var headSection = _range$head.section;
+        var headSectionOffset = _range$head.offset;
+        var _range$tail = range.tail;
+        var tailSection = _range$tail.section;
+        var tailSectionOffset = _range$tail.offset;
         var post = this.editor.post;
 
         if (headSection === tailSection) {
           this.cutSection(headSection, headSectionOffset, tailSectionOffset);
         } else {
           (function () {
-            var removedSections = [];
-            post.sections.walk(headSection, tailSection, function (section) {
+            var removedSections = post.sectionsContainedBy(range);
+            post.walkMarkerableSections(range, function (section) {
               switch (section) {
                 case headSection:
                   _this.cutSection(section, headSectionOffset, section.text.length);
                   break;
                 case tailSection:
-                  tailSection.markersFor(tailSectionOffset, section.text.length).forEach(function (m) {
+                  section.markersFor(tailSectionOffset, section.text.length).forEach(function (m) {
                     headSection.markers.append(m);
                   });
-                  removedSections.push(tailSection);
+                  headSection.renderNode.markDirty(); // May have added nodes
+                  removedSections.push(section);
                   break;
                 default:
-                  removedSections.push(section);
+                  if (removedSections.indexOf(section) === -1) {
+                    removedSections.push(section);
+                  }
               }
             });
             removedSections.forEach(function (section) {
@@ -1656,48 +1818,88 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
     }, {
       key: 'cutSection',
       value: function cutSection(section, headSectionOffset, tailSectionOffset) {
-        var _section$markerPositionAtOffset = section.markerPositionAtOffset(headSectionOffset);
+        if (section.markers.isEmpty) {
+          return;
+        }
 
-        var headMarker = _section$markerPositionAtOffset.marker;
-        var headOffset = _section$markerPositionAtOffset.offset;
+        var adjustedHead = 0,
+            marker = section.markers.head,
+            adjustedTail = marker.length;
 
-        var _section$markerPositionAtOffset2 = section.markerPositionAtOffset(tailSectionOffset);
+        // Walk to the first node inside the headSectionOffset, splitting
+        // a marker if needed. Leave marker as the first node inside.
+        while (marker) {
+          if (adjustedTail >= headSectionOffset) {
+            var splitOffset = headSectionOffset - adjustedHead;
 
-        var tailMarker = _section$markerPositionAtOffset2.marker;
-        var tailOffset = _section$markerPositionAtOffset2.offset;
+            var _splitMarker = this.splitMarker(marker, splitOffset);
 
-        var markers = this.splitMarkers({ headMarker: headMarker, headOffset: headOffset, tailMarker: tailMarker, tailOffset: tailOffset });
-        section.markers.removeBy(function (m) {
-          return markers.indexOf(m) !== -1;
-        });
+            var afterMarker = _splitMarker.afterMarker;
+
+            adjustedHead = adjustedHead + splitOffset;
+            // FIXME: That these two loops cannot agree on adjustedTail being
+            // incremented at the start or end seems prime for refactoring.
+            adjustedTail = adjustedHead;
+            marker = afterMarker;
+            break;
+          }
+          adjustedHead += marker.length;
+          marker = marker.next;
+          if (marker) {
+            adjustedTail += marker.length;
+          }
+        }
+
+        // Walk each marker inside, removing it if needed. when the last is
+        // reached split it and remove the part inside the tailSectionOffset
+        while (marker) {
+          adjustedTail += marker.length;
+          if (adjustedTail >= tailSectionOffset) {
+            var splitOffset = marker.length - (adjustedTail - tailSectionOffset);
+
+            var _splitMarker2 = this.splitMarker(marker, splitOffset);
+
+            var beforeMarker = _splitMarker2.beforeMarker;
+
+            if (beforeMarker) {
+              this.removeMarker(beforeMarker);
+            }
+            break;
+          }
+          adjustedHead += marker.length;
+          var nextMarker = marker.next;
+          this.removeMarker(marker);
+          marker = nextMarker;
+        }
       }
     }, {
       key: '_coalesceMarkers',
       value: function _coalesceMarkers(section) {
         var _this2 = this;
 
-        var builder = this.editor.builder;
-
         (0, _contentKitEditorUtilsArrayUtils.filter)(section.markers, function (m) {
           return m.isEmpty;
-        }).forEach(function (m) {
-          _this2.removeMarker(m);
+        }).forEach(function (marker) {
+          _this2.removeMarker(marker);
         });
-        if (section.markers.isEmpty) {
-          section.markers.append(builder.createBlankMarker());
-          section.renderNode.markDirty();
-        }
       }
     }, {
       key: 'removeMarker',
       value: function removeMarker(marker) {
+        var didChange = false;
         if (marker.renderNode) {
           marker.renderNode.scheduleForRemoval();
+          didChange = true;
         }
-        marker.section.markers.remove(marker);
+        if (marker.section) {
+          marker.section.markers.remove(marker);
+          didChange = true;
+        }
 
-        this.scheduleRerender();
-        this.scheduleDidUpdate();
+        if (didChange) {
+          this.scheduleRerender();
+          this.scheduleDidUpdate();
+        }
       }
 
       /**
@@ -1709,7 +1911,7 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        *     let marker = editor.post.sections.head.markers.head;
        *     // marker has text of "Howdy!"
        *     editor.run((postEditor) => {
-       *       postEditor.deleteFrom({marker, offset: 3});
+       *       postEditor.deleteFrom({section, offset: 3});
        *     });
        *     // marker has text of "Hody!"
        *
@@ -1720,147 +1922,193 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        * marker.
        *
        * @method deleteFrom
-       * @param {Object} position object with {marker, offset} the marker and offset to delete from
+       * @param {Position} position object with {section, offset} the marker and offset to delete from
        * @param {Number} direction The direction to delete in (default is BACKWARD)
-       * @return {Object} {currentMarker, currentOffset} for positioning the cursor
+       * @return {Position} for positioning the cursor
        * @public
        */
     }, {
       key: 'deleteFrom',
-      value: function deleteFrom(_ref) {
-        var marker = _ref.marker;
-        var offset = _ref.offset;
+      value: function deleteFrom(position) {
         var direction = arguments.length <= 1 || arguments[1] === undefined ? _contentKitEditorUtilsKey.DIRECTION.BACKWARD : arguments[1];
 
         if (direction === _contentKitEditorUtilsKey.DIRECTION.BACKWARD) {
-          return this._deleteBackwardFrom({ marker: marker, offset: offset });
+          return this._deleteBackwardFrom(position);
         } else {
-          return this._deleteForwardFrom({ marker: marker, offset: offset });
+          return this._deleteForwardFrom(position);
         }
+      }
+    }, {
+      key: '_joinPositionToPreviousSection',
+      value: function _joinPositionToPreviousSection(position) {
+        var section = position.section;
+
+        var nextPosition = position.clone();
+
+        if (!isMarkerable(section)) {
+          throw new Error('Cannot join non-markerable section to previous section');
+        } else if (isListItem(section)) {
+          nextPosition = this._convertListItemToMarkupSection(section);
+        } else {
+          var prevSection = section.immediatelyPreviousMarkerableSection();
+
+          if (prevSection) {
+            var _prevSection$join = prevSection.join(section);
+
+            var beforeMarker = _prevSection$join.beforeMarker;
+
+            prevSection.renderNode.markDirty();
+            this.removeSection(section);
+
+            nextPosition.section = prevSection;
+            nextPosition.offset = beforeMarker ? prevSection.offsetOfMarker(beforeMarker, beforeMarker.length) : 0;
+          }
+        }
+
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+
+        return nextPosition;
       }
 
       /**
        * delete 1 character in the FORWARD direction from the given position
        * @method _deleteForwardFrom
+       * @param {Position} position
        * @private
        */
     }, {
       key: '_deleteForwardFrom',
-      value: function _deleteForwardFrom(_ref2) {
-        var marker = _ref2.marker;
-        var offset = _ref2.offset;
+      value: function _deleteForwardFrom(position) {
+        var section = position.section;
+        var offset = position.offset;
 
-        var nextCursorMarker = marker,
-            nextCursorOffset = offset;
+        if (section.isBlank) {
+          // remove this section, focus on start of next markerable section
+          var nextPosition = position.clone();
+          var next = section.immediatelyNextMarkerableSection();
+          if (next) {
+            this.removeSection(section);
+            nextPosition.section = next;
+            nextPosition.offset = 0;
+          }
+          return nextPosition;
+        } else if (offset === section.length) {
+          // join next markerable section to this one
+          return this._joinPositionToNextSection(position);
+        } else {
+          return this._deleteForwardFromMarkerPosition(position.markerPosition);
+        }
+      }
+    }, {
+      key: '_joinPositionToNextSection',
+      value: function _joinPositionToNextSection(position) {
+        var section = position.section;
+
+        var nextPosition = position.clone();
+
+        if (!isMarkerable(section)) {
+          throw new Error('Cannot join non-markerable section to next section');
+        } else {
+          var next = section.immediatelyNextMarkerableSection();
+          if (next) {
+            section.join(next);
+            section.renderNode.markDirty();
+            this.removeSection(next);
+
+            this.scheduleRerender();
+            this.scheduleDidUpdate();
+          }
+        }
+
+        return nextPosition;
+      }
+    }, {
+      key: '_deleteForwardFromMarkerPosition',
+      value: function _deleteForwardFromMarkerPosition(markerPosition) {
+        var marker = markerPosition.marker;
+        var offset = markerPosition.offset;
+        var section = marker.section;
+
+        var nextPosition = new _contentKitEditorUtilsCursorPosition['default'](section, section.offsetOfMarker(marker, offset));
 
         if (offset === marker.length) {
           var nextMarker = marker.next;
 
           if (nextMarker) {
-            this._deleteForwardFrom({ marker: nextMarker, offset: 0 });
+            var nextMarkerPosition = { marker: nextMarker, offset: 0 };
+            return this._deleteForwardFromMarkerPosition(nextMarkerPosition);
           } else {
             var nextSection = marker.section.next;
             if (nextSection && isMarkupSection(nextSection)) {
               var currentSection = marker.section;
 
               currentSection.join(nextSection);
-
               currentSection.renderNode.markDirty();
-              nextSection.renderNode.scheduleForRemoval();
+
+              this.removeSection(nextSection);
             }
           }
         } else {
           marker.deleteValueAtOffset(offset);
           marker.renderNode.markDirty();
+          this._coalesceMarkers(marker.section);
         }
 
         this.scheduleRerender();
         this.scheduleDidUpdate();
 
-        return {
-          currentMarker: nextCursorMarker,
-          currentOffset: nextCursorOffset
-        };
+        return nextPosition;
+      }
+    }, {
+      key: '_convertListItemToMarkupSection',
+      value: function _convertListItemToMarkupSection(listItem) {
+        var listSection = listItem.parent;
+
+        var newSections = listItem.splitIntoSections();
+        var newMarkupSection = newSections[1];
+
+        this._replaceSection(listSection, (0, _contentKitEditorUtilsArrayUtils.compact)(newSections));
+
+        return new _contentKitEditorUtilsCursorPosition['default'](newMarkupSection, 0);
       }
 
       /**
        * delete 1 character in the BACKWARD direction from the given position
        * @method _deleteBackwardFrom
+       * @param {Position} position
        * @private
        */
     }, {
       key: '_deleteBackwardFrom',
-      value: function _deleteBackwardFrom(_ref3) {
-        var marker = _ref3.marker;
-        var offset = _ref3.offset;
+      value: function _deleteBackwardFrom(position) {
+        var sectionOffset = position.offset;
 
-        var nextCursorMarker = marker,
-            nextCursorOffset = offset;
+        if (sectionOffset === 0) {
+          return this._joinPositionToPreviousSection(position);
+        }
 
-        if (offset === 0) {
-          var prevMarker = marker.prev;
+        var nextPosition = position.clone();
+        var _position$markerPosition = position.markerPosition;
+        var marker = _position$markerPosition.marker;
+        var markerOffset = _position$markerPosition.offset;
 
-          if (prevMarker) {
-            return this._deleteBackwardFrom({ marker: prevMarker, offset: prevMarker.length });
-          } else {
-            var prevSection = marker.section.prev;
+        var offsetToDeleteAt = markerOffset - 1;
 
-            if (prevSection) {
-              if (isMarkupSection(prevSection)) {
-                nextCursorMarker = prevSection.markers.tail;
-                nextCursorOffset = nextCursorMarker.length;
-
-                var _prevSection$join = prevSection.join(marker.section);
-
-                var beforeMarker = _prevSection$join.beforeMarker;
-                var afterMarker = _prevSection$join.afterMarker;
-
-                prevSection.renderNode.markDirty();
-                marker.section.renderNode.scheduleForRemoval();
-
-                if (beforeMarker) {
-                  nextCursorMarker = beforeMarker;
-                  nextCursorOffset = beforeMarker.length;
-                } else {
-                  nextCursorMarker = afterMarker;
-                  nextCursorOffset = 0;
-                }
-              }
-              // ELSE: FIXME: card section -- what should deleting into it do?
-            }
-          }
-        } else if (offset <= marker.length) {
-            var offsetToDeleteAt = offset - 1;
-
-            marker.deleteValueAtOffset(offsetToDeleteAt);
-
-            if (marker.isEmpty && marker.prev) {
-              marker.renderNode.scheduleForRemoval();
-              nextCursorMarker = marker.prev;
-              nextCursorOffset = nextCursorMarker.length;
-            } else if (marker.isEmpty && marker.next) {
-              marker.renderNode.scheduleForRemoval();
-              nextCursorMarker = marker.next;
-              nextCursorOffset = 0;
-            } else {
-              marker.renderNode.markDirty();
-              nextCursorOffset = offsetToDeleteAt;
-            }
-          }
-
+        marker.deleteValueAtOffset(offsetToDeleteAt);
+        nextPosition.offset -= 1;
+        marker.renderNode.markDirty();
+        this._coalesceMarkers(marker.section);
         this.scheduleRerender();
         this.scheduleDidUpdate();
 
-        return {
-          currentMarker: nextCursorMarker,
-          currentOffset: nextCursorOffset
-        };
+        return nextPosition;
       }
 
       /**
-       * Split makers at two positions, once at the head, and if necessary once
-       * at the tail. This method is designed to accept `editor.cursor.offsets`
-       * as an argument.
+       * Split markers at two positions, once at the head, and if necessary once
+       * at the tail. This method is designed to accept a range
+       * (e.g. `editor.cursor.offsets`) as an argument.
        *
        * Usage:
        *
@@ -1873,25 +2121,22 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        * provided. Markers on the outside of the split may also have been modified.
        *
        * @method splitMarkers
-       * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
+       * @param {Range} markerRange
        * @return {Array} of markers that are inside the split
        * @public
        */
     }, {
       key: 'splitMarkers',
-      value: function splitMarkers(_ref4) {
-        var headMarker = _ref4.headMarker;
-        var headOffset = _ref4.headOffset;
-        var tailMarker = _ref4.tailMarker;
-        var tailOffset = _ref4.tailOffset;
+      value: function splitMarkers(range) {
         var post = this.editor.post;
+        var headSection = range.headSection;
+        var tailSection = range.tailSection;
+        var headMarker = range.headMarker;
+        var headMarkerOffset = range.headMarkerOffset;
+        var tailMarker = range.tailMarker;
+        var tailMarkerOffset = range.tailMarkerOffset;
 
-        var selectedMarkers = [];
-
-        var headSection = headMarker.section;
-        var tailSection = tailMarker.section;
-
-        // These render will be removed by the split functions. Mark them
+        // These render nodes will be removed by the split functions. Mark them
         // for removal before doing that. FIXME this seems prime for
         // refactoring onto the postEditor as a split function
         headMarker.renderNode.scheduleForRemoval();
@@ -1900,51 +2145,46 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
         tailMarker.section.renderNode.markDirty();
 
         if (headMarker === tailMarker) {
-          var markers = headSection.splitMarker(headMarker, headOffset, tailOffset);
-          selectedMarkers = post.markersInRange({
-            headMarker: markers[0],
-            tailMarker: markers[markers.length - 1],
-            headOffset: headOffset,
-            tailOffset: tailOffset
-          });
+          headSection.splitMarker(headMarker, headMarkerOffset, tailMarkerOffset);
         } else {
-          var newHeadMarkers = headSection.splitMarker(headMarker, headOffset);
-          var selectedHeadMarkers = post.markersInRange({
-            headMarker: newHeadMarkers[0],
-            tailMarker: newHeadMarkers[newHeadMarkers.length - 1],
-            headOffset: headOffset
-          });
-
-          var newTailMarkers = tailSection.splitMarker(tailMarker, 0, tailOffset);
-          var selectedTailMarkers = post.markersInRange({
-            headMarker: newTailMarkers[0],
-            tailMarker: newTailMarkers[newTailMarkers.length - 1],
-            headOffset: 0,
-            tailOffset: tailOffset
-          });
-
-          var newHeadMarker = selectedHeadMarkers[0],
-              newTailMarker = selectedTailMarkers[selectedTailMarkers.length - 1];
-
-          var newMarkers = [];
-          if (newHeadMarker) {
-            newMarkers.push(newHeadMarker);
-          }
-          if (newTailMarker) {
-            newMarkers.push(newTailMarker);
-          }
-
-          if (newMarkers.length) {
-            this.editor.post.markersFrom(newMarkers[0], newMarkers[newMarkers.length - 1], function (m) {
-              selectedMarkers.push(m);
-            });
-          }
+          headSection.splitMarker(headMarker, headMarkerOffset);
+          tailSection.splitMarker(tailMarker, 0, tailMarkerOffset);
         }
 
         this.scheduleRerender();
         this.scheduleDidUpdate();
 
-        return selectedMarkers;
+        return post.markersContainedByRange(range);
+      }
+    }, {
+      key: 'splitMarker',
+      value: function splitMarker(marker, offset) {
+        var beforeMarker = undefined,
+            afterMarker = undefined;
+
+        if (offset === 0) {
+          beforeMarker = marker.prev;
+          afterMarker = marker;
+        } else if (offset === marker.length) {
+          beforeMarker = marker;
+          afterMarker = marker.next;
+        } else {
+          var builder = this.editor.builder;
+          var section = marker.section;
+
+          beforeMarker = builder.createMarker(marker.value.substring(0, offset), marker.markups);
+          afterMarker = builder.createMarker(marker.value.substring(offset, marker.length), marker.markups);
+          section.markers.splice(marker, 1, [beforeMarker, afterMarker]);
+          if (marker.renderNode) {
+            marker.renderNode.scheduleForRemoval();
+          }
+          if (section.renderNode) {
+            section.renderNode.markDirty();
+          }
+        }
+        this.scheduleRerender();
+        this.scheduleDidUpdate();
+        return { beforeMarker: beforeMarker, afterMarker: afterMarker };
       }
 
       /**
@@ -1957,8 +2197,8 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        *     let marker = editor.post.sections.head.marker.head;
        *     editor.run((postEditor) => {
        *       postEditor.splitSection({
-       *         headMarker: marker,
-       *         headOffset: 3
+       *         headSection: section,
+       *         headSectionOffset: 3
        *       });
        *     });
        *     // Will result in the marker and its old section being removed from
@@ -1967,37 +2207,67 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        *
        * The return value will be the two new sections. One or both of these
        * sections can be blank (contain only a blank marker), for example if the
-       * headOffset is 0.
+       * headMarkerOffset is 0.
        *
-       * @method splitMarkers
-       * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
-       * @return {Array} of new sections, one for the first half and one for the second
+       * @method splitSection
+       * @param {Position} position
+       * @return {Array} new sections, one for the first half and one for the second
        * @public
        */
     }, {
       key: 'splitSection',
-      value: function splitSection(_ref5) {
-        var section = _ref5.headSection;
-        var headSectionOffset = _ref5.headSectionOffset;
+      value: function splitSection(position) {
+        var section = position.section;
 
-        var _section$markerPositionAtOffset3 = section.markerPositionAtOffset(headSectionOffset);
+        var _section$splitAtPosition = section.splitAtPosition(position);
 
-        var headMarker = _section$markerPositionAtOffset3.marker;
-        var headOffset = _section$markerPositionAtOffset3.offset;
+        var _section$splitAtPosition2 = _slicedToArray(_section$splitAtPosition, 2);
 
-        var _section$splitAtMarker = section.splitAtMarker(headMarker, headOffset);
+        var beforeSection = _section$splitAtPosition2[0];
+        var afterSection = _section$splitAtPosition2[1];
 
-        var _section$splitAtMarker2 = _slicedToArray(_section$splitAtMarker, 2);
+        this._coalesceMarkers(beforeSection);
+        this._coalesceMarkers(afterSection);
 
-        var beforeSection = _section$splitAtMarker2[0];
-        var afterSection = _section$splitAtMarker2[1];
+        var newSections = [beforeSection, afterSection];
+        var replacementSections = [beforeSection, afterSection];
 
-        this._replaceSection(section, [beforeSection, afterSection]);
+        if (isBlankAndListItem(beforeSection) && isBlankAndListItem(section)) {
+          var isLastItemInList = section === section.parent.sections.tail;
+
+          if (isLastItemInList) {
+            // when hitting enter in a final empty list item, do not insert a new
+            // empty item
+            replacementSections.shift();
+          }
+        }
+
+        this._replaceSection(section, replacementSections);
 
         this.scheduleRerender();
         this.scheduleDidUpdate();
 
-        return [beforeSection, afterSection];
+        // FIXME we must return 2 sections because other code expects this to always return 2
+        return newSections;
+      }
+
+      /**
+       * @method replaceSection
+       * @param {Section} section
+       * @param {Section} newSection
+       * @return null
+       * @public
+       */
+    }, {
+      key: 'replaceSection',
+      value: function replaceSection(section, newSection) {
+        if (!section) {
+          // The section may be undefined if the user used the embed intent
+          // ("+" icon) to insert a new "ul" section in a blank post
+          this.insertSectionBefore(this.editor.post.sections, newSection);
+        } else {
+          this._replaceSection(section, [newSection]);
+        }
       }
     }, {
       key: '_replaceSection',
@@ -2005,8 +2275,17 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
         var _this3 = this;
 
         var nextSection = section.next;
+        var collection = section.parent.sections;
+
+        var nextNewSection = newSections[0];
+        if (isMarkupSection(nextNewSection) && isListItem(section)) {
+          // put the new section after the ListSection (section.parent) instead of after the ListItem
+          collection = section.parent.parent.sections;
+          nextSection = section.parent.next;
+        }
+
         newSections.forEach(function (s) {
-          return _this3.insertSectionBefore(s, nextSection);
+          return _this3.insertSectionBefore(collection, s, nextSection);
         });
         this.removeSection(section);
       }
@@ -2018,10 +2297,10 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        *
        * Usage:
        *
-       *     let markerRange = editor.cursor.offsets;
-       *     let strongMarkup = editor.builder.createMarkup('strong');
+       *     const range = editor.cursor.offsets;
+       *     const strongMarkup = editor.builder.createMarkup('strong');
        *     editor.run((postEditor) => {
-       *       postEditor.applyMarkupToMarkers(markerRange, strongMarkup);
+       *       postEditor.applyMarkupToRange(range, strongMarkup);
        *     });
        *     // Will result some markers possibly being split, and the markup
        *     // being applied to all markers between the split.
@@ -2029,15 +2308,15 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        * The return value will be all markers between the split, the same return
        * value as `splitMarkers`.
        *
-       * @method applyMarkupToMarkers
-       * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
-       * @param {Object} markup A markup post abstract node
+       * @method applyMarkupToRange
+       * @param {Range} markerRange
+       * @param {Markup} markup A markup post abstract node
        * @return {Array} of markers that are inside the split
        * @public
        */
     }, {
-      key: 'applyMarkupToMarkers',
-      value: function applyMarkupToMarkers(markerRange, markup) {
+      key: 'applyMarkupToRange',
+      value: function applyMarkupToRange(markerRange, markup) {
         var markers = this.splitMarkers(markerRange);
         markers.forEach(function (marker) {
           marker.addMarkup(markup);
@@ -2057,10 +2336,10 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        *
        * Usage:
        *
-       *     let markerRange = editor.cursor.offsets;
-       *     let markup = markerRange.headMarker.markups[0];
+       *     const range = editor.cursor.offsets;
+       *     const markup = markerRange.headMarker.markups[0];
        *     editor.run((postEditor) => {
-       *       postEditor.removeMarkupFromMarkers(markerRange, markup);
+       *       postEditor.removeMarkupFromRange(range, markup);
        *     });
        *     // Will result some markers possibly being split, and the markup
        *     // being removed from all markers between the split.
@@ -2068,18 +2347,18 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        * The return value will be all markers between the split, the same return
        * value as `splitMarkers`.
        *
-       * @method removeMarkupFromMarkers
-       * @param {Object} markerRange Object with offsets, {headMarker, headOffset, tailMarker, tailOffset}
-       * @param {Object} markup A markup post abstract node
+       * @method removeMarkupFromRange
+       * @param {Range} range Object with offsets
+       * @param {Markup} markup A markup post abstract node
        * @return {Array} of markers that are inside the split
        * @public
        */
     }, {
-      key: 'removeMarkupFromMarkers',
-      value: function removeMarkupFromMarkers(markerRange, markup) {
-        var markers = this.splitMarkers(markerRange);
+      key: 'removeMarkupFromRange',
+      value: function removeMarkupFromRange(range, markupOrMarkupCallback) {
+        var markers = this.splitMarkers(range);
         markers.forEach(function (marker) {
-          marker.removeMarkup(markup);
+          marker.removeMarkup(markupOrMarkupCallback);
           marker.section.renderNode.markDirty();
         });
 
@@ -2098,20 +2377,23 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        *     let markerRange = editor.cursor.offsets;
        *     let sectionWithCursor = markerRange.headMarker.section;
        *     let section = editor.builder.createCardSection('my-image');
+       *     let collection = sectionWithCursor.parent.sections;
        *     editor.run((postEditor) => {
-       *       postEditor.insertSectionBefore(section, sectionWithCursor);
+       *       postEditor.insertSectionBefore(collection, section, sectionWithCursor);
        *     });
        *
        * @method insertSectionBefore
+       * @param {LinkedList} collection The list of sections to insert into
        * @param {Object} section The new section
-       * @param {Object} beforeSection The section "before" is relative to
+       * @param {Object} beforeSection Optional The section "before" is relative to,
+       * if falsy the new section will be appended to the collection
        * @public
        */
     }, {
       key: 'insertSectionBefore',
-      value: function insertSectionBefore(section, beforeSection) {
-        this.editor.post.sections.insertBefore(section, beforeSection);
-        this.editor.post.renderNode.markDirty();
+      value: function insertSectionBefore(collection, section, beforeSection) {
+        collection.insertBefore(section, beforeSection);
+        section.parent.renderNode.markDirty();
 
         this.scheduleRerender();
         this.scheduleDidUpdate();
@@ -2122,21 +2404,37 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
        *
        * Usage:
        *
-       *     let markerRange = editor.cursor.offsets;
-       *     let sectionWithCursor = markerRange.headMarker.section;
+       *     const range = editor.cursor.offsets;
+       *     const sectionWithCursor = range.head.section;
        *     editor.run((postEditor) => {
        *       postEditor.removeSection(sectionWithCursor);
        *     });
        *
-       * @method insertSectionBefore
+       * @method removeSection
        * @param {Object} section The section to remove
        * @public
        */
     }, {
       key: 'removeSection',
       value: function removeSection(section) {
+        var parent = section.parent;
+        var parentIsRemoved = parent.renderNode.isRemoved;
+
+        if (parentIsRemoved) {
+          // This can happen if we remove a list section and later
+          // try to remove one of the section's list items;
+          return;
+        }
+
         section.renderNode.scheduleForRemoval();
-        section.post.sections.remove(section);
+
+        parent.sections.remove(section);
+
+        if (parent.isBlank && parent.type !== _contentKitEditorModelsTypes.POST_TYPE) {
+          // If we removed the last child from a parent (e.g. the last li in a ul),
+          // also remove the parent
+          this.removeSection(parent);
+        }
 
         this.scheduleRerender();
         this.scheduleDidUpdate();
@@ -2221,6 +2519,106 @@ define('content-kit-editor/editor/post', ['exports', 'content-kit-editor/models/
 
   exports['default'] = PostEditor;
 });
+define('content-kit-editor/editor/text-expansions', ['exports', 'content-kit-editor/utils/keycodes', 'content-kit-editor/utils/key', 'content-kit-editor/utils/array-utils', 'content-kit-editor/models/types'], function (exports, _contentKitEditorUtilsKeycodes, _contentKitEditorUtilsKey, _contentKitEditorUtilsArrayUtils, _contentKitEditorModelsTypes) {
+  'use strict';
+
+  exports.validateExpansion = validateExpansion;
+  exports.findExpansion = findExpansion;
+  var SPACE = _contentKitEditorUtilsKeycodes['default'].SPACE;
+
+  function replaceWithListSection(editor, listTagName) {
+    var section = editor.cursor.offsets.head.section;
+
+    var newSection = editor.run(function (postEditor) {
+      var builder = postEditor.builder;
+
+      var listItem = builder.createListItem();
+      var listSection = builder.createListSection(listTagName, [listItem]);
+
+      postEditor.replaceSection(section, listSection);
+      return listItem;
+    });
+
+    editor.cursor.moveToSection(newSection);
+  }
+
+  function replaceWithHeaderSection(editor, headingTagName) {
+    var section = editor.cursor.offsets.head.section;
+
+    var newSection = editor.run(function (postEditor) {
+      var builder = postEditor.builder;
+
+      var newSection = builder.createMarkupSection(headingTagName);
+      postEditor.replaceSection(section, newSection);
+      return newSection;
+    });
+
+    editor.cursor.moveToSection(newSection);
+  }
+
+  function validateExpansion(expansion) {
+    return !!expansion.trigger && !!expansion.text && !!expansion.run;
+  }
+
+  var DEFAULT_TEXT_EXPANSIONS = [{
+    trigger: SPACE,
+    text: '*',
+    run: function run(editor) {
+      replaceWithListSection(editor, 'ul');
+    }
+  }, {
+    trigger: SPACE,
+    text: '1',
+    run: function run(editor) {
+      replaceWithListSection(editor, 'ol');
+    }
+  }, {
+    trigger: SPACE,
+    text: '1.',
+    run: function run(editor) {
+      replaceWithListSection(editor, 'ol');
+    }
+  }, {
+    trigger: SPACE,
+    text: '##',
+    run: function run(editor) {
+      replaceWithHeaderSection(editor, 'h2');
+    }
+  }, {
+    trigger: SPACE,
+    text: '###',
+    run: function run(editor) {
+      replaceWithHeaderSection(editor, 'h3');
+    }
+  }];
+
+  exports.DEFAULT_TEXT_EXPANSIONS = DEFAULT_TEXT_EXPANSIONS;
+
+  function findExpansion(expansions, keyEvent, editor) {
+    var key = _contentKitEditorUtilsKey['default'].fromEvent(keyEvent);
+    if (!key.isPrintable()) {
+      return;
+    }
+
+    var _editor$cursor$offsets$head = editor.cursor.offsets.head;
+    var section = _editor$cursor$offsets$head.section;
+    var offset = _editor$cursor$offsets$head.offset;
+
+    if (section.type !== _contentKitEditorModelsTypes.MARKUP_SECTION_TYPE) {
+      return;
+    }
+
+    // FIXME this is potentially expensive to calculate and might be better
+    // perf to first find expansions matching the trigger and only if matches
+    // are found then calculating the _text
+    var _text = section.textUntil(offset);
+    return (0, _contentKitEditorUtilsArrayUtils.detect)(expansions, function (_ref) {
+      var trigger = _ref.trigger;
+      var text = _ref.text;
+      return key.keyCode === trigger && _text === text;
+    });
+  }
+});
 define('content-kit-editor', ['exports', 'content-kit-editor/editor/editor', 'content-kit-editor/commands/bold', 'content-kit-editor/cards/image'], function (exports, _contentKitEditorEditorEditor, _contentKitEditorCommandsBold, _contentKitEditorCardsImage) {
   'use strict';
 
@@ -2238,6 +2636,373 @@ define('content-kit-editor', ['exports', 'content-kit-editor/editor/editor', 'co
 
   exports.Editor = _contentKitEditorEditorEditor['default'];
   exports['default'] = ContentKit;
+});
+define('content-kit-editor/models/_markerable', ['exports', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/set', 'content-kit-editor/utils/linked-list', 'content-kit-editor/models/_section'], function (exports, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsSet, _contentKitEditorUtilsLinkedList, _contentKitEditorModels_section) {
+  'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  var _get = function get(_x4, _x5, _x6) { var _again = true; _function: while (_again) { var object = _x4, property = _x5, receiver = _x6; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x4 = parent; _x5 = property; _x6 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var Markerable = (function (_Section) {
+    _inherits(Markerable, _Section);
+
+    function Markerable(type, tagName) {
+      var _this = this;
+
+      var markers = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+
+      _classCallCheck(this, Markerable);
+
+      _get(Object.getPrototypeOf(Markerable.prototype), 'constructor', this).call(this, type);
+      this.tagName = tagName;
+      this.markers = new _contentKitEditorUtilsLinkedList['default']({
+        adoptItem: function adoptItem(m) {
+          return m.section = m.parent = _this;
+        },
+        freeItem: function freeItem(m) {
+          return m.section = m.parent = null;
+        }
+      });
+
+      markers.forEach(function (m) {
+        return _this.markers.append(m);
+      });
+    }
+
+    _createClass(Markerable, [{
+      key: 'offsetOfMarker',
+
+      /**
+       * @param {Marker}
+       * @param {Number} markerOffset The offset relative to the start of the marker
+       *
+       * @return {Number} The offset relative to the start of this section
+       */
+      value: function offsetOfMarker(marker, markerOffset) {
+        if (marker.section !== this) {
+          throw new Error('Cannot get offsetOfMarker for marker that is not child of this');
+        }
+        // FIXME it is possible, when we get a cursor position before having finished reparsing,
+        // for markerOffset to be > marker.length. We shouldn't rely on this functionality.
+
+        var offset = 0;
+        var currentMarker = this.markers.head;
+        while (currentMarker && currentMarker !== marker.next) {
+          var _length = currentMarker === marker ? markerOffset : currentMarker.length;
+          offset += _length;
+          currentMarker = currentMarker.next;
+        }
+
+        return offset;
+      }
+
+      /**
+       * Splits the marker at the offset, filters empty markers from the result,
+       * and replaces this marker with the new non-empty ones
+       * @param {Marker} marker the marker to split
+       * @return {Array} the new markers that replaced `marker`
+       */
+    }, {
+      key: 'splitMarker',
+      value: function splitMarker(marker, offset) {
+        var endOffset = arguments.length <= 2 || arguments[2] === undefined ? marker.length : arguments[2];
+        return (function () {
+          var newMarkers = (0, _contentKitEditorUtilsArrayUtils.filter)(marker.split(offset, endOffset), function (m) {
+            return !m.isEmpty;
+          });
+          this.markers.splice(marker, 1, newMarkers);
+          return newMarkers;
+        }).apply(this, arguments);
+      }
+
+      // puts clones of this.markers into beforeSection and afterSection,
+      // all markers before the marker/offset split go in beforeSection, and all
+      // after the marker/offset split go in afterSection
+      // @return {Array} [beforeSection, afterSection], two new sections
+    }, {
+      key: '_redistributeMarkers',
+      value: function _redistributeMarkers(beforeSection, afterSection, marker) {
+        var offset = arguments.length <= 3 || arguments[3] === undefined ? 0 : arguments[3];
+
+        var currentSection = beforeSection;
+        (0, _contentKitEditorUtilsArrayUtils.forEach)(this.markers, function (m) {
+          if (m === marker) {
+            var _marker$split = marker.split(offset);
+
+            var _marker$split2 = _toArray(_marker$split);
+
+            var beforeMarker = _marker$split2[0];
+
+            var afterMarkers = _marker$split2.slice(1);
+
+            beforeSection.markers.append(beforeMarker);
+            (0, _contentKitEditorUtilsArrayUtils.forEach)(afterMarkers, function (_m) {
+              return afterSection.markers.append(_m);
+            });
+            currentSection = afterSection;
+          } else {
+            currentSection.markers.append(m.clone());
+          }
+        });
+
+        return [beforeSection, afterSection];
+      }
+    }, {
+      key: 'splitAtMarker',
+      value: function splitAtMarker() /*marker, offset=0*/{
+        throw new Error('splitAtMarker must be implemented by sub-class');
+      }
+    }, {
+      key: 'splitAtPosition',
+      value: function splitAtPosition(position) {
+        var marker = position.marker;
+        var offsetInMarker = position.offsetInMarker;
+
+        return this.splitAtMarker(marker, offsetInMarker);
+      }
+    }, {
+      key: 'markerPositionAtOffset',
+      value: function markerPositionAtOffset(offset) {
+        var currentOffset = 0;
+        var currentMarker = undefined;
+        var remaining = offset;
+        this.markers.detect(function (marker) {
+          currentOffset = Math.min(remaining, marker.length);
+          remaining -= currentOffset;
+          if (remaining === 0) {
+            currentMarker = marker;
+            return true; // break out of detect
+          }
+        });
+
+        return { marker: currentMarker, offset: currentOffset };
+      }
+    }, {
+      key: 'textUntil',
+      value: function textUntil(offset) {
+        return this.text.slice(0, offset);
+      }
+    }, {
+      key: 'markersFor',
+
+      /**
+       * @return {Array} New markers that match the boundaries of the
+       * range.
+       */
+      value: function markersFor(headOffset, tailOffset) {
+        var range = { head: { section: this, offset: headOffset },
+          tail: { section: this, offset: tailOffset } };
+
+        var markers = [];
+        this._markersInRange(range, function (marker, _ref) {
+          var markerHead = _ref.markerHead;
+          var markerTail = _ref.markerTail;
+
+          var cloned = marker.clone();
+          cloned.value = marker.value.slice(markerHead, markerTail);
+          markers.push(cloned);
+        });
+        return markers;
+      }
+    }, {
+      key: 'markupsInRange',
+      value: function markupsInRange(range) {
+        var markups = new _contentKitEditorUtilsSet['default']();
+        this._markersInRange(range, function (marker) {
+          marker.markups.forEach(function (m) {
+            return markups.add(m);
+          });
+        });
+        return markups.toArray();
+      }
+
+      // calls the callback with (marker, {markerHead, markerTail, isContained})
+      // for each marker that is wholly or partially contained in the range.
+    }, {
+      key: '_markersInRange',
+      value: function _markersInRange(range, callback) {
+        var head = range.head;
+        var tail = range.tail;
+
+        if (head.section !== this || tail.section !== this) {
+          throw new Error('Cannot call #_markersInRange if range expands beyond this');
+        }
+        var headOffset = head.offset;var tailOffset = tail.offset;
+
+        var currentHead = 0,
+            currentTail = 0,
+            currentMarker = this.markers.head;
+
+        while (currentMarker) {
+          currentTail += currentMarker.length;
+
+          if (currentTail > headOffset && currentHead < tailOffset) {
+            var markerHead = Math.max(headOffset - currentHead, 0);
+            var markerTail = currentMarker.length - Math.max(currentTail - tailOffset, 0);
+            var isContained = markerHead === 0 && markerTail === currentMarker.length;
+
+            callback(currentMarker, { markerHead: markerHead, markerTail: markerTail, isContained: isContained });
+          }
+
+          currentHead += currentMarker.length;
+          currentMarker = currentMarker.next;
+
+          if (currentHead > tailOffset) {
+            break;
+          }
+        }
+      }
+
+      // mutates this by appending the other section's (cloned) markers to it
+    }, {
+      key: 'join',
+      value: function join(otherSection) {
+        var _this2 = this;
+
+        var beforeMarker = this.markers.tail;
+        var afterMarker = null;
+
+        otherSection.markers.forEach(function (m) {
+          if (!m.isEmpty) {
+            m = m.clone();
+            _this2.markers.append(m);
+            if (!afterMarker) {
+              afterMarker = m;
+            }
+          }
+        });
+
+        return { beforeMarker: beforeMarker, afterMarker: afterMarker };
+      }
+    }, {
+      key: 'isBlank',
+      get: function get() {
+        if (!this.markers.length) {
+          return true;
+        }
+        var markerWithLength = this.markers.detect(function (marker) {
+          return !!marker.length;
+        });
+        return !markerWithLength;
+      }
+    }, {
+      key: 'text',
+      get: function get() {
+        return (0, _contentKitEditorUtilsArrayUtils.reduce)(this.markers, function (prev, m) {
+          return prev + m.value;
+        }, '');
+      }
+    }, {
+      key: 'length',
+      get: function get() {
+        return this.text.length;
+      }
+    }]);
+
+    return Markerable;
+  })(_contentKitEditorModels_section['default']);
+
+  exports['default'] = Markerable;
+});
+define('content-kit-editor/models/_section', ['exports', 'content-kit-editor/models/types', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/linked-item'], function (exports, _contentKitEditorModelsTypes, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsLinkedItem) {
+  'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  function isMarkerable(section) {
+    return !!section.markers;
+  }
+
+  function getParentSection(section) {
+    return section.parent;
+  }
+
+  function hasSubsections(section) {
+    return !!section.sections;
+  }
+
+  function isSubsection(section) {
+    return section.type === _contentKitEditorModelsTypes.LIST_ITEM_TYPE;
+  }
+
+  function firstMarkerableChild(section) {
+    return section.items.head;
+  }
+
+  function lastMarkerableChild(section) {
+    return section.items.tail;
+  }
+
+  var Section = (function (_LinkedItem) {
+    _inherits(Section, _LinkedItem);
+
+    function Section(type) {
+      _classCallCheck(this, Section);
+
+      _get(Object.getPrototypeOf(Section.prototype), 'constructor', this).call(this);
+      if (!type) {
+        throw new Error('Cannot create section without type');
+      }
+      this.type = type;
+    }
+
+    _createClass(Section, [{
+      key: 'immediatelyNextMarkerableSection',
+      value: function immediatelyNextMarkerableSection() {
+        var next = this.next;
+        if (next) {
+          if (isMarkerable(next)) {
+            return next;
+          } else if (hasSubsections(next)) {
+            var firstChild = firstMarkerableChild(next);
+            return firstChild;
+          }
+        } else if (isSubsection(this)) {
+          var parentSection = getParentSection(this);
+          return parentSection.immediatelyNextMarkerableSection();
+        }
+      }
+    }, {
+      key: 'immediatelyPreviousMarkerableSection',
+      value: function immediatelyPreviousMarkerableSection() {
+        var prev = this.prev;
+        if (!prev) {
+          return null;
+        }
+        if (isMarkerable(prev)) {
+          return prev;
+        } else if (hasSubsections(prev)) {
+          var lastChild = lastMarkerableChild(prev);
+          return lastChild;
+        }
+      }
+    }, {
+      key: 'tagName',
+      set: function set(val) {
+        this._tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(val);
+      },
+      get: function get() {
+        return this._tagName;
+      }
+    }]);
+
+    return Section;
+  })(_contentKitEditorUtilsLinkedItem['default']);
+
+  exports['default'] = Section;
 });
 define('content-kit-editor/models/card-node', ['exports'], function (exports) {
   'use strict';
@@ -2283,6 +3048,15 @@ define('content-kit-editor/models/card-node', ['exports'], function (exports) {
         this.render('edit');
       }
     }, {
+      key: 'remove',
+      value: function remove() {
+        var _this = this;
+
+        this.editor.run(function (postEditor) {
+          return postEditor.removeSection(_this.section);
+        });
+      }
+    }, {
       key: 'teardown',
       value: function teardown() {
         if (this.mode) {
@@ -2294,21 +3068,24 @@ define('content-kit-editor/models/card-node', ['exports'], function (exports) {
     }, {
       key: 'env',
       get: function get() {
-        var _this = this;
+        var _this2 = this;
 
         return {
           name: this.card.name,
           edit: function edit() {
-            _this.edit();
+            return _this2.edit();
           },
           save: function save(payload) {
-            _this.section.payload = payload;
+            _this2.section.payload = payload;
 
-            _this.editor.didUpdate();
-            _this.display();
+            _this2.editor.didUpdate();
+            _this2.display();
           },
           cancel: function cancel() {
-            _this.display();
+            return _this2.display();
+          },
+          remove: function remove() {
+            return _this2.remove();
           }
         };
       }
@@ -2319,371 +3096,215 @@ define('content-kit-editor/models/card-node', ['exports'], function (exports) {
 
   exports['default'] = CardNode;
 });
-define("content-kit-editor/models/card", ["exports", "content-kit-editor/utils/linked-item"], function (exports, _contentKitEditorUtilsLinkedItem) {
-  "use strict";
+define('content-kit-editor/models/card', ['exports', 'content-kit-editor/models/_section', 'content-kit-editor/models/types'], function (exports, _contentKitEditorModels_section, _contentKitEditorModelsTypes) {
+  'use strict';
 
-  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  var CARD_TYPE = 'card-section';
-
-  exports.CARD_TYPE = CARD_TYPE;
-
-  var Card = (function (_LinkedItem) {
-    _inherits(Card, _LinkedItem);
+  var Card = (function (_Section) {
+    _inherits(Card, _Section);
 
     function Card(name, payload) {
       _classCallCheck(this, Card);
 
-      _get(Object.getPrototypeOf(Card.prototype), "constructor", this).call(this);
+      _get(Object.getPrototypeOf(Card.prototype), 'constructor', this).call(this, _contentKitEditorModelsTypes.CARD_TYPE);
       this.name = name;
       this.payload = payload;
-      this.type = CARD_TYPE;
     }
 
     return Card;
-  })(_contentKitEditorUtilsLinkedItem["default"]);
+  })(_contentKitEditorModels_section['default']);
 
-  exports["default"] = Card;
+  exports['default'] = Card;
 });
-define('content-kit-editor/models/cursor', ['exports', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsDomUtils) {
+define('content-kit-editor/models/image', ['exports', 'content-kit-editor/models/types', 'content-kit-editor/models/_section'], function (exports, _contentKitEditorModelsTypes, _contentKitEditorModels_section) {
+  'use strict';
+
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var Image = (function (_Section) {
+    _inherits(Image, _Section);
+
+    function Image() {
+      _classCallCheck(this, Image);
+
+      _get(Object.getPrototypeOf(Image.prototype), 'constructor', this).call(this, _contentKitEditorModelsTypes.IMAGE_SECTION_TYPE);
+      this.src = null;
+    }
+
+    return Image;
+  })(_contentKitEditorModels_section['default']);
+
+  exports['default'] = Image;
+});
+define('content-kit-editor/models/list-item', ['exports', 'content-kit-editor/models/_markerable', 'content-kit-editor/models/types'], function (exports, _contentKitEditorModels_markerable, _contentKitEditorModelsTypes) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+  var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  function findOffsetInParent(parentElement, targetElement, targetOffset) {
-    var offset = 0;
-    var found = false;
-    // FIXME: would be nice to exit this walk early after we find the end node
-    (0, _contentKitEditorUtilsDomUtils.walkDOM)(parentElement, function (childElement) {
-      if (found) {
-        return;
-      }
-      found = childElement === targetElement;
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-      if (found) {
-        offset += targetOffset;
-      } else if ((0, _contentKitEditorUtilsDomUtils.isTextNode)(childElement)) {
-        offset += childElement.textContent.length;
-      }
-    });
-    return offset;
-  }
+  var ListItem = (function (_Markerable) {
+    _inherits(ListItem, _Markerable);
 
-  function findSectionContaining(sections, childNode) {
-    var _detectParentNode = (0, _contentKitEditorUtilsDomUtils.detectParentNode)(childNode, function (node) {
-      return (0, _contentKitEditorUtilsArrayUtils.detect)(sections, function (s) {
-        return s.renderNode.element === node;
-      });
-    });
+    function ListItem(tagName) {
+      var markers = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
-    var section = _detectParentNode.result;
+      _classCallCheck(this, ListItem);
 
-    return section;
-  }
-
-  function comparePosition(selection) {
-    var anchorNode = selection.anchorNode;
-    var focusNode = selection.focusNode;
-    var anchorOffset = selection.anchorOffset;
-    var focusOffset = selection.focusOffset;
-
-    var leftNode = undefined,
-        rightNode = undefined,
-        leftOffset = undefined,
-        rightOffset = undefined;
-
-    var position = anchorNode.compareDocumentPosition(focusNode);
-
-    if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
-      leftNode = anchorNode;rightNode = focusNode;
-      leftOffset = anchorOffset;rightOffset = focusOffset;
-    } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
-      leftNode = focusNode;rightNode = anchorNode;
-      leftOffset = focusOffset;rightOffset = anchorOffset;
-    } else {
-      // same node
-      leftNode = anchorNode;
-      rightNode = focusNode;
-      leftOffset = Math.min(anchorOffset, focusOffset);
-      rightOffset = Math.max(anchorOffset, focusOffset);
+      _get(Object.getPrototypeOf(ListItem.prototype), 'constructor', this).call(this, _contentKitEditorModelsTypes.LIST_ITEM_TYPE, tagName, markers);
     }
 
-    return { leftNode: leftNode, leftOffset: leftOffset, rightNode: rightNode, rightOffset: rightOffset };
-  }
-
-  var Cursor = (function () {
-    function Cursor(editor) {
-      _classCallCheck(this, Cursor);
-
-      this.editor = editor;
-      this.renderTree = editor._renderTree;
-      this.post = editor.post;
-    }
-
-    _createClass(Cursor, [{
-      key: 'hasSelection',
-      value: function hasSelection() {
-        var parentElement = this.editor.element;
-        return (0, _contentKitEditorUtilsSelectionUtils.isSelectionInElement)(parentElement);
-      }
-    }, {
-      key: 'clearSelection',
-      value: function clearSelection() {
-        (0, _contentKitEditorUtilsSelectionUtils.clearSelection)();
-      }
-    }, {
-      key: 'moveToSection',
-
-      // moves cursor to the start of the section
-      value: function moveToSection(section) {
-        var offsetInSection = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
-
-        var _section$markerPositionAtOffset = section.markerPositionAtOffset(offsetInSection);
-
-        var marker = _section$markerPositionAtOffset.marker;
-        var offset = _section$markerPositionAtOffset.offset;
-
-        if (!marker) {
-          throw new Error('Cannot move cursor to section without a marker');
-        }
-        this.moveToMarker(marker, offset);
-      }
-
-      // moves cursor to marker
-    }, {
-      key: 'moveToMarker',
-      value: function moveToMarker(headMarker) {
-        var headOffset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
-        var tailMarker = arguments.length <= 2 || arguments[2] === undefined ? headMarker : arguments[2];
-        var tailOffset = arguments.length <= 3 || arguments[3] === undefined ? headOffset : arguments[3];
-        return (function () {
-          if (!headMarker) {
-            throw new Error('Cannot move cursor to section without a marker');
-          }
-          var headElement = headMarker.renderNode.element;
-          var tailElement = tailMarker.renderNode.element;
-
-          this.moveToNode(headElement, headOffset, tailElement, tailOffset);
-        }).apply(this, arguments);
-      }
-    }, {
-      key: 'selectSections',
-      value: function selectSections(sections) {
-        var startSection = sections[0],
-            endSection = sections[sections.length - 1];
-
-        var startNode = startSection.markers.head.renderNode.element,
-            endNode = endSection.markers.tail.renderNode.element;
-
-        var startOffset = 0,
-            endOffset = endNode.textContent.length;
-
-        this.moveToNode(startNode, startOffset, endNode, endOffset);
-      }
-    }, {
-      key: 'selectMarkers',
-      value: function selectMarkers(markers) {
-        var startMarker = markers[0],
-            endMarker = markers[markers.length - 1];
-
-        var startNode = startMarker.renderNode.element,
-            endNode = endMarker.renderNode.element;
-        var startOffset = 0,
-            endOffset = endMarker.length;
-
-        this.moveToNode(startNode, startOffset, endNode, endOffset);
-      }
-
-      /**
-       * @param {textNode} node
-       * @param {integer} offset
-       * @param {textNode} endNode (default: node)
-       * @param {integer} endOffset (default: offset)
-       */
-    }, {
-      key: 'moveToNode',
-      value: function moveToNode(node) {
+    _createClass(ListItem, [{
+      key: 'splitAtMarker',
+      value: function splitAtMarker(marker) {
         var offset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
-        var endNode = arguments.length <= 2 || arguments[2] === undefined ? node : arguments[2];
-        var endOffset = arguments.length <= 3 || arguments[3] === undefined ? offset : arguments[3];
-        return (function () {
-          var r = document.createRange();
-          r.setStart(node, offset);
-          r.setEnd(endNode, endOffset);
-          var selection = this.selection;
-          if (selection.rangeCount > 0) {
-            selection.removeAllRanges();
-          }
-          selection.addRange(r);
-        }).apply(this, arguments);
+
+        // FIXME need to check if we are going to split into two list items
+        // or a list item and a new markup section:
+        var isLastItem = !this.next;
+        var createNewSection = !marker && offset === 0 && isLastItem;
+
+        var beforeSection = this.builder.createListItem();
+        var afterSection = createNewSection ? this.builder.createMarkupSection() : this.builder.createListItem();
+
+        return this._redistributeMarkers(beforeSection, afterSection, marker, offset);
       }
     }, {
-      key: 'selection',
-      get: function get() {
-        return window.getSelection();
+      key: 'splitIntoSections',
+      value: function splitIntoSections() {
+        return this.parent.splitAtListItem(this);
       }
     }, {
-      key: 'sectionOffsets',
-      get: function get() {
-        var sections = this.post.sections;
-
-        var selection = this.selection;
-        var rangeCount = selection.rangeCount;
-
-        var range = rangeCount > 0 && selection.getRangeAt(0);
-
-        if (!range) {
-          return {};
-        }
-
-        var _comparePosition = comparePosition(selection);
-
-        var headNode = _comparePosition.leftNode;
-        var headOffset = _comparePosition.leftOffset;
-
-        var headSection = findSectionContaining(sections, headNode);
-        var headSectionOffset = findOffsetInParent(headSection.renderNode.element, headNode, headOffset);
-
-        return { headSection: headSection, headSectionOffset: headSectionOffset };
-      }
-    }, {
-      key: 'offsets',
-      get: function get() {
-        var sections = this.post.sections;
-
-        var selection = this.selection;
-        var isCollapsed = selection.isCollapsed;
-        var rangeCount = selection.rangeCount;
-
-        var range = rangeCount > 0 && selection.getRangeAt(0);
-
-        if (!range) {
-          return {};
-        }
-
-        var _comparePosition2 = comparePosition(selection);
-
-        var leftNode = _comparePosition2.leftNode;
-        var leftOffset = _comparePosition2.leftOffset;
-        var rightNode = _comparePosition2.rightNode;
-        var rightOffset = _comparePosition2.rightOffset;
-
-        // The selection should contain two text nodes, but may contain a P
-        // tag if the section only has a blank br marker or on
-        // Chrome/Safari using shift+<Up arrow> can create a selection with
-        // a tag rather than a text node. This fixes that.
-        // See https://github.com/bustlelabs/content-kit-editor/issues/56
-
-        var leftRenderNode = this.renderTree.getElementRenderNode(leftNode),
-            rightRenderNode = this.renderTree.getElementRenderNode(rightNode);
-
-        if (!rightRenderNode) {
-          var rightSection = findSectionContaining(sections, rightNode);
-          var rightMarker = rightSection.markers.head;
-          rightRenderNode = rightMarker.renderNode;
-          rightNode = rightRenderNode.element;
-          rightOffset = 0;
-        }
-
-        if (!leftRenderNode) {
-          var leftSection = findSectionContaining(sections, leftNode);
-          var leftMarker = leftSection.markers.head;
-          leftRenderNode = leftMarker.renderNode;
-          leftNode = leftRenderNode.element;
-          leftOffset = 0;
-        }
-
-        var startMarker = leftRenderNode && leftRenderNode.postNode,
-            endMarker = rightRenderNode && rightRenderNode.postNode;
-
-        var startSection = startMarker && startMarker.section;
-        var endSection = endMarker && endMarker.section;
-
-        var headSectionOffset = startSection && startMarker && startMarker.offsetInParent(leftOffset);
-
-        var tailSectionOffset = endSection && endMarker && endMarker.offsetInParent(rightOffset);
-
-        return {
-          leftNode: leftNode,
-          rightNode: rightNode,
-          leftOffset: leftOffset,
-          rightOffset: rightOffset,
-          leftRenderNode: leftRenderNode,
-          rightRenderNode: rightRenderNode,
-          startMarker: startMarker,
-          endMarker: endMarker,
-          startSection: startSection,
-          endSection: endSection,
-
-          // FIXME: this should become the public API
-          headMarker: startMarker,
-          tailMarker: endMarker,
-          headOffset: leftOffset,
-          tailOffset: rightOffset,
-          headNode: leftNode,
-          tailNode: rightNode,
-
-          headSection: startSection,
-          tailSection: endSection,
-          headSectionOffset: headSectionOffset,
-          tailSectionOffset: tailSectionOffset,
-          isCollapsed: isCollapsed
-        };
-      }
-    }, {
-      key: 'activeSections',
-      get: function get() {
-        var sections = this.post.sections;
-
-        var selection = this.selection;
-        var rangeCount = selection.rangeCount;
-
-        var range = rangeCount > 0 && selection.getRangeAt(0);
-
-        if (!range) {
-          return [];
-        }
-
-        var startContainer = range.startContainer;
-        var endContainer = range.endContainer;
-
-        var startSection = findSectionContaining(sections, startContainer);
-        var endSection = findSectionContaining(sections, endContainer);
-
-        return sections.readRange(startSection, endSection);
+      key: 'clone',
+      value: function clone() {
+        var item = this.builder.createListItem();
+        this.markers.forEach(function (m) {
+          return item.markers.append(m.clone());
+        });
+        return item;
       }
     }]);
 
-    return Cursor;
-  })();
+    return ListItem;
+  })(_contentKitEditorModels_markerable['default']);
 
-  exports['default'] = Cursor;
+  exports['default'] = ListItem;
 });
-define('content-kit-editor/models/image', ['exports'], function (exports) {
+define('content-kit-editor/models/list-section', ['exports', 'content-kit-editor/utils/linked-list', 'content-kit-editor/models/types', 'content-kit-editor/models/_section'], function (exports, _contentKitEditorUtilsLinkedList, _contentKitEditorModelsTypes, _contentKitEditorModels_section) {
   'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  var IMAGE_SECTION_TYPE = 'image-section';
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  exports.IMAGE_SECTION_TYPE = IMAGE_SECTION_TYPE;
+  var DEFAULT_TAG_NAME = 'ul';
 
-  var Image = function Image() {
-    _classCallCheck(this, Image);
+  exports.DEFAULT_TAG_NAME = DEFAULT_TAG_NAME;
 
-    this.type = IMAGE_SECTION_TYPE;
-    this.src = null;
-  };
+  var ListSection = (function (_Section) {
+    _inherits(ListSection, _Section);
 
-  exports['default'] = Image;
+    function ListSection() {
+      var _this = this;
+
+      var tagName = arguments.length <= 0 || arguments[0] === undefined ? DEFAULT_TAG_NAME : arguments[0];
+      var items = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+      _classCallCheck(this, ListSection);
+
+      _get(Object.getPrototypeOf(ListSection.prototype), 'constructor', this).call(this, _contentKitEditorModelsTypes.LIST_SECTION_TYPE);
+
+      this.tagName = tagName;
+
+      this.items = new _contentKitEditorUtilsLinkedList['default']({
+        adoptItem: function adoptItem(i) {
+          return i.section = i.parent = _this;
+        },
+        freeItem: function freeItem(i) {
+          return i.section = i.parent = null;
+        }
+      });
+      this.sections = this.items;
+
+      items.forEach(function (i) {
+        return _this.items.append(i);
+      });
+    }
+
+    _createClass(ListSection, [{
+      key: 'splitAtListItem',
+
+      // returns [prevListSection, newMarkupSection, nextListSection]
+      // prevListSection and nextListSection may be undefined
+      value: function splitAtListItem(listItem) {
+        if (listItem.parent !== this) {
+          throw new Error('Cannot split list section at item that is not a child');
+        }
+        var prevItem = listItem.prev,
+            nextItem = listItem.next;
+        var listSection = this;
+
+        var prevListSection = undefined,
+            nextListSection = undefined,
+            newSection = undefined;
+
+        newSection = this.builder.createMarkupSection('p');
+        listItem.markers.forEach(function (m) {
+          return newSection.markers.append(m.clone());
+        });
+
+        // If there were previous list items, add them to a new list section `prevListSection`
+        if (prevItem) {
+          prevListSection = this.builder.createListSection(this.tagName);
+          var currentItem = listSection.items.head;
+          while (currentItem !== listItem) {
+            prevListSection.items.append(currentItem.clone());
+            currentItem = currentItem.next;
+          }
+        }
+
+        // if there is a next item, add it and all after it to the `nextListSection`
+        if (nextItem) {
+          nextListSection = this.builder.createListSection(this.tagName);
+          var currentItem = nextItem;
+          while (currentItem) {
+            nextListSection.items.append(currentItem.clone());
+            currentItem = currentItem.next;
+          }
+        }
+
+        return [prevListSection, newSection, nextListSection];
+      }
+    }, {
+      key: 'isBlank',
+      get: function get() {
+        return this.items.isEmpty;
+      }
+    }]);
+
+    return ListSection;
+  })(_contentKitEditorModels_section['default']);
+
+  exports['default'] = ListSection;
 });
-define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/linked-item'], function (exports, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsLinkedItem) {
+define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/models/types', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/linked-item'], function (exports, _contentKitEditorModelsTypes, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsLinkedItem) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -2693,10 +3314,6 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-  var MARKER_TYPE = 'marker';
-
-  exports.MARKER_TYPE = MARKER_TYPE;
 
   var Marker = (function (_LinkedItem) {
     _inherits(Marker, _LinkedItem);
@@ -2712,13 +3329,10 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
       _get(Object.getPrototypeOf(Marker.prototype), 'constructor', this).call(this);
       this.value = value;
       this.markups = [];
-      this.type = MARKER_TYPE;
-
-      if (markups && markups.length) {
-        markups.forEach(function (m) {
-          return _this.addMarkup(m);
-        });
-      }
+      this.type = _contentKitEditorModelsTypes.MARKER_TYPE;
+      markups.forEach(function (m) {
+        return _this.addMarkup(m);
+      });
     }
 
     _createClass(Marker, [{
@@ -2747,37 +3361,30 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
       value: function addMarkup(markup) {
         this.markups.push(markup);
       }
-
-      // find the value of the absolute offset in this marker's parent section
-    }, {
-      key: 'offsetInParent',
-      value: function offsetInParent(offset) {
-        var parent = this.section;
-        var markers = parent.markers;
-
-        var foundMarker = false;
-        var parentOffset = 0;
-        var marker = markers.head;
-        var length;
-        while (marker && !foundMarker) {
-          length = marker.length;
-          if (marker === this) {
-            foundMarker = true;
-            length = offset;
-          }
-
-          parentOffset += length;
-          marker = marker.next;
-        }
-
-        if (!foundMarker) {
-          throw new Error('offsetInParent could not find offset for marker');
-        }
-        return parentOffset;
-      }
     }, {
       key: 'removeMarkup',
-      value: function removeMarkup(markup) {
+      value: function removeMarkup(markupOrMarkupCallback) {
+        var _this2 = this;
+
+        var callback = undefined;
+        if (typeof markupOrMarkupCallback === 'function') {
+          callback = markupOrMarkupCallback;
+        } else {
+          (function () {
+            var markup = markupOrMarkupCallback;
+            callback = function (_markup) {
+              return _markup === markup;
+            };
+          })();
+        }
+
+        (0, _contentKitEditorUtilsArrayUtils.forEach)((0, _contentKitEditorUtilsArrayUtils.filter)(this.markups, callback), function (m) {
+          return _this2._removeMarkup(m);
+        });
+      }
+    }, {
+      key: '_removeMarkup',
+      value: function _removeMarkup(markup) {
         var index = this.markups.indexOf(markup);
         if (index !== -1) {
           this.markups.splice(index, 1);
@@ -2789,6 +3396,9 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
     }, {
       key: 'deleteValueAtOffset',
       value: function deleteValueAtOffset(offset) {
+        if (offset < 0 || offset > this.length) {
+          throw new Error('Invalid offset "' + offset + '"');
+        }
         var left = this.value.slice(0, offset);
         var right = this.value.slice(offset + 1);
 
@@ -2797,36 +3407,36 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
     }, {
       key: 'hasMarkup',
       value: function hasMarkup(tagNameOrMarkup) {
-        var _this2 = this;
+        return !!this.getMarkup(tagNameOrMarkup);
+      }
+    }, {
+      key: 'getMarkup',
+      value: function getMarkup(tagNameOrMarkup) {
+        var _this3 = this;
 
         if (typeof tagNameOrMarkup === 'string') {
-          var _ret = (function () {
+          var _ret2 = (function () {
             var tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagNameOrMarkup);
             return {
-              v: (0, _contentKitEditorUtilsArrayUtils.detect)(_this2.markups, function (markup) {
+              v: (0, _contentKitEditorUtilsArrayUtils.detect)(_this3.markups, function (markup) {
                 return markup.tagName === tagName;
               })
             };
           })();
 
-          if (typeof _ret === 'object') return _ret.v;
+          if (typeof _ret2 === 'object') return _ret2.v;
         } else {
-          var _ret2 = (function () {
+          var _ret3 = (function () {
             var targetMarkup = tagNameOrMarkup;
             return {
-              v: (0, _contentKitEditorUtilsArrayUtils.detect)(_this2.markups, function (markup) {
+              v: (0, _contentKitEditorUtilsArrayUtils.detect)(_this3.markups, function (markup) {
                 return markup === targetMarkup;
               })
             };
           })();
 
-          if (typeof _ret2 === 'object') return _ret2.v;
+          if (typeof _ret3 === 'object') return _ret3.v;
         }
-      }
-    }, {
-      key: 'getMarkup',
-      value: function getMarkup(tagName) {
-        return this.hasMarkup(tagName);
       }
     }, {
       key: 'join',
@@ -2895,55 +3505,35 @@ define('content-kit-editor/models/marker', ['exports', 'content-kit-editor/utils
 
   exports['default'] = Marker;
 });
-define('content-kit-editor/models/markup-section', ['exports', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/linked-list', 'content-kit-editor/utils/linked-item'], function (exports, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsLinkedList, _contentKitEditorUtilsLinkedItem) {
+define('content-kit-editor/models/markup-section', ['exports', 'content-kit-editor/models/_markerable', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/models/types'], function (exports, _contentKitEditorModels_markerable, _contentKitEditorUtilsDomUtils, _contentKitEditorModelsTypes) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
   var _get = function get(_x4, _x5, _x6) { var _again = true; _function: while (_again) { var object = _x4, property = _x5, receiver = _x6; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x4 = parent; _x5 = property; _x6 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-  function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
-
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  var DEFAULT_TAG_NAME = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)('p');
-  exports.DEFAULT_TAG_NAME = DEFAULT_TAG_NAME;
   var VALID_MARKUP_SECTION_TAGNAMES = ['p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'].map(_contentKitEditorUtilsDomUtils.normalizeTagName);
   exports.VALID_MARKUP_SECTION_TAGNAMES = VALID_MARKUP_SECTION_TAGNAMES;
-  var MARKUP_SECTION_TYPE = 'markup-section';
-  exports.MARKUP_SECTION_TYPE = MARKUP_SECTION_TYPE;
+  var DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[0];
 
-  var Section = (function (_LinkedItem) {
-    _inherits(Section, _LinkedItem);
+  exports.DEFAULT_TAG_NAME = DEFAULT_TAG_NAME;
+  var MarkupSection = (function (_Markerable) {
+    _inherits(MarkupSection, _Markerable);
 
-    function Section(tagName) {
-      var _this = this;
-
+    function MarkupSection() {
+      var tagName = arguments.length <= 0 || arguments[0] === undefined ? DEFAULT_TAG_NAME : arguments[0];
       var markers = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
-      _classCallCheck(this, Section);
+      _classCallCheck(this, MarkupSection);
 
-      _get(Object.getPrototypeOf(Section.prototype), 'constructor', this).call(this);
-      this.markers = new _contentKitEditorUtilsLinkedList['default']({
-        adoptItem: function adoptItem(m) {
-          return m.section = _this;
-        },
-        freeItem: function freeItem(m) {
-          return m.section = null;
-        }
-      });
-      this.tagName = tagName || DEFAULT_TAG_NAME;
-      this.type = MARKUP_SECTION_TYPE;
-      this.element = null;
-
-      markers.forEach(function (m) {
-        return _this.markers.append(m);
-      });
+      _get(Object.getPrototypeOf(MarkupSection.prototype), 'constructor', this).call(this, _contentKitEditorModelsTypes.MARKUP_SECTION_TYPE, tagName, markers);
     }
 
-    _createClass(Section, [{
+    _createClass(MarkupSection, [{
       key: 'setTagName',
       value: function setTagName(newTagName) {
         newTagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(newTagName);
@@ -2957,198 +3547,29 @@ define('content-kit-editor/models/markup-section', ['exports', 'content-kit-edit
       value: function resetTagName() {
         this.tagName = DEFAULT_TAG_NAME;
       }
-
-      /**
-       * Splits the marker at the offset, filters empty markers from the result,
-       * and replaces this marker with the new non-empty ones
-       * @param {Marker} marker the marker to split
-       * @return {Array} the new markers that replaced `marker`
-       */
-    }, {
-      key: 'splitMarker',
-      value: function splitMarker(marker, offset) {
-        var endOffset = arguments.length <= 2 || arguments[2] === undefined ? marker.length : arguments[2];
-        return (function () {
-          var newMarkers = (0, _contentKitEditorUtilsArrayUtils.filter)(marker.split(offset, endOffset), function (m) {
-            return !m.isEmpty;
-          });
-          this.markers.splice(marker, 1, newMarkers);
-          if (this.markers.length === 0) {
-            var blankMarker = this.builder.createBlankMarker();
-            this.markers.append(blankMarker);
-            newMarkers.push(blankMarker);
-          }
-          return newMarkers;
-        }).apply(this, arguments);
-      }
     }, {
       key: 'splitAtMarker',
       value: function splitAtMarker(marker) {
         var offset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
         var beforeSection = this.builder.createMarkupSection(this.tagName, []);
-        var afterSection = this.builder.createMarkupSection(this.tagName, []);
+        var afterSection = this.builder.createMarkupSection();
 
-        var currentSection = beforeSection;
-        (0, _contentKitEditorUtilsArrayUtils.forEach)(this.markers, function (m) {
-          if (m === marker) {
-            var _marker$split = marker.split(offset);
-
-            var _marker$split2 = _toArray(_marker$split);
-
-            var beforeMarker = _marker$split2[0];
-
-            var afterMarkers = _marker$split2.slice(1);
-
-            beforeSection.markers.append(beforeMarker);
-            (0, _contentKitEditorUtilsArrayUtils.forEach)(afterMarkers, function (_m) {
-              return afterSection.markers.append(_m);
-            });
-            currentSection = afterSection;
-          } else {
-            currentSection.markers.append(m.clone());
-          }
-        });
-
-        beforeSection.coalesceMarkers();
-        afterSection.coalesceMarkers();
-
-        return [beforeSection, afterSection];
-      }
-
-      /**
-       * Remove extranous empty markers, adding one at the end if there
-       * are no longer any markers
-       *
-       * Mutates this section's markers
-       */
-    }, {
-      key: 'coalesceMarkers',
-      value: function coalesceMarkers() {
-        var _this2 = this;
-
-        (0, _contentKitEditorUtilsArrayUtils.forEach)((0, _contentKitEditorUtilsArrayUtils.filter)(this.markers, function (m) {
-          return m.isEmpty;
-        }), function (m) {
-          return _this2.markers.remove(m);
-        });
-        if (this.markers.isEmpty) {
-          this.markers.append(this.builder.createBlankMarker());
-        }
-      }
-    }, {
-      key: 'markerPositionAtOffset',
-      value: function markerPositionAtOffset(offset) {
-        var currentOffset = 0;
-        var currentMarker = undefined;
-        var remaining = offset;
-        this.markers.detect(function (marker) {
-          currentOffset = Math.min(remaining, marker.length);
-          remaining -= currentOffset;
-          if (remaining === 0) {
-            currentMarker = marker;
-            return true; // break out of detect
-          }
-        });
-
-        return { marker: currentMarker, offset: currentOffset };
-      }
-
-      // mutates this by appending the other section's (cloned) markers to it
-    }, {
-      key: 'join',
-      value: function join(otherSection) {
-        var _this3 = this;
-
-        var wasBlank = this.isBlank;
-        var didAddContent = false;
-
-        var beforeMarker = this.markers.tail;
-        var afterMarker = null;
-
-        otherSection.markers.forEach(function (m) {
-          if (!m.isEmpty) {
-            m = m.clone();
-            _this3.markers.append(m);
-            if (!afterMarker) {
-              afterMarker = m;
-            }
-            didAddContent = true;
-          }
-        });
-
-        if (wasBlank && didAddContent) {
-          // FIXME: Join should maybe not be on the markup-section
-          beforeMarker.renderNode.scheduleForRemoval();
-          beforeMarker = null;
-        }
-
-        return { beforeMarker: beforeMarker, afterMarker: afterMarker };
-      }
-    }, {
-      key: 'markersFor',
-      value: function markersFor(headOffset, tailOffset) {
-        var markers = [];
-        var adjustedHead = 0,
-            adjustedTail = 0;
-        this.markers.forEach(function (m) {
-          adjustedTail += m.length;
-
-          if (adjustedTail > headOffset && adjustedHead < tailOffset) {
-            var head = Math.max(headOffset - adjustedHead, 0);
-            var tail = m.length - Math.max(adjustedTail - tailOffset, 0);
-            var cloned = m.clone();
-
-            cloned.value = m.value.slice(head, tail);
-            markers.push(cloned);
-          }
-          adjustedHead += m.length;
-        });
-        return markers;
-      }
-    }, {
-      key: 'tagName',
-      set: function set(val) {
-        this._tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(val);
-      },
-      get: function get() {
-        return this._tagName;
-      }
-    }, {
-      key: 'isBlank',
-      get: function get() {
-        if (!this.markers.length) {
-          return true;
-        }
-        var markerWithLength = this.markers.detect(function (marker) {
-          return !!marker.length;
-        });
-        return !markerWithLength;
-      }
-    }, {
-      key: 'text',
-      get: function get() {
-        var text = '';
-        this.markers.forEach(function (m) {
-          return text += m.value;
-        });
-        return text;
+        return this._redistributeMarkers(beforeSection, afterSection, marker, offset);
       }
     }]);
 
-    return Section;
-  })(_contentKitEditorUtilsLinkedItem['default']);
+    return MarkupSection;
+  })(_contentKitEditorModels_markerable['default']);
 
-  exports['default'] = Section;
+  exports['default'] = MarkupSection;
 });
-define('content-kit-editor/models/markup', ['exports', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsDomUtils) {
+define('content-kit-editor/models/markup', ['exports', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/models/types'], function (exports, _contentKitEditorUtilsDomUtils, _contentKitEditorModelsTypes) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  var MARKUP_TYPE = 'markup';
-  exports.MARKUP_TYPE = MARKUP_TYPE;
   var VALID_MARKUP_TAGNAMES = ['b', 'i', 'strong', 'em', 'a', 'li'].map(_contentKitEditorUtilsDomUtils.normalizeTagName);
 
   exports.VALID_MARKUP_TAGNAMES = VALID_MARKUP_TAGNAMES;
@@ -3165,14 +3586,20 @@ define('content-kit-editor/models/markup', ['exports', 'content-kit-editor/utils
 
       this.tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
       this.attributes = attributes;
-      this.type = MARKUP_TYPE;
+      this.type = _contentKitEditorModelsTypes.MARKUP_TYPE;
 
       if (VALID_MARKUP_TAGNAMES.indexOf(this.tagName) === -1) {
         throw new Error('Cannot create markup of tagName ' + tagName);
       }
     }
 
-    _createClass(Markup, null, [{
+    _createClass(Markup, [{
+      key: 'hasTag',
+      value: function hasTag(tagName) {
+        tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
+        return this.tagName === tagName;
+      }
+    }], [{
       key: 'isValidElement',
       value: function isValidElement(element) {
         var tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName);
@@ -3185,7 +3612,7 @@ define('content-kit-editor/models/markup', ['exports', 'content-kit-editor/utils
 
   exports['default'] = Markup;
 });
-define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-editor/models/post', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/image', 'content-kit-editor/models/marker', 'content-kit-editor/models/markup', 'content-kit-editor/models/card', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsImage, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorModelsCard, _contentKitEditorUtilsDomUtils) {
+define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-editor/models/post', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/list-section', 'content-kit-editor/models/list-item', 'content-kit-editor/models/image', 'content-kit-editor/models/marker', 'content-kit-editor/models/markup', 'content-kit-editor/models/card', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsListSection, _contentKitEditorModelsListItem, _contentKitEditorModelsImage, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorModelsCard, _contentKitEditorUtilsDomUtils) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -3216,12 +3643,12 @@ define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-e
     }, {
       key: 'createBlankPost',
       value: function createBlankPost() {
-        var blankMarkupSection = this.createBlankMarkupSection('p');
-        return this.createPost([blankMarkupSection]);
+        return this.createPost([this.createMarkupSection()]);
       }
     }, {
       key: 'createMarkupSection',
-      value: function createMarkupSection(tagName) {
+      value: function createMarkupSection() {
+        var tagName = arguments.length <= 0 || arguments[0] === undefined ? _contentKitEditorModelsMarkupSection.DEFAULT_TAG_NAME : arguments[0];
         var markers = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
         var isGenerated = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
@@ -3234,11 +3661,25 @@ define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-e
         return section;
       }
     }, {
-      key: 'createBlankMarkupSection',
-      value: function createBlankMarkupSection(tagName) {
+      key: 'createListSection',
+      value: function createListSection() {
+        var tagName = arguments.length <= 0 || arguments[0] === undefined ? _contentKitEditorModelsListSection.DEFAULT_TAG_NAME : arguments[0];
+        var items = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
         tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
-        var blankMarker = this.createBlankMarker();
-        return this.createMarkupSection(tagName, [blankMarker]);
+        var section = new _contentKitEditorModelsListSection['default'](tagName, items);
+        section.builder = this;
+        return section;
+      }
+    }, {
+      key: 'createListItem',
+      value: function createListItem() {
+        var markers = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+
+        var tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)('li');
+        var item = new _contentKitEditorModelsListItem['default'](tagName, markers);
+        item.builder = this;
+        return item;
       }
     }, {
       key: 'createImageSection',
@@ -3265,28 +3706,26 @@ define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-e
         marker.builder = this;
         return marker;
       }
-    }, {
-      key: 'createBlankMarker',
-      value: function createBlankMarker() {
-        var marker = new _contentKitEditorModelsMarker['default']('');
-        marker.builder = this;
-        return marker;
-      }
+
+      // Attributes is an array of [key1, value1, key2, value2, ...]
     }, {
       key: 'createMarkup',
-      value: function createMarkup(tagName, attributes) {
+      value: function createMarkup(tagName) {
+        var attributes = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
         tagName = (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(tagName);
 
         var markup = undefined;
 
-        if (attributes) {
+        if (attributes.length) {
           // FIXME: This could also be cached
           markup = new _contentKitEditorModelsMarkup['default'](tagName, attributes);
         } else {
-          if (this.markupCache[tagName]) {
-            markup = this.markupCache[tagName];
-          } else {
+          markup = this.markupCache[tagName];
+
+          if (!markup) {
             markup = new _contentKitEditorModelsMarkup['default'](tagName, attributes);
+            this.markupCache[tagName] = markup;
           }
         }
 
@@ -3300,15 +3739,12 @@ define('content-kit-editor/models/post-node-builder', ['exports', 'content-kit-e
 
   exports['default'] = PostNodeBuilder;
 });
-define("content-kit-editor/models/post", ["exports", "content-kit-editor/utils/linked-list"], function (exports, _contentKitEditorUtilsLinkedList) {
-  "use strict";
+define('content-kit-editor/models/post', ['exports', 'content-kit-editor/models/types', 'content-kit-editor/utils/linked-list', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/set'], function (exports, _contentKitEditorModelsTypes, _contentKitEditorUtilsLinkedList, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsSet) {
+  'use strict';
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-  var POST_TYPE = 'post';
-  exports.POST_TYPE = POST_TYPE;
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var Post = (function () {
     function Post() {
@@ -3316,63 +3752,48 @@ define("content-kit-editor/models/post", ["exports", "content-kit-editor/utils/l
 
       _classCallCheck(this, Post);
 
-      this.type = POST_TYPE;
-      this.sections = new _contentKitEditorUtilsLinkedList["default"]({
+      this.type = _contentKitEditorModelsTypes.POST_TYPE;
+      this.sections = new _contentKitEditorUtilsLinkedList['default']({
         adoptItem: function adoptItem(s) {
-          return s.post = _this;
+          return s.post = s.parent = _this;
         },
         freeItem: function freeItem(s) {
-          return s.post = null;
+          return s.post = s.parent = null;
         }
       });
     }
 
     _createClass(Post, [{
-      key: "markersInRange",
-      value: function markersInRange(_ref) {
-        var headMarker = _ref.headMarker;
-        var headOffset = _ref.headOffset;
-        var tailMarker = _ref.tailMarker;
-        var tailOffset = _ref.tailOffset;
+      key: 'markersContainedByRange',
 
-        var offset = 0;
-        var foundMarkers = [];
-        var toEnd = tailOffset === undefined;
-        if (toEnd) {
-          tailOffset = 0;
-        }
+      /**
+       * @param {Range} range
+       * @return {Array} markers that are completely contained by the range
+       */
+      value: function markersContainedByRange(range) {
+        var markers = [];
 
-        this.markersFrom(headMarker, tailMarker, function (marker) {
-          if (toEnd) {
-            tailOffset += marker.length;
-          }
-
-          if (offset >= headOffset && offset < tailOffset) {
-            foundMarkers.push(marker);
-          }
-
-          offset += marker.length;
+        this.walkMarkerableSections(range, function (section) {
+          section._markersInRange(range.trimTo(section), function (m, _ref) {
+            var isContained = _ref.isContained;
+            if (isContained) {
+              markers.push(m);
+            }
+          });
         });
 
-        return foundMarkers;
+        return markers;
       }
     }, {
-      key: "cutMarkers",
+      key: 'cutMarkers',
       value: function cutMarkers(markers) {
-        var _this2 = this;
-
         var firstSection = markers.length && markers[0].section,
             lastSection = markers.length && markers[markers.length - 1].section;
 
         var currentSection = firstSection;
         var removedSections = [],
-            changedSections = [];
-        if (firstSection) {
-          changedSections.push(firstSection);
-        }
-        if (lastSection) {
-          changedSections.push(lastSection);
-        }
+            changedSections = (0, _contentKitEditorUtilsArrayUtils.compact)([firstSection, lastSection]);
+
         if (markers.length !== 0) {
           markers.forEach(function (marker) {
             if (marker.section !== currentSection) {
@@ -3387,13 +3808,6 @@ define("content-kit-editor/models/post", ["exports", "content-kit-editor/utils/l
             currentSection.markers.remove(marker);
           });
 
-          // add a blank marker to any sections that are now empty
-          changedSections.forEach(function (section) {
-            if (section.markers.isEmpty) {
-              section.markers.append(_this2.builder.createBlankMarker());
-            }
-          });
-
           if (firstSection !== lastSection) {
             firstSection.join(lastSection);
             removedSections.push(lastSection);
@@ -3404,43 +3818,159 @@ define("content-kit-editor/models/post", ["exports", "content-kit-editor/utils/l
       }
 
       /**
-       * Invoke `callbackFn` for all markers between the startMarker and endMarker (inclusive),
+       * Invoke `callbackFn` for all markers between the headMarker and tailMarker (inclusive),
        * across sections
        */
     }, {
-      key: "markersFrom",
-      value: function markersFrom(startMarker, endMarker, callbackFn) {
-        var currentMarker = startMarker;
+      key: 'markersFrom',
+      value: function markersFrom(headMarker, tailMarker, callbackFn) {
+        var currentMarker = headMarker;
         while (currentMarker) {
           callbackFn(currentMarker);
 
-          if (currentMarker === endMarker) {
+          if (currentMarker === tailMarker) {
             currentMarker = null;
           } else if (currentMarker.next) {
             currentMarker = currentMarker.next;
           } else {
-            var nextSection = currentMarker.section.next;
+            var nextSection = this._nextMarkerableSection(currentMarker.section);
+            // FIXME: This will fail across cards
             currentMarker = nextSection && nextSection.markers.head;
           }
         }
+      }
+    }, {
+      key: 'markupsInRange',
+      value: function markupsInRange(range) {
+        var markups = new _contentKitEditorUtilsSet['default']();
+
+        this.walkMarkerableSections(range, function (section) {
+          (0, _contentKitEditorUtilsArrayUtils.forEach)(section.markupsInRange(range.trimTo(section)), function (m) {
+            return markups.add(m);
+          });
+        });
+
+        return markups.toArray();
+      }
+    }, {
+      key: 'walkMarkerableSections',
+      value: function walkMarkerableSections(range, callback) {
+        var head = range.head;
+        var tail = range.tail;
+
+        var currentSection = head.section;
+        while (currentSection) {
+          callback(currentSection);
+
+          if (currentSection === tail.section) {
+            break;
+          } else {
+            currentSection = this._nextMarkerableSection(currentSection);
+          }
+        }
+      }
+
+      // return an array of all top-level sections (direct children of `post`)
+      // that are wholly contained by the range.
+    }, {
+      key: 'sectionsContainedBy',
+      value: function sectionsContainedBy(range) {
+        var head = range.head;
+        var tail = range.tail;
+
+        var containedSections = [];
+
+        var findParent = function findParent(child, conditionFn) {
+          while (child) {
+            if (conditionFn(child)) {
+              return child;
+            }
+            child = child.parent;
+          }
+        };
+
+        var headTopLevelSection = findParent(head.section, function (s) {
+          return !!s.post;
+        });
+        var tailTopLevelSection = findParent(tail.section, function (s) {
+          return !!s.post;
+        });
+
+        var currentSection = headTopLevelSection.next;
+        while (currentSection && currentSection !== tailTopLevelSection) {
+          containedSections.push(currentSection);
+          currentSection = currentSection.next;
+        }
+
+        return containedSections;
+      }
+
+      // return the next section that has markers after this one
+    }, {
+      key: '_nextMarkerableSection',
+      value: function _nextMarkerableSection(section) {
+        if (!section) {
+          return null;
+        }
+        var isMarkerable = function isMarkerable(s) {
+          return !!s.markers;
+        };
+        var hasChildren = function hasChildren(s) {
+          return !!s.items;
+        };
+        var firstChild = function firstChild(s) {
+          return s.items.head;
+        };
+        var isChild = function isChild(s) {
+          return s.parent && !s.post;
+        };
+        var parent = function parent(s) {
+          return s.parent;
+        };
+
+        var next = section.next;
+        if (next) {
+          if (isMarkerable(next)) {
+            return next;
+          } else if (hasChildren(next)) {
+            // e.g. a ListSection
+            return firstChild(next);
+          } else {
+            // e.g. a cardSection that has no children or parent but
+            // may have a markerable after it in the AT
+            return this._nextMarkerableSection(next);
+          }
+        } else {
+          if (isChild(section)) {
+            // if there is no section after this, but this section is a child
+            // (e.g. a ListItem inside a ListSection), check for a markerable
+            // section after its parent
+            return this._nextMarkerableSection(parent(section));
+          }
+        }
+      }
+    }, {
+      key: 'isBlank',
+      get: function get() {
+        return this.sections.isEmpty;
       }
     }]);
 
     return Post;
   })();
 
-  exports["default"] = Post;
+  exports['default'] = Post;
 });
-define("content-kit-editor/models/render-node", ["exports", "content-kit-editor/utils/linked-item", "content-kit-editor/utils/linked-list"], function (exports, _contentKitEditorUtilsLinkedItem, _contentKitEditorUtilsLinkedList) {
-  "use strict";
+define('content-kit-editor/models/render-node', ['exports', 'content-kit-editor/utils/linked-item', 'content-kit-editor/utils/linked-list', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsLinkedItem, _contentKitEditorUtilsLinkedList, _contentKitEditorUtilsDomUtils) {
+  'use strict';
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   var RenderNode = (function (_LinkedItem) {
     _inherits(RenderNode, _LinkedItem);
@@ -3448,7 +3978,7 @@ define("content-kit-editor/models/render-node", ["exports", "content-kit-editor/
     function RenderNode(postNode) {
       _classCallCheck(this, RenderNode);
 
-      _get(Object.getPrototypeOf(RenderNode.prototype), "constructor", this).call(this);
+      _get(Object.getPrototypeOf(RenderNode.prototype), 'constructor', this).call(this);
       this.parent = null;
       this.isDirty = true;
       this.isRemoved = false;
@@ -3458,7 +3988,16 @@ define("content-kit-editor/models/render-node", ["exports", "content-kit-editor/
     }
 
     _createClass(RenderNode, [{
-      key: "scheduleForRemoval",
+      key: 'isAttached',
+      value: function isAttached() {
+        var rootElement = this.renderTree.node.element;
+        if (!this.element) {
+          throw new Error('Cannot check if a renderNode is attached without an element.');
+        }
+        return (0, _contentKitEditorUtilsDomUtils.containsNode)(rootElement, this.element);
+      }
+    }, {
+      key: 'scheduleForRemoval',
       value: function scheduleForRemoval() {
         this.isRemoved = true;
         if (this.parent) {
@@ -3466,7 +4005,7 @@ define("content-kit-editor/models/render-node", ["exports", "content-kit-editor/
         }
       }
     }, {
-      key: "markDirty",
+      key: 'markDirty',
       value: function markDirty() {
         this.isDirty = true;
         if (this.parent) {
@@ -3474,17 +4013,17 @@ define("content-kit-editor/models/render-node", ["exports", "content-kit-editor/
         }
       }
     }, {
-      key: "markClean",
+      key: 'markClean',
       value: function markClean() {
         this.isDirty = false;
       }
     }, {
-      key: "childNodes",
+      key: 'childNodes',
       get: function get() {
         var _this = this;
 
         if (!this._childNodes) {
-          this._childNodes = new _contentKitEditorUtilsLinkedList["default"]({
+          this._childNodes = new _contentKitEditorUtilsLinkedList['default']({
             adoptItem: function adoptItem(item) {
               item.parent = _this;
               item.renderTree = _this.renderTree;
@@ -3500,9 +4039,9 @@ define("content-kit-editor/models/render-node", ["exports", "content-kit-editor/
     }]);
 
     return RenderNode;
-  })(_contentKitEditorUtilsLinkedItem["default"]);
+  })(_contentKitEditorUtilsLinkedItem['default']);
 
-  exports["default"] = RenderNode;
+  exports['default'] = RenderNode;
 });
 define("content-kit-editor/models/render-tree", ["exports", "content-kit-editor/models/render-node", "content-kit-editor/utils/element-map"], function (exports, _contentKitEditorModelsRenderNode, _contentKitEditorUtilsElementMap) {
   "use strict";
@@ -3532,12 +4071,37 @@ define("content-kit-editor/models/render-tree", ["exports", "content-kit-editor/
         section.renderNode = renderNode;
         return renderNode;
       }
+    }, {
+      key: "rootElement",
+      get: function get() {
+        return this.node.element;
+      }
     }]);
 
     return RenderTree;
   })();
 
   exports["default"] = RenderTree;
+});
+define('content-kit-editor/models/types', ['exports'], function (exports) {
+  'use strict';
+
+  var MARKUP_SECTION_TYPE = 'markup-section';
+  exports.MARKUP_SECTION_TYPE = MARKUP_SECTION_TYPE;
+  var LIST_SECTION_TYPE = 'list-section';
+  exports.LIST_SECTION_TYPE = LIST_SECTION_TYPE;
+  var MARKUP_TYPE = 'markup';
+  exports.MARKUP_TYPE = MARKUP_TYPE;
+  var MARKER_TYPE = 'marker';
+  exports.MARKER_TYPE = MARKER_TYPE;
+  var POST_TYPE = 'post';
+  exports.POST_TYPE = POST_TYPE;
+  var LIST_ITEM_TYPE = 'list-item';
+  exports.LIST_ITEM_TYPE = LIST_ITEM_TYPE;
+  var CARD_TYPE = 'card-section';
+  exports.CARD_TYPE = CARD_TYPE;
+  var IMAGE_SECTION_TYPE = 'image-section';
+  exports.IMAGE_SECTION_TYPE = IMAGE_SECTION_TYPE;
 });
 define('content-kit-editor/parsers/dom', ['exports', 'content-kit-utils', 'content-kit-editor/models/markup-section', 'content-kit-editor/models/markup', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitUtils, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarkup, _contentKitEditorUtilsDomUtils) {
   'use strict';
@@ -3695,10 +4259,6 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-utils', 'conte
           parseMarkers(section, builder, sectionElement);
           break;
       }
-      if (section.markers.isEmpty) {
-        var marker = this.builder.createBlankMarker();
-        section.markers.append(marker);
-      }
       return section;
     },
     parse: function parse(postElement) {
@@ -3722,8 +4282,6 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-utils', 'conte
 
       if (post.sections.isEmpty) {
         section = this.builder.createMarkupSection('p');
-        var marker = this.builder.createBlankMarker();
-        section.markers.append(marker);
         post.sections.append(section);
       }
 
@@ -3733,17 +4291,14 @@ define('content-kit-editor/parsers/dom', ['exports', 'content-kit-utils', 'conte
 
   exports['default'] = NewHTMLParser;
 });
-define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
-  'use strict';
+define("content-kit-editor/parsers/mobiledoc", ["exports", "content-kit-editor/renderers/mobiledoc", "content-kit-editor/utils/array-utils"], function (exports, _contentKitEditorRenderersMobiledoc, _contentKitEditorUtilsArrayUtils) {
+  "use strict";
 
-  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-  var CARD_SECTION_TYPE = 10;
-  var IMAGE_SECTION_TYPE = 2;
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
   /*
    * input mobiledoc: [ markers, elements ]
@@ -3759,7 +4314,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
     }
 
     _createClass(MobiledocParser, [{
-      key: 'parse',
+      key: "parse",
       value: function parse(_ref) {
         var version = _ref.version;
         var sectionData = _ref.sections;
@@ -3773,17 +4328,10 @@ define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
         this.markerTypes = this.parseMarkerTypes(markerTypes);
         this.parseSections(sections, post);
 
-        if (post.sections.isEmpty) {
-          var section = this.builder.createMarkupSection('p');
-          var marker = this.builder.createBlankMarker();
-          section.markers.append(marker);
-          post.sections.append(section);
-        }
-
         return post;
       }
     }, {
-      key: 'parseMarkerTypes',
+      key: "parseMarkerTypes",
       value: function parseMarkerTypes(markerTypes) {
         var _this = this;
 
@@ -3792,7 +4340,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
         });
       }
     }, {
-      key: 'parseMarkerType',
+      key: "parseMarkerType",
       value: function parseMarkerType(_ref2) {
         var _ref22 = _slicedToArray(_ref2, 2);
 
@@ -3802,7 +4350,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
         return this.builder.createMarkup(tagName, attributes);
       }
     }, {
-      key: 'parseSections',
+      key: "parseSections",
       value: function parseSections(sections, post) {
         var _this2 = this;
 
@@ -3811,29 +4359,31 @@ define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
         });
       }
     }, {
-      key: 'parseSection',
+      key: "parseSection",
       value: function parseSection(section, post) {
         var _section = _slicedToArray(section, 1);
 
         var type = _section[0];
 
         switch (type) {
-          case 1:
-            // markup section
+          case _contentKitEditorRenderersMobiledoc.MOBILEDOC_MARKUP_SECTION_TYPE:
             this.parseMarkupSection(section, post);
             break;
-          case IMAGE_SECTION_TYPE:
+          case _contentKitEditorRenderersMobiledoc.MOBILEDOC_IMAGE_SECTION_TYPE:
             this.parseImageSection(section, post);
             break;
-          case CARD_SECTION_TYPE:
+          case _contentKitEditorRenderersMobiledoc.MOBILEDOC_CARD_SECTION_TYPE:
             this.parseCardSection(section, post);
             break;
+          case _contentKitEditorRenderersMobiledoc.MOBILEDOC_LIST_SECTION_TYPE:
+            this.parseListSection(section, post);
+            break;
           default:
-            throw new Error('Unexpected section type ' + type);
+            throw new Error("Unexpected section type " + type);
         }
       }
     }, {
-      key: 'parseCardSection',
+      key: "parseCardSection",
       value: function parseCardSection(_ref3, post) {
         var _ref32 = _slicedToArray(_ref3, 3);
 
@@ -3845,7 +4395,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
         post.sections.append(section);
       }
     }, {
-      key: 'parseImageSection',
+      key: "parseImageSection",
       value: function parseImageSection(_ref4, post) {
         var _ref42 = _slicedToArray(_ref4, 2);
 
@@ -3856,7 +4406,7 @@ define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
         post.sections.append(section);
       }
     }, {
-      key: 'parseMarkupSection',
+      key: "parseMarkupSection",
       value: function parseMarkupSection(_ref5, post) {
         var _ref52 = _slicedToArray(_ref5, 3);
 
@@ -3867,36 +4417,68 @@ define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
         var section = this.builder.createMarkupSection(tagName);
         post.sections.append(section);
         this.parseMarkers(markers, section);
-        if (section.markers.isEmpty) {
-          var marker = this.builder.createBlankMarker();
-          section.markers.append(marker);
-        }
-      }
-    }, {
-      key: 'parseMarkers',
-      value: function parseMarkers(markers, section) {
-        var _this3 = this;
-
-        markers.forEach(function (marker) {
-          return _this3.parseMarker(marker, section);
+        // Strip blank markers after the have been created. This ensures any
+        // markup they include has been correctly populated.
+        (0, _contentKitEditorUtilsArrayUtils.filter)(section.markers, function (m) {
+          return m.isEmpty;
+        }).forEach(function (m) {
+          section.markers.remove(m);
         });
       }
     }, {
-      key: 'parseMarker',
-      value: function parseMarker(_ref6, section) {
-        var _this4 = this;
-
+      key: "parseListSection",
+      value: function parseListSection(_ref6, post) {
         var _ref62 = _slicedToArray(_ref6, 3);
 
-        var markerTypeIndexes = _ref62[0];
-        var closeCount = _ref62[1];
-        var value = _ref62[2];
+        var type = _ref62[0];
+        var tagName = _ref62[1];
+        var items = _ref62[2];
+
+        var section = this.builder.createListSection(tagName);
+        post.sections.append(section);
+        this.parseListItems(items, section);
+      }
+    }, {
+      key: "parseListItems",
+      value: function parseListItems(items, section) {
+        var _this3 = this;
+
+        items.forEach(function (i) {
+          return _this3.parseListItem(i, section);
+        });
+      }
+    }, {
+      key: "parseListItem",
+      value: function parseListItem(markers, section) {
+        var item = this.builder.createListItem();
+        this.parseMarkers(markers, item);
+        section.items.append(item);
+      }
+    }, {
+      key: "parseMarkers",
+      value: function parseMarkers(markers, parent) {
+        var _this4 = this;
+
+        markers.forEach(function (m) {
+          return _this4.parseMarker(m, parent);
+        });
+      }
+    }, {
+      key: "parseMarker",
+      value: function parseMarker(_ref7, parent) {
+        var _this5 = this;
+
+        var _ref72 = _slicedToArray(_ref7, 3);
+
+        var markerTypeIndexes = _ref72[0];
+        var closeCount = _ref72[1];
+        var value = _ref72[2];
 
         markerTypeIndexes.forEach(function (index) {
-          _this4.markups.push(_this4.markerTypes[index]);
+          _this5.markups.push(_this5.markerTypes[index]);
         });
         var marker = this.builder.createMarker(value, this.markups.slice());
-        section.markers.append(marker);
+        parent.markers.append(marker);
         this.markups = this.markups.slice(0, this.markups.length - closeCount);
       }
     }]);
@@ -3904,20 +4486,14 @@ define('content-kit-editor/parsers/mobiledoc', ['exports'], function (exports) {
     return MobiledocParser;
   })();
 
-  exports['default'] = MobiledocParser;
+  exports["default"] = MobiledocParser;
 });
-define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models/markup-section', 'content-kit-editor/parsers/section', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/renderers/editor-dom', 'content-kit-editor/models/markup'], function (exports, _contentKitEditorModelsMarkupSection, _contentKitEditorParsersSection, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorRenderersEditorDom, _contentKitEditorModelsMarkup) {
+define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models/types', 'content-kit-editor/parsers/section', 'content-kit-editor/utils/array-utils', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/models/markup'], function (exports, _contentKitEditorModelsTypes, _contentKitEditorParsersSection, _contentKitEditorUtilsArrayUtils, _contentKitEditorUtilsDomUtils, _contentKitEditorModelsMarkup) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-  var sanitizeTextRegex = new RegExp(_contentKitEditorRenderersEditorDom.UNPRINTABLE_CHARACTER, 'g');
-
-  function sanitizeText(text) {
-    return text.replace(sanitizeTextRegex, '');
-  }
 
   var PostParser = (function () {
     function PostParser(builder) {
@@ -3949,51 +4525,83 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
         return this.sectionParser.parse(element);
       }
 
+      // walk up from the textNode until the rootNode, converting each
+      // parentNode into a markup
+    }, {
+      key: 'collectMarkups',
+      value: function collectMarkups(textNode, rootNode) {
+        var markups = [];
+        var currentNode = textNode.parentNode;
+        while (currentNode && currentNode !== rootNode) {
+          var markup = this.markupFromNode(currentNode);
+          if (markup) {
+            markups.push(markup);
+          }
+
+          currentNode = currentNode.parentNode;
+        }
+        return markups;
+      }
+
+      // Turn an element node into a markup
+    }, {
+      key: 'markupFromNode',
+      value: function markupFromNode(node) {
+        if (_contentKitEditorModelsMarkup['default'].isValidElement(node)) {
+          var tagName = node.tagName;
+          var attributes = (0, _contentKitEditorUtilsDomUtils.getAttributesArray)(node);
+
+          return this.builder.createMarkup(tagName, attributes);
+        }
+      }
+
       // FIXME should move to the section parser?
       // FIXME the `collectMarkups` logic could simplify the section parser?
     }, {
       key: 'reparseSection',
       value: function reparseSection(section, renderTree) {
+        switch (section.type) {
+          case _contentKitEditorModelsTypes.LIST_SECTION_TYPE:
+            return this.reparseListSection(section, renderTree);
+          case _contentKitEditorModelsTypes.LIST_ITEM_TYPE:
+            return this.reparseListItem(section, renderTree);
+          case _contentKitEditorModelsTypes.MARKUP_SECTION_TYPE:
+            return this.reparseMarkupSection(section, renderTree);
+          default:
+            return; // can only parse the above types
+        }
+      }
+    }, {
+      key: 'reparseMarkupSection',
+      value: function reparseMarkupSection(section, renderTree) {
+        return this._reparseSectionContainingMarkers(section, renderTree);
+      }
+    }, {
+      key: 'reparseListItem',
+      value: function reparseListItem(listItem, renderTree) {
+        return this._reparseSectionContainingMarkers(listItem, renderTree);
+      }
+    }, {
+      key: 'reparseListSection',
+      value: function reparseListSection(listSection, renderTree) {
         var _this2 = this;
 
-        if (section.type !== _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE) {
-          // can only reparse markup sections
-          return;
-        }
-        var sectionElement = section.renderNode.element;
+        listSection.items.forEach(function (li) {
+          return _this2.reparseListItem(li, renderTree);
+        });
+      }
+    }, {
+      key: '_reparseSectionContainingMarkers',
+      value: function _reparseSectionContainingMarkers(section, renderTree) {
+        var _this3 = this;
 
-        // Turn an element node into a markup
-        var markupFromNode = function markupFromNode(node) {
-          if (_contentKitEditorModelsMarkup['default'].isValidElement(node)) {
-            var tagName = node.tagName;
-            var attributes = (0, _contentKitEditorUtilsDomUtils.getAttributesArray)(node);
-
-            return _this2.builder.createMarkup(tagName, attributes);
-          }
-        };
-
-        // walk up from the textNode until the rootNode, converting each
-        // parentNode into a markup
-        var collectMarkups = function collectMarkups(textNode, rootNode) {
-          var markups = [];
-          var currentNode = textNode.parentNode;
-          while (currentNode && currentNode !== rootNode) {
-            var markup = markupFromNode(currentNode);
-            if (markup) {
-              markups.push(markup);
-            }
-
-            currentNode = currentNode.parentNode;
-          }
-          return markups;
-        };
-
+        var element = section.renderNode.element;
         var seenRenderNodes = [];
         var previousMarker = undefined;
 
-        (0, _contentKitEditorUtilsDomUtils.walkTextNodes)(sectionElement, function (textNode) {
-          var text = sanitizeText(textNode.textContent);
-          var markups = collectMarkups(textNode, sectionElement);
+        (0, _contentKitEditorUtilsDomUtils.walkTextNodes)(element, function (textNode) {
+          var text = textNode.textContent;
+          var markups = _this3.collectMarkups(textNode, element);
 
           var marker = undefined;
 
@@ -4007,26 +4615,17 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
               renderNode.scheduleForRemoval();
             }
           } else {
-            marker = _this2.builder.createMarker(text, markups);
+            marker = _this3.builder.createMarker(text, markups);
 
-            // create a cleaned render node to account for the fact that this
-            // render node comes from already-displayed DOM
-            // FIXME this should be cleaner
             renderNode = renderTree.buildRenderNode(marker);
             renderNode.element = textNode;
+            renderNode.renderTree.elements.set(textNode, renderNode);
             renderNode.markClean();
 
-            if (previousMarker) {
-              // insert this marker after the previous one
-              section.markers.insertAfter(marker, previousMarker);
-              section.renderNode.childNodes.insertAfter(renderNode, previousMarker.renderNode);
-            } else {
-              // insert marker at the beginning of the section
-              section.markers.prepend(marker);
-              section.renderNode.childNodes.insertAfter(renderNode, null);
-            }
+            var previousRenderNode = previousMarker && previousMarker.renderNode;
+            section.markers.insertAfter(marker, previousMarker);
+            section.renderNode.childNodes.insertAfter(renderNode, previousRenderNode);
 
-            // find the nextMarkerElement, set it on the render node
             var parentNodeCount = marker.closedMarkups.length;
             var nextMarkerElement = textNode.parentNode;
             while (parentNodeCount--) {
@@ -4039,18 +4638,12 @@ define('content-kit-editor/parsers/post', ['exports', 'content-kit-editor/models
           previousMarker = marker;
         });
 
-        // remove any nodes that were not marked as seen
-        section.renderNode.childNodes.forEach(function (childRenderNode) {
-          if (seenRenderNodes.indexOf(childRenderNode) === -1) {
-            childRenderNode.scheduleForRemoval();
+        var renderNode = section.renderNode.childNodes.head;
+        while (renderNode) {
+          if (seenRenderNodes.indexOf(renderNode) === -1) {
+            renderNode.scheduleForRemoval();
           }
-        });
-
-        /** FIXME that we are reparsing and there are no markers should never
-         * happen. We manage the delete key on our own. */
-        if (section.markers.isEmpty) {
-          var marker = this.builder.createBlankMarker();
-          section.markers.append(marker);
+          renderNode = renderNode.next;
         }
       }
     }]);
@@ -4100,10 +4693,6 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
         if (state.text.length) {
           var marker = this.builder.createMarker(state.text, state.markups);
           state.section.markers.append(marker);
-        }
-
-        if (section.markers.length === 0) {
-          section.markers.append(this.builder.createBlankMarker());
         }
 
         return section;
@@ -4189,23 +4778,22 @@ define('content-kit-editor/parsers/section', ['exports', 'content-kit-editor/mod
 
   exports['default'] = SectionParser;
 });
-define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-editor/models/render-node", "content-kit-editor/models/card-node", "content-kit-editor/utils/array-utils", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/marker", "content-kit-editor/models/image", "content-kit-editor/models/card", "content-kit-editor/utils/dom-utils", "content-kit-editor/utils/string-utils"], function (exports, _contentKitEditorModelsRenderNode, _contentKitEditorModelsCardNode, _contentKitEditorUtilsArrayUtils, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsMarker, _contentKitEditorModelsImage, _contentKitEditorModelsCard, _contentKitEditorUtilsDomUtils, _contentKitEditorUtilsStringUtils) {
-  "use strict";
+define('content-kit-editor/renderers/editor-dom', ['exports', 'content-kit-editor/models/render-node', 'content-kit-editor/models/card-node', 'content-kit-editor/utils/array-utils', 'content-kit-editor/models/types', 'content-kit-editor/utils/string-utils', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorModelsRenderNode, _contentKitEditorModelsCardNode, _contentKitEditorUtilsArrayUtils, _contentKitEditorModelsTypes, _contentKitEditorUtilsStringUtils, _contentKitEditorUtilsDomUtils) {
+  'use strict';
 
   var _destroyHooks;
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
   function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  var UNPRINTABLE_CHARACTER = "‌";
-  exports.UNPRINTABLE_CHARACTER = UNPRINTABLE_CHARACTER;
-  var NO_BREAK_SPACE = " ";
+  var NO_BREAK_SPACE = ' ';
   exports.NO_BREAK_SPACE = NO_BREAK_SPACE;
   var SPACE = ' ';
 
+  exports.SPACE = SPACE;
   function createElementFromMarkup(doc, markup) {
     var element = doc.createElement(markup.tagName);
     if (markup.attributes) {
@@ -4219,7 +4807,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
   // ascends from element upward, returning the last parent node that is not
   // parentElement
   function penultimateParentOf(element, parentElement) {
-    while (parentElement && element.parentNode !== parentElement && element.parentElement !== document.body // ensure the while loop stops
+    while (parentElement && element.parentNode !== parentElement && element.parentNode !== document.body // ensure the while loop stops
     ) {
       element = element.parentNode;
     }
@@ -4227,13 +4815,26 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
   }
 
   function renderMarkupSection(section) {
-    var element = document.createElement(section.tagName);
-    section.element = element;
+    return document.createElement(section.tagName);
+  }
+
+  function renderListSection(section) {
+    return document.createElement(section.tagName);
+  }
+
+  function renderListItem() {
+    return document.createElement('li');
+  }
+
+  function renderCard() {
+    var element = document.createElement('div');
+    element.contentEditable = false;
+    (0, _contentKitEditorUtilsDomUtils.addClassName)(element, 'ck-card');
     return element;
   }
 
   function getNextMarkerElement(renderNode) {
-    var element = renderNode._teardownElement.parentNode;
+    var element = renderNode.element.parentNode;
     var marker = renderNode.postNode;
     var closedCount = marker.closedMarkups.length;
 
@@ -4241,21 +4842,6 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
       element = element.parentNode;
     }
     return element;
-  }
-
-  function renderBlankMarker(marker, element, previousRenderNode) {
-    var blankElement = document.createElement('br');
-
-    if (previousRenderNode) {
-      // FIXME there should never be a previousRenderNode for a blank marker
-      var previousSibling = previousRenderNode.element;
-      var previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
-      element.insertBefore(blankElement, previousSiblingPenultimate.nextSibling);
-    } else {
-      element.insertBefore(blankElement, element.firstChild);
-    }
-
-    return blankElement;
   }
 
   function renderMarker(marker, element, previousRenderNode) {
@@ -4295,6 +4881,38 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     return textNode;
   }
 
+  function attachRenderNodeElementToDOM(renderNode, element, originalElement) {
+    var hasRendered = !!originalElement;
+
+    if (hasRendered) {
+      var parentElement = renderNode.parent.element;
+      parentElement.replaceChild(element, originalElement);
+    } else {
+      var parentElement = undefined,
+          nextSiblingElement = undefined;
+      if (renderNode.prev) {
+        var previousElement = renderNode.prev.element;
+        parentElement = previousElement.parentNode;
+        nextSiblingElement = previousElement.nextSibling;
+      } else {
+        parentElement = renderNode.parent.element;
+        nextSiblingElement = parentElement.firstChild;
+      }
+      parentElement.insertBefore(element, nextSiblingElement);
+    }
+  }
+
+  function removeRenderNodeSectionFromParent(renderNode, section) {
+    var parent = renderNode.parent.postNode;
+    parent.sections.remove(section);
+  }
+
+  function removeRenderNodeElementFromParent(renderNode) {
+    if (renderNode.element.parentNode) {
+      renderNode.element.parentNode.removeChild(renderNode.element);
+    }
+  }
+
   var Visitor = (function () {
     function Visitor(editor, cards, unknownCardHandler, options) {
       _classCallCheck(this, Visitor);
@@ -4306,7 +4924,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     }
 
     _createClass(Visitor, [{
-      key: _contentKitEditorModelsPost.POST_TYPE,
+      key: _contentKitEditorModelsTypes.POST_TYPE,
       value: function value(renderNode, post, visit) {
         if (!renderNode.element) {
           var element = document.createElement('div');
@@ -4315,39 +4933,59 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         visit(renderNode, post.sections);
       }
     }, {
-      key: _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE,
+      key: _contentKitEditorModelsTypes.MARKUP_SECTION_TYPE,
       value: function value(renderNode, section, visit) {
         var originalElement = renderNode.element;
-        var hasRendered = !!originalElement;
 
         // Always rerender the section -- its tag name or attributes may have changed.
         // TODO make this smarter, only rerendering and replacing the element when necessary
         var element = renderMarkupSection(section);
         renderNode.element = element;
 
-        if (!hasRendered) {
-          var _element = renderNode.element;
+        attachRenderNodeElementToDOM(renderNode, element, originalElement);
+        renderNode.renderTree.elements.set(element, renderNode);
 
-          if (renderNode.prev) {
-            var previousElement = renderNode.prev.element;
-            var parentNode = previousElement.parentNode;
-            parentNode.insertBefore(_element, previousElement.nextSibling);
-          } else {
-            var parentElement = renderNode.parent.element;
-            parentElement.insertBefore(_element, parentElement.firstChild);
-          }
+        if (section.markers.length) {
+          var visitAll = true;
+          visit(renderNode, section.markers, visitAll);
         } else {
-          renderNode.parent.element.replaceChild(element, originalElement);
+          renderNode.renderTree.elements.set(renderNode.element, renderNode);
+          var br = document.createElement('br');
+          renderNode.element.appendChild(br);
         }
-
-        // remove all elements so that we can rerender
-        (0, _contentKitEditorUtilsDomUtils.clearChildNodes)(renderNode.element);
-
-        var visitAll = true;
-        visit(renderNode, section.markers, visitAll);
       }
     }, {
-      key: _contentKitEditorModelsMarker.MARKER_TYPE,
+      key: _contentKitEditorModelsTypes.LIST_SECTION_TYPE,
+      value: function value(renderNode, section, visit) {
+        var originalElement = renderNode.element;
+        var element = renderListSection(section);
+        renderNode.element = element;
+
+        attachRenderNodeElementToDOM(renderNode, element, originalElement);
+
+        var visitAll = true;
+        visit(renderNode, section.items, visitAll);
+      }
+    }, {
+      key: _contentKitEditorModelsTypes.LIST_ITEM_TYPE,
+      value: function value(renderNode, item, visit) {
+        // FIXME do we need to do anything special for rerenders?
+        var element = renderListItem();
+        renderNode.element = element;
+
+        attachRenderNodeElementToDOM(renderNode, element, null);
+
+        if (item.markers.length) {
+          var visitAll = true;
+          visit(renderNode, item.markers, visitAll);
+        } else {
+          renderNode.renderTree.elements.set(renderNode.element, renderNode);
+          var br = document.createElement('br');
+          renderNode.element.appendChild(br);
+        }
+      }
+    }, {
+      key: _contentKitEditorModelsTypes.MARKER_TYPE,
       value: function value(renderNode, marker) {
         var parentElement = undefined;
 
@@ -4356,21 +4994,13 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         } else {
           parentElement = renderNode.parent.element;
         }
-        var markerNode = undefined,
-            focusableNode = undefined;
-        if (marker.isEmpty) {
-          markerNode = renderBlankMarker(marker, parentElement, renderNode.prev);
-          focusableNode = markerNode.parentNode;
-        } else {
-          markerNode = focusableNode = renderMarker(marker, parentElement, renderNode.prev);
-        }
 
-        renderNode.renderTree.elements.set(focusableNode, renderNode);
-        renderNode.element = focusableNode;
-        renderNode._teardownElement = markerNode;
+        var element = renderMarker(marker, parentElement, renderNode.prev);
+        renderNode.renderTree.elements.set(element, renderNode);
+        renderNode.element = element;
       }
     }, {
-      key: _contentKitEditorModelsImage.IMAGE_SECTION_TYPE,
+      key: _contentKitEditorModelsTypes.IMAGE_SECTION_TYPE,
       value: function value(renderNode, section) {
         if (renderNode.element) {
           if (renderNode.element.src !== section.src) {
@@ -4393,36 +5023,28 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         }
       }
     }, {
-      key: _contentKitEditorModelsCard.CARD_TYPE,
+      key: _contentKitEditorModelsTypes.CARD_TYPE,
       value: function value(renderNode, section) {
+        var originalElement = renderNode.element;
         var editor = this.editor;
         var options = this.options;
 
         var card = (0, _contentKitEditorUtilsArrayUtils.detect)(this.cards, function (card) {
           return card.name === section.name;
         });
-
-        var env = { name: section.name };
-        var element = document.createElement('div');
-        element.contentEditable = 'false';
+        var element = renderCard();
         renderNode.element = element;
-        if (renderNode.prev) {
-          var previousElement = renderNode.prev.element;
-          var nextElement = previousElement.nextSibling;
-          if (nextElement) {
-            nextElement.parentNode.insertBefore(element, nextElement);
-          }
-        }
-        if (!element.parentNode) {
-          renderNode.parent.element.appendChild(element);
-        }
 
+        attachRenderNodeElementToDOM(renderNode, element, originalElement);
+
+        renderNode.renderTree.elements.set(element, renderNode);
         if (card) {
-          var cardNode = new _contentKitEditorModelsCardNode["default"](editor, card, section, renderNode.element, options);
+          var cardNode = new _contentKitEditorModelsCardNode['default'](editor, card, section, element, options);
           renderNode.cardNode = cardNode;
           cardNode.display();
         } else {
-          this.unknownCardHandler(renderNode.element, options, env, section.payload);
+          var env = { name: section.name };
+          this.unknownCardHandler(element, options, env, section.payload);
         }
       }
     }]);
@@ -4430,21 +5052,22 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     return Visitor;
   })();
 
-  var destroyHooks = (_destroyHooks = {}, _defineProperty(_destroyHooks, _contentKitEditorModelsPost.POST_TYPE, function () /*renderNode, post*/{
+  var destroyHooks = (_destroyHooks = {}, _defineProperty(_destroyHooks, _contentKitEditorModelsTypes.POST_TYPE, function () /*renderNode, post*/{
     throw new Error('post destruction is not supported by the renderer');
-  }), _defineProperty(_destroyHooks, _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE, function (renderNode, section) {
-    var post = renderNode.parent.postNode;
-    post.sections.remove(section);
-    // Some formatting commands remove the element from the DOM during
-    // formatting. Do not error if this is the case.
-    if (renderNode.element.parentNode) {
-      renderNode.element.parentNode.removeChild(renderNode.element);
-    }
-  }), _defineProperty(_destroyHooks, _contentKitEditorModelsMarker.MARKER_TYPE, function (renderNode, marker) {
+  }), _defineProperty(_destroyHooks, _contentKitEditorModelsTypes.MARKUP_SECTION_TYPE, function (renderNode, section) {
+    removeRenderNodeSectionFromParent(renderNode, section);
+    removeRenderNodeElementFromParent(renderNode);
+  }), _defineProperty(_destroyHooks, _contentKitEditorModelsTypes.LIST_SECTION_TYPE, function (renderNode, section) {
+    removeRenderNodeSectionFromParent(renderNode, section);
+    removeRenderNodeElementFromParent(renderNode);
+  }), _defineProperty(_destroyHooks, _contentKitEditorModelsTypes.LIST_ITEM_TYPE, function (renderNode, li) {
+    removeRenderNodeSectionFromParent(renderNode, li);
+    removeRenderNodeElementFromParent(renderNode);
+  }), _defineProperty(_destroyHooks, _contentKitEditorModelsTypes.MARKER_TYPE, function (renderNode, marker) {
     // FIXME before we render marker, should delete previous renderNode's element
     // and up until the next marker element
 
-    var element = renderNode._teardownElement;
+    var element = renderNode.element;
     var nextMarkerElement = getNextMarkerElement(renderNode);
     while (element.parentNode && element.parentNode !== nextMarkerElement) {
       element = element.parentNode;
@@ -4458,26 +5081,30 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
       // if no parentNode, the browser already removed this element
       element.parentNode.removeChild(element);
     }
-  }), _defineProperty(_destroyHooks, _contentKitEditorModelsImage.IMAGE_SECTION_TYPE, function (renderNode, section) {
-    var post = renderNode.parent.postNode;
-    post.sections.remove(section);
-    renderNode.element.parentNode.removeChild(renderNode.element);
-  }), _defineProperty(_destroyHooks, _contentKitEditorModelsCard.CARD_TYPE, function (renderNode, section) {
+  }), _defineProperty(_destroyHooks, _contentKitEditorModelsTypes.IMAGE_SECTION_TYPE, function (renderNode, section) {
+    removeRenderNodeSectionFromParent(renderNode, section);
+    removeRenderNodeElementFromParent(renderNode);
+  }), _defineProperty(_destroyHooks, _contentKitEditorModelsTypes.CARD_TYPE, function (renderNode, section) {
     if (renderNode.cardNode) {
       renderNode.cardNode.teardown();
     }
-    var post = renderNode.parent.postNode;
-    post.sections.remove(section);
-    renderNode.element.parentNode.removeChild(renderNode.element);
+    removeRenderNodeSectionFromParent(renderNode, section);
+    removeRenderNodeElementFromParent(renderNode);
   }), _destroyHooks);
 
   // removes children from parentNode that are scheduled for removal
   function removeChildren(parentNode) {
     var child = parentNode.childNodes.head;
+    var nextChild = undefined,
+        method = undefined;
     while (child) {
-      var nextChild = child.next;
+      nextChild = child.next;
       if (child.isRemoved) {
-        destroyHooks[child.postNode.type](child, child.postNode);
+        method = child.postNode.type;
+        if (!destroyHooks[method]) {
+          throw new Error('editor-dom cannot destroy "' + method + '"');
+        }
+        destroyHooks[method](child, child.postNode);
         parentNode.childNodes.remove(child);
       }
       child = nextChild;
@@ -4490,7 +5117,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     if (postNode.renderNode) {
       return postNode.renderNode;
     } else {
-      var renderNode = new _contentKitEditorModelsRenderNode["default"](postNode);
+      var renderNode = new _contentKitEditorModelsRenderNode['default'](postNode);
       parentNode.childNodes.insertAfter(renderNode, previousNode);
       postNode.renderNode = renderNode;
       return renderNode;
@@ -4507,7 +5134,7 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     }
 
     _createClass(Renderer, [{
-      key: "visit",
+      key: 'visit',
       value: function visit(renderTree, parentNode, postNodes) {
         var _this = this;
 
@@ -4523,14 +5150,23 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
         });
       }
     }, {
-      key: "render",
+      key: 'render',
       value: function render(renderTree) {
         var _this2 = this;
 
         var node = renderTree.node;
+        var method = undefined,
+            postNode = undefined;
+
         while (node) {
           removeChildren(node);
-          this.visitor[node.postNode.type](node, node.postNode, function () {
+          postNode = node.postNode;
+
+          method = postNode.type;
+          if (!this.visitor[method]) {
+            throw new Error('EditorDom visitor cannot handle type ' + method);
+          }
+          this.visitor[node.postNode.type](node, postNode, function () {
             for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
               args[_key] = arguments[_key];
             }
@@ -4546,32 +5182,46 @@ define("content-kit-editor/renderers/editor-dom", ["exports", "content-kit-edito
     return Renderer;
   })();
 
-  exports["default"] = Renderer;
+  exports['default'] = Renderer;
 });
-define("content-kit-editor/renderers/mobiledoc", ["exports", "content-kit-editor/utils/compiler", "content-kit-editor/models/post", "content-kit-editor/models/markup-section", "content-kit-editor/models/image", "content-kit-editor/models/marker", "content-kit-editor/models/markup", "content-kit-editor/models/card"], function (exports, _contentKitEditorUtilsCompiler, _contentKitEditorModelsPost, _contentKitEditorModelsMarkupSection, _contentKitEditorModelsImage, _contentKitEditorModelsMarker, _contentKitEditorModelsMarkup, _contentKitEditorModelsCard) {
-  "use strict";
+define('content-kit-editor/renderers/mobiledoc', ['exports', 'content-kit-editor/utils/compiler', 'content-kit-editor/models/types'], function (exports, _contentKitEditorUtilsCompiler, _contentKitEditorModelsTypes) {
+  'use strict';
 
   var _visitor;
 
   function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-  var MOBILEDOC_VERSION = '0.1';
-
+  var MOBILEDOC_VERSION = '0.2.0';
   exports.MOBILEDOC_VERSION = MOBILEDOC_VERSION;
-  var visitor = (_visitor = {}, _defineProperty(_visitor, _contentKitEditorModelsPost.POST_TYPE, function (node, opcodes) {
+  var MOBILEDOC_MARKUP_SECTION_TYPE = 1;
+  exports.MOBILEDOC_MARKUP_SECTION_TYPE = MOBILEDOC_MARKUP_SECTION_TYPE;
+  var MOBILEDOC_IMAGE_SECTION_TYPE = 2;
+  exports.MOBILEDOC_IMAGE_SECTION_TYPE = MOBILEDOC_IMAGE_SECTION_TYPE;
+  var MOBILEDOC_LIST_SECTION_TYPE = 3;
+  exports.MOBILEDOC_LIST_SECTION_TYPE = MOBILEDOC_LIST_SECTION_TYPE;
+  var MOBILEDOC_CARD_SECTION_TYPE = 10;
+
+  exports.MOBILEDOC_CARD_SECTION_TYPE = MOBILEDOC_CARD_SECTION_TYPE;
+  var visitor = (_visitor = {}, _defineProperty(_visitor, _contentKitEditorModelsTypes.POST_TYPE, function (node, opcodes) {
     opcodes.push(['openPost']);
     (0, _contentKitEditorUtilsCompiler.visitArray)(visitor, node.sections, opcodes);
-  }), _defineProperty(_visitor, _contentKitEditorModelsMarkupSection.MARKUP_SECTION_TYPE, function (node, opcodes) {
+  }), _defineProperty(_visitor, _contentKitEditorModelsTypes.MARKUP_SECTION_TYPE, function (node, opcodes) {
     opcodes.push(['openMarkupSection', node.tagName]);
     (0, _contentKitEditorUtilsCompiler.visitArray)(visitor, node.markers, opcodes);
-  }), _defineProperty(_visitor, _contentKitEditorModelsImage.IMAGE_SECTION_TYPE, function (node, opcodes) {
+  }), _defineProperty(_visitor, _contentKitEditorModelsTypes.LIST_SECTION_TYPE, function (node, opcodes) {
+    opcodes.push(['openListSection', node.tagName]);
+    (0, _contentKitEditorUtilsCompiler.visitArray)(visitor, node.items, opcodes);
+  }), _defineProperty(_visitor, _contentKitEditorModelsTypes.LIST_ITEM_TYPE, function (node, opcodes) {
+    opcodes.push(['openListItem']);
+    (0, _contentKitEditorUtilsCompiler.visitArray)(visitor, node.markers, opcodes);
+  }), _defineProperty(_visitor, _contentKitEditorModelsTypes.IMAGE_SECTION_TYPE, function (node, opcodes) {
     opcodes.push(['openImageSection', node.src]);
-  }), _defineProperty(_visitor, _contentKitEditorModelsCard.CARD_TYPE, function (node, opcodes) {
+  }), _defineProperty(_visitor, _contentKitEditorModelsTypes.CARD_TYPE, function (node, opcodes) {
     opcodes.push(['openCardSection', node.name, node.payload]);
-  }), _defineProperty(_visitor, _contentKitEditorModelsMarker.MARKER_TYPE, function (node, opcodes) {
+  }), _defineProperty(_visitor, _contentKitEditorModelsTypes.MARKER_TYPE, function (node, opcodes) {
     opcodes.push(['openMarker', node.closedMarkups.length, node.value]);
     (0, _contentKitEditorUtilsCompiler.visitArray)(visitor, node.openedMarkups, opcodes);
-  }), _defineProperty(_visitor, _contentKitEditorModelsMarkup.MARKUP_TYPE, function (node, opcodes) {
+  }), _defineProperty(_visitor, _contentKitEditorModelsTypes.MARKUP_TYPE, function (node, opcodes) {
     opcodes.push(['openMarkup', node.tagName, node.attributes]);
   }), _visitor);
 
@@ -4582,13 +5232,21 @@ define("content-kit-editor/renderers/mobiledoc", ["exports", "content-kit-editor
     },
     openMarkupSection: function openMarkupSection(tagName) {
       this.markers = [];
-      this.sections.push([1, tagName, this.markers]);
+      this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers]);
+    },
+    openListSection: function openListSection(tagName) {
+      this.items = [];
+      this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items]);
+    },
+    openListItem: function openListItem() {
+      this.markers = [];
+      this.items.push(this.markers);
     },
     openImageSection: function openImageSection(url) {
-      this.sections.push([2, url]);
+      this.sections.push([MOBILEDOC_IMAGE_SECTION_TYPE, url]);
     },
     openCardSection: function openCardSection(name, payload) {
-      this.sections.push([10, name, payload]);
+      this.sections.push([MOBILEDOC_CARD_SECTION_TYPE, name, payload]);
     },
     openPost: function openPost() {
       this.markerTypes = [];
@@ -4617,7 +5275,7 @@ define("content-kit-editor/renderers/mobiledoc", ["exports", "content-kit-editor
     }
   };
 
-  exports["default"] = {
+  exports['default'] = {
     render: function render(post) {
       var opcodes = [];
       (0, _contentKitEditorUtilsCompiler.visit)(visitor, post, opcodes);
@@ -4690,11 +5348,28 @@ define("content-kit-editor/utils/array-utils", ["exports"], function (exports) {
     return offset;
   }
 
+  // return new array without falsy items like ruby's `compact`
+  function compact(enumerable) {
+    return filter(enumerable, function (i) {
+      return !!i;
+    });
+  }
+
+  function reduce(enumerable, callback, initialValue) {
+    var previousValue = initialValue;
+    forEach(enumerable, function (val, index) {
+      previousValue = callback(previousValue, val, index);
+    });
+    return previousValue;
+  }
+
   exports.detect = detect;
   exports.forEach = forEach;
   exports.any = any;
   exports.filter = filter;
   exports.commonItemLength = commonItemLength;
+  exports.compact = compact;
+  exports.reduce = reduce;
 });
 define('content-kit-editor/utils/compat', ['exports', 'content-kit-editor/utils/doc', 'content-kit-editor/utils/win'], function (exports, _contentKitEditorUtilsDoc, _contentKitEditorUtilsWin) {
   'use strict';
@@ -4712,7 +5387,11 @@ define("content-kit-editor/utils/compiler", ["exports"], function (exports) {
   function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
   function visit(visitor, node, opcodes) {
-    visitor[node.type](node, opcodes);
+    var method = node.type;
+    if (!visitor[method]) {
+      throw new Error("Cannot visit unknown type " + method);
+    }
+    visitor[method](node, opcodes);
   }
 
   function compile(compiler, opcodes) {
@@ -4739,6 +5418,491 @@ define("content-kit-editor/utils/compiler", ["exports"], function (exports) {
       visit(visitor, node, opcodes);
     });
   }
+});
+define('content-kit-editor/utils/cursor', ['exports', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/cursor/position', 'content-kit-editor/utils/cursor/range'], function (exports, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsCursorPosition, _contentKitEditorUtilsCursorRange) {
+  'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  exports.Position = _contentKitEditorUtilsCursorPosition['default'];
+  exports.Range = _contentKitEditorUtilsCursorRange['default'];
+
+  var Cursor = (function () {
+    function Cursor(editor) {
+      _classCallCheck(this, Cursor);
+
+      this.editor = editor;
+      this.renderTree = editor._renderTree;
+      this.post = editor.post;
+    }
+
+    _createClass(Cursor, [{
+      key: 'clearSelection',
+      value: function clearSelection() {
+        (0, _contentKitEditorUtilsSelectionUtils.clearSelection)();
+      }
+
+      /**
+       * @return {Boolean} true when there is either a collapsed cursor in the
+       * editor's element or a selection that is contained in the editor's element
+       */
+    }, {
+      key: 'hasCursor',
+      value: function hasCursor() {
+        return this._hasCollapsedSelection() || this._hasSelection();
+      }
+    }, {
+      key: 'isInCard',
+      value: function isInCard() {
+        if (!this.hasCursor()) {
+          return false;
+        }
+
+        var _offsets = this.offsets;
+        var head = _offsets.head;
+        var tail = _offsets.tail;
+
+        return head && tail && (head._inCard || tail._inCard);
+      }
+    }, {
+      key: 'hasSelection',
+      value: function hasSelection() {
+        return this._hasSelection();
+      }
+
+      /*
+       * @return {Range} Cursor#Range object
+       */
+    }, {
+      key: 'moveToSection',
+
+      // moves cursor to the start of the section
+      value: function moveToSection(section) {
+        var offsetInSection = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+
+        this.moveToPosition(new _contentKitEditorUtilsCursorPosition['default'](section, offsetInSection));
+      }
+    }, {
+      key: 'selectSections',
+      value: function selectSections(sections) {
+        var headSection = sections[0],
+            tailSection = sections[sections.length - 1];
+        var range = _contentKitEditorUtilsCursorRange['default'].create(headSection, 0, tailSection, tailSection.length);
+        this.selectRange(range);
+      }
+    }, {
+      key: '_findNodeForPosition',
+      value: function _findNodeForPosition(position) {
+        var section = position.section;
+
+        var node = undefined,
+            offset = undefined;
+        if (section.isBlank) {
+          node = section.renderNode.element;
+          offset = 0;
+        } else {
+          var marker = position.marker;
+          var offsetInMarker = position.offsetInMarker;
+
+          node = marker.renderNode.element;
+          offset = offsetInMarker;
+        }
+
+        return { node: node, offset: offset };
+      }
+    }, {
+      key: 'selectRange',
+      value: function selectRange(range) {
+        var head = range.head;
+        var tail = range.tail;
+
+        var _findNodeForPosition2 = this._findNodeForPosition(head);
+
+        var headNode = _findNodeForPosition2.node;
+        var headOffset = _findNodeForPosition2.offset;
+
+        var _findNodeForPosition3 = this._findNodeForPosition(tail);
+
+        var tailNode = _findNodeForPosition3.node;
+        var tailOffset = _findNodeForPosition3.offset;
+
+        this._moveToNode(headNode, headOffset, tailNode, tailOffset);
+      }
+    }, {
+      key: 'selectedText',
+      value: function selectedText() {
+        return this.selection.toString();
+      }
+    }, {
+      key: 'moveToPosition',
+      value: function moveToPosition(position) {
+        this.selectRange(new _contentKitEditorUtilsCursorRange['default'](position, position));
+      }
+
+      /**
+       * @private
+       * @param {textNode} node
+       * @param {integer} offset
+       * @param {textNode} endNode (default: node)
+       * @param {integer} endOffset (default: offset)
+       */
+    }, {
+      key: '_moveToNode',
+      value: function _moveToNode(node) {
+        var offset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+        var endNode = arguments.length <= 2 || arguments[2] === undefined ? node : arguments[2];
+        var endOffset = arguments.length <= 3 || arguments[3] === undefined ? offset : arguments[3];
+        return (function () {
+          this.clearSelection();
+
+          var range = document.createRange();
+          range.setStart(node, offset);
+          range.setEnd(endNode, endOffset);
+
+          this.selection.addRange(range);
+        }).apply(this, arguments);
+      }
+    }, {
+      key: '_hasSelection',
+      value: function _hasSelection() {
+        var element = this.editor.element;
+        var _selectionRange = this._selectionRange;
+
+        if (!_selectionRange || _selectionRange.collapsed) {
+          return false;
+        }
+
+        return (0, _contentKitEditorUtilsSelectionUtils.containsNode)(element, this.selection.anchorNode) && (0, _contentKitEditorUtilsSelectionUtils.containsNode)(element, this.selection.focusNode);
+      }
+    }, {
+      key: '_hasCollapsedSelection',
+      value: function _hasCollapsedSelection() {
+        var _selectionRange = this._selectionRange;
+
+        if (!_selectionRange) {
+          return false;
+        }
+
+        var element = this.editor.element;
+        return (0, _contentKitEditorUtilsSelectionUtils.containsNode)(element, this.selection.anchorNode);
+      }
+    }, {
+      key: 'offsets',
+      get: function get() {
+        if (!this.hasCursor()) {
+          return _contentKitEditorUtilsCursorRange['default'].emptyRange();
+        }
+
+        var selection = this.selection;
+        var renderTree = this.renderTree;
+
+        var _comparePosition = (0, _contentKitEditorUtilsSelectionUtils.comparePosition)(selection);
+
+        var headNode = _comparePosition.headNode;
+        var headOffset = _comparePosition.headOffset;
+        var tailNode = _comparePosition.tailNode;
+        var tailOffset = _comparePosition.tailOffset;
+
+        var headPosition = _contentKitEditorUtilsCursorPosition['default'].fromNode(renderTree, headNode, headOffset);
+        var tailPosition = _contentKitEditorUtilsCursorPosition['default'].fromNode(renderTree, tailNode, tailOffset);
+
+        return new _contentKitEditorUtilsCursorRange['default'](headPosition, tailPosition);
+      }
+    }, {
+      key: 'activeSections',
+      get: function get() {
+        if (!this.hasCursor()) {
+          return [];
+        }
+
+        var _offsets2 = this.offsets;
+        var head = _offsets2.head;
+        var tail = _offsets2.tail;
+
+        return this.post.sections.readRange(head.section, tail.section);
+      }
+    }, {
+      key: 'selection',
+      get: function get() {
+        return window.getSelection();
+      }
+    }, {
+      key: '_selectionRange',
+      get: function get() {
+        var selection = this.selection;
+
+        if (selection.rangeCount === 0) {
+          return null;
+        }
+        return selection.getRangeAt(0);
+      }
+    }]);
+
+    return Cursor;
+  })();
+
+  exports['default'] = Cursor;
+});
+define('content-kit-editor/utils/cursor/position', ['exports', 'content-kit-editor/utils/dom-utils', 'content-kit-editor/models/types'], function (exports, _contentKitEditorUtilsDomUtils, _contentKitEditorModelsTypes) {
+  'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function isSection(postNode) {
+    if (!(postNode && postNode.type)) {
+      return false;
+    }
+    return postNode.type === _contentKitEditorModelsTypes.MARKUP_SECTION_TYPE || postNode.type === _contentKitEditorModelsTypes.LIST_ITEM_TYPE || postNode.type === _contentKitEditorModelsTypes.CARD_TYPE;
+  }
+
+  function isCardSection(section) {
+    return section.type === _contentKitEditorModelsTypes.CARD_TYPE;
+  }
+
+  function findParentSectionFromNode(renderTree, node) {
+    var renderNode = undefined;
+    while (node && node !== renderTree.rootElement) {
+      renderNode = renderTree.getElementRenderNode(node);
+      if (renderNode && isSection(renderNode.postNode)) {
+        return renderNode.postNode;
+      }
+      node = node.parentNode;
+    }
+  }
+
+  var Position = (function () {
+    function Position(section) {
+      var offset = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+
+      _classCallCheck(this, Position);
+
+      this.section = section;
+      this.offset = offset;
+      this._inCard = isCardSection(section);
+    }
+
+    _createClass(Position, [{
+      key: 'clone',
+      value: function clone() {
+        return new Position(this.section, this.offset);
+      }
+    }, {
+      key: 'isEqual',
+      value: function isEqual(position) {
+        return this.section === position.section && this.offset === position.offset;
+      }
+    }, {
+      key: 'marker',
+      get: function get() {
+        return this.markerPosition.marker;
+      }
+    }, {
+      key: 'offsetInMarker',
+      get: function get() {
+        return this.markerPosition.offset;
+      }
+    }, {
+      key: 'markerPosition',
+
+      /**
+       * @private
+       */
+      get: function get() {
+        if (!this.section) {
+          throw new Error('cannot get markerPosition without a section');
+        }
+        return this.section.markerPositionAtOffset(this.offset);
+      }
+    }], [{
+      key: 'emptyPosition',
+      value: function emptyPosition() {
+        return {
+          section: null,
+          offset: 0,
+          _inCard: false,
+          marker: null,
+          offsetInTextNode: 0,
+          _isEmpty: true,
+          isEqual: function isEqual(other) {
+            return other._isEmpty;
+          },
+          markerPosition: {}
+        };
+      }
+    }, {
+      key: 'fromNode',
+      value: function fromNode(renderTree, node, offset) {
+        if ((0, _contentKitEditorUtilsDomUtils.isTextNode)(node)) {
+          return Position.fromTextNode(renderTree, node, offset);
+        } else {
+          return Position.fromElementNode(renderTree, node);
+        }
+      }
+    }, {
+      key: 'fromTextNode',
+      value: function fromTextNode(renderTree, textNode, offsetInNode) {
+        var renderNode = renderTree.getElementRenderNode(textNode);
+        var section = undefined,
+            offsetInSection = undefined;
+
+        if (renderNode) {
+          var marker = renderNode.postNode;
+          section = marker.section;
+
+          if (!section) {
+            throw new Error('Could not find parent section for mapped text node "' + textNode.textContent + '"');
+          }
+          offsetInSection = section.offsetOfMarker(marker, offsetInNode);
+        } else {
+          // all text nodes should be rendered by markers except:
+          //   * text nodes inside cards
+          //   * text nodes created by the browser during text input
+          // both of these should have rendered parent sections, though
+          section = findParentSectionFromNode(renderTree, textNode);
+          if (!section) {
+            throw new Error('Could not find parent section for un-mapped text node "' + textNode.textContent + '"');
+          }
+
+          if (isCardSection(section)) {
+            offsetInSection = 0; // we don't care about offsets in card sections
+          } else {
+              offsetInSection = (0, _contentKitEditorUtilsDomUtils.findOffsetInElement)(section.renderNode.element, textNode, offsetInNode);
+            }
+        }
+
+        return new Position(section, offsetInSection);
+      }
+    }, {
+      key: 'fromElementNode',
+      value: function fromElementNode(renderTree, elementNode) {
+        // The browser may change the reported selection to equal the editor's root
+        // element if the user clicks an element that is immediately removed,
+        // which can happen when clicking to remove a card.
+        if (elementNode === renderTree.rootElement) {
+          return Position.emptyPosition();
+        }
+
+        var section = undefined,
+            offsetInSection = 0;
+
+        section = findParentSectionFromNode(renderTree, elementNode);
+        if (!section) {
+          throw new Error('Could not find parent section from element node');
+        }
+
+        // FIXME We assume that offsetInSection will always be 0 because we assume
+        // that only empty br tags (offsetInSection=0) will be those that cause
+        // us to call `fromElementNode`. This may not be a reliable assumption.
+        return new Position(section, offsetInSection);
+      }
+    }]);
+
+    return Position;
+  })();
+
+  exports['default'] = Position;
+});
+define('content-kit-editor/utils/cursor/range', ['exports', 'content-kit-editor/utils/cursor/position'], function (exports, _contentKitEditorUtilsCursorPosition) {
+  'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  var Range = (function () {
+    function Range(head, tail) {
+      _classCallCheck(this, Range);
+
+      this.head = head;
+      this.tail = tail;
+    }
+
+    _createClass(Range, [{
+      key: 'trimTo',
+
+      /**
+       * @param {Markerable} section
+       * @return {Range} A range that is constrained to only the part that
+       * includes the section.
+       * FIXME -- if the section isn't the head or tail, it's assumed to be
+       * wholly contained. It's possible to call `trimTo` with a selection that is
+       * outside of the range, though, which would invalidate that assumption.
+       */
+      value: function trimTo(section) {
+        var length = section.length;
+
+        var headOffset = section === this.head.section ? Math.min(this.head.offset, length) : 0;
+        var tailOffset = section === this.tail.section ? Math.min(this.tail.offset, length) : length;
+
+        return Range.create(section, headOffset, section, tailOffset);
+      }
+
+      // "legacy" APIs
+    }, {
+      key: 'headSection',
+      get: function get() {
+        return this.head.section;
+      }
+    }, {
+      key: 'tailSection',
+      get: function get() {
+        return this.tail.section;
+      }
+    }, {
+      key: 'headSectionOffset',
+      get: function get() {
+        return this.head.offset;
+      }
+    }, {
+      key: 'tailSectionOffset',
+      get: function get() {
+        return this.tail.offset;
+      }
+    }, {
+      key: 'isCollapsed',
+      get: function get() {
+        return this.head.isEqual(this.tail);
+      }
+    }, {
+      key: 'headMarker',
+      get: function get() {
+        return this.head.marker;
+      }
+    }, {
+      key: 'tailMarker',
+      get: function get() {
+        return this.tail.marker;
+      }
+    }, {
+      key: 'headMarkerOffset',
+      get: function get() {
+        return this.head.offsetInMarker;
+      }
+    }, {
+      key: 'tailMarkerOffset',
+      get: function get() {
+        return this.tail.offsetInMarker;
+      }
+    }], [{
+      key: 'create',
+      value: function create(headSection, headOffset, tailSection, tailOffset) {
+        return new Range(new _contentKitEditorUtilsCursorPosition['default'](headSection, headOffset), new _contentKitEditorUtilsCursorPosition['default'](tailSection, tailOffset));
+      }
+    }, {
+      key: 'emptyRange',
+      value: function emptyRange() {
+        return new Range(_contentKitEditorUtilsCursorPosition['default'].emptyPosition(), _contentKitEditorUtilsCursorPosition['default'].emptyPosition());
+      }
+    }]);
+
+    return Range;
+  })();
+
+  exports['default'] = Range;
 });
 define('content-kit-editor/utils/dom-utils', ['exports', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorUtilsArrayUtils) {
   'use strict';
@@ -4828,16 +5992,14 @@ define('content-kit-editor/utils/dom-utils', ['exports', 'content-kit-editor/uti
     }
   }
 
-  // see https://github.com/webmodules/node-contains/blob/master/index.js
+  /**
+   * @return {Boolean} true when the child node is contained by (and not
+   * the same as) the parent node
+   *  see https://github.com/webmodules/node-contains/blob/master/index.js
+   */
   function containsNode(parentNode, childNode) {
-    var isSame = function isSame() {
-      return parentNode === childNode;
-    };
-    var isContainedBy = function isContainedBy() {
-      var position = parentNode.compareDocumentPosition(childNode);
-      return !!(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
-    };
-    return isSame() || isContainedBy();
+    var position = parentNode.compareDocumentPosition(childNode);
+    return !!(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
   }
 
   /**
@@ -4879,8 +6041,41 @@ define('content-kit-editor/utils/dom-utils', ['exports', 'content-kit-editor/uti
     element.classList.add(className);
   }
 
+  function removeClassName(element, className) {
+    // FIXME-IE IE10+
+    element.classList.remove(className);
+  }
+
   function normalizeTagName(tagName) {
     return tagName.toLowerCase();
+  }
+
+  /*
+   * @param {Node} elementNode not a text node
+   * @param {Node} textNode a text node
+   * @param {Number} offsetInTextNode optional, the offset relative to the text node
+   * @return {Number} The offset relative to all the text nodes in the element node
+   */
+  function findOffsetInElement(elementNode, textNode) {
+    var offsetInTextNode = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+
+    var offset = 0,
+        found = false;
+    walkTextNodes(elementNode, function (_textNode) {
+      if (found) {
+        return;
+      }
+      if (_textNode === textNode) {
+        found = true;
+        offset += offsetInTextNode;
+      } else {
+        offset += _textNode.textContent.length;
+      }
+    });
+    if (!found) {
+      throw new Error('Unable to find offset of text node in element, it is not a child.');
+    }
+    return offset;
   }
 
   function parseHTML(html) {
@@ -4898,9 +6093,11 @@ define('content-kit-editor/utils/dom-utils', ['exports', 'content-kit-editor/uti
   exports.walkDOM = walkDOM;
   exports.walkTextNodes = walkTextNodes;
   exports.addClassName = addClassName;
+  exports.removeClassName = removeClassName;
   exports.normalizeTagName = normalizeTagName;
   exports.isTextNode = isTextNode;
   exports.parseHTML = parseHTML;
+  exports.findOffsetInElement = findOffsetInElement;
 });
 define('content-kit-editor/utils/element-map', ['exports'], function (exports) {
   // start at one to make the falsy semantics easier
@@ -5119,16 +6316,18 @@ define("content-kit-editor/utils/event-emitter", ["exports"], function (exports)
 
   exports["default"] = EventEmitter;
 });
-define("content-kit-editor/utils/event-listener", ["exports"], function (exports) {
-  "use strict";
+define('content-kit-editor/utils/event-listener', ['exports', 'content-kit-editor/utils/array-utils'], function (exports, _contentKitEditorUtilsArrayUtils) {
+  'use strict';
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
   function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
   function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   var EventListenerMixin = (function () {
     function EventListenerMixin() {
@@ -5136,7 +6335,7 @@ define("content-kit-editor/utils/event-listener", ["exports"], function (exports
     }
 
     _createClass(EventListenerMixin, [{
-      key: "addEventListener",
+      key: 'addEventListener',
       value: function addEventListener(context, eventName, listener) {
         if (!this._eventListeners) {
           this._eventListeners = [];
@@ -5145,7 +6344,7 @@ define("content-kit-editor/utils/event-listener", ["exports"], function (exports
         this._eventListeners.push([context, eventName, listener]);
       }
     }, {
-      key: "removeAllEventListeners",
+      key: 'removeAllEventListeners',
       value: function removeAllEventListeners() {
         var listeners = this._eventListeners || [];
         listeners.forEach(function (_ref) {
@@ -5158,12 +6357,36 @@ define("content-kit-editor/utils/event-listener", ["exports"], function (exports
           context.removeEventListener.apply(context, _toConsumableArray(args));
         });
       }
+
+      // This is primarily useful for programmatically simulating events on the
+      // editor from the tests.
+    }, {
+      key: 'triggerEvent',
+      value: function triggerEvent(context, eventName, event) {
+        var matches = (0, _contentKitEditorUtilsArrayUtils.filter)(this._eventListeners, function (_ref3) {
+          var _ref32 = _slicedToArray(_ref3, 2);
+
+          var _context = _ref32[0];
+          var _eventName = _ref32[1];
+
+          return context === _context && eventName === _eventName;
+        });
+        matches.forEach(function (_ref4) {
+          var _ref42 = _slicedToArray(_ref4, 3);
+
+          var context = _ref42[0];
+          var eventName = _ref42[1];
+          var listener = _ref42[2];
+
+          listener.call(context, event);
+        });
+      }
     }]);
 
     return EventListenerMixin;
   })();
 
-  exports["default"] = EventListenerMixin;
+  exports['default'] = EventListenerMixin;
 });
 define('content-kit-editor/utils/http-utils', ['exports'], function (exports) {
   'use strict';
@@ -5268,10 +6491,17 @@ define('content-kit-editor/utils/key', ['exports', 'content-kit-editor/utils/key
 
   var DIRECTION = {
     FORWARD: 1,
-    BACKWARD: 2
+    BACKWARD: -1
   };
 
   exports.DIRECTION = DIRECTION;
+  var MODIFIERS = {
+    META: 1, // also called "command" on OS X
+    CTRL: 2,
+    SHIFT: 3
+  };
+
+  exports.MODIFIERS = MODIFIERS;
   /**
    * An abstraction around a KeyEvent
    * that key listeners in the editor can use
@@ -5311,12 +6541,36 @@ define('content-kit-editor/utils/key', ['exports', 'content-kit-editor/utils/key
         return this.keyCode === _contentKitEditorUtilsKeycodes['default'].ENTER;
       }
     }, {
-      key: 'isPrintable',
+      key: 'isShift',
+      value: function isShift() {
+        return this.hasModifier(MODIFIERS.SHIFT);
+      }
+    }, {
+      key: 'hasModifier',
+      value: function hasModifier(modifier) {
+        switch (modifier) {
+          case MODIFIERS.META:
+            return this.metaKey;
+          case MODIFIERS.CTRL:
+            return this.ctrlKey;
+          case MODIFIERS.SHIFT:
+            return this.shiftKey;
+          default:
+            throw new Error('Cannot check for unknown modifier ' + modifier);
+        }
+      }
+    }, {
+      key: 'isChar',
+      value: function isChar(string) {
+        return this.keyCode === string.toUpperCase().charCodeAt(0);
+      }
 
       /**
        * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
        *   and http://stackoverflow.com/a/12467610/137784
        */
+    }, {
+      key: 'isPrintable',
       value: function isPrintable() {
         if (this.ctrlKey || this.metaKey) {
           return false;
@@ -5657,93 +6911,39 @@ define('content-kit-editor/utils/mixin', ['exports'], function (exports) {
 define('content-kit-editor/utils/selection-utils', ['exports', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsDomUtils) {
   'use strict';
 
-  // TODO: remove, pass in Editor's current block set
-  var RootTags = ['p', 'h2', 'h3', 'blockquote', 'ul', 'ol'];
-
-  var SelectionDirection = {
-    LEFT_TO_RIGHT: 1,
-    RIGHT_TO_LEFT: 2,
-    SAME_NODE: 3
-  };
-
   function clearSelection() {
     // FIXME-IE ensure this works on IE 9. It works on IE10.
     window.getSelection().removeAllRanges();
   }
 
-  function getDirectionOfSelection(selection) {
-    var node = selection.anchorNode;
-    var position = node && node.compareDocumentPosition(selection.focusNode);
-    if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
-      return SelectionDirection.LEFT_TO_RIGHT;
-    } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
-      return SelectionDirection.RIGHT_TO_LEFT;
-    }
-    return SelectionDirection.SAME_NODE;
-  }
-
-  function getSelectionElement(selection) {
-    selection = selection || window.getSelection();
-    // FIXME it used to return `anchorNode` when selection direction is `LEFT_TO_RIGHT`,
-    // but I think that was a bug. In Safari and Chrome the selection usually had the
-    // same anchorNode and focusNode when selecting text, so it didn't matter.
-    var node = getDirectionOfSelection(selection) === SelectionDirection.LEFT_TO_RIGHT ? selection.focusNode : selection.anchorNode;
-    return node && (node.nodeType === 3 ? node.parentNode : node);
-  }
-
-  function isSelectionInElement(element) {
-    var selection = window.getSelection();
-    var rangeCount = selection.rangeCount;
+  function comparePosition(selection) {
     var anchorNode = selection.anchorNode;
     var focusNode = selection.focusNode;
+    var anchorOffset = selection.anchorOffset;
+    var focusOffset = selection.focusOffset;
 
-    var range = rangeCount > 0 && selection.getRangeAt(0);
-    var hasSelection = range && !range.collapsed;
+    var headNode = undefined,
+        tailNode = undefined,
+        headOffset = undefined,
+        tailOffset = undefined;
 
-    if (hasSelection) {
-      return (0, _contentKitEditorUtilsDomUtils.containsNode)(element, anchorNode) && (0, _contentKitEditorUtilsDomUtils.containsNode)(element, focusNode);
+    var position = anchorNode.compareDocumentPosition(focusNode);
+
+    if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+      headNode = anchorNode;tailNode = focusNode;
+      headOffset = anchorOffset;tailOffset = focusOffset;
+    } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+      headNode = focusNode;tailNode = anchorNode;
+      headOffset = focusOffset;tailOffset = anchorOffset;
     } else {
-      return false;
+      // same node
+      headNode = anchorNode;
+      tailNode = focusNode;
+      headOffset = Math.min(anchorOffset, focusOffset);
+      tailOffset = Math.max(anchorOffset, focusOffset);
     }
-  }
 
-  function getSelectionBlockElement(selection) {
-    selection = selection || window.getSelection();
-    var element = getSelectionElement();
-    var tag = element && (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName);
-    while (tag && RootTags.indexOf(tag) === -1) {
-      if (element.contentEditable === 'true') {
-        return null; // Stop traversing up dom when hitting an editor element
-      }
-      element = element.parentNode;
-      tag = element.tagName && (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName);
-    }
-    return element;
-  }
-
-  function getSelectionTagName() {
-    var element = getSelectionElement();
-    return element ? (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName) : null;
-  }
-
-  function getSelectionBlockTagName() {
-    var element = getSelectionBlockElement();
-    return element ? element.tagName && (0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName) : null;
-  }
-
-  function tagsInSelection(selection) {
-    var element = getSelectionElement(selection);
-    var tags = [];
-    while (element) {
-      if (element.contentEditable === 'true') {
-        break;
-      } // Stop traversing up dom when hitting an editor element
-      if (element.tagName) {
-        tags.push((0, _contentKitEditorUtilsDomUtils.normalizeTagName)(element.tagName));
-      }
-      element = element.parentNode;
-    }
-    return tags;
+    return { headNode: headNode, headOffset: headOffset, tailNode: tailNode, tailOffset: tailOffset };
   }
 
   function restoreRange(range) {
@@ -5752,27 +6952,55 @@ define('content-kit-editor/utils/selection-utils', ['exports', 'content-kit-edit
     selection.addRange(range);
   }
 
-  function selectNode(node) {
-    clearSelection();
-
-    var range = document.createRange();
-    range.setStart(node, 0);
-    range.setEnd(node, node.length);
-
-    var selection = window.getSelection();
-    selection.addRange(range);
-  }
-
-  exports.getDirectionOfSelection = getDirectionOfSelection;
-  exports.getSelectionElement = getSelectionElement;
-  exports.getSelectionBlockElement = getSelectionBlockElement;
-  exports.getSelectionTagName = getSelectionTagName;
-  exports.getSelectionBlockTagName = getSelectionBlockTagName;
-  exports.tagsInSelection = tagsInSelection;
   exports.restoreRange = restoreRange;
-  exports.selectNode = selectNode;
+  exports.containsNode = _contentKitEditorUtilsDomUtils.containsNode;
   exports.clearSelection = clearSelection;
-  exports.isSelectionInElement = isSelectionInElement;
+  exports.comparePosition = comparePosition;
+});
+define("content-kit-editor/utils/set", ["exports"], function (exports) {
+  "use strict";
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  var Set = (function () {
+    function Set() {
+      var _this = this;
+
+      var items = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+
+      _classCallCheck(this, Set);
+
+      this.items = [];
+      items.forEach(function (i) {
+        return _this.add(i);
+      });
+    }
+
+    _createClass(Set, [{
+      key: "add",
+      value: function add(item) {
+        if (!this.has(item)) {
+          this.items.push(item);
+        }
+      }
+    }, {
+      key: "has",
+      value: function has(item) {
+        return this.items.indexOf(item) !== -1;
+      }
+    }, {
+      key: "toArray",
+      value: function toArray() {
+        return this.items;
+      }
+    }]);
+
+    return Set;
+  })();
+
+  exports["default"] = Set;
 });
 define('content-kit-editor/utils/string-utils', ['exports'], function (exports) {
   /*
@@ -5782,6 +7010,7 @@ define('content-kit-editor/utils/string-utils', ['exports'], function (exports) 
   'use strict';
 
   exports.dasherize = dasherize;
+  exports.capitalize = capitalize;
   exports.startsWith = startsWith;
   exports.endsWith = endsWith;
 
@@ -5793,6 +7022,10 @@ define('content-kit-editor/utils/string-utils', ['exports'], function (exports) 
     });
   }
 
+  function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
   function startsWith(string, character) {
     return string.charAt(0) === character;
   }
@@ -5801,8 +7034,16 @@ define('content-kit-editor/utils/string-utils', ['exports'], function (exports) 
     return string.charAt(string.length - 1) === character;
   }
 });
-define('content-kit-editor/views/embed-intent', ['exports', 'content-kit-editor/views/view', 'content-kit-editor/views/toolbar', 'content-kit-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/keycodes'], function (exports, _contentKitEditorViewsView, _contentKitEditorViewsToolbar, _contentKitUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsKeycodes) {
+define('content-kit-editor/views/embed-intent', ['exports', 'content-kit-editor/views/view', 'content-kit-editor/views/toolbar', 'content-kit-editor/utils/element-utils', 'content-kit-editor/commands/unordered-list', 'content-kit-editor/commands/ordered-list', 'content-kit-editor/commands/image', 'content-kit-editor/commands/card'], function (exports, _contentKitEditorViewsView, _contentKitEditorViewsToolbar, _contentKitEditorUtilsElementUtils, _contentKitEditorCommandsUnorderedList, _contentKitEditorCommandsOrderedList, _contentKitEditorCommandsImage, _contentKitEditorCommandsCard) {
   'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   var LayoutStyle = {
     GUTTER: 1,
@@ -5816,127 +7057,139 @@ define('content-kit-editor/views/embed-intent', ['exports', 'content-kit-editor/
     return LayoutStyle.CENTERED;
   }
 
-  function EmbedIntent(options) {
-    var _this = this;
+  var EmbedIntent = (function (_View) {
+    _inherits(EmbedIntent, _View);
 
-    var embedIntent = this;
-    var rootElement = embedIntent.rootElement = options.rootElement;
-    options.classNames = ['ck-embed-intent'];
-    _contentKitEditorViewsView['default'].call(embedIntent, options);
+    function EmbedIntent() {
+      var _this = this;
 
-    embedIntent.isActive = false;
-    embedIntent.editorContext = options.editorContext;
-    embedIntent.loadingIndicator = (0, _contentKitEditorUtilsElementUtils.createDiv)('ck-embed-loading');
-    embedIntent.button = document.createElement('button');
-    embedIntent.button.className = 'ck-embed-intent-btn';
-    embedIntent.button.title = 'Insert image or embed...';
-    embedIntent.element.appendChild(embedIntent.button);
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-    this.addEventListener(embedIntent.button, 'click', function (e) {
-      if (embedIntent.isActive) {
-        embedIntent.deactivate();
-      } else {
-        embedIntent.activate();
-      }
-      e.stopPropagation();
-    });
+      _classCallCheck(this, EmbedIntent);
 
-    embedIntent.toolbar = new _contentKitEditorViewsToolbar['default']({
-      container: embedIntent.element,
-      embedIntent: embedIntent,
-      editor: embedIntent.editorContext,
-      commands: options.commands,
-      direction: _contentKitEditorViewsToolbar['default'].Direction.RIGHT
-    });
+      options.classNames = ['ck-embed-intent'];
+      _get(Object.getPrototypeOf(EmbedIntent.prototype), 'constructor', this).call(this, options);
+      this.rootElement = options.rootElement;
 
-    var embedIntentHandler = function embedIntentHandler() {
-      var editor = _this.editorContext;
-
-      if (_this._isDestroyed || editor._isDestroyed) {
-        return;
-      }
-
-      var _embedIntent$editorContext$cursor$offsets = embedIntent.editorContext.cursor.offsets;
-      var headSection = _embedIntent$editorContext$cursor$offsets.headSection;
-      var isCollapsed = _embedIntent$editorContext$cursor$offsets.isCollapsed;
-
-      var headRenderNode = headSection && headSection.renderNode && headSection.renderNode.element;
-
-      if (headRenderNode && headSection.isBlank && isCollapsed) {
-        embedIntent.showAt(headRenderNode);
-      } else {
-        embedIntent.hide();
-      }
-    };
-
-    this.addEventListener(rootElement, 'keyup', embedIntentHandler);
-    this.addEventListener(document, 'click', function () {
-      setTimeout(function () {
-        embedIntentHandler();
-      });
-    });
-
-    this.addEventListener(document, 'keyup', function (e) {
-      if (e.keyCode === _contentKitEditorUtilsKeycodes['default'].ESC) {
-        embedIntent.hide();
-      }
-    });
-
-    this.addEventListener(window, 'resize', function () {
-      if (embedIntent.isShowing) {
-        embedIntent.reposition();
-      }
-    });
-  }
-  (0, _contentKitUtils.inherit)(EmbedIntent, _contentKitEditorViewsView['default']);
-
-  EmbedIntent.prototype.hide = function () {
-    if (EmbedIntent._super.prototype.hide.call(this)) {
-      this.deactivate();
-    }
-  };
-
-  EmbedIntent.prototype.showAt = function (node) {
-    this.atNode = node;
-    this.show();
-    this.deactivate();
-    this.reposition();
-  };
-
-  EmbedIntent.prototype.reposition = function () {
-    if (computeLayoutStyle(this.rootElement) === LayoutStyle.GUTTER) {
-      (0, _contentKitEditorUtilsElementUtils.positionElementToLeftOf)(this.element, this.atNode);
-    } else {
-      (0, _contentKitEditorUtilsElementUtils.positionElementCenteredIn)(this.element, this.atNode);
-    }
-  };
-
-  EmbedIntent.prototype.activate = function () {
-    if (!this.isActive) {
-      this.addClass('activated');
-      this.toolbar.show();
-      this.isActive = true;
-    }
-  };
-
-  EmbedIntent.prototype.deactivate = function () {
-    if (this.isActive) {
-      this.removeClass('activated');
-      this.toolbar.hide();
       this.isActive = false;
+      this.editor = options.editor;
+      this.button = document.createElement('button');
+      this.button.className = 'ck-embed-intent-btn';
+      this.button.title = 'Insert image or embed...';
+      this.element.appendChild(this.button);
+
+      var commands = [new _contentKitEditorCommandsImage['default'](), new _contentKitEditorCommandsCard['default'](), new _contentKitEditorCommandsUnorderedList['default'](this.editor), new _contentKitEditorCommandsOrderedList['default'](this.editor)];
+
+      this.addEventListener(this.button, 'click', function (e) {
+        if (_this.isActive) {
+          _this.deactivate();
+        } else {
+          _this.activate();
+        }
+        e.stopPropagation();
+      });
+
+      this.toolbar = new _contentKitEditorViewsToolbar['default']({
+        container: this.element,
+        embedIntent: this,
+        editor: this.editor,
+        commands: commands,
+        direction: _contentKitEditorViewsToolbar['default'].Direction.RIGHT
+      });
+
+      var embedIntentHandler = function embedIntentHandler() {
+        var editor = _this.editor;
+
+        if (_this._isDestroyed || editor._isDestroyed) {
+          return;
+        }
+
+        var showElement = undefined;
+
+        var headSection = _this.editor.cursor.offsets.headSection;
+
+        var headElement = headSection && headSection.renderNode && headSection.renderNode.element;
+        if (headElement && headSection.isBlank) {
+          showElement = headElement;
+        } else if (editor.post.isBlank) {
+          showElement = editor.post.renderNode.element;
+        }
+
+        if (showElement) {
+          _this.showAt(showElement);
+        } else {
+          _this.hide();
+        }
+      };
+
+      this.addEventListener(this.rootElement, 'keyup', embedIntentHandler);
+      this.addEventListener(document, 'click', function () {
+        setTimeout(embedIntentHandler);
+      });
+      this.addEventListener(window, 'resize', function () {
+        _this.reposition();
+      });
     }
-  };
 
-  EmbedIntent.prototype.showLoading = function () {
-    var embedIntent = this;
-    var loadingIndicator = embedIntent.loadingIndicator;
-    embedIntent.hide();
-    embedIntent.atNode.appendChild(loadingIndicator);
-  };
+    _createClass(EmbedIntent, [{
+      key: 'hide',
+      value: function hide() {
+        if (_get(Object.getPrototypeOf(EmbedIntent.prototype), 'hide', this).call(this)) {
+          this.deactivate();
+        }
+      }
+    }, {
+      key: 'showAt',
+      value: function showAt(node) {
+        this.atNode = node;
+        this.show();
+        this.deactivate();
+        this.reposition();
+      }
+    }, {
+      key: 'reposition',
+      value: function reposition() {
+        if (!this.isShowing) {
+          return;
+        }
+        if (computeLayoutStyle(this.rootElement) === LayoutStyle.GUTTER) {
+          (0, _contentKitEditorUtilsElementUtils.positionElementToLeftOf)(this.element, this.atNode);
+        } else {
+          (0, _contentKitEditorUtilsElementUtils.positionElementCenteredIn)(this.element, this.atNode);
+        }
+      }
+    }, {
+      key: 'activate',
+      value: function activate() {
+        if (this.isActive) {
+          return;
+        }
 
-  EmbedIntent.prototype.hideLoading = function () {
-    this.atNode.removeChild(this.loadingIndicator);
-  };
+        this.addClass('activated');
+        this.toolbar.show();
+        this.isActive = true;
+      }
+    }, {
+      key: 'deactivate',
+      value: function deactivate() {
+        if (!this.isActive) {
+          return;
+        }
+
+        this.removeClass('activated');
+        this.toolbar.hide();
+        this.isActive = false;
+      }
+    }, {
+      key: 'destroy',
+      value: function destroy() {
+        this.toolbar.destroy();
+        _get(Object.getPrototypeOf(EmbedIntent.prototype), 'destroy', this).call(this);
+      }
+    }]);
+
+    return EmbedIntent;
+  })(_contentKitEditorViewsView['default']);
 
   exports['default'] = EmbedIntent;
 });
@@ -5972,12 +7225,12 @@ define('content-kit-editor/views/message', ['exports', 'content-kit-editor/views
 
   exports['default'] = Message;
 });
-define('content-kit-editor/views/prompt', ['exports', 'content-kit-editor/views/view', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/keycodes'], function (exports, _contentKitEditorViewsView, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsKeycodes) {
+define('content-kit-editor/views/prompt', ['exports', 'content-kit-editor/views/view', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/element-utils', 'content-kit-editor/utils/key'], function (exports, _contentKitEditorViewsView, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsElementUtils, _contentKitEditorUtilsKey) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+  var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -6004,30 +7257,26 @@ define('content-kit-editor/views/prompt', ['exports', 'content-kit-editor/views/
 
       options.tagName = 'input';
       _get(Object.getPrototypeOf(Prompt.prototype), 'constructor', this).call(this, options);
+      this.toolbar = options.toolbar;
 
-      var prompt = this;
-
-      prompt.command = options.command;
-      prompt.element.placeholder = options.placeholder || '';
-      this.addEventListener(prompt.element, 'click', function (e) {
+      this.element.placeholder = options.placeholder || '';
+      this.addEventListener(this.element, 'click', function (e) {
         // prevents closing prompt when clicking input
         e.stopPropagation();
       });
-      this.addEventListener(prompt.element, 'keyup', function (e) {
-        var entry = prompt.element.value;
+      this.addEventListener(this.element, 'keyup', function (e) {
+        var key = _contentKitEditorUtilsKey['default'].fromEvent(e);
+        var entry = _this.element.value;
 
-        if (entry && prompt.range && !e.shiftKey && e.which === _contentKitEditorUtilsKeycodes['default'].ENTER) {
-          (0, _contentKitEditorUtilsSelectionUtils.restoreRange)(prompt.range);
-          _this.command.exec(entry);
-          if (_this.onComplete) {
-            _this.onComplete();
-          }
+        if (entry && _this.range && !key.isShift() && key.isEnter()) {
+          (0, _contentKitEditorUtilsSelectionUtils.restoreRange)(_this.range);
+          _this.doComplete(entry);
         }
       });
 
       this.addEventListener(window, 'resize', function () {
         var activeHilite = hiliter.parentNode;
-        var range = prompt.range;
+        var range = _this.range;
         if (activeHilite && range) {
           positionHiliteRange(range);
         }
@@ -6035,8 +7284,21 @@ define('content-kit-editor/views/prompt', ['exports', 'content-kit-editor/views/
     }
 
     _createClass(Prompt, [{
+      key: 'doComplete',
+      value: function doComplete(value) {
+        this.hide();
+        this.onComplete(value);
+        this.toolbar.hide();
+      }
+    }, {
       key: 'show',
-      value: function show(callback) {
+      value: function show() {
+        var callback = arguments.length <= 0 || arguments[0] === undefined ? function () {} : arguments[0];
+        var toolbar = this.toolbar;
+
+        toolbar.displayPrompt(this);
+
+        this.onComplete = callback;
         var element = this.element;
         var selection = window.getSelection();
         var range = selection && selection.rangeCount && selection.getRangeAt(0);
@@ -6050,9 +7312,6 @@ define('content-kit-editor/views/prompt', ['exports', 'content-kit-editor/views/
             // defer focus (disrupts mouseup events)
             element.focus();
           });
-          if (callback) {
-            this.onComplete = callback;
-          }
         }
       }
     }, {
@@ -6061,6 +7320,7 @@ define('content-kit-editor/views/prompt', ['exports', 'content-kit-editor/views/
         if (hiliter.parentNode) {
           container.removeChild(hiliter);
         }
+        this.toolbar.dismissPrompt();
       }
     }]);
 
@@ -6069,7 +7329,56 @@ define('content-kit-editor/views/prompt', ['exports', 'content-kit-editor/views/
 
   exports['default'] = Prompt;
 });
-define('content-kit-editor/views/reversible-toolbar-button', ['exports', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener'], function (exports, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener) {
+define('content-kit-editor/views/reversible-prompt-button', ['exports', 'content-kit-editor/views/reversible-toolbar-button'], function (exports, _contentKitEditorViewsReversibleToolbarButton) {
+  'use strict';
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  var PromptButton = (function (_ReversibleToolbarButton) {
+    _inherits(PromptButton, _ReversibleToolbarButton);
+
+    function PromptButton(command, editor) {
+      _classCallCheck(this, PromptButton);
+
+      _get(Object.getPrototypeOf(PromptButton.prototype), 'constructor', this).call(this, command, editor);
+    }
+
+    _createClass(PromptButton, [{
+      key: 'handleClick',
+      value: function handleClick(e) {
+        var _this = this;
+
+        e.stopPropagation();
+
+        var prompt = this.prompt;
+
+        if (!this.active) {
+          prompt.show(function () {
+            return _this.exec.apply(_this, arguments);
+          });
+        } else {
+          this.unexec();
+        }
+      }
+    }, {
+      key: 'prompt',
+      get: function get() {
+        return this.toolbar.prompt;
+      }
+    }]);
+
+    return PromptButton;
+  })(_contentKitEditorViewsReversibleToolbarButton['default']);
+
+  exports['default'] = PromptButton;
+});
+define('content-kit-editor/views/reversible-toolbar-button', ['exports', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener', 'content-kit-editor/utils/dom-utils'], function (exports, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener, _contentKitEditorUtilsDomUtils) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -6078,6 +7387,7 @@ define('content-kit-editor/views/reversible-toolbar-button', ['exports', 'conten
 
   var ELEMENT_TYPE = 'button';
   var BUTTON_CLASS_NAME = 'ck-toolbar-btn';
+  var ACTIVE_CLASS_NAME = 'active';
 
   var ReversibleToolbarButton = (function () {
     function ReversibleToolbarButton(command, editor) {
@@ -6118,10 +7428,24 @@ define('content-kit-editor/views/reversible-toolbar-button', ['exports', 'conten
         e.stopPropagation();
 
         if (this.active) {
-          this.command.unexec();
+          this.unexec();
         } else {
-          this.command.exec();
+          this.exec();
         }
+      }
+    }, {
+      key: 'exec',
+      value: function exec() {
+        var _command;
+
+        (_command = this.command).exec.apply(_command, arguments);
+      }
+    }, {
+      key: 'unexec',
+      value: function unexec() {
+        var _command2;
+
+        (_command2 = this.command).unexec.apply(_command2, arguments);
       }
     }, {
       key: 'updateActiveState',
@@ -6138,14 +7462,16 @@ define('content-kit-editor/views/reversible-toolbar-button', ['exports', 'conten
         return element;
       }
     }, {
+      key: 'destroy',
+      value: function destroy() {
+        this.removeAllEventListeners();
+      }
+    }, {
       key: 'active',
       set: function set(val) {
         this._active = val;
-        if (this._active) {
-          this.element.className = BUTTON_CLASS_NAME + ' active';
-        } else {
-          this.element.className = BUTTON_CLASS_NAME;
-        }
+        var method = this._active ? _contentKitEditorUtilsDomUtils.addClassName : _contentKitEditorUtilsDomUtils.removeClassName;
+        method(this.element, ACTIVE_CLASS_NAME);
       },
       get: function get() {
         return this._active;
@@ -6159,7 +7485,7 @@ define('content-kit-editor/views/reversible-toolbar-button', ['exports', 'conten
 
   exports['default'] = ReversibleToolbarButton;
 });
-define('content-kit-editor/views/text-format-toolbar', ['exports', 'content-kit-editor/views/toolbar'], function (exports, _contentKitEditorViewsToolbar) {
+define('content-kit-editor/views/text-format-toolbar', ['exports', 'content-kit-editor/views/toolbar', 'content-kit-editor/views/reversible-toolbar-button', 'content-kit-editor/views/reversible-prompt-button', 'content-kit-editor/commands/bold', 'content-kit-editor/commands/italic', 'content-kit-editor/commands/link', 'content-kit-editor/commands/quote', 'content-kit-editor/commands/heading', 'content-kit-editor/commands/subheading'], function (exports, _contentKitEditorViewsToolbar, _contentKitEditorViewsReversibleToolbarButton, _contentKitEditorViewsReversiblePromptButton, _contentKitEditorCommandsBold, _contentKitEditorCommandsItalic, _contentKitEditorCommandsLink, _contentKitEditorCommandsQuote, _contentKitEditorCommandsHeading, _contentKitEditorCommandsSubheading) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -6169,6 +7495,28 @@ define('content-kit-editor/views/text-format-toolbar', ['exports', 'content-kit-
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
   function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+  function makeButtons(editor) {
+    var headingCommand = new _contentKitEditorCommandsHeading['default'](editor);
+    var headingButton = new _contentKitEditorViewsReversibleToolbarButton['default'](headingCommand, editor);
+
+    var subheadingCommand = new _contentKitEditorCommandsSubheading['default'](editor);
+    var subheadingButton = new _contentKitEditorViewsReversibleToolbarButton['default'](subheadingCommand, editor);
+
+    var quoteCommand = new _contentKitEditorCommandsQuote['default'](editor);
+    var quoteButton = new _contentKitEditorViewsReversibleToolbarButton['default'](quoteCommand, editor);
+
+    var boldCommand = new _contentKitEditorCommandsBold['default'](editor);
+    var boldButton = new _contentKitEditorViewsReversibleToolbarButton['default'](boldCommand, editor);
+
+    var italicCommand = new _contentKitEditorCommandsItalic['default'](editor);
+    var italicButton = new _contentKitEditorViewsReversibleToolbarButton['default'](italicCommand, editor);
+
+    var linkCommand = new _contentKitEditorCommandsLink['default'](editor);
+    var linkButton = new _contentKitEditorViewsReversiblePromptButton['default'](linkCommand, editor);
+
+    return [headingButton, subheadingButton, quoteButton, boldButton, italicButton, linkButton];
+  }
 
   var TextFormatToolbar = (function (_Toolbar) {
     _inherits(TextFormatToolbar, _Toolbar);
@@ -6197,21 +7545,25 @@ define('content-kit-editor/views/text-format-toolbar', ['exports', 'content-kit-
       this.addEventListener(window, 'resize', function () {
         return _this.handleResize();
       });
+
+      var buttons = makeButtons(this.editor);
+      buttons.forEach(function (b) {
+        return _this.addButton(b);
+      });
     }
 
     _createClass(TextFormatToolbar, [{
       key: 'handleResize',
       value: function handleResize() {
         if (this.isShowing) {
-          var activePromptRange = this.activePrompt && this.activePrompt.range;
-          this.positionToContent(activePromptRange ? activePromptRange : window.getSelection().getRangeAt(0));
+          this.positionToContent();
         }
       }
     }, {
       key: 'handleSelection',
       value: function handleSelection() {
         this.show();
-        this.updateForSelection(window.getSelection());
+        this.updateForSelection();
       }
     }, {
       key: 'handleSelectionEnded',
@@ -6228,58 +7580,59 @@ define('content-kit-editor/views/text-format-toolbar', ['exports', 'content-kit-
 define('content-kit-editor/views/toolbar-button', ['exports', 'content-kit-editor/utils/mixin', 'content-kit-editor/utils/event-listener'], function (exports, _contentKitEditorUtilsMixin, _contentKitEditorUtilsEventListener) {
   'use strict';
 
-  var buttonClassName = 'ck-toolbar-btn';
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-  function ToolbarButton(options) {
-    var button = this;
-    var toolbar = options.toolbar;
-    var command = options.command;
-    var prompt = command.prompt;
-    var element = document.createElement('button');
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-    button.element = element;
-    button.command = command;
-    button.isActive = false;
+  var ELEMENT_TYPE = 'button';
+  var BUTTON_CLASS_NAME = 'ck-toolbar-btn';
 
-    element.title = command.name;
-    element.className = buttonClassName;
-    element.innerHTML = command.button;
-    this.addEventListener(element, 'click', function (e) {
-      if (!button.isActive && prompt) {
-        toolbar.displayPrompt(prompt);
-      } else {
+  var ToolbarButton = (function () {
+    function ToolbarButton() {
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+      _classCallCheck(this, ToolbarButton);
+
+      var toolbar = options.toolbar;
+      var command = options.command;
+
+      this.command = command;
+      this.element = this.createElement();
+      this.isActive = false;
+
+      this.addEventListener(this.element, 'click', function (e) {
         command.exec();
-        toolbar.updateForSelection();
         if (toolbar.embedIntent) {
           toolbar.embedIntent.hide();
         }
-      }
-      e.stopPropagation();
-    });
-  }
-
-  ToolbarButton.prototype = {
-    setActive: function setActive() {
-      var button = this;
-      if (!button.isActive) {
-        button.element.className = buttonClassName + ' active';
-        button.isActive = true;
-      }
-    },
-    setInactive: function setInactive() {
-      var button = this;
-      if (button.isActive) {
-        button.element.className = buttonClassName;
-        button.isActive = false;
-      }
+        e.stopPropagation();
+      });
     }
-  };
+
+    _createClass(ToolbarButton, [{
+      key: 'createElement',
+      value: function createElement() {
+        var element = document.createElement(ELEMENT_TYPE);
+        element.className = BUTTON_CLASS_NAME;
+        element.innerHTML = this.command.button;
+        element.title = this.command.name;
+        return element;
+      }
+    }, {
+      key: 'destroy',
+      value: function destroy() {
+        this.removeAllEventListeners();
+      }
+    }]);
+
+    return ToolbarButton;
+  })();
 
   (0, _contentKitEditorUtilsMixin['default'])(ToolbarButton, _contentKitEditorUtilsEventListener['default']);
 
   exports['default'] = ToolbarButton;
 });
-define('content-kit-editor/views/toolbar', ['exports', 'content-kit-editor/views/view', 'content-kit-editor/views/toolbar-button', 'content-kit-editor/utils/selection-utils', 'content-kit-editor/utils/element-utils'], function (exports, _contentKitEditorViewsView, _contentKitEditorViewsToolbarButton, _contentKitEditorUtilsSelectionUtils, _contentKitEditorUtilsElementUtils) {
+define('content-kit-editor/views/toolbar', ['exports', 'content-kit-editor/views/view', 'content-kit-editor/views/prompt', 'content-kit-editor/views/toolbar-button', 'content-kit-editor/utils/element-utils'], function (exports, _contentKitEditorViewsView, _contentKitEditorViewsPrompt, _contentKitEditorViewsToolbarButton, _contentKitEditorUtilsElementUtils) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -6295,27 +7648,6 @@ define('content-kit-editor/views/toolbar', ['exports', 'content-kit-editor/views
     RIGHT: 2
   };
 
-  function selectionContainsButtonsTag(selectedTags, buttonsTags) {
-    return selectedTags.filter(function (tag) {
-      return buttonsTags.indexOf(tag) > -1;
-    }).length;
-  }
-
-  function updateButtonsForSelection(buttons, selection) {
-    var selectedTags = (0, _contentKitEditorUtilsSelectionUtils.tagsInSelection)(selection);
-    var len = buttons.length;
-    var i, button;
-
-    for (i = 0; i < len; i++) {
-      button = buttons[i];
-      if (selectionContainsButtonsTag(selectedTags, button.command.mappedTags)) {
-        button.setActive();
-      } else {
-        button.setInactive();
-      }
-    }
-  }
-
   var Toolbar = (function (_View) {
     _inherits(Toolbar, _View);
 
@@ -6329,10 +7661,11 @@ define('content-kit-editor/views/toolbar', ['exports', 'content-kit-editor/views
       options.classNames = ['ck-toolbar'];
       _get(Object.getPrototypeOf(Toolbar.prototype), 'constructor', this).call(this, options);
 
+      this.prompt = new _contentKitEditorViewsPrompt['default']({ toolbar: this });
+
       this.setDirection(options.direction || ToolbarDirection.TOP);
       this.editor = options.editor || null;
       this.embedIntent = options.embedIntent || null;
-      this.activePrompt = null;
       this.buttons = [];
 
       this.contentElement = (0, _contentKitEditorUtilsElementUtils.createDiv)('ck-toolbar-content');
@@ -6370,51 +7703,44 @@ define('content-kit-editor/views/toolbar', ['exports', 'content-kit-editor/views
       value: function addCommand(command) {
         command.editor = this.editor;
         command.embedIntent = this.embedIntent;
-        var button = new _contentKitEditorViewsToolbarButton['default']({ command: command, toolbar: this });
-        this.addButton(button);
+        this.addButton(new _contentKitEditorViewsToolbarButton['default']({ command: command, toolbar: this }));
       }
     }, {
       key: 'addButton',
       value: function addButton(button) {
+        button.toolbar = this;
         this.buttons.push(button);
         this.buttonContainerElement.appendChild(button.element);
       }
     }, {
       key: 'displayPrompt',
       value: function displayPrompt(prompt) {
-        var _this2 = this;
-
         (0, _contentKitEditorUtilsElementUtils.swapElements)(this.promptContainerElement, this.buttonContainerElement);
         this.promptContainerElement.appendChild(prompt.element);
-        prompt.show(function () {
-          _this2.dismissPrompt();
-          _this2.updateForSelection();
-        });
-        this.activePrompt = prompt;
       }
     }, {
       key: 'dismissPrompt',
       value: function dismissPrompt() {
-        var activePrompt = this.activePrompt;
-        if (activePrompt) {
-          activePrompt.hide();
-          (0, _contentKitEditorUtilsElementUtils.swapElements)(this.buttonContainerElement, this.promptContainerElement);
-          this.activePrompt = null;
-        }
+        (0, _contentKitEditorUtilsElementUtils.swapElements)(this.buttonContainerElement, this.promptContainerElement);
+        this.updateForSelection();
       }
     }, {
       key: 'updateForSelection',
       value: function updateForSelection() {
-        var selection = arguments.length <= 0 || arguments[0] === undefined ? window.getSelection() : arguments[0];
-
-        if (!selection.isCollapsed) {
-          this.positionToContent(selection.getRangeAt(0));
-          updateButtonsForSelection(this.buttons, selection);
+        if (!this.isShowing) {
+          return;
+        }
+        var selection = window.getSelection(),
+            range = selection && selection.getRangeAt(0);
+        if (!range.collapsed) {
+          this.positionToContent(range);
         }
       }
     }, {
       key: 'positionToContent',
-      value: function positionToContent(content) {
+      value: function positionToContent() {
+        var content = arguments.length <= 0 || arguments[0] === undefined ? window.getSelection().getRangeAt(0) : arguments[0];
+
         var directions = ToolbarDirection;
         var positioningMethod, position, sideEdgeOffset;
         switch (this.direction) {
@@ -6437,6 +7763,15 @@ define('content-kit-editor/views/toolbar', ['exports', 'content-kit-editor/views
         } else {
           this.removeClass('right');
         }
+      }
+    }, {
+      key: 'destroy',
+      value: function destroy() {
+        this.buttons.forEach(function (b) {
+          return b.destroy();
+        });
+        this.prompt.destroy();
+        _get(Object.getPrototypeOf(Toolbar.prototype), 'destroy', this).call(this);
       }
     }]);
 
@@ -6535,10 +7870,9 @@ define('content-kit-editor/views/view', ['exports', 'content-kit-editor/utils/mi
     }, {
       key: 'hide',
       value: function hide() {
-        var view = this;
-        if (view.isShowing) {
-          view.container.removeChild(view.element);
-          view.isShowing = false;
+        if (this.isShowing) {
+          this.container.removeChild(this.element);
+          this.isShowing = false;
           return true;
         }
       }
