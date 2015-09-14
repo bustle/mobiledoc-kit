@@ -8,7 +8,7 @@ import ImageCard from '../cards/image';
 import Key from '../utils/key';
 import EventEmitter from '../utils/event-emitter';
 
-import MobiledocParser from "../parsers/mobiledoc";
+import MobiledocParser from '../parsers/mobiledoc';
 import PostParser from '../parsers/post';
 import DOMParser from '../parsers/dom';
 import Renderer  from 'content-kit-editor/renderers/editor-dom';
@@ -234,7 +234,7 @@ class Editor {
   }
 
   handleNewline(event) {
-    if (!this.cursor.hasCursor()) { return ;}
+    if (!this.cursor.hasCursor()) { return; }
 
     const range = this.cursor.offsets;
     event.preventDefault();
@@ -570,8 +570,20 @@ class Editor {
     e.preventDefault(); // FIXME for now, just prevent default
   }
 
+  _insertEmptyMarkupSectionAtCursor() {
+    const section = this.run(postEditor => {
+      const section = postEditor.builder.createMarkupSection('p');
+      postEditor.insertSectionBefore(this.post.sections, section);
+      return section;
+    });
+    this.cursor.moveToSection(section);
+  }
+
   handleKeydown(event) {
     if (!this.isEditable) { return; }
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor();
+    }
 
     const key = Key.fromEvent(event);
 

@@ -12,6 +12,10 @@ export default class Post {
     });
   }
 
+  get isBlank() {
+    return this.sections.isEmpty;
+  }
+
   /**
    * @param {Range} range
    * @return {Array} markers that are completely contained by the range

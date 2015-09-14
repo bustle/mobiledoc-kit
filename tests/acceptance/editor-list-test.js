@@ -210,6 +210,7 @@ test('hitting enter at empty last list item exists list', (assert) => {
   assert.equal($('#editor li').length, 2, 'removes empty li');
   assert.equal($('#editor p').length, 1, 'adds 1 new p');
   assert.equal($('#editor p').text(), '', 'p has no text');
+  assert.hasNoElement('#editor ul p', 'does not nest p under ul');
 
   Helpers.dom.insertText(editor, 'X');
   assert.hasElement('#editor p:contains(X)', 'text goes in right spot');

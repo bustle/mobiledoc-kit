@@ -13,6 +13,10 @@ export default class Range {
     );
   }
 
+  static emptyRange() {
+    return new Range(Position.emptyPosition(), Position.emptyPosition());
+  }
+
   /**
    * @param {Markerable} section
    * @return {Range} A range that is constrained to only the part that

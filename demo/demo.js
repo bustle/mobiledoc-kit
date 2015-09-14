@@ -88,10 +88,13 @@ var selfieCard = {
 var simpleCard = {
   name: 'simple-card',
   display: {
-    setup: function(element) {
+    setup: function(element, options, env) {
       var card = document.createElement('span');
       card.innerHTML = 'Hello, world';
       element.appendChild(card);
+      var button = $('<button>Remove card</button>');
+      button.on('click', env.remove);
+      $(element).append(button);
     }
   }
 };
@@ -284,6 +287,7 @@ function bootEditor(element, mobiledoc) {
   editor = new ContentKit.Editor({
     autofocus: false,
     mobiledoc: mobiledoc,
+    placeholder: 'Write something here...',
     cards: [simpleCard, cardWithEditMode, cardWithInput, selfieCard],
     cardOptions: {
       image: {
@@ -333,6 +337,14 @@ var sampleMobiledocs = {
           [[], 0, "hello world"]
         ]]
       ]
+    ]
+  },
+
+  emptyMobiledoc: {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      []
     ]
   },
 
@@ -408,9 +420,6 @@ var sampleMobiledocs = {
     sections: [
       [],
       [
-        [1, "H2", [
-          [[], 0, "Simple Card"]
-        ]],
         [10, "simple-card"]
       ]
     ]

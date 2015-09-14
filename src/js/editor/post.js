@@ -1,4 +1,4 @@
-import { MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
+import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
 import { filter, compact } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
@@ -484,11 +484,20 @@ class PostEditor {
   }
 
   /**
+   * @method replaceSection
+   * @param {Section} section
+   * @param {Section} newSection
+   * @return null
    * @public
-   * FIXME: add tests for this
    */
   replaceSection(section, newSection) {
-    return this._replaceSection(section, [newSection]);
+    if (!section) {
+      // The section may be undefined if the user used the embed intent
+      // ("+" icon) to insert a new "ul" section in a blank post
+      this.insertSectionBefore(this.editor.post.sections, newSection);
+    } else {
+      this._replaceSection(section, [newSection]);
+    }
   }
 
   _replaceSection(section, newSections) {
@@ -597,7 +606,8 @@ class PostEditor {
    * @method insertSectionBefore
    * @param {LinkedList} collection The list of sections to insert into
    * @param {Object} section The new section
-   * @param {Object} beforeSection The section "before" is relative to
+   * @param {Object} beforeSection Optional The section "before" is relative to,
+   * if falsy the new section will be appended to the collection
    * @public
    */
   insertSectionBefore(collection, section, beforeSection) {
@@ -637,7 +647,7 @@ class PostEditor {
 
     parent.sections.remove(section);
 
-    if (parent.isBlank) {
+    if (parent.isBlank && parent.type !== POST_TYPE) {
       // If we removed the last child from a parent (e.g. the last li in a ul),
       // also remove the parent
       this.removeSection(parent);
