@@ -31,17 +31,10 @@ function postEditorWithMobiledoc(treeFn) {
   return new PostEditor(editor);
 }
 
-function prepareRenderTree(post) {
-  let renderTree = new RenderTree();
-  let node = renderTree.buildRenderNode(post);
-  renderTree.node = node;
-  return renderTree;
-}
-
 function renderBuiltAbstract(post) {
   mockEditor.post = post;
   let renderer = new EditorDomRenderer(mockEditor, [], () => {}, {});
-  let renderTree = prepareRenderTree(post);
+  let renderTree = new RenderTree(post);
   renderer.render(renderTree);
 }
 

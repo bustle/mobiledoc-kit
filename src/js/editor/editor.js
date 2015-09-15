@@ -88,7 +88,7 @@ class Editor {
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
     this.post = this.loadPost();
-    this._renderTree = this.prepareRenderTree(this.post);
+    this._renderTree = new RenderTree(this.post);
   }
 
   addView(view) {
@@ -98,13 +98,6 @@ class Editor {
   get builder() {
     if (!this._builder) { this._builder = new PostNodeBuilder(); }
     return this._builder;
-  }
-
-  prepareRenderTree(post) {
-    let renderTree = new RenderTree();
-    let node = renderTree.buildRenderNode(post);
-    renderTree.node = node;
-    return renderTree;
   }
 
   loadPost() {

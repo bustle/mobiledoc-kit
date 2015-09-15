@@ -3,50 +3,61 @@ import LinkedList from 'content-kit-editor/utils/linked-list';
 import { containsNode } from 'content-kit-editor/utils/dom-utils';
 
 export default class RenderNode extends LinkedItem {
-  constructor(postNode) {
+  constructor(postNode, renderTree) {
     super();
     this.parent = null;
     this.isDirty = true;
     this.isRemoved = false;
     this.postNode = postNode;
     this._childNodes = null;
-    this.element = null;
+    this._element = null;
+    this.renderTree = renderTree;
   }
   isAttached() {
-    const rootElement = this.renderTree.node.element;
     if (!this.element) {
       throw new Error('Cannot check if a renderNode is attached without an element.');
     }
-    return containsNode(rootElement, this.element);
+    return containsNode(this.renderTree.rootElement, this.element);
   }
   get childNodes() {
     if (!this._childNodes) {
       this._childNodes = new LinkedList({
-        adoptItem: item => {
-          item.parent = this;
-          item.renderTree = this.renderTree;
-        },
-        freeItem: item => {
-          item.parent = null;
-          item.renderTree = null;
-        }
+        adoptItem: item => item.parent = this,
+        freeItem: item => item.destroy()
       });
     }
     return this._childNodes;
   }
   scheduleForRemoval() {
     this.isRemoved = true;
-    if (this.parent) {
-      this.parent.markDirty();
-    }
+    if (this.parent) { this.parent.markDirty(); }
   }
   markDirty() {
     this.isDirty = true;
-    if (this.parent) {
-      this.parent.markDirty();
-    }
+    if (this.parent) { this.parent.markDirty(); }
   }
   markClean() {
     this.isDirty = false;
+  }
+  set element(element) {
+    const currentElement = this._element;
+    this._element = element;
+
+    if (currentElement) {
+      this.renderTree.removeElementRenderNode(currentElement);
+    }
+
+    if (element) {
+      this.renderTree.setElementRenderNode(element, this);
+    }
+  }
+  get element() {
+    return this._element;
+  }
+  destroy() {
+    this.element = null;
+    this.parent = null;
+    this.postNode = null;
+    this.renderTree = null;
   }
 }
