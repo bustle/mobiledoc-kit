@@ -561,10 +561,10 @@ class PostEditor {
    *
    *     const range = editor.cursor.offsets;
    *     const markup = markerRange.headMarker.markups[0];
-   *     editor.run((postEditor) => {
+   *     editor.run(postEditor => {
    *       postEditor.removeMarkupFromRange(range, markup);
    *     });
-   *     // Will result some markers possibly being split, and the markup
+   *     // Will result in some markers possibly being split, and the markup
    *     // being removed from all markers between the split.
    *
    * The return value will be all markers between the split, the same return
