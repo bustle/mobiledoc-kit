@@ -179,7 +179,7 @@ And visit [localhost:5000/dist/demo/index.html](http://localhost:5000/dist/demo/
 
 * `npm version patch` or `minor` or `major`
 * `npm run build`
-* `git push bustle --tags`
+* `git push <origin> --follow-tags`
 * `npm publish`
 
 #### Re-deploy the demo
