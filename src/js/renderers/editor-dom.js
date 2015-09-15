@@ -1,4 +1,3 @@
-import RenderNode from 'content-kit-editor/models/render-node';
 import CardNode from 'content-kit-editor/models/card-node';
 import { detect } from 'content-kit-editor/utils/array-utils';
 import {
@@ -109,7 +108,8 @@ function renderMarker(marker, element, previousRenderNode) {
   return textNode;
 }
 
-function attachRenderNodeElementToDOM(renderNode, element, originalElement) {
+function attachRenderNodeElementToDOM(renderNode, originalElement) {
+  const element = renderNode.element;
   const hasRendered = !!originalElement;
 
   if (hasRendered) {
@@ -150,8 +150,7 @@ class Visitor {
 
   [POST_TYPE](renderNode, post, visit) {
     if (!renderNode.element) {
-      const element = document.createElement('div');
-      renderNode.element = element;
+      renderNode.element = document.createElement('div');
     }
     visit(renderNode, post.sections);
   }
@@ -161,11 +160,8 @@ class Visitor {
 
     // Always rerender the section -- its tag name or attributes may have changed.
     // TODO make this smarter, only rerendering and replacing the element when necessary
-    const element = renderMarkupSection(section);
-    renderNode.element = element;
-
-    attachRenderNodeElementToDOM(renderNode, element, originalElement);
-    renderNode.renderTree.elements.set(element, renderNode);
+    renderNode.element = renderMarkupSection(section);
+    attachRenderNodeElementToDOM(renderNode, originalElement);
 
     if (section.isBlank) {
       renderNode.element.appendChild(renderCursorPlaceholder());
@@ -177,10 +173,9 @@ class Visitor {
 
   [LIST_SECTION_TYPE](renderNode, section, visit) {
     const originalElement = renderNode.element;
-    const element = renderListSection(section);
-    renderNode.element = element;
 
-    attachRenderNodeElementToDOM(renderNode, element, originalElement);
+    renderNode.element = renderListSection(section);
+    attachRenderNodeElementToDOM(renderNode, originalElement);
 
     const visitAll = true;
     visit(renderNode, section.items, visitAll);
@@ -188,11 +183,8 @@ class Visitor {
 
   [LIST_ITEM_TYPE](renderNode, item, visit) {
     // FIXME do we need to do anything special for rerenders?
-    const element = renderListItem();
-    renderNode.element = element;
-
-    attachRenderNodeElementToDOM(renderNode, element, null);
-    renderNode.renderTree.elements.set(element, renderNode);
+    renderNode.element = renderListItem();
+    attachRenderNodeElementToDOM(renderNode, null);
 
     if (item.isBlank) {
       renderNode.element.appendChild(renderCursorPlaceholder());
@@ -211,10 +203,7 @@ class Visitor {
       parentElement = renderNode.parent.element;
     }
 
-    const element = renderMarker(marker, parentElement, renderNode.prev);
-    renderNode.element = element;
-
-    renderNode.renderTree.elements.set(element, renderNode);
+    renderNode.element = renderMarker(marker, parentElement, renderNode.prev);
   }
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
@@ -243,19 +232,19 @@ class Visitor {
     const originalElement = renderNode.element;
     const {editor, options} = this;
     const card = detect(this.cards, card => card.name === section.name);
-    const element = renderCard();
-    renderNode.element = element;
 
-    attachRenderNodeElementToDOM(renderNode, element, originalElement);
-    renderNode.renderTree.elements.set(element, renderNode); 
+    renderNode.element = renderCard();
+    attachRenderNodeElementToDOM(renderNode, originalElement);
 
     if (card) {
-      const cardNode = new CardNode(editor, card, section, element, options);
+      const cardNode = new CardNode(
+        editor, card, section, renderNode.element, options);
       renderNode.cardNode = cardNode;
       cardNode.display();
     } else {
       const env = { name: section.name };
-      this.unknownCardHandler(element, options, env, section.payload);
+      this.unknownCardHandler(
+        renderNode.element, options, env, section.payload);
     }
   }
 }
@@ -314,13 +303,14 @@ let destroyHooks = {
   }
 };
 
-// removes children from parentNode that are scheduled for removal
-function removeChildren(parentNode) {
+// removes children from parentNode (a RenderNode) that are scheduled for removal
+function removeDestroyedChildren(parentNode, forceRemoval=false) {
   let child = parentNode.childNodes.head;
   let nextChild, method;
   while (child) {
     nextChild = child.next;
-    if (child.isRemoved) {
+    if (child.isRemoved || forceRemoval) {
+      removeDestroyedChildren(child, true);
       method = child.postNode.type;
       if (!destroyHooks[method]) {
         throw new Error(`editor-dom cannot destroy "${method}"`);
@@ -338,9 +328,8 @@ function lookupNode(renderTree, parentNode, postNode, previousNode) {
   if (postNode.renderNode) {
     return postNode.renderNode;
   } else {
-    let renderNode = new RenderNode(postNode);
+    const renderNode = renderTree.buildRenderNode(postNode);
     parentNode.childNodes.insertAfter(renderNode, previousNode);
-    postNode.renderNode = renderNode;
     return renderNode;
   }
 }
@@ -364,20 +353,21 @@ export default class Renderer {
   }
 
   render(renderTree) {
-    let node = renderTree.node;
+    let renderNode = renderTree.rootNode;
     let method, postNode;
 
-    while (node) {
-      removeChildren(node);
-      postNode = node.postNode;
+    while (renderNode) {
+      removeDestroyedChildren(renderNode);
+      postNode = renderNode.postNode;
 
       method = postNode.type;
       if (!this.visitor[method]) {
         throw new Error(`EditorDom visitor cannot handle type ${method}`);
       }
-      this.visitor[node.postNode.type](node, postNode, (...args) => this.visit(renderTree, ...args));
-      node.markClean();
-      node = this.nodes.shift();
+      this.visitor[method](renderNode, postNode,
+                           (...args) => this.visit(renderTree, ...args));
+      renderNode.markClean();
+      renderNode = this.nodes.shift();
     }
   }
 }

@@ -1,6 +1,5 @@
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import Renderer from 'content-kit-editor/renderers/editor-dom';
-import RenderNode from 'content-kit-editor/models/render-node';
 import RenderTree from 'content-kit-editor/models/render-tree';
 import Helpers from '../../test-helpers';
 const { module, test } = Helpers;
@@ -27,15 +26,12 @@ test("renders a dirty post", (assert) => {
    * renderNode
    *
    */
-  let renderNode = new RenderNode(builder.createPost());
-  let renderTree = new RenderTree(renderNode);
-  renderNode.renderTree = renderTree;
-
+  const renderTree = new RenderTree(builder.createPost());
   render(renderTree);
 
-  assert.ok(renderTree.node.element, 'renderTree renders element for post');
-  assert.ok(!renderTree.node.isDirty, 'dirty node becomes clean');
-  assert.equal(renderTree.node.element.tagName, 'DIV', 'renderTree renders element for post');
+  assert.ok(renderTree.rootElement, 'renderTree renders element for post');
+  assert.ok(!renderTree.rootNode.isDirty, 'dirty node becomes clean');
+  assert.equal(renderTree.rootElement.tagName, 'DIV', 'renderTree renders element for post');
 });
 
 test("renders a dirty post with un-rendered sections", (assert) => {
@@ -45,23 +41,20 @@ test("renders a dirty post with un-rendered sections", (assert) => {
   let sectionB = builder.createMarkupSection('P');
   post.sections.append(sectionB);
 
-  let renderNode = new RenderNode(post);
-  let renderTree = new RenderTree(renderNode);
-  renderNode.renderTree = renderTree;
-
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
-  assert.equal(renderTree.node.element.outerHTML, '<div><p><br></p><p><br></p></div>',
+  assert.equal(renderTree.rootElement.outerHTML, '<div><p><br></p><p><br></p></div>',
                'correct HTML is rendered');
 
-  assert.ok(renderTree.node.childNodes.head,
+  assert.ok(renderTree.rootNode.childNodes.head,
             'sectionA creates a first child');
-  assert.equal(renderTree.node.childNodes.head.postNode, sectionA,
+  assert.equal(renderTree.rootNode.childNodes.head.postNode, sectionA,
                'sectionA is first renderNode child');
-  assert.ok(!renderTree.node.childNodes.head.isDirty, 'sectionA node is clean');
-  assert.equal(renderTree.node.childNodes.tail.postNode, sectionB,
+  assert.ok(!renderTree.rootNode.childNodes.head.isDirty, 'sectionA node is clean');
+  assert.equal(renderTree.rootNode.childNodes.tail.postNode, sectionB,
                'sectionB is second renderNode child');
-  assert.ok(!renderTree.node.childNodes.tail.isDirty, 'sectionB node is clean');
+  assert.ok(!renderTree.rootNode.childNodes.tail.isDirty, 'sectionB node is clean');
 });
 
 [
@@ -93,10 +86,8 @@ test("renders a dirty post with un-rendered sections", (assert) => {
     let sectionElement = document.createElement('p');
     postElement.appendChild(sectionElement);
 
-    let postRenderNode = new RenderNode(post);
-
-    let renderTree = new RenderTree(postRenderNode);
-    postRenderNode.renderTree = renderTree;
+    const renderTree = new RenderTree(post);
+    const postRenderNode = renderTree.rootNode;
     postRenderNode.element = postElement;
 
     let sectionRenderNode = renderTree.buildRenderNode(section);
@@ -106,13 +97,13 @@ test("renders a dirty post with un-rendered sections", (assert) => {
 
     render(renderTree);
 
-    assert.equal(renderTree.node.element, postElement,
+    assert.equal(renderTree.rootElement, postElement,
                  'post element remains');
 
-    assert.equal(renderTree.node.element.firstChild, null,
+    assert.equal(renderTree.rootElement.firstChild, null,
                  'section element removed');
 
-    assert.equal(renderTree.node.firstChild, null,
+    assert.equal(renderTree.rootNode.childNodes.length, 0,
                  'section renderNode is removed');
   });
 });
@@ -127,11 +118,9 @@ test('renders a post with marker', (assert) => {
     ])
   );
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
-  assert.equal(node.element.innerHTML, '<p><strong>Hi</strong></p>');
+  assert.equal(renderTree.rootElement.innerHTML, '<p><strong>Hi</strong></p>');
 });
 
 test('renders a post with markup empty section', (assert) => {
@@ -139,11 +128,9 @@ test('renders a post with markup empty section', (assert) => {
   let section = builder.createMarkupSection('P');
   post.sections.append(section);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
-  assert.equal(node.element.innerHTML, '<p><br></p>');
+  assert.equal(renderTree.rootElement.innerHTML, '<p><br></p>');
 });
 
 test('renders a post with multiple markers', (assert) => {
@@ -165,11 +152,9 @@ test('renders a post with multiple markers', (assert) => {
     builder.createMarker(' world.')
   );
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
-  assert.equal(node.element.innerHTML, '<p>hello <b>bold, <i>italic,</i></b> world.</p>');
+  assert.equal(renderTree.rootElement.innerHTML, '<p>hello <b>bold, <i>italic,</i></b> world.</p>');
 });
 
 
@@ -179,11 +164,9 @@ test('renders a post with image', (assert) => {
   let section = builder.createImageSection(url);
   post.sections.append(section);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
-  assert.equal(node.element.innerHTML, `<img src="${url}">`);
+  assert.equal(renderTree.rootElement.innerHTML, `<img src="${url}">`);
 });
 
 test('renders a card section', (assert) => {
@@ -199,12 +182,10 @@ test('renders a card section', (assert) => {
   };
   post.sections.append(cardSection);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree, [card]);
 
-  assert.equal(node.element.firstChild.innerHTML, 'I am a card',
+  assert.equal(renderTree.rootElement.firstChild.innerHTML, 'I am a card',
               'card is rendered');
 });
 
@@ -223,12 +204,10 @@ test('renders a card section into a non-contenteditable element', (assert) => {
   };
   post.sections.append(cardSection);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree, [card]);
 
-  let element = node.element.firstChild;
+  let element = renderTree.rootElement.firstChild;
   assert.equal(element.getAttribute('id'), 'my-card-div',
                'precond - correct element selected');
   assert.equal(element.contentEditable, 'false', 'is not contenteditable');
@@ -271,12 +250,10 @@ test('rerender a marker after adding a markup to it', (assert) => {
   section.markers.append(marker2);
   post.sections.append(section);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p><b>text1</b>text2</p>');
 
   marker2.addMarkup(b);
@@ -285,7 +262,7 @@ test('rerender a marker after adding a markup to it', (assert) => {
   // rerender
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p><b>text1text2</b></p>');
 });
 
@@ -300,12 +277,10 @@ test('rerender a marker after removing a markup from it', (assert) => {
   section.markers.append(marker2);
   post.sections.append(section);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p>text1<b>text2</b></p>');
 
   marker2.removeMarkup(bMarkup);
@@ -314,7 +289,7 @@ test('rerender a marker after removing a markup from it', (assert) => {
   // rerender
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p>text1text2</p>');
 });
 
@@ -329,12 +304,10 @@ test('rerender a marker after removing a markup from it (when changed marker is 
   section.markers.append(marker2);
   post.sections.append(section);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p><b>text1</b>text2</p>');
 
   marker1.removeMarkup(bMarkup);
@@ -343,7 +316,7 @@ test('rerender a marker after removing a markup from it (when changed marker is 
   // rerender
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p>text1text2</p>');
 });
 
@@ -358,12 +331,10 @@ test('rerender a marker after removing a markup from it (when both markers have 
   section.markers.append(marker2);
   post.sections.append(section);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p><b>text1text2</b></p>');
 
   marker1.removeMarkup(bMarkup);
@@ -372,7 +343,7 @@ test('rerender a marker after removing a markup from it (when both markers have 
   // rerender
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p>text1<b>text2</b></p>');
 });
 
@@ -387,12 +358,10 @@ test('rerender a marker after removing a markup from it (when both markers have 
   section.markers.append(marker2);
   post.sections.append(section);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p><b>text1text2</b></p>');
 
   marker1.removeMarkup(bMarkup);
@@ -401,7 +370,7 @@ test('rerender a marker after removing a markup from it (when both markers have 
   // rerender
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p>text1<b>text2</b></p>');
 });
 
@@ -422,12 +391,10 @@ test('render when contiguous markers have out-of-order markups', (assert) => {
   markers.forEach(m => section.markers.append(m));
   post.sections.append(section);
 
-  let node = new RenderNode(post);
-  let renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p><b><i>BI</i></b><i><b>IB</b></i>plain</p>');
 
   // remove 'b' from 1st marker, rerender
@@ -435,7 +402,7 @@ test('render when contiguous markers have out-of-order markups', (assert) => {
   m1.renderNode.markDirty();
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p><i>BI<b>IB</b></i>plain</p>');
 });
 
@@ -451,12 +418,10 @@ test('contiguous markers have overlapping markups', (assert) => {
   const section = builder.createMarkupSection('P', markers);
   post.sections.append(section);
 
-  const node = new RenderNode(post);
-  const renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                '<p><i>W<b>XY</b></i><b>Z</b></p>');
 });
 
@@ -470,9 +435,7 @@ test('renders and rerenders list items', (assert) => {
     ])
   );
 
-  const node = new RenderNode(post);
-  const renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
   const expectedDOM = Helpers.dom.build(t =>
@@ -483,20 +446,20 @@ test('renders and rerenders list items', (assert) => {
   );
   const expectedHTML = expectedDOM.outerHTML;
 
-  assert.equal(node.element.innerHTML, expectedHTML, 'correct html on initial render');
+  assert.equal(renderTree.rootElement.innerHTML, expectedHTML, 'correct html on initial render');
 
   // test rerender after dirtying list section
   const listSection = post.sections.head;
   listSection.renderNode.markDirty();
   render(renderTree);
-  assert.equal(node.element.innerHTML, expectedHTML, 'correct html on rerender after dirtying list-section');
+  assert.equal(renderTree.rootElement.innerHTML, expectedHTML, 'correct html on rerender after dirtying list-section');
 
   // test rerender after dirtying list item
   const listItem = post.sections.head.items.head;
   listItem.renderNode.markDirty();
   render(renderTree);
 
-  assert.equal(node.element.innerHTML, expectedHTML, 'correct html on rerender after diryting list-item');
+  assert.equal(renderTree.rootElement.innerHTML, expectedHTML, 'correct html on rerender after diryting list-item');
 });
 
 test('removes list items', (assert) => {
@@ -510,9 +473,7 @@ test('removes list items', (assert) => {
     ])
   );
 
-  const node = new RenderNode(post);
-  const renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
   // return HTML for a list with the given items
@@ -528,7 +489,7 @@ test('removes list items', (assert) => {
   listItem2.renderNode.scheduleForRemoval();
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                htmlWithItems(['first item', 'third item']),
                'removes middle list item');
 
@@ -537,7 +498,7 @@ test('removes list items', (assert) => {
   listItemLast.renderNode.scheduleForRemoval();
   render(renderTree);
 
-  assert.equal(node.element.innerHTML,
+  assert.equal(renderTree.rootElement.innerHTML,
                htmlWithItems(['first item']),
                'removes last list item');
 });
@@ -552,9 +513,7 @@ test('removes list sections', (assert) => {
     ])
   );
 
-  const node = new RenderNode(post);
-  const renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree);
 
   const expectedDOM = Helpers.dom.build(t =>
@@ -566,7 +525,7 @@ test('removes list sections', (assert) => {
   listSection.renderNode.scheduleForRemoval();
   render(renderTree);
 
-  assert.equal(node.element.innerHTML, expectedHTML, 'removes list section');
+  assert.equal(renderTree.rootElement.innerHTML, expectedHTML, 'removes list section');
 });
 
 test('includes card sections in renderTree element map', (assert) => {
@@ -582,17 +541,38 @@ test('includes card sections in renderTree element map', (assert) => {
     }
   }];
 
-  const node = new RenderNode(post);
-  const renderTree = new RenderTree(node);
-  node.renderTree = renderTree;
+  const renderTree = new RenderTree(post);
   render(renderTree, cards);
 
-  $('#qunit-fixture')[0].appendChild(node.element);
+  $('#qunit-fixture')[0].appendChild(renderTree.rootElement);
 
   const element = $('#simple-card')[0];
   assert.ok(!!element, 'precond - simple card is rendered');
   assert.ok(!!renderTree.getElementRenderNode(element),
             'has render node for card element');
+});
+
+test('removes nested children of removed render nodes', (assert) => {
+  let section;
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    section = markupSection('p', [marker('abc')]);
+    return post([section]);
+  });
+
+  const renderTree = new RenderTree(post);
+  render(renderTree);
+
+  const marker = section.markers.head;
+  assert.ok(!!section.renderNode, 'precond - section has render node');
+  assert.ok(!!marker.renderNode, 'precond - marker has render node');
+
+  section.renderNode.scheduleForRemoval();
+  render(renderTree);
+
+  assert.ok(!marker.renderNode.parent, 'marker render node is orphaned');
+  assert.ok(!marker.renderNode.element, 'marker render node has no element');
+  assert.equal(section.renderNode.childNodes.length, 0,
+               'section render node has all children removed');
 });
 
 /*
@@ -618,8 +598,8 @@ test("It renders a renderTree with rendered dirty section", (assert) => {
 
   render(renderTree);
 
-  assert.ok(renderTree.node.element, 'renderTree renders element for post');
-  assert.ok(!renderTree.node.isDirty, 'dirty node becomes clean');
-  assert.equal(renderTree.node.element.tagName, 'DIV', 'renderTree renders element for post');
+  assert.ok(renderTree.rootElement, 'renderTree renders element for post');
+  assert.ok(!renderTree.rootNode.isDirty, 'dirty node becomes clean');
+  assert.equal(renderTree.rootElement.tagName, 'DIV', 'renderTree renders element for post');
 });
 */

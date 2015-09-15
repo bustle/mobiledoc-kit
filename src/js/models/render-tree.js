@@ -2,20 +2,38 @@ import RenderNode from 'content-kit-editor/models/render-node';
 import ElementMap from "../utils/element-map";
 
 export default class RenderTree {
-  constructor(node) {
-    this.node = node;
-    this.elements = new ElementMap();
+  constructor(rootPostNode) {
+    this._rootNode = this.buildRenderNode(rootPostNode);
+    this._elements = new ElementMap();
   }
+  /*
+   * @return {RenderNode} The root render node in this tree
+   */
+  get rootNode() {
+    return this._rootNode;
+  }
+  /*
+   * @return {DOMNode} The root DOM element in this tree
+   */
   get rootElement() {
-    return this.node.element;
+    return this.rootNode.element;
   }
+  /*
+   * @param {DOMNode} element
+   * @return {RenderNode} The renderNode for this element, if any
+   */
   getElementRenderNode(element) {
-    return this.elements.get(element);
+    return this._elements.get(element);
   }
-  buildRenderNode(section) {
-    let renderNode = new RenderNode(section);
-    renderNode.renderTree = this;
-    section.renderNode = renderNode;
+  setElementRenderNode(element, renderNode) {
+    this._elements.set(element, renderNode);
+  }
+  removeElementRenderNode(element) {
+    this._elements.remove(element);
+  }
+  buildRenderNode(postNode) {
+    const renderNode = new RenderNode(postNode, this);
+    postNode.renderNode = renderNode;
     return renderNode;
   }
 }
