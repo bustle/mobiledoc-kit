@@ -413,3 +413,33 @@ test('selecting empty list items does not cause error', (assert) => {
   assert.hasElement('#editor li:contains(Xdef)', 'insert text');
   assert.equal($('#editor li').length, 2, 'inserting text deletes selected li');
 });
+
+// see https://github.com/bustlelabs/content-kit-editor/issues/128
+test('selecting list item and deleting leaves following section intact', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(builder => {
+    const {post, markupSection, listSection, listItem, marker} = builder;
+    return post([
+      listSection('ul', [
+        listItem([marker('abc')]), listItem()
+      ]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  createEditorWithMobiledoc(mobiledoc);
+
+  // precond
+  assert.hasElement('#editor p:contains(123)');
+  assert.hasElement('#editor li:contains(abc)');
+
+  const liTextNode  = $('#editor li:eq(0)')[0].childNodes[0];
+  const emptyLiNode = $('#editor li:eq(1)')[0];
+  assert.equal(liTextNode.textContent, 'abc'); // precond
+  Helpers.dom.moveCursorTo(liTextNode, 0, emptyLiNode, 0);
+  Helpers.dom.triggerDelete(editor);
+
+  assert.hasElement('#editor p', 'does not delete p');
+  Helpers.dom.insertText(editor, 'X');
+  assert.hasNoElement('#editor li:contains(abc)', 'li text is removed');
+  assert.hasElement('#editor li:contains(X)', 'text is inserted');
+});

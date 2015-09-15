@@ -276,3 +276,120 @@ test('#isBlank is true when there are no sections', (assert) => {
   _post.sections.append(_section);
   assert.ok(!_post.isBlank);
 });
+
+// see https://github.com/bustlelabs/content-kit-editor/issues/134
+test('#sectionsContainedBy when range covers two list items', (assert) => {
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, marker, listSection, listItem}) => {
+    return post([
+      listSection('ul', [listItem([marker('abc')]), listItem()]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+  const li1 = post.sections.head.items.head,
+        li2 = post.sections.head.items.tail;
+  const section = post.sections.tail;
+  assert.equal(li1.text, 'abc', 'precond - li1 text');
+  assert.equal(li2.text, '', 'precond - li2 text');
+  assert.equal(section.text, '123', 'precond - section text');
+
+  const range = Range.create(li1, 0, li2, li2.length);
+  const containedSections = post.sectionsContainedBy(range);
+  assert.equal(containedSections.length, 0, 'no sections are contained');
+});
+
+test('#sectionsContainedBy when range contains no sections', (assert) => {
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+  const s1 = post.sections.head,
+        s2 = post.sections.tail;
+  assert.equal(s1.text, 'abc', 'precond - s1 text');
+  assert.equal(s2.text, '123', 'precond - s2 text');
+
+  const range = Range.create(s1, 0, s2, s2.length);
+  const containedSections = post.sectionsContainedBy(range);
+  assert.equal(containedSections.length, 0, 'no sections are contained');
+});
+
+test('#sectionsContainedBy when range contains sections', (assert) => {
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('inner')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+  const s1 = post.sections.head,
+        sInner = post.sections.objectAt(1),
+        s2 = post.sections.tail;
+  assert.equal(s1.text, 'abc', 'precond - s1 text');
+  assert.equal(sInner.text, 'inner', 'precond - sInner text');
+  assert.equal(s2.text, '123', 'precond - s2 text');
+
+  const range = Range.create(s1, 0, s2, s2.length);
+  const containedSections = post.sectionsContainedBy(range);
+  assert.equal(containedSections.length, 1, '1 sections are contained');
+  assert.ok(containedSections[0] === sInner, 'inner section is contained');
+});
+
+test('#sectionsContainedBy when range contains non-markerable sections', (assert) => {
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, marker, cardSection, listSection, listItem}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      cardSection('test-card'),
+      listSection('ul', [listItem([marker('li')])]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+  const s1 = post.sections.head,
+        card = post.sections.objectAt(1),
+        list = post.sections.objectAt(2),
+        s2 = post.sections.tail;
+
+  assert.equal(s1.text, 'abc', 'precond - s1 text');
+  assert.equal(s2.text, '123', 'precond - s2 text');
+  const range = Range.create(s1, 0, s2, s2.length);
+  const containedSections = post.sectionsContainedBy(range);
+  assert.equal(containedSections.length, 2, '2 sections are contained');
+  assert.ok(containedSections.indexOf(card) !== -1, 'contains card');
+  assert.ok(containedSections.indexOf(list) !== -1, 'contains list');
+});
+
+test('#sectionsContainedBy when range starts/ends in list item', (assert) => {
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, marker, cardSection, listSection, listItem}) => {
+    return post([
+      listSection('ul', [
+        listItem([marker('ul1 li1')]),
+        listItem([marker('ul1 li2')])
+      ]),
+      markupSection('p', [marker('abc')]),
+      cardSection('test-card'),
+      listSection('ul', [
+        listItem([marker('ul2 li1')]),
+        listItem([marker('ul2 li2')])
+      ])
+    ]);
+  });
+  const li1 = post.sections.head.items.head,
+        li2 = post.sections.tail.items.tail,
+        s1  = post.sections.objectAt(1),
+        card = post.sections.objectAt(2);
+
+  assert.equal(li1.text, 'ul1 li1', 'precond - li1 text');
+  assert.equal(li2.text, 'ul2 li2', 'precond - li2 text');
+  assert.equal(s1.text, 'abc', 'precond - s1 text');
+
+  const range = Range.create(li1, li1.length, li2, li2.length);
+  const containedSections = post.sectionsContainedBy(range);
+  assert.equal(containedSections.length, 2, '2 sections are contained');
+  assert.ok(containedSections.indexOf(card) !== -1, 'contains card');
+  assert.ok(containedSections.indexOf(s1) !== -1, 'contains section');
+});
