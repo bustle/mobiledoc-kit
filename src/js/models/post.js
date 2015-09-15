@@ -126,8 +126,12 @@ export default class Post {
       }
     };
 
-    let headTopLevelSection = findParent(head.section, s => !!s.post);
-    let tailTopLevelSection = findParent(tail.section, s => !!s.post);
+    const headTopLevelSection = findParent(head.section, s => !!s.post);
+    const tailTopLevelSection = findParent(tail.section, s => !!s.post);
+
+    if (headTopLevelSection === tailTopLevelSection) {
+      return containedSections;
+    }
 
     let currentSection = headTopLevelSection.next;
     while (currentSection && currentSection !== tailTopLevelSection) {
