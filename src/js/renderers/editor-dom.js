@@ -50,6 +50,10 @@ function renderListItem() {
   return document.createElement('li');
 }
 
+function renderCursorPlaceholder() {
+  return document.createElement('br');
+}
+
 function renderCard() {
   const element = document.createElement('div');
   element.contentEditable = false;
@@ -146,7 +150,7 @@ class Visitor {
 
   [POST_TYPE](renderNode, post, visit) {
     if (!renderNode.element) {
-      let element = document.createElement('div');
+      const element = document.createElement('div');
       renderNode.element = element;
     }
     visit(renderNode, post.sections);
@@ -157,19 +161,17 @@ class Visitor {
 
     // Always rerender the section -- its tag name or attributes may have changed.
     // TODO make this smarter, only rerendering and replacing the element when necessary
-    let element = renderMarkupSection(section);
+    const element = renderMarkupSection(section);
     renderNode.element = element;
 
     attachRenderNodeElementToDOM(renderNode, element, originalElement);
     renderNode.renderTree.elements.set(element, renderNode);
 
-    if (section.markers.length) {
+    if (section.isBlank) {
+      renderNode.element.appendChild(renderCursorPlaceholder());
+    } else {
       const visitAll = true;
       visit(renderNode, section.markers, visitAll);
-    } else {
-      renderNode.renderTree.elements.set(renderNode.element, renderNode);
-      let br = document.createElement('br');
-      renderNode.element.appendChild(br);
     }
   }
 
@@ -192,13 +194,11 @@ class Visitor {
     attachRenderNodeElementToDOM(renderNode, element, null);
     renderNode.renderTree.elements.set(element, renderNode);
 
-    if (item.markers.length) {
+    if (item.isBlank) {
+      renderNode.element.appendChild(renderCursorPlaceholder());
+    } else {
       const visitAll = true;
       visit(renderNode, item.markers, visitAll);
-    } else {
-      renderNode.renderTree.elements.set(renderNode.element, renderNode);
-      let br = document.createElement('br');
-      renderNode.element.appendChild(br);
     }
   }
 
@@ -212,8 +212,9 @@ class Visitor {
     }
 
     const element = renderMarker(marker, parentElement, renderNode.prev);
-    renderNode.renderTree.elements.set(element, renderNode);
     renderNode.element = element;
+
+    renderNode.renderTree.elements.set(element, renderNode);
   }
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
@@ -246,8 +247,8 @@ class Visitor {
     renderNode.element = element;
 
     attachRenderNodeElementToDOM(renderNode, element, originalElement);
-
     renderNode.renderTree.elements.set(element, renderNode); 
+
     if (card) {
       const cardNode = new CardNode(editor, card, section, element, options);
       renderNode.cardNode = cardNode;
