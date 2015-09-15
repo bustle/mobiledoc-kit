@@ -190,6 +190,7 @@ class Visitor {
     renderNode.element = element;
 
     attachRenderNodeElementToDOM(renderNode, element, null);
+    renderNode.renderTree.elements.set(element, renderNode);
 
     if (item.markers.length) {
       const visitAll = true;
