@@ -512,3 +512,34 @@ test('selecting text that includes a 1-character marker and unbolding it', (asse
     done();
   });
 });
+
+// see https://github.com/bustlelabs/content-kit-editor/issues/128
+test('selecting text that includes an empty section and applying markup to it', (assert) => {
+  const done = assert.async();
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p')
+    ]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  // precond
+  assert.hasElement('#editor p:contains(abc)');
+  assert.ok($('#editor p:eq(1)').text() === '', 'no text in second p');
+  const t1 = $('#editor p:eq(0)')[0].childNodes[0];
+  assert.equal(t1.textContent, 'abc', 'correct text node');
+  const p2 = $('#editor p:eq(1)')[0];
+
+  Helpers.dom.moveCursorTo(t1, 0, p2, 0);
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    assert.toolbarVisible();
+    Helpers.toolbar.clickButton(assert, 'bold');
+
+    assert.hasElement('#editor p strong:contains(abc)', 'bold is applied to text');
+    done();
+  });
+});
