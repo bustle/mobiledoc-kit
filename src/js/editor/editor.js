@@ -367,6 +367,11 @@ class Editor {
     return this.cursor.activeSections;
   }
 
+  get activeSection() {
+    const { activeSections } = this;
+    return activeSections[activeSections.length - 1];
+  }
+
   get markupsInSelection() {
     if (this.cursor.hasSelection()) {
       const range = this.cursor.offsets;

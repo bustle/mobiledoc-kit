@@ -581,3 +581,18 @@ test('#replaceSection when section is null appends new section', (assert) => {
   assert.equal(post.sections.length, 1, 'has 1 section');
   assert.equal(post.sections.head.text, '', 'no text in new section');
 });
+
+test('#insertSectionAtEnd inserts the section at the end of the mobiledoc', (assert) => {
+  let newSection;
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    newSection = markupSection('p', [marker('123')]);
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  renderBuiltAbstract(post);
+
+  postEditor.insertSectionAtEnd(newSection);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 2, 'new section added');
+  assert.equal(post.sections.tail.text, '123', 'new section added at end');
+});
