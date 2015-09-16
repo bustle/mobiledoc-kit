@@ -77,7 +77,7 @@ class PostEditor {
             section.markersFor(tailSectionOffset, section.text.length).forEach(m => {
               headSection.markers.append(m);
             });
-            headSection.renderNode.markDirty(); // May have added nodes
+            this._markDirty(headSection); // May have added nodes
             removedSections.push(section);
             break;
           default:
@@ -90,9 +90,6 @@ class PostEditor {
     }
 
     this._coalesceMarkers(headSection);
-
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
   }
 
   cutSection(section, headSectionOffset, tailSectionOffset) {
@@ -152,17 +149,26 @@ class PostEditor {
   }
 
   removeMarker(marker) {
-    let didChange = false;
-    if (marker.renderNode) {
-      marker.renderNode.scheduleForRemoval();
-      didChange = true;
-    }
+    this._scheduleForRemoval(marker);
     if (marker.section) {
+      this._markDirty(marker.section);
       marker.section.markers.remove(marker);
-      didChange = true;
     }
+  }
 
-    if (didChange) {
+  _scheduleForRemoval(postNode) {
+    if (postNode.renderNode) {
+      postNode.renderNode.scheduleForRemoval();
+
+      this.scheduleRerender();
+      this.scheduleDidUpdate();
+    }
+  }
+
+  _markDirty(postNode) {
+    if (postNode.renderNode) {
+      postNode.renderNode.markDirty();
+
       this.scheduleRerender();
       this.scheduleDidUpdate();
     }
@@ -214,7 +220,7 @@ class PostEditor {
 
       if (prevSection) {
         const { beforeMarker } = prevSection.join(section);
-        prevSection.renderNode.markDirty();
+        this._markDirty(prevSection);
         this.removeSection(section);
 
         nextPosition.section = prevSection;
@@ -222,9 +228,6 @@ class PostEditor {
           prevSection.offsetOfMarker(beforeMarker, beforeMarker.length) : 0;
       }
     }
-
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
 
     return nextPosition;
   }
@@ -265,11 +268,8 @@ class PostEditor {
       const next = section.immediatelyNextMarkerableSection();
       if (next) {
         section.join(next);
-        section.renderNode.markDirty();
+        this._markDirty(section);
         this.removeSection(next);
-
-        this.scheduleRerender();
-        this.scheduleDidUpdate();
       }
     }
 
@@ -293,19 +293,16 @@ class PostEditor {
           const currentSection = marker.section;
 
           currentSection.join(nextSection);
-          currentSection.renderNode.markDirty();
+          this._markDirty(currentSection);
 
           this.removeSection(nextSection);
         }
       }
     } else {
       marker.deleteValueAtOffset(offset);
-      marker.renderNode.markDirty();
+      this._markDirty(marker);
       this._coalesceMarkers(marker.section);
     }
-
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
 
     return nextPosition;
   }
@@ -325,6 +322,7 @@ class PostEditor {
    * delete 1 character in the BACKWARD direction from the given position
    * @method _deleteBackwardFrom
    * @param {Position} position
+   * @return {Position} The position the cursor should be put after this deletion
    * @private
    */
   _deleteBackwardFrom(position) {
@@ -341,10 +339,8 @@ class PostEditor {
 
     marker.deleteValueAtOffset(offsetToDeleteAt);
     nextPosition.offset -= 1;
-    marker.renderNode.markDirty();
+    this._markDirty(marker);
     this._coalesceMarkers(marker.section);
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
 
     return nextPosition;
   }
@@ -367,36 +363,20 @@ class PostEditor {
    * @method splitMarkers
    * @param {Range} markerRange
    * @return {Array} of markers that are inside the split
-   * @public
+   * @private
    */
   splitMarkers(range) {
     const { post } = this.editor;
     const {
-      headSection,
-      tailSection,
-      headMarker,
-      headMarkerOffset,
-      tailMarker,
-      tailMarkerOffset
+      head: {section: headSection, offset: headSectionOffset},
+      tail: {section: tailSection, offset: tailSectionOffset}
     } = range;
 
-    // These render nodes will be removed by the split functions. Mark them
-    // for removal before doing that. FIXME this seems prime for
-    // refactoring onto the postEditor as a split function
-    headMarker.renderNode.scheduleForRemoval();
-    tailMarker.renderNode.scheduleForRemoval();
-    headMarker.section.renderNode.markDirty();
-    tailMarker.section.renderNode.markDirty();
+    const headEdit = headSection.splitMarkerAtOffset(headSectionOffset);
+    const tailEdit = tailSection.splitMarkerAtOffset(tailSectionOffset);
 
-    if (headMarker === tailMarker) {
-      headSection.splitMarker(headMarker, headMarkerOffset, tailMarkerOffset);
-    } else {
-      headSection.splitMarker(headMarker, headMarkerOffset);
-      tailSection.splitMarker(tailMarker, 0, tailMarkerOffset);
-    }
-
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
+    headEdit.removed.forEach(m => this.removeMarker(m));
+    tailEdit.removed.forEach(m => this.removeMarker(m));
 
     return post.markersContainedByRange(range);
   }
@@ -416,15 +396,11 @@ class PostEditor {
       beforeMarker = builder.createMarker(marker.value.substring(0, offset), marker.markups);
       afterMarker = builder.createMarker(marker.value.substring(offset, marker.length), marker.markups);
       section.markers.splice(marker, 1, [beforeMarker, afterMarker]);
-      if (marker.renderNode) {
-        marker.renderNode.scheduleForRemoval();
-      }
-      if (section.renderNode) {
-        section.renderNode.markDirty();
-      }
+
+      this.removeMarker(marker);
+      this._markDirty(section);
     }
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
+
     return { beforeMarker, afterMarker };
   }
 
@@ -475,9 +451,6 @@ class PostEditor {
     }
 
     this._replaceSection(section, replacementSections);
-
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
 
     // FIXME we must return 2 sections because other code expects this to always return 2
     return newSections;
@@ -543,11 +516,8 @@ class PostEditor {
     const markers = this.splitMarkers(markerRange);
     markers.forEach(marker => {
       marker.addMarkup(markup);
-      marker.section.renderNode.markDirty();
+      this._markDirty(marker.section);
     });
-
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
 
     return markers;
   }
@@ -580,11 +550,8 @@ class PostEditor {
     const markers = this.splitMarkers(range);
     markers.forEach(marker => {
       marker.removeMarkup(markupOrMarkupCallback);
-      marker.section.renderNode.markDirty();
+      this._markDirty(marker.section);
     });
-
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
 
     return markers;
   }
@@ -612,10 +579,7 @@ class PostEditor {
    */
   insertSectionBefore(collection, section, beforeSection) {
     collection.insertBefore(section, beforeSection);
-    section.parent.renderNode.markDirty();
-
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
+    this._markDirty(section.parent);
   }
 
   /**
@@ -643,8 +607,7 @@ class PostEditor {
       return;
     }
 
-    section.renderNode.scheduleForRemoval();
-
+    this._scheduleForRemoval(section);
     parent.sections.remove(section);
 
     if (parent.isBlank && parent.type !== POST_TYPE) {
@@ -652,9 +615,6 @@ class PostEditor {
       // also remove the parent
       this.removeSection(parent);
     }
-
-    this.scheduleRerender();
-    this.scheduleDidUpdate();
   }
 
   /**

@@ -87,6 +87,27 @@ export default class Markerable extends Section {
     throw new Error('splitAtMarker must be implemented by sub-class');
   }
 
+  /**
+   * Split this section's marker (if any) at the given offset, so that
+   * there is now a marker boundary at that offset (useful for later applying
+   * a markup to a range)
+   * @param {Number} sectionOffset The offset relative to start of this section
+   * @return {EditObject} An edit object with 'removed' and 'added' keys with arrays of Markers
+   */
+  splitMarkerAtOffset(sectionOffset) {
+    const edit = {removed:[], added:[]};
+    const {marker,offset} = this.markerPositionAtOffset(sectionOffset);
+    if (!marker) { return edit; }
+
+    const newMarkers = filter(marker.split(offset), m => !m.isEmpty);
+    this.markers.splice(marker, 1, newMarkers);
+
+    edit.removed = [marker];
+    edit.added = newMarkers;
+
+    return edit;
+  }
+
   splitAtPosition(position) {
     const {marker, offsetInMarker} = position;
     return this.splitAtMarker(marker, offsetInMarker);
