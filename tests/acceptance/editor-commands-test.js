@@ -232,19 +232,7 @@ Helpers.skipInPhantom('highlight text, click "link" button shows input for URL, 
 
     setTimeout(() => {
       assert.hasElement(`#editor a[href="${url}"]:contains(${selectedText})`);
-
-      Helpers.dom.insertText(editor, 'X');
-
-      assert.hasElement(`#editor p:contains(${selectedText}X)`,
-                        'inserts text after selected text');
-      assert.hasNoElement(`#editor a:contains(${selectedText}X)`,
-                        'inserted text does not extend "a" tag');
-
-      Helpers.dom.insertText(editor, 'X');
-      assert.hasElement(`#editor p:contains(${selectedText}XX)`,
-                        'inserts text after selected text again');
-
-      Helpers.dom.selectText(selectedText, editorElement);
+      assert.selectedText(selectedText, 'text remains selected');
       Helpers.dom.triggerEvent(document, 'mouseup');
 
       setTimeout(() => {

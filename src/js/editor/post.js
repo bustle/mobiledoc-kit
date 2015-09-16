@@ -1,6 +1,6 @@
 import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
-import { filter, compact } from '../utils/array-utils';
+import { any, filter, compact } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 
 function isMarkupSection(section) {
@@ -24,6 +24,7 @@ class PostEditor {
     this.editor = editor;
     this.builder = this.editor.builder;
     this._completionWorkQueue = [];
+    this._afterRenderQueue = [];
     this._didRerender = false;
     this._didUpdate = false;
     this._didComplete = false;
@@ -544,7 +545,7 @@ class PostEditor {
    * @param {Range} range Object with offsets
    * @param {Markup} markup A markup post abstract node
    * @return {Array} of markers that are inside the split
-   * @public
+   * @private
    */
   removeMarkupFromRange(range, markupOrMarkupCallback) {
     const markers = this.splitMarkers(range);
@@ -554,6 +555,45 @@ class PostEditor {
     });
 
     return markers;
+  }
+
+  /**
+   * Toggle the given markup on the current selection. If anything in the current
+   * selection has the markup, it will be removed. If nothing in the selection
+   * has the markup, it will be added to everything in the selection.
+   *
+   * Usage:
+   *
+   * // Remove any 'strong' markup if it exists in the selection, otherwise
+   * // make it all 'strong'
+   * editor.run(postEditor => postEditor.toggleMarkup('strong'));
+   *
+   * // add/remove a link to 'bustle.com' to the selection
+   * editor.run(postEditor => {
+   *   const linkMarkup = postEditor.builder.createMarkup('a', ['href', 'http://bustle.com']);
+   *   postEditor.toggleMarkup(linkMarkup);
+   * });
+   *
+   * @method toggleMarkup
+   * @param {Markup|String} markupOrString Either a markup object created using
+   * the builder (useful when adding a markup with attributes, like an 'a' markup),
+   * or, if a string, the tag name of the markup (e.g. 'strong', 'em') to toggle.
+   */
+  toggleMarkup(markupOrMarkupString) {
+    const markup = typeof markupOrMarkupString === 'string' ?
+                     this.builder.createMarkup(markupOrMarkupString) :
+                     markupOrMarkupString;
+
+    const range = this.editor.cursor.offsets;
+    const hasMarkup = m => m.hasTag(markup.tagName);
+    const rangeHasMarkup = any(this.editor.markupsInSelection, hasMarkup);
+
+    if (rangeHasMarkup) {
+      this.removeMarkupFromRange(range, hasMarkup);
+    } else {
+      this.applyMarkupToRange(range, markup);
+    }
+    this.scheduleAfterRender(() => this.editor.selectRange(range));
   }
 
   /**
@@ -580,6 +620,31 @@ class PostEditor {
   insertSectionBefore(collection, section, beforeSection) {
     collection.insertBefore(section, beforeSection);
     this._markDirty(section.parent);
+  }
+
+  /**
+   * Insert the given section after the current active section, or, if no
+   * section is active, at the end of the document.
+   * @method insertSection
+   * @param {Section} section
+   * @public
+   */
+  insertSection(section) {
+    const activeSection = this.editor.activeSection;
+    const nextSection = activeSection && activeSection.next;
+
+    const collection = this.editor.post.sections;
+    this.insertSectionBefore(collection, section, nextSection);
+  }
+
+  /**
+   * Insert the given section at the end of the document.
+   * @method insertSectionAtEnd
+   * @param {Section} section
+   * @public
+   */
+  insertSectionAtEnd(section) {
+    this.insertSectionBefore(this.editor.post.sections, section, null);
   }
 
   /**
@@ -661,6 +726,10 @@ class PostEditor {
     });
   }
 
+  scheduleAfterRender(callback) {
+    this._afterRenderQueue.push(callback);
+  }
+
   /**
    * Flush any work on the queue. `editor.run` already does this, calling this
    * method directly should not be needed outside `editor.run`.
@@ -673,9 +742,8 @@ class PostEditor {
       throw new Error('Post editing can only be completed once');
     }
     this._didComplete = true;
-    this._completionWorkQueue.forEach(callback => {
-      callback();
-    });
+    this._completionWorkQueue.forEach(cb => cb());
+    this._afterRenderQueue.forEach(cb => cb());
   }
 }
 
