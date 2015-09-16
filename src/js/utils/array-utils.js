@@ -69,6 +69,29 @@ function reduce(enumerable, callback, initialValue) {
   return previousValue;
 }
 
+/**
+ * @param {Array} array of key1,value1,key2,value2,...
+ * @return {Object} {key1:value1, key2:value2, ...}
+ */
+function kvArrayToObject(array) {
+  const obj = {};
+  for (let i = 0; i < array.length; i+=2) {
+    let [key, value] = [array[i], array[i+1]];
+    obj[key] = value;
+  }
+  return obj;
+}
+
+function objectToSortedKVArray(obj) {
+  const keys = Object.keys(obj).sort();
+  const result = [];
+  keys.forEach(k => {
+    result.push(k);
+    result.push(obj[k]);
+  });
+  return result;
+}
+
 export {
   detect,
   forEach,
@@ -76,5 +99,7 @@ export {
   filter,
   commonItemLength,
   compact,
-  reduce
+  reduce,
+  objectToSortedKVArray,
+  kvArrayToObject
 };

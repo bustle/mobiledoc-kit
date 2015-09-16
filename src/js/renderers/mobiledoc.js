@@ -1,4 +1,5 @@
 import {visit, visitArray, compile} from '../utils/compiler';
+import { objectToSortedKVArray } from '../utils/array-utils';
 import {
   POST_TYPE,
   MARKUP_SECTION_TYPE,
@@ -44,7 +45,7 @@ const visitor = {
     visitArray(visitor, node.openedMarkups, opcodes);
   },
   [MARKUP_TYPE](node, opcodes) {
-    opcodes.push(['openMarkup', node.tagName, node.attributes]);
+    opcodes.push(['openMarkup', node.tagName, objectToSortedKVArray(node.attributes)]);
   }
 };
 
@@ -84,21 +85,24 @@ const postOpcodeCompiler = {
     };
   },
   openMarkup(tagName, attributes) {
-    if (!this._seenMarkerTypes) {
-      this._seenMarkerTypes = {};
-    }
-    let index;
-    if (attributes.length) {
-      this.markerTypes.push([tagName, attributes]);
-      index = this.markerTypes.length - 1;
-    } else {
-      index = this._seenMarkerTypes[tagName];
-      if (index === undefined) {
-        this.markerTypes.push([tagName]);
-        this._seenMarkerTypes[tagName] = index = this.markerTypes.length-1;
-      }
-    }
+    const index = this._findOrAddMarkerTypeIndex(tagName, attributes);
     this.markupMarkerIds.push(index);
+  },
+  _findOrAddMarkerTypeIndex(tagName, attributesArray) {
+    if (!this._markerTypeCache) { this._markerTypeCache = {}; }
+    const key = `${tagName}-${attributesArray.join('-')}`;
+
+    let index = this._markerTypeCache[key];
+    if (index === undefined) {
+      let markerType = [tagName];
+      if (attributesArray.length) { markerType.push(attributesArray); }
+      this.markerTypes.push(markerType);
+
+      index =  this.markerTypes.length - 1;
+      this._markerTypeCache[key] = index;
+    }
+
+    return index;
   }
 };
 

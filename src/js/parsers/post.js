@@ -6,7 +6,7 @@ import {
 
 import SectionParser from 'content-kit-editor/parsers/section';
 import { forEach } from 'content-kit-editor/utils/array-utils';
-import { getAttributesArray, walkTextNodes } from '../utils/dom-utils';
+import { getAttributes, walkTextNodes } from '../utils/dom-utils';
 import Markup from 'content-kit-editor/models/markup';
 
 export default class PostParser {
@@ -51,9 +51,8 @@ export default class PostParser {
   // Turn an element node into a markup
   markupFromNode(node) {
     if (Markup.isValidElement(node)) {
-      let tagName = node.tagName;
-      let attributes = getAttributesArray(node);
-
+      const tagName = node.tagName;
+      const attributes = getAttributes(node);
       return this.builder.createMarkup(tagName, attributes);
     }
   }

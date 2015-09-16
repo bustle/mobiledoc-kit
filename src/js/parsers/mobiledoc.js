@@ -4,7 +4,7 @@ import {
   MOBILEDOC_LIST_SECTION_TYPE,
   MOBILEDOC_CARD_SECTION_TYPE
 } from '../renderers/mobiledoc';
-import { filter } from "../utils/array-utils";
+import { kvArrayToObject, filter } from "../utils/array-utils";
 
 /*
  * input mobiledoc: [ markers, elements ]
@@ -33,8 +33,9 @@ export default class MobiledocParser {
     return markerTypes.map((markerType) => this.parseMarkerType(markerType));
   }
 
-  parseMarkerType([tagName, attributes]) {
-    return this.builder.createMarkup(tagName, attributes);
+  parseMarkerType([tagName, attributesArray]) {
+    const attributesObject = kvArrayToObject(attributesArray || []);
+    return this.builder.createMarkup(tagName, attributesObject);
   }
 
   parseSections(sections, post) {

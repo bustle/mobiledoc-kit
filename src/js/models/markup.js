@@ -12,10 +12,13 @@ export const VALID_MARKUP_TAGNAMES = [
 
 class Markup {
   /*
-   * @param {attributes} array flat array of key1,value1,key2,value2,...
+   * @param {Object} attributes key-values
    */
-  constructor(tagName, attributes=[]) {
+  constructor(tagName, attributes={}) {
     this.tagName = normalizeTagName(tagName);
+    if (Array.isArray(attributes)) {
+      throw new Error('Must use attributes object param (not array) to Markup');
+    }
     this.attributes = attributes;
     this.type = MARKUP_TYPE;
 
@@ -25,12 +28,11 @@ class Markup {
   }
 
   hasTag(tagName) {
-    tagName = normalizeTagName(tagName);
-    return this.tagName === tagName;
+    return this.tagName === normalizeTagName(tagName);
   }
 
   static isValidElement(element) {
-    let tagName = normalizeTagName(element.tagName);
+    const tagName = normalizeTagName(element.tagName);
     return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
   }
 }

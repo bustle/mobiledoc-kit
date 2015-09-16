@@ -4,8 +4,9 @@ import {
 } from 'content-kit-editor/renderers/mobiledoc';
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import { normalizeTagName } from 'content-kit-editor/utils/dom-utils';
+import Helpers from '../../test-helpers';
 
-const { module, test } = window.QUnit;
+const { module, test } = Helpers;
 const render = MobiledocRenderer.render;
 let builder;
 
@@ -25,52 +26,35 @@ test('renders a blank post', (assert) => {
 });
 
 test('renders a post with marker', (assert) => {
-  let post = builder.createPost();
-  let section = builder.createMarkupSection('P');
-  post.sections.append(section);
-  section.markers.append(
-    builder.createMarker('Hi', [
-      builder.createMarkup('STRONG')
-    ])
-  );
-  let mobiledoc = render(post);
+  const post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    return post([
+      markupSection('p', [marker('Hi', [markup('strong')])])
+    ]);
+  });
+  const mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {
     version: MOBILEDOC_VERSION,
     sections: [
+      [['strong']],
       [
-        ['strong']
-      ],
-      [
-        [1, normalizeTagName('P'), [
-          [[0], 1, 'Hi']
-        ]]
+        [1, normalizeTagName('P'), [[[0], 1, 'Hi']]]
       ]
     ]
   });
 });
 
 test('renders a post section with markers sharing a markup', (assert) => {
-  let post = builder.createPost();
-  let section = builder.createMarkupSection('P');
-  post.sections.append(section);
-  let markup = builder.createMarkup('STRONG');
-  section.markers.append(
-    builder.createMarker('Hi', [
-      markup
-    ])
-  );
-  section.markers.append(
-    builder.createMarker(' Guy', [
-      markup
-    ])
-  );
+  const post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    const strong = markup('strong');
+    return post([
+      markupSection('p', [marker('Hi', [strong]), marker(' Guy', [strong])])
+    ]);
+  });
   let mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {
     version: MOBILEDOC_VERSION,
     sections: [
-      [
-        ['strong']
-      ],
+      [['strong']],
       [
         [1, normalizeTagName('P'), [
           [[0], 0, 'Hi'],
@@ -80,6 +64,40 @@ test('renders a post section with markers sharing a markup', (assert) => {
     ]
   });
 });
+
+test('renders a post with markers with markers with complex attributes', (assert) => {
+  let link1,link2;
+ const post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    link1 = markup('a', {href:'bustle.com'});
+    link2 = markup('a', {href:'other.com'});
+    return post([
+      markupSection('p', [
+        marker('Hi', [link1]),
+        marker(' Guy', [link2]),
+        marker(' other guy', [link1])
+      ])
+    ]);
+  });
+  let mobiledoc = render(post);
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [
+        ['a', ['href', 'bustle.com']],
+        ['a', ['href', 'other.com']]
+      ],
+      [
+        [1, normalizeTagName('P'), [
+          [[0], 1, 'Hi'],
+          [[1], 1, ' Guy'],
+          [[0], 1, ' other guy']
+        ]]
+      ]
+    ]
+  });
+
+});
+
 
 test('renders a post with image', (assert) => {
   let url = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";

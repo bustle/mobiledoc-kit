@@ -93,7 +93,6 @@ export default class SectionParser {
   markupFromElement(element) {
     const tagName = normalizeTagName(element.tagName);
     if (VALID_MARKUP_TAGNAMES.indexOf(tagName) === -1) { return null; }
-
     return this.builder.createMarkup(tagName, getAttributes(element));
   }
 

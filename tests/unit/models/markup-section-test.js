@@ -20,20 +20,6 @@ test('a section can append a marker', (assert) => {
   assert.equal(s1.markers.length, 1);
 });
 
-test('postNodeBuilder#createMarkup returns a singleton object when it has no attributes', (assert) => {
-  let markup = builder.createMarkup('b');
-
-  let others = [
-    builder.createMarkup('B'),
-    builder.createMarkup('B', []),
-    builder.createMarkup('b', [])
-  ];
-
-  others.forEach(other => {
-    assert.ok(markup === other, 'markup is the same object');
-  });
-});
-
 test('#splitMarker splits the marker at the offset', (assert) => {
   const m1 = builder.createMarker('hi ');
   const m2 = builder.createMarker('there!');

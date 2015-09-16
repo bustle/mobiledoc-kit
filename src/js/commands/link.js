@@ -9,9 +9,9 @@ export default class LinkCommand extends TextFormatCommand {
     });
   }
 
-  exec(url) {
+  exec(href) {
     this.editor.run(postEditor => {
-      const markup = postEditor.builder.createMarkup('a', ['href', url]);
+      const markup = postEditor.builder.createMarkup('a', {href});
       this.editor.run(postEditor => postEditor.toggleMarkup(markup));
     });
   }
