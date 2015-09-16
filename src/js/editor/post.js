@@ -1,3 +1,6 @@
+import {
+  DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME
+} from '../models/markup-section';
 import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
 import { any, filter, compact } from '../utils/array-utils';
@@ -594,6 +597,19 @@ class PostEditor {
       this.applyMarkupToRange(range, markup);
     }
     this.scheduleAfterRender(() => this.editor.selectRange(range));
+  }
+
+  changeSectionTagName(section, newTagName) {
+    section.markers.forEach(m => {
+      m.clearMarkups();
+      this._markDirty(m);
+    });
+    section.setTagName(newTagName);
+    this._markDirty(section);
+  }
+
+  resetSectionTagName(section) {
+    this.changeSectionTagName(section, DEFAULT_MARKUP_SECTION_TAG_NAME);
   }
 
   /**

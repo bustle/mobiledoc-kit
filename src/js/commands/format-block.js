@@ -11,30 +11,25 @@ class FormatBlockCommand extends TextFormatCommand {
   }
 
   exec() {
-    const editor = this.editor;
-    const activeSections = editor.activeSections;
-
-    activeSections.forEach(s => {
-      editor.resetSectionMarkers(s);
-      editor.setSectionTagName(s, this.tag);
+    const { editor } = this;
+    editor.run(postEditor => {
+      const activeSections = editor.activeSections;
+      activeSections.forEach(s => postEditor.changeSectionTagName(s, this.tag));
+      postEditor.scheduleAfterRender(() => {
+        editor.selectSections(activeSections);
+      });
     });
-
-    editor.rerender();
-    editor.selectSections(activeSections);
-    this.editor.didUpdate();
   }
 
   unexec() {
-    const editor = this.editor;
-    const activeSections = editor.activeSections;
-
-    activeSections.forEach(s => {
-      editor.resetSectionTagName(s);
+    const { editor } = this;
+    editor.run(postEditor => {
+      const activeSections = editor.activeSections;
+      activeSections.forEach(s => postEditor.resetSectionTagName(s));
+      postEditor.scheduleAfterRender(() => {
+        editor.selectSections(activeSections);
+      });
     });
-
-    editor.rerender();
-    editor.selectSections(activeSections);
-    this.editor.didUpdate();
   }
 }
 
