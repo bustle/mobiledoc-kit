@@ -101,15 +101,6 @@ function positionElementToRightOf(element, rightOfElement) {
   return positionElementToRect(element, rightOfElementRect, -verticalCenter, -rightOfElement.offsetWidth - elementMargin);
 }
 
-function getData(element, name) {
-  if (element.dataset) {
-    return element.dataset[name];
-  } else {
-    const dataName = dasherize(name);
-    return element.getAttribute(dataName);
-  }
-}
-
 function setData(element, name, value) {
   if (element.dataset) {
     element.dataset[name] = value;
@@ -120,7 +111,6 @@ function setData(element, name, value) {
 }
 
 export {
-  getData,
   setData,
   createDiv,
   hideElement,

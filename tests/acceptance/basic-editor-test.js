@@ -41,6 +41,17 @@ test('#disableEditing before render is meaningful', (assert) => {
                'element is contenteditable');
 });
 
+test('when editing is disabled, the placeholder is not shown', (assert) => {
+  editor = new Editor({placeholder: 'the placeholder'});
+  editor.disableEditing();
+  editor.render(editorElement);
+
+  assert.ok(!$('#editor').data('placeholder'), 'no placeholder when disabled');
+  editor.enableEditing();
+  assert.equal($('#editor').data('placeholder'), 'the placeholder',
+               'placeholder is shown when editable');
+});
+
 test('#disableEditing and #enableEditing toggle contenteditable', (assert) => {
   editor = new Editor();
   editor.render(editorElement);
