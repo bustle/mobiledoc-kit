@@ -84,14 +84,23 @@ function containsNode(parentNode, childNode) {
 /**
  * converts the element's NamedNodeMap of attrs into
  * an object with key-value pairs
- * FIXME should add a whitelist as a second arg
+ * @param {DOMNode} element
+ * @param {Array} whitelist optional, an array of attributes to constrain to.
+ * If not passed (or empty), all attributes are allowed.
+ * @return {Object} key-value pairs
  */
-function getAttributes(element) {
-  let result = {};
+function getAttributes(element, whitelist=[]) {
+  const allowed = attrName => {
+    return whitelist.length === 0 ? true : whitelist.indexOf(attrName) !== -1;
+  };
+  const result = {};
   if (element.hasAttributes()) {
-    let attributes = element.attributes;
-
-    forEach(attributes, ({name,value}) => result[name] = value);
+    const attributes = element.attributes;
+    forEach(attributes, ({name,value}) => {
+      if (allowed(name)) {
+        result[name] = value;
+      }
+    });
   }
   return result;
 }

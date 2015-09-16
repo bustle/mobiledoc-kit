@@ -104,8 +104,8 @@ test('#markupsInRange returns all markups', (assert) => {
 
     b  = markup('strong');
     i  = markup('em');
-    a1 = markup('a', ['href', 'example.com']);
-    a2 = markup('a', ['href', 'other-example.com']);
+    a1 = markup('a', {href:'example.com'});
+    a2 = markup('a', {href:'other-example.com'});
 
     return post([
       markupSection('p', [

@@ -1,7 +1,7 @@
 import { trim } from 'content-kit-utils';
 import { VALID_MARKUP_SECTION_TAGNAMES } from '../models/markup-section';
 import { VALID_MARKUP_TAGNAMES } from '../models/markup';
-import { normalizeTagName } from '../utils/dom-utils';
+import { getAttributes, normalizeTagName } from '../utils/dom-utils';
 
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
@@ -10,48 +10,6 @@ const ALLOWED_ATTRIBUTES = ['href', 'rel', 'src'];
 
 function isEmptyTextNode(node) {
   return node.nodeType === TEXT_NODE && trim(node.textContent) === '';
-}
-
-// FIXME we need sorted attributes for deterministic tests. This is not
-// a particularly elegant method, since it loops at least 3 times.
-function sortAttributes(attributes) {
-  let keyValueAttributes = [];
-  let currentKey;
-  attributes.forEach((keyOrValue, index) => {
-    if (index % 2 === 0) {
-      currentKey = keyOrValue;
-    } else {
-      keyValueAttributes.push({key:currentKey, value:keyOrValue});
-    }
-  });
-  keyValueAttributes.sort((a,b) => {
-    return a.key === b.key ? 0 :
-      a.key > b.key ? 1 : - 1;
-  });
-  let sortedAttributes = [];
-  keyValueAttributes.forEach(({key, value}) => {
-    sortedAttributes.push(key, value);
-  });
-  return sortedAttributes;
-}
-
-/**
- * @return {array} attributes as key1,value1,key2,value2,etc
- */
-function readAttributes(node) {
-  var attributes = [];
-
-  if (node.hasAttributes()) {
-    var i, l;
-    for (i=0,l=node.attributes.length;i<l;i++) {
-      if (ALLOWED_ATTRIBUTES.indexOf(node.attributes[i].name) !== -1) {
-        attributes.push(node.attributes[i].name);
-        attributes.push(node.attributes[i].value);
-      }
-    }
-  }
-
-  return sortAttributes(attributes);
 }
 
 function isValidMarkerElement(element) {
@@ -67,7 +25,8 @@ function parseMarkers(section, builder, topNode) {
     switch(currentNode.nodeType) {
     case ELEMENT_NODE:
       if (isValidMarkerElement(currentNode)) {
-        markups.push(builder.createMarkup(currentNode.tagName, readAttributes(currentNode)));
+        const attributes = getAttributes(currentNode, ALLOWED_ATTRIBUTES);
+        markups.push(builder.createMarkup(currentNode.tagName, attributes));
       }
       break;
     case TEXT_NODE:

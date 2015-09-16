@@ -107,7 +107,7 @@ test('#parse doc with marker type', (assert) => {
   const parsed = parser.parse(mobiledoc);
 
   let section = builder.createMarkupSection('P', [], false);
-  let aMarkerType = builder.createMarkup('A', ['href', 'google.com']);
+  let aMarkerType = builder.createMarkup('A', {href:'google.com'});
   let bMarkerType = builder.createMarkup('B');
 
   let markers  = [

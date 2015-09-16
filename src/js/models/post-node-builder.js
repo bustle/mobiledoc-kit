@@ -7,6 +7,7 @@ import Marker from '../models/marker';
 import Markup from '../models/markup';
 import Card from '../models/card';
 import { normalizeTagName } from '../utils/dom-utils';
+import { objectToSortedKVArray } from '../utils/array-utils';
 import {
   DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME
 } from '../models/markup-section';
@@ -14,6 +15,19 @@ import {
 import {
   DEFAULT_TAG_NAME as DEFAULT_LIST_SECTION_TAG_NAME
 } from '../models/list-section';
+
+function cacheKey(tagName, attributes) {
+  return `${normalizeTagName(tagName)}-${objectToSortedKVArray(attributes).join('-')}`;
+}
+
+function addMarkupToCache(cache, markup) {
+  cache[cacheKey(markup.tagName, markup.attributes)] = markup;
+}
+
+function findMarkupInCache(cache, tagName, attributes) {
+  const key = cacheKey(tagName, attributes);
+  return cache[key];
+}
 
 export default class PostNodeBuilder {
   constructor() {
@@ -75,25 +89,19 @@ export default class PostNodeBuilder {
     return marker;
   }
 
-  // Attributes is an array of [key1, value1, key2, value2, ...]
-  createMarkup(tagName, attributes=[]) {
+  /**
+   * @param {Object} attributes {key:value}
+   */
+  createMarkup(tagName, attributes={}) {
     tagName = normalizeTagName(tagName);
 
-    let markup;
-
-    if (attributes.length) {
-      // FIXME: This could also be cached
+    let markup = findMarkupInCache(this.markupCache, tagName, attributes);
+    if (!markup) {
       markup = new Markup(tagName, attributes);
-    } else {
-      markup = this.markupCache[tagName];
-
-      if (!markup) {
-        markup = new Markup(tagName, attributes);
-        this.markupCache[tagName] = markup;
-      }
+      markup.builder = this;
+      addMarkupToCache(this.markupCache, markup);
     }
 
-    markup.builder = this;
     return markup;
   }
 }

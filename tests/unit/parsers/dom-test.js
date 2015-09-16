@@ -149,7 +149,7 @@ test('a tag (stray markup) without a block should create a block', (assert) => {
 
   let expectedFirst = builder.createMarkupSection('P', [], true);
   expectedFirst.markers.append(builder.createMarker('text', [
-    builder.createMarkup('A', ['href', url])
+    builder.createMarkup('A', {href:url})
   ]));
   expectedPost.sections.append(expectedFirst);
 
@@ -352,7 +352,7 @@ test('attributes', (assert) => {
 
   let expectedFirst = builder.createMarkupSection('P');
   expectedFirst.markers.append(builder.createMarker('Link to google.com', [
-    builder.createMarkup('A', ['href', href, 'rel', rel])
+    builder.createMarkup('A', {href, rel})
   ]));
   expectedPost.sections.append(expectedFirst);
 

@@ -17,11 +17,9 @@ export const SPACE = ' ';
 
 function createElementFromMarkup(doc, markup) {
   var element = doc.createElement(markup.tagName);
-  if (markup.attributes) {
-    for (var i=0, l=markup.attributes.length;i<l;i=i+2) {
-      element.setAttribute(markup.attributes[i], markup.attributes[i+1]);
-    }
-  }
+  Object.keys(markup.attributes).forEach(k => {
+    element.setAttribute(k, markup.attributes[k]);
+  });
   return element;
 }
 
