@@ -154,3 +154,22 @@ test('clicking in empty mobiledoc shows embed intent', (assert) => {
     });
   });
 });
+
+test('when editing is disabled, embedIntent does not show', (assert) => {
+  const done = assert.async();
+  const mobiledoc = Helpers.mobiledoc.build(({post}) => post());
+  editor = new Editor({mobiledoc});
+  editor.disableEditing();
+  editor.render(editorElement);
+
+  assert.hasElement('#editor', 'precond - editor');
+  assert.hasNoElement('#editor p', 'precond - editor has no p');
+
+  Helpers.dom.moveCursorTo($('#editor')[0]);
+  Helpers.dom.triggerEvent(document, 'click');
+
+  setTimeout(() => {
+    assertHasNoEmbedIntent(assert, 'embed intent not shown');
+    done();
+  });
+});

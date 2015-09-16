@@ -59,6 +59,7 @@ class EmbedIntent extends View {
     const embedIntentHandler = () => {
       const { editor } = this;
       if (this._isDestroyed || editor._isDestroyed) { return; }
+      if (!editor.isEditable) { return; }
 
       let showElement;
 

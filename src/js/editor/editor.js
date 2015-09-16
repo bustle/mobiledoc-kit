@@ -429,7 +429,6 @@ class Editor {
    * programmatic API is still permitted.
    *
    * @method disableEditing
-   * @return undefined
    * @public
    */
   disableEditing() {
