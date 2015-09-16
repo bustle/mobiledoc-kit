@@ -371,29 +371,6 @@ class Editor {
     }
   }
 
-  /*
-   * Clear the markups from each of the section's markers
-   */
-  resetSectionMarkers(section) {
-    section.markers.forEach(m => {
-      m.clearMarkups();
-      m.renderNode.markDirty();
-    });
-  }
-
-  /*
-   * Change the tag name for the given section
-   */
-  setSectionTagName(section, tagName) {
-    section.setTagName(tagName);
-    section.renderNode.markDirty();
-  }
-
-  resetSectionTagName(section) {
-    section.resetTagName();
-    section.renderNode.markDirty();
-  }
-
   _reparseCurrentSection() {
     const {headSection:currentSection } = this.cursor.offsets;
     this._parser.reparseSection(currentSection, this._renderTree);
