@@ -18,7 +18,7 @@ import MobiledocRenderer from '../renderers/mobiledoc';
 import { mergeWithOptions } from 'content-kit-utils';
 import { clearChildNodes, addClassName, parseHTML } from '../utils/dom-utils';
 import { forEach, filter } from '../utils/array-utils';
-import { getData, setData } from '../utils/element-utils';
+import { setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
 import Cursor from '../utils/cursor';
@@ -138,8 +138,6 @@ class Editor {
     this.element = element;
 
     addClassName(this.element, EDITOR_ELEMENT_CLASS_NAME);
-    this.applyPlaceholder();
-
     element.spellcheck = this.spellcheck;
 
     if (this.isEditable === null) {
@@ -149,7 +147,6 @@ class Editor {
     clearChildNodes(element);
 
     this._setupListeners();
-
     this._addEmbedIntent();
     this._addToolbar();
     this._addTooltip();
@@ -159,9 +156,7 @@ class Editor {
     this.run(() => {});
     this.rerender();
 
-    if (this.autofocus) {
-      element.focus();
-    }
+    if (this.autofocus) { this.element.focus(); }
   }
 
   _addToolbar() {
@@ -300,13 +295,8 @@ class Editor {
     return new Cursor(this);
   }
 
-  applyPlaceholder() {
-    const placeholder = this.placeholder;
-    const existingPlaceholder = getData(this.element, 'placeholder');
-
-    if (placeholder && !existingPlaceholder) {
-      setData(this.element, 'placeholder', placeholder);
-    }
+  setPlaceholder(placeholder) {
+    setData(this.element, 'placeholder', placeholder);
   }
 
   /**
@@ -435,6 +425,7 @@ class Editor {
     this.isEditable = false;
     if (this.element) {
       this.element.setAttribute('contentEditable', false);
+      this.setPlaceholder('');
     }
   }
 
@@ -449,6 +440,7 @@ class Editor {
     this.isEditable = true;
     if (this.element) {
       this.element.setAttribute('contentEditable', true);
+      this.setPlaceholder(this.placeholder);
     }
   }
 
