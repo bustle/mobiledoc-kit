@@ -188,7 +188,7 @@ var ContentKitDemo = exports.ContentKitDemo = {
   syncCodePane: function(editor) {
     var codePaneJSON = document.getElementById('serialized-mobiledoc');
     var mobiledoc = editor.serialize();
-    codePaneJSON.innerText = JSON.stringify(mobiledoc, null, '  ');
+    $(codePaneJSON).text(JSON.stringify(mobiledoc, null, '  '));
 
     var cards = {
       'simple-card': simpleCard,
