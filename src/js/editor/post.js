@@ -399,18 +399,17 @@ class PostEditor {
    */
   splitMarkers(range) {
     const { post } = this.editor;
-    const {
-      head: {section: headSection, offset: headSectionOffset},
-      tail: {section: tailSection, offset: tailSectionOffset}
-    } = range;
+    const { head, tail } = range;
 
-    const headEdit = headSection.splitMarkerAtOffset(headSectionOffset);
-    const tailEdit = tailSection.splitMarkerAtOffset(tailSectionOffset);
-
-    headEdit.removed.forEach(m => this.removeMarker(m));
-    tailEdit.removed.forEach(m => this.removeMarker(m));
+    this.splitSectionMarkerAtOffset(head.section, head.offset);
+    this.splitSectionMarkerAtOffset(tail.section, tail.offset);
 
     return post.markersContainedByRange(range);
+  }
+
+  splitSectionMarkerAtOffset(section, offset) {
+    const edit = section.splitMarkerAtOffset(offset);
+    edit.removed.forEach(m => this.removeMarker(m));
   }
 
   splitMarker(marker, offset) {
