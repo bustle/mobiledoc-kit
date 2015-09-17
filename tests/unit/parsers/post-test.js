@@ -80,6 +80,9 @@ test('editor#reparse catches changes to section', (assert) => {
   const p = $('#editor p:eq(0)')[0];
   p.childNodes[0].textContent = 'the NEW marker';
 
+  // In Firefox, changing the text content changes the selection, so re-set it
+  Helpers.dom.moveCursorTo(p.childNodes[0]);
+
   editor.reparse();
 
   const section = editor.post.sections.head;
@@ -103,6 +106,9 @@ test('editor#reparse catches changes to list section', (assert) => {
 
   const li = $('#editor li:eq(0)')[0];
   li.childNodes[0].textContent = 'the NEW list item';
+
+  // In Firefox, changing the text content changes the selection, so re-set it
+  Helpers.dom.moveCursorTo(li.childNodes[0]);
 
   editor.reparse();
 

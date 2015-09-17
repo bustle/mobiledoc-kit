@@ -7,7 +7,7 @@ let editor, editorElement;
 
 function insertText(text, cursorNode) {
   if (!cursorNode) {
-    cursorNode = $('#editor p:eq(0)')[0].firstChild;
+    cursorNode = $('#editor p:eq(0)')[0];
   }
   Helpers.dom.moveCursorTo(cursorNode);
   Helpers.dom.insertText(editor, text);
@@ -89,7 +89,7 @@ test('typing "* " inside of a list section does not create a new list section', 
 
   assert.hasElement('#editor ul > li', 'precond - has li');
 
-  const cursorNode = $('#editor li:eq(0)')[0].firstChild;
+  const cursorNode = $('#editor li:eq(0)')[0];
   insertText('* ', cursorNode);
 
   // note: the actual text is "*&nbsp;", so only check that the "*" is there,

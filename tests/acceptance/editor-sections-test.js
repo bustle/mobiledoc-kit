@@ -314,30 +314,22 @@ test('keystroke of delete when cursor is after only char in only marker of secti
 test('keystroke of character in empty section adds character, moves cursor', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWithNoCharacter});
   editor.render(editorElement);
-  const getTextNode = () => editor.element.
-                                  childNodes[0]. // section
-                                  childNodes[0]; // marker
 
-  let textNode = getTextNode();
-  assert.ok(!!textNode, 'precond - gets text node');
-  Helpers.dom.moveCursorTo(textNode, 0);
+  assert.hasElement('#editor p br', 'precond - br tag rendered for empty section');
+  let pNode = $('#editor p')[0];
+
+  // Firefox requires that the cursor be placed explicitly for this test to pass
+  Helpers.dom.moveCursorTo(pNode, 0);
 
   const letter = 'M';
   Helpers.dom.insertText(editor, letter);
 
-  assert.equal(getTextNode().textContent, letter, 'adds character');
-  assert.equal(getTextNode().textContent.length, 1);
-
-  assert.deepEqual(Helpers.dom.getCursorPosition(),
-                  {node: getTextNode(), offset: 1},
-                  `cursor moves to end of ${letter} text node`);
+  assert.hasElement(`#editor p:contains(${letter})`, 'adds char');
 
   const otherLetter = 'X';
   Helpers.dom.insertText(editor, otherLetter);
 
-  assert.equal(getTextNode().textContent, `${letter}${otherLetter}`,
-               'adds character in the correct spot');
-  assert.equal(getTextNode().textContent.length, letter.length + otherLetter.length);
+  assert.hasElement(`#editor p:contains(${letter}${otherLetter})`, 'adds char in correct spot');
 });
 
 test('keystroke of delete at start of section joins with previous section', (assert) => {
