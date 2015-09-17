@@ -224,10 +224,10 @@ class Editor {
   handleNewline(event) {
     if (!this.cursor.hasCursor()) { return; }
 
-    const range = this.cursor.offsets;
     event.preventDefault();
 
-    const cursorSection = this.run((postEditor) => {
+    const range = this.cursor.offsets;
+    const cursorSection = this.run(postEditor => {
       if (!range.isCollapsed) {
         postEditor.deleteRange(range);
         if (range.head.section.isBlank) {
@@ -262,9 +262,8 @@ class Editor {
 
   cancelSelection() {
     if (this._hasSelection) {
-      // FIXME perhaps restore cursor position to end of the selection?
-      this.cursor.clearSelection();
-      this.reportNoSelection();
+      const range = this.cursor.offsets;
+      this.moveToPosition(range.tail);
     }
   }
 
@@ -339,6 +338,8 @@ class Editor {
     this.cursor.moveToSection(headSection, headSectionOffset);
   }
 
+  // FIXME this should be able to be removed now -- if any sections are detached,
+  // it's due to a bug in the code.
   _removeDetachedSections() {
     forEach(
       filter(this.post.sections, s => !s.renderNode.isAttached()),

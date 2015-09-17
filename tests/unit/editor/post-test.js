@@ -97,11 +97,8 @@ test('#deleteFrom offset 0 joins section with previous if first marker', (assert
   const nextPosition = postEditor.deleteFrom(position);
   postEditor.complete();
 
-  assert.equal(editor.post.sections.length, 1,
-               'sections joined');
-  assert.equal(getSection(0).markers.length, 2,
-               'joined section has 2 markers');
-
+  assert.equal(editor.post.sections.length, 1, 'sections joined');
+  assert.equal(getSection(0).markers.length, 1, 'joined section has 1 marker');
   assert.equal(getSection(0).text, 'abcdef', 'text is joined');
   assert.ok(nextPosition.section === getSection(0), 'correct position section');
   assert.equal(nextPosition.offset, 'abc'.length, 'correct position offset');
@@ -120,11 +117,8 @@ test('#deleteFrom (FORWARD) end of marker joins section with next if last marker
   const nextPosition = postEditor.deleteFrom(position, FORWARD);
   postEditor.complete();
 
-  assert.equal(editor.post.sections.length, 1,
-               'sections joined');
-  assert.equal(getSection(0).markers.length, 2,
-               'joined section has 2 markers');
-
+  assert.equal(editor.post.sections.length, 1, 'sections joined');
+  assert.equal(getSection(0).markers.length, 1, 'joined section has 1 marker');
   assert.equal(getSection(0).text, 'abcdef', 'text is joined');
   assert.ok(nextPosition.section === getSection(0), 'correct position section');
   assert.equal(nextPosition.offset, 'abc'.length, 'correct position offset');
@@ -316,58 +310,49 @@ test('#cutSection with one marker', (assert) => {
   });
 
   renderBuiltAbstract(post);
-
   postEditor.cutSection(section, 1, 2);
-
   postEditor.complete();
 
   assert.equal(post.sections.head.text, 'ac');
   assert.equal(post.sections.length, 1, 'only 1 section remains');
-  assert.equal(post.sections.head.markers.length, 2, 'two markers remain');
+  assert.equal(post.sections.head.markers.length, 1, 'markers are joined');
 });
 
 test('#cutSection at boundaries across markers', (assert) => {
   let post, section;
   Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
-    section = markupSection('p', [
-      marker('a'),
-      marker('b'),
-      marker('c'),
-      marker('d')
-    ]);
-    post = buildPost([ section ]);
+    const markers = "abcd".split('').map(l => marker(l));
+    section = markupSection('p', markers);
+    post = buildPost([section]);
   });
 
   renderBuiltAbstract(post);
-
+  assert.equal(post.sections.head.text, 'abcd'); //precond
+  assert.equal(post.sections.head.markers.length, 4); //precond
   postEditor.cutSection(section, 1, 3);
-
   postEditor.complete();
 
   assert.equal(post.sections.head.text, 'ad');
   assert.equal(post.sections.length, 1, 'only 1 section remains');
-  assert.equal(post.sections.head.markers.length, 2, 'two markers remain');
+  assert.equal(post.sections.head.markers.length, 1, 'markers are joined');
 });
 
 test('#cutSection in head marker', (assert) => {
   let post, section;
   Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
-    section = markupSection('p', [
-      marker('a'),
-      marker('bc')
-    ]);
+    section = markupSection('p', [marker('a'), marker('bc')]);
     post = buildPost([ section ]);
   });
 
   renderBuiltAbstract(post);
-
+  assert.equal(section.text, 'abc'); //precond
+  assert.equal(section.markers.length, 2); //precond
   postEditor.cutSection(section, 2, 3);
-
   postEditor.complete();
 
   assert.equal(post.sections.head.text, 'ab');
   assert.equal(post.sections.length, 1, 'only 1 section remains');
-  assert.equal(post.sections.head.markers.length, 2, 'two markers remain');
+  assert.equal(post.sections.head.markers.length, 1, 'markers are joined');
 });
 
 test('#cutSection in tail marker', (assert) => {
@@ -595,4 +580,54 @@ test('#insertSectionAtEnd inserts the section at the end of the mobiledoc', (ass
 
   assert.equal(post.sections.length, 2, 'new section added');
   assert.equal(post.sections.tail.text, '123', 'new section added at end');
+});
+
+test('markers with identical non-attribute markups get coalesced after applying or removing markup', (assert) => {
+  let strong, section;
+  const post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    strong = markup('strong');
+    section = markupSection('p', [marker('a'), marker('b',[strong]), marker('c')]);
+    return post([section]);
+  });
+  renderBuiltAbstract(post);
+
+  // removing the strong from the "b"
+  let range = Range.create(section, 1, section, 2);
+  postEditor = new PostEditor(mockEditor);
+  postEditor.removeMarkupFromRange(range, strong);
+  postEditor.complete();
+
+  assert.equal(section.markers.length, 1, 'similar markers are coalesced');
+  assert.equal(section.markers.head.value, 'abc', 'marker value is correct');
+  assert.ok(!section.markers.head.hasMarkup(strong), 'marker has no bold');
+
+  // adding strong to each of the characters individually
+  postEditor = new PostEditor(mockEditor);
+  for (let i=0; i < section.length; i++) {
+    range = Range.create(section, i, section, i+1);
+    postEditor.applyMarkupToRange(range, strong);
+  }
+  postEditor.complete();
+
+  assert.equal(section.markers.length, 1, 'bold markers coalesced');
+  assert.equal(section.markers.head.value, 'abc', 'bold marker value is correct');
+  assert.ok(section.markers.head.hasMarkup(strong), 'bold marker has bold');
+});
+
+test('markers with identical markups get coalesced after deletion', (assert) => {
+  let strong, section;
+  const post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    strong = markup('strong');
+    section = markupSection('p', [marker('a'), marker('b',[strong]), marker('c')]);
+    return post([section]);
+  });
+  renderBuiltAbstract(post);
+
+  let range = Range.create(section, 1, section, 2);
+  postEditor = new PostEditor(mockEditor);
+  postEditor.deleteRange(range);
+  postEditor.complete();
+
+  assert.equal(section.markers.length, 1, 'similar markers are coalesced');
+  assert.equal(section.markers.head.value, 'ac', 'marker value is correct');
 });

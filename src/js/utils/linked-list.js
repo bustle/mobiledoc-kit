@@ -139,6 +139,9 @@ export default class LinkedList {
       item = item.next;
     }
   }
+  any(callback) {
+    return !!this.detect(callback);
+  }
   objectAt(targetIndex) {
     let index = -1;
     return this.detect(() => {

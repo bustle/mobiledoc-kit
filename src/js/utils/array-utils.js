@@ -10,9 +10,11 @@ function detect(enumerable, callback) {
   }
 }
 
-function any(array, callback) {
-  for (let i=0; i<array.length; i++) {
-    if (callback(array[i])) {
+function any(enumerable, callback) {
+  if (enumerable.any) { return enumerable.any(callback); }
+
+  for (let i=0; i<enumerable.length; i++) {
+    if (callback(enumerable[i])) {
       return true;
     }
   }
@@ -92,6 +94,17 @@ function objectToSortedKVArray(obj) {
   return result;
 }
 
+// check shallow equality of two non-nested arrays
+function isArrayEqual(arr1, arr2) {
+  let l1 = arr1.length, l2 = arr2.length;
+  if (l1 !== l2) { return false; }
+
+  for (let i=0; i < l1; i++) {
+    if (arr1[i] !== arr2[i]) { return false; }
+  }
+  return true;
+}
+
 export {
   detect,
   forEach,
@@ -101,5 +114,6 @@ export {
   compact,
   reduce,
   objectToSortedKVArray,
-  kvArrayToObject
+  kvArrayToObject,
+  isArrayEqual
 };

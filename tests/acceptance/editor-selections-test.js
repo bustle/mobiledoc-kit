@@ -63,8 +63,8 @@ test('selecting an entire section and deleting removes it', (assert) => {
   Helpers.dom.selectText('second section', editorElement);
   Helpers.dom.triggerDelete(editor);
 
-  assert.hasElement('p:contains(first section)');
-  assert.hasNoElement('p:contains(second section)', 'deletes contents of second section');
+  assert.hasElement('#editor p:contains(first section)');
+  assert.hasNoElement('#editor p:contains(second section)', 'deletes contents of second section');
   assert.equal($('#editor p').length, 2, 'still has 2 sections');
 
   Helpers.dom.insertText(editor, 'X');
@@ -81,16 +81,12 @@ test('selecting text in a section and deleting deletes it', (assert) => {
   Helpers.dom.selectText('cond sec', editorElement);
   Helpers.dom.triggerDelete(editor);
 
-  assert.hasElement('p:contains(first section)', 'first section unchanged');
-  assert.hasNoElement('p:contains(second section)', 'second section is no longer there');
-  assert.hasElement('p:contains(setion)', 'second section has correct text');
+  assert.hasElement('#editor p:contains(first section)', 'first section unchanged');
+  assert.hasNoElement('#editor p:contains(second section)', 'second section is no longer there');
+  assert.hasElement('#editor p:contains(setion)', 'second section has correct text');
 
-  let textNode = $('p:contains(setion)')[0].childNodes[0];
-  assert.equal(textNode.textContent, 'se', 'precond - has correct text node');
-  let charOffset = 2; // after the 'e' in 'se'
-
-  assert.deepEqual(Helpers.dom.getCursorPosition(),
-                   {node: textNode, offset: charOffset});
+  Helpers.dom.insertText(editor, 'Z');
+  assert.hasElement('#editor p:contains(seZtion)', 'text inserted correctly');
 });
 
 test('selecting text across sections and deleting joins sections', (assert) => {
