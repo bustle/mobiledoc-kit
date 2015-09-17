@@ -545,7 +545,7 @@ class PostEditor {
   applyMarkupToRange(range, markup) {
     this.splitMarkers(range).forEach(marker => {
       marker.addMarkup(markup);
-      this._markDirty(marker.section);
+      this._markDirty(marker);
     });
   }
 
@@ -573,10 +573,9 @@ class PostEditor {
    * @private
    */
   removeMarkupFromRange(range, markupOrMarkupCallback) {
-    const markers = this.splitMarkers(range);
-    markers.forEach(marker => {
+    this.splitMarkers(range).forEach(marker => {
       marker.removeMarkup(markupOrMarkupCallback);
-      this._markDirty(marker.section);
+      this._markDirty(marker);
     });
   }
 
