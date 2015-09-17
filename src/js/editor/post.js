@@ -191,9 +191,6 @@ class PostEditor {
       this.scheduleRerender();
       this.scheduleDidUpdate();
     }
-    if (isMarkerable(postNode)) {
-      this._queues.beforeCompletion.push(() => this._coalesceMarkers(postNode));
-    }
   }
 
   _markDirty(postNode) {
