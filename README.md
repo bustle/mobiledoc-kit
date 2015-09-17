@@ -92,7 +92,7 @@ editor.didUpdatePost(postEditor => {
 
 The available lifecycle hooks are:
 
-* `editor.didUpdatePost(postEditor => {})` - An opprotunity to use the
+* `editor.didUpdatePost(postEditor => {})` - An opportunity to use the
   `postEditor` and possibly change the post before rendering begins.
 * `editor.willRender()` - After all post mutation has finished, but before
    the DOM is updated.
@@ -107,13 +107,11 @@ the creation of completely custom interfaces for buttons, hot-keys, and
 other interactions.
 
 To change the post in code, use the `editor.run` API. For example, the
-following usage would mark currently selected text as bold:
+following usage would mark currently selected text as "strong":
 
 ```js
-const strongMarkup = editor.builder.createMarkup('strong');
-const range = editor.cursor.offsets;
-editor.run((postEditor) => {
-  postEditor.applyMarkupToRange(range, strongMarkup);
+editor.run(postEditor => {
+  postEditor.toggleMarkup('strong');
 });
 ```
 
@@ -121,10 +119,10 @@ It is important that you make changes to posts, sections, and markers through
 the `run` and `postEditor` API. This API allows Content-Kit to conserve
 and better understand changes being made to the post.
 
-For more details on the API of `postEditor`, see the [API documentation](https://github.com/mixonic/content-kit-editor/blob/master/src/js/editor/post.js).
+For more details on the API of `postEditor`, see the [API documentation](https://github.com/bustlelabs/content-kit-editor/blob/master/src/js/editor/post.js).
 
 For more details on the API for the builder, required to create new sections
-and markers, see the [builder API](https://github.com/mixonic/content-kit-editor/blob/master/src/js/models/post-node-builder.js).
+and markers, see the [builder API](https://github.com/bustlelabs/content-kit-editor/blob/master/src/js/models/post-node-builder.js).
 
 ### Contributing
 

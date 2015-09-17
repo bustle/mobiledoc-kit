@@ -3,7 +3,9 @@ import {
 } from '../models/markup-section';
 import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
-import { any, filter, compact } from '../utils/array-utils';
+import {
+  isArrayEqual, any, forEach, filter, compact
+} from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 
 function isMarkupSection(section) {
@@ -26,10 +28,13 @@ class PostEditor {
   constructor(editor) {
     this.editor = editor;
     this.builder = this.editor.builder;
-    this._completionWorkQueue = [];
-    this._afterRenderQueue = [];
-    this._didRerender = false;
-    this._didUpdate = false;
+    this._queues = {
+      beforeCompletion: [],
+      completion: [],
+      afterCompletion: []
+    };
+    this._didScheduleRerender = false;
+    this._didScheduleUpdate = false;
     this._didComplete = false;
   }
 
@@ -92,14 +97,10 @@ class PostEditor {
       });
       removedSections.forEach(section => this.removeSection(section) );
     }
-
-    this._coalesceMarkers(headSection);
   }
 
   cutSection(section, headSectionOffset, tailSectionOffset) {
-    if (section.markers.isEmpty) {
-      return;
-    }
+    if (section.isBlank) { return; }
 
     let adjustedHead = 0,
         marker = section.markers.head,
@@ -147,9 +148,32 @@ class PostEditor {
   }
 
   _coalesceMarkers(section) {
-    filter(section.markers, m => m.isEmpty).forEach(marker => {
-      this.removeMarker(marker);
-    });
+    this._removeEmptyMarkers(section);
+    this._joinSimilarMarkers(section);
+  }
+
+  _removeEmptyMarkers(section) {
+    forEach(
+      filter(section.markers, m => m.isEmpty),
+      m => this.removeMarker(m)
+    );
+  }
+
+  // joins markers that have identical markups
+  _joinSimilarMarkers(section) {
+    let marker = section.markers.head;
+    let nextMarker;
+    while (marker && marker.next) {
+      nextMarker = marker.next;
+
+      if (isArrayEqual(marker.markups, nextMarker.markups)) {
+        nextMarker.value = marker.value + nextMarker.value;
+        this._markDirty(nextMarker);
+        this.removeMarker(marker);
+      }
+
+      marker = nextMarker;
+    }
   }
 
   removeMarker(marker) {
@@ -167,6 +191,9 @@ class PostEditor {
       this.scheduleRerender();
       this.scheduleDidUpdate();
     }
+    if (isMarkerable(postNode)) {
+      this._queues.beforeCompletion.push(() => this._coalesceMarkers(postNode));
+    }
   }
 
   _markDirty(postNode) {
@@ -175,6 +202,12 @@ class PostEditor {
 
       this.scheduleRerender();
       this.scheduleDidUpdate();
+    }
+    if (postNode.section) {
+      this._markDirty(postNode.section);
+    }
+    if (isMarkerable(postNode)) {
+      this._queues.beforeCompletion.push(() => this._coalesceMarkers(postNode));
     }
   }
 
@@ -305,7 +338,6 @@ class PostEditor {
     } else {
       marker.deleteValueAtOffset(offset);
       this._markDirty(marker);
-      this._coalesceMarkers(marker.section);
     }
 
     return nextPosition;
@@ -344,7 +376,6 @@ class PostEditor {
     marker.deleteValueAtOffset(offsetToDeleteAt);
     nextPosition.offset -= 1;
     this._markDirty(marker);
-    this._coalesceMarkers(marker.section);
 
     return nextPosition;
   }
@@ -511,19 +542,15 @@ class PostEditor {
    * value as `splitMarkers`.
    *
    * @method applyMarkupToRange
-   * @param {Range} markerRange
+   * @param {Range} range
    * @param {Markup} markup A markup post abstract node
-   * @return {Array} of markers that are inside the split
    * @public
    */
-  applyMarkupToRange(markerRange, markup) {
-    const markers = this.splitMarkers(markerRange);
-    markers.forEach(marker => {
+  applyMarkupToRange(range, markup) {
+    this.splitMarkers(range).forEach(marker => {
       marker.addMarkup(markup);
       this._markDirty(marker.section);
     });
-
-    return markers;
   }
 
   /**
@@ -547,7 +574,6 @@ class PostEditor {
    * @method removeMarkupFromRange
    * @param {Range} range Object with offsets
    * @param {Markup} markup A markup post abstract node
-   * @return {Array} of markers that are inside the split
    * @private
    */
   removeMarkupFromRange(range, markupOrMarkupCallback) {
@@ -556,8 +582,6 @@ class PostEditor {
       marker.removeMarkup(markupOrMarkupCallback);
       this._markDirty(marker.section);
     });
-
-    return markers;
   }
 
   /**
@@ -709,7 +733,7 @@ class PostEditor {
     if (this._didComplete) {
       throw new Error('Work can only be scheduled before a post edit has completed');
     }
-    this._completionWorkQueue.push(callback);
+    this._queues.completion.push(callback);
   }
 
   /**
@@ -719,12 +743,10 @@ class PostEditor {
    * @public
    */
   scheduleRerender() {
-    this.schedule(() => {
-      if (!this._didRerender) {
-        this._didRerender = true;
-        this.editor.rerender();
-      }
-    });
+    if (!this._didScheduleRerender) {
+      this.schedule(() => this.editor.rerender());
+      this._didScheduleRerender = true;
+    }
   }
 
   /**
@@ -734,16 +756,14 @@ class PostEditor {
    * @public
    */
   scheduleDidUpdate() {
-    this.schedule(() => {
-      if (!this._didUpdate) {
-        this._didUpdate = true;
-        this.editor.didUpdate();
-      }
-    });
+    if (!this._didScheduleUpdate) {
+      this.schedule(() => this.editor.didUpdate());
+      this._didScheduleUpdate = true;
+    }
   }
 
   scheduleAfterRender(callback) {
-    this._afterRenderQueue.push(callback);
+    this._queues.afterCompletion.push(callback);
   }
 
   /**
@@ -757,9 +777,14 @@ class PostEditor {
     if (this._didComplete) {
       throw new Error('Post editing can only be completed once');
     }
+
+    this._runCallbacks([this._queues.beforeCompletion]);
     this._didComplete = true;
-    this._completionWorkQueue.forEach(cb => cb());
-    this._afterRenderQueue.forEach(cb => cb());
+    this._runCallbacks([this._queues.completion, this._queues.afterCompletion]);
+  }
+
+  _runCallbacks(queues) {
+    queues.forEach(queue => queue.forEach(cb => cb()));
   }
 }
 
