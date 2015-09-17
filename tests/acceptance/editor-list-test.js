@@ -390,6 +390,7 @@ test('forward-delete end of li with markup section after', (assert) => {
 
 // see https://github.com/bustlelabs/content-kit-editor/issues/130
 test('selecting empty list items does not cause error', (assert) => {
+  const done = assert.async();
   const mobiledoc = Helpers.mobiledoc.build(builder => {
     const {post, listSection, listItem, marker} = builder;
     return post([
@@ -406,12 +407,15 @@ test('selecting empty list items does not cause error', (assert) => {
   assert.equal($('#editor li').length, 3, 'precond - 3 lis');
   Helpers.dom.moveCursorTo($('#editor li:eq(1)')[0], 0,
                            $('#editor li:eq(2)')[0], 0);
-  Helpers.dom.triggerEvent(editorElement, 'keyup');
-  assert.ok(true, 'no error');
+  Helpers.dom.triggerEvent(editor.element, 'click');
+  setTimeout(() => {
+    assert.ok(true, 'no error');
 
-  Helpers.dom.insertText(editor, 'X');
-  assert.hasElement('#editor li:contains(Xdef)', 'insert text');
-  assert.equal($('#editor li').length, 2, 'inserting text deletes selected li');
+    Helpers.dom.insertText(editor, 'X');
+    assert.hasElement('#editor li:contains(Xdef)', 'insert text');
+    assert.equal($('#editor li').length, 2, 'inserting text deletes selected li');
+    done();
+  });
 });
 
 // see https://github.com/bustlelabs/content-kit-editor/issues/128

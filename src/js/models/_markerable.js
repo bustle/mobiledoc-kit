@@ -26,10 +26,7 @@ export default class Markerable extends Section {
     if (!this.markers.length) {
       return true;
     }
-    let markerWithLength = this.markers.detect((marker) => {
-      return !!marker.length;
-    });
-    return !markerWithLength;
+    return this.markers.every(m => m.isBlank);
   }
 
   /**
@@ -149,7 +146,7 @@ export default class Markerable extends Section {
 
   /**
    * @return {Array} New markers that match the boundaries of the
-   * range.
+   * range. Does not change the existing markers in this section.
    */
   markersFor(headOffset, tailOffset) {
     const range = {head: {section:this, offset:headOffset},

@@ -7,14 +7,14 @@ import Key from '../utils/key';
 import EventEmitter from '../utils/event-emitter';
 
 import MobiledocParser from '../parsers/mobiledoc';
-import PostParser from '../parsers/post';
+import HTMLParser from '../parsers/html';
 import DOMParser from '../parsers/dom';
 import Renderer  from 'content-kit-editor/renderers/editor-dom';
 import RenderTree from 'content-kit-editor/models/render-tree';
 import MobiledocRenderer from '../renderers/mobiledoc';
 
 import { mergeWithOptions } from 'content-kit-utils';
-import { clearChildNodes, addClassName, parseHTML } from '../utils/dom-utils';
+import { clearChildNodes, addClassName } from '../utils/dom-utils';
 import { forEach, filter } from '../utils/array-utils';
 import { setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
@@ -30,10 +30,13 @@ import {
 import { capitalize } from '../utils/string-utils';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 import { CARD_MODES } from '../models/card';
+import { detect } from '../utils/array-utils';
+import {
+  parsePostFromPaste,
+  setClipboardCopyData
+} from '../utils/paste-utils';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
-
-import { detect } from '../utils/array-utils';
 
 const defaults = {
   placeholder: 'Write here...',
@@ -78,7 +81,7 @@ class Editor {
     DEFAULT_TEXT_EXPANSIONS.forEach(e => this.registerExpansion(e));
     DEFAULT_KEY_COMMANDS.forEach(kc => this.registerKeyCommand(kc));
 
-    this._parser   = new PostParser(this.builder);
+    this._parser   = new DOMParser(this.builder);
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
     this.post = this.loadPost();
@@ -99,9 +102,10 @@ class Editor {
       return new MobiledocParser(this.builder).parse(this.mobiledoc);
     } else if (this.html) {
       if (typeof this.html === 'string') {
-        this.html = parseHTML(this.html);
+        return new HTMLParser(this.builder).parse(this.html);
+      } else { // DOM
+        return this._parser.parse(this.html);
       }
-      return new DOMParser(this.builder).parse(this.html);
     } else {
       return this.builder.createPost();
     }
@@ -208,8 +212,6 @@ class Editor {
   }
 
   handleDeletion(event) {
-    event.preventDefault();
-
     const range = this.cursor.offsets;
 
     if (this.cursor.hasSelection()) {
@@ -505,7 +507,7 @@ class Editor {
   }
 
   _setupListeners() {
-    const elementEvents = ['keydown', 'keyup', 'input', 'paste'];
+    const elementEvents = ['keydown', 'keyup', 'input', 'cut', 'copy', 'paste'];
     const documentEvents = ['mouseup'];
 
     elementEvents.forEach(eventName => {
@@ -630,8 +632,28 @@ class Editor {
     return false;
   }
 
+  handleCut(event) {
+    this.handleCopy(event);
+    this.handleDeletion(event);
+  }
+
+  handleCopy(event) {
+    event.preventDefault();
+    setClipboardCopyData(event, this);
+  }
+
   handlePaste(event) {
-    event.preventDefault(); // FIXME for now, just prevent pasting
+    event.preventDefault();
+
+    let pastedPost = parsePostFromPaste(event, this.builder);
+
+    const range = this.cursor.offsets;
+    let nextPosition;
+    this.run(postEditor => {
+      nextPosition = postEditor.insertPost(range.head, pastedPost);
+    });
+
+    this.cursor.moveToPosition(nextPosition);
   }
 
   // @private

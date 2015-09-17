@@ -4,9 +4,7 @@ import {
 import { isMarkerable } from '../models/_section';
 import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
-import {
-  isArrayEqual, forEach, filter, compact
-} from '../utils/array-utils';
+import { isArrayEqual, forEach, filter, compact } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 import mixin from '../utils/mixin';
@@ -622,9 +620,32 @@ class PostEditor {
   }
 
   /**
+   * @method insertMarkers
+   * @param {Position} position to insert at
+   * @param {Array} markers to insert
+   * @return {Position} position at end of inserted markers
+   * @private
+   */
+  insertMarkers(position, markers=[]) {
+    let { section, offset } = position;
+    this.splitSectionMarkerAtOffset(section, offset);
+    let {marker:prevMarker} = section.markerPositionAtOffset(offset);
+    let currentMarker = offset === 0 ? prevMarker : prevMarker.next;
+    
+    markers.forEach(marker => {
+      marker = marker.clone();
+      section.markers.insertBefore(marker, currentMarker);
+      offset += marker.length;
+      this._markDirty(marker);
+    });
+
+    return new Position(section, offset);
+  }
+
+  /**
    * Toggle the given markup on the current selection. If anything in the current
-   * selection has the markup, it will be removed. If nothing in the selection
-   * has the markup, it will be added to everything in the selection.
+   * selection has the markup, the markup will be removed from it. If nothing in the selection
+   * has the markup, the markup will be added to everything in the selection.
    *
    * Usage:
    *
@@ -726,6 +747,49 @@ class PostEditor {
    */
   insertSectionAtEnd(section) {
     this.insertSectionBefore(this.editor.post.sections, section, null);
+  }
+
+  /**
+   * @method insertPost
+   * @param {Position} position
+   * @param {Post} post
+   * @return {Position} position at end of inserted content
+   * @private
+   */
+  insertPost(position, newPost) {
+    const post = this.editor.post;
+    const shouldSplitSection = newPost.sections.length > 1;
+
+    if (!shouldSplitSection) {
+      const markers = newPost.sections.head.markers;
+      return this.insertMarkers(position, markers);
+    }
+
+    let [preSplit, postSplit] = this.splitSection(position);
+    const headSection = newPost.sections.head;
+    let lastInsertedSection = headSection;
+
+    newPost.sections.forEach(section => {
+      if (section === headSection) {
+        this._mergeSectionAtEnd(section, preSplit);
+      } else {
+        section = section.clone();
+        lastInsertedSection = section;
+        this.insertSectionBefore(post.sections, section, postSplit);
+      }
+    });
+
+    if (postSplit.isBlank) {
+      this.removeSection(postSplit);
+    }
+
+    return new Position(lastInsertedSection, lastInsertedSection.length);
+  }
+
+  _mergeSectionAtEnd(sectionToMerge, existingSection) {
+    const markers = sectionToMerge.markers;
+    const position = new Position(existingSection, existingSection.length);
+    return this.insertMarkers(position, markers);
   }
 
   /**

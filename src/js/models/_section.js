@@ -41,8 +41,12 @@ export default class Section extends LinkedItem {
     return this._tagName;
   }
 
+  get isBlank() {
+    throw new Error('`isBlank` must be implemented by subclass');
+  }
+
   clone() {
-    throw new Error('clone() must be implemented by subclass');
+    throw new Error('`clone()` must be implemented by subclass');
   }
 
   immediatelyNextMarkerableSection() {

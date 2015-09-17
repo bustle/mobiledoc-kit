@@ -775,3 +775,166 @@ test('moveSectionDown moves it down', (assert) => {
                'moveSectionDown is no-op when card is at bottom');
  
 });
+
+test('#insertPost single section, insert at start', (assert) => {
+  const build = Helpers.postAbstract.build;
+  let post1, post2;
+  build(({post, markupSection, marker}) => {
+    post1 = post([markupSection('p', [marker('abc')])]);
+    post2 = post([markupSection('p', [marker('def')])]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post1);
+  const position = new Position(post1.sections.head, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  let nextPosition = postEditor.insertPost(position, post2);
+  postEditor.complete();
+
+  assert.equal(post1.sections.length, 1, '1 section');
+  assert.equal(post1.sections.head.text, 'defabc', 'inserts text');
+
+  assert.ok(nextPosition.section === post1.sections.head,
+            'nextPosition.section is correct');
+  assert.equal(nextPosition.offset, 3,
+            'nextPosition.offset is correct');
+});
+
+test('#insertPost single section, insert at end', (assert) => {
+  const build = Helpers.postAbstract.build;
+  let post1, post2;
+  build(({post, markupSection, marker}) => {
+    post1 = post([markupSection('p', [marker('abc')])]);
+    post2 = post([markupSection('p', [marker('def')])]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post1);
+  const position = new Position(post1.sections.head, post1.sections.head.length);
+
+  postEditor = new PostEditor(mockEditor);
+  let nextPosition = postEditor.insertPost(position, post2);
+  postEditor.complete();
+
+  assert.equal(post1.sections.length, 1, '1 section');
+  assert.equal(post1.sections.head.text, 'abcdef', 'inserts text');
+
+  assert.ok(nextPosition.section === post1.sections.head,
+            'nextPosition.section is correct');
+  assert.equal(nextPosition.offset, 6,
+            'nextPosition.offset is correct');
+});
+
+test('#insertPost single section, insert at middle', (assert) => {
+  const build = Helpers.postAbstract.build;
+  let post1, post2;
+  build(({post, markupSection, marker}) => {
+    post1 = post([markupSection('p', [marker('abc')])]);
+    post2 = post([markupSection('p', [marker('def')])]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post1);
+  const position = new Position(post1.sections.head, 1);
+
+  postEditor = new PostEditor(mockEditor);
+  let nextPosition = postEditor.insertPost(position, post2);
+  postEditor.complete();
+
+  assert.equal(post1.sections.length, 1, '1 section');
+  assert.equal(post1.sections.head.text, 'adefbc', 'inserts text');
+
+  assert.ok(nextPosition.section === post1.sections.head,
+            'nextPosition.section is correct');
+  assert.equal(nextPosition.offset, 4,
+            'nextPosition.offset is correct');
+});
+
+test('#insertPost multiple sections, insert at start', (assert) => {
+  const build = Helpers.postAbstract.build;
+  let post1, post2;
+  build(({post, markupSection, marker}) => {
+    post1 = post([markupSection('p', [marker('abc')])]);
+    post2 = post([
+      markupSection('p', [marker('123')]),
+      markupSection('p', [marker('456')])
+    ]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post1);
+  const position = new Position(post1.sections.head, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  let nextPosition = postEditor.insertPost(position, post2);
+  postEditor.complete();
+
+  assert.equal(post1.sections.length, 3, '3 sections');
+  assert.equal(post1.sections.objectAt(0).text, '123',
+               'inserts text in section 1');
+  assert.equal(post1.sections.objectAt(1).text, '456',
+               'inserts text in section 2');
+  assert.equal(post1.sections.objectAt(2).text, 'abc',
+               'inserts text in section 3');
+
+  assert.ok(nextPosition.section === post1.sections.objectAt(1),
+            'nextPosition section is correct');
+  assert.equal(nextPosition.offset, post1.sections.objectAt(1).length,
+            'nextPosition offset is correct');
+});
+
+test('#insertPost multiple sections, insert at end', (assert) => {
+  const build = Helpers.postAbstract.build;
+  let post1, post2;
+  build(({post, markupSection, marker}) => {
+    post1 = post([markupSection('p', [marker('abc')])]);
+    post2 = post([
+      markupSection('p', [marker('123')]),
+      markupSection('p', [marker('456')])
+    ]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post1);
+  const position = new Position(post1.sections.head, post1.sections.head.length);
+
+  postEditor = new PostEditor(mockEditor);
+  let nextPosition = postEditor.insertPost(position, post2);
+  postEditor.complete();
+
+  assert.equal(post1.sections.length, 2, '2 sections');
+  assert.equal(post1.sections.head.text, 'abc123', 'inserts text in section 1');
+  assert.equal(post1.sections.tail.text, '456', 'inserts text in section 2');
+
+  assert.ok(nextPosition.section === post1.sections.tail,
+            'nextPosition.section is correct');
+  assert.equal(nextPosition.offset, post1.sections.tail.length,
+            'nextPosition.offset is correct');
+});
+
+test('#insertPost multiple sections, insert at middle', (assert) => {
+  const build = Helpers.postAbstract.build;
+  let post1, post2;
+  build(({post, markupSection, marker}) => {
+    post1 = post([markupSection('p', [marker('abc')])]);
+    post2 = post([
+      markupSection('p', [marker('123')]),
+      markupSection('p', [marker('456')])
+    ]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post1);
+  const position = new Position(post1.sections.head, 1);
+
+  postEditor = new PostEditor(mockEditor);
+  let nextPosition = postEditor.insertPost(position, post2);
+  postEditor.complete();
+
+  assert.equal(post1.sections.length, 3, '3 sections');
+  assert.equal(post1.sections.objectAt(0).text, 'a123',
+               'inserts text in section 1');
+  assert.equal(post1.sections.objectAt(1).text, '456',
+               'inserts text in section 2');
+  assert.equal(post1.sections.objectAt(2).text, 'bc',
+               'inserts text in section 3');
+  assert.ok(nextPosition.section === post1.sections.objectAt(1),
+            'nextPosition.section is correct');
+  assert.equal(nextPosition.offset, post1.sections.objectAt(1).length,
+            'nextPosition.offset is correct');
+});

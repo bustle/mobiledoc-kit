@@ -3,6 +3,7 @@ export const DIRECTION = {
   FORWARD: 1,
   BACKWARD: -1
 };
+import assert from './assert';
 
 export const MODIFIERS = {
   META: 1, // also called "command" on OS X
@@ -28,6 +29,14 @@ export const SPECIAL_KEYS = {
   DEL:       46
 };
 
+// heuristic for determining if `event` is a key event
+function isKeyEvent(event) {
+  return !!event.keyCode ||
+    !!event.metaKey ||
+    !!event.shiftKey ||
+    !!event.ctrlKey;
+}
+
 /**
  * An abstraction around a KeyEvent
  * that key listeners in the editor can use
@@ -40,6 +49,8 @@ const Key = class Key {
   }
 
   static fromEvent(event) {
+    assert('Must pass a Key event to Key.fromEvent',
+           event && isKeyEvent(event));
     return new Key(event);
   }
 
