@@ -2,7 +2,15 @@ import Markerable from './_markerable';
 import { normalizeTagName } from '../utils/dom-utils';
 import { MARKUP_SECTION_TYPE } from './types';
 
+// valid values of `tagName` for a MarkupSection
 export const VALID_MARKUP_SECTION_TAGNAMES = [
+  'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol', 'pull-quote'
+].map(normalizeTagName);
+
+// valid element names for a MarkupSection. A MarkupSection with a tagName
+// not in this should be rendered as a div with a className matching the
+// tagName, instead
+export const MARKUP_SECTION_ELEMENT_NAMES = [
   'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'
 ].map(normalizeTagName);
 export const DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[0];
