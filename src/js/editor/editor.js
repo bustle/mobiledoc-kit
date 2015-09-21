@@ -287,9 +287,14 @@ class Editor {
     this.trigger('update');
   }
 
-  selectSections(sections) {
-    this.cursor.selectSections(sections);
-    this.reportSelection();
+  selectSections(sections=[]) {
+    if (sections.length) {
+      this.cursor.selectSections(sections);
+      this.reportSelection();
+    } else {
+      this.cursor.clearSelection();
+      this.reportNoSelection();
+    }
   }
 
   selectRange(range){
