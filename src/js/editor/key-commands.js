@@ -2,43 +2,30 @@ import Key from '../utils/key';
 import { MODIFIERS } from '../utils/key';
 import { detect } from '../utils/array-utils';
 import LinkCommand from '../commands/link';
-import BoldCommand from '../commands/bold';
-import ItalicCommand from '../commands/italic';
-
-function runSelectionCommand(editor, CommandKlass) {
-  if (editor.cursor.hasSelection()) {
-    const cmd = new CommandKlass(editor);
-    if (cmd.isActive()) {
-      cmd.unexec();
-    } else {
-      cmd.exec();
-    }
-  }
-}
 
 export const DEFAULT_KEY_COMMANDS = [{
   modifier: MODIFIERS.META,
   str: 'B',
   run(editor) {
-    runSelectionCommand(editor, BoldCommand);
+    editor.run(postEditor => postEditor.toggleMarkup('strong'));
   }
 }, {
   modifier: MODIFIERS.CTRL,
   str: 'B',
   run(editor) {
-    runSelectionCommand(editor, BoldCommand);
+    editor.run(postEditor => postEditor.toggleMarkup('strong'));
   }
 }, {
   modifier: MODIFIERS.META,
   str: 'I',
   run(editor) {
-    runSelectionCommand(editor, ItalicCommand);
+    editor.run(postEditor => postEditor.toggleMarkup('em'));
   }
 }, {
   modifier: MODIFIERS.CTRL,
   str: 'I',
   run(editor) {
-    runSelectionCommand(editor, ItalicCommand);
+    editor.run(postEditor => postEditor.toggleMarkup('em'));
   }
 }, {
   modifier: MODIFIERS.META,

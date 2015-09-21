@@ -182,6 +182,14 @@ class Editor {
     return this._keyCommands;
   }
 
+  /**
+   * @method registerExpansion
+   * @param {Object} expansion The text expansion to register. It must specify a
+   * trigger character (e.g. the `<space>` character) and a text string that precedes
+   * the trigger (e.g. "*"), and a `run` method that will be passed the
+   * editor instance when the text expansion is invoked
+   * @public
+   */
   registerExpansion(expansion) {
     if (!validateExpansion(expansion)) {
       throw new Error('Expansion is not valid');
@@ -189,6 +197,14 @@ class Editor {
     this.expansions.push(expansion);
   }
 
+  /**
+   * @method registerKeyCommand
+   * @param {Object} keyCommand The key command to register. It must specify a
+   * modifier key (meta, ctrl, etc), a string representing the ascii key, and
+   * a `run` method that will be passed the editor instance when the key command
+   * is invoked
+   * @public
+   */
   registerKeyCommand(keyCommand) {
     if (!validateKeyCommand(keyCommand)) {
       throw new Error('Key Command is not valid');

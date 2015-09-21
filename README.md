@@ -124,6 +124,40 @@ For more details on the API of `postEditor`, see the [API documentation](https:/
 For more details on the API for the builder, required to create new sections
 and markers, see the [builder API](https://github.com/bustlelabs/content-kit-editor/blob/master/src/js/models/post-node-builder.js).
 
+### Configuring hot keys and text expansions
+
+Content-Kit allows configuring hot keys and text expansions. For instance, the
+hot-key command-B to make selected text bold, is registered internally as:
+```javascript
+const boldKeyCommand = {
+  modifier: META,
+  str: 'B',
+  run(editor) {
+    editor.run(postEditor => postEditor.toggleMarkup('strong'));
+  }
+};
+editor.registerKeyCommand(boldKeyCommand);
+```
+
+All key commands must have `modifier`, `str` and `run` properties as shown above.
+
+Text expansions can also be registered with the editor. These are methods that
+are run when a text string is entered and then a trigger character is entered.
+For example, the text `"*"` followed by a space character triggers a method that
+turns the current section into a list item. To register a text expansion call
+`editor.registerExpansion` with an object that has `text`, `trigger` and `run`
+properties, e.g.:
+
+```javascript
+const expansion = {
+  trigger: ' ',
+  text: 'X',
+  run(editor) {
+    // use the editor to programmatically change the post
+  }
+};
+```
+
 ### Contributing
 
 Fork the repo, write a test, make a change, open a PR.
