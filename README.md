@@ -9,7 +9,7 @@ demo at [bustlelabs.github.io/content-kit-editor/demo](http://bustlelabs.github.
   technologies.
 * Content-Kit is designed for *rich* content. We call these sections of an
   article "cards", and implementing a new one doesn't require an understanding
-  of Content-Kit internals. Adding a new card take an afternoon, not several
+  of Content-Kit internals. Adding a new card takes an afternoon, not several
   days.
 * Posts are serialized to a JSON payload called **Mobiledoc** instead of to
   HTML. Mobiledoc can be rendered for the web, mobile web, or in theory on any
