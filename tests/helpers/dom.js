@@ -171,6 +171,12 @@ function triggerKeyCommand(editor, string, modifier) {
   editor.triggerEvent(editor.element, 'keydown', keyEvent);
 }
 
+function triggerRightArrowKey(editor) {
+  if (!editor) { throw new Error('Must pass editor to triggerRightArrowKey'); }
+  const event = {preventDefault() {}, keyCode: 39};
+  editor.triggerEvent(editor.element, 'keyup', event);
+}
+
 const DOMHelper = {
   moveCursorTo,
   selectText,
@@ -185,7 +191,8 @@ const DOMHelper = {
   triggerForwardDelete,
   triggerEnter,
   insertText,
-  triggerKeyCommand
+  triggerKeyCommand,
+  triggerRightArrowKey
 };
 
 export { triggerEvent };

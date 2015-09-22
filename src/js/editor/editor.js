@@ -30,6 +30,7 @@ import {
   DEFAULT_KEY_COMMANDS, findKeyCommand, validateKeyCommand
 } from './key-commands';
 import { capitalize } from '../utils/string-utils';
+import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
 
@@ -50,12 +51,12 @@ const defaults = {
   html: null
 };
 
-function runCallbacks(callbacks, args) {
-  let i;
-  for (i=0;i<callbacks.length;i++) {
-    callbacks[i].apply(null, args);
-  }
-}
+const CALLBACK_QUEUES = {
+  DID_UPDATE: 'didUpdate',
+  WILL_RENDER: 'willRender',
+  DID_RENDER: 'didRender',
+  CURSOR_DID_CHANGE: 'cursorDidChange'
+};
 
 /**
  * @class Editor
@@ -71,10 +72,6 @@ class Editor {
     this._elementListeners = [];
     this._views = [];
     this.isEditable = null;
-
-    this._didUpdatePostCallbacks = [];
-    this._willRenderCallbacks = [];
-    this._didRenderCallbacks = [];
 
     // FIXME: This should merge onto this.options
     mergeWithOptions(this, defaults, options);
@@ -125,9 +122,9 @@ class Editor {
       postRenderNode.markDirty();
     }
 
-    runCallbacks(this._willRenderCallbacks, []);
+    this.runCallbacks(CALLBACK_QUEUES.WILL_RENDER);
     this._renderer.render(this._renderTree);
-    runCallbacks(this._didRenderCallbacks, []);
+    this.runCallbacks(CALLBACK_QUEUES.DID_RENDER);
   }
 
   render(element) {
@@ -260,22 +257,6 @@ class Editor {
     callback(window.prompt(message, defaultValue));
   }
 
-  reportSelection() {
-    if (!this._hasSelection) {
-      this.trigger('selection');
-    } else {
-      this.trigger('selectionUpdated');
-    }
-    this._hasSelection = true;
-  }
-
-  reportNoSelection() {
-    if (this._hasSelection) {
-      this.trigger('selectionEnded');
-    }
-    this._hasSelection = false;
-  }
-
   cancelSelection() {
     if (this._hasSelection) {
       const range = this.cursor.offsets;
@@ -290,25 +271,20 @@ class Editor {
   selectSections(sections=[]) {
     if (sections.length) {
       this.cursor.selectSections(sections);
-      this.reportSelection();
     } else {
       this.cursor.clearSelection();
-      this.reportNoSelection();
     }
+    this._reportSelectionState();
   }
 
   selectRange(range){
     this.cursor.selectRange(range);
-    if (range.isCollapsed) {
-      this.reportNoSelection();
-    } else {
-      this.reportSelection();
-    }
+    this._reportSelectionState();
   }
 
   moveToPosition(position) {
     this.cursor.moveToPosition(position);
-    this.reportNoSelection();
+    this._reportSelectionState();
   }
 
   get cursor() {
@@ -472,21 +448,49 @@ class Editor {
   run(callback) {
     const postEditor = new PostEditor(this);
     const result = callback(postEditor);
-    runCallbacks(this._didUpdatePostCallbacks, [postEditor]);
+    this.runCallbacks(CALLBACK_QUEUES.DID_UPDATE, [postEditor]);
     postEditor.complete();
     return result;
   }
 
+  /**
+   * @method didUpdatePost
+   * @param {Function} callback This callback will be called with `postEditor`
+   *         argument when the post is updated
+   * @public
+   */
   didUpdatePost(callback) {
-    this._didUpdatePostCallbacks.push(callback);
+    this.addCallback(CALLBACK_QUEUES.DID_UPDATE, callback);
   }
 
+  /**
+   * @method willRender
+   * @param {Function} callback This callback will be called before the editor
+   *        is rendered.
+   * @public
+   */
   willRender(callback) {
-    this._willRenderCallbacks.push(callback);
+    this.addCallback(CALLBACK_QUEUES.WILL_RENDER, callback);
   }
 
+  /**
+   * @method didRender
+   * @param {Function} callback This callback will be called after the editor
+   *        is rendered.
+   * @public
+   */
   didRender(callback) {
-    this._didRenderCallbacks.push(callback);
+    this.addCallback(CALLBACK_QUEUES.DID_RENDER, callback);
+  }
+
+  /**
+   * @method cursorDidChange
+   * @param {Function} callback This callback will be called after the cursor
+   *        position (or selection) changes.
+   * @public
+   */
+  cursorDidChange(callback) {
+    this.addCallback(CALLBACK_QUEUES.CURSOR_DID_CHANGE, callback);
   }
 
   _addEmbedIntent() {
@@ -543,10 +547,20 @@ class Editor {
        * ctrl-click -> context menu -> click "select all"
    */
   _reportSelectionState() {
+    this.runCallbacks(CALLBACK_QUEUES.CURSOR_DID_CHANGE);
+
     if (this.cursor.hasSelection()) {
-      this.reportSelection();
+      if (!this._hasSelection) {
+        this._hasSelection = true;
+        this.trigger('selection'); // new selection
+      } else {
+        this.trigger('selectionUpdated'); // already had selection
+      }
     } else {
-      this.reportNoSelection();
+      if (this._hasSelection) {
+        this.trigger('selectionEnded');
+        this._hasSelection = false;
+      }
     }
   }
 
@@ -607,5 +621,6 @@ class Editor {
 
 mixin(Editor, EventEmitter);
 mixin(Editor, EventListenerMixin);
+mixin(Editor, LifecycleCallbacksMixin);
 
 export default Editor;
