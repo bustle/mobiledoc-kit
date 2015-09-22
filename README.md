@@ -43,8 +43,6 @@ editor.render(element);
 
 `options` is an object which may include the following properties:
 
-* `stickyToolbar` - a boolean option enabling a persistent header with
-  formatting tools. Default is true for touch devices.
 * `placeholder` - default text to show before a user starts typing.
 * `spellcheck` - a boolean option enabling spellcheck. Default is true.
 * `autofocus` - a boolean option for grabbing input focus when an editor is
