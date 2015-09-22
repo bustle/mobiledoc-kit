@@ -575,6 +575,20 @@ test('removes nested children of removed render nodes', (assert) => {
                'section render node has all children removed');
 });
 
+test('renders markup section "pull-quote" as <div class="pull-quote"></div>', (assert) => {
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([markupSection('pull-quote', [marker('abc')])]);
+  });
+  const renderTree = new RenderTree(post);
+  render(renderTree);
+
+  const expectedDOM = Helpers.dom.build(t => {
+    return t('div', {"class": "pull-quote"}, [t.text('abc')]);
+  });
+
+  assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
+});
+
 /*
 test("It renders a renderTree with rendered dirty section", (assert) => {
   /*

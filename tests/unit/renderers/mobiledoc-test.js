@@ -175,3 +175,19 @@ test('renders a post with a list', (assert) => {
     ]
   });
 });
+
+test('renders a pull-quote as markup section', (assert) => {
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([markupSection('pull-quote', [marker('abc')])]);
+  });
+  const mobiledoc = render(post);
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, 'pull-quote', [[[], 0, 'abc']]]
+      ]
+    ]
+  });
+});

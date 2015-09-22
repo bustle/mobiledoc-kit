@@ -11,6 +11,7 @@ import {
 } from '../models/types';
 import { startsWith, endsWith } from '../utils/string-utils';
 import { addClassName } from '../utils/dom-utils';
+import { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section';
 
 export const NO_BREAK_SPACE = '\u00A0';
 export const SPACE = ' ';
@@ -36,7 +37,15 @@ function penultimateParentOf(element, parentElement) {
 }
 
 function renderMarkupSection(section) {
-  return document.createElement(section.tagName);
+  let element;
+  if (MARKUP_SECTION_ELEMENT_NAMES.indexOf(section.tagName) !== -1) {
+    element = document.createElement(section.tagName);
+  } else {
+    element = document.createElement('div');
+    addClassName(element, section.tagName);
+  }
+
+  return element;
 }
 
 function renderListSection(section) {
