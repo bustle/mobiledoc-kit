@@ -98,6 +98,8 @@ The available lifecycle hooks are:
    the DOM is updated.
 * `editor.didRender()` - After the DOM has been updated to match the
   edited post.
+* `editor.cursorDidChange()` - When the cursor (or selection) changes as a result of arrow-key
+  movement or clicking in the document.
 
 ### Programmatic Post Editing
 

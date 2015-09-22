@@ -1,27 +1,19 @@
-const { module, test } = QUnit;
 import Helpers from '../../test-helpers';
-import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
-
 import { Editor } from 'content-kit-editor';
+
+const { module, test } = Helpers;
 
 let editor, editorElement;
 let triggered = [];
 
-const mobiledoc = {
-  version: MOBILEDOC_VERSION,
-  sections: [
-    [],
-    [[
-      1, 'P', [[[], 0, 'this is the editor']]
-    ]]
-  ]
-};
+const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+  return post([markupSection('p', [marker('this is the editor')])]);
+});
 
-module('Unit: Editor: events', {
+
+module('Unit: Editor: events and lifecycle callbacks', {
   beforeEach() {
-    editorElement = document.createElement('div');
-    document.getElementById('qunit-fixture').appendChild(editorElement);
-
+    editorElement = $('<div id="editor"></div>').appendTo('#qunit-fixture')[0];
     editor = new Editor({mobiledoc});
     editor.render(editorElement);
     editor.trigger = (name) => triggered.push(name);
@@ -107,4 +99,41 @@ test('mouseup after text was selected triggers "selectionEnded" event', (assert)
       done();
     });
   });
+});
+
+test('"cursorChanged" callbacks fired on mouseup', (assert) => {
+  const done = assert.async();
+
+  let cursorChanged = 0;
+  editor.cursorDidChange(() => cursorChanged++);
+  const textNode = $('#editor p')[0].childNodes[0];
+  Helpers.dom.moveCursorTo(textNode, 0);
+
+  assert.equal(cursorChanged, 0, 'precond');
+
+  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  setTimeout(() => {
+    assert.equal(cursorChanged, 1, 'cursor changed');
+    cursorChanged = 0;
+
+    Helpers.dom.moveCursorTo(textNode, textNode.textContent.length);
+    Helpers.dom.triggerEvent(document, 'mouseup');
+
+    setTimeout(() => {
+    assert.equal(cursorChanged, 1, 'cursor changed again');
+      done();
+    });
+  });
+});
+
+test('"cursorChanged" callback called after hitting arrow key', (assert) => {
+  let cursorChanged = 0;
+  editor.cursorDidChange(() => cursorChanged++);
+  const textNode = $('#editor p')[0].childNodes[0];
+  Helpers.dom.moveCursorTo(textNode, 0);
+
+  assert.equal(cursorChanged, 0, 'precond');
+  Helpers.dom.triggerRightArrowKey(editor);
+  assert.equal(cursorChanged, 1, 'cursor changed');
 });
