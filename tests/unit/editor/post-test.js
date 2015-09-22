@@ -36,6 +36,7 @@ function renderBuiltAbstract(post) {
   let renderer = new EditorDomRenderer(mockEditor, [], () => {}, {});
   let renderTree = new RenderTree(post);
   renderer.render(renderTree);
+  return mockEditor;
 }
 
 module('Unit: PostEditor with mobiledoc', {
@@ -385,8 +386,9 @@ test('#splitMarkers when headMarker = tailMarker', (assert) => {
     post = buildPost([ section ]);
   });
 
-  renderBuiltAbstract(post);
+  let mockEditor = renderBuiltAbstract(post);
 
+  const postEditor = new PostEditor(mockEditor);
   const range = Range.create(section, 1, section, 3);
   const markers = postEditor.splitMarkers(range);
   postEditor.complete();
@@ -402,10 +404,11 @@ test('#splitMarkers when head section = tail section, but different markers', (a
     ])
   );
 
-  renderBuiltAbstract(post);
+  let mockEditor = renderBuiltAbstract(post);
 
   const section = post.sections.head;
   const range = Range.create(section, 2, section, 5);
+  const postEditor = new PostEditor(mockEditor);
   const markers = postEditor.splitMarkers(range);
   postEditor.complete();
 

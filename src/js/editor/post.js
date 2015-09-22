@@ -7,6 +7,8 @@ import {
   isArrayEqual, forEach, filter, compact
 } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
+import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
+import mixin from '../utils/mixin';
 
 function isMarkupSection(section) {
   return section.type === MARKUP_SECTION_TYPE;
@@ -24,15 +26,17 @@ function isMarkerable(section) {
   return !!section.markers;
 }
 
+const CALLBACK_QUEUES = {
+  BEFORE_COMPLETE: 'beforeComplete',
+  COMPLETE: 'complete',
+  AFTER_COMPLETE: 'afterComplete'
+};
+
 class PostEditor {
   constructor(editor) {
     this.editor = editor;
     this.builder = this.editor.builder;
-    this._queues = {
-      beforeCompletion: [],
-      completion: [],
-      afterCompletion: []
-    };
+
     this._didScheduleRerender = false;
     this._didScheduleUpdate = false;
     this._didComplete = false;
@@ -204,7 +208,8 @@ class PostEditor {
       this._markDirty(postNode.section);
     }
     if (isMarkerable(postNode)) {
-      this._queues.beforeCompletion.push(() => this._coalesceMarkers(postNode));
+      this.addCallback(
+        CALLBACK_QUEUES.BEFORE_COMPLETE, () => this._coalesceMarkers(postNode));
     }
   }
 
@@ -738,7 +743,7 @@ class PostEditor {
     if (this._didComplete) {
       throw new Error('Work can only be scheduled before a post edit has completed');
     }
-    this._queues.completion.push(callback);
+    this.addCallback(CALLBACK_QUEUES.COMPLETE, callback);
   }
 
   /**
@@ -748,10 +753,10 @@ class PostEditor {
    * @public
    */
   scheduleRerender() {
-    if (!this._didScheduleRerender) {
-      this.schedule(() => this.editor.rerender());
-      this._didScheduleRerender = true;
-    }
+    if (this._didScheduleRerender) { return; }
+
+    this.schedule(() => this.editor.rerender());
+    this._didScheduleRerender = true;
   }
 
   /**
@@ -761,14 +766,14 @@ class PostEditor {
    * @public
    */
   scheduleDidUpdate() {
-    if (!this._didScheduleUpdate) {
-      this.schedule(() => this.editor.didUpdate());
-      this._didScheduleUpdate = true;
-    }
+    if (this._didScheduleUpdate) { return; }
+
+    this.schedule(() => this.editor.didUpdate());
+    this._didScheduleUpdate = true;
   }
 
   scheduleAfterRender(callback) {
-    this._queues.afterCompletion.push(callback);
+    this.addCallback(CALLBACK_QUEUES.AFTER_COMPLETE, callback);
   }
 
   /**
@@ -783,14 +788,13 @@ class PostEditor {
       throw new Error('Post editing can only be completed once');
     }
 
-    this._runCallbacks([this._queues.beforeCompletion]);
+    this.runCallbacks(CALLBACK_QUEUES.BEFORE_COMPLETE);
     this._didComplete = true;
-    this._runCallbacks([this._queues.completion, this._queues.afterCompletion]);
-  }
-
-  _runCallbacks(queues) {
-    queues.forEach(queue => queue.forEach(cb => cb()));
+    this.runCallbacks(CALLBACK_QUEUES.COMPLETE);
+    this.runCallbacks(CALLBACK_QUEUES.AFTER_COMPLETE);
   }
 }
+
+mixin(PostEditor, LifecycleCallbacksMixin);
 
 export default PostEditor;
