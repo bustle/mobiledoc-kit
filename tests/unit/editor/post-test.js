@@ -56,7 +56,7 @@ test('#deleteFrom in middle of marker deletes char before offset', (assert) => {
   const postEditor = postEditorWithMobiledoc(({post, markupSection, marker}) =>
     post([
       markupSection('P', [marker('abc def')])
-    ]) 
+    ])
   );
 
   const position = new Position(getSection(0), 4);
@@ -612,6 +612,50 @@ test('markers with identical non-attribute markups get coalesced after applying 
   assert.equal(section.markers.length, 1, 'bold markers coalesced');
   assert.equal(section.markers.head.value, 'abc', 'bold marker value is correct');
   assert.ok(section.markers.head.hasMarkup(strong), 'bold marker has bold');
+});
+
+test('#removeMarkup silently does nothing when invoked with an empty range', (assert) => {
+  let section, markup;
+  const post = Helpers.postAbstract.build(({
+    post, markupSection, marker, markup: buildMarkup
+  }) => {
+    markup = buildMarkup('strong');
+    section = markupSection('p', [
+      marker('abc')
+    ]);
+    return post([section]);
+  });
+  renderBuiltAbstract(post);
+
+  let range = Range.create(section, 1, section, 1);
+  postEditor.removeMarkupFromRange(range, markup);
+  postEditor.complete();
+
+  assert.equal(section.markers.length, 1, 'similar markers are coalesced');
+  assert.equal(section.markers.head.value, 'abc', 'marker value is correct');
+  assert.ok(!section.markers.head.hasMarkup(markup), 'marker has no markup');
+});
+
+test('#applyMarkupToRange silently does nothing when invoked with an empty range', (assert) => {
+  let section, markup;
+  const post = Helpers.postAbstract.build(({
+    post, markupSection, marker, markup: buildMarkup
+  }) => {
+    markup = buildMarkup('strong');
+    section = markupSection('p', [
+      marker('abc')
+    ]);
+    return post([section]);
+  });
+  renderBuiltAbstract(post);
+
+  let range = Range.create(section, 1, section, 1);
+  postEditor.applyMarkupToRange(range, markup);
+  postEditor.complete();
+
+  assert.equal(section.markers.length, 1, 'similar markers are coalesced');
+  assert.equal(section.markers.head.value, 'abc', 'marker value is correct');
+  assert.ok(!section.markers.head.hasMarkup(markup), 'marker has no markup');
 });
 
 test('markers with identical markups get coalesced after deletion', (assert) => {

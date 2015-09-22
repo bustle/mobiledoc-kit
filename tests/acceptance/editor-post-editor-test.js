@@ -117,3 +117,17 @@ test('#toggleMarkup removes markup by tag name', (assert) => {
   assert.hasNoElement('#editor strong:contains(bcd)', 'markup removed from selection');
   assert.hasElement('#editor strong:contains(e)', 'unselected text still bold');
 });
+
+test('#toggleMarkup does nothing with an empty selection', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('a')])
+    ]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  editor.run(postEditor => postEditor.toggleMarkup('strong'));
+
+  assert.hasNoElement('#editor strong', 'strong not added, nothing selected');
+});
