@@ -509,6 +509,40 @@ class PostEditor {
     }
   }
 
+  moveSectionBefore(collection, renderedSection, beforeSection) {
+    const newSection = renderedSection.clone();
+    this.removeSection(renderedSection);
+    this.insertSectionBefore(collection, newSection, beforeSection);
+  }
+
+  /**
+   * @method moveSectionUp
+   * @param {Section} section A section that is already in DOM
+   * @public
+   */
+  moveSectionUp(renderedSection) {
+    const isFirst = !renderedSection.prev;
+    if (isFirst) { return; }
+
+    const collection = renderedSection.parent.sections;
+    const beforeSection = renderedSection.prev;
+    this.moveSectionBefore(collection, renderedSection, beforeSection);
+  }
+
+  /**
+   * @method moveSectionDown
+   * @param {Section} section A section that is already in DOM
+   * @public
+   */
+  moveSectionDown(renderedSection) {
+    const isLast = !renderedSection.next;
+    if (isLast) { return; }
+
+    const beforeSection = renderedSection.next.next;
+    const collection = renderedSection.parent.sections;
+    this.moveSectionBefore(collection, renderedSection, beforeSection);
+  }
+
   _replaceSection(section, newSections) {
     let nextSection = section.next;
     let collection = section.parent.sections;

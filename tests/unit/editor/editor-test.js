@@ -3,8 +3,9 @@ import { EDITOR_ELEMENT_CLASS_NAME } from 'content-kit-editor/editor/editor';
 import { normalizeTagName } from 'content-kit-editor/utils/dom-utils';
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 import Range from 'content-kit-editor/utils/cursor/range';
+import Helpers from '../../test-helpers';
 
-const { module, test } = window.QUnit;
+const { module, test } = Helpers;
 
 let fixture, editorElement, editor;
 
@@ -29,10 +30,6 @@ test('can render an editor via dom node reference', (assert) => {
   editor.render(editorElement);
   assert.equal(editor.element, editorElement);
   assert.ok(editor.post);
-  assert.equal(editor.post.sections.length, 1);
-  assert.equal(editor.post.sections.head.tagName, 'p');
-  assert.equal(editor.post.sections.head.markers.length, 0);
-  assert.equal(editor.post.sections.head.text, '');
 });
 
 test('creating an editor with DOM node throws', (assert) => {
@@ -84,7 +81,10 @@ test('editor fires lifecycle hooks', (assert) => {
 
 test('editor fires lifecycle hooks for edit', (assert) => {
   assert.expect(4);
-  editor = new Editor();
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection}) => {
+    return post([markupSection()]);
+  });
+  editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
   let didCallUpdatePost, didCallWillRender, didCallDidRender;

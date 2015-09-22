@@ -35,7 +35,8 @@ export default class CardNode {
         this.display();
       },
       cancel: () => this.display(),
-      remove: () => this.remove()
+      remove: () => this.remove(),
+      section: this.section
     };
   }
 

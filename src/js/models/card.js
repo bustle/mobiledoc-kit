@@ -7,4 +7,8 @@ export default class Card extends Section {
     this.name = name;
     this.payload = payload;
   }
+
+  clone() {
+    return this.builder.createCardSection(this.name, this.payload);
+  }
 }

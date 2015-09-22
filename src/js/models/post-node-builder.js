@@ -9,6 +9,10 @@ import Card from '../models/card';
 import { normalizeTagName } from '../utils/dom-utils';
 import { objectToSortedKVArray } from '../utils/array-utils';
 import {
+  LIST_ITEM_TYPE,
+  MARKUP_SECTION_TYPE
+} from '../models/types';
+import {
   DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME
 } from '../models/markup-section';
 
@@ -43,8 +47,15 @@ export default class PostNodeBuilder {
     return post;
   }
 
-  createBlankPost() {
-    return this.createPost([this.createMarkupSection()]);
+  createMarkerableSection(type, tagName, markers=[]) {
+    switch (type) {
+      case LIST_ITEM_TYPE:
+        return this.createListItem(tagName, markers);
+      case MARKUP_SECTION_TYPE:
+        return this.createMarkupSection(tagName, markers);
+      default:
+        throw new Error(`Cannot create markerable section of type ${type}`);
+    }
   }
 
   createMarkupSection(tagName=DEFAULT_MARKUP_SECTION_TAG_NAME, markers=[], isGenerated=false) {
@@ -80,7 +91,9 @@ export default class PostNodeBuilder {
   }
 
   createCardSection(name, payload={}) {
-    return new Card(name, payload);
+    const card = new Card(name, payload);
+    card.builder = this;
+    return card;
   }
 
   createMarker(value, markups=[]) {

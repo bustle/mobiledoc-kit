@@ -41,6 +41,10 @@ export default class Section extends LinkedItem {
     return this._tagName;
   }
 
+  clone() {
+    throw new Error('clone() must be implemented by subclass');
+  }
+
   immediatelyNextMarkerableSection() {
     const next = this.next;
     if (next) {
