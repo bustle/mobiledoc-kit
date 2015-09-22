@@ -605,7 +605,7 @@ test('markers with identical non-attribute markups get coalesced after applying 
   postEditor = new PostEditor(mockEditor);
   for (let i=0; i < section.length; i++) {
     range = Range.create(section, i, section, i+1);
-    postEditor.applyMarkupToRange(range, strong);
+    postEditor.addMarkupToRange(range, strong);
   }
   postEditor.complete();
 
@@ -636,7 +636,7 @@ test('#removeMarkup silently does nothing when invoked with an empty range', (as
   assert.ok(!section.markers.head.hasMarkup(markup), 'marker has no markup');
 });
 
-test('#applyMarkupToRange silently does nothing when invoked with an empty range', (assert) => {
+test('#addMarkupToRange silently does nothing when invoked with an empty range', (assert) => {
   let section, markup;
   const post = Helpers.postAbstract.build(({
     post, markupSection, marker, markup: buildMarkup
@@ -650,7 +650,7 @@ test('#applyMarkupToRange silently does nothing when invoked with an empty range
   renderBuiltAbstract(post);
 
   let range = Range.create(section, 1, section, 1);
-  postEditor.applyMarkupToRange(range, markup);
+  postEditor.addMarkupToRange(range, markup);
   postEditor.complete();
 
   assert.equal(section.markers.length, 1, 'similar markers are coalesced');

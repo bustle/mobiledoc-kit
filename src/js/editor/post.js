@@ -529,7 +529,7 @@ class PostEditor {
    *     const range = editor.cursor.offsets;
    *     const strongMarkup = editor.builder.createMarkup('strong');
    *     editor.run((postEditor) => {
-   *       postEditor.applyMarkupToRange(range, strongMarkup);
+   *       postEditor.addMarkupToRange(range, strongMarkup);
    *     });
    *     // Will result some markers possibly being split, and the markup
    *     // being applied to all markers between the split.
@@ -537,12 +537,12 @@ class PostEditor {
    * The return value will be all markers between the split, the same return
    * value as `splitMarkers`.
    *
-   * @method applyMarkupToRange
+   * @method addMarkupToRange
    * @param {Range} range
    * @param {Markup} markup A markup post abstract node
    * @public
    */
-  applyMarkupToRange(range, markup) {
+  addMarkupToRange(range, markup) {
     if (range.isCollapsed) {
       return;
     }
@@ -623,7 +623,7 @@ class PostEditor {
     if (hasMarkup) {
       this.removeMarkupFromRange(range, hasMarkup);
     } else {
-      this.applyMarkupToRange(range, markup);
+      this.addMarkupToRange(range, markup);
     }
     this.scheduleAfterRender(() => this.editor.selectRange(range));
   }
