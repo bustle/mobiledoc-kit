@@ -66,7 +66,8 @@ var exampleCard = {
   The content for the card should be pushed on that array as a string.
 * `options` is the `cardOptions` argument passed to the editor or renderer.
 * `env` contains information about the running of this hook. It may contain
-  the following functions:
+  the following properties:
+  * `env.name` The name of this card
   * `env.save(payload)` will save a new payload for a card instance, then
     swap a card in edit mode to display.
   * `env.cancel()` will swap a card in edit mode to display without changing
@@ -76,6 +77,9 @@ var exampleCard = {
   * `env.remove()` remove this card. This calls the current mode's `teardown()`
     hook and removes the card from DOM and from the post abstract.
     the instance to edit mode.
+  * `env.section` the CardSection from the Post -- this can be used when
+    programmatically interacting with the card, for example to move the card
+    using `editor.run(postEditor => postEditor.moveSectionUp(section)`.
 * `payload` is the payload for this card instance. It was either loaded from
   a Mobiledoc or generated and passed into an `env.save` call.
 

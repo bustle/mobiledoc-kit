@@ -24,8 +24,6 @@ test('sets element as contenteditable', (assert) => {
   assert.equal(editorElement.getAttribute('contenteditable'),
                'true',
                'element is contenteditable');
-  assert.equal(editorElement.firstChild.tagName, 'P',
-               `editor element has a P as its first child`);
 });
 
 test('#disableEditing before render is meaningful', (assert) => {

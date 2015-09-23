@@ -108,7 +108,7 @@ class Editor {
       }
       return new DOMParser(this.builder).parse(this.html);
     } else {
-      return this.builder.createBlankPost();
+      return this.builder.createPost();
     }
   }
 

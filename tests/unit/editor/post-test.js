@@ -36,6 +36,7 @@ function renderBuiltAbstract(post) {
   let renderer = new EditorDomRenderer(mockEditor, [], () => {}, {});
   let renderTree = new RenderTree(post);
   renderer.render(renderTree);
+  return mockEditor;
 }
 
 module('Unit: PostEditor with mobiledoc', {
@@ -385,8 +386,9 @@ test('#splitMarkers when headMarker = tailMarker', (assert) => {
     post = buildPost([ section ]);
   });
 
-  renderBuiltAbstract(post);
+  let mockEditor = renderBuiltAbstract(post);
 
+  const postEditor = new PostEditor(mockEditor);
   const range = Range.create(section, 1, section, 3);
   const markers = postEditor.splitMarkers(range);
   postEditor.complete();
@@ -402,10 +404,11 @@ test('#splitMarkers when head section = tail section, but different markers', (a
     ])
   );
 
-  renderBuiltAbstract(post);
+  let mockEditor = renderBuiltAbstract(post);
 
   const section = post.sections.head;
   const range = Range.create(section, 2, section, 5);
+  const postEditor = new PostEditor(mockEditor);
   const markers = postEditor.splitMarkers(range);
   postEditor.complete();
 
@@ -665,7 +668,7 @@ test('markers with identical markups get coalesced after deletion', (assert) => 
     section = markupSection('p', [marker('a'), marker('b',[strong]), marker('c')]);
     return post([section]);
   });
-  renderBuiltAbstract(post);
+  let mockEditor = renderBuiltAbstract(post);
 
   let range = Range.create(section, 1, section, 2);
   postEditor = new PostEditor(mockEditor);
@@ -674,4 +677,101 @@ test('markers with identical markups get coalesced after deletion', (assert) => 
 
   assert.equal(section.markers.length, 1, 'similar markers are coalesced');
   assert.equal(section.markers.head.value, 'ac', 'marker value is correct');
+});
+
+test('#moveSectionBefore moves the section as expected', (assert) => {
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+  let mockEditor = renderBuiltAbstract(post);
+
+  const [headSection, tailSection] = post.sections.toArray();
+  const collection = post.sections;
+  postEditor = new PostEditor(mockEditor);
+  postEditor.moveSectionBefore(collection, tailSection, headSection);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.text, '123', 'tail section is now head');
+  assert.equal(post.sections.tail.text, 'abc', 'head section is now tail');
+});
+
+test('#moveSectionBefore moves card sections', (assert) => {
+  const listiclePayload = {some:'thing'};
+  const otherPayload = {some:'other thing'};
+  const post = Helpers.postAbstract.build(({post, cardSection}) => {
+    return post([
+      cardSection('listicle-card', listiclePayload),
+      cardSection('other-card', otherPayload)
+    ]);
+  });
+  let mockEditor = renderBuiltAbstract(post);
+
+  const collection = post.sections;
+  let [headSection, tailSection] = post.sections.toArray();
+  postEditor = new PostEditor(mockEditor);
+  postEditor.moveSectionBefore(collection, tailSection, headSection);
+  postEditor.complete();
+
+  ([headSection, tailSection] = post.sections.toArray());
+  assert.equal(headSection.name, 'other-card', 'other-card moved to first spot');
+  assert.equal(tailSection.name, 'listicle-card', 'listicle-card moved to last spot');
+  assert.deepEqual(headSection.payload, otherPayload, 'payload is correct for other-card');
+  assert.deepEqual(tailSection.payload, listiclePayload, 'payload is correct for listicle-card');
+});
+
+test('#moveSectionUp moves it up', (assert) => {
+  const post = Helpers.postAbstract.build(({post, cardSection}) => {
+    return post([
+      cardSection('listicle-card'),
+      cardSection('other-card')
+    ]);
+  });
+  let mockEditor = renderBuiltAbstract(post);
+
+  let [headSection, tailSection] = post.sections.toArray();
+  postEditor = new PostEditor(mockEditor);
+  postEditor.moveSectionUp(tailSection);
+  postEditor.complete();
+
+  ([headSection, tailSection] = post.sections.toArray());
+  assert.equal(headSection.name, 'other-card', 'other-card moved to first spot');
+  assert.equal(tailSection.name, 'listicle-card', 'listicle-card moved to last spot');
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.moveSectionUp(headSection);
+  postEditor.complete();
+
+  ([headSection, tailSection] = post.sections.toArray());
+  assert.equal(headSection.name, 'other-card', 'moveSectionUp is no-op when card is at top');
+});
+
+test('moveSectionDown moves it down', (assert) => {
+  const post = Helpers.postAbstract.build(({post, cardSection}) => {
+    return post([
+      cardSection('listicle-card'),
+      cardSection('other-card')
+    ]);
+  });
+  let mockEditor = renderBuiltAbstract(post);
+
+  let [headSection, tailSection] = post.sections.toArray();
+  postEditor = new PostEditor(mockEditor);
+  postEditor.moveSectionDown(headSection);
+  postEditor.complete();
+
+  ([headSection, tailSection] = post.sections.toArray());
+  assert.equal(headSection.name, 'other-card', 'other-card moved to first spot');
+  assert.equal(tailSection.name, 'listicle-card', 'listicle-card moved to last spot');
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.moveSectionDown(tailSection);
+  postEditor.complete();
+
+  ([headSection, tailSection] = post.sections.toArray());
+  assert.equal(tailSection.name, 'listicle-card',
+               'moveSectionDown is no-op when card is at bottom');
+ 
 });

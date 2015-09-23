@@ -111,6 +111,11 @@ export default class LinkedList {
       item = item.next;
     }
   }
+  map(callback) {
+    let result = [];
+    this.forEach(i => result.push(callback(i)));
+    return result;
+  }
   walk(startItem, endItem, callback) {
     let item = startItem || this.head;
     while (item) {

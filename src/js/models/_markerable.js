@@ -16,6 +16,12 @@ export default class Markerable extends Section {
     markers.forEach(m => this.markers.append(m));
   }
 
+  clone() {
+    const newMarkers = this.markers.map(m => m.clone());
+    return this.builder.createMarkerableSection(
+      this.type, this.tagName, newMarkers);
+  }
+
   get isBlank() {
     if (!this.markers.length) {
       return true;

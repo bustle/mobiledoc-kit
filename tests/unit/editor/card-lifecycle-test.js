@@ -48,6 +48,34 @@ test('rendering a mobiledoc for editing calls card#setup', (assert) => {
   editor.render(editorElement);
 });
 
+test('rendered card env has `name`, `edit`, `save`, `remove`, `section', (assert) => {
+  let cardEnv;
+
+  const cardName = 'test-card';
+  const cards = [{
+    name: cardName,
+    display: {
+      setup(element, options, env) { cardEnv = env; },
+      teardown() {}
+    }
+  }];
+
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
+    return post([cardSection('test-card')]);
+  });
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  assert.ok(!!cardEnv, 'card env is present');
+  assert.equal(cardEnv.name, cardName, 'env name is correct');
+  assert.ok(!!cardEnv.edit, 'has edit hook');
+  assert.ok(!!cardEnv.save, 'has save hook');
+  assert.ok(!!cardEnv.cancel, 'has cancel hook');
+  assert.ok(!!cardEnv.remove, 'has remove hook');
+  const cardSection = editor.post.sections.head;
+  assert.ok(cardEnv.section && cardEnv.section === cardSection, 'has `section`');
+});
+
 test('rendering a mobiledoc for editing calls #unknownCardHandler when it encounters an unknown card', (assert) => {
   assert.expect(1);
 

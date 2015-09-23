@@ -41,3 +41,8 @@ test('#createMarkup normalizes tagName', (assert) => {
             m3 === m4, 'all markups are the same');
 });
 
+test('#createCardSection creates card with builder', (assert) => {
+  const builder = new PostNodeBuilder();
+  const cardSection = builder.createCardSection('test-card');
+  assert.ok(cardSection.builder === builder, 'card section has builder');
+});
