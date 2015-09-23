@@ -34,6 +34,8 @@ import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
 
+import { detect } from '../utils/array-utils';
+
 const defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
@@ -227,7 +229,7 @@ class Editor {
       this.cursor.moveToPosition(range.head);
     } else {
       const key = Key.fromEvent(event);
-      const nextPosition = this.run(postEditor => { 
+      const nextPosition = this.run(postEditor => {
         return postEditor.deleteFrom(range.head, key.direction);
       });
       this.cursor.moveToPosition(nextPosition);
@@ -358,6 +360,13 @@ class Editor {
   get activeSection() {
     const { activeSections } = this;
     return activeSections[activeSections.length - 1];
+  }
+
+  detectMarkupInRange(range, markupTagName) {
+    let markups = this.post.markupsInRange(range);
+    return detect(markups, markup => {
+      return markup.hasTag(markupTagName);
+    });
   }
 
   get markupsInSelection() {

@@ -4,7 +4,7 @@ import {
 import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
 import {
-  isArrayEqual, any, forEach, filter, compact
+  isArrayEqual, forEach, filter, compact
 } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 
@@ -529,7 +529,7 @@ class PostEditor {
    *     const range = editor.cursor.offsets;
    *     const strongMarkup = editor.builder.createMarkup('strong');
    *     editor.run((postEditor) => {
-   *       postEditor.applyMarkupToRange(range, strongMarkup);
+   *       postEditor.addMarkupToRange(range, strongMarkup);
    *     });
    *     // Will result some markers possibly being split, and the markup
    *     // being applied to all markers between the split.
@@ -537,12 +537,15 @@ class PostEditor {
    * The return value will be all markers between the split, the same return
    * value as `splitMarkers`.
    *
-   * @method applyMarkupToRange
+   * @method addMarkupToRange
    * @param {Range} range
    * @param {Markup} markup A markup post abstract node
    * @public
    */
-  applyMarkupToRange(range, markup) {
+  addMarkupToRange(range, markup) {
+    if (range.isCollapsed) {
+      return;
+    }
     this.splitMarkers(range).forEach(marker => {
       marker.addMarkup(markup);
       this._markDirty(marker);
@@ -573,6 +576,9 @@ class PostEditor {
    * @private
    */
   removeMarkupFromRange(range, markupOrMarkupCallback) {
+    if (range.isCollapsed) {
+      return;
+    }
     this.splitMarkers(range).forEach(marker => {
       marker.removeMarkup(markupOrMarkupCallback);
       this._markDirty(marker);
@@ -602,18 +608,22 @@ class PostEditor {
    * or, if a string, the tag name of the markup (e.g. 'strong', 'em') to toggle.
    */
   toggleMarkup(markupOrMarkupString) {
+    const range = this.editor.cursor.offsets;
+    if (range.isCollapsed) {
+      return;
+    }
     const markup = typeof markupOrMarkupString === 'string' ?
                      this.builder.createMarkup(markupOrMarkupString) :
                      markupOrMarkupString;
 
-    const range = this.editor.cursor.offsets;
-    const hasMarkup = m => m.hasTag(markup.tagName);
-    const rangeHasMarkup = any(this.editor.markupsInSelection, hasMarkup);
-
-    if (rangeHasMarkup) {
+    const hasMarkup = this.editor.detectMarkupInRange(range, markup.tagName);
+    // FIXME: This implies only a single markup in a range. This may not be
+    // true for links (which are not the same object instance like multiple
+    // strong tags would be).
+    if (hasMarkup) {
       this.removeMarkupFromRange(range, hasMarkup);
     } else {
-      this.applyMarkupToRange(range, markup);
+      this.addMarkupToRange(range, markup);
     }
     this.scheduleAfterRender(() => this.editor.selectRange(range));
   }

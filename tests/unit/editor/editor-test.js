@@ -2,6 +2,7 @@ import Editor from 'content-kit-editor/editor/editor';
 import { EDITOR_ELEMENT_CLASS_NAME } from 'content-kit-editor/editor/editor';
 import { normalizeTagName } from 'content-kit-editor/utils/dom-utils';
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
+import Range from 'content-kit-editor/utils/cursor/range';
 
 const { module, test } = window.QUnit;
 
@@ -181,4 +182,49 @@ test('editor parses and renders DOM', (assert) => {
 
   assert.equal(editorElement.innerHTML,
                `<p>hello world</p>`);
+});
+
+test('#detectMarkupInRange not found', (assert) => {
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      [
+        [1, normalizeTagName('p'), [
+          [[], 0, 'hello world']
+        ]]
+      ]
+    ]
+  };
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  let section = editor.post.sections.head;
+  let range = Range.create(section, 0, section, section.text.length);
+  let markup = editor.detectMarkupInRange(range, 'strong');
+  assert.ok(!markup, 'selection is not strong');
+});
+
+test('#detectMarkupInRange matching bounds of marker', (assert) => {
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [
+        ['strong']
+      ],
+      [
+        [1, normalizeTagName('p'), [
+          [[0], 1, 'hello world']
+        ]]
+      ]
+    ]
+  };
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  let section = editor.post.sections.head;
+  let range = Range.create(section, 0, section, section.text.length);
+  let markup = editor.detectMarkupInRange(range, 'strong');
+  assert.ok(markup, 'selection has markup');
+  assert.equal(markup.tagName, 'strong', 'detected markup is strong');
 });

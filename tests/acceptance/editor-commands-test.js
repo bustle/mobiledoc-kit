@@ -227,7 +227,7 @@ Helpers.skipInPhantom('highlight text, click "link" button shows input for URL, 
     const url = 'http://google.com';
     $(input).val(url);
     Helpers.dom.triggerEnterKeyupEvent(input[0]);
- 
+
     assert.toolbarHidden();
 
     setTimeout(() => {
