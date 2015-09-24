@@ -18,8 +18,7 @@
     "json",
     "wysiwyg",
     "editor",
-    "contenteditable",
-    "ember-addon"
+    "contenteditable"
   ],
   "files": [
     "index.js",
@@ -35,8 +34,7 @@
     "aws-sdk": "^2.1.7",
     "busboy": "^0.2.9",
     "embedly": "^1.0.2",
-    "express": "^4.11.1",
-    "broccoli-funnel": "^0.2.3"
+    "express": "^4.11.1"
   },
   "devDependencies": {
     "broccoli": "^0.16.3",
