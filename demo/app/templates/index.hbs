@@ -1,0 +1,54 @@
+<div class="section">
+  <p>
+    Content-Kit is a publishing solution designed for both text and
+    dynamically rendered cards. Posts are serialized into <a href="https://github.com/bustlelabs/content-kit-editor/blob/master/MOBILEDOC.md">Mobiledoc</a>, and
+    rendered to DOM in a reader's browser.
+  </p>
+  <p>
+    Read more on the <a href="https://github.com/bustlelabs/content-kit-editor">content-kit-editor</a>
+    GitHub repo, or on the <a href="http://madhatted.com/2015/7/31/announcing-content-kit-and-mobiledoc">announcement blog post</a>.
+  </p>
+</div>
+<div class="section">
+  <br>
+  <h2>Try a Demo</h2>
+</div>
+<div class="container">
+  <div class="pane">
+    <div class="output full-left">
+      <select id='select-mobiledoc' {{action 'changeMobiledoc' on='change' value='target'}}>
+        <option disabled>Load a new Mobiledoc</option>
+        <option value='simple'>Simple text content</option>
+        <option value='empty'>Empty mobiledoc</option>
+        <option value='simpleList'>List example</option>
+        <option value='simpleCard'>Simple Card</option>
+        <option value='inputCard'>Card with Input</option>
+        <option value='selfieCard'>Selfie Card</option>
+      </select>
+      {{#content-kit-editor
+          class='post-editor__editor'
+          mobiledoc=mobiledoc
+          cards=(content-kit-cards-list)
+          on-change=(action 'didEdit')
+        as |contentKit|}}
+        {{content-kit-toolbar contentKit=contentKit}}
+      {{/content-kit-editor}}
+    </div>
+  </div>
+
+  <div class="pane">
+    <div class="output">
+      <h4>Mobiledoc Output</h4>
+      <pre class="serialized-mobiledoc-wrapper"><code id="serialized-mobiledoc">
+      {{~ format-object editedMobiledoc ~}}
+      </code></pre>
+    </div>
+  </div>
+  <div class="pane">
+    <div class="output full-right">
+      <h4>Rendered with <a href="https://github.com/bustlelabs/mobiledoc-dom-renderer">DOM-Renderer</a></h4>
+      {{mobiledoc-dom-renderer mobiledoc=editedMobiledoc}}
+    </div>
+  </div>
+
+</div>

@@ -1,4 +1,3 @@
-import TextFormatToolbar  from '../views/text-format-toolbar';
 import Tooltip from '../views/tooltip';
 import EmbedIntent from '../views/embed-intent';
 import PostEditor from './post';
@@ -40,10 +39,6 @@ const defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
-  // FIXME PhantomJS has 'ontouchstart' in window,
-  // causing the stickyToolbar to accidentally be auto-activated
-  // in tests
-  stickyToolbar: false, // !!('ontouchstart' in window),
   cards: [],
   cardOptions: {},
   unknownCardHandler: () => {
@@ -147,7 +142,6 @@ class Editor {
 
     this._setupListeners();
     this._addEmbedIntent();
-    this._addToolbar();
     this._addTooltip();
 
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
@@ -158,17 +152,11 @@ class Editor {
     if (this.autofocus) { this.element.focus(); }
   }
 
-  _addToolbar() {
-    this.addView(new TextFormatToolbar({
-      editor: this,
-      rootElement: this.element,
-      commands: [],
-      sticky: this.stickyToolbar
-    }));
-  }
-
   _addTooltip() {
-    this.addView(new Tooltip({rootElement: this.element, showForTag: 'a'}));
+    this.addView(new Tooltip({
+      rootElement: this.element,
+      showForTag: 'a'
+    }));
   }
 
   get expansions() {
@@ -254,7 +242,6 @@ class Editor {
     this.cursor.moveToSection(cursorSection);
   }
 
-  // FIXME it might be nice to use the toolbar's prompt instead
   showPrompt(message, defaultValue, callback) {
     callback(window.prompt(message, defaultValue));
   }
