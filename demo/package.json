@@ -35,6 +35,6 @@
     "ember-content-kit": "0.1.0",
     "ember-disable-proxy-controllers": "^1.0.0",
     "ember-export-application-global": "^1.0.3",
-    "mobiledoc-dom-renderer": "^0.1.12"
+    "mobiledoc-dom-renderer": "^0.1.13"
   }
 }
