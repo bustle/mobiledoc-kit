@@ -1,19 +1,19 @@
 #!/bin/bash
 
 echo "Building website..."
-npm run build
+cd demo/
+rm -rf node_modules/ bower_components/*
+npm install
+bower install
+ember build --environment production
 
 echo "Arranging built website in website/"
 rm -rf website
 mkdir website
 
-# rename demo/website-index.html to be the base index.html
-cp dist/demo/website-index.html website/index.hml
-
-# selectively copy asset dirs from dist to the staging area
-cp -R dist/demo website/demo
-cp -R dist/css website/css
-cp -R dist/global website/global
+# rename demo/dist/index.html to be the base index.html
+cd ..
+cp -R demo/dist/* website/
 
 CURRENT_SHA="$(git rev-parse HEAD)"
 git add website/
