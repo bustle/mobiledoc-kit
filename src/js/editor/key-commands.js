@@ -47,13 +47,20 @@ export const DEFAULT_KEY_COMMANDS = [{
 }];
 
 export function validateKeyCommand(keyCommand) {
-  return !!keyCommand.modifier && !!keyCommand.str && !!keyCommand.run;
+  if (!keyCommand.run) {
+    return false;
+  }
+  return !!keyCommand.check || (!!keyCommand.modifier && !!keyCommand.str);
 }
 
 export function findKeyCommand(keyCommands, keyEvent) {
   const key = Key.fromEvent(keyEvent);
 
-  return detect(keyCommands, ({modifier, str}) => {
-    return key.hasModifier(modifier) && key.isChar(str);
+  return detect(keyCommands, ({modifier, str, check}) => {
+    if (!!check) {
+      return check(keyEvent);
+    } else {
+      return key.hasModifier(modifier) && key.isChar(str);
+    }
   });
 }

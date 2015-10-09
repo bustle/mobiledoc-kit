@@ -1,4 +1,5 @@
 import { Editor } from 'content-kit-editor';
+import Keycodes from 'content-kit-editor/utils/keycodes';
 import { MODIFIERS } from 'content-kit-editor/utils/key';
 import Helpers from '../test-helpers';
 
@@ -49,7 +50,7 @@ test('typing command-I italicizes highlighted text', (assert) => {
   assert.hasElement('#editor em:contains(something)', 'text is emphasized');
 });
 
-test('new key commands can be registered', (assert) => {
+test('new simple key commands can be registered', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => post([
       markupSection('p', [marker('something')])
@@ -72,3 +73,27 @@ test('new key commands can be registered', (assert) => {
 
   assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
 });
+
+test('new custom key commands can be registered', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker('something')])
+    ]));
+
+  let passedEditor;
+  editor = new Editor({mobiledoc});
+  editor.registerKeyCommand({
+    check(e) { return e.keyCode === Keycodes.ENTER; },
+    run(editor) { passedEditor = editor; }
+  });
+  editor.render(editorElement);
+
+  Helpers.dom.triggerKeyCommand(editor, 'Y', MODIFIERS.CTRL);
+
+  assert.ok(!passedEditor, 'incorrect key combo does not trigger key command');
+
+  Helpers.dom.triggerEnter(editor);
+
+  assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
+});
+
