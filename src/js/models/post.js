@@ -2,6 +2,7 @@ import { POST_TYPE } from './types';
 import LinkedList from 'content-kit-editor/utils/linked-list';
 import { forEach, compact } from 'content-kit-editor/utils/array-utils';
 import Set from 'content-kit-editor/utils/set';
+import { isMarkerable } from 'content-kit-editor/models/_section';
 
 export default class Post {
   constructor() {
@@ -102,6 +103,10 @@ export default class Post {
     const {head, tail} = range;
 
     let currentSection = head.section;
+    if (!isMarkerable(currentSection)) {
+      currentSection = this._nextMarkerableSection(currentSection);
+    }
+
     while (currentSection) {
       callback(currentSection);
 
@@ -145,7 +150,6 @@ export default class Post {
   // return the next section that has markers after this one
   _nextMarkerableSection(section) {
     if (!section) { return null; }
-    const isMarkerable = s => !!s.markers;
     const hasChildren  = s => !!s.items;
     const firstChild   = s => s.items.head;
     const isChild      = s => s.parent && !s.post;

@@ -2,7 +2,7 @@ import { LIST_ITEM_TYPE } from './types';
 import { normalizeTagName } from '../utils/dom-utils';
 import LinkedItem from '../utils/linked-item';
 
-function isMarkerable(section) {
+export function isMarkerable(section) {
   return !!section.markers;
 }
 
