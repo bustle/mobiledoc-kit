@@ -1,6 +1,7 @@
 import {
   DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME
 } from '../models/markup-section';
+import { isMarkerable } from '../models/_section';
 import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
 import {
@@ -20,10 +21,6 @@ function isListItem(section) {
 
 function isBlankAndListItem(section) {
   return isListItem(section) && section.isBlank;
-}
-
-function isMarkerable(section) {
-  return !!section.markers;
 }
 
 const CALLBACK_QUEUES = {

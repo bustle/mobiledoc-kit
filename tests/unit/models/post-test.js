@@ -66,6 +66,22 @@ test('#markersFrom finds markers across non-homogeneous sections', (assert) => {
                    'iterates correct markers');
 });
 
+test('#walkMarkerableSections finds no section when range contains only a card', (assert) => {
+  const post = Helpers.postAbstract.build(builder => {
+    const {post, cardSection} = builder;
+
+    return post([cardSection('simple-card')]);
+  });
+
+  let foundSections = [];
+
+  const card = post.sections.objectAt(0);
+  const range = Range.create(card, 0, card, 0);
+
+  post.walkMarkerableSections(range, s => foundSections.push(s));
+  assert.equal(foundSections.length, 0, 'found no markerable sections');
+});
+
 test('#walkMarkerableSections skips non-markerable sections', (assert) => {
   const post = Helpers.postAbstract.build(builder => {
     const {post, markupSection, marker, cardSection} = builder;
