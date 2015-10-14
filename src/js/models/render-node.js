@@ -36,6 +36,9 @@ export default class RenderNode extends LinkedItem {
     this.isDirty = true;
     if (this.parent) { this.parent.markDirty(); }
   }
+  get isRendered() {
+    return !!this.element;
+  }
   markClean() {
     this.isDirty = false;
   }

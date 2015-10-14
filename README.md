@@ -58,6 +58,10 @@ editor.render(element);
   current post with their cursor. Programmatic edits are still allowed.
 * `editor.enableEditing()` - allow the user to make direct edits directly
   to a post's text.
+* `editor.editCard(cardSection)` - change the card to its edit mode (will change
+  immediately if the card is already rendered, or will ensure that when the card
+  does get rendered it will be rendered in the "edit" state initially)
+* `editor.displayCard(cardSection)` - same as `editCard` except in display mode.
 
 ### Editor Lifecycle Hooks
 
