@@ -58,8 +58,7 @@ test('new key commands can be registered', (assert) => {
   let passedEditor;
   editor = new Editor({mobiledoc});
   editor.registerKeyCommand({
-    modifier: MODIFIERS.CTRL,
-    str: 'X',
+    str: 'ctrl+x',
     run(editor) { passedEditor = editor; }
   });
   editor.render(editorElement);
@@ -73,6 +72,33 @@ test('new key commands can be registered', (assert) => {
   assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
 });
 
+test('new key commands can be registered without modifiers', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker('something')])
+    ]));
+
+  let passedEditor;
+  editor = new Editor({mobiledoc});
+  editor.registerKeyCommand({
+    str: 'X',
+    run(editor) { passedEditor = editor; }
+  });
+  editor.render(editorElement);
+
+  Helpers.dom.triggerKeyCommand(editor, 'Y', MODIFIERS.CTRL);
+
+  assert.ok(!passedEditor, 'incorrect key combo does not trigger key command');
+
+  Helpers.dom.triggerKeyCommand(editor, 'X', MODIFIERS.CTRL);
+
+  assert.ok(!passedEditor, 'key with modifier combo does not trigger key command');
+
+  Helpers.dom.triggerKeyCommand(editor, 'X');
+
+  assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
+});
+
 test('duplicate key commands can be registered with the last registered winning', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => post([
@@ -82,13 +108,11 @@ test('duplicate key commands can be registered with the last registered winning'
   let firstCommandRan, secondCommandRan;
   editor = new Editor({mobiledoc});
   editor.registerKeyCommand({
-    modifier: MODIFIERS.CTRL,
-    str: 'X',
+    str: 'ctrl+x',
     run() { firstCommandRan = true; }
   });
   editor.registerKeyCommand({
-    modifier: MODIFIERS.CTRL,
-    str: 'X',
+    str: 'ctrl+x',
     run() { secondCommandRan = true; }
   });
   editor.render(editorElement);
@@ -108,13 +132,11 @@ test('returning false from key command causes next match to run', (assert) => {
   let firstCommandRan, secondCommandRan;
   editor = new Editor({mobiledoc});
   editor.registerKeyCommand({
-    modifier: MODIFIERS.CTRL,
-    str: 'X',
+    str: 'ctrl+x',
     run() { firstCommandRan = true; }
   });
   editor.registerKeyCommand({
-    modifier: MODIFIERS.CTRL,
-    str: 'X',
+    str: 'ctrl+x',
     run() {
       secondCommandRan = true;
       return false;

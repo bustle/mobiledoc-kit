@@ -1,13 +1,31 @@
 import Keycodes from './keycodes';
 export const DIRECTION = {
   FORWARD: 1,
-  BACKWARD: -1 
+  BACKWARD: -1
 };
 
 export const MODIFIERS = {
   META: 1, // also called "command" on OS X
   CTRL: 2,
   SHIFT: 3
+};
+
+export const SPECIAL_KEYS = {
+  BACKSPACE: 8,
+  TAB:       9,
+  ENTER:     13,
+  ESC:       27,
+  SPACE:     32,
+  PAGEUP:    33,
+  PAGEDOWN:  34,
+  END:       35,
+  HOME:      36,
+  LEFT:      37,
+  UP:        38,
+  RIGHT:     39,
+  DOWN:      40,
+  INS:       45,
+  DEL:       46
 };
 
 /**
@@ -65,6 +83,10 @@ const Key = class Key {
       default:
         throw new Error(`Cannot check for unknown modifier ${modifier}`);
     }
+  }
+
+  hasAnyModifier() {
+    return this.metaKey || this.ctrlKey || this.shiftKey;
   }
 
   get ctrlKey() {

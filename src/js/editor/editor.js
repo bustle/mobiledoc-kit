@@ -26,7 +26,7 @@ import {
   DEFAULT_TEXT_EXPANSIONS, findExpansion, validateExpansion
 } from './text-expansions';
 import {
-  DEFAULT_KEY_COMMANDS, findKeyCommands, validateKeyCommand
+  DEFAULT_KEY_COMMANDS, buildKeyCommand, findKeyCommands, validateKeyCommand
 } from './key-commands';
 import { capitalize } from '../utils/string-utils';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
@@ -192,7 +192,8 @@ class Editor {
    * is invoked
    * @public
    */
-  registerKeyCommand(keyCommand) {
+  registerKeyCommand(rawKeyCommand) {
+    const keyCommand = buildKeyCommand(rawKeyCommand);
     if (!validateKeyCommand(keyCommand)) {
       throw new Error('Key Command is not valid');
     }

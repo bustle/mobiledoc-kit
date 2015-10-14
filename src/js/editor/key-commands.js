@@ -1,5 +1,5 @@
 import Key from '../utils/key';
-import { MODIFIERS } from '../utils/key';
+import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
 import { filter } from '../utils/array-utils';
 import LinkCommand from '../commands/link';
 
@@ -46,14 +46,49 @@ export const DEFAULT_KEY_COMMANDS = [{
   }
 }];
 
+function stringToModifier(string) {
+  return MODIFIERS[string.toUpperCase()];
+}
+
+function characterToCode(character) {
+  const upperCharacter = character.toUpperCase();
+  const special = SPECIAL_KEYS[upperCharacter];
+  if (special) {
+    return special;
+  } else {
+    return upperCharacter.charCodeAt(0);
+  }
+}
+
+export function buildKeyCommand(keyCommand) {
+  if (!keyCommand.str) {
+    return keyCommand;
+  }
+
+  const str = keyCommand.str;
+  if (str.indexOf('+') !== -1) {
+    const [modifierName, character] = str.split('+');
+    keyCommand.modifier = stringToModifier(modifierName);
+    keyCommand.code = characterToCode(character);
+  } else {
+    keyCommand.code = characterToCode(str);
+  }
+
+  return keyCommand;
+}
+
 export function validateKeyCommand(keyCommand) {
-  return !!keyCommand.modifier && !!keyCommand.str && !!keyCommand.run;
+  return !!keyCommand.code && !!keyCommand.run;
 }
 
 export function findKeyCommands(keyCommands, keyEvent) {
   const key = Key.fromEvent(keyEvent);
 
-  return filter(keyCommands, ({modifier, str}) => {
-    return key.hasModifier(modifier) && key.isChar(str);
+  return filter(keyCommands, ({modifier, code}) => {
+    if (key.keyCode !== code) {
+      return false;
+    }
+
+    return (modifier && key.hasModifier(modifier)) || (!modifier && !key.hasAnyModifier());
   });
 }
