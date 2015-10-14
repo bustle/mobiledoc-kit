@@ -584,6 +584,10 @@ class Editor {
       this._insertEmptyMarkupSectionAtCursor();
     }
 
+    if (this.handleKeyCommand(event)) {
+      return;
+    }
+
     const key = Key.fromEvent(event);
 
     if (key.isDelete()) {
@@ -600,7 +604,6 @@ class Editor {
     }
 
     this.handleExpansion(event);
-    this.handleKeyCommand(event);
   }
 
   /**
@@ -614,6 +617,7 @@ class Editor {
    *
    * @method handleKeyCommand
    * @param {Event} event The keyboard event triggered by the user
+   * @return {Boolean} true when a command was successfully run
    * @private
    */
   handleKeyCommand(event) {
@@ -622,9 +626,10 @@ class Editor {
       let keyCommand = keyCommands[i];
       if (keyCommand.run(this) !== false) {
         event.preventDefault();
-        return;
+        return true;
       }
     }
+    return false;
   }
 
   handlePaste(event) {

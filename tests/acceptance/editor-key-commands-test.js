@@ -150,3 +150,56 @@ test('returning false from key command causes next match to run', (assert) => {
   assert.ok(!!firstCommandRan, 'first registered method is called');
 });
 
+test('key commands can override built-in functionality', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker('something')])
+    ]));
+
+  editor = new Editor({mobiledoc});
+
+  let passedEditor;
+  editor.registerKeyCommand({
+    str: 'enter',
+    run(editor) { passedEditor = editor; }
+  });
+
+  editor.render(editorElement);
+  assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
+
+  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 5);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
+
+  assert.equal($('#editor p').length, 1, 'still has just one paragraph');
+});
+
+test('returning false from key command still runs built-in functionality', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker('something')])
+    ]));
+
+  editor = new Editor({mobiledoc});
+
+  let passedEditor;
+  editor.registerKeyCommand({
+    str: 'enter',
+    run(editor) {
+      passedEditor = editor;
+      return false;
+    }
+  });
+
+  editor.render(editorElement);
+  assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
+
+  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 5);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
+
+  assert.equal($('#editor p').length, 2, 'has added a new paragraph');
+});
+
