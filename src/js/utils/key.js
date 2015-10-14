@@ -69,7 +69,7 @@ const Key = class Key {
   }
 
   isShift() {
-    return this.hasModifier(MODIFIERS.SHIFT);
+    return this.shiftKey;
   }
 
   hasModifier(modifier) {
@@ -95,6 +95,10 @@ const Key = class Key {
 
   get metaKey() {
     return this.event.metaKey;
+  }
+
+  get shiftKey() {
+    return this.event.shiftKey;
   }
 
   isChar(string) {
