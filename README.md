@@ -124,14 +124,14 @@ For more details on the API of `postEditor`, see the [API documentation](https:/
 For more details on the API for the builder, required to create new sections
 and markers, see the [builder API](https://github.com/bustlelabs/content-kit-editor/blob/master/src/js/models/post-node-builder.js).
 
-### Configuring hot keys and text expansions
+### Configuring hot keys
 
 Content-Kit allows configuring hot keys and text expansions. For instance, the
 hot-key command-B to make selected text bold, is registered internally as:
+
 ```javascript
 const boldKeyCommand = {
-  modifier: META,
-  str: 'B',
+  str: 'META+B',
   run(editor) {
     editor.run(postEditor => postEditor.toggleMarkup('strong'));
   }
@@ -139,7 +139,48 @@ const boldKeyCommand = {
 editor.registerKeyCommand(boldKeyCommand);
 ```
 
-All key commands must have `modifier`, `str` and `run` properties as shown above.
+All key commands must have `str` and `run` properties as shown above.
+
+`str` describes the key combination to use and may be a single key, or a modifier and a key separated by `+`.
+
+Modifiers can be one of `CTRL`, `META` or `SHIFT`.
+
+The key can be any of the alphanumeric characters on the keyboard, or one of the following special keys:
+
+* `BACKSPACE`
+* `TAB`
+* `ENTER`
+* `ESC`
+* `SPACE`
+* `PAGEUP`
+* `PAGEDOWN`
+* `END`
+* `HOME`
+* `LEFT`
+* `UP`
+* `RIGHT`
+* `DOWN`
+* `INS`
+* `DEL`
+
+#### Overriding built-in keys
+
+You can override built-in behavior by simply registering a hot key with the same name.
+For example, to submit a form instead of entering a new line when `enter` is pressed you could do the following:
+
+```javascript
+const enterKeyCommand = {
+  str: 'enter',
+  run(editor) {
+    // submit the form
+  }
+};
+editor.registerKeyCommand(enterKeyCommand);
+```
+
+To fall-back to the default behavior, simply return `false` from `run`.
+
+### Configuring text expansions
 
 Text expansions can also be registered with the editor. These are methods that
 are run when a text string is entered and then a trigger character is entered.
