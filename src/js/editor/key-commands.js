@@ -1,6 +1,6 @@
 import Key from '../utils/key';
 import { MODIFIERS } from '../utils/key';
-import { detect } from '../utils/array-utils';
+import { filter } from '../utils/array-utils';
 import LinkCommand from '../commands/link';
 
 export const DEFAULT_KEY_COMMANDS = [{
@@ -50,10 +50,10 @@ export function validateKeyCommand(keyCommand) {
   return !!keyCommand.modifier && !!keyCommand.str && !!keyCommand.run;
 }
 
-export function findKeyCommand(keyCommands, keyEvent) {
+export function findKeyCommands(keyCommands, keyEvent) {
   const key = Key.fromEvent(keyEvent);
 
-  return detect(keyCommands, ({modifier, str}) => {
+  return filter(keyCommands, ({modifier, str}) => {
     return key.hasModifier(modifier) && key.isChar(str);
   });
 }

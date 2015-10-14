@@ -72,3 +72,59 @@ test('new key commands can be registered', (assert) => {
 
   assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
 });
+
+test('duplicate key commands can be registered with the last registered winning', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker('something')])
+    ]));
+
+  let firstCommandRan, secondCommandRan;
+  editor = new Editor({mobiledoc});
+  editor.registerKeyCommand({
+    modifier: MODIFIERS.CTRL,
+    str: 'X',
+    run() { firstCommandRan = true; }
+  });
+  editor.registerKeyCommand({
+    modifier: MODIFIERS.CTRL,
+    str: 'X',
+    run() { secondCommandRan = true; }
+  });
+  editor.render(editorElement);
+
+  Helpers.dom.triggerKeyCommand(editor, 'X', MODIFIERS.CTRL);
+
+  assert.ok(!firstCommandRan, 'first registered method not called');
+  assert.ok(!!secondCommandRan, 'last registered method is called');
+});
+
+test('returning false from key command causes next match to run', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker('something')])
+    ]));
+
+  let firstCommandRan, secondCommandRan;
+  editor = new Editor({mobiledoc});
+  editor.registerKeyCommand({
+    modifier: MODIFIERS.CTRL,
+    str: 'X',
+    run() { firstCommandRan = true; }
+  });
+  editor.registerKeyCommand({
+    modifier: MODIFIERS.CTRL,
+    str: 'X',
+    run() {
+      secondCommandRan = true;
+      return false;
+    }
+  });
+  editor.render(editorElement);
+
+  Helpers.dom.triggerKeyCommand(editor, 'X', MODIFIERS.CTRL);
+
+  assert.ok(!!secondCommandRan, 'last registered method is called');
+  assert.ok(!!firstCommandRan, 'first registered method is called');
+});
+

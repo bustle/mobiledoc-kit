@@ -26,7 +26,7 @@ import {
   DEFAULT_TEXT_EXPANSIONS, findExpansion, validateExpansion
 } from './text-expansions';
 import {
-  DEFAULT_KEY_COMMANDS, findKeyCommand, validateKeyCommand
+  DEFAULT_KEY_COMMANDS, findKeyCommands, validateKeyCommand
 } from './key-commands';
 import { capitalize } from '../utils/string-utils';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
@@ -196,7 +196,7 @@ class Editor {
     if (!validateKeyCommand(keyCommand)) {
       throw new Error('Key Command is not valid');
     }
-    this.keyCommands.push(keyCommand);
+    this.keyCommands.unshift(keyCommand);
   }
 
   handleExpansion(event) {
@@ -602,11 +602,27 @@ class Editor {
     this.handleKeyCommand(event);
   }
 
+  /**
+   * Finds and runs the first matching key command for the event
+   *
+   * If multiple commands are bound to a key combination, the
+   * first matching one is run.
+   *
+   * If a command returns `false` then the next matching command
+   * is run instead.
+   *
+   * @method handleKeyCommand
+   * @param {Event} event The keyboard event triggered by the user
+   * @private
+   */
   handleKeyCommand(event) {
-    const keyCommand = findKeyCommand(this.keyCommands, event);
-    if (keyCommand) {
-      event.preventDefault();
-      keyCommand.run(this);
+    const keyCommands = findKeyCommands(this.keyCommands, event);
+    for (let i=0; i<keyCommands.length; i++) {
+      let keyCommand = keyCommands[i];
+      if (keyCommand.run(this) !== false) {
+        event.preventDefault();
+        return;
+      }
     }
   }
 
