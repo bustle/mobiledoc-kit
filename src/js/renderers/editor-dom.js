@@ -247,7 +247,8 @@ class Visitor {
       const cardNode = new CardNode(
         editor, card, section, renderNode.element, options);
       renderNode.cardNode = cardNode;
-      cardNode.display();
+      const initialMode = section._initialMode;
+      cardNode[initialMode]();
     } else {
       const env = { name: section.name };
       this.unknownCardHandler(

@@ -82,6 +82,143 @@ test('#insertSection inserts at end when no active cursor section', (assert) => 
   assert.hasElement('#editor p:eq(1):contains(def)', '2nd section -> same spot');
 });
 
+test('#insertSection can insert card, render it in display mode', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+
+  let displayedCard = false;
+  let cards = [{
+    name: 'sample-card',
+    display: {
+      setup() {
+        displayedCard = true;
+      }
+    }
+  }];
+
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  editor.run(postEditor => {
+    let cardSection = postEditor.builder.createCardSection('sample-card');
+    postEditor.insertSection(cardSection);
+  });
+
+  assert.ok(displayedCard, 'rendered card in display mode');
+});
+
+test('#insertSection inserts card, can render it in edit mode using #editCard', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+
+  let displayedCard = false,
+      editCard = false;
+  let cards = [{
+    name: 'sample-card',
+    display: {
+      setup() {
+        displayedCard = true;
+      }
+    },
+    edit: {
+      setup() {
+        editCard = true;
+      }
+    }
+  }];
+
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  editor.run(postEditor => {
+    let cardSection = postEditor.builder.createCardSection('sample-card');
+    postEditor.insertSection(cardSection);
+    editor.editCard(cardSection);
+  });
+
+  assert.ok(editCard, 'rendered card in edit mode');
+  assert.ok(!displayedCard, 'did not render in display mode');
+});
+
+test('after inserting a section, can use editor#editCard to switch it to edit mode', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
+    return post([cardSection('sample-card')]);
+  });
+
+  let displayedCard = false,
+      editedCard = false;
+  let cards = [{
+    name: 'sample-card',
+    display: {
+      setup() {
+        displayedCard = true;
+      }
+    },
+    edit: {
+      setup() {
+        editedCard = true;
+      }
+    }
+  }];
+
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+  assert.ok(displayedCard, 'called display#setup');
+  assert.ok(!editedCard, 'did not call edit#setup yet');
+
+  displayedCard = false;
+  const card = editor.post.sections.head;
+  editor.editCard(card);
+
+  assert.ok(editedCard, 'called edit#setup');
+  assert.ok(!displayedCard, 'did not call display#setup again');
+});
+
+test('can call editor#displayCard to swtich card into display mode', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
+    return post([cardSection('sample-card')]);
+  });
+
+  let displayedCard = false,
+      editedCard = false;
+
+  let cards = [{
+    name: 'sample-card',
+    display: {
+      setup() {
+        displayedCard = true;
+      }
+    },
+    edit: {
+      setup() {
+        editedCard = true;
+      }
+    }
+  }];
+
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  assert.ok(displayedCard, 'precond - called display#setup');
+  assert.ok(!editedCard, 'precond - did not call edit#setup yet');
+
+  displayedCard = false;
+  const card = editor.post.sections.head;
+  editor.editCard(card);
+
+  assert.ok(!displayedCard, 'card not in display mode');
+  assert.ok(editedCard, 'card in edit mode');
+
+  editedCard = false;
+
+  editor.displayCard(card);
+
+  assert.ok(displayedCard, 'card back in display mode');
+  assert.ok(!editedCard, 'card not in edit mode');
+});
+
 test('#toggleMarkup adds markup by tag name', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([

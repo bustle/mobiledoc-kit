@@ -30,6 +30,7 @@ import {
 } from './key-commands';
 import { capitalize } from '../utils/string-utils';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
+import { CARD_MODES } from '../models/card';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
 
@@ -417,6 +418,30 @@ class Editor {
   }
 
   /**
+   * Change a cardSection into edit mode
+   * If called before the card has been rendered, it will be marked so that
+   * it is rendered in edit mode when it gets rendered.
+   * @param {CardSection} cardSection
+   * @return undefined
+   * @public
+   */
+  editCard(cardSection) {
+    this._setCardMode(cardSection, CARD_MODES.EDIT);
+  }
+
+  /**
+   * Change a cardSection into display mode
+   * If called before the card has been rendered, it will be marked so that
+   * it is rendered in display mode when it gets rendered.
+   * @param {CardSection} cardSection
+   * @return undefined
+   * @public
+   */
+  displayCard(cardSection) {
+    this._setCardMode(cardSection, CARD_MODES.DISPLAY);
+  }
+
+  /**
    * Run a new post editing session. Yields a block with a new `postEditor`
    * instance. This instance can be used to interact with the post abstract,
    * and defers rendering until the end of all changes.
@@ -634,6 +659,17 @@ class Editor {
 
   handlePaste(event) {
     event.preventDefault(); // FIXME for now, just prevent pasting
+  }
+
+  // @private
+  _setCardMode(cardSection, mode) {
+    const renderNode = this._renderTree.getRenderNode(cardSection);
+    if (renderNode && renderNode.isRendered) {
+      const cardNode = renderNode.cardNode;
+      cardNode[mode]();
+    } else {
+      cardSection.setInitialMode(mode);
+    }
   }
 }
 
