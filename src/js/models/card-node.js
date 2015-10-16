@@ -28,11 +28,13 @@ export default class CardNode {
     return {
       name: this.card.name,
       edit: () => this.edit(),
-      save: (payload) => {
+      save: (payload, transition=true) => {
         this.section.payload = payload;
 
         this.editor.didUpdate();
-        this.display();
+        if (transition) {
+          this.display();
+        }
       },
       cancel: () => this.display(),
       remove: () => this.remove(),
