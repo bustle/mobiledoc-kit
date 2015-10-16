@@ -68,8 +68,10 @@ var exampleCard = {
 * `env` contains information about the running of this hook. It may contain
   the following properties:
   * `env.name` The name of this card
-  * `env.save(payload)` will save a new payload for a card instance, then
-    swap a card in edit mode to display.
+  * `env.save(payload)` will save a new payload for a card instance. `save`
+    also accepts a boolean as a second argument, `true` if the card should
+    be transitioned to `display` and `false` if it should remain in `edit`
+    mode. The default behavior is to transition to `display`.
   * `env.cancel()` will swap a card in edit mode to display without changing
     the payload.
   * `env.edit()` is available to the `display` setup, and when called swaps

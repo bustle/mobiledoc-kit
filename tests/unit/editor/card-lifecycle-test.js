@@ -178,6 +178,42 @@ test('rendered card can fire edit hook to enter editing mode, then save', (asser
   assert.equal(secondPayload, newPayload, 'second display with new payload');
 });
 
+test('rendered card can fire edit hook to enter editing mode, then silently save', (assert) => {
+  const setupPayloads = [];
+  const payload = { foo: 'bar' };
+  const newPayload = {some: 'new values'};
+  let cardEnv;
+
+  const card = {
+    name: 'test-card',
+    display: {
+      setup() {
+        assert.ok(false, 'card should never be displayed in this test');
+      }
+    },
+    edit: {
+      setup(element, options, env, setupPayload) {
+        cardEnv = env;
+        setupPayloads.push(setupPayload);
+      }
+    }
+  };
+
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) =>
+    post([ cardSection('test-card', payload) ])
+  );
+  editor = new Editor({ mobiledoc, cards: [card] });
+  editor.editCard(editor.post.sections.head);
+  editor.render(editorElement);
+
+  cardEnv.save(newPayload, false);
+
+  const [firstPayload] = setupPayloads;
+  assert.equal(firstPayload, payload, 'first display with mobiledoc payload');
+  let secondPayload = editor.post.sections.head.payload;
+  assert.equal(secondPayload, newPayload, 'second display with new payload');
+});
+
 test('rendered card can fire edit hook to enter editing mode, then cancel', (assert) => {
   const setupPayloads = [];
   let cardEnv;
