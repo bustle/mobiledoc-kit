@@ -1,5 +1,4 @@
 import Tooltip from '../views/tooltip';
-import EmbedIntent from '../views/embed-intent';
 import PostEditor from './post';
 
 import ImageCard from '../cards/image';
@@ -142,7 +141,6 @@ class Editor {
     clearChildNodes(element);
 
     this._setupListeners();
-    this._addEmbedIntent();
     this._addTooltip();
 
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
@@ -513,13 +511,6 @@ class Editor {
    */
   cursorDidChange(callback) {
     this.addCallback(CALLBACK_QUEUES.CURSOR_DID_CHANGE, callback);
-  }
-
-  _addEmbedIntent() {
-    this.addView(new EmbedIntent({
-      editor: this,
-      rootElement: this.element
-    }));
   }
 
   _setupListeners() {
