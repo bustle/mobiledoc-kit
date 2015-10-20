@@ -523,7 +523,7 @@ class Editor {
   }
 
   _setupListeners() {
-    const elementEvents = ['keydown', 'keyup', 'input', 'dragover', 'drop', 'paste'];
+    const elementEvents = ['keydown', 'keyup', 'input', 'paste'];
     const documentEvents = ['mouseup'];
 
     elementEvents.forEach(eventName => {
@@ -584,14 +584,6 @@ class Editor {
         this._hasSelection = false;
       }
     }
-  }
-
-  handleDragover(e) {
-    e.preventDefault(); // FIXME for now, just prevent default
-  }
-
-  handleDrop(e) {
-    e.preventDefault(); // FIXME for now, just prevent default
   }
 
   _insertEmptyMarkupSectionAtCursor() {
