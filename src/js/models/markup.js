@@ -1,5 +1,7 @@
 import { normalizeTagName } from '../utils/dom-utils';
+import { filterObject } from '../utils/array-utils';
 import { MARKUP_TYPE } from './types';
+import assert from '../utils/assert';
 
 export const VALID_MARKUP_TAGNAMES = [
   'b',
@@ -10,25 +12,34 @@ export const VALID_MARKUP_TAGNAMES = [
   'li'
 ].map(normalizeTagName);
 
+export const VALID_ATTRIBUTES = [
+  'href',
+  'ref'
+];
+
 class Markup {
   /*
    * @param {Object} attributes key-values
    */
   constructor(tagName, attributes={}) {
     this.tagName = normalizeTagName(tagName);
-    if (Array.isArray(attributes)) {
-      throw new Error('Must use attributes object param (not array) to Markup');
-    }
-    this.attributes = attributes;
+
+    assert('Must use attributes object param (not array) for Markup',
+           !Array.isArray(attributes));
+
+    this.attributes = filterObject(attributes, VALID_ATTRIBUTES);
     this.type = MARKUP_TYPE;
 
-    if (VALID_MARKUP_TAGNAMES.indexOf(this.tagName) === -1) {
-      throw new Error(`Cannot create markup of tagName ${tagName}`);
-    }
+    assert(`Cannot create markup of tagName ${tagName}`,
+           VALID_MARKUP_TAGNAMES.indexOf(this.tagName) !== -1);
   }
 
   hasTag(tagName) {
     return this.tagName === normalizeTagName(tagName);
+  }
+
+  getAttribute(name) {
+    return this.attributes[name];
   }
 
   static isValidElement(element) {

@@ -22,6 +22,21 @@ function any(enumerable, callback) {
   return false;
 }
 
+function every(enumerable, callback) {
+  if (enumerable.every) { return enumerable.every(callback); }
+
+  for (let i=0; i<enumerable.length; i++) {
+    if (!callback(enumerable[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function toArray(arrayLike) {
+  return Array.prototype.slice.call(arrayLike);
+}
+
 /**
  * Useful for array-like things that aren't
  * actually arrays, like NodeList
@@ -105,15 +120,28 @@ function isArrayEqual(arr1, arr2) {
   return true;
 }
 
+// return an object with only the valid keys
+function filterObject(object, validKeys=[]) {
+  let result = {};
+  forEach(
+    filter(Object.keys(object), key => validKeys.indexOf(key) !== -1),
+      key => result[key] = object[key]
+  );
+  return result;
+}
+
 export {
   detect,
   forEach,
   any,
+  every,
   filter,
   commonItemLength,
   compact,
   reduce,
   objectToSortedKVArray,
   kvArrayToObject,
-  isArrayEqual
+  isArrayEqual,
+  toArray,
+  filterObject
 };

@@ -3,6 +3,7 @@ import LinkedList from 'content-kit-editor/utils/linked-list';
 import { forEach, compact } from 'content-kit-editor/utils/array-utils';
 import Set from 'content-kit-editor/utils/set';
 import { isMarkerable } from 'content-kit-editor/models/_section';
+import MobiledocRenderer from 'content-kit-editor/renderers/mobiledoc';
 
 export default class Post {
   constructor() {
@@ -99,6 +100,22 @@ export default class Post {
     return markups.toArray();
   }
 
+  walkAllSections(range, callback) {
+    const {head, tail} = range;
+
+    let currentSection = head.section;
+
+    while (currentSection) {
+      callback(currentSection);
+
+      if (currentSection === tail.section) {
+        break;
+      } else {
+        currentSection = currentSection.next;
+      }
+    }
+  }
+
   walkMarkerableSections(range, callback) {
     const {head, tail} = range;
 
@@ -147,7 +164,8 @@ export default class Post {
     return containedSections;
   }
 
-  // return the next section that has markers after this one
+  // return the next section that has markers after this one,
+  // possibly skipping non-markerable sections
   _nextMarkerableSection(section) {
     if (!section) { return null; }
     const hasChildren  = s => !!s.items;
@@ -174,5 +192,30 @@ export default class Post {
         return this._nextMarkerableSection(parent(section));
       }
     }
+  }
+
+  /**
+   * @param {Range} range
+   * @return {Mobiledoc} A mobiledoc representation of the range (JSON)
+   */
+  cloneRange(range) {
+    const post = this.builder.createPost();
+    const { builder } = this;
+
+    this.walkAllSections(range, section => {
+      let newSection;
+      if (isMarkerable(section)) {
+        newSection = builder.createMarkupSection(section.tagName);
+        let currentRange = range.trimTo(section);
+        forEach(
+          section.markersFor(currentRange.headSectionOffset, currentRange.tailSectionOffset),
+          m => newSection.markers.append(m)
+        );
+      } else {
+        newSection = section.clone();
+      }
+      post.sections.append(newSection);
+    });
+    return MobiledocRenderer.render(post);
   }
 }

@@ -455,3 +455,11 @@ test('#insertBefore throws if item to be inserted is in another non-empty list',
     list2.insertBefore(item1, null);
   });
 });
+
+test('#every', (assert) => {
+  let list = new LinkedList();
+  [2,3,4].forEach(n => list.append({val: n}));
+
+  assert.ok(list.every(i => i.val > 0), '> 0');
+  assert.ok(!list.every(i => i.val % 2 === 0), 'even');
+});

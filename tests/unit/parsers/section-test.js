@@ -1,10 +1,12 @@
-const {module, test} = QUnit;
-
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import SectionParser from 'content-kit-editor/parsers/section';
 import Helpers from '../../test-helpers';
 
+const {module, test} = Helpers;
+
 let builder, parser;
+let buildDOM = Helpers.dom.fromHTML;
+
 module('Unit: Parser: SectionParser', {
   beforeEach() {
     builder = new PostNodeBuilder();
@@ -17,14 +19,8 @@ module('Unit: Parser: SectionParser', {
 });
 
 test('#parse parses simple dom', (assert) => {
-  let element = Helpers.dom.build(t =>
-    t('p', {}, [
-      t.text('hello there'),
-      t('b', {}, [
-        t.text('i am bold')
-      ])
-    ])
-  );
+  let container = buildDOM('<p>hello there<b>i am bold</b><p>');
+  let element = container.firstChild;
 
   const section = parser.parse(element);
   assert.equal(section.tagName, 'p');
@@ -37,17 +33,10 @@ test('#parse parses simple dom', (assert) => {
 });
 
 test('#parse parses nested markups', (assert) => {
-  let element = Helpers.dom.build(t =>
-    t('p', {}, [
-      t('b', {}, [
-        t.text('i am bold'),
-        t('i', {}, [
-          t.text('i am bold and italic')
-        ]),
-        t.text('i am bold again')
-      ])
-    ])
-  );
+  let container = buildDOM(`
+    <p><b>i am bold<i>i am bold and italic</i>i am bold again</b></p>
+  `);
+  let element = container.firstChild;
 
   const section = parser.parse(element);
   assert.equal(section.markers.length, 3, 'has 3 markers');
@@ -63,13 +52,10 @@ test('#parse parses nested markups', (assert) => {
 });
 
 test('#parse ignores non-markup elements like spans', (assert) => {
-  let element = Helpers.dom.build(t =>
-    t('p', {}, [
-      t('span', {}, [
-        t.text('i was in span')
-      ])
-    ])
-  );
+  let container = buildDOM(`
+    <p><span>i was in span</span></p>
+  `);
+  let element = container.firstChild;
 
   const section = parser.parse(element);
   assert.equal(section.tagName, 'p');
@@ -80,13 +66,11 @@ test('#parse ignores non-markup elements like spans', (assert) => {
 });
 
 test('#parse reads attributes', (assert) => {
-  let element = Helpers.dom.build(t =>
-    t('p', {}, [
-      t('a', {href: 'google.com'}, [
-        t.text('i am a link')
-      ])
-    ])
-  );
+  let container = buildDOM(`
+    <p><a href="google.com">i am a link</a></p>
+  `);
+  let element = container.firstChild;
+
   const section = parser.parse(element);
   assert.equal(section.markers.length, 1, 'has 1 markers');
   const [m1] = section.markers.toArray();
@@ -96,21 +80,26 @@ test('#parse reads attributes', (assert) => {
 });
 
 test('#parse joins contiguous text nodes separated by non-markup elements', (assert) => {
-  let element = Helpers.dom.build(t =>
-    t('p', {}, [
-      t('span', {}, [
-        t.text('span 1')
-      ]),
-      t('span', {}, [
-        t.text('span 2')
-      ])
-    ])
-  );
+  let container = buildDOM(`
+    <p><span>span 1</span><span>span 2</span></p>
+  `);
+  let element = container.firstChild;
 
   const section = parser.parse(element);
   assert.equal(section.tagName, 'p');
-  assert.equal(section.markers.length, 1, 'has 1 markers');
+  assert.equal(section.markers.length, 1, 'has 1 marker');
   const [m1] = section.markers.toArray();
 
   assert.equal(m1.value, 'span 1span 2');
+});
+
+test('#parse turns a textNode into a section', (assert) => {
+  let container = buildDOM(`I am a text node`);
+  let element = container.firstChild;
+  const section = parser.parse(element);
+  assert.equal(section.tagName, 'p');
+  assert.equal(section.markers.length, 1, 'has 1 marker');
+  const [m1] = section.markers.toArray();
+
+  assert.equal(m1.value, 'I am a text node');
 });

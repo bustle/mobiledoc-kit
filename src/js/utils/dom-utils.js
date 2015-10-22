@@ -85,21 +85,13 @@ function containsNode(parentNode, childNode) {
  * converts the element's NamedNodeMap of attrs into
  * an object with key-value pairs
  * @param {DOMNode} element
- * @param {Array} whitelist optional, an array of attributes to constrain to.
- * If not passed (or empty), all attributes are allowed.
  * @return {Object} key-value pairs
  */
-function getAttributes(element, whitelist=[]) {
-  const allowed = attrName => {
-    return whitelist.length === 0 ? true : whitelist.indexOf(attrName) !== -1;
-  };
+function getAttributes(element) {
   const result = {};
   if (element.hasAttributes()) {
-    const attributes = element.attributes;
-    forEach(attributes, ({name,value}) => {
-      if (allowed(name)) {
-        result[name] = value;
-      }
+    forEach(element.attributes, ({name,value}) => {
+      result[name] = value;
     });
   }
   return result;

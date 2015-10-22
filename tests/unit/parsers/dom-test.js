@@ -1,525 +1,326 @@
 import DOMParser from 'content-kit-editor/parsers/dom';
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import Helpers from '../../test-helpers';
+import { Editor } from 'content-kit-editor';
 
-const { module, test } = Helpers;
+const {module, test} = Helpers;
 
-function buildDOM(html) {
-  var div = document.createElement('div');
-  div.innerHTML = html;
-  return div;
-}
+let builder, parser, editor;
+let buildDOM = Helpers.dom.fromHTML;
 
-let parser, builder, expectedPost;
-
-module('Unit: DOMParser', {
+module('Unit: Parser: DOMParser', {
   beforeEach() {
     builder = new PostNodeBuilder();
     parser = new DOMParser(builder);
-    expectedPost = builder.createPost();
   },
   afterEach() {
-    parser = null;
     builder = null;
-    expectedPost = null;
+    parser = null;
+    if (editor) {
+      editor.destroy();
+      editor = null;
+    }
   }
 });
 
-test('parse empty content', (assert) => {
-  const post = parser.parse(buildDOM(''));
-  let section = builder.createMarkupSection('p');
-  expectedPost.sections.append(section);
+test('#parse can parse a section element', (assert) => {
+  let element = buildDOM("<p>some text</p>");
 
-  assert.deepEqual(post, expectedPost);
+  const post = parser.parse(element);
+  assert.ok(post, 'gets post');
+  assert.equal(post.sections.length, 1, 'has 1 section');
+
+  const s1 = post.sections.head;
+  assert.equal(s1.markers.length, 1, 's1 has 1 marker');
+  assert.equal(s1.markers.head.value, 'some text', 'has text');
+});
+
+test('#parse can parse multiple elements', (assert) => {
+  let element = buildDOM('<p>some text</p><p>some other text</p>');
+
+  const post = parser.parse(element);
+  assert.ok(post, 'gets post');
+  assert.equal(post.sections.length, 2, 'has 2 sections');
+
+  const [s1, s2] = post.sections.toArray();
+  assert.equal(s1.markers.length, 1, 's1 has 1 marker');
+  assert.equal(s1.markers.head.value, 'some text');
+
+  assert.equal(s2.markers.length, 1, 's2 has 1 marker');
+  assert.equal(s2.markers.head.value, 'some other text');
+});
+
+test('editor#reparse catches changes to section', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => 
+    post([
+      markupSection('p', [marker('the marker')])
+    ])
+  );
+  editor = new Editor({mobiledoc});
+  const editorElement = $('<div id="editor"></div>')[0];
+  $('#qunit-fixture').append(editorElement);
+  editor.render(editorElement);
+
+  assert.hasElement('#editor p:contains(the marker)', 'precond - rendered correctly');
+
+  const p = $('#editor p:eq(0)')[0];
+  p.childNodes[0].textContent = 'the NEW marker';
+
+  // In Firefox, changing the text content changes the selection, so re-set it
+  Helpers.dom.moveCursorTo(p.childNodes[0]);
+
+  editor.reparse();
+
+  const section = editor.post.sections.head;
+  assert.equal(section.text, 'the NEW marker');
+});
+
+test('editor#reparse catches changes to list section', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, listSection, listItem, marker}) => 
+    post([
+      listSection('ul', [
+        listItem([marker('the list item')])
+      ])
+    ])
+  );
+  editor = new Editor({mobiledoc});
+  const editorElement = $('<div id="editor"></div>')[0];
+  $('#qunit-fixture').append(editorElement);
+  editor.render(editorElement);
+
+  assert.hasElement('#editor li:contains(list item)', 'precond - rendered correctly');
+
+  const li = $('#editor li:eq(0)')[0];
+  li.childNodes[0].textContent = 'the NEW list item';
+
+  // In Firefox, changing the text content changes the selection, so re-set it
+  Helpers.dom.moveCursorTo(li.childNodes[0]);
+
+  editor.reparse();
+
+  const listItem = editor.post.sections.head.items.head;
+  assert.equal(listItem.text, 'the NEW list item');
+});
+
+test('parse empty content', (assert) => {
+  let element = buildDOM('');
+  const post = parser.parse(element);
+
+  assert.ok(post.isBlank, 'post is blank');
 });
 
 test('blank textnodes are ignored', (assert) => {
   let post = parser.parse(buildDOM('<p>first line</p>\n<p>second line</p>'));
 
-  let expectedFirst = builder.createMarkupSection('P');
-  expectedFirst.markers.append(builder.createMarker('first line'));
-  expectedPost.sections.append(expectedFirst);
-  let expectedSecond = builder.createMarkupSection('P');
-  expectedSecond.markers.append(builder.createMarker('second line'));
-  expectedPost.sections.append(expectedSecond);
+  assert.equal(post.sections.length, 2, 'parse 2 sections');
+  assert.equal(post.sections.objectAt(0).text, 'first line');
+  assert.equal(post.sections.objectAt(1).text, 'second line');
+});
 
-  assert.deepEqual(post, expectedPost);
+test('adjacent textnodes are turned into sections', (assert) => {
+  let post = parser.parse(buildDOM('<p>first line</p>middle line<p>third line</p>'));
+
+  assert.equal(post.sections.length, 3, 'parse 3 sections');
+  assert.equal(post.sections.objectAt(0).text, 'first line');
+  assert.equal(post.sections.objectAt(1).text, 'middle line');
+  assert.equal(post.sections.objectAt(2).text, 'third line');
 });
 
 test('textnode adjacent to p tag becomes section', (assert) => {
   const post = parser.parse(buildDOM('<p>first line</p>second line'));
 
-  let expectedFirst = builder.createMarkupSection('P');
-  expectedFirst.markers.append(builder.createMarker('first line'));
-  expectedPost.sections.append(expectedFirst);
-  let expectedSecond = builder.createMarkupSection('P', [], true);
-  expectedSecond.markers.append(builder.createMarker('second line'));
-  expectedPost.sections.append(expectedSecond);
-
-  assert.deepEqual(post, expectedPost);
+  assert.equal(post.sections.length, 2, 'parse 2 sections');
+  assert.equal(post.sections.objectAt(0).text, 'first line');
+  assert.equal(post.sections.objectAt(1).text, 'second line');
 });
 
-test('p tag (section markup) should create a block', (assert) => {
-  const post = parser.parse(buildDOM('<p>text</p>'));
+test('plain text creates a section', (assert) => {
+  let container = buildDOM('plain text');
+  let element = container.firstChild;
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P');
-  expectedFirst.markers.append(builder.createMarker('text'));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
+  assert.equal(post.sections.length, 1, 'parse 1 section');
+  assert.equal(post.sections.objectAt(0).text, 'plain text');
 });
 
-test('strong tag (stray markup) without a block should create a block', (assert) => {
-  const post = parser.parse(buildDOM('<strong>text</strong>'));
+test('strong tag + text node creates section', (assert) => {
+  let element = buildDOM('<b>bold text</b>');
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  expectedFirst.markers.append(builder.createMarker('text', [
-    builder.createMarkup('STRONG')
-  ]));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
+  assert.equal(post.sections.length, 1, 'parse 1 section');
+  assert.equal(post.sections.objectAt(0).text, 'bold text');
+  let marker = post.sections.head.markers.head;
+  assert.equal(marker.value, 'bold text');
+  assert.ok(marker.hasMarkup('b'), 'marker has b');
 });
 
-test('strong tag with inner em (stray markup) without a block should create a block', (assert) => {
-  const post = parser.parse(buildDOM('<strong><em>stray</em> markup tags</strong>.'));
+test('strong tag + em + text node creates section', (assert) => {
+  let element = buildDOM('<b><em>stray</em> markup tags</b>');
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  let strong = builder.createMarkup('STRONG');
-  expectedFirst.markers.append(builder.createMarker('stray', [
-    strong,
-    builder.createMarkup('EM')
-  ]));
-  expectedFirst.markers.append(builder.createMarker(' markup tags', [strong]));
-  expectedFirst.markers.append(builder.createMarker('.'));
-  expectedPost.sections.append(expectedFirst);
+  assert.equal(post.sections.length, 1, 'parse 1 section');
+  assert.equal(post.sections.objectAt(0).text, 'stray markup tags');
 
-  assert.deepEqual(post, expectedPost);
+  let markers = post.sections.objectAt(0).markers.toArray();
+  assert.equal(markers.length, 2, '2 markers');
+
+  let [m1, m2] = markers;
+
+  assert.equal(m1.value, 'stray');
+  assert.equal(m2.value, ' markup tags');
+
+  assert.ok(m1.hasMarkup('b'), 'm1 is b');
+  assert.ok(m1.hasMarkup('em'), 'm1 is em');
+
+  assert.ok(m2.hasMarkup('b'), 'm2 is b');
+  assert.ok(!m2.hasMarkup('em'), 'm1 is not em');
 });
 
-test('stray text (stray markup) should create a block', (assert) => {
-  const post = parser.parse(buildDOM('text'));
+test('link (A tag) is parsed', (assert) => {
+  let url = 'http://bustle.com',
+      ref = 'nofollow';
+  let element = buildDOM(`<a href="${url}" ref="${ref}">link</a>`);
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  expectedFirst.markers.append(builder.createMarker('text'));
-  expectedPost.sections.append(expectedFirst);
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.equal(post.sections.objectAt(0).text, 'link');
 
-  assert.deepEqual(post, expectedPost);
+  let markers = post.sections.objectAt(0).markers.toArray();
+  assert.equal(markers.length, 1, '1 marker');
+  let [marker] = markers;
+  assert.equal(marker.value, 'link');
+  assert.ok(marker.hasMarkup('a'), 'has A markup');
+
+  let markup = marker.markups[0];
+  assert.equal(markup.getAttribute('href'), url, 'has href attr');
+  assert.equal(markup.getAttribute('ref'), ref, 'has ref attr');
 });
 
-test('text node, strong tag, text node (stray markup) without a block should create a block', (assert) => {
-  const post = parser.parse(buildDOM('start <strong>bold</strong> end'));
+test('unrecognized tags are ignored', (assert) => {
+  let element = buildDOM(`<p>before<sub>sub</sub>after</p>`);
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  expectedFirst.markers.append(builder.createMarker('start '));
-  expectedFirst.markers.append(builder.createMarker('bold', [
-    builder.createMarkup('STRONG')
-  ]));
-  expectedFirst.markers.append(builder.createMarker(' end'));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.equal(post.sections.objectAt(0).text, 'beforesubafter');
+  assert.equal(post.sections.objectAt(0).markers.length, 1, '1 marker');
 });
 
-test('italic tag (stray markup) without a block should create a block', (assert) => {
-  const post = parser.parse(buildDOM('<em>text</em>'));
+test('doubly-nested span with text is parsed into a section', (assert) => {
+  let element = buildDOM(`<p><span><span>inner</span></span></p>`);
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  expectedFirst.markers.append(builder.createMarker('text', [
-    builder.createMarkup('EM')
-  ]));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.equal(post.sections.objectAt(0).text, 'inner');
+  assert.equal(post.sections.objectAt(0).markers.length, 1, '1 marker');
 });
 
-test('u tag (stray markup) without a block should strip U and create a block', (assert) => {
-  const post = parser.parse(buildDOM('<u>text</u>'));
+test('span with font-style italic maps to em', (assert) => {
+  let element = buildDOM(`<p><span style="font-style:ItaLic;">emph</span></p>`);
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  expectedFirst.markers.append(builder.createMarker('text'));
-  expectedPost.sections.append(expectedFirst);
+  assert.equal(post.sections.length, 1, '1 section');
 
-  assert.deepEqual(post, expectedPost);
+  let section = post.sections.objectAt(0);
+  assert.equal(section.markers.length, 1, '1 marker');
+  let marker = section.markers.objectAt(0);
+
+  assert.equal(marker.value, 'emph');
+  assert.ok(marker.hasMarkup('em'), 'marker is em');
 });
 
-test('a tag (stray markup) without a block should create a block', (assert) => {
-  var url = "http://test.com";
-  const post = parser.parse(buildDOM('<a href="'+url+'">text</a>'));
+test('span with font-weight 700 maps to strong', (assert) => {
+  let element = buildDOM(`<p><span style="font-weight:700;">bold 700</span></p>`);
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  expectedFirst.markers.append(builder.createMarker('text', [
-    builder.createMarkup('A', {href:url})
-  ]));
-  expectedPost.sections.append(expectedFirst);
+  assert.equal(post.sections.length, 1, '1 section');
 
-  assert.deepEqual(post, expectedPost);
+  let section = post.sections.objectAt(0);
+  assert.equal(section.markers.length, 1, '1 marker');
+  let marker = section.markers.objectAt(0);
+
+  assert.equal(marker.value, 'bold 700');
+  assert.ok(marker.hasMarkup('strong'), 'marker is strong');
 });
 
-/* FIXME: What should happen with br
-test('markup: break', (assert) => {
-  const post = parser.parse(buildDOM('line <br/>break'));
+test('span with font-weight "bold" maps to strong', (assert) => {
+  let element = buildDOM(`<p><span style="font-weight:bold;">bold bold</span></p>`);
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  expectedFirst.markers.append(builder.createMarker('line '));
-  expectedFirst.markers.append(builder.createMarker('break'));
-  expectedPost.sections.append(expectedFirst);
+  assert.equal(post.sections.length, 1, '1 section');
 
-  assert.deepEqual(post, expectedPost);
-});
-*/
+  let section = post.sections.objectAt(0);
+  assert.equal(section.markers.length, 1, '1 marker');
+  let marker = section.markers.objectAt(0);
 
-test('sub tag (stray markup) without a block should filter SUB and create a block', (assert) => {
-  const post = parser.parse(buildDOM('footnote<sub>1</sub>'));
-
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  expectedFirst.markers.append(builder.createMarker('footnote'));
-  expectedFirst.markers.append(builder.createMarker('1'));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
+  assert.equal(marker.value, 'bold bold');
+  assert.ok(marker.hasMarkup('strong'), 'marker is strong');
 });
 
-test('sup tag (stray markup) without a block should filter SUP and create a block', (assert) => {
-  const post = parser.parse(buildDOM('e=mc<sup>2</sup>'));
+test('unrecognized inline styles are ignored', (assert) => {
+  let element = buildDOM(`<p><span style="font-color:red;">was red</span></p>`);
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P', [], true);
-  expectedFirst.markers.append(builder.createMarker('e=mc'));
-  expectedFirst.markers.append(builder.createMarker('2'));
-  expectedPost.sections.append(expectedFirst);
+  assert.equal(post.sections.length, 1, '1 section');
 
-  assert.deepEqual(post, expectedPost);
+  let section = post.sections.objectAt(0);
+  assert.equal(section.markers.length, 1, '1 marker');
+  let marker = section.markers.objectAt(0);
+
+  assert.equal(marker.value, 'was red');
+  assert.equal(marker.markups.length, 0, 'no markups');
 });
 
-// This is not the way a list should be created -- it should be list sections
-// and list items
-Helpers.skip('list (stray markup) without a block should create a block', (assert) => {
-  const post = parser.parse(buildDOM('<ul><li>Item 1</li><li>Item 2</li></ul>'));
+test('recognized markup section tags are parsed (H1)', (assert) => {
+  let element = buildDOM(`<h1>h1 text</h1>`);
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('UL');
-  expectedFirst.markers.append(builder.createMarker('Item 1', [
-    builder.createMarkup('LI')
-  ]));
-  expectedFirst.markers.append(builder.createMarker('Item 2', [
-    builder.createMarkup('LI')
-  ]));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.ok(post === expectedPost, 'should generate correct output');
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.equal(post.sections.objectAt(0).text, 'h1 text');
+  assert.equal(post.sections.objectAt(0).tagName, 'h1');
 });
 
-test('nested tags (section markup) should create a block', (assert) => {
-  const post = parser.parse(buildDOM('<p><em><strong>Double.</strong></em> <strong><em>Double staggered</em> start.</strong> <strong>Double <em>staggered end.</em></strong> <strong>Double <em>staggered</em> middle.</strong></p>'));
+test('recognized markup section tags are parsed (H2)', (assert) => {
+  let element = buildDOM(`<h2>h2 text</h2>`);
+  const post = parser.parse(element);
 
-  let expectedFirst = builder.createMarkupSection('P');
-  expectedFirst.markers.append(builder.createMarker('Double.', [
-    builder.createMarkup('EM'),
-    builder.createMarkup('STRONG')
-  ]));
-  expectedFirst.markers.append(builder.createMarker(' '));
-  let firstStrong = builder.createMarkup('STRONG');
-  expectedFirst.markers.append(builder.createMarker('Double staggered', [
-    firstStrong,
-    builder.createMarkup('EM')
-  ]));
-  expectedFirst.markers.append(builder.createMarker(' start.', [firstStrong]));
-  expectedFirst.markers.append(builder.createMarker(' '));
-  let secondStrong = builder.createMarkup('STRONG');
-  expectedFirst.markers.append(builder.createMarker('Double ', [
-    secondStrong
-  ]));
-  expectedFirst.markers.append(builder.createMarker('staggered end.', [
-    secondStrong,
-    builder.createMarkup('EM')
-  ]));
-  expectedFirst.markers.append(builder.createMarker(' '));
-  let thirdStrong = builder.createMarkup('STRONG');
-  expectedFirst.markers.append(builder.createMarker('Double ', [
-    thirdStrong
-  ]));
-  expectedFirst.markers.append(builder.createMarker('staggered', [
-    thirdStrong,
-    builder.createMarkup('EM')
-  ]));
-  expectedFirst.markers.append(builder.createMarker(' middle.', [thirdStrong]));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-  let sectionMarkers = post.sections.head.markers;
-  assert.equal(sectionMarkers.objectAt(2).markups[0], sectionMarkers.objectAt(3).markups[0]);
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.equal(post.sections.objectAt(0).text, 'h2 text');
+  assert.equal(post.sections.objectAt(0).tagName, 'h2');
 });
 
-/*
- * FIXME: Update these tests to use the renderer
- *
-test('markup: nested/unsupported tags', (assert) => {
-  var parsed = compiler.parse('<p>Test one <strong>two</strong> <em><strong>three</strong></em> <span>four</span> <span><strong>five</strong></span> <strong><span>six</span></strong> <strong></strong><span></span><strong><span></span></strong><span><strong></strong></span>seven</p>');
+test('recognized markup section tags are parsed (H3)', (assert) => {
+  let element = buildDOM(`<h3>h3 text</h3>`);
+  const post = parser.parse(element);
 
-  equal ( parsed.length, 1 );
-  equal ( parsed[0].type, Type.PARAGRAPH.id );
-  equal ( parsed[0].value, 'Test one two three four five six seven' );
-  equal ( parsed[0].markup.length, 5 );
-
-  equal ( parsed[0].markup[0].type, Type.BOLD.id );
-  equal ( parsed[0].markup[0].start, 9 );
-  equal ( parsed[0].markup[0].end, 12 );
-
-  equal ( parsed[0].markup[1].type, Type.ITALIC.id );
-  equal ( parsed[0].markup[1].start, 13 );
-  equal ( parsed[0].markup[1].end, 18 );
-
-  equal ( parsed[0].markup[2].type, Type.BOLD.id );
-  equal ( parsed[0].markup[2].start, 13 );
-  equal ( parsed[0].markup[2].end, 18 );
-
-  equal ( parsed[0].markup[3].type, Type.BOLD.id );
-  equal ( parsed[0].markup[3].start, 24 );
-  equal ( parsed[0].markup[3].end, 28 );
-
-  equal ( parsed[0].markup[4].type, Type.BOLD.id );
-  equal ( parsed[0].markup[4].start, 29 );
-  equal ( parsed[0].markup[4].end, 32 );
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.equal(post.sections.objectAt(0).text, 'h3 text');
+  assert.equal(post.sections.objectAt(0).tagName, 'h3');
 });
 
-test('markup: preserves spaces in empty tags', (assert) => {
-  var rendered = compiler.rerender('<p>Testing a<span> </span><em>space</em></p>');
-  equal ( rendered, '<p>Testing a <em>space</em></p>');
+test('recognized markup section tags are parsed (blockquote)', (assert) => {
+  let element = buildDOM(`<blockquote>blockquote text</blockquote>`);
+  const post = parser.parse(element);
+
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.equal(post.sections.objectAt(0).text, 'blockquote text');
+  assert.equal(post.sections.objectAt(0).tagName, 'blockquote');
 });
 
-test('markup: self-closing tags with nesting', (assert) => {
-  var input = '<p><strong>Blah <br/>blah</strong> <br/>blah</p>';
-  var parsed = compiler.parse(input);
+test('unrecognized attributes are ignored', (assert) => {
+  let element = buildDOM(`
+    <a href="http://bustle.com"
+       style="text-decoration: none">not-underlined link</a>`
+  );
+  const post = parser.parse(element);
 
-  equal ( parsed[0].value, 'Blah blah blah' );
-  equal ( parsed[0].markup.length, 3 );
-
-  equal ( parsed[0].markup[0].type, Type.BOLD.id );
-  equal ( parsed[0].markup[0].start, 0 );
-  equal ( parsed[0].markup[0].end, 9 );
-
-  equal ( parsed[0].markup[1].type, Type.BREAK.id );
-  equal ( parsed[0].markup[1].start, 5 );
-  equal ( parsed[0].markup[1].end, 5 );
-
-  equal ( parsed[0].markup[2].type, Type.BREAK.id );
-  equal ( parsed[0].markup[2].start, 10 );
-  equal ( parsed[0].markup[2].end, 10 );
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.equal(post.sections.objectAt(0).text, 'not-underlined link');
+  let marker = post.sections.objectAt(0).markers.objectAt(0);
+  assert.equal(marker.value, 'not-underlined link');
+  assert.ok(marker.hasMarkup('a'), 'has <a> markup');
+  let markup = marker.getMarkup('a');
+  assert.equal(markup.getAttribute('href'), 'http://bustle.com');
+  assert.ok(!markup.getAttribute('style'), 'style attribute not included');
 });
 
-test('markup: whitespace', (assert) => {
-  var parsed = compiler.parse('<ul>   ' +
-                              '\t <li>Item <em>1</em></li> &nbsp;\n' +
-                              '   <li><strong>Item 2</strong></li>\r\n &nbsp; ' +
-                              '\t\t<li><strong>Item</strong> 3</li>\r' +
-                              '</ul>');
-  equal ( parsed.length, 1 );
-  equal ( parsed[0].value, 'Item 1 Item 2 Item 3' );
-
-  var markup = parsed[0].markup
-  equal ( markup.length, 6);
-  equal ( markup[0].type, Type.LIST_ITEM.id );
-  equal ( markup[0].start, 0 );
-  equal ( markup[0].end, 6 );
-  equal ( markup[1].type, Type.ITALIC.id );
-  equal ( markup[1].start, 5 );
-  equal ( markup[1].end, 6 );
-  equal ( markup[2].type, Type.LIST_ITEM.id );
-  equal ( markup[2].start, 7 );
-  equal ( markup[2].end, 13 );
-  equal ( markup[3].type, Type.BOLD.id );
-  equal ( markup[3].start, 7 );
-  equal ( markup[3].end, 13 );
-  equal ( markup[4].type, Type.LIST_ITEM.id );
-  equal ( markup[4].start, 14 );
-  equal ( markup[4].end, 20 );
-  equal ( markup[5].type, Type.BOLD.id );
-  equal ( markup[5].start, 14 );
-  equal ( markup[5].end, 18 );
-});
-
-test('markup: consistent order', (assert) => {
-  var correctlyOrdered = compiler.parse('<p><a><strong>text</strong></a></p>');
-  var incorrectlyOrdered = compiler.parse('<p><strong><a>text</a></strong></p>');
-
-  equal( compiler.render(correctlyOrdered),  compiler.render(incorrectlyOrdered) );
-});
-*/
-
-test('attributes', (assert) => {
-  const href = 'http://google.com';
-  const rel = 'nofollow';
-  const post = parser.parse(buildDOM(`<p><a href="${href}" rel="${rel}">Link to google.com</a></p>`));
-
-  let expectedFirst = builder.createMarkupSection('P');
-  expectedFirst.markers.append(builder.createMarker('Link to google.com', [
-    builder.createMarkup('A', {href, rel})
-  ]));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-});
-
-test('attributes filters out inline styles and classes', (assert) => {
-  const post = parser.parse(buildDOM('<p class="test" style="color:red;"><b style="line-height:11px">test</b></p>'));
-
-  let expectedFirst = builder.createMarkupSection('P');
-  expectedFirst.markers.append(builder.createMarker('test', [
-    builder.createMarkup('B')
-  ]));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-});
-
-test('blocks: paragraph', (assert) => {
-  const post = parser.parse(buildDOM('<p>TEXT</p>'));
-
-  let expectedFirst = builder.createMarkupSection('P');
-  expectedFirst.markers.append(builder.createMarker('TEXT'));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-});
-
-test('blocks: heading', (assert) => {
-  const post = parser.parse(buildDOM('<h2>TEXT</h2>'));
-
-  let expectedFirst = builder.createMarkupSection('H2');
-  expectedFirst.markers.append(builder.createMarker('TEXT'));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-});
-
-test('blocks: subheading', (assert) => {
-  const post = parser.parse(buildDOM('<h3>TEXT</h3>'));
-
-  let expectedFirst = builder.createMarkupSection('H3');
-  expectedFirst.markers.append(builder.createMarker('TEXT'));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-});
-
-/* FIXME: should not create a markup type section
-test('blocks: image', (assert) => {
-  var url = "http://domain.com/text.png";
-  const post = parser.parse(buildDOM('<img src="'+url+'" />'));
-  assert.deepEqual( post, {
-    sections: [{
-      type: MARKUP_SECTION,
-      tagName: 'IMG',
-      attributes: ['src', url],
-      markups: []
-    }]
-  });
-});
-*/
-
-test('blocks: quote', (assert) => {
-  const post = parser.parse(buildDOM('<blockquote>quote</blockquote>'));
-
-  let expectedFirst = builder.createMarkupSection('BLOCKQUOTE');
-  expectedFirst.markers.append(builder.createMarker('quote'));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-});
-
-test('blocks: list', (assert) => {
-  const post = parser.parse(buildDOM('<ul><li>Item 1</li> <li>Item 2</li></ul>'));
-
-  let expectedFirst = builder.createMarkupSection('UL');
-  expectedFirst.markers.append(builder.createMarker('Item 1', [
-    builder.createMarkup('LI')
-  ]));
-  expectedFirst.markers.append(builder.createMarker(' '));
-  expectedFirst.markers.append(builder.createMarker('Item 2', [
-    builder.createMarkup('LI')
-  ]));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-});
-
-test('blocks: ordered list', (assert) => {
-  const post = parser.parse(buildDOM('<ol><li>Item 1</li> <li>Item 2</li></ol>'));
-
-  let expectedFirst = builder.createMarkupSection('OL');
-  expectedFirst.markers.append(builder.createMarker('Item 1', [
-    builder.createMarkup('LI')
-  ]));
-  expectedFirst.markers.append(builder.createMarker(' '));
-  expectedFirst.markers.append(builder.createMarker('Item 2', [
-    builder.createMarkup('LI')
-  ]));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-});
-
-/*
-test('blocks: mixed', (assert) => {
-  var input = '<h2>The Title</h2><h3>The Subtitle</h3><p>TEXT <strong>1</strong></p><p>TEXT <strong><em>2</em></strong></p><p>TEXT with a <a href="http://google.com/">link</a>.</p><blockquote>Quote</blockquote>';
-  var parsed = compiler.parse(input);
-
-  equal ( parsed.length, 6 );
-  equal ( parsed[0].type, Type.HEADING.id );
-  equal ( parsed[1].type, Type.SUBHEADING.id );
-  equal ( parsed[2].type, Type.PARAGRAPH.id );
-  equal ( parsed[3].type, Type.PARAGRAPH.id );
-  equal ( parsed[4].type, Type.PARAGRAPH.id );
-  equal ( parsed[5].type, Type.QUOTE.id );
-});
-*/
-
-/* FIXME: needs images, br support
-test('blocks: self-closing', (assert) => {
-  var url = 'http://domain.com/test.png';
-  const post = parser.parse(buildDOM('<img src="'+url+'"/><p>Line<br/>break</p>'));
-
-  assert.deepEqual( post, {
-    sections: [{
-      type: MARKUP_SECTION,
-      tagName: 'IMG',
-      attributes: ['src', url],
-      markups: []
-    }, {
-      type: MARKUP_SECTION,
-      tagName: 'P',
-      markups: [{
-        open: [],
-        close: 0,
-        value: 'Line'
-      }, {
-        open: [{
-          tagName: 'BR'
-        }],
-        close: 1,
-        value: null
-      }, {
-        open: [],
-        close: 0,
-        value: 'break'
-      }]
-    }]
-  });
-});
-*/
-
-test('converts tags to mapped values', (assert) => {
-  // FIXME: Should probably be normalizing b to strong etc
-  const post = parser.parse(buildDOM('<p><b><i>Converts</i> tags</b>.</p>'));
-
-  let expectedFirst = builder.createMarkupSection('P');
-  let bold = builder.createMarkup('B');
-  expectedFirst.markers.append(builder.createMarker('Converts', [
-    bold,
-    builder.createMarkup('I')
-  ]));
-  expectedFirst.markers.append(builder.createMarker(' tags', [bold]));
-  expectedFirst.markers.append(builder.createMarker('.'));
-  expectedPost.sections.append(expectedFirst);
-
-  assert.deepEqual(post, expectedPost);
-});
+// FIXME TODO ul, ol, li, img parsing

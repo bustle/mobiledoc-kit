@@ -1,4 +1,5 @@
 import LinkedList from '../utils/linked-list';
+import { forEach } from '../utils/array-utils';
 import { LIST_SECTION_TYPE } from './types';
 import Section from './_section';
 
@@ -21,6 +22,12 @@ export default class ListSection extends Section {
 
   get isBlank() {
     return this.items.isEmpty;
+  }
+
+  clone() {
+    let newSection = this.builder.createListSection();
+    forEach(this.items, i => newSection.items.append(i.clone()));
+    return newSection;
   }
 
   // returns [prevListSection, newMarkupSection, nextListSection]

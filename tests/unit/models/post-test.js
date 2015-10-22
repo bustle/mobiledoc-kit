@@ -409,3 +409,50 @@ test('#sectionsContainedBy when range starts/ends in list item', (assert) => {
   assert.ok(containedSections.indexOf(card) !== -1, 'contains card');
   assert.ok(containedSections.indexOf(s1) !== -1, 'contains section');
 });
+
+test('#cloneRange creates a mobiledoc from the given range', (assert) => {
+  const post = Helpers.postAbstract.build(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  const section = post.sections.head;
+  const range = Range.create(section,1,section,2); // "b"
+
+  const mobiledoc = post.cloneRange(range);
+  const expectedMobiledoc = Helpers.mobiledoc.build(({post, marker, markupSection}) => {
+    return post([markupSection('p',[marker('b')])]);
+  });
+
+  assert.deepEqual(mobiledoc, expectedMobiledoc);
+});
+
+test('#cloneRange copies card sections', (assert) => {
+  let cardPayload = {foo: 'bar'};
+
+  let buildPost = Helpers.postAbstract.build,
+      buildMobiledoc = Helpers.mobiledoc.build;
+
+  const post = buildPost(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      cardSection('test-card', cardPayload),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  const range = Range.create(post.sections.head, 1,  // 'b'
+                             post.sections.tail, 1); // '2'
+
+  const mobiledoc = post.cloneRange(range);
+  const expectedMobiledoc = buildMobiledoc(
+    ({post, marker, markupSection, cardSection}) => {
+    return post([
+      markupSection('p',[marker('bc')]),
+      cardSection('test-card', {foo: 'bar'}),
+      markupSection('p',[marker('1')])
+    ]);
+  });
+
+  assert.deepEqual(mobiledoc, expectedMobiledoc);
+});

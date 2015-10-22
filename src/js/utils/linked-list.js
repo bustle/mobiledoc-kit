@@ -147,6 +147,16 @@ export default class LinkedList {
   any(callback) {
     return !!this.detect(callback);
   }
+  every(callback) {
+    let item = this.head;
+    while (item) {
+      if (!callback(item)) {
+        return false;
+      }
+      item = item.next;
+    }
+    return true;
+  }
   objectAt(targetIndex) {
     let index = -1;
     return this.detect(() => {
