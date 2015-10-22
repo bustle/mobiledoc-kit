@@ -13,40 +13,144 @@ module('Acceptance: Editor: Key Commands', {
     $('#qunit-fixture').append(editorElement);
   },
   afterEach() {
-    if (editor) { editor.destroy(); }
+    if (editor) {
+      editor.destroy();
+      editor = null;
+    }
   }
 });
 
-test('typing command-B bolds highlighted text', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker('something')])
-    ]));
+function testStatefulCommand({modifier, key, command, markupName}) {
+  test(`${command} applies markup ${markupName} to highlighted text`, (assert) => {
+    let initialText = 'something';
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => post([
+        markupSection('p', [marker(initialText)])
+      ]));
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
-  assert.hasNoElement('#editor strong', 'precond - no strong text');
-  Helpers.dom.selectText('something', editorElement);
-  Helpers.dom.triggerKeyCommand(editor, 'B', MODIFIERS.META);
+    assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
+    Helpers.dom.selectText(initialText, editorElement);
+    Helpers.dom.triggerKeyCommand(editor, key, modifier);
 
-  assert.hasElement('#editor strong:contains(something)', 'text is strengthened');
+    assert.hasElement(`#editor ${markupName}:contains(${initialText})`,
+                      `text wrapped in ${markupName}`);
+  });
+
+  test(`${command} applies ${markupName} to next entered text`, (assert) => {
+    let initialText = 'something';
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => post([
+        markupSection('p', [marker(initialText)])
+      ]));
+
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
+
+    assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
+    Helpers.dom.moveCursorTo(
+      editor.post.sections.head.markers.head.renderNode.element,
+      initialText.length);
+    Helpers.dom.triggerKeyCommand(editor, key, modifier);
+    Helpers.dom.insertText(editor, 'z');
+
+    let changedMobiledoc = editor.serialize();
+    let expectedMobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker, markup: buildMarkup}) => {
+        let markup = buildMarkup(markupName);
+        return post([
+          markupSection('p', [
+            marker(initialText),
+            marker('z', [markup])
+          ])
+        ]);
+    });
+    assert.deepEqual(changedMobiledoc, expectedMobiledoc);
+  });
+}
+
+testStatefulCommand({
+  modifier: MODIFIERS.META,
+  key: 'B',
+  command: 'command-B',
+  markupName: 'strong'
 });
 
-test('typing command-I italicizes highlighted text', (assert) => {
+testStatefulCommand({
+  modifier: MODIFIERS.CTRL,
+  key: 'B',
+  command: 'command-B',
+  markupName: 'strong'
+});
+
+testStatefulCommand({
+  modifier: MODIFIERS.META,
+  key: 'I',
+  command: 'command-I',
+  markupName: 'em'
+});
+
+testStatefulCommand({
+  modifier: MODIFIERS.CTRL,
+  key: 'I',
+  command: 'command-I',
+  markupName: 'em'
+});
+
+test(`ctrl-k clears to the end of a line`, (assert) => {
+  let initialText = 'something';
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => post([
-      markupSection('p', [marker('something')])
+      markupSection('p', [marker(initialText)])
     ]));
 
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  assert.hasNoElement('#editor em', 'precond - no strong text');
-  Helpers.dom.selectText('something', editorElement);
-  Helpers.dom.triggerKeyCommand(editor, 'I', MODIFIERS.META);
+  let textElement = editor.post.sections.head.markers.head.renderNode.element;
+  Helpers.dom.moveCursorTo(textElement, 4);
+  Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.CTRL);
 
-  assert.hasElement('#editor em:contains(something)', 'text is emphasized');
+  let changedMobiledoc = editor.serialize();
+  let expectedMobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => {
+      return post([
+        markupSection('p', [
+          marker('some')
+        ])
+      ]);
+  });
+  assert.deepEqual(changedMobiledoc, expectedMobiledoc,
+                   'mobiledoc updated appropriately');
+});
+
+test(`ctrl-k clears selected text`, (assert) => {
+  let initialText = 'something';
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker(initialText)])
+    ]));
+
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  let textElement = editor.post.sections.head.markers.head.renderNode.element;
+  Helpers.dom.moveCursorTo(textElement, 4, textElement, 8);
+  Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.CTRL);
+
+  let changedMobiledoc = editor.serialize();
+  let expectedMobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => {
+      return post([
+        markupSection('p', [
+          marker('someg')
+        ])
+      ]);
+  });
+  assert.deepEqual(changedMobiledoc, expectedMobiledoc,
+                   'mobiledoc updated appropriately');
 });
 
 test('new key commands can be registered', (assert) => {

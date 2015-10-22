@@ -305,13 +305,6 @@ class Editor {
   }
 
   reparse() {
-    let { headSection, headSectionOffset } = this.cursor.offsets;
-    if (headSectionOffset === 0) {
-      // FIXME if the offset is 0, the user is typing the first character
-      // in an empty section, so we need to move the cursor 1 letter forward
-      headSectionOffset = 1;
-    }
-
     this._reparseCurrentSection();
     this._removeDetachedSections();
 
@@ -320,8 +313,6 @@ class Editor {
     this.run(() => {});
     this.rerender();
     this.trigger('update');
-
-    this.cursor.moveToSection(headSection, headSectionOffset);
   }
 
   // FIXME this should be able to be removed now -- if any sections are detached,
@@ -587,13 +578,12 @@ class Editor {
   }
 
   handleKeydown(event) {
-    if (!this.isEditable) { return; }
-    if (this.post.isBlank) {
-      this._insertEmptyMarkupSectionAtCursor();
+    if (!this.isEditable || this.handleKeyCommand(event)) {
+      return;
     }
 
-    if (this.handleKeyCommand(event)) {
-      return;
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor();
     }
 
     const key = Key.fromEvent(event);

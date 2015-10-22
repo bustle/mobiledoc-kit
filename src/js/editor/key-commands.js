@@ -2,36 +2,66 @@ import Key from '../utils/key';
 import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
 import { filter } from '../utils/array-utils';
 import LinkCommand from '../commands/link';
+import Position from '../utils/cursor/position';
 
 export const DEFAULT_KEY_COMMANDS = [{
   modifier: MODIFIERS.META,
   str: 'B',
   run(editor) {
-    editor.run(postEditor => postEditor.toggleMarkup('strong'));
+    if (editor.cursor.hasSelection()) {
+      editor.run(postEditor => postEditor.toggleMarkup('strong'));
+    } else {
+      document.execCommand('bold', false, null);
+    }
   }
 }, {
   modifier: MODIFIERS.CTRL,
   str: 'B',
   run(editor) {
-    editor.run(postEditor => postEditor.toggleMarkup('strong'));
+    if (editor.cursor.hasSelection()) {
+      editor.run(postEditor => postEditor.toggleMarkup('strong'));
+    } else {
+      document.execCommand('bold', false, null);
+    }
   }
 }, {
   modifier: MODIFIERS.META,
   str: 'I',
   run(editor) {
-    editor.run(postEditor => postEditor.toggleMarkup('em'));
+    if (editor.cursor.hasSelection()) {
+      editor.run(postEditor => postEditor.toggleMarkup('em'));
+    } else {
+      document.execCommand('italic', false, null);
+    }
   }
 }, {
   modifier: MODIFIERS.CTRL,
   str: 'I',
   run(editor) {
-    editor.run(postEditor => postEditor.toggleMarkup('em'));
+    if (editor.cursor.hasSelection()) {
+      editor.run(postEditor => postEditor.toggleMarkup('em'));
+    } else {
+      document.execCommand('italic', false, null);
+    }
+  }
+}, {
+  modifier: MODIFIERS.CTRL,
+  str: 'K',
+  run(editor) {
+    let range = editor.cursor.offsets;
+    if (!editor.cursor.hasSelection()) {
+      range.tail = new Position(range.head.section, range.head.section.length);
+    }
+    editor.run(postEditor => postEditor.deleteRange(range));
+    editor.cursor.moveToPosition(range.head);
   }
 }, {
   modifier: MODIFIERS.META,
   str: 'K',
   run(editor) {
-    if (!editor.cursor.hasSelection()) { return; }
+    if (!editor.cursor.hasSelection()) {
+      return;
+    }
 
     let selectedText = editor.cursor.selectedText();
     let defaultUrl = '';
