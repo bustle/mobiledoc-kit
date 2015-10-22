@@ -9,6 +9,17 @@ import { forEach } from 'content-kit-editor/utils/array-utils';
 import { getAttributes, walkTextNodes } from '../utils/dom-utils';
 import Markup from 'content-kit-editor/models/markup';
 
+const TAG_REMAPPING = {
+  'b': 'strong',
+  'i': 'em'
+};
+
+function normalizeTagName(tagName) {
+  let normalized = tagName.toLowerCase();
+  let remapped = TAG_REMAPPING[normalized];
+  return remapped || normalized;
+}
+
 export default class PostParser {
   constructor(builder) {
     this.builder = builder;
@@ -53,7 +64,7 @@ export default class PostParser {
     if (Markup.isValidElement(node)) {
       const tagName = node.tagName;
       const attributes = getAttributes(node);
-      return this.builder.createMarkup(tagName, attributes);
+      return this.builder.createMarkup(normalizeTagName(tagName), attributes);
     }
   }
 

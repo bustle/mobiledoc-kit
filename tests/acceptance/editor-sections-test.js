@@ -88,14 +88,16 @@ const mobileDocWithNoCharacter = {
 
 module('Acceptance: Editor sections', {
   beforeEach() {
-    fixture = document.getElementById('qunit-fixture');
-    editorElement = document.createElement('div');
-    editorElement.setAttribute('id', 'editor');
-    fixture.appendChild(editorElement);
+    fixture = $('#qunit-fixture');
+    editorElement = $('<div id="editor"></div>')[0];
+    fixture.append(editorElement);
   },
 
   afterEach() {
-    if (editor) { editor.destroy(); }
+    if (editor) {
+      editor.destroy();
+      editor = null;
+    }
   }
 });
 
@@ -405,14 +407,14 @@ test('when selection incorrectly contains P end tag, editor reports correct sele
       headSectionOffset, tailSectionOffset, headMarkerOffset, tailMarkerOffset
     } = editor.cursor.offsets;
 
-    assert.equal(headSection, editor.post.sections.objectAt(0),
-                 'returns first section head');
-    assert.equal(tailSection, editor.post.sections.objectAt(1),
-                 'returns second section tail');
-    assert.equal(headMarker, editor.post.sections.objectAt(0).markers.head,
-                 'returns first section marker head');
-    assert.equal(tailMarker, editor.post.sections.objectAt(1).markers.head,
-                 'returns second section marker tail');
+    assert.ok(headSection === editor.post.sections.objectAt(0),
+              'returns first section head');
+    assert.ok(tailSection === editor.post.sections.objectAt(1),
+              'returns second section tail');
+    assert.ok(headMarker === editor.post.sections.objectAt(0).markers.head,
+              'returns first section marker head');
+    assert.ok(tailMarker === editor.post.sections.objectAt(1).markers.head,
+              'returns second section marker tail');
     assert.equal(headMarkerOffset, 0, 'headMarkerOffset correct');
     assert.equal(tailMarkerOffset, 0, 'tailMarkerOffset correct');
     assert.equal(headSectionOffset, 0, 'headSectionOffset correct');
