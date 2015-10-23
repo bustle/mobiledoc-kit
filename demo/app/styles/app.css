@@ -237,3 +237,8 @@ hr {
 .json-null {
   color: #bf616a;
 }
+
+.content-kit-toolbar__button.active {
+  font-weight: bold;
+  background-color: aliceblue;
+}
