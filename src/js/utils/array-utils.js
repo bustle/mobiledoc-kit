@@ -130,6 +130,10 @@ function filterObject(object, validKeys=[]) {
   return result;
 }
 
+function contains(array, item) {
+  return array.indexOf(item) !== -1;
+}
+
 export {
   detect,
   forEach,
@@ -143,5 +147,6 @@ export {
   kvArrayToObject,
   isArrayEqual,
   toArray,
-  filterObject
+  filterObject,
+  contains
 };

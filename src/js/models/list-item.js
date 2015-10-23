@@ -1,5 +1,12 @@
 import Markerable from './_markerable';
 import { LIST_ITEM_TYPE } from './types';
+import {
+  normalizeTagName
+} from 'content-kit-editor/utils/dom-utils';
+
+export const VALID_LIST_ITEM_TAGNAMES = [
+  'li'
+].map(normalizeTagName);
 
 export default class ListItem extends Markerable {
   constructor(tagName, markers=[]) {

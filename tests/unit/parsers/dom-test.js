@@ -323,4 +323,67 @@ test('unrecognized attributes are ignored', (assert) => {
   assert.ok(!markup.getAttribute('style'), 'style attribute not included');
 });
 
-// FIXME TODO ul, ol, li, img parsing
+test('singly-nested ul lis are parsed correctly', (assert) => {
+  let element= buildDOM(`
+    <ul><li>first element</li><li>second element</li></ul>
+  `);
+  const post = parser.parse(element);
+
+  assert.equal(post.sections.length, 1, '1 section');
+  let section = post.sections.objectAt(0);
+  assert.equal(section.tagName, 'ul');
+  assert.equal(section.items.length, 2, '2 items');
+  assert.equal(section.items.objectAt(0).text, 'first element');
+  assert.equal(section.items.objectAt(1).text, 'second element');
+});
+
+test('singly-nested ol lis are parsed correctly', (assert) => {
+  let element= buildDOM(`
+    <ol><li>first element</li><li>second element</li></ol>
+  `);
+  const post = parser.parse(element);
+
+  assert.equal(post.sections.length, 1, '1 section');
+  let section = post.sections.objectAt(0);
+  assert.equal(section.tagName, 'ol');
+  assert.equal(section.items.length, 2, '2 items');
+  assert.equal(section.items.objectAt(0).text, 'first element');
+  assert.equal(section.items.objectAt(1).text, 'second element');
+});
+
+test('lis in nested uls are flattened (when ul is child of li)', (assert) => {
+  let element= buildDOM(`
+    <ul>
+      <li>first element</li>
+      <li><ul><li>nested element</li></ul></li>
+    </ul>
+  `);
+  const post = parser.parse(element);
+
+  assert.equal(post.sections.length, 1, '1 section');
+  let section = post.sections.objectAt(0);
+  assert.equal(section.tagName, 'ul');
+  assert.equal(section.items.length, 2, '2 items');
+  assert.equal(section.items.objectAt(0).text, 'first element');
+  assert.equal(section.items.objectAt(1).text, 'nested element');
+});
+
+/*
+ * FIXME: Google docs nests uls like this
+test('lis in nested uls are flattened (when ul is child of ul)', (assert) => {
+  let element= buildDOM(`
+    <ul>
+      <li>outer</li>
+      <ul><li>inner</li></ul>
+    </ul>
+  `);
+  const post = parser.parse(element);
+
+  assert.equal(post.sections.length, 1, '1 section');
+  let section = post.sections.objectAt(0);
+  assert.equal(section.tagName, 'ul');
+  assert.equal(section.items.length, 2, '2 items');
+  assert.equal(section.items.objectAt(0).text, 'outer');
+  assert.equal(section.items.objectAt(1).text, 'inner');
+});
+ */
