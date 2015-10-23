@@ -58,6 +58,27 @@ test('can cut and then paste content', (assert) => {
   assert.hasElement('#editor p:contains(abc)', 'pastes the text');
 });
 
+test('paste when text is selected replaces that text', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor p:contains(abc)', 'precond - has p');
+
+  Helpers.dom.selectText('bc', editorElement);
+  Helpers.dom.triggerCopyEvent(editor);
+
+  Helpers.dom.selectText('a', editorElement);
+
+  Helpers.dom.triggerPasteEvent(editor);
+
+  assert.hasElement('#editor p:contains(bcbc)',
+                    'pastes, replacing the selection');
+});
+
 test('simple copy-paste with markup at end of section works', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker, markup}) => {

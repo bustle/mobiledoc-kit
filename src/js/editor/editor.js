@@ -211,13 +211,17 @@ class Editor {
     }
   }
 
-  handleDeletion(event) {
+  /**
+   * @param {KeyEvent} event optional
+   * @private
+   */
+  handleDeletion(event=null) {
     const range = this.cursor.offsets;
 
     if (this.cursor.hasSelection()) {
       this.run(postEditor => postEditor.deleteRange(range));
       this.cursor.moveToPosition(range.head);
-    } else {
+    } else if (event) {
       const key = Key.fromEvent(event);
       const nextPosition = this.run(postEditor => {
         return postEditor.deleteFrom(range.head, key.direction);
@@ -633,24 +637,31 @@ class Editor {
   }
 
   handleCut(event) {
+    event.preventDefault();
+
     this.handleCopy(event);
-    this.handleDeletion(event);
+    this.handleDeletion();
   }
 
   handleCopy(event) {
     event.preventDefault();
+
     setClipboardCopyData(event, this);
   }
 
   handlePaste(event) {
     event.preventDefault();
 
+    const { head: position } = this.cursor.offsets;
+    if (this.cursor.hasSelection()) {
+      this.handleDeletion();
+    }
+
     let pastedPost = parsePostFromPaste(event, this.builder);
 
-    const range = this.cursor.offsets;
     let nextPosition;
     this.run(postEditor => {
-      nextPosition = postEditor.insertPost(range.head, pastedPost);
+      nextPosition = postEditor.insertPost(position, pastedPost);
     });
 
     this.cursor.moveToPosition(nextPosition);
