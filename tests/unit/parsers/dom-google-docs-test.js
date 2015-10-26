@@ -3,12 +3,13 @@ import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import Helpers from '../../test-helpers';
 import GoogleDocs from '../../fixtures/google-docs';
 import { forEach } from 'content-kit-editor/utils/array-utils';
+import { CARD_TYPE } from 'content-kit-editor/models/types';
 
 const {module, test} = Helpers;
 
-function parseHTML(html) {
+function parseHTML(html, options={}) {
   let builder = new PostNodeBuilder();
-  return new HTMLParser(builder).parse(html);
+  return new HTMLParser(builder, options).parse(html);
 }
 
 module('Unit: Parser: HTMLParser Google Docs');
@@ -21,6 +22,16 @@ function equalToExpected(assert, rawHTML, expectedHTML) {
                'matches section length');
   raw.sections.forEach((section, sectionIndex) => {
     let expectedSection = expected.sections.objectAt(sectionIndex);
+
+    if (section.type === CARD_TYPE) {
+      assert.equal(section.name, expectedSection.name,
+                   `card section at index ${sectionIndex} has equal name`);
+
+      assert.deepEqual(section.payload, expectedSection.payload,
+                   `card section at index ${sectionIndex} has equal payload`);
+
+      return;
+    }
 
     assert.equal(section.markers.length, expectedSection.markers.length,
                  `section at index ${sectionIndex} has equal marker length`);
@@ -52,7 +63,6 @@ function equalToExpected(assert, rawHTML, expectedHTML) {
           assert.equal(expectedMarkup.getAttribute(key),
                        markup.getAttribute(key),
                        `equal attribute value for ${key}`);
-                                           
         });
       });
     });
@@ -64,4 +74,30 @@ Object.keys(GoogleDocs).forEach(key => {
     let example = GoogleDocs[key];
     equalToExpected(assert, example.raw, example.expected);
   });
+});
+
+test('img in span can use a cardParser to turn img into image-card', function(assert) {
+  let example = GoogleDocs['img in span'];
+  let options = {
+    cardParsers: [{
+      parse(element, builder) {
+        if (element.tagName === 'IMG') {
+          let payload = {url: element.src};
+          return builder.createCardSection('image-card', payload);
+        }
+      }
+    }]
+  };
+  let parsed = parseHTML(example.raw, options);
+
+  let sections = parsed.sections.toArray();
+  let found = false, payload;
+  for (let i=0; i < sections.length; i++) {
+    if (sections[i].name === 'image-card') {
+      found = true;
+      payload = sections[i].payload;
+    }
+  }
+  assert.ok(found, 'found image-card');
+  assert.ok(payload.url, 'has url in payload');
 });

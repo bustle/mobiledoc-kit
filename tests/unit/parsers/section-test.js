@@ -22,7 +22,7 @@ test('#parse parses simple dom', (assert) => {
   let container = buildDOM('<p>hello there<b>i am bold</b><p>');
   let element = container.firstChild;
 
-  const section = parser.parse(element);
+  const [section] = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 2, 'has 2 markers');
   const [m1, m2] = section.markers.toArray();
@@ -38,7 +38,7 @@ test('#parse parses nested markups', (assert) => {
   `);
   let element = container.firstChild;
 
-  const section = parser.parse(element);
+  const [section] = parser.parse(element);
   assert.equal(section.markers.length, 3, 'has 3 markers');
   const [m1, m2, m3] = section.markers.toArray();
 
@@ -57,7 +57,7 @@ test('#parse ignores non-markup elements like spans', (assert) => {
   `);
   let element = container.firstChild;
 
-  const section = parser.parse(element);
+  const [section] = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 markers');
   const [m1] = section.markers.toArray();
@@ -71,7 +71,7 @@ test('#parse reads attributes', (assert) => {
   `);
   let element = container.firstChild;
 
-  const section = parser.parse(element);
+  const [section] = parser.parse(element);
   assert.equal(section.markers.length, 1, 'has 1 markers');
   const [m1] = section.markers.toArray();
   assert.equal(m1.value, 'i am a link');
@@ -85,7 +85,7 @@ test('#parse joins contiguous text nodes separated by non-markup elements', (ass
   `);
   let element = container.firstChild;
 
-  const section = parser.parse(element);
+  const [section] = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 marker');
   const [m1] = section.markers.toArray();
@@ -96,10 +96,37 @@ test('#parse joins contiguous text nodes separated by non-markup elements', (ass
 test('#parse turns a textNode into a section', (assert) => {
   let container = buildDOM(`I am a text node`);
   let element = container.firstChild;
-  const section = parser.parse(element);
+  const [section] = parser.parse(element);
   assert.equal(section.tagName, 'p');
   assert.equal(section.markers.length, 1, 'has 1 marker');
   const [m1] = section.markers.toArray();
 
   assert.equal(m1.value, 'I am a text node');
+});
+
+test('#parse allows passing in cardParsers that can override parsing', (assert) => {
+  let container = buildDOM(`
+    <p>text 1<img src="http://placehold.it/100x100">text 2</p>
+  `);
+
+  let element = container.firstChild;
+  let cardParsers = [{
+    parse(element, builder) {
+      if (element.tagName === 'IMG') {
+        let payload = {url: element.src};
+        return builder.createCardSection('test-image', payload);
+      }
+    }
+  }];
+  parser = new SectionParser(builder, {cardParsers});
+  const sections = parser.parse(element);
+
+  assert.equal(sections.length, 3, '3 sections');
+
+  assert.equal(sections[0].text, 'text 1');
+  assert.equal(sections[2].text, 'text 2');
+
+  let cardSection = sections[1];
+  assert.equal(cardSection.name, 'test-image');
+  assert.deepEqual(cardSection.payload, {url: 'http://placehold.it/100x100'});
 });

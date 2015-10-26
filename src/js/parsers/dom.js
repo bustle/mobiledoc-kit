@@ -50,9 +50,9 @@ function remapTagName(tagName) {
  * Parses DOM element -> Post
  */
 export default class DOMParser {
-  constructor(builder) {
+  constructor(builder, options={}) {
     this.builder = builder;
-    this.sectionParser = new SectionParser(this.builder);
+    this.sectionParser = new SectionParser(this.builder, options);
   }
 
   parse(element) {
@@ -60,11 +60,15 @@ export default class DOMParser {
     let rootElement = detectRootElement(element);
 
     this._eachChildNode(rootElement, child => {
-      let section = this.parseSection(child);
-      this.appendSection(post, section);
+      let sections = this.parseSections(child);
+      this.appendSections(post, sections);
     });
 
     return post;
+  }
+
+  appendSections(post, sections) {
+    forEach(sections, section => this.appendSection(post, section));
   }
 
   appendSection(post, section) {
@@ -88,7 +92,7 @@ export default class DOMParser {
     forEach(nodes, node => callback(node));
   }
 
-  parseSection(element) {
+  parseSections(element) {
     return this.sectionParser.parse(element);
   }
 

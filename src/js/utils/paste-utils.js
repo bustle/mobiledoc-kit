@@ -21,7 +21,7 @@ export function setClipboardCopyData(copyEvent, editor) {
   clipboardData.setData('text/html', html);
 }
 
-export function parsePostFromPaste(pasteEvent, builder) {
+export function parsePostFromPaste(pasteEvent, builder, cardParsers=[]) {
   let mobiledoc, post;
   const mobiledocRegex = new RegExp(/data\-mobiledoc='(.*?)'>/);
 
@@ -32,7 +32,7 @@ export function parsePostFromPaste(pasteEvent, builder) {
     mobiledoc = JSON.parse(mobiledocString);
     post = new MobiledocParser(builder).parse(mobiledoc);
   } else {
-    post = new HTMLParser(builder).parse(html);
+    post = new HTMLParser(builder, {cardParsers}).parse(html);
   }
 
   return post;

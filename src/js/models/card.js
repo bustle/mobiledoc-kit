@@ -17,6 +17,10 @@ export default class Card extends Section {
     this.setInitialMode(DEFAULT_INITIAL_MODE);
   }
 
+  get isBlank() {
+    return false;
+  }
+
   clone() {
     const payload = shallowCopyObject(this.payload);
     return this.builder.createCardSection(this.name, payload);
