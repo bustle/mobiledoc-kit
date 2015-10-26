@@ -26,65 +26,111 @@ import {
  * @return {Section}
  */
 export default class SectionParser {
-  constructor(builder) {
+  constructor(builder, options={}) {
     this.builder = builder;
+    this.cardParsers = options.cardParsers || [];
   }
 
   parse(element) {
-    const section = this.createSectionFromElement(element);
-    const markups = this.markupsFromElement(element);
-    const state = {section, markups, text:''};
+    this.sections = [];
+    this.state = {};
+
+    this._updateStateFromElement(element);
 
     let childNodes = isTextNode(element) ? [element] : element.childNodes;
 
     forEach(childNodes, el => {
-      this.parseNode(el, state);
+      this.parseNode(el);
     });
 
-    // close a trailing text nodes if it exists
-    if (state.text.length) {
-      let marker = this.builder.createMarker(state.text, state.markups);
-      state.section.markers.append(marker);
-    }
+    this._closeCurrentSection();
 
-    return section;
+    return this.sections;
   }
 
-  parseNode(node, state) {
+  parseNode(node) {
+    if (!this.state.section) {
+      this._updateStateFromElement(node);
+    }
+
     switch (node.nodeType) {
       case TEXT_NODE:
-        this.parseTextNode(node, state);
+        this.parseTextNode(node);
         break;
       case ELEMENT_NODE:
-        this.parseElementNode(node, state);
+        this.parseElementNode(node);
         break;
       default:
         throw new Error(`parseNode got unexpected element type ${node.nodeType} ` + node);
     }
   }
 
-  parseElementNode(element, state) {
-    const markups = this.markupsFromElement(element);
+  parseCard(element) {
+    let { builder } = this;
+
+    for (let i=0; i<this.cardParsers.length; i++) {
+      let card = this.cardParsers[i].parse(element, builder);
+      if (card) {
+        this._closeCurrentSection();
+        this.sections.push(card);
+        return true;
+      }
+    }
+  }
+
+  parseElementNode(element) {
+    let { state } = this;
+
+    let parsedCard = this.parseCard(element);
+    if (parsedCard) {
+      return;
+    }
+    const markups = this._markupsFromElement(element);
     if (markups.length && state.text.length) {
-      this._createMarkerFromState(state);
+      this._createMarker();
     }
     state.markups.push(...markups);
 
     forEach(element.childNodes, (node) => {
-      this.parseNode(node, state);
+      this.parseNode(node);
     });
 
     if (markups.length && state.text.length) {
       // create the marker started for this node
-      this._createMarkerFromState(state);
+      this._createMarker();
     }
 
     // pop the current markups from the stack
     state.markups.splice(-markups.length, markups.length);
   }
 
-  parseTextNode(textNode, state) {
+  parseTextNode(textNode) {
+    let { state } = this;
     state.text += textNode.textContent;
+  }
+
+  _updateStateFromElement(element) {
+    let { state } = this;
+    state.section = this._createSectionFromElement(element);
+    state.markups = this._markupsFromElement(element);
+    state.text = '';
+  }
+
+  _closeCurrentSection() {
+    let { sections, state } = this;
+
+    if (!state.section) {
+      return;
+    }
+
+    // close a trailing text node if it exists
+    if (state.text.length) {
+      let marker = this.builder.createMarker(state.text, state.markups);
+      state.section.markers.append(marker);
+    }
+
+    sections.push(state.section);
+    state.section = null;
   }
 
   isSectionElement(element) {
@@ -92,7 +138,7 @@ export default class SectionParser {
       VALID_MARKUP_SECTION_TAGNAMES.indexOf(normalizeTagName(element.tagName)) !== -1;
   }
 
-  markupsFromElement(element) {
+  _markupsFromElement(element) {
     let { builder } = this;
     let markups = [];
     if (isTextNode(element)) {
@@ -135,7 +181,8 @@ export default class SectionParser {
     return markups;
   }
 
-  _createMarkerFromState(state) {
+  _createMarker() {
+    let { state } = this;
     let marker = this.builder.createMarker(state.text, state.markups);
     state.section.markers.append(marker);
     state.text = '';
@@ -156,18 +203,18 @@ export default class SectionParser {
     return tagName;
   }
 
-  inferSectionTagNameFromElement(/* element */) {
+  _inferSectionTagNameFromElement(/* element */) {
     return DEFAULT_TAG_NAME;
   }
 
-  createSectionFromElement(element) {
+  _createSectionFromElement(element) {
     let { builder } = this;
 
     let inferredTagName = false;
     let tagName = this._sectionTagNameFromElement(element);
     if (!tagName) {
       inferredTagName = true;
-      tagName = this.inferSectionTagNameFromElement(element);
+      tagName = this._inferSectionTagNameFromElement(element);
     }
     let section = builder.createMarkupSection(tagName);
 

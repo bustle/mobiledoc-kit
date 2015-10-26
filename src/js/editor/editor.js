@@ -72,6 +72,7 @@ class Editor {
     this._elementListeners = [];
     this._views = [];
     this.isEditable = null;
+    this._cardParsers = options.cardParsers || [];
 
     // FIXME: This should merge onto this.options
     mergeWithOptions(this, defaults, options);
@@ -657,7 +658,7 @@ class Editor {
       this.handleDeletion();
     }
 
-    let pastedPost = parsePostFromPaste(event, this.builder);
+    let pastedPost = parsePostFromPaste(event, this.builder, this._cardParsers);
 
     let nextPosition;
     this.run(postEditor => {
