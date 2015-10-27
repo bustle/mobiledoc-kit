@@ -23,8 +23,7 @@ testTree = jquery.build(testTree, '/tests/jquery');
 module.exports = mergeTrees([
   builder.build('amd', buildOptions),
   builder.build('global', buildOptions),
-  // FIXME Later we may want to bring back the commonjs build
-  // builder.build('commonjs', buildOptions),
+  builder.build('commonjs', buildOptions),
   styles(),
   testTree
 ]);
