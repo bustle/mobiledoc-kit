@@ -35,6 +35,10 @@ import {
   contains
 } from 'content-kit-editor/utils/array-utils';
 
+import {
+  transformHTMLText
+} from '../parsers/dom';
+
 function isListSection(section) {
   return section.type === LIST_SECTION_TYPE;
 }
@@ -164,8 +168,7 @@ export default class SectionParser {
 
     // close a trailing text node if it exists
     if (state.text.length) {
-      let marker = this.builder.createMarker(state.text, state.markups);
-      state.section.markers.append(marker);
+      this._createMarker();
     }
 
     sections.push(state.section);
@@ -222,7 +225,8 @@ export default class SectionParser {
 
   _createMarker() {
     let { state } = this;
-    let marker = this.builder.createMarker(state.text, state.markups);
+    let text = transformHTMLText(state.text);
+    let marker = this.builder.createMarker(text, state.markups);
     state.section.markers.append(marker);
     state.text = '';
   }

@@ -8,6 +8,18 @@ const { test, module } = Helpers;
 
 let fixture, editor, editorElement;
 
+const mobileDocWithSection = {
+  version: MOBILEDOC_VERSION,
+  sections: [
+    [],
+    [
+      [1, "P", [
+        [[], 0, "one trick pony"]
+      ]]
+    ]
+  ]
+};
+
 const mobileDocWith2Sections = {
   version: MOBILEDOC_VERSION,
   sections: [
@@ -250,6 +262,21 @@ test('keystroke of printable character while text is selected deletes the text',
 
   assert.ok($(`#editor h2:contains(first Xd section)`).length,
             'updates the section');
+});
+
+test('selecting text bounded by space and typing replaces it', (assert) => {
+  editor = new Editor({mobiledoc: mobileDocWithSection});
+  editor.render(editorElement);
+
+  Helpers.dom.selectText('trick', editorElement);
+  Helpers.dom.insertText(editor, 'X');
+
+  assert.hasElement('#editor p:contains(one X pony)',
+                    'new text present');
+
+  Helpers.dom.insertText(editor, 'Y');
+  assert.hasElement('#editor p:contains(one XY pony)',
+                    'cursor positioned correctly');
 });
 
 test('selecting all text across sections and hitting enter deletes and moves cursor to empty section', (assert) => {

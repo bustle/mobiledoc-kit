@@ -1,3 +1,4 @@
+import { NO_BREAK_SPACE } from '../renderers/editor-dom';
 import {
   MARKUP_SECTION_TYPE,
   LIST_SECTION_TYPE,
@@ -17,6 +18,13 @@ import { getAttributes, walkTextNodes } from '../utils/dom-utils';
 import Markup from 'content-kit-editor/models/markup';
 
 const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/;
+
+const NO_BREAK_SPACE_REGEX = new RegExp(NO_BREAK_SPACE, 'g');
+export function transformHTMLText(textContent) {
+  let text = textContent;
+  text = text.replace(NO_BREAK_SPACE_REGEX, ' ');
+  return text;
+}
 
 function isGoogleDocsContainer(element) {
   return !isTextNode(element) &&
@@ -154,7 +162,7 @@ export default class DOMParser {
     let previousMarker;
 
     walkTextNodes(element, (textNode) => {
-      const text = textNode.textContent;
+      const text = transformHTMLText(textNode.textContent);
       let markups = this.collectMarkups(textNode, element);
 
       let marker;
