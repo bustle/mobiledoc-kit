@@ -44,8 +44,8 @@ const defaults = {
   autofocus: true,
   cards: [],
   cardOptions: {},
-  unknownCardHandler: () => {
-    throw new Error('Unknown card encountered');
+  unknownCardHandler: (element, options, env) => {
+    throw new Error(`Unknown card encountered: ${env.name}`);
   },
   mobiledoc: null,
   html: null
