@@ -34,11 +34,19 @@ export default class Section extends LinkedItem {
   }
 
   set tagName(val) {
-    this._tagName = normalizeTagName(val);
+    let normalizedTagName = normalizeTagName(val);
+    if (!this.isValidTagName(normalizedTagName)) {
+      throw new Error(`Cannot set section tagName to ${val}`);
+    }
+    this._tagName = normalizedTagName;
   }
 
   get tagName() {
     return this._tagName;
+  }
+
+  isValidTagName(/* normalizedTagName */) {
+    throw new Error('`isValidTagName` must be implemented by subclass');
   }
 
   get isBlank() {

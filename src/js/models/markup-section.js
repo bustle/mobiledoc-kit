@@ -1,5 +1,6 @@
 import Markerable from './_markerable';
 import { normalizeTagName } from '../utils/dom-utils';
+import { contains } from '../utils/array-utils';
 import { MARKUP_SECTION_TYPE } from './types';
 
 // valid values of `tagName` for a MarkupSection
@@ -20,16 +21,8 @@ const MarkupSection = class MarkupSection extends Markerable {
     super(MARKUP_SECTION_TYPE, tagName, markers);
   }
 
-  setTagName(newTagName) {
-    newTagName = normalizeTagName(newTagName);
-    if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(newTagName) === -1) {
-      throw new Error(`Cannot change section tagName to "${newTagName}`);
-    }
-    this.tagName = newTagName;
-  }
-
-  resetTagName() {
-    this.tagName = DEFAULT_TAG_NAME;
+  isValidTagName(normalizedTagName) {
+    return contains(VALID_MARKUP_SECTION_TAGNAMES, normalizedTagName);
   }
 
   splitAtMarker(marker, offset=0) {

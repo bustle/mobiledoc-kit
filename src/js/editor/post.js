@@ -2,12 +2,29 @@ import {
   DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME
 } from '../models/markup-section';
 import { isMarkerable } from '../models/_section';
-import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE } from '../models/types';
+import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE, LIST_SECTION_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
 import { isArrayEqual, forEach, filter, compact } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 import mixin from '../utils/mixin';
+
+function isJoinable(section1, section2) {
+  return isMarkerable(section1) &&
+         isMarkerable(section2) &&
+         section1.type === section2.type &&
+         section1.tagName === section2.tagName;
+}
+
+function endPosition(section) {
+  if (isMarkerable(section)) {
+    return new Position(section, section.length);
+  } else if (section.type === LIST_SECTION_TYPE) {
+    return endPosition(section.items.tail);
+  } else {
+    return new Position(section, 0);
+  }
+}
 
 function isMarkupSection(section) {
   return section.type === MARKUP_SECTION_TYPE;
@@ -625,29 +642,6 @@ class PostEditor {
   }
 
   /**
-   * @method insertMarkers
-   * @param {Position} position to insert at
-   * @param {Array} markers to insert
-   * @return {Position} position at end of inserted markers
-   * @private
-   */
-  insertMarkers(position, markers=[]) {
-    let { section, offset } = position;
-    this.splitSectionMarkerAtOffset(section, offset);
-    let {marker:prevMarker} = section.markerPositionAtOffset(offset);
-    let currentMarker = offset === 0 ? prevMarker : prevMarker.next;
-    
-    markers.forEach(marker => {
-      marker = marker.clone();
-      section.markers.insertBefore(marker, currentMarker);
-      offset += marker.length;
-      this._markDirty(marker);
-    });
-
-    return new Position(section, offset);
-  }
-
-  /**
    * Toggle the given markup on the current selection. If anything in the current
    * selection has the markup, the markup will be removed from it. If nothing in the selection
    * has the markup, the markup will be added to everything in the selection.
@@ -695,7 +689,7 @@ class PostEditor {
       m.clearMarkups();
       this._markDirty(m);
     });
-    section.setTagName(newTagName);
+    section.tagName = newTagName;
     this._markDirty(section);
   }
 
@@ -762,25 +756,27 @@ class PostEditor {
    * @private
    */
   insertPost(position, newPost) {
-    const post = this.editor.post;
-    const shouldSplitSection = newPost.sections.length > 1;
-
-    if (!shouldSplitSection) {
-      const markers = newPost.sections.head.markers;
-      return this.insertMarkers(position, markers);
+    if (newPost.isBlank) {
+      return position;
     }
+    const post = this.editor.post;
 
     let [preSplit, postSplit] = this.splitSection(position);
-    const headSection = newPost.sections.head;
-    let lastInsertedSection = headSection;
+    let nextPosition = position.clone();
 
-    newPost.sections.forEach(section => {
-      if (section === headSection) {
-        this._mergeSectionAtEnd(section, preSplit);
+    newPost.sections.forEach((section, index) => {
+      if (index === 0 &&
+          isJoinable(preSplit, section)) {
+
+          preSplit.join(section);
+          this._markDirty(preSplit);
+
+          nextPosition = endPosition(preSplit);
       } else {
         section = section.clone();
-        lastInsertedSection = section;
         this.insertSectionBefore(post.sections, section, postSplit);
+
+        nextPosition = endPosition(section);
       }
     });
 
@@ -788,13 +784,19 @@ class PostEditor {
       this.removeSection(postSplit);
     }
 
-    return new Position(lastInsertedSection, lastInsertedSection.length);
-  }
+    if (isJoinable(preSplit, postSplit) &&
+        preSplit.next === postSplit) {
 
-  _mergeSectionAtEnd(sectionToMerge, existingSection) {
-    const markers = sectionToMerge.markers;
-    const position = new Position(existingSection, existingSection.length);
-    return this.insertMarkers(position, markers);
+      nextPosition = endPosition(preSplit);
+
+      preSplit.join(postSplit);
+      this._markDirty(preSplit);
+      this.removeSection(postSplit);
+    } else if (preSplit.isBlank) {
+      this.removeSection(preSplit);
+    }
+
+    return nextPosition;
   }
 
   /**
