@@ -48,5 +48,6 @@
     "mobiledoc-dom-renderer": "^0.1.12",
     "mobiledoc-html-renderer": "^0.1.7",
     "testem": "^0.8.4"
-  }
+  },
+  "main": "dist/commonjs/content-kit-editor/index.js"
 }
