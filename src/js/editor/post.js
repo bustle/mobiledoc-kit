@@ -508,6 +508,7 @@ class PostEditor {
     const newSection = renderedSection.clone();
     this.removeSection(renderedSection);
     this.insertSectionBefore(collection, newSection, beforeSection);
+    return newSection;
   }
 
   /**
@@ -517,11 +518,13 @@ class PostEditor {
    */
   moveSectionUp(renderedSection) {
     const isFirst = !renderedSection.prev;
-    if (isFirst) { return; }
+    if (isFirst) {
+      return renderedSection;
+    }
 
     const collection = renderedSection.parent.sections;
     const beforeSection = renderedSection.prev;
-    this.moveSectionBefore(collection, renderedSection, beforeSection);
+    return this.moveSectionBefore(collection, renderedSection, beforeSection);
   }
 
   /**
@@ -531,11 +534,13 @@ class PostEditor {
    */
   moveSectionDown(renderedSection) {
     const isLast = !renderedSection.next;
-    if (isLast) { return; }
+    if (isLast) {
+      return renderedSection;
+    }
 
     const beforeSection = renderedSection.next.next;
     const collection = renderedSection.parent.sections;
-    this.moveSectionBefore(collection, renderedSection, beforeSection);
+    return this.moveSectionBefore(collection, renderedSection, beforeSection);
   }
 
   _replaceSection(section, newSections) {

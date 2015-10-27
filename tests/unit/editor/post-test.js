@@ -691,9 +691,10 @@ test('#moveSectionBefore moves the section as expected', (assert) => {
   const [headSection, tailSection] = post.sections.toArray();
   const collection = post.sections;
   postEditor = new PostEditor(mockEditor);
-  postEditor.moveSectionBefore(collection, tailSection, headSection);
+  let movedSection = postEditor.moveSectionBefore(collection, tailSection, headSection);
   postEditor.complete();
 
+  assert.equal(post.sections.head, movedSection, 'movedSection is returned');
   assert.equal(post.sections.head.text, '123', 'tail section is now head');
   assert.equal(post.sections.tail.text, 'abc', 'head section is now tail');
 });
@@ -741,10 +742,11 @@ test('#moveSectionUp moves it up', (assert) => {
   assert.equal(tailSection.name, 'listicle-card', 'listicle-card moved to last spot');
 
   postEditor = new PostEditor(mockEditor);
-  postEditor.moveSectionUp(headSection);
+  let movedSection = postEditor.moveSectionUp(headSection);
   postEditor.complete();
 
   ([headSection, tailSection] = post.sections.toArray());
+  assert.equal(post.sections.head, movedSection, 'movedSection is returned');
   assert.equal(headSection.name, 'other-card', 'moveSectionUp is no-op when card is at top');
 });
 
@@ -767,10 +769,11 @@ test('moveSectionDown moves it down', (assert) => {
   assert.equal(tailSection.name, 'listicle-card', 'listicle-card moved to last spot');
 
   postEditor = new PostEditor(mockEditor);
-  postEditor.moveSectionDown(tailSection);
+  let movedSection = postEditor.moveSectionDown(tailSection);
   postEditor.complete();
 
   ([headSection, tailSection] = post.sections.toArray());
+  assert.equal(post.sections.tail, movedSection, 'movedSection is returned');
   assert.equal(tailSection.name, 'listicle-card',
                'moveSectionDown is no-op when card is at bottom');
  
