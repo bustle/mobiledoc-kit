@@ -4,14 +4,14 @@ import { MARKUP_SECTION_TYPE } from './types';
 
 // valid values of `tagName` for a MarkupSection
 export const VALID_MARKUP_SECTION_TAGNAMES = [
-  'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol', 'pull-quote'
+  'p', 'h3', 'h2', 'h1', 'blockquote', 'pull-quote'
 ].map(normalizeTagName);
 
 // valid element names for a MarkupSection. A MarkupSection with a tagName
-// not in this should be rendered as a div with a className matching the
-// tagName, instead
+// not in this will be rendered as a div with a className matching the
+// tagName
 export const MARKUP_SECTION_ELEMENT_NAMES = [
-  'p', 'h3', 'h2', 'h1', 'blockquote', 'ul', 'ol'
+  'p', 'h3', 'h2', 'h1', 'blockquote'
 ].map(normalizeTagName);
 export const DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[0];
 

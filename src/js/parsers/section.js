@@ -7,6 +7,20 @@ import {
 } from 'content-kit-editor/models/markup-section';
 
 import {
+  VALID_LIST_SECTION_TAGNAMES
+} from 'content-kit-editor/models/list-section';
+
+import {
+  VALID_LIST_ITEM_TAGNAMES
+} from 'content-kit-editor/models/list-item';
+
+import {
+  LIST_SECTION_TYPE,
+  LIST_ITEM_TYPE,
+  MARKUP_SECTION_TYPE
+} from 'content-kit-editor/models/types';
+
+import {
   VALID_MARKUP_TAGNAMES
 } from 'content-kit-editor/models/markup';
 
@@ -17,8 +31,17 @@ import {
 } from 'content-kit-editor/utils/dom-utils';
 
 import {
-  forEach
+  forEach,
+  contains
 } from 'content-kit-editor/utils/array-utils';
+
+function isListSection(section) {
+  return section.type === LIST_SECTION_TYPE;
+}
+
+function isListItem(section) {
+  return section.type === LIST_ITEM_TYPE;
+}
 
 /**
  * parses an element into a section, ignoring any non-markup
@@ -39,13 +62,28 @@ export default class SectionParser {
 
     let childNodes = isTextNode(element) ? [element] : element.childNodes;
 
-    forEach(childNodes, el => {
-      this.parseNode(el);
-    });
+    if (isListSection(this.state.section)) {
+      this.parseListItems(childNodes);
+    } else {
+      forEach(childNodes, el => {
+        this.parseNode(el);
+      });
+    }
 
     this._closeCurrentSection();
 
     return this.sections;
+  }
+
+  parseListItems(childNodes) {
+    let { state } = this;
+    forEach(childNodes, el => {
+      let parsed = new this.constructor(this.builder).parse(el);
+      let li = parsed[0];
+      if (li && isListItem(li)) {
+        state.section.items.append(li);
+      }
+    });
   }
 
   parseNode(node) {
@@ -85,6 +123,7 @@ export default class SectionParser {
     if (parsedCard) {
       return;
     }
+
     const markups = this._markupsFromElement(element);
     if (markups.length && state.text.length) {
       this._createMarker();
@@ -188,39 +227,55 @@ export default class SectionParser {
     state.text = '';
   }
 
-  _sectionTagNameFromElement(element) {
+  _getSectionDetails(element) {
+    let sectionType,
+        tagName,
+        inferredTagName = false;
     if (isTextNode(element)) {
-      return null;
+      tagName = DEFAULT_TAG_NAME;
+      sectionType = MARKUP_SECTION_TYPE;
+      inferredTagName = true;
+    } else {
+      tagName = normalizeTagName(element.tagName);
+
+      if (contains(VALID_LIST_SECTION_TAGNAMES, tagName)) {
+        sectionType = LIST_SECTION_TYPE;
+      } else if (contains(VALID_LIST_ITEM_TAGNAMES, tagName)) {
+        sectionType = LIST_ITEM_TYPE;
+      } else if (contains(VALID_MARKUP_SECTION_TAGNAMES, tagName)) {
+        sectionType = MARKUP_SECTION_TYPE;
+      } else {
+        sectionType = MARKUP_SECTION_TYPE;
+        tagName = DEFAULT_TAG_NAME;
+        inferredTagName = true;
+      }
     }
-    let tagName;
 
-    let elementTagName = normalizeTagName(element.tagName);
-
-    if (VALID_MARKUP_SECTION_TAGNAMES.indexOf(elementTagName) !== -1) {
-      tagName = elementTagName;
-    }
-
-    return tagName;
-  }
-
-  _inferSectionTagNameFromElement(/* element */) {
-    return DEFAULT_TAG_NAME;
+    return {sectionType, tagName, inferredTagName};
   }
 
   _createSectionFromElement(element) {
     let { builder } = this;
 
-    let inferredTagName = false;
-    let tagName = this._sectionTagNameFromElement(element);
-    if (!tagName) {
-      inferredTagName = true;
-      tagName = this._inferSectionTagNameFromElement(element);
-    }
-    let section = builder.createMarkupSection(tagName);
+    let section;
+    let {tagName, sectionType, inferredTagName} =
+      this._getSectionDetails(element);
 
-    if (inferredTagName) {
-      section._inferredTagName = true;
+    switch (sectionType) {
+      case LIST_SECTION_TYPE:
+        section = builder.createListSection(tagName);
+        break;
+      case LIST_ITEM_TYPE:
+        section = builder.createListItem();
+        break;
+      case MARKUP_SECTION_TYPE:
+        section = builder.createMarkupSection(tagName);
+        section._inferredTagName = inferredTagName;
+        break;
+      default:
+        throw new Error('Cannot parse section from element');
     }
+
     return section;
   }
 
