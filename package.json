@@ -1,6 +1,6 @@
 {
   "name": "content-kit-editor",
-  "version": "0.4.11",
+  "version": "0.5.0-beta1",
   "description": "A modern, minimalist WYSIWYG editor.",
   "repository": "https://github.com/bustlelabs/content-kit-editor",
   "engines": {
