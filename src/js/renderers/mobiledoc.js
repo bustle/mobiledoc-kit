@@ -106,7 +106,15 @@ const postOpcodeCompiler = {
   }
 };
 
+/**
+ * Render from post -> mobiledoc
+ */
 export default {
+  /**
+   * @method render
+   * @param {Post}
+   * @return {Mobiledoc}
+   */
   render(post) {
     let opcodes = [];
     visit(visitor, post, opcodes);

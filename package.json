@@ -3,9 +3,6 @@
   "version": "0.5.0-beta2",
   "description": "A modern, minimalist WYSIWYG editor.",
   "repository": "https://github.com/bustlelabs/content-kit-editor",
-  "engines": {
-    "node": "0.10.x"
-  },
   "scripts": {
     "start": "broccoli serve",
     "test": "testem ci",
@@ -30,12 +27,6 @@
   ],
   "author": "Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)",
   "license": "MIT",
-  "dependencies": {
-    "aws-sdk": "^2.1.7",
-    "busboy": "^0.2.9",
-    "embedly": "^1.0.2",
-    "express": "^4.11.1"
-  },
   "devDependencies": {
     "broccoli": "^0.16.3",
     "broccoli-funnel": "^0.2.8",
@@ -45,8 +36,6 @@
     "broccoli-test-builder": "^0.1.0",
     "content-kit-utils": "^0.2.0",
     "jquery": "^2.1.4",
-    "mobiledoc-dom-renderer": "^0.1.12",
-    "mobiledoc-html-renderer": "^0.1.7",
     "testem": "^0.8.4"
   },
   "main": "dist/commonjs/content-kit-editor/index.js"

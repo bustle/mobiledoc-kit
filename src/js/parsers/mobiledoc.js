@@ -7,15 +7,18 @@ import {
 import { kvArrayToObject, filter } from "../utils/array-utils";
 
 /*
- * input mobiledoc: [ markers, elements ]
- * output: Post
- *
+ * Parses from mobiledoc -> post
  */
 export default class MobiledocParser {
   constructor(builder) {
     this.builder = builder;
   }
 
+  /**
+   * @method parse
+   * @param {Mobiledoc}
+   * @return {Post}
+   */
   parse({version, sections: sectionData}) {
     const markerTypes = sectionData[0];
     const sections    = sectionData[1];
