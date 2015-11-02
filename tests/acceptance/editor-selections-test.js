@@ -1,8 +1,6 @@
 import { Editor } from 'content-kit-editor';
 import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
-import BoldCommand from 'content-kit-editor/commands/bold';
-import HeadingCommand from 'content-kit-editor/commands/heading';
 
 const { test, module } = Helpers;
 
@@ -104,10 +102,7 @@ test('selecting text across markers and deleting joins markers', (assert) => {
   editor.render(editorElement);
 
   Helpers.dom.selectText('rst sect', editorElement);
-  Helpers.dom.triggerEvent(document, 'mouseup');
-
-  let command = new BoldCommand(editor);
-  command.exec();
+  editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
   let firstTextNode = editorElement
                          .childNodes[0] // p
@@ -142,13 +137,13 @@ test('select text and apply markup multiple times', (assert) => {
   Helpers.dom.selectText('t sect', editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
-  let command = new BoldCommand(editor);
-  command.exec();
+  editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
   Helpers.dom.selectText('fir', editorElement);
+  editor.run(postEditor => postEditor.toggleMarkup('strong'));
   Helpers.dom.triggerEvent(document, 'mouseup');
 
-  command.exec();
+  editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
   assert.hasElement('p:contains(first section)', 'correct first section');
   assert.hasElement('strong:contains(fir)', 'strong "fir"');
@@ -156,54 +151,69 @@ test('select text and apply markup multiple times', (assert) => {
 });
 
 test('selecting text across markers deletes intermediary markers', (assert) => {
-  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  let mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker, markup}) => {
+    return post([
+      markupSection('p', [
+        marker('abc'),
+        marker('123', [markup('strong')]),
+        marker('def')
+      ])
+    ]);
+  });
+  editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  Helpers.dom.selectText('rst sec', editorElement);
-  Helpers.dom.triggerEvent(document, 'mouseup');
-
-  let command = new BoldCommand(editor);
-  command.exec();
 
   const textNode1 = editorElement.childNodes[0].childNodes[0],
         textNode2 = editorElement.childNodes[0].childNodes[2];
-  Helpers.dom.selectText('i', textNode1,
-                         'tio', textNode2);
-  Helpers.dom.triggerEvent(document, 'mouseup');
+
+  assert.equal(textNode1.textContent, 'abc', 'precond - text node 1');
+  assert.equal(textNode2.textContent, 'def', 'precond - text node 2');
+  Helpers.dom.selectText('b', textNode1,
+                         'e', textNode2);
 
   Helpers.dom.triggerDelete(editor);
 
-  assert.hasElement('p:contains(fn)', 'has remaining first section');
-  assert.deepEqual(Helpers.dom.getCursorPosition(),
-                   {node: editorElement.childNodes[0].childNodes[0],
-                     offset: 1});
+  assert.hasElement('p:contains(af)', 'has remaining first section');
+
+  Helpers.dom.insertText(editor, 'X');
+  assert.hasElement('p:contains(aXf)', 'inserts text at correct place');
 });
 
-test('selecting text across markers preserves node after', (assert) => {
-  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+test('deleting text across markers preserves node after', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker, markup}) => {
+    return post([
+      markupSection('p', [
+        marker('abc'),
+        marker('123', [markup('strong')]),
+        marker('def')
+      ])
+    ]);
+  });
+  editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  Helpers.dom.selectText('rst sec', editorElement);
-  Helpers.dom.triggerEvent(document, 'mouseup');
-
-  let command = new BoldCommand(editor);
-  command.exec();
 
   const textNode1 = editorElement.childNodes[0].childNodes[0],
         textNode2 = editorElement.childNodes[0].childNodes[1];
-  Helpers.dom.selectText('i', textNode1,
-                         'sec', textNode2);
-  Helpers.dom.triggerEvent(document, 'mouseup');
+  assert.equal(textNode1.textContent, 'abc', 'precond -text node 1');
+  assert.equal(textNode2.textContent, '123', 'precond -text node 2');
+
+  Helpers.dom.selectText('b', editorElement,
+                         '2', editorElement);
 
   Helpers.dom.triggerDelete(editor);
 
-  assert.deepEqual(
-    editorElement.childNodes[0].innerHTML, 'ftion',
+  assert.equal(
+    editorElement.childNodes[0].textContent, 'a3def',
     'has remaining first section'
   );
-  assert.deepEqual(Helpers.dom.getCursorPosition(),
-                   {node: editorElement.childNodes[0].childNodes[0],
-                     offset: 1});
+  Helpers.dom.insertText(editor, 'X');
+  assert.equal(
+    editorElement.childNodes[0].textContent, 'aX3def',
+    'inserts text at correct spot');
 });
 
 test('selecting text across sections and hitting enter deletes and moves cursor to last selected section', (assert) => {
@@ -233,10 +243,12 @@ test('keystroke of printable character while text is selected deletes the text',
   editor.render(editorElement);
 
   Helpers.dom.selectText('first section', editorElement);
-  Helpers.dom.triggerEvent(document, 'mouseup');
 
-  let command = new HeadingCommand(editor);
-  command.exec();
+  editor.run(postEditor => {
+    editor.activeSections.forEach(section => {
+      postEditor.changeSectionTagName(section, 'h2');
+    });
+  });
 
   assert.ok($('#editor h2:contains(first section)').length,
             'first section is a heading');
@@ -403,8 +415,7 @@ test('selecting text that touches bold text should not be considered bold', (ass
   Helpers.dom.selectText('b', editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
-  let command = new BoldCommand(editor);
-  command.exec();
+  editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
   assert.hasElement('#editor strong:contains(b)', 'precond - bold text');
 
@@ -431,12 +442,11 @@ test('selecting text that includes a 1-character marker and unbolding it', (asse
   assert.hasElement('#editor strong:contains(b)', 'precond - bold');
 
   Helpers.dom.selectText('b', editorElement, 'c', editorElement);
-  Helpers.dom.triggerEvent(document, 'mouseup');
 
   let bold = editor.builder.createMarkup('strong');
   assert.ok(editor.markupsInSelection.indexOf(bold) !== -1, 'strong is in selection');
-  let command = new BoldCommand(editor);
-  command.exec();
+
+  editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
   assert.hasNoElement('#editor strong', 'bold text is unboldened');
 });
@@ -460,10 +470,8 @@ test('selecting text that includes an empty section and applying markup to it', 
   const p2 = $('#editor p:eq(1)')[0];
 
   Helpers.dom.moveCursorTo(t1, 0, p2, 0);
-  Helpers.dom.triggerEvent(document, 'mouseup');
 
-  let command = new BoldCommand(editor);
-  command.exec();
+  editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
   assert.hasElement('#editor p strong:contains(abc)', 'bold is applied to text');
 });

@@ -12,21 +12,21 @@ export const MODIFIERS = {
 };
 
 export const SPECIAL_KEYS = {
-  BACKSPACE: 8,
-  TAB:       9,
-  ENTER:     13,
-  ESC:       27,
-  SPACE:     32,
-  PAGEUP:    33,
-  PAGEDOWN:  34,
-  END:       35,
-  HOME:      36,
-  LEFT:      37,
-  UP:        38,
-  RIGHT:     39,
-  DOWN:      40,
-  INS:       45,
-  DEL:       46
+  BACKSPACE: Keycodes.BACKSPACE,
+  TAB:       Keycodes.TAB,
+  ENTER:     Keycodes.ENTER,
+  ESC:       Keycodes.ESC,
+  SPACE:     Keycodes.SPACE,
+  PAGEUP:    Keycodes.PAGEUP,
+  PAGEDOWN:  Keycodes.PAGEDOWN,
+  END:       Keycodes.END,
+  HOME:      Keycodes.HOME,
+  LEFT:      Keycodes.LEFT,
+  UP:        Keycodes.UP,
+  RIGHT:     Keycodes.RIGHT,
+  DOWN:      Keycodes.DOWN,
+  INS:       Keycodes.INS,
+  DEL:       Keycodes.DELETE
 };
 
 // heuristic for determining if `event` is a key event

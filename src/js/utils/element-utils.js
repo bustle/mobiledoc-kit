@@ -11,19 +11,6 @@ function createDiv(className) {
   return div;
 }
 
-function hideElement(element) {
-  element.style.display = 'none';
-}
-
-function showElement(element) {
-  element.style.display = 'block';
-}
-
-function swapElements(elementToShow, elementToHide) {
-  hideElement(elementToHide);
-  showElement(elementToShow);
-}
-
 function getEventTargetMatchingTag(tagName, target, container) {
   tagName = normalizeTagName(tagName);
   // Traverses up DOM from an event target to find the node matching specifed tag
@@ -73,32 +60,9 @@ function positionElementHorizontallyCenteredToRect(element, rect, topOffset) {
   return positionElementToRect(element, rect, topOffset, horizontalCenter);
 }
 
-function positionElementCenteredAbove(element, aboveElement) {
-  var elementMargin = getElementComputedStyleNumericProp(element, 'marginBottom');
-  return positionElementHorizontallyCenteredToRect(element, aboveElement.getBoundingClientRect(), element.offsetHeight + elementMargin);
-}
-
 function positionElementCenteredBelow(element, belowElement) {
   var elementMargin = getElementComputedStyleNumericProp(element, 'marginTop');
   return positionElementHorizontallyCenteredToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
-}
-
-function positionElementCenteredIn(element, inElement) {
-  var verticalCenter = (inElement.offsetHeight / 2) - (element.offsetHeight / 2);
-  return positionElementHorizontallyCenteredToRect(element, inElement.getBoundingClientRect(), -verticalCenter);
-}
-
-function positionElementToLeftOf(element, leftOfElement) {
-  var verticalCenter = (leftOfElement.offsetHeight / 2) - (element.offsetHeight / 2);
-  var elementMargin = getElementComputedStyleNumericProp(element, 'marginRight');
-  return positionElementToRect(element, leftOfElement.getBoundingClientRect(), -verticalCenter, element.offsetWidth + elementMargin);
-}
-
-function positionElementToRightOf(element, rightOfElement) {
-  var verticalCenter = (rightOfElement.offsetHeight / 2) - (element.offsetHeight / 2);
-  var elementMargin = getElementComputedStyleNumericProp(element, 'marginLeft');
-  var rightOfElementRect = rightOfElement.getBoundingClientRect();
-  return positionElementToRect(element, rightOfElementRect, -verticalCenter, -rightOfElement.offsetWidth - elementMargin);
 }
 
 function setData(element, name, value) {
@@ -113,17 +77,10 @@ function setData(element, name, value) {
 export {
   setData,
   createDiv,
-  hideElement,
-  showElement,
-  swapElements,
   getEventTargetMatchingTag,
   getElementRelativeOffset,
   getElementComputedStyleNumericProp,
   positionElementToRect,
   positionElementHorizontallyCenteredToRect,
-  positionElementCenteredAbove,
-  positionElementCenteredBelow,
-  positionElementCenteredIn,
-  positionElementToLeftOf,
-  positionElementToRightOf
+  positionElementCenteredBelow
 };

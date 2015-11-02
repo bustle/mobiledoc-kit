@@ -253,13 +253,6 @@ class Editor {
     callback(window.prompt(message, defaultValue));
   }
 
-  cancelSelection() {
-    if (this._hasSelection) {
-      const range = this.cursor.offsets;
-      this.moveToPosition(range.tail);
-    }
-  }
-
   didUpdate() {
     this.trigger('update');
   }
@@ -308,7 +301,7 @@ class Editor {
    */
   handleInput() {
     this.reparse();
-    this.trigger('update');
+    this.didUpdate();
   }
 
   reparse() {
@@ -319,7 +312,7 @@ class Editor {
     // postEditor.
     this.run(() => {});
     this.rerender();
-    this.trigger('update');
+    this.didUpdate();
   }
 
   // FIXME this should be able to be removed now -- if any sections are detached,
@@ -541,10 +534,7 @@ class Editor {
     setTimeout(() => this._reportSelectionState());
   }
 
-  handleKeyup(event) {
-    const key = Key.fromEvent(event);
-
-    if (key.isEscape()) { this.trigger('escapeKey'); }
+  handleKeyup() {
     this._reportSelectionState();
   }
 
@@ -559,20 +549,6 @@ class Editor {
    */
   _reportSelectionState() {
     this.runCallbacks(CALLBACK_QUEUES.CURSOR_DID_CHANGE);
-
-    if (this.cursor.hasSelection()) {
-      if (!this._hasSelection) {
-        this._hasSelection = true;
-        this.trigger('selection'); // new selection
-      } else {
-        this.trigger('selectionUpdated'); // already had selection
-      }
-    } else {
-      if (this._hasSelection) {
-        this.trigger('selectionEnded');
-        this._hasSelection = false;
-      }
-    }
   }
 
   _insertEmptyMarkupSectionAtCursor() {

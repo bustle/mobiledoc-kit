@@ -1,9 +1,27 @@
-const TEXT_NODE = 3;
-
 import { clearSelection } from 'content-kit-editor/utils/selection-utils';
-import { walkDOMUntil } from 'content-kit-editor/utils/dom-utils';
+import { forEach } from 'content-kit-editor/utils/array-utils';
 import KEY_CODES from 'content-kit-editor/utils/keycodes';
 import { DIRECTION, MODIFIERS }  from 'content-kit-editor/utils/key';
+import { isTextNode } from 'content-kit-editor/utils/dom-utils';
+
+// walks DOWN the dom from node to childNodes, returning the element
+// for which `conditionFn(element)` is true
+function walkDOMUntil(topNode, conditionFn=() => {}) {
+  if (!topNode) { throw new Error('Cannot call walkDOMUntil without a node'); }
+  let stack = [topNode];
+  let currentElement;
+
+  while (stack.length) {
+    currentElement = stack.pop();
+
+    if (conditionFn(currentElement)) {
+      return currentElement;
+    }
+
+    forEach(currentElement.childNodes, (el) => stack.push(el));
+  }
+}
+
 
 function selectRange(startNode, startOffset, endNode, endOffset) {
   clearSelection();
@@ -21,7 +39,7 @@ function selectText(startText,
                     endText=startText,
                     endContainingElement=startContainingElement) {
   const findTextNode = (text) => {
-    return (el) => el.nodeType === TEXT_NODE && el.textContent.indexOf(text) !== -1;
+    return (el) => isTextNode(el) && el.textContent.indexOf(text) !== -1;
   };
   const startTextNode = walkDOMUntil(
     startContainingElement, findTextNode(startText));

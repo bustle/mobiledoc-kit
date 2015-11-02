@@ -1,5 +1,3 @@
-import { containsNode } from './dom-utils';
-
 function clearSelection() {
   // FIXME-IE ensure this works on IE 9. It works on IE10.
   window.getSelection().removeAllRanges();
@@ -37,15 +35,7 @@ function comparePosition(selection) {
   return {headNode, headOffset, tailNode, tailOffset};
 }
 
-function restoreRange(range) {
-  clearSelection();
-  var selection = window.getSelection();
-  selection.addRange(range);
-}
-
 export {
-  restoreRange,
-  containsNode,
   clearSelection,
   comparePosition,
   getSelectionContents
