@@ -20,16 +20,20 @@ export default class MobiledocParser {
    * @return {Post}
    */
   parse({version, sections: sectionData}) {
-    const markerTypes = sectionData[0];
-    const sections    = sectionData[1];
+    try {
+      const markerTypes = sectionData[0];
+      const sections    = sectionData[1];
 
-    const post = this.builder.createPost();
+      const post = this.builder.createPost();
 
-    this.markups = [];
-    this.markerTypes = this.parseMarkerTypes(markerTypes);
-    this.parseSections(sections, post);
+      this.markups = [];
+      this.markerTypes = this.parseMarkerTypes(markerTypes);
+      this.parseSections(sections, post);
 
-    return post;
+      return post;
+    } catch (e) {
+      throw new Error(`Unable to parse mobiledoc: ${e.message}`);
+    }
   }
 
   parseMarkerTypes(markerTypes) {
