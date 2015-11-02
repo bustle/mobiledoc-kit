@@ -142,3 +142,9 @@ test('#markersFor clones a single marker with a tail offset', (assert) => {
   assert.equal(clones.length, 1);
   assert.equal(clones[0].value, ' ');
 });
+
+test('instantiating with invalid tagName throws', (assert) => {
+  assert.throws(() => {
+    builder.createMarkupSection('blah');
+  }, /Cannot set.*tagName.*blah/);
+});

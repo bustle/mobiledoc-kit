@@ -1,5 +1,8 @@
 import LinkedList from '../utils/linked-list';
-import { forEach } from '../utils/array-utils';
+import {
+  forEach,
+  contains
+} from '../utils/array-utils';
 import { LIST_SECTION_TYPE } from './types';
 import Section from './_section';
 import {
@@ -25,6 +28,10 @@ export default class ListSection extends Section {
     this.sections = this.items;
 
     items.forEach(i => this.items.append(i));
+  }
+
+  isValidTagName(normalizedTagName) {
+    return contains(VALID_LIST_SECTION_TAGNAMES, normalizedTagName);
   }
 
   get isBlank() {

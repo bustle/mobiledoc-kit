@@ -3,6 +3,7 @@ import { LIST_ITEM_TYPE } from './types';
 import {
   normalizeTagName
 } from 'content-kit-editor/utils/dom-utils';
+import { contains } from 'content-kit-editor/utils/array-utils';
 
 export const VALID_LIST_ITEM_TAGNAMES = [
   'li'
@@ -11,6 +12,10 @@ export const VALID_LIST_ITEM_TAGNAMES = [
 export default class ListItem extends Markerable {
   constructor(tagName, markers=[]) {
     super(LIST_ITEM_TYPE, tagName, markers);
+  }
+
+  isValidTagName(normalizedTagName) {
+    return contains(VALID_LIST_ITEM_TAGNAMES, normalizedTagName);
   }
 
   splitAtMarker(marker, offset=0) {

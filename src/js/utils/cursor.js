@@ -105,6 +105,10 @@ const Cursor = class Cursor {
   }
 
   moveToPosition(position) {
+    if (position._inCard) {
+      // FIXME add the ability to position the cursor on/in a card
+      return;
+    }
     this.selectRange(new Range(position, position));
   }
 
