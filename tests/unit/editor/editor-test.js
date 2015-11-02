@@ -228,3 +228,21 @@ test('#detectMarkupInRange matching bounds of marker', (assert) => {
   assert.ok(markup, 'selection has markup');
   assert.equal(markup.tagName, 'strong', 'detected markup is strong');
 });
+
+test('useful error message when given invalid mobiledoc', (assert) => {
+  let badMobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      ["incorrect"]
+    ]
+  };
+  assert.throws(() => {
+    new Editor({mobiledoc: badMobiledoc}); // jshint ignore:line
+  }, /unable to parse.*mobiledoc/i);
+
+  let verybadMobiledoc = "not mobiledoc";
+  assert.throws(() => {
+    new Editor({mobiledoc: verybadMobiledoc}); // jshint ignore:line
+  }, /unable to parse.*mobiledoc/i);
+});
