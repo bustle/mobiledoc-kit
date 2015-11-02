@@ -226,31 +226,13 @@ Or run headless tests via testem:
 
   * `npm test`
 
-To quickly view the demo:
+#### Demo
 
-  * `broccoli serve`
-  * open http://localhost:4200/demo
-  * Image uploads and embeds are not supported running in this manner.
+There is a demo app that uses content-kit and ember-content-kit in `demo/`. To run the demo:
 
-To view the full demo with uploads and embed, you will have to configure AWS
-and Embedly keys as environment variables:
-
-```bash
-export AWS_ACCESS_KEY_ID=XXXXXX
-export AWS_SECRET_ACCESS_KEY=XXXXXX
-export EMBEDLY_KEY=XXXXXX
-```
-
-Also set the `bucketName` in `server/config.json` with the name of your AWS
-S3 bucket for uploading files.
-
-Then to boot the server:
-
-```
-node server/index.js
-```
-
-And visit [localhost:5000/dist/demo/index.html](http://localhost:5000/dist/demo/index.html)
+ * `cd demo/ && npm install && bower install`
+ * `ember serve` (shut down your broccoli server if it is already running on port 4200)
+ * visit http://localhost:4200/
 
 #### Releasing
 
@@ -259,7 +241,7 @@ And visit [localhost:5000/dist/demo/index.html](http://localhost:5000/dist/demo/
 * `git push <origin> --follow-tags`
 * `npm publish`
 
-#### Re-deploy the demo
+#### Deploy the demo
 
 The demo website is hosted at github pages. To publish a new version:
 
