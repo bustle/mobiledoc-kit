@@ -5,6 +5,8 @@ import Helpers from '../../test-helpers';
 import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
 const { module, test } = Helpers;
 
+const ZWNJ = '\u200c';
+
 const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
 let builder;
 
@@ -186,32 +188,12 @@ test('renders a card section', (assert) => {
   const renderTree = new RenderTree(post);
   render(renderTree, [card]);
 
-  assert.equal(renderTree.rootElement.firstChild.innerHTML, 'I am a card',
+  // Use a wrapper an innerHTML to satisfy different browser attribute
+  // ordering quirks
+  let expectedWrapper = $(`<div>${ZWNJ}<div contenteditable="false" class="ck-card">I am a card</div>${ZWNJ}</div>`);
+  assert.equal(renderTree.rootElement.firstChild.innerHTML,
+               expectedWrapper.html(),
               'card is rendered');
-});
-
-test('renders a card section into a non-contenteditable element', (assert) => {
-  assert.expect(2);
-
-  let post = builder.createPost();
-  let cardSection = builder.createCardSection('my-card');
-  let card = {
-    name: 'my-card',
-    display: {
-      setup(element) {
-        element.setAttribute('id', 'my-card-div');
-      }
-    }
-  };
-  post.sections.append(cardSection);
-
-  const renderTree = new RenderTree(post);
-  render(renderTree, [card]);
-
-  let element = renderTree.rootElement.firstChild;
-  assert.equal(element.getAttribute('id'), 'my-card-div',
-               'precond - correct element selected');
-  assert.equal(element.contentEditable, 'false', 'is not contenteditable');
 });
 
 /*
@@ -547,7 +529,7 @@ test('includes card sections in renderTree element map', (assert) => {
 
   $('#qunit-fixture')[0].appendChild(renderTree.rootElement);
 
-  const element = $('#simple-card')[0];
+  const element = $('#simple-card').parent()[0];
   assert.ok(!!element, 'precond - simple card is rendered');
   assert.ok(!!renderTree.getElementRenderNode(element),
             'has render node for card element');

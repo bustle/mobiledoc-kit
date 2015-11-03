@@ -45,7 +45,6 @@ function renderBuiltAbstract(post) {
 
 module('Unit: PostEditor with mobiledoc', {
   beforeEach() {
-    $('#qunit-fixture').append('<div id="editor"></div>');
     editorElement = $('#editor')[0];
   },
 
@@ -305,6 +304,140 @@ test('#deleteRange across all content', (assert) => {
   assert.equal(post.sections.head.text, '');
   assert.equal(post.sections.length, 1, 'only 1 section remains');
   assert.equal(post.sections.head.markers.length, 0, 'no markers remain');
+});
+
+test('#deleteRange when range head and tail is same card section', (assert) => {
+  let post = Helpers.postAbstract.build(({cardSection, post}) => {
+    return post([
+      cardSection('my-card')
+    ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  const range = Range.create(post.sections.head, 0, post.sections.tail, 1);
+  let position = postEditor.deleteRange(range);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, 'only 1 section');
+  assert.ok(!post.sections.head.isCardSection, 'not card section');
+  assert.ok(position.section === post.sections.head, 'correct position section');
+  assert.equal(position.offset, 0, 'correct position offset');
+});
+
+test('#deleteRange when range head and tail are diff card sections', (assert) => {
+  let post = Helpers.postAbstract.build(({cardSection, post}) => {
+    return post([
+      cardSection('my-card'),
+      cardSection('my-card')
+    ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  const range = Range.create(post.sections.head, 0, post.sections.tail, 1);
+  let position = postEditor.deleteRange(range);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, 'only 1 section');
+  assert.ok(!post.sections.head.isCardSection, 'not card section');
+  assert.ok(position.section === post.sections.head, 'correct position section');
+  assert.equal(position.offset, 0, 'correct position offset');
+});
+
+test('#deleteRange when range head is card section', (assert) => {
+  let post = Helpers.postAbstract.build(({cardSection, marker, markupSection, post}) => {
+    return post([
+      cardSection('my-card'),
+      markupSection('p', [marker('abc')])
+    ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  const range = Range.create(post.sections.head, 0, post.sections.tail, 1);
+  let position = postEditor.deleteRange(range);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, 'only 1 section');
+  assert.ok(!post.sections.head.isCardSection, 'not card section');
+  assert.ok(position.section === post.sections.head, 'correct position section');
+  assert.equal(position.offset, 0, 'correct position offset');
+  assert.equal(position.section.text, 'bc', 'correct text in section');
+});
+
+test('#deleteRange when range tail is start of card section', (assert) => {
+  let post = Helpers.postAbstract.build(({marker, markupSection, cardSection, post}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      cardSection('my-card')
+    ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  const range = Range.create(post.sections.head, 1, post.sections.tail, 0);
+  let position = postEditor.deleteRange(range);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 2, '2 sections remain');
+  assert.ok(!post.sections.head.isCardSection, 'not card section');
+  assert.equal(post.sections.head.text, 'a', 'correct text in markup section');
+  assert.ok(post.sections.tail.isCardSection, 'tail is card section');
+
+  assert.ok(position.section === post.sections.head, 'correct position section');
+  assert.equal(position.offset, 1, 'correct position offset');
+});
+
+test('#deleteRange when range tail is end of card section', (assert) => {
+  let post = Helpers.postAbstract.build(({marker, markupSection, cardSection, post}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      cardSection('my-card')
+    ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  const range = Range.create(post.sections.head, 1, post.sections.tail, 1);
+  let position = postEditor.deleteRange(range);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, '1 section remains');
+  assert.ok(!post.sections.head.isCardSection, 'not card section');
+  assert.equal(post.sections.head.text, 'a', 'correct text in markup section');
+
+  assert.ok(position.section === post.sections.head, 'correct position section');
+  assert.equal(position.offset, 1, 'correct position offset');
+});
+
+test('#deleteRange when range head is end of card section', (assert) => {
+  let post = Helpers.postAbstract.build(({marker, markupSection, cardSection, post}) => {
+    return post([
+      cardSection('my-card'),
+      markupSection('p', [marker('abc')])
+    ]);
+  });
+
+  renderBuiltAbstract(post);
+
+  const range = Range.create(post.sections.head, 1, post.sections.tail, 1);
+  let position = postEditor.deleteRange(range);
+
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 2, '2 sections remain');
+  assert.ok(post.sections.head.isCardSection, 'head is card section');
+  assert.ok(!post.sections.tail.isCardSection, 'tail is not card section');
+  assert.equal(post.sections.tail.text, 'bc', 'correct text in markup section');
+
+  assert.ok(position.section === post.sections.head, 'correct position section');
+  assert.equal(position.offset, 1, 'correct position offset');
 });
 
 test('#cutSection with one marker', (assert) => {

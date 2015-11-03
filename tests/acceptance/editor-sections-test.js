@@ -5,7 +5,7 @@ import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
 
 const { test, module } = Helpers;
 
-let fixture, editor, editorElement;
+let editor, editorElement;
 const mobileDocWith1Section = {
   version: MOBILEDOC_VERSION,
   sections: [
@@ -88,9 +88,7 @@ const mobileDocWithNoCharacter = {
 
 module('Acceptance: Editor sections', {
   beforeEach() {
-    fixture = $('#qunit-fixture');
-    editorElement = $('<div id="editor"></div>')[0];
-    fixture.append(editorElement);
+    editorElement = $('#editor')[0];
   },
 
   afterEach() {

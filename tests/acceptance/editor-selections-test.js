@@ -4,7 +4,7 @@ import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
 
 const { test, module } = Helpers;
 
-let fixture, editor, editorElement;
+let editor, editorElement;
 
 const mobileDocWithSection = {
   version: MOBILEDOC_VERSION,
@@ -35,10 +35,7 @@ const mobileDocWith2Sections = {
 
 module('Acceptance: Editor Selections', {
   beforeEach() {
-    fixture = document.getElementById('qunit-fixture');
-    editorElement = document.createElement('div');
-    editorElement.setAttribute('id', 'editor');
-    fixture.appendChild(editorElement);
+    editorElement = $('#editor')[0];
   },
 
   afterEach() {
@@ -326,7 +323,6 @@ test('selecting text across markup and list sections', (assert) => {
   editor.render(editorElement);
 
   Helpers.dom.selectText('bc', editorElement, '12', editorElement);
-  Helpers.dom.triggerEvent(document, 'mouseup');
 
   Helpers.dom.triggerDelete(editor);
 

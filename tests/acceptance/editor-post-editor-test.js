@@ -7,8 +7,7 @@ let editor, editorElement;
 
 module('Acceptance: Editor - PostEditor', {
   beforeEach() {
-    editorElement = $('<div id="editor"></div>')[0];
-    $('#qunit-fixture').append($(editorElement));
+    editorElement = $('#editor')[0];
   },
   afterEach() {
     if (editor) { editor.destroy(); }

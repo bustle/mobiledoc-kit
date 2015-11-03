@@ -15,6 +15,8 @@ export default class Card extends Section {
     this.name = name;
     this.payload = payload;
     this.setInitialMode(DEFAULT_INITIAL_MODE);
+    this.isCardSection = true;
+    this.length = 1;
   }
 
   get isBlank() {

@@ -51,8 +51,8 @@ export const DEFAULT_KEY_COMMANDS = [{
     if (!editor.cursor.hasSelection()) {
       range.tail = new Position(range.head.section, range.head.section.length);
     }
-    editor.run(postEditor => postEditor.deleteRange(range));
-    editor.cursor.moveToPosition(range.head);
+    let nextPosition = editor.run(postEditor => postEditor.deleteRange(range));
+    editor.cursor.moveToPosition(nextPosition);
   }
 }, {
   modifier: MODIFIERS.META,

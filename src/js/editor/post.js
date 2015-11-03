@@ -8,6 +8,7 @@ import { isArrayEqual, forEach, filter, compact } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 import mixin from '../utils/mixin';
+import assert from '../utils/assert';
 
 function isJoinable(section1, section2) {
   return isMarkerable(section1) &&
@@ -66,6 +67,7 @@ class PostEditor {
    *
    * @method deleteRange
    * @param {Range} range Cursor Range object with head and tail Positions
+   * @return {Position} The position where the cursor would go after deletion
    * @public
    */
   deleteRange(range) {
@@ -83,27 +85,48 @@ class PostEditor {
     //     -- mark the end section for removal
     //     -- cursor goes at end of marker before the selection start
 
-    const {
+    let {
       head: {section: headSection, offset: headSectionOffset},
       tail: {section: tailSection, offset: tailSectionOffset}
     } = range;
     const { post } = this.editor;
 
+    let nextPosition;
+
     if (headSection === tailSection) {
-      this.cutSection(headSection, headSectionOffset, tailSectionOffset);
+      nextPosition = this.cutSection(headSection, headSectionOffset, tailSectionOffset);
     } else {
       let removedSections = post.sectionsContainedBy(range);
-      post.walkMarkerableSections(range, section => {
+      let appendSection = headSection;
+
+      post.walkLeafSections(range, section => {
         switch (section) {
           case headSection:
-            this.cutSection(section, headSectionOffset, section.text.length);
+            if (section.isCardSection) {
+              appendSection = this.builder.createMarkupSection();
+
+              if (headSectionOffset === 0) {
+                removedSections.push(section);
+                nextPosition = new Position(appendSection, 0);
+              } else {
+                nextPosition = new Position(section, 1);
+              }
+            } else {
+              nextPosition = this.cutSection(section, headSectionOffset, section.length);
+            }
             break;
           case tailSection:
-            section.markersFor(tailSectionOffset, section.text.length).forEach(m => {
-              headSection.markers.append(m);
-            });
-            this._markDirty(headSection); // May have added nodes
-            removedSections.push(section);
+            if (section.isCardSection) {
+              if (tailSectionOffset === 1) {
+                removedSections.push(section);
+              }
+            } else {
+              section.markersFor(tailSectionOffset, section.text.length).forEach(m => {
+                appendSection.markers.append(m);
+              });
+              this._markDirty(headSection); // May have added nodes
+              removedSections.push(section);
+            }
             break;
           default:
             if (removedSections.indexOf(section) === -1) {
@@ -111,12 +134,27 @@ class PostEditor {
             }
           }
       });
+      if (headSection !== appendSection) {
+        this.insertSectionBefore(post.sections, appendSection, headSection.next);
+      }
       removedSections.forEach(section => this.removeSection(section) );
     }
+
+    return nextPosition;
   }
 
+  /**
+   * @return {Position}
+   */
   cutSection(section, headSectionOffset, tailSectionOffset) {
-    if (section.isBlank) { return; }
+    if (section.isBlank || headSectionOffset === tailSectionOffset) {
+      return new Position(section, headSectionOffset);
+    }
+    if (section.isCardSection) {
+      let newSection = this.builder.createMarkupSection();
+      this.replaceSection(section, newSection);
+      return new Position(newSection, 0);
+    }
 
     let adjustedHead = 0,
         marker = section.markers.head,
@@ -161,11 +199,15 @@ class PostEditor {
       this.removeMarker(marker);
       marker = nextMarker;
     }
+
+    return new Position(section, headSectionOffset);
   }
 
   _coalesceMarkers(section) {
-    this._removeEmptyMarkers(section);
-    this._joinSimilarMarkers(section);
+    if (section.isMarkerable) {
+      this._removeEmptyMarkers(section);
+      this._joinSimilarMarkers(section);
+    }
   }
 
   _removeEmptyMarkers(section) {
@@ -267,16 +309,23 @@ class PostEditor {
     } else if (isListItem(section)) {
       nextPosition = this._convertListItemToMarkupSection(section);
     } else {
-      const prevSection = section.immediatelyPreviousMarkerableSection();
+      const prevSection = section.previousLeafSection();
 
       if (prevSection) {
-        const { beforeMarker } = prevSection.join(section);
-        this._markDirty(prevSection);
-        this.removeSection(section);
+        if (prevSection.isCardSection) {
+          if (section.isBlank) {
+            this.removeSection(section);
+          }
+          nextPosition = new Position(prevSection, 1);
+        } else {
+          const { beforeMarker } = prevSection.join(section);
+          this._markDirty(prevSection);
+          this.removeSection(section);
 
-        nextPosition.section = prevSection;
-        nextPosition.offset = beforeMarker ?
-          prevSection.offsetOfMarker(beforeMarker, beforeMarker.length) : 0;
+          nextPosition.section = prevSection;
+          nextPosition.offset = beforeMarker ?
+            prevSection.offsetOfMarker(beforeMarker, beforeMarker.length) : 0;
+        }
       }
     }
 
@@ -291,6 +340,7 @@ class PostEditor {
    */
   _deleteForwardFrom(position) {
     const { section, offset } = position;
+
     if (section.isBlank) {
       // remove this section, focus on start of next markerable section
       const nextPosition = position.clone();
@@ -302,10 +352,25 @@ class PostEditor {
       }
       return nextPosition;
     } else if (offset === section.length) {
-      // join next markerable section to this one
-      return this._joinPositionToNextSection(position);
+      if (section.isCardSection)  {
+        if (section.next && section.next.isBlank) {
+          this.removeSection(section.next);
+        }
+        return position;
+      } else {
+        // join next markerable section to this one
+        return this._joinPositionToNextSection(position);
+      }
     } else {
-      return this._deleteForwardFromMarkerPosition(position.markerPosition);
+      if (section.isCardSection) {
+        if (offset === 0) {
+          let newSection = this.builder.createMarkupSection();
+          this.replaceSection(section, newSection);
+          return new Position(newSection, 0);
+        }
+      } else {
+        return this._deleteForwardFromMarkerPosition(position.markerPosition);
+      }
     }
   }
 
@@ -376,13 +441,28 @@ class PostEditor {
    * @private
    */
   _deleteBackwardFrom(position) {
-    const { offset:sectionOffset } = position;
+    const { section, offset:sectionOffset } = position;
 
     if (sectionOffset === 0) {
-      return this._joinPositionToPreviousSection(position);
+      if (section.isCardSection) {
+        if (section.prev && section.prev.isBlank) {
+          this.removeSection(section.prev);
+        }
+        return position;
+      } else {
+        return this._joinPositionToPreviousSection(position);
+      }
     }
 
     let nextPosition = position.clone();
+
+    // if position is end of a card, replace the card with a markup section
+    if (section.isCardSection) {
+      let newSection = this.builder.createMarkupSection();
+      this.replaceSection(section, newSection);
+      return new Position(newSection, 0);
+    }
+ 
     const { marker, offset:markerOffset } = position.markerPosition;
 
     const offsetToDeleteAt = markerOffset - 1;
@@ -480,7 +560,12 @@ class PostEditor {
    * @public
    */
   splitSection(position) {
-    const section = position.section;
+    const { section } = position;
+
+    if (section.isCardSection) {
+      return this._splitCardSection(section, position);
+    }
+
     const [beforeSection, afterSection] = section.splitAtPosition(position);
     this._coalesceMarkers(beforeSection);
     this._coalesceMarkers(afterSection);
@@ -502,6 +587,36 @@ class PostEditor {
 
     // FIXME we must return 2 sections because other code expects this to always return 2
     return newSections;
+  }
+
+  /**
+   * @method _splitCardSection
+   * @param {Section} cardSection
+   * @param {Position} position to split at
+   * @return {Array} pre and post-split sections
+   * @private
+   */
+  _splitCardSection(cardSection, position) {
+    let { offset } = position;
+    assert('Cards section must be split at offset 0 or 1',
+           offset === 0 || offset === 1);
+
+    let newSection = this.builder.createMarkupSection();
+    let nextSection;
+    let surroundingSections;
+
+    if (offset === 0) {
+      nextSection = cardSection;
+      surroundingSections = [newSection, cardSection];
+    } else {
+      nextSection = cardSection.next;
+      surroundingSections = [cardSection, newSection];
+    }
+
+    let collection = this.editor.post.sections;
+    this.insertSectionBefore(collection, newSection, nextSection);
+
+    return surroundingSections;
   }
 
   /**

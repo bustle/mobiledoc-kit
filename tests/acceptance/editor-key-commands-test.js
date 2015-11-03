@@ -8,9 +8,7 @@ let editor, editorElement;
 
 module('Acceptance: Editor: Key Commands', {
   beforeEach() {
-    editorElement = document.createElement('div');
-    editorElement.setAttribute('id', 'editor');
-    $('#qunit-fixture').append(editorElement);
+    editorElement = $('#editor')[0];
   },
   afterEach() {
     if (editor) {

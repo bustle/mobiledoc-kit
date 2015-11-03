@@ -6,24 +6,8 @@ export function isMarkerable(section) {
   return !!section.markers;
 }
 
-function getParentSection(section) {
-  return section.parent;
-}
-
-function hasSubsections(section) {
-  return !!section.sections;
-}
-
-function isSubsection(section) {
+function isChild(section) {
   return section.type === LIST_ITEM_TYPE;
-}
-
-function firstMarkerableChild(section) {
-  return section.items.head;
-}
-
-function lastMarkerableChild(section) {
-  return section.items.tail;
 }
 
 export default class Section extends LinkedItem {
@@ -31,6 +15,7 @@ export default class Section extends LinkedItem {
     super();
     if (!type) { throw new Error('Cannot create section without type'); }
     this.type = type;
+    this.isMarkerable = false;
   }
 
   set tagName(val) {
@@ -57,29 +42,42 @@ export default class Section extends LinkedItem {
     throw new Error('`clone()` must be implemented by subclass');
   }
 
-  immediatelyNextMarkerableSection() {
+  nextLeafSection() {
     const next = this.next;
     if (next) {
-      if (isMarkerable(next)) {
+      if (!!next.items) {
+        return next.items.head;
+      } else {
         return next;
-      } else if (hasSubsections(next)) {
-        const firstChild = firstMarkerableChild(next);
-        return firstChild;
       }
-    } else if (isSubsection(this)) {
-      const parentSection = getParentSection(this);
-      return parentSection.immediatelyNextMarkerableSection();
+    } else {
+      if (isChild(this)) {
+        return this.parent.nextLeafSection();
+      }
     }
   }
 
-  immediatelyPreviousMarkerableSection() {
+  immediatelyNextMarkerableSection() {
+    let next = this.nextLeafSection();
+    while (next && !isMarkerable(next)) {
+      next = next.nextLeafSection();
+    }
+    return next;
+  }
+
+  previousLeafSection() {
     const prev = this.prev;
-    if (!prev) { return null; }
-    if (isMarkerable(prev)) {
-      return prev;
-    } else if (hasSubsections(prev)) {
-      const lastChild = lastMarkerableChild(prev);
-      return lastChild;
+
+    if (prev) {
+      if (!!prev.items) {
+        return prev.items.tail;
+      } else {
+        return prev;
+      }
+    } else {
+      if (isChild(this)) {
+        return this.parent.previousLeafSection();
+      }
     }
   }
 }

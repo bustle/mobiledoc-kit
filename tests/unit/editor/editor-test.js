@@ -7,15 +7,11 @@ import Helpers from '../../test-helpers';
 
 const { module, test } = Helpers;
 
-let fixture, editorElement, editor;
+let editorElement, editor;
 
 module('Unit: Editor', {
   beforeEach() {
-    fixture = document.getElementById('qunit-fixture');
-    editorElement = document.createElement('div');
-    editorElement.id = 'editor1';
-    editorElement.className = 'editor';
-    fixture.appendChild(editorElement);
+    editorElement = $('#editor')[0];
   },
 
   afterEach() {

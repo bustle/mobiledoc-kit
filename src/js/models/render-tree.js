@@ -31,6 +31,31 @@ export default class RenderTree {
   removeElementRenderNode(element) {
     this._elements.remove(element);
   }
+  /**
+   * @param {DOMNode} element
+   * Walk up from the element until we find a renderNode element
+   */
+  findRenderNodeFromElement(element, conditionFn=()=>true) {
+    let renderNode;
+    while (element) {
+      renderNode = this.getElementRenderNode(element);
+      if (renderNode && conditionFn(renderNode)) {
+        return renderNode;
+      }
+
+      // continue loop
+      element = element.parentNode;
+
+      // stop if we are at the root element
+      if (element === this.rootElement) {
+        if (conditionFn(this.rootNode)) {
+          return this.rootNode;
+        } else {
+          return;
+        }
+      }
+    }
+  }
   buildRenderNode(postNode) {
     const renderNode = new RenderNode(postNode, this);
     postNode.renderNode = renderNode;

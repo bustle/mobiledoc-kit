@@ -100,7 +100,8 @@ export default class Post {
     return markups.toArray();
   }
 
-  walkAllSections(range, callback) {
+  // FIXME if range.head is a listItem this will not work properly
+  walkPostSections(range, callback) {
     const {head, tail} = range;
 
     let currentSection = head.section;
@@ -116,13 +117,10 @@ export default class Post {
     }
   }
 
-  walkMarkerableSections(range, callback) {
-    const {head, tail} = range;
+  walkLeafSections(range, callback) {
+    const { head, tail } = range;
 
     let currentSection = head.section;
-    if (!isMarkerable(currentSection)) {
-      currentSection = this._nextMarkerableSection(currentSection);
-    }
 
     while (currentSection) {
       callback(currentSection);
@@ -130,9 +128,17 @@ export default class Post {
       if (currentSection === tail.section) {
         break;
       } else {
-        currentSection = this._nextMarkerableSection(currentSection);
+        currentSection = this._nextLeafSection(currentSection);
       }
     }
+  }
+
+  walkMarkerableSections(range, callback) {
+    this.walkLeafSections(range, section => {
+      if (isMarkerable(section)) {
+        callback(section);
+      }
+    });
   }
 
   // return an array of all top-level sections (direct children of `post`)
@@ -164,9 +170,19 @@ export default class Post {
     return containedSections;
   }
 
+  _nextMarkerableSection(section) {
+    let nextSection = this._nextLeafSection(section);
+
+    while (nextSection && !isMarkerable(nextSection)) {
+      nextSection = this._nextLeafSection(nextSection);
+    }
+
+    return nextSection;
+  }
+
   // return the next section that has markers after this one,
   // possibly skipping non-markerable sections
-  _nextMarkerableSection(section) {
+  _nextLeafSection(section) {
     if (!section) { return null; }
     const hasChildren  = s => !!s.items;
     const firstChild   = s => s.items.head;
@@ -175,21 +191,17 @@ export default class Post {
 
     const next = section.next;
     if (next) {
-      if (isMarkerable(next)) {
-        return next;
-      } else if (hasChildren(next)) { // e.g. a ListSection
+      if (hasChildren(next)) { // e.g. a ListSection
         return firstChild(next);
       } else {
-        // e.g. a cardSection that has no children or parent but
-        // may have a markerable after it in the AT
-        return this._nextMarkerableSection(next);
+        return next;
       }
     } else {
       if (isChild(section)) {
         // if there is no section after this, but this section is a child
         // (e.g. a ListItem inside a ListSection), check for a markerable
         // section after its parent
-        return this._nextMarkerableSection(parent(section));
+        return this._nextLeafSection(parent(section));
       }
     }
   }
@@ -202,7 +214,7 @@ export default class Post {
     const post = this.builder.createPost();
     const { builder } = this;
 
-    this.walkAllSections(range, section => {
+    this.walkPostSections(range, section => {
       let newSection;
       if (isMarkerable(section)) {
         newSection = builder.createMarkupSection(section.tagName);

@@ -7,6 +7,7 @@ import Section from './_section';
 export default class Markerable extends Section {
   constructor(type, tagName, markers=[]) {
     super(type);
+    this.isMarkerable = true;
     this.tagName = tagName;
     this.markers = new LinkedList({
       adoptItem: m => m.section = m.parent = this,

@@ -67,8 +67,26 @@ const Key = class Key {
     return this.keyCode === Keycodes.DELETE;
   }
 
+  isHorizontalArrow() {
+    return this.keyCode === Keycodes.LEFT ||
+      this.keyCode === Keycodes.RIGHT;
+  }
+
+  isLeftArrow() {
+    return this.keyCode === Keycodes.LEFT;
+  }
+
+  isRightArrow() {
+    return this.keyCode === Keycodes.RIGHT;
+  }
+
   get direction() {
-    return this.isForwardDelete() ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
+    switch (true) {
+      case this.isDelete():
+        return this.isForwardDelete() ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
+      case this.isHorizontalArrow():
+        return this.isRightArrow() ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
+    }
   }
 
   isSpace() {
