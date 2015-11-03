@@ -74,7 +74,7 @@ callback function. For example:
 
 ```js
 editor.didUpdatePost(postEditor => {
-  let { offsets } = editor.offsets,
+  let { offsets } = editor.cursor,
       cursorSection;
 
   if (offset.headSection.text === 'add-section-when-i-type-this') {
