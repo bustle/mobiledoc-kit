@@ -2,6 +2,7 @@ import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import Renderer from 'content-kit-editor/renderers/editor-dom';
 import RenderTree from 'content-kit-editor/models/render-tree';
 import Helpers from '../../test-helpers';
+import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
 const { module, test } = Helpers;
 
 const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
@@ -584,6 +585,20 @@ test('renders markup section "pull-quote" as <div class="pull-quote"></div>', (a
 
   const expectedDOM = Helpers.dom.build(t => {
     return t('div', {"class": "pull-quote"}, [t.text('abc')]);
+  });
+
+  assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
+});
+
+test('renders a bunch of spaces with nbsp', (assert) => {
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('a b  c    d ')])]);
+  });
+  const renderTree = new RenderTree(post);
+  render(renderTree);
+
+  const expectedDOM = Helpers.dom.build(t => {
+    return t('p', {}, [t.text(`a b ${NO_BREAK_SPACE}c ${NO_BREAK_SPACE} ${NO_BREAK_SPACE}d${NO_BREAK_SPACE}`)]);
   });
 
   assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);

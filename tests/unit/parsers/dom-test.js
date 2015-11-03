@@ -2,6 +2,7 @@ import DOMParser from 'content-kit-editor/parsers/dom';
 import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
 import Helpers from '../../test-helpers';
 import { Editor } from 'content-kit-editor';
+import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
 
 const {module, test} = Helpers;
 
@@ -50,8 +51,17 @@ test('#parse can parse multiple elements', (assert) => {
   assert.equal(s2.markers.head.value, 'some other text');
 });
 
+test('#parse can parse spaces and breaking spaces', (assert) => {
+  let element = buildDOM("<p>some &nbsp;text &nbsp;&nbsp;for &nbsp; &nbsp;you</p>");
+
+  const post = parser.parse(element);
+  const s1 = post.sections.head;
+  assert.equal(s1.markers.length, 1, 's1 has 1 marker');
+  assert.equal(s1.markers.head.value, 'some  text   for    you', 'has text');
+});
+
 test('editor#reparse catches changes to section', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => 
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) =>
     post([
       markupSection('p', [marker('the marker')])
     ])
@@ -75,8 +85,33 @@ test('editor#reparse catches changes to section', (assert) => {
   assert.equal(section.text, 'the NEW marker');
 });
 
+test('editor#reparse parses spaces and breaking spaces', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) =>
+    post([
+      markupSection('p', [marker('the marker')])
+    ])
+  );
+  editor = new Editor({mobiledoc});
+  const editorElement = $('<div id="editor"></div>')[0];
+  $('#qunit-fixture').append(editorElement);
+  editor.render(editorElement);
+
+  assert.hasElement('#editor p:contains(the marker)', 'precond - rendered correctly');
+
+  const p = $('#editor p:eq(0)')[0];
+  p.childNodes[0].textContent = `some ${NO_BREAK_SPACE}text ${NO_BREAK_SPACE}${NO_BREAK_SPACE}for ${NO_BREAK_SPACE} ${NO_BREAK_SPACE}you`;
+
+  // In Firefox, changing the text content changes the selection, so re-set it
+  Helpers.dom.moveCursorTo(p.childNodes[0]);
+
+  editor.reparse();
+
+  const section = editor.post.sections.head;
+  assert.equal(section.text, 'some  text   for    you');
+});
+
 test('editor#reparse catches changes to list section', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, listSection, listItem, marker}) => 
+  const mobiledoc = Helpers.mobiledoc.build(({post, listSection, listItem, marker}) =>
     post([
       listSection('ul', [
         listItem([marker('the list item')])

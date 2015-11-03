@@ -24,6 +24,26 @@ function createElementFromMarkup(doc, markup) {
   return element;
 }
 
+// FIXME: This can be done more efficiently with a single pass
+// building a correct string based on the original.
+function renderHTMLText(marker) {
+  let text = marker.value;
+  // If the first marker has a leading space or the last marker has a
+  // trailing space, the browser will collapse the space when we position
+  // the cursor.
+  // See https://github.com/bustlelabs/content-kit-editor/issues/68
+  //   and https://github.com/bustlelabs/content-kit-editor/issues/75
+  if (!marker.next && endsWith(text, SPACE)) {
+    text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
+  } else if ((!marker.prev || endsWith(marker.prev.value, SPACE)) && startsWith(text, SPACE)) {
+    text = NO_BREAK_SPACE + text.substr(1);
+  }
+  text = text.replace(/ ( )/g, () => {
+    return ' '+NO_BREAK_SPACE;
+  });
+  return text;
+}
+
 // ascends from element upward, returning the last parent node that is not
 // parentElement
 function penultimateParentOf(element, parentElement) {
@@ -79,18 +99,7 @@ function getNextMarkerElement(renderNode) {
 }
 
 function renderMarker(marker, element, previousRenderNode) {
-  let text = marker.value;
-
-  // If the first marker has a leading space or the last marker has a
-  // trailing space, the browser will collapse the space when we position
-  // the cursor.
-  // See https://github.com/bustlelabs/content-kit-editor/issues/68
-  //   and https://github.com/bustlelabs/content-kit-editor/issues/75
-  if (!marker.next && endsWith(text, SPACE)) {
-    text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
-  } else if (!marker.prev && startsWith(text, SPACE)) {
-    text = NO_BREAK_SPACE + text.substr(1);
-  }
+  let text = renderHTMLText(marker);
 
   let textNode = document.createTextNode(text);
   let currentElement = textNode;
