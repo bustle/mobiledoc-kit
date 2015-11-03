@@ -210,3 +210,36 @@ test('copy-paste can copy list sections', (assert) => {
   assert.equal($('#editor ul').length, 2, 'pastes the list');
   assert.hasElement($('#editor ul:eq(0) li:contains(list)'));
 });
+
+test('copy sets html & text for pasting externally', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => {
+      return post([
+        markupSection('h1', [marker('h1 heading')]),
+        markupSection('h2', [marker('h2 subheader')]),
+        markupSection('p', [marker('The text')])
+      ]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.selectText('heading', editor.element,
+                         'The text', editor.element);
+
+  Helpers.dom.triggerCopyEvent(editor);
+
+  let text = Helpers.dom.getCopyData('text/plain');
+  let html = Helpers.dom.getCopyData('text/html');
+  assert.equal(text, [
+    "heading",
+    "h2 subheader",
+    "The text"
+  ].join(''), 'gets plain text');
+
+  assert.ok(html.indexOf("<h1>heading") !== -1,
+            'html has h1');
+  assert.ok(html.indexOf("<h2>h2 subheader") !== -1,
+            'html has h2');
+  assert.ok(html.indexOf("<p>The text") !== -1,
+            'html has p');
+});

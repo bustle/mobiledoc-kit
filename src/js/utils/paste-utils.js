@@ -1,9 +1,8 @@
 /* global JSON */
 import MobiledocParser from '../parsers/mobiledoc';
 import HTMLParser from '../parsers/html';
-
-// FIXME fix this issue:
-const issueUrl = 'https://github.com/bustlelabs/content-kit-editor/issues/180';
+import { createDiv } from '../utils/element-utils';
+import { getSelectionContents } from '../utils/selection-utils';
 
 export function setClipboardCopyData(copyEvent, editor) {
   const { cursor, post } = editor;
@@ -11,11 +10,14 @@ export function setClipboardCopyData(copyEvent, editor) {
 
   const range = cursor.offsets;
   const mobiledoc = post.cloneRange(range);
+  const fragment = getSelectionContents();
+  const div = createDiv();
+  div.appendChild(fragment);
   const html =
     `<div data-mobiledoc='${JSON.stringify(mobiledoc)}'>` +
-      `<a href='${issueUrl}'>Pasting from Content-Kit not yet supported.</a>` +
+      div.innerHTML +
     `</div>`;
-  const plain = `Pasting from Content-Kit not yet supported. (${issueUrl})`;
+  const plain = div.textContent;
 
   clipboardData.setData('text/plain', plain);
   clipboardData.setData('text/html', html);

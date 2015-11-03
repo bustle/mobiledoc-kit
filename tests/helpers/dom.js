@@ -211,6 +211,10 @@ function triggerPasteEvent(editor) {
   editor.triggerEvent(editor.element, 'paste', event);
 }
 
+function getCopyData(type) {
+  return lastCopyData[type];
+}
+
 function fromHTML(html) {
   html = $.trim(html);
   let div = document.createElement('div');
@@ -237,7 +241,8 @@ const DOMHelper = {
   triggerRightArrowKey,
   triggerCopyEvent,
   triggerCutEvent,
-  triggerPasteEvent
+  triggerPasteEvent,
+  getCopyData
 };
 
 export { triggerEvent };

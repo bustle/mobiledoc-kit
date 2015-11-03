@@ -5,6 +5,16 @@ function clearSelection() {
   window.getSelection().removeAllRanges();
 }
 
+// @return {DocumentFragment}
+function getSelectionContents() {
+  let selection = window.getSelection();
+  if (selection.rangeCount > 0) {
+    return selection.getRangeAt(0).cloneContents();
+  } else {
+    return document.createDocumentFragment();
+  }
+}
+
 function comparePosition(selection) {
   let { anchorNode, focusNode, anchorOffset, focusOffset } = selection;
   let headNode, tailNode, headOffset, tailOffset;
@@ -37,5 +47,6 @@ export {
   restoreRange,
   containsNode,
   clearSelection,
-  comparePosition
+  comparePosition,
+  getSelectionContents
 };
