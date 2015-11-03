@@ -1,8 +1,8 @@
 import {
-  containsNode,
   clearSelection,
   comparePosition
 } from '../utils/selection-utils';
+import { containsNode } from '../utils/dom-utils';
 import Position from './cursor/position';
 import Range from './cursor/range';
 

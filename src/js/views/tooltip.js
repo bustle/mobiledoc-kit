@@ -1,45 +1,42 @@
 import View from './view';
-import { inherit } from 'content-kit-utils';
 import { positionElementCenteredBelow, getEventTargetMatchingTag } from '../utils/element-utils';
 
-function Tooltip(options) {
-  var tooltip = this;
-  var rootElement = options.rootElement;
-  var delay = options.delay || 200;
-  var timeout;
-  options.classNames = ['ck-tooltip'];
-  View.call(tooltip, options);
+const DELAY = 200;
 
-  this.addEventListener(rootElement, 'mouseover', (e) => {
-    var target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
-    if (target && target.isContentEditable) {
-      timeout = setTimeout(function() {
-        tooltip.showLink(target.href, target);
-      }, delay);
-    }
-  });
-  
-  this.addEventListener(rootElement, 'mouseout', (e) => {
-    clearTimeout(timeout);
-    var toElement = e.toElement || e.relatedTarget;
-    if (toElement && toElement.className !== tooltip.element.className) {
-      tooltip.hide();
-    }
-  });
+export default class Tooltip extends View {
+  constructor(options) {
+    let { rootElement } = options;
+    let timeout;
+    options.classNames = ['ck-tooltip'];
+    super(options);
+
+    this.addEventListener(rootElement, 'mouseover', (e) => {
+      let target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
+      if (target && target.isContentEditable) {
+        timeout = setTimeout(() => {
+          this.showLink(target.href, target);
+        }, DELAY);
+      }
+    });
+    
+    this.addEventListener(rootElement, 'mouseout', (e) => {
+      clearTimeout(timeout);
+      let toElement = e.toElement || e.relatedTarget;
+      if (toElement && toElement.className !== this.element.className) {
+        this.hide();
+      }
+    });
+  }
+
+  showMessage(message, element) {
+    let tooltipElement = this.element;
+    tooltipElement.innerHTML = message;
+    this.show();
+    positionElementCenteredBelow(tooltipElement, element);
+  }
+
+  showLink(link, element) {
+    let message = `<a href="${link}" target="_blank">${link}</a>`;
+    this.showMessage(message, element);
+  }
 }
-inherit(Tooltip, View);
-
-Tooltip.prototype.showMessage = function(message, element) {
-  var tooltip = this;
-  var tooltipElement = tooltip.element;
-  tooltipElement.innerHTML = message;
-  tooltip.show();
-  positionElementCenteredBelow(tooltipElement, element);
-};
-
-Tooltip.prototype.showLink = function(link, element) {
-  var message = '<a href="' + link + '" target="_blank">' + link + '</a>';
-  this.showMessage(message, element);
-};
-
-export default Tooltip;

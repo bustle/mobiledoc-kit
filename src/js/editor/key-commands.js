@@ -1,7 +1,6 @@
 import Key from '../utils/key';
 import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
 import { filter } from '../utils/array-utils';
-import LinkCommand from '../commands/link';
 import Position from '../utils/cursor/position';
 
 export const DEFAULT_KEY_COMMANDS = [{
@@ -70,8 +69,10 @@ export const DEFAULT_KEY_COMMANDS = [{
     editor.showPrompt('Enter a URL', defaultUrl, url => {
       if (!url) { return; }
 
-      const linkCommand = new LinkCommand(editor);
-      linkCommand.exec(url);
+      editor.run(postEditor => {
+        let markup = postEditor.builder.createMarkup('a', {href: url});
+        postEditor.toggleMarkup(markup);
+      });
     });
   }
 }];
