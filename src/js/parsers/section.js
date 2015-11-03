@@ -172,11 +172,6 @@ export default class SectionParser {
     state.section = null;
   }
 
-  isSectionElement(element) {
-    return element.nodeType === ELEMENT_NODE &&
-      VALID_MARKUP_SECTION_TAGNAMES.indexOf(normalizeTagName(element.tagName)) !== -1;
-  }
-
   _markupsFromElement(element) {
     let { builder } = this;
     let markups = [];
