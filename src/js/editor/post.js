@@ -654,7 +654,7 @@ class PostEditor {
    *
    * // add/remove a link to 'bustle.com' to the selection
    * editor.run(postEditor => {
-   *   const linkMarkup = postEditor.builder.createMarkup('a', ['href', 'http://bustle.com']);
+   *   const linkMarkup = postEditor.builder.createMarkup('a', {href: 'http://bustle.com'});
    *   postEditor.toggleMarkup(linkMarkup);
    * });
    *
