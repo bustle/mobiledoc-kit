@@ -36,11 +36,15 @@ function clearChildNodes(element) {
 }
 
 /**
- * @return {Boolean} true when the child node is contained by (and not
- * the same as) the parent node
+ * @return {Boolean} true when the child node is contained or the same as
+ * (e.g., inclusive containment)  the parent node
  *  see https://github.com/webmodules/node-contains/blob/master/index.js
+ *  Mimics the behavior of `Node.contains`, which is broken in IE 10
  */
 function containsNode(parentNode, childNode) {
+  if (parentNode === childNode) {
+    return true;
+  }
   const position = parentNode.compareDocumentPosition(childNode);
   return !!(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
 }

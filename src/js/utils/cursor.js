@@ -131,13 +131,14 @@ const Cursor = class Cursor {
   }
 
   /**
-   * @private
    * @param {textNode} node
    * @param {integer} offset
-   * @param {textNode} endNode (default: node)
-   * @param {integer} endOffset (default: offset)
+   * @param {textNode} endNode
+   * @param {integer} endOffset
+   * @param {integer} direction forward or backward, default forward
+   * @private
    */
-  _moveToNode(node, offset, endNode, endOffset, direction) {
+  _moveToNode(node, offset, endNode, endOffset, direction=DIRECTION.FORWARD) {
     this.clearSelection();
 
     if (direction === DIRECTION.BACKWARD) {

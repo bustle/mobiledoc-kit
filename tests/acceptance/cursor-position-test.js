@@ -199,8 +199,28 @@ test('cursor focused on card wrapper with 0 offset', (assert) => {
   assert.equal(offsets.tail.offset, 0,
                'Cursor tail is positioned at offset 0');
 });
-
      
+// see https://github.com/bustlelabs/content-kit-editor/issues/215
+test('selecting the entire editor element reports a selection range of the entire post', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('1234')])
+    ]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.moveCursorTo(editorElement, 0,
+                           editorElement, editorElement.childNodes.length);
+  let { offsets } = editor.cursor;
+  assert.ok(offsets.head.section === editor.post.sections.head,
+            'head section correct');
+  assert.equal(offsets.head.offset, 0, 'head offset 0');
+  assert.ok(offsets.tail.section === editor.post.sections.tail,
+            'tail section correct');
+  assert.equal(offsets.tail.offset, 4, 'tail offset equals section length');
+});
      
 //inside card wrapper div and before starting zwnj reports its position correctly');
 

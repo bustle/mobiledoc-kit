@@ -1,7 +1,6 @@
 import {
   DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME
 } from '../models/markup-section';
-import { isMarkerable } from '../models/_section';
 import { POST_TYPE, MARKUP_SECTION_TYPE, LIST_ITEM_TYPE, LIST_SECTION_TYPE } from '../models/types';
 import Position from '../utils/cursor/position';
 import { isArrayEqual, forEach, filter, compact } from '../utils/array-utils';
@@ -11,14 +10,14 @@ import mixin from '../utils/mixin';
 import assert from '../utils/assert';
 
 function isJoinable(section1, section2) {
-  return isMarkerable(section1) &&
-         isMarkerable(section2) &&
+  return section1.isMarkerable &&
+         section2.isMarkerable &&
          section1.type === section2.type &&
          section1.tagName === section2.tagName;
 }
 
 function endPosition(section) {
-  if (isMarkerable(section)) {
+  if (section.isMarkerable) {
     return new Position(section, section.length);
   } else if (section.type === LIST_SECTION_TYPE) {
     return endPosition(section.items.tail);
@@ -261,7 +260,7 @@ class PostEditor {
     if (postNode.section) {
       this._markDirty(postNode.section);
     }
-    if (isMarkerable(postNode)) {
+    if (postNode.isMarkerable) {
       this.addCallback(
         CALLBACK_QUEUES.BEFORE_COMPLETE, () => this._coalesceMarkers(postNode));
     }
@@ -304,7 +303,7 @@ class PostEditor {
     const {section } = position;
     let nextPosition = position.clone();
 
-    if (!isMarkerable(section)) {
+    if (!section.isMarkerable) {
       throw new Error('Cannot join non-markerable section to previous section');
     } else if (isListItem(section)) {
       nextPosition = this._convertListItemToMarkupSection(section);
@@ -378,7 +377,7 @@ class PostEditor {
     const { section } = position;
     let nextPosition = position.clone();
 
-    if (!isMarkerable(section)) {
+    if (!section.isMarkerable) {
       throw new Error('Cannot join non-markerable section to next section');
     } else {
       const next = section.immediatelyNextMarkerableSection();
