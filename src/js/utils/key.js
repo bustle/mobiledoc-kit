@@ -8,8 +8,22 @@ import assert from './assert';
 export const MODIFIERS = {
   META: 1, // also called "command" on OS X
   CTRL: 2,
-  SHIFT: 3
+  SHIFT: 4,
+  ALT: 8   // also called "option" on OS X
 };
+
+export function modifierMask(event) {
+  let {
+    metaKey, shiftKey, ctrlKey, altKey
+  } = event;
+  let modVal = (val, modifier) => {
+    return (val && modifier) || 0;
+  };
+  return modVal(metaKey,  MODIFIERS.META) +
+         modVal(shiftKey, MODIFIERS.SHIFT) +
+         modVal(ctrlKey,  MODIFIERS.CTRL) +
+         modVal(altKey,   MODIFIERS.ALT);
+}
 
 export const SPECIAL_KEYS = {
   BACKSPACE: Keycodes.BACKSPACE,
@@ -46,6 +60,7 @@ const Key = class Key {
   constructor(event) {
     this.keyCode = event.keyCode;
     this.event = event;
+    this.modifierMask = modifierMask(event);
   }
 
   static fromEvent(event) {
@@ -102,32 +117,27 @@ const Key = class Key {
   }
 
   hasModifier(modifier) {
-    switch (modifier) {
-      case MODIFIERS.META:
-        return this.metaKey;
-      case MODIFIERS.CTRL:
-        return this.ctrlKey;
-      case MODIFIERS.SHIFT:
-        return this.shiftKey;
-      default:
-        throw new Error(`Cannot check for unknown modifier ${modifier}`);
-    }
+    return modifier & this.modifierMask;
   }
 
   hasAnyModifier() {
-    return this.metaKey || this.ctrlKey || this.shiftKey;
+    return !!this.modifierMask;
   }
 
   get ctrlKey() {
-    return this.event.ctrlKey;
+    return MODIFIERS.CTRL & this.modifierMask;
   }
 
   get metaKey() {
-    return this.event.metaKey;
+    return MODIFIERS.META & this.modifierMask;
   }
 
   get shiftKey() {
-    return this.event.shiftKey;
+    return MODIFIERS.SHIFT & this.modifierMask;
+  }
+
+  get altKey() {
+    return MODIFIERS.ALT & this.modifierMask;
   }
 
   isChar(string) {

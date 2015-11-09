@@ -276,7 +276,8 @@ const DOMHelper = {
   triggerCopyEvent,
   triggerCutEvent,
   triggerPasteEvent,
-  getCopyData
+  getCopyData,
+  createMockEvent
 };
 
 export { triggerEvent };

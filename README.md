@@ -145,9 +145,9 @@ editor.registerKeyCommand(boldKeyCommand);
 
 All key commands must have `str` and `run` properties as shown above.
 
-`str` describes the key combination to use and may be a single key, or a modifier and a key separated by `+`.
+`str` describes the key combination to use and may be a single key, or modifier(s) and a key separated by `+`, e.g.: `META+K` (cmd-K), `META+SHIFT+K` (cmd-shift-K)
 
-Modifiers can be one of `CTRL`, `META` or `SHIFT`.
+Modifiers can be any of `CTRL`, `META`, `SHIFT`, or `ALT`.
 
 The key can be any of the alphanumeric characters on the keyboard, or one of the following special keys:
 
@@ -182,7 +182,7 @@ const enterKeyCommand = {
 editor.registerKeyCommand(enterKeyCommand);
 ```
 
-To fall-back to the default behavior, simply return `false` from `run`.
+To fall-back to the default behavior, return `false` from `run`.
 
 ### Configuring text expansions
 
