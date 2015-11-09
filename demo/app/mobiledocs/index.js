@@ -4,3 +4,4 @@ export { simpleList } from './simple-list';
 export { simpleCard } from './simple-card';
 export { inputCard } from './input-card';
 export { selfieCard } from './selfie-card';
+export { imageCard } from './image-card';
