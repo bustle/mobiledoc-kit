@@ -12,38 +12,32 @@ export let inputCard = {
       if (payload.name) {
         text = 'Hello, ' + payload.name + '!';
       }
-      var card = document.createElement('div');
-      card.innerText = text;
-
-      var button = document.createElement('button');
-      button.innerText = 'Edit';
-      button.onclick = env.edit;
+      var card = $(`<div>${text}</div>`);
+      var button = $('<button>Edit</button>');
+      button.on('click', env.edit);
 
       if (env.edit) {
-        card.appendChild(button);
+        card.append(button);
       }
-      element.appendChild(card);
+      $(element).append(card);
     }
   },
   edit: {
     setup(element, options, env) {
       $(element).empty();
-      var card = document.createElement('div');
+      var card = $('<div>What is your name?</div>');
       card.innerHTML = 'What is your name?';
 
-      var input = document.createElement('input');
-      input.placeholder = 'Enter your name...';
+      var input = $('<input placeholder="Enter your name...">');
+      var button = $('<button>Save</button>');
+      button.on('click', () => {
+        var name = input.val();
+        env.save({name});
+      });
 
-      var button = document.createElement('button');
-      button.innerText = 'Save';
-      button.onclick = function() {
-        var name = input.value;
-        env.save({name:name});
-      };
-
-      card.appendChild(input);
-      card.appendChild(button);
-      element.appendChild(card);
+      card.append(input);
+      card.append(button);
+      $(element).append(card);
     }
   }
 };
