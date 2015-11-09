@@ -2,10 +2,6 @@ import { LIST_ITEM_TYPE } from './types';
 import { normalizeTagName } from '../utils/dom-utils';
 import LinkedItem from '../utils/linked-item';
 
-export function isMarkerable(section) {
-  return !!section.markers;
-}
-
 function isChild(section) {
   return section.type === LIST_ITEM_TYPE;
 }
@@ -59,7 +55,7 @@ export default class Section extends LinkedItem {
 
   immediatelyNextMarkerableSection() {
     let next = this.nextLeafSection();
-    while (next && !isMarkerable(next)) {
+    while (next && !next.isMarkerable) {
       next = next.nextLeafSection();
     }
     return next;

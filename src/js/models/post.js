@@ -2,7 +2,6 @@ import { POST_TYPE } from './types';
 import LinkedList from 'content-kit-editor/utils/linked-list';
 import { forEach, compact } from 'content-kit-editor/utils/array-utils';
 import Set from 'content-kit-editor/utils/set';
-import { isMarkerable } from 'content-kit-editor/models/_section';
 import MobiledocRenderer from 'content-kit-editor/renderers/mobiledoc';
 
 export default class Post {
@@ -135,7 +134,7 @@ export default class Post {
 
   walkMarkerableSections(range, callback) {
     this.walkLeafSections(range, section => {
-      if (isMarkerable(section)) {
+      if (section.isMarkerable) {
         callback(section);
       }
     });
@@ -173,7 +172,7 @@ export default class Post {
   _nextMarkerableSection(section) {
     let nextSection = this._nextLeafSection(section);
 
-    while (nextSection && !isMarkerable(nextSection)) {
+    while (nextSection && !nextSection.isMarkerable) {
       nextSection = this._nextLeafSection(nextSection);
     }
 
@@ -216,7 +215,7 @@ export default class Post {
 
     this.walkPostSections(range, section => {
       let newSection;
-      if (isMarkerable(section)) {
+      if (section.isMarkerable) {
         newSection = builder.createMarkupSection(section.tagName);
         let currentRange = range.trimTo(section);
         forEach(

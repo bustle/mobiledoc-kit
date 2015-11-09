@@ -1,21 +1,12 @@
 import {
   isTextNode, findOffsetInElement
 } from 'content-kit-editor/utils/dom-utils';
-import {
-  MARKUP_SECTION_TYPE, LIST_ITEM_TYPE, CARD_TYPE
-} from 'content-kit-editor/models/types';
 import { DIRECTION } from 'content-kit-editor/utils/key';
 import assert from 'content-kit-editor/utils/assert';
 
 function isSection(postNode) {
   if (!(postNode && postNode.type)) { return false; }
-  return postNode.type === MARKUP_SECTION_TYPE ||
-    postNode.type === LIST_ITEM_TYPE ||
-    postNode.type === CARD_TYPE;
-}
-
-function isCardSection(section) {
-  return section.type === CARD_TYPE;
+  return postNode.isMarkerable || postNode.isCardSection;
 }
 
 function findParentSectionFromNode(renderTree, node) {
@@ -28,7 +19,7 @@ function findParentSectionFromNode(renderTree, node) {
 }
 
 function findOffsetInSection(section, node, offset) {
-  if (!isCardSection(section)) {
+  if (!section.isCardSection) {
     return findOffsetInElement(section.renderNode.element,
                                node, offset);
   }
@@ -46,7 +37,7 @@ const Position = class Position {
   constructor(section, offset=0) {
     this.section = section;
     this.offset = offset;
-    this._inCard = isCardSection(section);
+    this._inCard = section.isCardSection;
   }
 
   static emptyPosition() {
@@ -143,32 +134,37 @@ const Position = class Position {
   }
 
   static fromElementNode(renderTree, elementNode, offset) {
+    let section, offsetInSection;
+
     // The browser may change the reported selection to equal the editor's root
     // element if the user clicks an element that is immediately removed,
     // which can happen when clicking to remove a card.
     if (elementNode === renderTree.rootElement) {
-      return Position.emptyPosition();
-    }
-
-    let section = findParentSectionFromNode(renderTree, elementNode);
-    if (!section) { throw new Error('Could not find parent section from element node'); }
-
-    let offsetInSection;
-
-    if (isCardSection(section)) {
-      // Selections in cards are usually made on a text node containing a &zwnj; 
-      // on one side or the other of the card but some scenarios will result in
-      // selecting the card's wrapper div. If the offset is 2 we've selected
-      // the final zwnj and should consider the cursor at the end of the card (offset 1). Otherwise,
-      // the cursor is at the start of the card
-      offsetInSection = offset < 2 ? 0 : 1;
+      let post = renderTree.rootNode.postNode;
+      if (offset === 0) {
+        section = post.sections.head;
+        offsetInSection = 0;
+      } else {
+        section = post.sections.tail;
+        offsetInSection = section.length;
+      }
     } else {
-      offsetInSection = 0;
-    }
+      section = findParentSectionFromNode(renderTree, elementNode);
+      assert('Could not find parent section from element node', !!section);
 
-    // FIXME We assume that offsetInSection will always be 0 because we assume
-    // that only empty br tags (offsetInSection=0) will be those that cause
-    // us to call `fromElementNode`. This may not be a reliable assumption.
+      if (section.isCardSection) {
+        // Selections in cards are usually made on a text node containing a &zwnj; 
+        // on one side or the other of the card but some scenarios (Firefox) will result in
+        // selecting the card's wrapper div. If the offset is 2 we've selected
+        // the final zwnj and should consider the cursor at the end of the card (offset 1). Otherwise,
+        // the cursor is at the start of the card
+        offsetInSection = offset < 2 ? 0 : 1;
+      } else {
+        // The offset is 0 if the cursor is on an element node (e.g., a <br> tag in
+        // a blank markup section)
+        offsetInSection = 0;
+      }
+    }
     return new Position(section, offsetInSection);
   }
 

@@ -151,3 +151,25 @@ test('typing when on the start of a card is blocked', (assert) => {
   Helpers.dom.insertText(editor, 'Y');
   assert.hasNoElement('#editor div:contains(Y)');
 });
+
+// see https://github.com/bustlelabs/content-kit-editor/issues/215
+test('select-all and type text works ok', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')])
+    ]);
+  });
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  Helpers.dom.moveCursorTo(editorElement.firstChild, 0);
+  document.execCommand('selectAll');
+
+  assert.selectedText('abc', 'precond - abc is selected');
+  assert.hasElement('#editor p:contains(abc)', 'precond - renders p');
+
+  Helpers.dom.insertText(editor, 'X');
+
+  assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
+  assert.hasElement('#editor p:contains(X)', 'inserts text');
+});
