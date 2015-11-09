@@ -227,11 +227,11 @@ test('link (A tag) is parsed', (assert) => {
 });
 
 test('unrecognized tags are ignored', (assert) => {
-  let element = buildDOM(`<p>before<sub>sub</sub>after</p>`);
+  let element = buildDOM(`<p>before<span>span</span>after</p>`);
   const post = parser.parse(element);
 
   assert.equal(post.sections.length, 1, '1 section');
-  assert.equal(post.sections.objectAt(0).text, 'beforesubafter');
+  assert.equal(post.sections.objectAt(0).text, 'beforespanafter');
   assert.equal(post.sections.objectAt(0).markers.length, 1, '1 marker');
 });
 
