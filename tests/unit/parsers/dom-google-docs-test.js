@@ -1,9 +1,9 @@
-import HTMLParser from 'content-kit-editor/parsers/html';
-import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
+import HTMLParser from 'mobiledoc-kit/parsers/html';
+import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Helpers from '../../test-helpers';
 import GoogleDocs from '../../fixtures/google-docs';
-import { forEach } from 'content-kit-editor/utils/array-utils';
-import { CARD_TYPE } from 'content-kit-editor/models/types';
+import { forEach } from 'mobiledoc-kit/utils/array-utils';
+import { CARD_TYPE } from 'mobiledoc-kit/models/types';
 
 const {module, test} = Helpers;
 

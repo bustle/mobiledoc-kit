@@ -1,8 +1,8 @@
-import Editor from 'content-kit-editor/editor/editor';
-import { EDITOR_ELEMENT_CLASS_NAME } from 'content-kit-editor/editor/editor';
-import { normalizeTagName } from 'content-kit-editor/utils/dom-utils';
-import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
-import Range from 'content-kit-editor/utils/cursor/range';
+import Editor from 'mobiledoc-kit/editor/editor';
+import { EDITOR_ELEMENT_CLASS_NAME } from 'mobiledoc-kit/editor/editor';
+import { normalizeTagName } from 'mobiledoc-kit/utils/dom-utils';
+import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 import Helpers from '../../test-helpers';
 
 const { module, test } = Helpers;

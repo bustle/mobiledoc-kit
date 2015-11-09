@@ -1,16 +1,16 @@
-import EditorDomRenderer from 'content-kit-editor/renderers/editor-dom';
-import RenderTree from 'content-kit-editor/models/render-tree';
-import PostEditor from 'content-kit-editor/editor/post';
-import { Editor } from 'content-kit-editor';
+import EditorDomRenderer from 'mobiledoc-kit/renderers/editor-dom';
+import RenderTree from 'mobiledoc-kit/models/render-tree';
+import PostEditor from 'mobiledoc-kit/editor/post';
+import { Editor } from 'mobiledoc-kit';
 import Helpers from '../../test-helpers';
-import { DIRECTION } from 'content-kit-editor/utils/key';
-import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
-import Range from 'content-kit-editor/utils/cursor/range';
-import Position from 'content-kit-editor/utils/cursor/position';
+import { DIRECTION } from 'mobiledoc-kit/utils/key';
+import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
+import Range from 'mobiledoc-kit/utils/cursor/range';
+import Position from 'mobiledoc-kit/utils/cursor/position';
 import {
   LIST_SECTION_TYPE,
   CARD_TYPE
-} from 'content-kit-editor/models/types';
+} from 'mobiledoc-kit/models/types';
 
 const { FORWARD } = DIRECTION;
 
@@ -554,7 +554,7 @@ test('#splitMarkers when head section = tail section, but different markers', (a
   assert.equal(markers[1].value, 'de', 'marker 1');
 });
 
-// see https://github.com/bustlelabs/content-kit-editor/issues/121
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/121
 test('#splitMarkers when single-character marker at start', (assert) => {
   let post, section;
   Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {

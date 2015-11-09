@@ -1,8 +1,8 @@
 {
-  "name": "content-kit-editor",
-  "version": "0.5.1",
-  "description": "A modern, minimalist WYSIWYG editor.",
-  "repository": "https://github.com/bustlelabs/content-kit-editor",
+  "name": "mobiledoc-kit",
+  "version": "0.6.0",
+  "description": "A toolkit for building WYSIWYG editors with Mobiledoc",
+  "repository": "https://github.com/bustlelabs/mobiledoc-kit",
   "scripts": {
     "start": "broccoli serve",
     "test": "testem ci",
@@ -26,6 +26,10 @@
     "dist/css"
   ],
   "author": "Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)",
+  "contributors": [
+    "Cory Forsyth <cory.forsyth@gmail.com> (http://coryforsyth.com/)",
+    "Matthew Beale <matt.beale@madhatted.com> (http://madhatted.com/)"
+  ],
   "license": "MIT",
   "devDependencies": {
     "broccoli": "^0.16.3",
@@ -38,5 +42,5 @@
     "jquery": "^2.1.4",
     "testem": "^0.8.4"
   },
-  "main": "dist/commonjs/content-kit-editor/index.js"
+  "main": "dist/commonjs/mobiledoc-kit/index.js"
 }

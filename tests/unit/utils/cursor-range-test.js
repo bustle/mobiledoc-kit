@@ -1,5 +1,5 @@
 import Helpers from '../../test-helpers';
-import Range from 'content-kit-editor/utils/cursor/range';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const {module, test} = Helpers;
 

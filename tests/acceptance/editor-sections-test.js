@@ -1,7 +1,7 @@
-import { Editor } from 'content-kit-editor';
+import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
-import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
-import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
+import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
+import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 
 const { test, module } = Helpers;
 

@@ -1,6 +1,6 @@
-import { buildKeyCommand, findKeyCommands } from 'content-kit-editor/editor/key-commands';
-import { MODIFIERS, SPECIAL_KEYS, modifierMask as createModifierMask } from 'content-kit-editor/utils/key';
-import Keycodes from 'content-kit-editor/utils/keycodes';
+import { buildKeyCommand, findKeyCommands } from 'mobiledoc-kit/editor/key-commands';
+import { MODIFIERS, SPECIAL_KEYS, modifierMask as createModifierMask } from 'mobiledoc-kit/utils/key';
+import Keycodes from 'mobiledoc-kit/utils/keycodes';
 
 import Helpers from '../../test-helpers';
 

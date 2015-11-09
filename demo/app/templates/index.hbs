@@ -1,12 +1,12 @@
 <div class="section">
   <p>
-    Content-Kit is a publishing solution designed for both text and
-    dynamically rendered cards. Posts are serialized into <a href="https://github.com/bustlelabs/content-kit-editor/blob/master/MOBILEDOC.md">Mobiledoc</a>, and
+    Mobiledoc is a publishing solution designed for both text and
+    dynamically rendered cards. Posts are serialized into <a href="https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md">Mobiledoc</a>, and
     rendered to DOM in a reader's browser.
   </p>
   <p>
-    Read more on the <a href="https://github.com/bustlelabs/content-kit-editor">content-kit-editor</a>
-    GitHub repo, or on the <a href="http://madhatted.com/2015/7/31/announcing-content-kit-and-mobiledoc">announcement blog post</a>.
+    Read more on the <a href="https://github.com/bustlelabs/mobiledoc-kit">mobiledoc-kit</a>
+    GitHub repo.
   </p>
 </div>
 <div class="section">
@@ -26,14 +26,14 @@
         <option value='inputCard'>Card with Input</option>
         <option value='selfieCard'>Selfie Card</option>
       </select>
-      {{#content-kit-editor
+      {{#mobiledoc-editor
           class='post-editor__editor'
           mobiledoc=mobiledoc
-          cards=(content-kit-cards-list)
+          cards=(mobiledoc-cards-list)
           on-change=(action 'didEdit')
-        as |contentKit|}}
-        {{content-kit-toolbar contentKit=contentKit}}
-      {{/content-kit-editor}}
+        as |editor|}}
+        {{mobiledoc-toolbar editor=editor}}
+      {{/mobiledoc-editor}}
     </div>
   </div>
 

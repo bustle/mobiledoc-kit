@@ -1,7 +1,7 @@
 const {module, test} = QUnit;
 
-import LinkedList from 'content-kit-editor/utils/linked-list';
-import LinkedItem from 'content-kit-editor/utils/linked-item';
+import LinkedList from 'mobiledoc-kit/utils/linked-list';
+import LinkedItem from 'mobiledoc-kit/utils/linked-item';
 
 module('Unit: Utils: LinkedList');
 

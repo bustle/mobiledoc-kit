@@ -9,8 +9,8 @@ import EventEmitter from '../utils/event-emitter';
 import MobiledocParser from '../parsers/mobiledoc';
 import HTMLParser from '../parsers/html';
 import DOMParser from '../parsers/dom';
-import Renderer  from 'content-kit-editor/renderers/editor-dom';
-import RenderTree from 'content-kit-editor/models/render-tree';
+import Renderer  from 'mobiledoc-kit/renderers/editor-dom';
+import RenderTree from 'mobiledoc-kit/models/render-tree';
 import MobiledocRenderer from '../renderers/mobiledoc';
 
 import { mergeWithOptions } from 'content-kit-utils';
@@ -35,7 +35,7 @@ import {
   parsePostFromPaste,
   setClipboardCopyData
 } from '../utils/paste-utils';
-import { DIRECTION } from 'content-kit-editor/utils/key';
+import { DIRECTION } from 'mobiledoc-kit/utils/key';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
 

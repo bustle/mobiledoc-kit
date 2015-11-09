@@ -1,5 +1,5 @@
-import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
-import SectionParser from 'content-kit-editor/parsers/section';
+import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
+import SectionParser from 'mobiledoc-kit/parsers/section';
 import Helpers from '../../test-helpers';
 
 const {module, test} = Helpers;

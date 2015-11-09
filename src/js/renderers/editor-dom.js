@@ -1,5 +1,5 @@
-import CardNode from 'content-kit-editor/models/card-node';
-import { detect } from 'content-kit-editor/utils/array-utils';
+import CardNode from 'mobiledoc-kit/models/card-node';
+import { detect } from 'mobiledoc-kit/utils/array-utils';
 import {
   POST_TYPE,
   MARKUP_SECTION_TYPE,
@@ -31,8 +31,8 @@ function renderHTMLText(marker) {
   // If the first marker has a leading space or the last marker has a
   // trailing space, the browser will collapse the space when we position
   // the cursor.
-  // See https://github.com/bustlelabs/content-kit-editor/issues/68
-  //   and https://github.com/bustlelabs/content-kit-editor/issues/75
+  // See https://github.com/bustlelabs/mobiledoc-kit/issues/68
+  //   and https://github.com/bustlelabs/mobiledoc-kit/issues/75
   if (!marker.next && endsWith(text, SPACE)) {
     text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
   } else if ((!marker.prev || endsWith(marker.prev.value, SPACE)) && startsWith(text, SPACE)) {

@@ -8,7 +8,7 @@ module.exports = function() {
 
   var srcDir = 'src/css',
       mainFile = 'application.less',
-      outputFile = '/css/content-kit-editor.css';
+      outputFile = '/css/mobiledoc-kit.css';
 
   tree = less(srcDir, mainFile, outputFile);
   return tree;

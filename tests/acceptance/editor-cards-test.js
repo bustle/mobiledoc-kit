@@ -1,6 +1,6 @@
-import { Editor } from 'content-kit-editor';
-import { DIRECTION } from 'content-kit-editor/utils/key';
-import Position from 'content-kit-editor/utils/cursor/position';
+import { Editor } from 'mobiledoc-kit';
+import { DIRECTION } from 'mobiledoc-kit/utils/key';
+import Position from 'mobiledoc-kit/utils/cursor/position';
 import Helpers from '../test-helpers';
 
 const { test, module } = Helpers;

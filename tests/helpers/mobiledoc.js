@@ -1,5 +1,5 @@
 import PostAbstractHelpers from './post-abstract';
-import MobiledocRenderer from 'content-kit-editor/renderers/mobiledoc';
+import MobiledocRenderer from 'mobiledoc-kit/renderers/mobiledoc';
 
 /*
  * usage:

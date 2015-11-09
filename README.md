@@ -1,29 +1,34 @@
-## Mobiledoc-Kit [![Build Status](https://travis-ci.org/bustlelabs/mobiledoc-kit.svg?branch=master)](https://travis-ci.org/bustlelabs/mobiledoc-kit)
+## Mobiledoc Kit [![Build Status](https://travis-ci.org/bustlelabs/mobiledoc-kit.svg?branch=master)](https://travis-ci.org/bustlelabs/mobiledoc-kit)
 
-[![Join the chat at https://gitter.im/bustlelabs/content-kit-editor](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bustlelabs/content-kit-editor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/bustlelabs/mobiledoc-kit](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bustlelabs/mobiledoc-kit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Content-Kit (WARNING: alpha!!) is a WYSIWYG editor supporting rich content via cards. Try a
-demo at [bustlelabs.github.io/content-kit-editor/demo](http://bustlelabs.github.io/content-kit-editor/demo/).
+Mobiledoc Kit (WARNING: beta!!) is a library for buildling WYSIWYG editors
+supporting rich content via cards. Try a
+demo at [bustlelabs.github.io/mobiledoc-kit/demo](http://bustlelabs.github.io/mobiledoc-kit/demo/).
 
-* It makes limited use of Content Editable, the siren-song of doomed web editor
-  technologies.
-* Content-Kit is designed for *rich* content. We call these sections of an
-  article "cards", and implementing a new one doesn't require an understanding
-  of Content-Kit internals. Adding a new card takes an afternoon, not several
-  days.
 * Posts are serialized to a JSON payload called **Mobiledoc** instead of to
   HTML. Mobiledoc can be rendered for the web, mobile web, or in theory on any
   platform. Mobiledoc is portable and fast.
+* The editor makes limited use of Content Editable, the siren-song of doomed
+  web editor technologies.
+* Mobiledoc is designed for *rich* content. We call these sections of an
+  article "cards", and implementing a new one doesn't require an understanding
+  of Mobiledoc editor internals. Adding a new card takes an afternoon, not several
+  days.
 
-To learn more about Content-Kit in the abstract,
-[read this announcement blog post](http://madhatted.com/2015/7/31/announcing-content-kit-and-mobiledoc).
+To learn more about the ideas behind Mobiledoc and the editor (note that the
+editor used to be named Content-Kit), see these blog posts:
 
-Content-Kit saves posts to
+* [The Content-Kit announcement post](http://madhatted.com/2015/7/31/announcing-content-kit-and-mobiledoc).
+* [Building the Content-Kit Editor on Content Editable](https://medium.com/@bantic/building-content-kit-editor-on-contenteditable-99a94871c951)
+* [Content-Kit: Programmatic Editing](http://madhatted.com/2015/8/25/content-kit-programmatic-editing)
+
+The Mobiledoc kit saves posts to
 **[Mobiledoc](https://github.com/bustlelabs/content-kit-editor/blob/master/MOBILEDOC.md)**.
 
 ### Usage
 
-The `ContentKit.Editor` class is invoked with an element to render into and
+The `Mobiledoc.Editor` class is invoked with an element to render into and
 optionally a Mobiledoc to load. For example:
 
 ```js
@@ -31,13 +36,13 @@ var simpleMobiledoc = {
   version: "0.1",
   sections: [[], [
     [1, "p", [
-      [[], 0, "Welcome to Content-Kit"]
+      [[], 0, "Welcome to Mobiledoc"]
     ]]
   ]]
 };
 var element = document.querySelector('#editor');
 var options = { mobiledoc: simpleMobiledoc };
-var editor = new ContentKit.Editor(options);
+var editor = new Mobiledoc.Editor(options);
 editor.render(element);
 ```
 
@@ -105,7 +110,7 @@ The available lifecycle hooks are:
 
 ### Programmatic Post Editing
 
-A major goal of Content-Kit is to allow complete customization of user
+A major goal of the Mobiledoc kit is to allow complete customization of user
 interfaces using the editing surface. The programmatic editing API allows
 the creation of completely custom interfaces for buttons, hot-keys, and
 other interactions.
@@ -120,18 +125,19 @@ editor.run(postEditor => {
 ```
 
 It is important that you make changes to posts, sections, and markers through
-the `run` and `postEditor` API. This API allows Content-Kit to conserve
+the `run` and `postEditor` API. This API allows the Mobiledoc editor to conserve
 and better understand changes being made to the post.
 
-For more details on the API of `postEditor`, see the [API documentation](https://github.com/bustlelabs/content-kit-editor/blob/master/src/js/editor/post.js).
+For more details on the API of `postEditor`, see the [API documentation](https://github.com/bustlelabs/mobiledoc-kit/blob/master/src/js/editor/post.js).
 
 For more details on the API for the builder, required to create new sections
-and markers, see the [builder API](https://github.com/bustlelabs/content-kit-editor/blob/master/src/js/models/post-node-builder.js).
+and markers, see the [builder API](https://github.com/bustlelabs/mobiledoc-kit/blob/master/src/js/models/post-node-builder.js).
 
 ### Configuring hot keys
 
-Content-Kit allows configuring hot keys and text expansions. For instance, the
-hot-key command-B to make selected text bold, is registered internally as:
+The Mobiledoc editor allows the configuration of hot keys and text expansions.
+For instance, the hot-key command-B to make selected text bold, is registered
+internally as:
 
 ```javascript
 const boldKeyCommand = {
@@ -228,7 +234,8 @@ Or run headless tests via testem:
 
 #### Demo
 
-There is a demo app that uses content-kit and ember-content-kit in `demo/`. To run the demo:
+There is a demo app that uses the Mobiledoc kit via the [ember-mobiledoc-editor](https://github.com/bustlelabs/ember-mobiledoc-editor)
+in `demo/`. To run the demo:
 
  * `cd demo/ && npm install && bower install`
  * `ember serve` (shut down your broccoli server if it is already running on port 4200)
@@ -249,6 +256,6 @@ The demo website is hosted at github pages. To publish a new version:
   * `npm run deploy-website` - Pushes the `website/` subtree to the `gh-pages`
      branch of your `origin` at github
 
-Visit [bustlelabs.github.io/content-kit-editor/demo](http://bustlelabs.github.io/content-kit-editor/demo).
+Visit [bustlelabs.github.io/mobiledoc-kit/demo](http://bustlelabs.github.io/mobiledoc-kit/demo).
 
-*Development of Content-Kit was generously funded by [Bustle Labs](http://www.bustle.com/labs). Bustle Labs is the tech team behind the editorial staff at [Bustle](http://www.bustle.com), a fantastic and successful feminist and women’s interest site based in NYC.*
+*Development of Mobiledoc and the supporting libraries was generously funded by [Bustle Labs](http://www.bustle.com/labs). Bustle Labs is the tech team behind the editorial staff at [Bustle](http://www.bustle.com), a fantastic and successful feminist and women’s interest site based in NYC.*

@@ -1,8 +1,8 @@
-import DOMParser from 'content-kit-editor/parsers/dom';
-import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
+import DOMParser from 'mobiledoc-kit/parsers/dom';
+import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Helpers from '../../test-helpers';
-import { Editor } from 'content-kit-editor';
-import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
+import { Editor } from 'mobiledoc-kit';
+import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 
 const {module, test} = Helpers;
 

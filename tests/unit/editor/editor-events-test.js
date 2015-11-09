@@ -1,5 +1,5 @@
 import Helpers from '../../test-helpers';
-import { Editor } from 'content-kit-editor';
+import { Editor } from 'mobiledoc-kit';
 
 const { module, test } = Helpers;
 

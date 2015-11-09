@@ -1,5 +1,5 @@
 import Helpers from '../../test-helpers';
-import Range from 'content-kit-editor/utils/cursor/range';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const {module, test} = Helpers;
 
@@ -293,7 +293,7 @@ test('#isBlank is true when there are no sections', (assert) => {
   assert.ok(!_post.isBlank);
 });
 
-// see https://github.com/bustlelabs/content-kit-editor/issues/134
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/134
 test('#sectionsContainedBy when range covers two list items', (assert) => {
   const post = Helpers.postAbstract.build(
     ({post, markupSection, marker, listSection, listItem}) => {

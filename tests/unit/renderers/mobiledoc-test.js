@@ -1,9 +1,9 @@
-import MobiledocRenderer from 'content-kit-editor/renderers/mobiledoc';
+import MobiledocRenderer from 'mobiledoc-kit/renderers/mobiledoc';
 import {
   MOBILEDOC_VERSION
-} from 'content-kit-editor/renderers/mobiledoc';
-import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
-import { normalizeTagName } from 'content-kit-editor/utils/dom-utils';
+} from 'mobiledoc-kit/renderers/mobiledoc';
+import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
+import { normalizeTagName } from 'mobiledoc-kit/utils/dom-utils';
 import Helpers from '../../test-helpers';
 
 const { module, test } = Helpers;

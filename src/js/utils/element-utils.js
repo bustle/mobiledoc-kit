@@ -1,7 +1,7 @@
-import { dasherize } from 'content-kit-editor/utils/string-utils';
+import { dasherize } from 'mobiledoc-kit/utils/string-utils';
 import {
   normalizeTagName
-} from 'content-kit-editor/utils/dom-utils';
+} from 'mobiledoc-kit/utils/dom-utils';
 
 function createDiv(className) {
   var div = document.createElement('div');

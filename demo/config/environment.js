@@ -2,7 +2,7 @@
 
 module.exports = function(environment) {
   var ENV = {
-    modulePrefix: 'content-kit-demo',
+    modulePrefix: 'mobiledoc-kit-demo',
     environment: environment,
     baseURL: '/',
     locationType: 'auto',
@@ -40,7 +40,7 @@ module.exports = function(environment) {
   }
 
   if (environment === 'production') {
-    ENV.baseURL = '/content-kit-editor/demo/';
+    ENV.baseURL = '/mobiledoc-kit/demo/';
   }
 
   return ENV;

@@ -1,6 +1,6 @@
 import Helpers from '../../test-helpers';
-import { Editor } from 'content-kit-editor';
-import { containsNode } from 'content-kit-editor/utils/dom-utils';
+import { Editor } from 'mobiledoc-kit';
+import { containsNode } from 'mobiledoc-kit/utils/dom-utils';
 let editorElement, editor;
 
 const { module, test } = Helpers;

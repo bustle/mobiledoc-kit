@@ -1,8 +1,8 @@
-## Content-Kit / Mobiledoc Cards
+## Mobiledoc Cards
 
 Cards are an API supported by
-[Content-Kit](https://github.com/bustlelabs/content-kit-editor),
-the [Mobiledoc format](https://github.com/bustlelabs/content-kit-editor/blob/master/MOBILEDOC.md),
+[Mobiledoc Kit](https://github.com/bustlelabs/mobiledoc-kit),
+the [Mobiledoc format](https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md),
 the [Mobiledoc DOM Renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer)
 and [Mobiledoc HTML Renderer](https://github.com/bustlelabs/mobiledoc-html-renderer).
 
@@ -23,18 +23,19 @@ In this minimally viable demo, a `display` hook is defined showing some text.
 Given a Mobiledoc referencing `demo` as a card this text would render for that
 name.
 
-Cards are executed at runtime by Content-Kit and the renderers. This means
+Cards are executed at runtime by a renderer. This means
 you must pass any cards you want available to an editor or renderer. See the
 documentation for each project on how to do this.
 
 ### Available hooks
 
-Between [Content-Kit](https://github.com/bustlelabs/content-kit-editor),
+Between the [Mobiledoc Kit](https://github.com/bustlelabs/mobiledoc-kit) provided
+editor,
 the [Mobiledoc DOM Renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer)
 and [Mobiledoc HTML Renderer](https://github.com/bustlelabs/mobiledoc-html-renderer)
 there are several hooks a complete card should define.
 
-|Hook|Used by Content-Kit|Used by DOM Renderer|Used by HTML Renderer|
+|Hook|Used by Mobiledoc Kit|Used by DOM Renderer|Used by HTML Renderer|
 |---|---|---|---|
 |`display`|✓|✓||
 |`edit`|✓|||
@@ -92,7 +93,7 @@ variants of a card in different situations.
 
 ### Card Lifecycle
 
-Cards rendered by Content-Kit may move between `edit` and `display` hooks
+Cards rendered by the Mobiledoc Kit editor may move between `edit` and `display` hooks
 many times after being added (or loaded from a Mobiledoc). The can do this
 by calling the functions passed to `env`.
 
