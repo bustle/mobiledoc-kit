@@ -1,11 +1,11 @@
 import Key from '../utils/key';
 import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
-import { filter } from '../utils/array-utils';
+import { filter, reduce } from '../utils/array-utils';
 import Position from '../utils/cursor/position';
+import assert from '../utils/assert';
 
 export const DEFAULT_KEY_COMMANDS = [{
-  modifier: MODIFIERS.META,
-  str: 'B',
+  str: 'META+B',
   run(editor) {
     if (editor.cursor.hasSelection()) {
       editor.run(postEditor => postEditor.toggleMarkup('strong'));
@@ -14,8 +14,7 @@ export const DEFAULT_KEY_COMMANDS = [{
     }
   }
 }, {
-  modifier: MODIFIERS.CTRL,
-  str: 'B',
+  str: 'CTRL+B',
   run(editor) {
     if (editor.cursor.hasSelection()) {
       editor.run(postEditor => postEditor.toggleMarkup('strong'));
@@ -24,8 +23,7 @@ export const DEFAULT_KEY_COMMANDS = [{
     }
   }
 }, {
-  modifier: MODIFIERS.META,
-  str: 'I',
+  str: 'META+I',
   run(editor) {
     if (editor.cursor.hasSelection()) {
       editor.run(postEditor => postEditor.toggleMarkup('em'));
@@ -34,8 +32,7 @@ export const DEFAULT_KEY_COMMANDS = [{
     }
   }
 }, {
-  modifier: MODIFIERS.CTRL,
-  str: 'I',
+  str: 'CTRL+I',
   run(editor) {
     if (editor.cursor.hasSelection()) {
       editor.run(postEditor => postEditor.toggleMarkup('em'));
@@ -44,8 +41,7 @@ export const DEFAULT_KEY_COMMANDS = [{
     }
   }
 }, {
-  modifier: MODIFIERS.CTRL,
-  str: 'K',
+  str: 'CTRL+K',
   run(editor) {
     let range = editor.cursor.offsets;
     if (!editor.cursor.hasSelection()) {
@@ -55,8 +51,7 @@ export const DEFAULT_KEY_COMMANDS = [{
     editor.cursor.moveToPosition(nextPosition);
   }
 }, {
-  modifier: MODIFIERS.META,
-  str: 'K',
+  str: 'META+K',
   run(editor) {
     if (!editor.cursor.hasSelection()) {
       return;
@@ -77,8 +72,15 @@ export const DEFAULT_KEY_COMMANDS = [{
   }
 }];
 
-function stringToModifier(string) {
-  return MODIFIERS[string.toUpperCase()];
+function modifierNamesToMask(modiferNames) {
+  let defaultVal = 0;
+  return reduce(modiferNames,
+                (sum, name) => {
+                  let modifier = MODIFIERS[name.toUpperCase()];
+                  assert(`No modifier named "${name}" found`, !!modifier);
+                  return sum + modifier;
+                },
+                defaultVal);
 }
 
 function characterToCode(character) {
@@ -87,23 +89,25 @@ function characterToCode(character) {
   if (special) {
     return special;
   } else {
+    assert(`Only 1 character can be used in a key command str (got "${character}")`,
+           character.length === 1);
     return upperCharacter.charCodeAt(0);
   }
 }
 
 export function buildKeyCommand(keyCommand) {
-  if (!keyCommand.str) {
+  let { str } = keyCommand;
+
+  if (!str) {
     return keyCommand;
   }
+  assert('[deprecation] Key commands no longer use the `modifier` property',
+         !keyCommand.modifier);
 
-  const str = keyCommand.str;
-  if (str.indexOf('+') !== -1) {
-    const [modifierName, character] = str.split('+');
-    keyCommand.modifier = stringToModifier(modifierName);
-    keyCommand.code = characterToCode(character);
-  } else {
-    keyCommand.code = characterToCode(str);
-  }
+  let [character, ...modifierNames] = str.split('+').reverse();
+
+  keyCommand.modifierMask = modifierNamesToMask(modifierNames);
+  keyCommand.code = characterToCode(character);
 
   return keyCommand;
 }
@@ -115,11 +119,7 @@ export function validateKeyCommand(keyCommand) {
 export function findKeyCommands(keyCommands, keyEvent) {
   const key = Key.fromEvent(keyEvent);
 
-  return filter(keyCommands, ({modifier, code}) => {
-    if (key.keyCode !== code) {
-      return false;
-    }
-
-    return (modifier && key.hasModifier(modifier)) || (!modifier && !key.hasAnyModifier());
+  return filter(keyCommands, ({modifierMask, code}) => {
+    return key.keyCode === code && key.modifierMask === modifierMask;
   });
 }

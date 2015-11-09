@@ -1,5 +1,5 @@
-import { buildKeyCommand } from 'content-kit-editor/editor/key-commands';
-import { MODIFIERS, SPECIAL_KEYS } from 'content-kit-editor/utils/key';
+import { buildKeyCommand, findKeyCommands } from 'content-kit-editor/editor/key-commands';
+import { MODIFIERS, SPECIAL_KEYS, modifierMask as createModifierMask } from 'content-kit-editor/utils/key';
 import Keycodes from 'content-kit-editor/utils/keycodes';
 
 import Helpers from '../../test-helpers';
@@ -24,27 +24,36 @@ test('leaves modifier, code and run in place if they exist', (assert) => {
   assert.equal(run, fn, 'keeps run');
 });
 
-test('translates MODIFIER+CHARACTER string to modifier and code', (assert) => {
+test('translates MODIFIER+CHARACTER string to modifierMask and code', (assert) => {
 
-  const { modifier, code } = buildKeyCommand({ str: 'meta+k' });
+  const { modifierMask, code } = buildKeyCommand({ str: 'meta+k' });
 
-  assert.equal(modifier, MODIFIERS.META, 'translates string to modifier');
+  assert.equal(modifierMask, createModifierMask({metaKey: true}),
+               'calculates correct modifierMask');
   assert.equal(code, 75, 'translates string to code');
 });
 
-test('translates modifier+character string to modifier and code', (assert) => {
+test('translates modifier+character string to modifierMask and code', (assert) => {
 
-  const { modifier, code } = buildKeyCommand({ str: 'META+K' });
+  const { modifierMask, code } = buildKeyCommand({ str: 'META+K' });
 
-  assert.equal(modifier, MODIFIERS.META, 'translates string to modifier');
+  assert.equal(modifierMask, createModifierMask({metaKey: true}),
+               'calculates correct modifierMask');
+  assert.equal(code, 75, 'translates string to code');
+});
+
+test('translates multiple modifiers to modifierMask', (assert) => {
+  const { modifierMask, code } = buildKeyCommand({ str: 'META+SHIFT+K' });
+  assert.equal(modifierMask, createModifierMask({metaKey: true, shiftKey: true}),
+               'calculates correct modifierMask');
   assert.equal(code, 75, 'translates string to code');
 });
 
 test('translates uppercase character string to code', (assert) => {
 
-  const { modifier, code } = buildKeyCommand({ str: 'K' });
+  const { modifierMask, code } = buildKeyCommand({ str: 'K' });
 
-  assert.equal(modifier, undefined, 'no modifier given');
+  assert.equal(modifierMask, 0, 'no modifier given');
   assert.equal(code, 75, 'translates string to code');
 });
 
@@ -55,6 +64,24 @@ test('translates lowercase character string to code', (assert) => {
   assert.equal(modifier, undefined, 'no modifier given');
   assert.equal(code, 75, 'translates string to code');
 
+});
+
+test('throws when given invalid modifier', (assert) => {
+  assert.throws(() => {
+    buildKeyCommand({str: 'MEAT+K'});
+  }, /No modifier named.*MEAT.*/);
+});
+
+test('throws when given `modifier` property (deprecation)', (assert) => {
+  assert.throws(() => {
+    buildKeyCommand({str: 'K', modifier: MODIFIERS.META});
+  }, /Key commands no longer use.*modifier.* property/);
+});
+
+test('throws when given str with too many characters', (assert) => {
+  assert.throws(() => {
+    buildKeyCommand({str: 'abc'});
+  }, /Only 1 character/);
 });
 
 test('translates uppercase special key names to codes', (assert) => {
@@ -69,4 +96,33 @@ test('translates lowercase special key names to codes', (assert) => {
     const { code } = buildKeyCommand({ str: name.toLowerCase() });
     assert.equal(code, SPECIAL_KEYS[name], `translates ${name} string to code`);
   });
+});
+
+test('`findKeyCommands` matches modifiers exactly', (assert) => {
+  let cmdK = buildKeyCommand({
+    str: 'META+K'
+  });
+  let cmdShiftK = buildKeyCommand({
+    str: 'META+SHIFT+K'
+  });
+  let commands = [cmdK, cmdShiftK];
+
+  let element = null;
+  let cmdKEvent = Helpers.dom.createMockEvent('keydown', element, {
+    keyCode: 75,
+    metaKey: true
+  });
+  let cmdShiftKEvent = Helpers.dom.createMockEvent('keydown', element, {
+    keyCode: 75,
+    metaKey: true,
+    shiftKey: true
+  });
+
+  let found = findKeyCommands(commands, cmdKEvent);
+  assert.ok(found.length && found[0] === cmdK,
+                   'finds cmd-K command from cmd-k event');
+
+  found = findKeyCommands(commands, cmdShiftKEvent);
+  assert.ok(found.length && found[0] === cmdShiftK,
+                   'finds cmd-shift-K command from cmd-shift-k event');
 });
