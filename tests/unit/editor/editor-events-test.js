@@ -12,7 +12,7 @@ const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
 
 module('Unit: Editor: events and lifecycle callbacks', {
   beforeEach() {
-    editorElement = $('<div id="editor"></div>').appendTo('#qunit-fixture')[0];
+    editorElement = $('#editor')[0];
     editor = new Editor({mobiledoc});
     editor.render(editorElement);
   },

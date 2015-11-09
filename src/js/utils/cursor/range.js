@@ -1,9 +1,11 @@
 import Position from './position';
+import { DIRECTION } from '../key';
 
 export default class Range {
-  constructor(head, tail) {
+  constructor(head, tail, direction) {
     this.head = head;
     this.tail = tail;
+    this.direction = direction;
   }
 
   static create(headSection, headOffset, tailSection, tailOffset) {
@@ -34,6 +36,17 @@ export default class Range {
       Math.min(this.tail.offset, length) : length;
 
     return Range.create(section, headOffset, section, tailOffset);
+  }
+
+  moveFocusedPosition(direction) {
+    switch (this.direction) {
+      case DIRECTION.FORWARD:
+        return new Range(this.head, this.tail.move(direction), this.direction);
+      case DIRECTION.BACKWARD:
+        return new Range(this.head.move(direction), this.tail, this.direction);
+      default:
+        return new Range(this.head, this.tail, direction).moveFocusedPosition(direction);
+    }
   }
 
   // "legacy" APIs

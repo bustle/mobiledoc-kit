@@ -5,8 +5,9 @@ import {
 import { containsNode } from '../utils/dom-utils';
 import Position from './cursor/position';
 import Range from './cursor/range';
+import { DIRECTION } from '../utils/key';
 
-export {Position, Range};
+export { Position, Range };
 
 const Cursor = class Cursor {
   constructor(editor) {
@@ -27,15 +28,29 @@ const Cursor = class Cursor {
     return this._hasCollapsedSelection() || this._hasSelection();
   }
 
-  isInCard() {
-    if (!this.hasCursor()) { return false; }
-
-    const {head, tail} = this.offsets;
-    return head && tail && (head._inCard || tail._inCard);
-  }
-
   hasSelection() {
     return this._hasSelection();
+  }
+
+  /**
+   * @return {Boolean} Can the cursor be on this element?
+   */
+  isAddressable(element) {
+    let { renderTree } = this;
+    let renderNode = renderTree.findRenderNodeFromElement(element);
+    if (renderNode && renderNode.postNode.isCardSection) {
+      let renderedElement = renderNode.element;
+
+      // card sections have addressable text nodes containing &zwnj;
+      // as their first and last child
+      if (element !== renderedElement &&
+          element !== renderedElement.firstChild &&
+          element !== renderedElement.lastChild) {
+        return false;
+      }
+    }
+
+    return !!renderNode;
   }
 
   /*
@@ -47,13 +62,13 @@ const Cursor = class Cursor {
     const { selection, renderTree } = this;
 
     const {
-      headNode, headOffset, tailNode, tailOffset
+      headNode, headOffset, tailNode, tailOffset, direction
     } = comparePosition(selection);
 
     const headPosition = Position.fromNode(renderTree, headNode, headOffset);
     const tailPosition = Position.fromNode(renderTree, tailNode, tailOffset);
 
-    return new Range(headPosition, tailPosition);
+    return new Range(headPosition, tailPosition, direction);
   }
 
   get activeSections() {
@@ -77,7 +92,14 @@ const Cursor = class Cursor {
   _findNodeForPosition(position) {
     const { section } = position;
     let node, offset;
-    if (section.isBlank) {
+    if (section.isCardSection) {
+      offset = 0;
+      if (position.offset === 0) {
+        node = section.renderNode.element.firstChild;
+      } else {
+        node = section.renderNode.element.lastChild;
+      }
+    } else if (section.isBlank) {
       node = section.renderNode.element;
       offset = 0;
     } else {
@@ -90,10 +112,10 @@ const Cursor = class Cursor {
   }
 
   selectRange(range) {
-    const { head, tail } = range;
+    const { head, tail, direction } = range;
     const { node:headNode, offset:headOffset } = this._findNodeForPosition(head),
           { node:tailNode, offset:tailOffset } = this._findNodeForPosition(tail);
-    this._moveToNode(headNode, headOffset, tailNode, tailOffset);
+    this._moveToNode(headNode, headOffset, tailNode, tailOffset, direction);
   }
 
   get selection() {
@@ -105,10 +127,6 @@ const Cursor = class Cursor {
   }
 
   moveToPosition(position) {
-    if (position._inCard) {
-      // FIXME add the ability to position the cursor on/in a card
-      return;
-    }
     this.selectRange(new Range(position, position));
   }
 
@@ -119,14 +137,17 @@ const Cursor = class Cursor {
    * @param {textNode} endNode (default: node)
    * @param {integer} endOffset (default: offset)
    */
-  _moveToNode(node, offset=0, endNode=node, endOffset=offset) {
+  _moveToNode(node, offset, endNode, endOffset, direction) {
     this.clearSelection();
+
+    if (direction === DIRECTION.BACKWARD) {
+      [node, offset, endNode, endOffset] = [ endNode, endOffset, node, offset ];
+    }
 
     const range = document.createRange();
     range.setStart(node, offset);
-    range.setEnd(endNode, endOffset);
-
     this.selection.addRange(range);
+    this.selection.extend(endNode, endOffset);
   }
 
   _hasSelection() {

@@ -81,10 +81,14 @@ function renderCursorPlaceholder() {
 }
 
 function renderCard() {
-  const element = document.createElement('div');
-  element.contentEditable = false;
-  addClassName(element, 'ck-card');
-  return element;
+  let wrapper = document.createElement('div');
+  let cardElement = document.createElement('div');
+  cardElement.contentEditable = false;
+  addClassName(cardElement, 'ck-card');
+  wrapper.appendChild(document.createTextNode('\u200c'));
+  wrapper.appendChild(cardElement);
+  wrapper.appendChild(document.createTextNode('\u200c'));
+  return { wrapper, cardElement };
 }
 
 function getNextMarkerElement(renderNode) {
@@ -249,19 +253,20 @@ class Visitor {
     const {editor, options} = this;
     const card = detect(this.cards, card => card.name === section.name);
 
-    renderNode.element = renderCard();
+    let { wrapper, cardElement } = renderCard();
+    renderNode.element = wrapper;
     attachRenderNodeElementToDOM(renderNode, originalElement);
 
     if (card) {
       const cardNode = new CardNode(
-        editor, card, section, renderNode.element, options);
+        editor, card, section, cardElement, options);
       renderNode.cardNode = cardNode;
       const initialMode = section._initialMode;
       cardNode[initialMode]();
     } else {
       const env = { name: section.name };
       this.unknownCardHandler(
-        renderNode.element, options, env, section.payload);
+        cardElement, options, env, section.payload);
     }
   }
 }

@@ -3,6 +3,7 @@ import { forEach } from 'content-kit-editor/utils/array-utils';
 import KEY_CODES from 'content-kit-editor/utils/keycodes';
 import { DIRECTION, MODIFIERS }  from 'content-kit-editor/utils/key';
 import { isTextNode } from 'content-kit-editor/utils/dom-utils';
+import { merge } from 'content-kit-utils';
 
 // walks DOWN the dom from node to childNodes, returning the element
 // for which `conditionFn(element)` is true
@@ -21,7 +22,6 @@ function walkDOMUntil(topNode, conditionFn=() => {}) {
     forEach(currentElement.childNodes, (el) => stack.push(el));
   }
 }
-
 
 function selectRange(startNode, startOffset, endNode, endOffset) {
   clearSelection();
@@ -71,38 +71,6 @@ function triggerEvent(node, eventType) {
   return node.dispatchEvent(clickEvent);
 }
 
-function createKeyEvent(eventType, keyCode) {
-  let oEvent = document.createEvent('KeyboardEvent');
-  if (oEvent.initKeyboardEvent) {
-    oEvent.initKeyboardEvent(eventType, true, true, window, 0, 0, 0, 0, 0, keyCode);
-  } else if (oEvent.initKeyEvent) {
-    oEvent.initKeyEvent(eventType, true, true, window, 0, 0, 0, 0, 0, keyCode);
-  }
-
-  // Hack for Chrome to force keyCode/which value
-  try {
-    Object.defineProperty(oEvent, 'keyCode', {get: function() { return keyCode; }});
-    Object.defineProperty(oEvent, 'which', {get: function() { return keyCode; }});
-  } catch(e) {
-    // FIXME
-    // PhantomJS/webkit will throw an error "ERROR: Attempting to change access mechanism for an unconfigurable property"
-    // see https://bugs.webkit.org/show_bug.cgi?id=36423
-  }
-
-  if (oEvent.keyCode !== keyCode || oEvent.which !== keyCode) {
-    throw new Error(`Failed to create key event with keyCode ${keyCode}. \`keyCode\`: ${oEvent.keyCode}, \`which\`: ${oEvent.which}`);
-  }
-
-  return oEvent;
-}
-
-function triggerEnterKeyupEvent(node) {
-  const keyCode = KEY_CODES.ENTER;
-  const eventType = 'keyup';
-  let oEvent = createKeyEvent(eventType, keyCode);
-  node.dispatchEvent(oEvent);
-}
-
 function _buildDOM(tagName, attributes={}, children=[]) {
   const el = document.createElement(tagName);
   Object.keys(attributes).forEach(k => el.setAttribute(k, attributes[k]));
@@ -149,11 +117,23 @@ function getCursorPosition() {
   };
 }
 
+function createMockEvent(eventName, element, options={}) {
+  let event = {
+    type: eventName,
+    preventDefault() {},
+    target: element
+  };
+  merge(event, options);
+  return event;
+}
+
 function triggerDelete(editor, direction=DIRECTION.BACKWARD) {
   if (!editor) { throw new Error('Must pass `editor` to `triggerDelete`'); }
   const keyCode = direction === DIRECTION.BACKWARD ? KEY_CODES.BACKSPACE :
                                                      KEY_CODES.DELETE;
-  const event = { keyCode, preventDefault() {} };
+  let event = createMockEvent('keydown', editor.element, {
+    keyCode
+  });
   editor.triggerEvent(editor.element, 'keydown', event);
 }
 
@@ -163,7 +143,7 @@ function triggerForwardDelete(editor) {
 
 function triggerEnter(editor) {
   if (!editor) { throw new Error('Must pass `editor` to `triggerEnter`'); }
-  const event = { preventDefault() {}, keyCode: KEY_CODES.ENTER };
+  let event = createMockEvent('keydown', editor.element, { keyCode: KEY_CODES.ENTER});
   editor.triggerEvent(editor.element, 'keydown', event);
 }
 
@@ -171,61 +151,97 @@ function insertText(editor, string) {
   if (!string && editor) { throw new Error('Must pass `editor` to `insertText`'); }
 
   string.split('').forEach(letter => {
-    const keyEvent = {keyCode: letter.charCodeAt(0), preventDefault: () =>{}};
-    editor.triggerEvent(editor.element, 'keydown', keyEvent);
+    let stop = false;
+    let keydown = createMockEvent('keydown', editor.element, {
+      keyCode: letter.charCodeAt(0),
+      preventDefault() { stop = true; }
+    });
+    let keyup = createMockEvent('keyup', editor.element, {
+      keyCode: letter.charCodeAt(0),
+      preventDefault() { stop = true; }
+    });
+    let input = createMockEvent('input', editor.element, {
+      preventDefault() { stop = true; }
+    });
+
+    editor.triggerEvent(editor.element, 'keydown', keydown);
+    if (stop) {
+      return;
+    }
     document.execCommand('insertText', false, letter);
-    editor.triggerEvent(editor.element, 'input');
-    editor.triggerEvent(editor.element, 'keyup', keyEvent);
+    editor.triggerEvent(editor.element, 'input', input);
+    if (stop) {
+      return;
+    }
+    editor.triggerEvent(editor.element, 'keyup', keyup);
   });
 }
 
 // triggers a key sequence like cmd-B on the editor, to test out
 // registered keyCommands
 function triggerKeyCommand(editor, string, modifier) {
-  const keyEvent = {
-    preventDefault() {},
+  let keyEvent = createMockEvent('keydown', editor.element, {
     keyCode: string.toUpperCase().charCodeAt(0),
     metaKey: modifier === MODIFIERS.META,
     ctrlKey: modifier === MODIFIERS.CTRL
-  };
+  });
   editor.triggerEvent(editor.element, 'keydown', keyEvent);
 }
 
-function triggerRightArrowKey(editor) {
+function triggerRightArrowKey(editor, modifier) {
   if (!editor) { throw new Error('Must pass editor to triggerRightArrowKey'); }
-  const event = {preventDefault() {}, keyCode: 39};
-  editor.triggerEvent(editor.element, 'keyup', event);
+  let keydown = createMockEvent('keydown', editor.element, {
+    keyCode: KEY_CODES.RIGHT,
+    shiftKey: modifier === MODIFIERS.SHIFT
+  });
+  let keyup = createMockEvent('keyup', editor.element, {
+    keyCode: KEY_CODES.RIGHT,
+    shiftKey: modifier === MODIFIERS.SHIFT
+  });
+  editor.triggerEvent(editor.element, 'keydown', keydown);
+  editor.triggerEvent(editor.element, 'keyup', keyup);
+}
+
+function triggerLeftArrowKey(editor, modifier) {
+  if (!editor) { throw new Error('Must pass editor to triggerLeftArrowKey'); }
+  let keydown = createMockEvent('keydown', editor.element, {
+    keyCode: KEY_CODES.LEFT,
+    shiftKey: modifier === MODIFIERS.SHIFT
+  });
+  let keyup = createMockEvent('keyup', editor.element, {
+    keyCode: KEY_CODES.LEFT,
+    shiftKey: modifier === MODIFIERS.SHIFT
+  });
+  editor.triggerEvent(editor.element, 'keydown', keydown);
+  editor.triggerEvent(editor.element, 'keyup', keyup);
 }
 
 // Allows our fake copy and paste events to communicate with each other.
 const lastCopyData = {};
 function triggerCopyEvent(editor) {
-  const event = {
-    preventDefault() {},
+  let event = createMockEvent('copy', editor.element, {
     clipboardData: {
       setData(type, value) { lastCopyData[type] = value; }
     }
-  };
+  });
   editor.triggerEvent(editor.element, 'copy', event);
 }
 
 function triggerCutEvent(editor) {
-  const event = {
-    preventDefault() {},
+  let event = createMockEvent('copy', editor.element, {
     clipboardData: {
       setData(type, value) { lastCopyData[type] = value; }
     }
-  };
+  });
   editor.triggerEvent(editor.element, 'cut', event);
 }
 
 function triggerPasteEvent(editor) {
-  const event = {
-    preventDefault() {},
+  let event = createMockEvent('copy', editor.element, {
     clipboardData: {
       getData(type) { return lastCopyData[type]; }
     }
-  };
+  });
   editor.triggerEvent(editor.element, 'paste', event);
 }
 
@@ -245,7 +261,6 @@ const DOMHelper = {
   selectText,
   clearSelection,
   triggerEvent,
-  triggerEnterKeyupEvent,
   build,
   fromHTML,
   KEY_CODES,
@@ -257,6 +272,7 @@ const DOMHelper = {
   insertText,
   triggerKeyCommand,
   triggerRightArrowKey,
+  triggerLeftArrowKey,
   triggerCopyEvent,
   triggerCutEvent,
   triggerPasteEvent,

@@ -15,9 +15,7 @@ function insertText(text, cursorNode) {
 
 module('Acceptance: Editor: Text Expansions', {
   beforeEach() {
-    editorElement = document.createElement('div');
-    editorElement.setAttribute('id', 'editor');
-    $('#qunit-fixture').append(editorElement);
+    editorElement = $('#editor')[0];
   },
   afterEach() {
     if (editor) { editor.destroy(); }

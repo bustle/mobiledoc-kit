@@ -4,6 +4,8 @@ import {
 import {
   MARKUP_SECTION_TYPE, LIST_ITEM_TYPE, CARD_TYPE
 } from 'content-kit-editor/models/types';
+import { DIRECTION } from 'content-kit-editor/utils/key';
+import assert from 'content-kit-editor/utils/assert';
 
 function isSection(postNode) {
   if (!(postNode && postNode.type)) { return false; }
@@ -17,14 +19,27 @@ function isCardSection(section) {
 }
 
 function findParentSectionFromNode(renderTree, node) {
-  let renderNode;
-  while (node && node !== renderTree.rootElement) {
-    renderNode = renderTree.getElementRenderNode(node);
-    if (renderNode && isSection(renderNode.postNode)) {
-      return renderNode.postNode;
-    }
-    node = node.parentNode;
+  let renderNode =  renderTree.findRenderNodeFromElement(
+    node,
+    (renderNode) => isSection(renderNode.postNode)
+  );
+
+  return renderNode && renderNode.postNode;
+}
+
+function findOffsetInSection(section, node, offset) {
+  if (!isCardSection(section)) {
+    return findOffsetInElement(section.renderNode.element,
+                               node, offset);
   }
+
+  // Only the card case
+  let wrapperNode = section.renderNode.element;
+  let endTextNode = wrapperNode.lastChild;
+  if (node === endTextNode) {
+    return 1;
+  }
+  return 0;
 }
 
 const Position = class Position {
@@ -64,11 +79,42 @@ const Position = class Position {
            this.offset  === position.offset;
   }
 
+  move(direction) {
+    switch (direction) {
+      case DIRECTION.BACKWARD:
+        return this.moveLeft();
+      case DIRECTION.FORWARD:
+        return this.moveRight();
+      default:
+        assert('Must pass a valid direction to Position.move', false);
+    }
+  }
+
+  moveLeft() {
+    if (this.offset > 0) {
+      return new Position(this.section, this.offset - 1);
+    } else if (this.section.prev) {
+      return new Position(this.section.prev, this.section.prev.length);
+    } else {
+      return null;
+    }
+  }
+
+  moveRight() {
+    if (this.offset < this.section.length) {
+      return new Position(this.section, this.offset + 1);
+    } else if (this.section.next) {
+      return new Position(this.section.next, 0);
+    } else {
+      return null;
+    }
+  }
+
   static fromNode(renderTree, node, offset) {
     if (isTextNode(node)) {
       return Position.fromTextNode(renderTree, node, offset);
     } else {
-      return Position.fromElementNode(renderTree, node);
+      return Position.fromElementNode(renderTree, node, offset);
     }
   }
 
@@ -90,18 +136,13 @@ const Position = class Position {
       section = findParentSectionFromNode(renderTree, textNode);
       if (!section) { throw new Error(`Could not find parent section for un-mapped text node "${textNode.textContent}"`); }
 
-      if (isCardSection(section)) {
-        offsetInSection = 0; // we don't care about offsets in card sections
-      } else {
-        offsetInSection = findOffsetInElement(section.renderNode.element,
-                                              textNode, offsetInNode);
-      }
+      offsetInSection = findOffsetInSection(section, textNode, offsetInNode);
     }
 
     return new Position(section, offsetInSection);
   }
 
-  static fromElementNode(renderTree, elementNode) {
+  static fromElementNode(renderTree, elementNode, offset) {
     // The browser may change the reported selection to equal the editor's root
     // element if the user clicks an element that is immediately removed,
     // which can happen when clicking to remove a card.
@@ -109,10 +150,21 @@ const Position = class Position {
       return Position.emptyPosition();
     }
 
-    let section, offsetInSection = 0;
-
-    section = findParentSectionFromNode(renderTree, elementNode);
+    let section = findParentSectionFromNode(renderTree, elementNode);
     if (!section) { throw new Error('Could not find parent section from element node'); }
+
+    let offsetInSection;
+
+    if (isCardSection(section)) {
+      // Selections in cards are usually made on a text node containing a &zwnj; 
+      // on one side or the other of the card but some scenarios will result in
+      // selecting the card's wrapper div. If the offset is 2 we've selected
+      // the final zwnj and should consider the cursor at the end of the card (offset 1). Otherwise,
+      // the cursor is at the start of the card
+      offsetInSection = offset < 2 ? 0 : 1;
+    } else {
+      offsetInSection = 0;
+    }
 
     // FIXME We assume that offsetInSection will always be 0 because we assume
     // that only empty br tags (offsetInSection=0) will be those that cause

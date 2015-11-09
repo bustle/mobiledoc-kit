@@ -15,7 +15,7 @@ import MobiledocRenderer from '../renderers/mobiledoc';
 
 import { mergeWithOptions } from 'content-kit-utils';
 import { clearChildNodes, addClassName } from '../utils/dom-utils';
-import { forEach, filter } from '../utils/array-utils';
+import { forEach, filter, contains } from '../utils/array-utils';
 import { setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
@@ -35,8 +35,12 @@ import {
   parsePostFromPaste,
   setClipboardCopyData
 } from '../utils/paste-utils';
+import { DIRECTION } from 'content-kit-editor/utils/key';
 
 export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
+
+const ELEMENT_EVENTS = ['keydown', 'keyup', 'input', 'cut', 'copy', 'paste'];
+const DOCUMENT_EVENTS= ['mouseup'];
 
 const defaults = {
   placeholder: 'Write here...',
@@ -220,8 +224,8 @@ class Editor {
     const range = this.cursor.offsets;
 
     if (this.cursor.hasSelection()) {
-      this.run(postEditor => postEditor.deleteRange(range));
-      this.cursor.moveToPosition(range.head);
+      let nextPosition = this.run(postEditor => postEditor.deleteRange(range));
+      this.cursor.moveToPosition(nextPosition);
     } else if (event) {
       const key = Key.fromEvent(event);
       const nextPosition = this.run(postEditor => {
@@ -239,9 +243,9 @@ class Editor {
     const range = this.cursor.offsets;
     const cursorSection = this.run(postEditor => {
       if (!range.isCollapsed) {
-        postEditor.deleteRange(range);
-        if (range.head.section.isBlank) {
-          return range.head.section;
+        let nextPosition = postEditor.deleteRange(range);
+        if (nextPosition.section.isBlank) {
+          return nextPosition.section;
         }
       }
       return postEditor.splitSection(range.head)[1];
@@ -505,16 +509,13 @@ class Editor {
   }
 
   _setupListeners() {
-    const elementEvents = ['keydown', 'keyup', 'input', 'cut', 'copy', 'paste'];
-    const documentEvents = ['mouseup'];
-
-    elementEvents.forEach(eventName => {
+    ELEMENT_EVENTS.forEach(eventName => {
       this.addEventListener(this.element, eventName,
         (...args) => this.handleEvent(eventName, ...args)
       );
     });
 
-    documentEvents.forEach(eventName => {
+    DOCUMENT_EVENTS.forEach(eventName => {
       this.addEventListener(document, eventName,
         (...args) => this.handleEvent(eventName, ...args)
       );
@@ -522,7 +523,13 @@ class Editor {
   }
 
   handleEvent(eventName, ...args) {
-    if (this.cursor.isInCard()) { return; }
+    if (contains(ELEMENT_EVENTS, eventName)) {
+      let [{target: element}] = args;
+      if (!this.cursor.isAddressable(element)) {
+        // abort handling this event
+        return true;
+      }
+    }
 
     const methodName = `handle${capitalize(eventName)}`;
     if (!this[methodName]) { throw new Error(`No handler for ${eventName}`); }
@@ -531,7 +538,7 @@ class Editor {
 
   handleMouseup() {
     // mouseup does not correctly report a selection until the next tick
-    setTimeout(() => this._reportSelectionState());
+    setTimeout(() => this._reportSelectionState(), 0);
   }
 
   handleKeyup() {
@@ -571,17 +578,44 @@ class Editor {
 
     const key = Key.fromEvent(event);
 
-    if (key.isDelete()) {
-      this.handleDeletion(event);
-      event.preventDefault();
-    } else if (key.isEnter()) {
-      this.handleNewline(event);
-    } else if (key.isPrintable()) {
-      if (this.cursor.hasSelection()) {
-        const range = this.cursor.offsets;
-        this.run(postEditor => postEditor.deleteRange(range));
-        this.cursor.moveToPosition(range.head);
-      }
+    let range, nextPosition;
+
+    switch(true) {
+      case key.isHorizontalArrow():
+        range = this.cursor.offsets;
+        let position = range.tail;
+        if (range.direction === DIRECTION.BACKWARD) {
+          position = range.head;
+        }
+        if (position.section.isCardSection) {
+          nextPosition = position.move(key.direction);
+          if (nextPosition) {
+            if (key.isShift()) {
+              let newRange = range.moveFocusedPosition(key.direction);
+              this.cursor.selectRange(newRange);
+            } else {
+              this.cursor.moveToPosition(nextPosition);
+            }
+            event.preventDefault();
+          }
+        }
+        break;
+      case key.isDelete():
+        this.handleDeletion(event);
+        event.preventDefault();
+        break;
+      case key.isEnter():
+        this.handleNewline(event);
+        break;
+      case key.isPrintable():
+        let range = this.cursor.offsets;
+        if (this.cursor.hasSelection()) {
+          let nextPosition = this.run(postEditor => postEditor.deleteRange(range));
+          this.cursor.moveToPosition(nextPosition);
+        } else if (range.head.section.isCardSection) {
+          event.preventDefault();
+        }
+        break;
     }
 
     this.handleExpansion(event);
@@ -630,6 +664,11 @@ class Editor {
     event.preventDefault();
 
     const { head: position } = this.cursor.offsets;
+
+    if (position.section.isCardSection) {
+      return;
+    }
+
     if (this.cursor.hasSelection()) {
       this.handleDeletion();
     }

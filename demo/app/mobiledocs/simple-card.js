@@ -3,7 +3,9 @@ export var simpleCard = {
   sections: [
     [],
     [
-      [10, 'simple-card']
+      [1, 'p', [[[], 0, 'before']]],
+      [10, 'simple-card'],
+      [1, 'p', [[[], 0, 'after']]]
     ]
   ]
 };

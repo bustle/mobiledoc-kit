@@ -23,6 +23,11 @@ const test = (msg, callback) => {
   qunitTest(msg, callback);
 };
 
+QUnit.testStart(() => {
+  // The fixture is cleared between tests, clearing this
+  $('<div id="editor"></div>').appendTo('#qunit-fixture');
+});
+
 export default {
   dom: DOMHelpers,
   mobiledoc: MobiledocHelpers,

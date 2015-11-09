@@ -3,14 +3,23 @@ import Helpers from '../test-helpers';
 
 const { test, module } = Helpers;
 
-let fixture, editor, editorElement;
+const cards = [{
+  name: 'my-card',
+  display: {
+    setup() {},
+    teardown() {}
+  },
+  edit: {
+    setup() {},
+    teardown() {}
+  }
+}];
+
+let editor, editorElement;
 
 module('Acceptance: editor: basic', {
   beforeEach() {
-    fixture = document.getElementById('qunit-fixture');
-    editorElement = document.createElement('div');
-    editorElement.setAttribute('id', 'editor');
-    fixture.appendChild(editorElement);
+    editorElement = $('#editor')[0];
   },
   afterEach() {
     if (editor) { editor.destroy(); }
@@ -105,4 +114,40 @@ test('typing in empty post correctly adds a section to it', (assert) => {
   assert.hasElement('#editor p:contains(X)');
   Helpers.dom.insertText(editor, 'Y');
   assert.hasElement('#editor p:contains(XY)', 'inserts text at correct spot');
+});
+
+test('typing when on the end of a card is blocked', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
+    return post([
+      cardSection('my-card')
+    ]);
+  });
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  let endingZWNJ = $('#editor')[0].firstChild.lastChild;
+  Helpers.dom.moveCursorTo(endingZWNJ, 0);
+  Helpers.dom.insertText(editor, 'X');
+  assert.hasNoElement('#editor div:contains(X)');
+  Helpers.dom.moveCursorTo(endingZWNJ, 1);
+  Helpers.dom.insertText(editor, 'Y');
+  assert.hasNoElement('#editor div:contains(Y)');
+});
+
+test('typing when on the start of a card is blocked', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
+    return post([
+      cardSection('my-card')
+    ]);
+  });
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  let startingZWNJ = $('#editor')[0].firstChild.firstChild;
+  Helpers.dom.moveCursorTo(startingZWNJ, 0);
+  Helpers.dom.insertText(editor, 'X');
+  assert.hasNoElement('#editor div:contains(X)');
+  Helpers.dom.moveCursorTo(startingZWNJ, 1);
+  Helpers.dom.insertText(editor, 'Y');
+  assert.hasNoElement('#editor div:contains(Y)');
 });

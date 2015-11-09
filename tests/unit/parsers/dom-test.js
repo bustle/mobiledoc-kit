@@ -6,11 +6,12 @@ import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
 
 const {module, test} = Helpers;
 
-let builder, parser, editor;
+let editorElement, builder, parser, editor;
 let buildDOM = Helpers.dom.fromHTML;
 
 module('Unit: Parser: DOMParser', {
   beforeEach() {
+    editorElement = $('#editor')[0];
     builder = new PostNodeBuilder();
     parser = new DOMParser(builder);
   },
@@ -67,8 +68,6 @@ test('editor#reparse catches changes to section', (assert) => {
     ])
   );
   editor = new Editor({mobiledoc});
-  const editorElement = $('<div id="editor"></div>')[0];
-  $('#qunit-fixture').append(editorElement);
   editor.render(editorElement);
 
   assert.hasElement('#editor p:contains(the marker)', 'precond - rendered correctly');
@@ -92,8 +91,6 @@ test('editor#reparse parses spaces and breaking spaces', (assert) => {
     ])
   );
   editor = new Editor({mobiledoc});
-  const editorElement = $('<div id="editor"></div>')[0];
-  $('#qunit-fixture').append(editorElement);
   editor.render(editorElement);
 
   assert.hasElement('#editor p:contains(the marker)', 'precond - rendered correctly');
@@ -119,8 +116,6 @@ test('editor#reparse catches changes to list section', (assert) => {
     ])
   );
   editor = new Editor({mobiledoc});
-  const editorElement = $('<div id="editor"></div>')[0];
-  $('#qunit-fixture').append(editorElement);
   editor.render(editorElement);
 
   assert.hasElement('#editor li:contains(list item)', 'precond - rendered correctly');

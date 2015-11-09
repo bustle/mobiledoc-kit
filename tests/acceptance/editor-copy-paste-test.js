@@ -3,11 +3,23 @@ import Helpers from '../test-helpers';
 
 const { test, module } = Helpers;
 
+const cards = [{
+  name: 'my-card',
+  display: {
+    setup() {},
+    teardown() {}
+  },
+  edit: {
+    setup() {},
+    teardown() {}
+  }
+}];
+
 let editor, editorElement;
 
 module('Acceptance: editor: copy-paste', {
   beforeEach() {
-    editorElement = $('<div id="editor"></div>').appendTo('#qunit-fixture')[0];
+    editorElement = $('#editor')[0];
   },
   afterEach() {
     if (editor) { editor.destroy(); }
@@ -242,4 +254,47 @@ test('copy sets html & text for pasting externally', (assert) => {
             'html has h2');
   assert.ok(html.indexOf("<p>The text") !== -1,
             'html has p');
+});
+
+test('pasting when on the end of a card is blocked', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, cardSection, markupSection, marker}) => {
+    return post([
+      cardSection('my-card'),
+      markupSection('p', [marker('abc')])
+    ]);
+  });
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  Helpers.dom.selectText('abc', editorElement);
+  Helpers.dom.triggerCopyEvent(editor);
+
+  editor.cursor.moveToSection(editor.post.sections.head, 0);
+  Helpers.dom.triggerPasteEvent(editor);
+
+  let updatedMobiledoc = editor.serialize();
+  assert.deepEqual(updatedMobiledoc.sections, [
+    [],
+    [
+      [10, 'my-card', {}],
+      [1, 'p', [
+        [[], 0, 'abc']
+      ]]
+    ]
+  ], 'no paste has occurred');
+
+  editor.cursor.moveToSection(editor.post.sections.head, 1);
+  Helpers.dom.triggerPasteEvent(editor);
+
+  updatedMobiledoc = editor.serialize();
+  assert.deepEqual(updatedMobiledoc.sections, [
+    [],
+    [
+      [10, 'my-card', {}],
+      [1, 'p', [
+        [[], 0, 'abc']
+      ]]
+    ]
+  ], 'no paste has occurred');
 });
