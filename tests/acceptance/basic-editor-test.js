@@ -1,4 +1,4 @@
-import { Editor } from 'content-kit-editor';
+import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 
 const { test, module } = Helpers;
@@ -152,7 +152,7 @@ test('typing when on the start of a card is blocked', (assert) => {
   assert.hasNoElement('#editor div:contains(Y)');
 });
 
-// see https://github.com/bustlelabs/content-kit-editor/issues/215
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/215
 test('select-all and type text works ok', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([

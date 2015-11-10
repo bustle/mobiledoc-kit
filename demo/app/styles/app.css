@@ -238,7 +238,7 @@ hr {
   color: #bf616a;
 }
 
-.content-kit-toolbar__button.active {
+.mobiledoc-toolbar__button.active {
   font-weight: bold;
   background-color: aliceblue;
 }

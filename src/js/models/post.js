@@ -1,8 +1,8 @@
 import { POST_TYPE } from './types';
-import LinkedList from 'content-kit-editor/utils/linked-list';
-import { forEach, compact } from 'content-kit-editor/utils/array-utils';
-import Set from 'content-kit-editor/utils/set';
-import MobiledocRenderer from 'content-kit-editor/renderers/mobiledoc';
+import LinkedList from 'mobiledoc-kit/utils/linked-list';
+import { forEach, compact } from 'mobiledoc-kit/utils/array-utils';
+import Set from 'mobiledoc-kit/utils/set';
+import MobiledocRenderer from 'mobiledoc-kit/renderers/mobiledoc';
 
 export default class Post {
   constructor() {

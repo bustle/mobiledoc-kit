@@ -1,8 +1,8 @@
-import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
-import Renderer from 'content-kit-editor/renderers/editor-dom';
-import RenderTree from 'content-kit-editor/models/render-tree';
+import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
+import Renderer from 'mobiledoc-kit/renderers/editor-dom';
+import RenderTree from 'mobiledoc-kit/models/render-tree';
 import Helpers from '../../test-helpers';
-import { NO_BREAK_SPACE } from 'content-kit-editor/renderers/editor-dom';
+import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 const { module, test } = Helpers;
 
 const ZWNJ = '\u200c';

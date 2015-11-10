@@ -2,8 +2,8 @@ import Markerable from './_markerable';
 import { LIST_ITEM_TYPE } from './types';
 import {
   normalizeTagName
-} from 'content-kit-editor/utils/dom-utils';
-import { contains } from 'content-kit-editor/utils/array-utils';
+} from 'mobiledoc-kit/utils/dom-utils';
+import { contains } from 'mobiledoc-kit/utils/array-utils';
 
 export const VALID_LIST_ITEM_TAGNAMES = [
   'li'

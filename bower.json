@@ -1,7 +1,7 @@
 {
-  "name": "content-kit-editor",
+  "name": "mobiledoc-kit",
   "version": "0.0.0",
-  "homepage": "https://github.com/bustlelabs/content-kit-editor",
+  "homepage": "https://github.com/bustlelabs/mobiledoc-kit",
   "moduleType": [
     "amd",
     "es6",

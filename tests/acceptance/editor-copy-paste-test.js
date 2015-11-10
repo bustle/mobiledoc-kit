@@ -1,4 +1,4 @@
-import { Editor } from 'content-kit-editor';
+import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 
 const { test, module } = Helpers;

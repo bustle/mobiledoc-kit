@@ -1,6 +1,6 @@
-import LinkedItem from 'content-kit-editor/utils/linked-item';
-import LinkedList from 'content-kit-editor/utils/linked-list';
-import { containsNode } from 'content-kit-editor/utils/dom-utils';
+import LinkedItem from 'mobiledoc-kit/utils/linked-item';
+import LinkedList from 'mobiledoc-kit/utils/linked-list';
+import { containsNode } from 'mobiledoc-kit/utils/dom-utils';
 
 export default class RenderNode extends LinkedItem {
   constructor(postNode, renderTree) {

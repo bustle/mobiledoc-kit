@@ -1,5 +1,5 @@
 import Helpers from '../../test-helpers';
-import { shallowCopyObject } from 'content-kit-editor/utils/copy';
+import { shallowCopyObject } from 'mobiledoc-kit/utils/copy';
 
 const {module, test} = Helpers;
 

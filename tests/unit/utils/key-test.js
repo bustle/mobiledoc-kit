@@ -1,6 +1,6 @@
 import Helpers from '../../test-helpers';
-import Key from 'content-kit-editor/utils/key';
-import { MODIFIERS } from 'content-kit-editor/utils/key';
+import Key from 'mobiledoc-kit/utils/key';
+import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 
 const {module, test} = Helpers;
 

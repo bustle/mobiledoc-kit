@@ -1,5 +1,5 @@
-import RenderNode from 'content-kit-editor/models/render-node';
-import ElementMap from "../utils/element-map";
+import RenderNode from 'mobiledoc-kit/models/render-node';
+import ElementMap from '../utils/element-map';
 
 export default class RenderTree {
   constructor(rootPostNode) {

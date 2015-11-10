@@ -1,5 +1,5 @@
 {
-  "name": "content-kit-demo",
+  "name": "mobiledoc-kit-demo",
   "dependencies": {
     "ember": "1.13.7",
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.3",

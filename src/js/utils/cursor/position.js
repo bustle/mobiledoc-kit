@@ -1,8 +1,8 @@
 import {
   isTextNode, findOffsetInElement
-} from 'content-kit-editor/utils/dom-utils';
-import { DIRECTION } from 'content-kit-editor/utils/key';
-import assert from 'content-kit-editor/utils/assert';
+} from 'mobiledoc-kit/utils/dom-utils';
+import { DIRECTION } from 'mobiledoc-kit/utils/key';
+import assert from 'mobiledoc-kit/utils/assert';
 
 function isSection(postNode) {
   if (!(postNode && postNode.type)) { return false; }

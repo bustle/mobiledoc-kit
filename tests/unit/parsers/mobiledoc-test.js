@@ -1,6 +1,6 @@
-import MobiledocParser from 'content-kit-editor/parsers/mobiledoc';
-import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
-import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
+import MobiledocParser from 'mobiledoc-kit/parsers/mobiledoc';
+import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
+import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 
 const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
 const { module, test } = window.QUnit;

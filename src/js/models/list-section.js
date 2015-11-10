@@ -7,7 +7,7 @@ import { LIST_SECTION_TYPE } from './types';
 import Section from './_section';
 import {
   normalizeTagName
-} from 'content-kit-editor/utils/dom-utils';
+} from 'mobiledoc-kit/utils/dom-utils';
 
 export const VALID_LIST_SECTION_TAGNAMES = [
   'ul', 'ol'

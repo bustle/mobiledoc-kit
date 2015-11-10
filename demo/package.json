@@ -1,5 +1,5 @@
 {
-  "name": "content-kit-demo",
+  "name": "mobiledoc-kit-demo",
   "version": "0.0.0",
   "description": "Small description for content-kit-demo goes here",
   "private": true,
@@ -32,7 +32,7 @@
     "ember-cli-release": "0.2.3",
     "ember-cli-sri": "^1.0.3",
     "ember-cli-uglify": "^1.2.0",
-    "ember-content-kit": "^0.1.10",
+    "ember-mobiledoc-editor": "^0.1.10",
     "ember-disable-proxy-controllers": "^1.0.0",
     "ember-export-application-global": "^1.0.3",
     "mobiledoc-dom-renderer": "^0.1.13"

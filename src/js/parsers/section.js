@@ -4,36 +4,36 @@ const ELEMENT_NODE = 1;
 import {
   DEFAULT_TAG_NAME,
   VALID_MARKUP_SECTION_TAGNAMES
-} from 'content-kit-editor/models/markup-section';
+} from 'mobiledoc-kit/models/markup-section';
 
 import {
   VALID_LIST_SECTION_TAGNAMES
-} from 'content-kit-editor/models/list-section';
+} from 'mobiledoc-kit/models/list-section';
 
 import {
   VALID_LIST_ITEM_TAGNAMES
-} from 'content-kit-editor/models/list-item';
+} from 'mobiledoc-kit/models/list-item';
 
 import {
   LIST_SECTION_TYPE,
   LIST_ITEM_TYPE,
   MARKUP_SECTION_TYPE
-} from 'content-kit-editor/models/types';
+} from 'mobiledoc-kit/models/types';
 
 import {
   VALID_MARKUP_TAGNAMES
-} from 'content-kit-editor/models/markup';
+} from 'mobiledoc-kit/models/markup';
 
 import {
   getAttributes,
   normalizeTagName,
   isTextNode
-} from 'content-kit-editor/utils/dom-utils';
+} from 'mobiledoc-kit/utils/dom-utils';
 
 import {
   forEach,
   contains
-} from 'content-kit-editor/utils/array-utils';
+} from 'mobiledoc-kit/utils/array-utils';
 
 import {
   transformHTMLText

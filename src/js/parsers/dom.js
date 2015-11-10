@@ -13,9 +13,9 @@ import {
   forEach,
 } from '../utils/array-utils';
 
-import SectionParser from 'content-kit-editor/parsers/section';
+import SectionParser from 'mobiledoc-kit/parsers/section';
 import { getAttributes, walkTextNodes } from '../utils/dom-utils';
-import Markup from 'content-kit-editor/models/markup';
+import Markup from 'mobiledoc-kit/models/markup';
 
 const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/;
 

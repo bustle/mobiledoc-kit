@@ -1,8 +1,8 @@
-import { clearSelection } from 'content-kit-editor/utils/selection-utils';
-import { forEach } from 'content-kit-editor/utils/array-utils';
-import KEY_CODES from 'content-kit-editor/utils/keycodes';
-import { DIRECTION, MODIFIERS }  from 'content-kit-editor/utils/key';
-import { isTextNode } from 'content-kit-editor/utils/dom-utils';
+import { clearSelection } from 'mobiledoc-kit/utils/selection-utils';
+import { forEach } from 'mobiledoc-kit/utils/array-utils';
+import KEY_CODES from 'mobiledoc-kit/utils/keycodes';
+import { DIRECTION, MODIFIERS }  from 'mobiledoc-kit/utils/key';
+import { isTextNode } from 'mobiledoc-kit/utils/dom-utils';
 import { merge } from 'content-kit-utils';
 
 // walks DOWN the dom from node to childNodes, returning the element

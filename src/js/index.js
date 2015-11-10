@@ -1,14 +1,14 @@
 import Editor from './editor/editor';
 import ImageCard from './cards/image';
 
-const ContentKit = {
+const Mobiledoc = {
   Editor,
   ImageCard
 };
 
 export function registerGlobal(global) {
-  global.ContentKit = ContentKit;
+  global.Mobiledoc = Mobiledoc;
 }
 
 export { Editor };
-export default ContentKit;
+export default Mobiledoc;

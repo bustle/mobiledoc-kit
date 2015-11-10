@@ -20,7 +20,7 @@ prescription for output display.
 ## Usage
 
 Often Mobiledoc will be used with the
-[Content-Kit Editor](https://github.com/bustlelabs/content-kit-editor),
+[Mobiledoc Kit](https://github.com/bustlelabs/mobiledoc-kit),
 [Mobiledoc DOM Renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer),
 and/or [Mobiledoc HTML Renderer](https://github.com/bustlelabs/mobiledoc-html-renderer).
 

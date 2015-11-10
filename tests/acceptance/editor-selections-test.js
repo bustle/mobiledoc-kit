@@ -1,6 +1,6 @@
-import { Editor } from 'content-kit-editor';
+import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
-import { MOBILEDOC_VERSION } from 'content-kit-editor/renderers/mobiledoc';
+import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 
 const { test, module } = Helpers;
 
@@ -449,7 +449,7 @@ test('selecting text that touches bold text should not be considered bold', (ass
   assert.ok(editor.markupsInSelection.indexOf(bold) === -1, 'strong is not in selection');
 });
 
-// https://github.com/bustlelabs/content-kit-editor/issues/121
+// https://github.com/bustlelabs/mobiledoc-kit/issues/121
 test('selecting text that includes a 1-character marker and unbolding it', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, markup}) => {
     const b = markup('strong');
@@ -474,7 +474,7 @@ test('selecting text that includes a 1-character marker and unbolding it', (asse
   assert.hasNoElement('#editor strong', 'bold text is unboldened');
 });
 
-// see https://github.com/bustlelabs/content-kit-editor/issues/128
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/128
 test('selecting text that includes an empty section and applying markup to it', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([
@@ -499,7 +499,7 @@ test('selecting text that includes an empty section and applying markup to it', 
   assert.hasElement('#editor p strong:contains(abc)', 'bold is applied to text');
 });
 
-// see https://github.com/bustlelabs/content-kit-editor/issues/155
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/155
 test('editor#selectSections works when given an empty array', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);

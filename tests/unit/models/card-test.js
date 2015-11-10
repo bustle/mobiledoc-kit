@@ -1,6 +1,6 @@
 const {module, test} = QUnit;
 
-import PostNodeBuilder from 'content-kit-editor/models/post-node-builder';
+import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 
 let builder;
 module('Unit: Card', {

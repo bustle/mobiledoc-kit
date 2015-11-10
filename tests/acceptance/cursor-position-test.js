@@ -1,4 +1,4 @@
-import { Editor } from 'content-kit-editor';
+import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 
 const { test, module } = Helpers;
@@ -200,7 +200,7 @@ test('cursor focused on card wrapper with 0 offset', (assert) => {
                'Cursor tail is positioned at offset 0');
 });
      
-// see https://github.com/bustlelabs/content-kit-editor/issues/215
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/215
 test('selecting the entire editor element reports a selection range of the entire post', (assert) => {
   let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([
