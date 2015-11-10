@@ -37,14 +37,12 @@ const Position = class Position {
   constructor(section, offset=0) {
     this.section = section;
     this.offset = offset;
-    this._inCard = section.isCardSection;
   }
 
   static emptyPosition() {
     return {
       section: null,
       offset: 0,
-      _inCard: false,
       marker: null,
       offsetInTextNode: 0,
       _isEmpty: true,

@@ -242,3 +242,18 @@ test('useful error message when given invalid mobiledoc', (assert) => {
     new Editor({mobiledoc: verybadMobiledoc}); // jshint ignore:line
   }, /unable to parse.*mobiledoc/i);
 });
+
+test('activeSections of a rendered blank mobiledoc is an empty array', (assert) => {
+  let mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    sections: [
+      [],
+      []
+    ]
+  };
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.equal(0, editor.activeSections.length,
+               'empty activeSections');
+});
