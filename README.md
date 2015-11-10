@@ -1,5 +1,7 @@
 ## Mobiledoc Kit [![Build Status](https://travis-ci.org/bustlelabs/mobiledoc-kit.svg?branch=master)](https://travis-ci.org/bustlelabs/mobiledoc-kit)
 
+![Mobiledoc Logo](https://raw.githubusercontent.com/bustlelabs/mobiledoc-kit/master/demo/public/images/mobiledoc-logo-color-small.png)
+
 [![Join the chat at https://gitter.im/bustlelabs/mobiledoc-kit](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bustlelabs/mobiledoc-kit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Mobiledoc Kit (WARNING: beta!!) is a library for buildling WYSIWYG editors
