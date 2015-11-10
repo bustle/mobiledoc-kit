@@ -1,82 +1,27 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Mobiledoc Editor Demo</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<head>
-  <meta charset="utf-8">
-  <title>Content Kit Editor Demo 0.2.0</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+    <base href="/mobiledoc-kit/demo/" />
+<meta name="mobiledoc-kit-demo/config/environment" content="%7B%22modulePrefix%22%3A%22mobiledoc-kit-demo%22%2C%22environment%22%3A%22production%22%2C%22baseURL%22%3A%22/mobiledoc-kit/demo/%22%2C%22locationType%22%3A%22auto%22%2C%22EmberENV%22%3A%7B%22FEATURES%22%3A%7B%7D%7D%2C%22APP%22%3A%7B%22name%22%3A%22mobiledoc-kit-demo%22%2C%22version%22%3A%220.0.0+45e3b42b%22%7D%2C%22exportApplicationGlobal%22%3Afalse%7D" />
 
-  <!-- Include ContentKit-Editor CSS -->
-  <link href="../css/content-kit-editor.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/vendor-77cb4d0d47a436e43286713b8c27274e.css" integrity="sha256-PsNvZ7OHum3Olxh9evqa9ZtHKBCqFFm9nFAkRLMslIQ= sha512-pO9s4w/J5efW0xcO6+vEQHCivDtvc7dgQtnq6EmUKh+ABmO3hDR9zpbLfV1MsIKnhuEwEj9rhp5++i2GxIbjfw==" >
+    <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Merriweather+Sans:700" rel="stylesheet">
+    <link rel="stylesheet" href="assets/mobiledoc-kit-demo-620fb6a18fe78d1c8d9d26f0fbd65cf2.css" integrity="sha256-6ALa7PrBBskja/wIdl8DfXhqblBX3sb2XT2ZUzMM2gk= sha512-IX6ujV7PvZmUfpzrq/rYpb2EBsT+0nyaFmm6cXSvq12gnuhrWEgg7Z7bVrFZnBi7OheuXmJnKHUzeNgoWtUdaw==" >
 
-  <!-- Include fancy fonts (optional) -->
-  <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Merriweather+Sans:700" rel="stylesheet">
+    
+  </head>
+  <body>
+    
 
-  <!-- CSS just for the demo page -->
-  <link href="demo.css" rel="stylesheet">
-</head>
+    <script src="assets/vendor-cefe3d8c2a067de7056cf65a462a657f.js"></script>
+    <script src="assets/mobiledoc-kit-demo-a112d5b84948a8f2f84d807eef75a10c.js" integrity="sha256-GChPW8hh4bdXdJVIOhizx4OBYZjrGPry0vRO87N/JQY= sha512-/J5sbcpM2P28UwpayDadHDN7D0S5vFKprL5IjwVbCeltZQ7BzMtujWzAsbeYDZ8Fqoy0jjMSQo8ytC5R+zzEgg==" ></script>
 
-<body>
-  <div class="section">
-    <h1>Content-Kit<span class="headline-note">alpha!</span></h1>
-    <p class="subheadline">A WYSIWYG editor for rich content</p>
-  </div>
-  <hr>
-  <div class="section">
-    <p>
-      Content-Kit is a publishing solution designed for both text and
-      dynamically rendered cards. Posts are serialized into <a href="https://github.com/bustlelabs/content-kit-editor/blob/master/MOBILEDOC.md">Mobiledoc</a>, and
-      rendered to DOM in a reader's browser.
-    </p>
-    <p>
-      Read more on the <a href="https://github.com/bustlelabs/content-kit-editor">content-kit-editor</a>
-      GitHub repo, or on the <a href="http://madhatted.com/2015/7/31/announcing-content-kit-and-mobiledoc">announcement blog post</a>.
-    </p>
-  </div>
-  <div class="section">
-    <br>
-    <h2>Try a Demo</h2>
-  </div>
-  <div class="container">
-    <div class="pane">
-      <div class="output full-left">
-        <select id='select-mobiledoc'>
-          <option disabled>Load a new Mobiledoc</option>
-          <option value='simpleMobiledoc'>Simple text content</option>
-          <option value='emptyMobiledoc'>Empty mobiledoc</option>
-          <option value='simpleMobiledocWithList'>List example</option>
-          <option value='mobileDocWithSimpleCard'>Simple Card</option>
-          <option value='mobileDocWithInputCard'>Card with Input</option>
-          <option value='mobileDocWithSelfieCard'>Selfie Card</option>
-        </select>
-        <div id="editor">
-        </div>
-      </div>
-    </div>
-
-    <div class="pane">
-      <div class="output">
-        <h4>Mobiledoc Output</h4>
-        <pre class="serialized-mobiledoc-wrapper"><code id="serialized-mobiledoc">
-        </code></pre>
-      </div>
-    </div>
-    <div class="pane">
-      <div class="output full-right">
-        <h4>Rendered with <a href="https://github.com/bustlelabs/mobiledoc-dom-renderer">DOM-Renderer</a></h4>
-        <div id="rendered-mobiledoc">
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Include ContentKit JS -->
-  <script src="../global/content-kit-editor.js"></script>
-  <!-- JS just for the demo page -->
-  <script src="./mobiledoc-dom-renderer.js"></script>
-  <script src="./mobiledoc-html-renderer.js"></script>
-  <script src="./jquery/jquery.js"></script>
-  <script src="demo.js"></script>
-</body>
+    
+  </body>
 </html>
