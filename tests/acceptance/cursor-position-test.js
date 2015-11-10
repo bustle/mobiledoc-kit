@@ -199,7 +199,7 @@ test('cursor focused on card wrapper with 0 offset', (assert) => {
   assert.equal(offsets.tail.offset, 0,
                'Cursor tail is positioned at offset 0');
 });
-     
+
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/215
 test('selecting the entire editor element reports a selection range of the entire post', (assert) => {
   let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
@@ -221,14 +221,3 @@ test('selecting the entire editor element reports a selection range of the entir
             'tail section correct');
   assert.equal(offsets.tail.offset, 4, 'tail offset equals section length');
 });
-     
-//inside card wrapper div and before starting zwnj reports its position correctly');
-
-/*
-// These could maybe be done better with arrow keys to get in the cases we want
-// to reproduce. Jumping straight to the DOM nodes in not very acceptancy and may
-// obscure real browser behavior.
-test('cursor inside card wrapper div and after starting zwnj reports its position correctly');
-test('cursor inside card wrapper div and before ending zwnj reports its position correctly');
-test('cursor inside card wrapper div and after ending zwnj reports its position correctly');
-*/
