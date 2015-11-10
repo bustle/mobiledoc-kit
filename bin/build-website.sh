@@ -18,4 +18,4 @@ cp -R demo/dist/* website/demo/
 CURRENT_SHA="$(git rev-parse HEAD)"
 git add website/
 git commit -m "built website from $CURRENT_SHA"
-echo "Deployed to http://bustlelabs.github.io/mobiledoc-kit/demo/"
+echo "Done building."
