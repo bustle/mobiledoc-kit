@@ -26,7 +26,7 @@ editor used to be named Content-Kit), see these blog posts:
 * [Content-Kit: Programmatic Editing](http://madhatted.com/2015/8/25/content-kit-programmatic-editing)
 
 The Mobiledoc kit saves posts to
-**[Mobiledoc](https://github.com/bustlelabs/content-kit-editor/blob/master/MOBILEDOC.md)**.
+**[Mobiledoc](https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md)**.
 
 ### Usage
 
