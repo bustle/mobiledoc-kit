@@ -1,11 +1,12 @@
 import Ember from 'ember';
 import { cardsHash } from '../mobiledoc-cards/index';
+import Renderer from 'ember-mobiledoc-text-renderer';
 
 let { computed, run } = Ember;
 
 export default Ember.Component.extend({
   textRenderer: computed(function(){
-    return new window.MobiledocTextRenderer();
+    return new Renderer();
   }),
   didRender() {
     let renderer = this.get('textRenderer');
