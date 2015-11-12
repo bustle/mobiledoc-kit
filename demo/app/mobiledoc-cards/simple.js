@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 let { $ } = Ember;
 
-export let simpleCard = {
+export default {
   name: 'simple-card',
   display: {
     setup(element, options, env) {

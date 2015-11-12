@@ -1,21 +1,22 @@
 import Ember from 'ember';
 import { cardsHash } from '../mobiledoc-cards/index';
-import Renderer from 'ember-mobiledoc-dom-renderer';
+import Renderer from 'ember-mobiledoc-html-renderer';
 
 let { computed, run } = Ember;
 
 export default Ember.Component.extend({
-  domRenderer: computed(function(){
+  htmlRenderer: computed(function(){
     return new Renderer();
   }),
   didRender() {
-    let domRenderer = this.get('domRenderer');
+    let renderer = this.get('htmlRenderer');
     let mobiledoc = this.get('mobiledoc');
     run(() => {
       let target = this.$();
       target.empty();
       if (mobiledoc) {
-        domRenderer.render(mobiledoc, target[0], cardsHash);
+        let html = renderer.render(mobiledoc, cardsHash);
+        target.text(html);
       }
     });
   }

@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 let { $ } = Ember;
 
-export let selfieCard = {
+export default {
   name: 'selfie-card',
   display: {
     setup(element, options, env, payload) {
@@ -27,9 +27,11 @@ export let selfieCard = {
         );
       }
 
-      $('#go-edit').click(function() {
-        env.edit();
-      });
+      if (env.edit) {
+        $('#go-edit').click(function() {
+          env.edit();
+        });
+      }
     }
   },
   edit: {
@@ -38,9 +40,9 @@ export let selfieCard = {
 
       var vid = $('' +
         '<div>' +
-          '<video id="video" width="160" height="120" autoplay></video>' +
+          '<video id="video" width="400" height="300" autoplay></video>' +
           '<button id="snap">Snap Photo</button>' +
-          '<canvas id="canvas" width="160" height="120"></canvas>' +
+          '<canvas id="canvas" width="400" height="300"></canvas>' +
         '</div>' +
       '');
       element.appendChild(vid[0]);
@@ -70,11 +72,21 @@ export let selfieCard = {
         }
 
         $('#snap').click(function() {
-          context.drawImage(video, 0, 0, 160, 120);
+          context.drawImage(video, 0, 0, 400, 300);
           var src = canvas.toDataURL('image/png');
           env.save({src: src});
         });
       }, errBack);
+    }
+  },
+  html: {
+    setup(buffer, options, env, payload) {
+      buffer.push(`<img src="${payload.src}>"`);
+    }
+  },
+  text: {
+    setup() {
+      return "[ :-) ]";
     }
   }
 };
