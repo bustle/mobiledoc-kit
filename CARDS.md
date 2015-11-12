@@ -53,33 +53,6 @@ When being rendered by an editor (i.e., `env.isInEditor` is true), the env will 
   * `remove` [function] - Removes this card from the document
   * `postModel` [object] - The instance of this card's section in the editor's internal abstract tree. This can be used along with the mobiledoc-kit `postEditor` API to transform the card in other ways (for example, moving the card to a different section of the document)
 
-## Renderers
-
-All of the officially-supported mobiledoc renderers have the same signature and methods.
-To instantiate a renderer, call its constructor with an object of options that has any of the following optional properties:
-
-  * `cards` [array] - The cards that your mobiledoc includes and that the renderer will encounter
-  * `cardOptions` [object] - Options to be passed to the card `render` (or `edit`) function
-  * `unknownCardHandler` [function] - This function is called (with the same arguments as `render`) whenever the renderer encounters a card that doesn't
-    match one of the `cards` it has been provided
-
-An instance of a renderer has one method, `render`. This method accepts a mobiledoc and returns an object with two properties:
-  * `result` [mixed] - The rendered result. Its type depends on the renderer, and can be a DOM Node (dom renderer) or a string (html or text renderers)
-  * `teardown` [function] - Call this function to tear down the rendered mobiledoc. The dom renderer will remove the rendered dom from the screen. All renderers will call
-    the card teardown callbacks that were registered using `env.onTeardown(callbackFunction)`
-
-Example usage of a renderer:
-```js
-let renderer = new DOMRenderer({cards: [card1, card2], cardOptions: {foo: 'bar'});
-let rendered = renderer.render(mobiledoc);
-
-document.body.appendChild(renderered.result);
-
-// later...
-
-rendered.teardown(); // removes the rendered items, calls teardown hooks
-```
-
 ## Card examples
 
 Example dom card that renders an image:
