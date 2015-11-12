@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-import * as mobiledocs from '../mobiledocs/index';
+import mobiledocs from '../mobiledocs/index';
 
 let { $ } = Ember;
 
@@ -10,6 +10,7 @@ export default Ember.Controller.extend({
     let mobiledoc = mobiledocs['simple'];
     this.set('mobiledoc', mobiledoc);
     this.set('editedMobiledoc', mobiledoc);
+    this.set('rendererName', 'dom');
   },
 
   actions: {
@@ -20,6 +21,10 @@ export default Ember.Controller.extend({
 
       this.set('mobiledoc', mobiledoc);
       this.set('editedMobiledoc', mobiledoc);
+    },
+
+    setRenderer(rendererName) {
+      this.set('rendererName', rendererName);
     },
 
     didEdit(value) {

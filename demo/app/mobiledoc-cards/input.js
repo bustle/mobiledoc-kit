@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 let { $ } = Ember;
 
-export let inputCard = {
+export default {
   name: 'input-card',
   display: {
     setup(element, options, env, payload) {

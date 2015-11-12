@@ -6,6 +6,10 @@ module.exports = function(defaults) {
     // Add options here
   });
 
+  app.import('bower_components/codemirror/lib/codemirror.css');
+  app.import('bower_components/codemirror/lib/codemirror.js');
+  app.import('bower_components/codemirror/mode/javascript/javascript.js');
+
   // Use `app.import` to add additional libraries to the generated
   // output files.
   //

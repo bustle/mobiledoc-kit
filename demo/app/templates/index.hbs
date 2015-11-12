@@ -32,6 +32,7 @@
           cards=(mobiledoc-cards-list)
           on-change=(action 'didEdit')
         as |editor|}}
+        <button {{action editor.addCardInEditMode 'image-card'}}>Add image</button>
         {{mobiledoc-toolbar editor=editor}}
       {{/mobiledoc-editor}}
     </div>
@@ -47,8 +48,14 @@
   </div>
   <div class="pane">
     <div class="output full-right">
-      <h4>Rendered with <a href="https://github.com/bustlelabs/mobiledoc-dom-renderer">DOM-Renderer</a></h4>
-      {{mobiledoc-dom-renderer mobiledoc=editedMobiledoc}}
+      <h4>Rendered with {{rendererName}} renderer</h4>
+      <ul>
+        <li>Use <button {{action 'setRenderer' 'dom'}}>DOM-Renderer</button></li>
+        <li>Use <button {{action 'setRenderer' 'html'}}>HTML Renderer</button></li>
+        <li>Use <button {{action 'setRenderer' 'text'}}>Text Renderer</button></li>
+      </ul>
+      <hr>
+      {{component (concat 'mobiledoc-' rendererName '-renderer') mobiledoc=editedMobiledoc}}
     </div>
   </div>
 
