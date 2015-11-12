@@ -19,10 +19,13 @@ prescription for output display.
 
 ## Usage
 
-Often Mobiledoc will be used with the
-[Mobiledoc Kit](https://github.com/bustlelabs/mobiledoc-kit),
-[Mobiledoc DOM Renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer),
-and/or [Mobiledoc HTML Renderer](https://github.com/bustlelabs/mobiledoc-html-renderer).
+Often Mobiledoc will be used with one or more of:
+
+* [Mobiledoc Kit](https://github.com/bustlelabs/mobiledoc-kit) to author an editor
+  * [Ember Mobiledoc Editor](https://github.com/bustlelabs/ember-mobiledoc-editor) is one such editor 
+* [Mobiledoc DOM Renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer)
+* [Mobiledoc HTML Renderer](https://github.com/bustlelabs/mobiledoc-html-renderer)
+* [Mobiledoc Text Renderer](https://github.com/bustlelabs/mobiledoc-text-renderer)
 
 ## Specification
 
