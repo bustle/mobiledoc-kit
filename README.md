@@ -246,6 +246,7 @@ in `demo/`. To run the demo:
 #### Releasing
 
 * `npm version patch` or `minor` or `major`
+* `npm run update-changelog`
 * `npm run build`
 * `git push <origin> --follow-tags`
 * `npm publish`

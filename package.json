@@ -8,7 +8,8 @@
     "test": "testem ci",
     "build": "rm -rf dist && broccoli build dist",
     "build-website": "./bin/build-website.sh",
-    "deploy-website": "./bin/deploy-website.sh"
+    "deploy-website": "./bin/deploy-website.sh",
+    "update-changelog": "./node_modules/conventional-changelog/cli.js -i CHANGELOG.md -r 0 --overwrite && git add CHANGELOG.md && git commit -m 'Update changelog'"
   },
   "keywords": [
     "html",
@@ -39,6 +40,7 @@
     "broccoli-multi-builder": "^0.2.8",
     "broccoli-test-builder": "^0.1.0",
     "content-kit-utils": "^0.2.0",
+    "conventional-changelog": "^0.5.1",
     "jquery": "^2.1.4",
     "testem": "^0.8.4"
   },
