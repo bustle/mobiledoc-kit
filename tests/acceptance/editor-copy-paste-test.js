@@ -246,7 +246,7 @@ test('copy sets html & text for pasting externally', (assert) => {
     "heading",
     "h2 subheader",
     "The text"
-  ].join(''), 'gets plain text');
+  ].join('\n'), 'gets plain text');
 
   assert.ok(html.indexOf("<h1>heading") !== -1,
             'html has h1');

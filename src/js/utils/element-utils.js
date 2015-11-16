@@ -3,14 +3,6 @@ import {
   normalizeTagName
 } from 'mobiledoc-kit/utils/dom-utils';
 
-function createDiv(className) {
-  var div = document.createElement('div');
-  if (className) {
-    div.className = className;
-  }
-  return div;
-}
-
 function getEventTargetMatchingTag(tagName, target, container) {
   tagName = normalizeTagName(tagName);
   // Traverses up DOM from an event target to find the node matching specifed tag
@@ -76,7 +68,6 @@ function setData(element, name, value) {
 
 export {
   setData,
-  createDiv,
   getEventTargetMatchingTag,
   getElementRelativeOffset,
   getElementComputedStyleNumericProp,
