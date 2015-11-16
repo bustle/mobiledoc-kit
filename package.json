@@ -40,6 +40,8 @@
     "broccoli-test-builder": "^0.1.0",
     "content-kit-utils": "^0.2.0",
     "jquery": "^2.1.4",
+    "mobiledoc-html-renderer": "^0.1.8",
+    "mobiledoc-text-renderer": "^0.1.1",
     "testem": "^0.8.4"
   },
   "main": "dist/commonjs/mobiledoc-kit/index.js"
