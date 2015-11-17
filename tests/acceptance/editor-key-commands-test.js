@@ -1,6 +1,7 @@
 import { Editor } from 'mobiledoc-kit';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Helpers from '../test-helpers';
+import { detectIE } from '../helpers/browsers';
 
 const { module, test } = Helpers;
 
@@ -37,36 +38,42 @@ function testStatefulCommand({modifier, key, command, markupName}) {
                       `text wrapped in ${markupName}`);
   });
 
-  test(`${command} applies ${markupName} to next entered text`, (assert) => {
-    let initialText = 'something';
-    const mobiledoc = Helpers.mobiledoc.build(
-      ({post, markupSection, marker}) => post([
-        markupSection('p', [marker(initialText)])
-      ]));
+  if (!detectIE()) {
+    // FIXME: IE does not respect the current typing styles (such as an
+    // `execCommand('bold', false, null)`) when calling the `insertText`
+    // command. Skip these tests in IE until we can implement non-parsing
+    // text entry.
+    test(`${command} applies ${markupName} to next entered text`, (assert) => {
+      let initialText = 'something';
+      const mobiledoc = Helpers.mobiledoc.build(
+        ({post, markupSection, marker}) => post([
+          markupSection('p', [marker(initialText)])
+        ]));
 
-    editor = new Editor({mobiledoc});
-    editor.render(editorElement);
+      editor = new Editor({mobiledoc});
+      editor.render(editorElement);
 
-    assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
-    Helpers.dom.moveCursorTo(
-      editor.post.sections.head.markers.head.renderNode.element,
-      initialText.length);
-    Helpers.dom.triggerKeyCommand(editor, key, modifier);
-    Helpers.dom.insertText(editor, 'z');
+      assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
+      Helpers.dom.moveCursorTo(
+        editor.post.sections.head.markers.head.renderNode.element,
+        initialText.length);
+      Helpers.dom.triggerKeyCommand(editor, key, modifier);
+      Helpers.dom.insertText(editor, 'z');
 
-    let changedMobiledoc = editor.serialize();
-    let expectedMobiledoc = Helpers.mobiledoc.build(
-      ({post, markupSection, marker, markup: buildMarkup}) => {
-        let markup = buildMarkup(markupName);
-        return post([
-          markupSection('p', [
-            marker(initialText),
-            marker('z', [markup])
-          ])
-        ]);
+      let changedMobiledoc = editor.serialize();
+      let expectedMobiledoc = Helpers.mobiledoc.build(
+        ({post, markupSection, marker, markup: buildMarkup}) => {
+          let markup = buildMarkup(markupName);
+          return post([
+            markupSection('p', [
+              marker(initialText),
+              marker('z', [markup])
+            ])
+          ]);
+      });
+      assert.deepEqual(changedMobiledoc, expectedMobiledoc);
     });
-    assert.deepEqual(changedMobiledoc, expectedMobiledoc);
-  });
+  }
 }
 
 testStatefulCommand({
