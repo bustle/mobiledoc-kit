@@ -50,6 +50,7 @@ const defaults = {
   spellcheck: true,
   autofocus: true,
   cards: [],
+  atoms: [],
   cardOptions: {},
   unknownCardHandler: ({env}) => {
     throw new Error(`Unknown card encountered: ${env.name}`);
@@ -94,7 +95,7 @@ class Editor {
     });
     this._isMutationObserved = false;
     this._parser   = new DOMParser(this.builder);
-    this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
+    this._renderer = new Renderer(this, this.cards, this.atoms, this.unknownCardHandler, this.cardOptions);
 
     this.post = this.loadPost();
     this._renderTree = new RenderTree(this.post);

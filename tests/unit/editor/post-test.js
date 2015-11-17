@@ -34,7 +34,7 @@ function postEditorWithMobiledoc(treeFn) {
 
 function renderBuiltAbstract(post) {
   mockEditor.post = post;
-  let renderer = new EditorDomRenderer(mockEditor, [], () => {}, {});
+  let renderer = new EditorDomRenderer(mockEditor, [], [], () => {}, {});
   let renderTree = new RenderTree(post);
   renderer.render(renderTree);
   return mockEditor;
