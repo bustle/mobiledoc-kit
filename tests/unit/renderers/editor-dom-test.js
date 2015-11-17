@@ -10,9 +10,9 @@ import placeholderImageSrc from 'mobiledoc-kit/utils/placeholder-image-src';
 let builder;
 
 let renderer;
-function render(renderTree, cards=[]) {
+function render(renderTree, cards=[], atoms=[]) {
   let editor = {};
-  renderer = new Renderer(editor, cards);
+  renderer = new Renderer(editor, cards, atoms);
   return renderer.render(renderTree);
 }
 
@@ -195,6 +195,54 @@ test('renders a post with image', (assert) => {
   assert.equal(renderTree.rootElement.innerHTML, `<img src="${url}">`);
 });
 
+test('renders a post with atom', (assert) => {
+  let post = Helpers.postAbstract.build(({ markupSection, post, atom }) => {
+    return post([markupSection('p', [atom('mention', '@bob', {})])]);
+  });
+
+  const renderTree = new RenderTree(post);
+  render(renderTree, [], [
+    {
+      name: 'mention',
+      type: 'dom',
+      render({fragment, value/*, options, env, payload*/}) {
+        let textNode = document.createTextNode(value);
+        fragment.appendChild(textNode);
+      }
+    }
+  ]);
+  assert.equal(renderTree.rootElement.innerHTML, `<p><span class="-mobiledoc-kit__atom">@bob</span></p>`);
+});
+
+test('renders a post with mixed markups and atoms', (assert) => {
+  let post = Helpers.postAbstract.build(({ markupSection, post, atom, marker, markup }) => {
+    let b = markup('B');
+    let i = markup('I');
+
+    return post([markupSection('p', [
+      marker('bold', [b]),
+      marker('italic ', [b, i]),
+      atom('mention', '@bob', {}, [b, i]),
+      marker(' bold', [b]),
+      builder.createMarker('text.')
+    ])]);
+  });
+
+  const renderTree = new RenderTree(post);
+  render(renderTree, [], [
+    {
+      name: 'mention',
+      type: 'dom',
+      render({fragment, value/*, options, env, payload*/}) {
+        let textNode = document.createTextNode(value);
+        fragment.appendChild(textNode);
+      }
+    }
+  ]);
+
+  assert.equal(renderTree.rootElement.innerHTML, `<p><b>bold<i>italic <span class="-mobiledoc-kit__atom">@bob</span></i> bold</b>text.</p>`);
+});
+
 test('renders a card section', (assert) => {
   let post = builder.createPost();
   let cardSection = builder.createCardSection('my-card');
@@ -238,9 +286,9 @@ test('renders a card section', (assert) => {
  *    section
  *       |
  *       |
- *       |      
+ *       |
  *     marker1 [b]
- *       |       
+ *       |
  *     <text1> + <text2>
  */
 
@@ -431,7 +479,7 @@ test('contiguous markers have overlapping markups', (assert) => {
 });
 
 test('renders and rerenders list items', (assert) => {
-  const post = Helpers.postAbstract.build(({post, listSection, listItem, marker}) => 
+  const post = Helpers.postAbstract.build(({post, listSection, listItem, marker}) =>
     post([
       listSection('ul', [
         listItem([marker('first item')]),

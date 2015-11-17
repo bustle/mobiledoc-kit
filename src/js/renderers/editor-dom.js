@@ -1,5 +1,6 @@
 import CardNode from 'mobiledoc-kit/models/card-node';
 import { detect, forEach } from 'mobiledoc-kit/utils/array-utils';
+import AtomNode from 'mobiledoc-kit/models/atom-node';
 import {
   POST_TYPE,
   MARKUP_SECTION_TYPE,
@@ -7,7 +8,8 @@ import {
   LIST_ITEM_TYPE,
   MARKER_TYPE,
   IMAGE_SECTION_TYPE,
-  CARD_TYPE
+  CARD_TYPE,
+  ATOM_TYPE
 } from '../models/types';
 import { startsWith, endsWith } from '../utils/string-utils';
 import { addClassName } from '../utils/dom-utils';
@@ -109,6 +111,21 @@ function renderCard() {
   return { wrapper, cardElement };
 }
 
+function renderAtom(element, previousRenderNode) {
+  let atomElement = document.createElement('span');
+  addClassName(atomElement, '-mobiledoc-kit__atom');
+
+  if (previousRenderNode) {
+    let previousSibling = previousRenderNode.element;
+    let previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
+    element.insertBefore(atomElement, previousSiblingPenultimate.nextSibling);
+  } else {
+    element.insertBefore(atomElement, element.firstChild);
+  }
+
+  return atomElement;
+}
+
 function getNextMarkerElement(renderNode) {
   let element = renderNode.element.parentNode;
   let marker = renderNode.postNode;
@@ -206,10 +223,25 @@ function validateCards(cards=[]) {
   return cards;
 }
 
+function validateAtoms(atoms=[]) {
+  forEach(atoms, atom => {
+    assert(
+      `Atom "${atom.name}" must define type "dom", has: "${atom.type}"`,
+      atom.type === 'dom'
+    );
+    assert(
+      `Card "${atom.name}" must define \`render\` method`,
+      !!atom.render
+    );
+  });
+  return atoms;
+}
+
 class Visitor {
-  constructor(editor, cards, unknownCardHandler, options) {
+  constructor(editor, cards, atoms, unknownCardHandler, options) {
     this.editor = editor;
     this.cards = validateCards(cards);
+    this.atoms = validateAtoms(atoms);
     this.unknownCardHandler = unknownCardHandler;
     this.options = options;
   }
@@ -334,6 +366,35 @@ class Visitor {
     const initialMode = section._initialMode;
     cardNode[initialMode]();
   }
+
+  [ATOM_TYPE](renderNode, atomModel) {
+    let parentElement;
+
+    if (renderNode.prev) {
+      parentElement = getNextMarkerElement(renderNode.prev);
+    } else {
+      parentElement = renderNode.parent.element;
+    }
+
+    const {editor, options} = this;
+    const atomElement = renderAtom(parentElement, renderNode.prev);
+    const atom = detect(this.atoms, atom => atom.name === atomModel.name);
+
+    if (atom) {
+      const atomNode = new AtomNode(
+        editor, atom, atomModel, atomElement, options
+      );
+
+      atomNode.render();
+
+      renderNode.atomNode = atomNode;
+      renderNode.element = atomElement;
+    } else {
+      const env = { name: atomModel.name };
+      this.unknownAtomHandler( // TODO - pass this in...
+        atomElement, options, env, atomModel.payload);
+    }
+  }
 }
 
 let destroyHooks = {
@@ -384,6 +445,14 @@ let destroyHooks = {
     removeRenderNodeSectionFromParent(renderNode, section);
     removeRenderNodeElementFromParent(renderNode);
   }
+
+  // [ATOM_TYPE](renderNode, atom) {
+  //   if (renderNode.atomNode) {
+  //     renderNode.atomNode.teardown();
+  //   }
+  //
+  //   // TODO - same/similar logic as markers?
+  // }
 };
 
 // removes children from parentNode (a RenderNode) that are scheduled for removal
@@ -416,9 +485,9 @@ function lookupNode(renderTree, parentNode, postNode, previousNode) {
 }
 
 export default class Renderer {
-  constructor(editor, cards, unknownCardHandler, options) {
+  constructor(editor, cards, atoms, unknownCardHandler, options) {
     this.editor = editor;
-    this.visitor = new Visitor(editor, cards, unknownCardHandler, options);
+    this.visitor = new Visitor(editor, cards, atoms, unknownCardHandler, options);
     this.nodes = [];
     this.hasRendered = false;
   }
