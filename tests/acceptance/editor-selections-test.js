@@ -280,12 +280,12 @@ test('selecting text bounded by space and typing replaces it', (assert) => {
   Helpers.dom.selectText('trick', editorElement);
   Helpers.dom.insertText(editor, 'X');
 
-  assert.hasElement('#editor p:contains(one X pony)',
-                    'new text present');
+  assert.equal(editor.post.sections.head.text, 'one X pony',
+               'new text present');
 
   Helpers.dom.insertText(editor, 'Y');
-  assert.hasElement('#editor p:contains(one XY pony)',
-                    'cursor positioned correctly');
+  assert.equal(editor.post.sections.head.text, 'one XY pony',
+               'further new text present');
 });
 
 test('selecting all text across sections and hitting enter deletes and moves cursor to empty section', (assert) => {
