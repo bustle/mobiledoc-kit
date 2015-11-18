@@ -3,14 +3,16 @@
   * [ ] Change card shape to object with `type`, `name`, `render` and optional `edit` properties
   * [ ] Card's `type` is validated by renderer (dom renderer cannot render 'text', e.g.)
   * [ ] Change arguments passed by editor to card's `render` (or `edit`) method
-    * [ ] single argument object with `name`, `buffer`, `isInEditor`, `options`, `editorEnv` and `payload` properties
+    * [ ] single argument object with `name`, `onTeardown`, `isInEditor`, `options`, `editorEnv` and `payload` properties
   * [ ] Return value of card's `render` (or `edit`) method is appended/concatenated by renderer
-  * [ ] card can register teardown callback by calling `buffer.onTeardown(teardownFn)`
+  * [ ] card can register teardown callback by calling `onTeardown(teardownFn)`
   * [ ] Change editor-dom renderer to clear child elements from card element on teardown
-  * [ ] Renderer `constructor` signature changes to accept cards (array), cardOptions (object) arguments
+  * [ ] Renderer `constructor` signature changes to accept options object with: cards, atoms, cardOptions, unknownCardHandler, editor (for editor-dom)
   * [ ] Renderer `render` instance method accepts `mobiledoc` argument, returns `rendered` object with 2 props:
     * [ ] `result` property (which is a dom node or string, depending)
     * [ ] `teardown` method with no args tears down rendered mobiledoc (removing dom when applicable, calling registered card teardown callbacks when applicable)
+  * [ ] `unknownCardHandler` method is called whenever a renderer encounters an unknown card
+
 
 ## Projects that must change
 
@@ -26,7 +28,7 @@
 Every card is an object that *must* define the following properties:
  * `render`: A function called by the renderer to display the card
  * `type`: A string. The render context (currently the only known render contexts are 'dom', 'html' and 'text')
- * `name`: A string. This is the same string that is in DOM
+ * `name`: A string. This is the same string that is in the mobiledoc
 
 Additionally a card *may* define the following property:
 
@@ -37,7 +39,7 @@ Additionally a card *may* define the following property:
 The `render` method (and the `edit` method if applicable) receives a single argument that is an object with the following properties:
 
   * `name`
-  * `buffer` An object supplied by the renderer that provides an `onTeardown` method to register a teardown callback
+  * `onTeardown` A method used to register a teardown callback
   * `options` The card options passed to the renderer
   * `isInEditor` True when being rendered in an editor, false otherwise
   * `editorEnv`
@@ -46,7 +48,7 @@ The `render` method (and the `edit` method if applicable) receives a single argu
     * `cancel` Method with no args. Exit edit mode without saving payload
     * `edit` Method with no args. Change from display mode to edit mode
     * `remove` Method with no args. Remove this card from the post abstract
-    * `section` The post abstract cardSection for this card (can be used with the `postEditor` to manipulate this card in other ways)
+    * `postModel` The post abstract cardSection for this card (can be used with the `postEditor` to manipulate this card in other ways)
   * `payload` The payload in the mobiledoc for this card
 
 ### Rendering a card
@@ -56,19 +58,24 @@ The **return value** of the `render` method is the rendered result of the card. 
 ### Tearing down a card
 
 The 80% use case is likely that most cards will not need to clean up after themselves. The editor-dom renderer will clear child nodes, which should account for most use cases.
-When cards need to manage their own cleanup, however, they can register a teardown callback by calling the `onTeardown` method on the `buffer` with a function to be called on teardown, e.g.:
+When cards need to manage their own cleanup, however, they can register a teardown callback by calling the `onTeardown` method with a function to be called on teardown, e.g.:
 
 ```
-buffer.onTeardown(() => doTeardownStuff());
+onTeardown(() => doTeardownStuff());
 ```
 
 ### Renderer
 
 ### Change Renderer `constructor` signature
 
-The renderer constructor will change to accept `cards` (array) and `cardOptions` (object):
+The renderer constructor will change to accept an options object with the following properties:
+  * `cards` (array), default: []
+  * `cardOptions` (object), default: {}
+  * `unknownCardHandler` method called when encountering an unknown card
+  * `atoms` (array), default: []
+  * `editor` optional, used by the editor-dom renderer
 ```
-let render = new Renderer(cards=[], cardOptions={});
+let renderer = new Renderer({cards, cardOptions, unknownCardHandler, atoms});
 ```
 
 ### Change Renderer `render` signature and return value
@@ -88,3 +95,6 @@ Ensure that `render` is stateless for the dom, html and text renderers (this is 
 
 An instance of a renderer should be reusable for rendering multiple mobiledocs (this simplifies "inception" cards that also render mobiledoc), which means its `render` method must also be stateless.
 
+### `unknownCardHandler` method
+
+This method is called with the same arguments as a normal card's `render` method.
