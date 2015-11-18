@@ -7,7 +7,7 @@ const { module, test } = Helpers;
 
 const ZWNJ = '\u200c';
 
-const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
+import placeholderImageSrc from 'mobiledoc-kit/utils/placeholder-image-src';
 let builder;
 
 function render(renderTree, cards=[]) {
@@ -16,7 +16,7 @@ function render(renderTree, cards=[]) {
   return renderer.render(renderTree);
 }
 
-module("Unit: Renderer: Editor-Dom", {
+module('Unit: Renderer: Editor-Dom', {
   beforeEach() {
     builder = new PostNodeBuilder();
   }
@@ -67,7 +67,7 @@ test("renders a dirty post with un-rendered sections", (assert) => {
   },
   {
     name: 'image',
-    section: (builder) => builder.createImageSection(DATA_URL)
+    section: (builder) => builder.createImageSection(placeholderImageSrc)
   },
   {
     name: 'card',
@@ -162,7 +162,7 @@ test('renders a post with multiple markers', (assert) => {
 
 
 test('renders a post with image', (assert) => {
-  let url = DATA_URL;
+  let url = placeholderImageSrc;
   let post = builder.createPost();
   let section = builder.createImageSection(url);
   post.sections.append(section);
@@ -177,10 +177,9 @@ test('renders a card section', (assert) => {
   let cardSection = builder.createCardSection('my-card');
   let card = {
     name: 'my-card',
-    display: {
-      setup(element) {
-        element.innerHTML = 'I am a card';
-      }
+    type: 'dom',
+    render() {
+      return document.createTextNode('I am a card');
     }
   };
   post.sections.append(cardSection);
@@ -517,19 +516,18 @@ test('includes card sections in renderTree element map', (assert) => {
   );
   const cards = [{
     name: 'simple-card',
-    display: {
-      setup(element) {
-        element.setAttribute('id', 'simple-card');
-      }
+    type: 'dom',
+    render() {
+      return $('<div id="simple-card"></div>')[0];
     }
   }];
 
   const renderTree = new RenderTree(post);
   render(renderTree, cards);
 
-  $('#qunit-fixture')[0].appendChild(renderTree.rootElement);
+  $('#qunit-fixture').append(renderTree.rootElement);
 
-  const element = $('#simple-card').parent()[0];
+  const element = $('#simple-card')[0].parentNode.parentNode;
   assert.ok(!!element, 'precond - simple card is rendered');
   assert.ok(!!renderTree.getElementRenderNode(element),
             'has render node for card element');

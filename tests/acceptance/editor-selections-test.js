@@ -402,12 +402,9 @@ test('selecting text that includes a card section and deleting deletes card sect
   );
   const cards = [{
     name: 'simple-card',
-    display: {
-      setup(element) {
-        const span = document.createElement('span');
-        span.setAttribute('id', 'card-el');
-        element.appendChild(span);
-      }
+    type: 'dom',
+    render() {
+      return $('<span id="card-el"></span>')[0];
     }
   }];
   editor = new Editor({mobiledoc, cards});

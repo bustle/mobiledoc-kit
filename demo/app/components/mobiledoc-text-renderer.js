@@ -1,26 +1,36 @@
 import Ember from 'ember';
-import { cardsHash } from '../mobiledoc-cards/index';
+import cards from '../mobiledoc-cards/text';
 import Renderer from 'ember-mobiledoc-text-renderer';
 
-let { computed, run } = Ember;
+let { run } = Ember;
+
+let renderer = new Renderer({cards});
+
+let addHTMLEntitites = (str) => {
+  return str.replace(/</g,  '&lt;')
+            .replace(/>/g,  '&gt;')
+            .replace(/\n/g, '<br>');
+};
 
 export default Ember.Component.extend({
-  textRenderer: computed(function(){
-    return new Renderer();
-  }),
   didRender() {
-    let renderer = this.get('textRenderer');
     let mobiledoc = this.get('mobiledoc');
+    if (!mobiledoc) {
+      return;
+    }
     run(() => {
-      let target = this.$();
-      target.empty();
-      if (mobiledoc) {
-        let text = renderer.render(mobiledoc, cardsHash);
-        text = text.replace(/</g, '&lt;')
-                   .replace(/>/g,'&gt;')
-                   .replace(/\n/g, '<br>');
-        target.html(text);
+      if (this._teardownRender) {
+        this._teardownRender();
+        this._teardownRender = null;
       }
+
+      let target = this.$();
+      let {result: text, teardown} = renderer.render(mobiledoc);
+
+      text = addHTMLEntitites(text);
+      target.html(text);
+
+      this._teardownRender = teardown;
     });
   }
 });

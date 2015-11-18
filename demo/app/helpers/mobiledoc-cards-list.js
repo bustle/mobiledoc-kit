@@ -1,8 +1,8 @@
 import Ember from 'ember';
-import { cardsList } from '../mobiledoc-cards/index';
+import cards from '../mobiledoc-cards/dom';
 
 export function mobiledocCardsList() {
-  return cardsList;
+  return cards;
 }
 
 export default Ember.Helper.helper(mobiledocCardsList);

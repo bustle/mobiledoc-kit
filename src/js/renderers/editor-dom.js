@@ -1,5 +1,5 @@
 import CardNode from 'mobiledoc-kit/models/card-node';
-import { detect } from 'mobiledoc-kit/utils/array-utils';
+import { detect, forEach } from 'mobiledoc-kit/utils/array-utils';
 import {
   POST_TYPE,
   MARKUP_SECTION_TYPE,
@@ -12,6 +12,7 @@ import {
 import { startsWith, endsWith } from '../utils/string-utils';
 import { addClassName } from '../utils/dom-utils';
 import { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section';
+import assert from '../utils/assert';
 
 export const NO_BREAK_SPACE = '\u00A0';
 export const SPACE = ' ';
@@ -155,17 +156,50 @@ function removeRenderNodeSectionFromParent(renderNode, section) {
 }
 
 function removeRenderNodeElementFromParent(renderNode) {
-  if (renderNode.element.parentNode) {
+  if (renderNode.element && renderNode.element.parentNode) {
     renderNode.element.parentNode.removeChild(renderNode.element);
   }
+}
+
+function validateCards(cards=[]) {
+  forEach(cards, card => {
+    assert(
+      `Card "${card.name}" must define type "dom", has: "${card.type}"`,
+      card.type === 'dom'
+    );
+    assert(
+      `Card "${card.name}" must define \`render\` method`,
+      !!card.render
+    );
+  });
+  return cards;
 }
 
 class Visitor {
   constructor(editor, cards, unknownCardHandler, options) {
     this.editor = editor;
-    this.cards = cards;
+    this.cards = validateCards(cards);
     this.unknownCardHandler = unknownCardHandler;
     this.options = options;
+  }
+
+  _findCard(cardName) {
+    let card = detect(this.cards, card => card.name === cardName);
+    return card || this._createUnknownCard(cardName);
+  }
+
+  _createUnknownCard(cardName) {
+    assert(
+      `Unknown card "${cardName}" found, but no unknownCardHandler is defined`,
+      !!this.unknownCardHandler
+    );
+
+    return {
+      name: cardName,
+      type: 'dom',
+      render: this.unknownCardHandler,
+      edit:   this.unknownCardHandler
+    };
   }
 
   [POST_TYPE](renderNode, post, visit) {
@@ -251,23 +285,19 @@ class Visitor {
   [CARD_TYPE](renderNode, section) {
     const originalElement = renderNode.element;
     const {editor, options} = this;
-    const card = detect(this.cards, card => card.name === section.name);
+
+    const card = this._findCard(section.name);
 
     let { wrapper, cardElement } = renderCard();
     renderNode.element = wrapper;
     attachRenderNodeElementToDOM(renderNode, originalElement);
 
-    if (card) {
-      const cardNode = new CardNode(
-        editor, card, section, cardElement, options);
-      renderNode.cardNode = cardNode;
-      const initialMode = section._initialMode;
-      cardNode[initialMode]();
-    } else {
-      const env = { name: section.name };
-      this.unknownCardHandler(
-        cardElement, options, env, section.payload);
-    }
+    const cardNode = new CardNode(
+      editor, card, section, cardElement, options);
+    renderNode.cardNode = cardNode;
+
+    const initialMode = section._initialMode;
+    cardNode[initialMode]();
   }
 }
 
@@ -363,6 +393,12 @@ export default class Renderer {
     this.nodes = [];
   }
 
+  destroy() {
+    let renderNode = this.renderTree.rootNode;
+    let force = true;
+    removeDestroyedChildren(renderNode, force);
+  }
+
   visit(renderTree, parentNode, postNodes, visitAll=false) {
     let previousNode;
     postNodes.forEach(postNode => {
@@ -375,6 +411,7 @@ export default class Renderer {
   }
 
   render(renderTree) {
+    this.renderTree = renderTree;
     let renderNode = renderTree.rootNode;
     let method, postNode;
 

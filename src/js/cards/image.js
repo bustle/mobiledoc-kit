@@ -2,16 +2,11 @@ import placeholderImageSrc from 'mobiledoc-kit/utils/placeholder-image-src';
 
 export default {
   name: 'image',
+  type: 'dom',
 
-  display: {
-    setup(element, options, env, payload) {
-      let img = document.createElement('img');
-      img.src = payload.src || placeholderImageSrc;
-      element.appendChild(img);
-      return img;
-    },
-    teardown(element) {
-      element.parentNode.removeChild(element);
-    }
+  render({env, options, payload}) {
+    let img = document.createElement('img');
+    img.src = payload.src || placeholderImageSrc;
+    return img;
   }
 };

@@ -86,14 +86,12 @@ test('#insertSection can insert card, render it in display mode', (assert) => {
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let displayedCard = false;
+  let displayedCard, editedCard;
   let cards = [{
     name: 'sample-card',
-    display: {
-      setup() {
-        displayedCard = true;
-      }
-    }
+    type: 'dom',
+    render() { displayedCard = true; },
+    edit() { editedCard = true; }
   }];
 
   editor = new Editor({mobiledoc, cards});
@@ -112,20 +110,12 @@ test('#insertSection inserts card, can render it in edit mode using #editCard', 
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let displayedCard = false,
-      editCard = false;
+  let displayedCard, editedCard;
   let cards = [{
     name: 'sample-card',
-    display: {
-      setup() {
-        displayedCard = true;
-      }
-    },
-    edit: {
-      setup() {
-        editCard = true;
-      }
-    }
+    type: 'dom',
+    render() { displayedCard = true; },
+    edit() { editedCard = true; }
   }];
 
   editor = new Editor({mobiledoc, cards});
@@ -137,7 +127,7 @@ test('#insertSection inserts card, can render it in edit mode using #editCard', 
     editor.editCard(cardSection);
   });
 
-  assert.ok(editCard, 'rendered card in edit mode');
+  assert.ok(editedCard, 'rendered card in edit mode');
   assert.ok(!displayedCard, 'did not render in display mode');
 });
 
@@ -146,20 +136,12 @@ test('after inserting a section, can use editor#editCard to switch it to edit mo
     return post([cardSection('sample-card')]);
   });
 
-  let displayedCard = false,
-      editedCard = false;
+  let displayedCard, editedCard;
   let cards = [{
     name: 'sample-card',
-    display: {
-      setup() {
-        displayedCard = true;
-      }
-    },
-    edit: {
-      setup() {
-        editedCard = true;
-      }
-    }
+    type: 'dom',
+    render() { displayedCard = true; },
+    edit() { editedCard = true; }
   }];
 
   editor = new Editor({mobiledoc, cards});
@@ -180,21 +162,12 @@ test('can call editor#displayCard to swtich card into display mode', (assert) =>
     return post([cardSection('sample-card')]);
   });
 
-  let displayedCard = false,
-      editedCard = false;
-
+  let displayedCard, editedCard;
   let cards = [{
     name: 'sample-card',
-    display: {
-      setup() {
-        displayedCard = true;
-      }
-    },
-    edit: {
-      setup() {
-        editedCard = true;
-      }
-    }
+    type: 'dom',
+    render() { displayedCard = true; },
+    edit() { editedCard = true; }
   }];
 
   editor = new Editor({mobiledoc, cards});
