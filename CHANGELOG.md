@@ -1,9 +1,26 @@
-<a name="0.6.0-beta4"></a>
-# 0.6.0-beta4 (2015-11-16)
+<a name="0.6.1"></a>
+## 0.6.1 (2015-11-18)
 
 
-* Add `update-changelog` npm script, update readme ([3980946](https://github.com/bustlelabs/mobiledoc-kit/commit/3980946))
-* add changelog ([937e0e1](https://github.com/bustlelabs/mobiledoc-kit/commit/937e0e1))
+
+
+<a name="0.6.1"></a>
+## 0.6.1 (2015-11-18)
+
+
+* 0.6.1 ([ff637c1](https://github.com/bustlelabs/mobiledoc-kit/commit/ff637c1))
+* Merge pull request #237 from mixonic/retain-edit-mode ([7b781de](https://github.com/bustlelabs/mobiledoc-kit/commit/7b781de))
+* Retain edit mode on cloned cards ([ebe19b8](https://github.com/bustlelabs/mobiledoc-kit/commit/ebe19b8))
+
+
+
+<a name="0.6.0"></a>
+# 0.6.0 (2015-11-16)
+
+
+* 0.6.0 ([0001015](https://github.com/bustlelabs/mobiledoc-kit/commit/0001015))
+* Add `update-changelog` npm script, update readme ([29e5278](https://github.com/bustlelabs/mobiledoc-kit/commit/29e5278))
+* add changelog ([1aa18a6](https://github.com/bustlelabs/mobiledoc-kit/commit/1aa18a6))
 * add logo to demo assets ([45e3b42](https://github.com/bustlelabs/mobiledoc-kit/commit/45e3b42))
 * Add mobiledoc logo ([88e9902](https://github.com/bustlelabs/mobiledoc-kit/commit/88e9902))
 * Add select option for codemirror card ([208f09d](https://github.com/bustlelabs/mobiledoc-kit/commit/208f09d))
@@ -12,12 +29,15 @@
 * Fix project in a link ([e7bcab2](https://github.com/bustlelabs/mobiledoc-kit/commit/e7bcab2))
 * Merge pull request #225 from mixonic/update-demo ([cdeb973](https://github.com/bustlelabs/mobiledoc-kit/commit/cdeb973))
 * Merge pull request #227 from bustlelabs/update-demos ([fb16ec0](https://github.com/bustlelabs/mobiledoc-kit/commit/fb16ec0))
+* Merge pull request #230 from bustlelabs/add-changelog ([852350e](https://github.com/bustlelabs/mobiledoc-kit/commit/852350e))
+* Merge pull request #231 from bustlelabs/use-html-and-text-renderers-205 ([16326b0](https://github.com/bustlelabs/mobiledoc-kit/commit/16326b0))
 * Update demo for mobiledoc 0.2.0-beta ([e078eeb](https://github.com/bustlelabs/mobiledoc-kit/commit/e078eeb))
 * Update demos, add different renderers ([1d9b124](https://github.com/bustlelabs/mobiledoc-kit/commit/1d9b124))
 * Update links to mobiledoc renderers ([d5d573e](https://github.com/bustlelabs/mobiledoc-kit/commit/d5d573e))
 * update website build/deploy script messages ([34beec1](https://github.com/bustlelabs/mobiledoc-kit/commit/34beec1))
 * Use ember-mobiledoc-*-renderer addons ([a7f5940](https://github.com/bustlelabs/mobiledoc-kit/commit/a7f5940))
 * use ember-mobiledoc-dom-renderer ([fb8fd2d](https://github.com/bustlelabs/mobiledoc-kit/commit/fb8fd2d))
+* Use html and text mobiledoc renderers for copy/paste ([6a1bbf7](https://github.com/bustlelabs/mobiledoc-kit/commit/6a1bbf7)), closes [#205](https://github.com/bustlelabs/mobiledoc-kit/issues/205)
 
 
 
