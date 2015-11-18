@@ -2,6 +2,7 @@ import { Editor } from 'mobiledoc-kit';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import Position from 'mobiledoc-kit/utils/cursor/position';
 import Helpers from '../test-helpers';
+import { CARD_MODES } from 'mobiledoc-kit/models/cards';
 
 const { test, module } = Helpers;
 
@@ -441,4 +442,53 @@ test('editor ignores events when focus is inside a card', (assert) => {
   Helpers.dom.triggerEvent(p, 'input');
 
   assert.equal(inputEvents, 1, 'editor handles input event outside of card');
+});
+
+test('a moved card retains its inital editing mode', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, cardSection}) => {
+    let card = cardSection('simple-card');
+    card.setInitialMode(CARD_MODES.EDIT);
+    return post([
+      markupSection(),
+      card
+    ]);
+  });
+
+  editor = new Editor({mobiledoc, cards: [simpleCard]});
+  editor.render(editorElement);
+
+  assert.hasElement('#edit-button', 'precond - card is in edit mode');
+
+  editor.run(postEditor => {
+    let card = editor.post.sections.tail;
+    postEditor.moveSectionUp(card);
+  });
+
+  assert.hasElement('#edit-button', 'card is still in edit mode');
+});
+
+test('a moved card retains its current editing mode', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, cardSection}) => {
+    return post([
+      markupSection(),
+      cardSection('simple-card')
+    ]);
+  });
+
+  editor = new Editor({mobiledoc, cards: [simpleCard]});
+  editor.render(editorElement);
+
+  assert.hasNoElement('#edit-button', 'precond - card is not in edit mode');
+
+  let card = editor.post.sections.tail;
+  editor.editCard(card);
+
+  assert.hasElement('#edit-button', 'precond - card is in edit mode');
+
+  editor.run(postEditor => {
+    let card = editor.post.sections.tail;
+    postEditor.moveSectionUp(card);
+  });
+
+  assert.hasElement('#edit-button', 'card is still in edit mode');
 });
