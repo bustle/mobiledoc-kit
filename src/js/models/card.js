@@ -24,8 +24,16 @@ export default class Card extends Section {
   }
 
   clone() {
-    const payload = shallowCopyObject(this.payload);
-    return this.builder.createCardSection(this.name, payload);
+    let payload = shallowCopyObject(this.payload);
+    let card = this.builder.createCardSection(this.name, payload);
+    // If this card is currently rendered, clone the mode it is
+    // currently in as the default mode of the new card.
+    let mode = this._initialMode;
+    if (this.renderNode && this.renderNode.cardNode) {
+      mode = this.renderNode.cardNode.mode;
+    }
+    card.setInitialMode(mode);
+    return card;
   }
 
   /**
