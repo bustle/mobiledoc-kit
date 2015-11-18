@@ -3,7 +3,7 @@
   * [ ] Change card shape to object with `type`, `name`, `render` and optional `edit` properties
   * [ ] Card's `type` is validated by renderer (dom renderer cannot render 'text', e.g.)
   * [ ] Change arguments passed by editor to card's `render` (or `edit`) method
-    * [ ] single argument object with `name`, `onTeardown`, `isInEditor`, `options`, `editorEnv` and `payload` properties
+    * [ ] single argument object with `env`, `options` and `payload` properties
   * [ ] Return value of card's `render` (or `edit`) method is appended/concatenated by renderer
   * [ ] card can register teardown callback by calling `onTeardown(teardownFn)`
   * [ ] Change editor-dom renderer to clear child elements from card element on teardown
@@ -38,22 +38,23 @@ Additionally a card *may* define the following property:
 
 The `render` method (and the `edit` method if applicable) receives a single argument that is an object with the following properties:
 
-  * `name`
-  * `onTeardown` A method used to register a teardown callback
+  * `env`:
+    * env *always* contains these properties:
+      * `name` -- the name of the card in the mobiledoc (i.e., 'embed-card')
+      * `onTeardown` A method used to register a teardown callback
+      * `isInEditor` True when being rendered in an editor, false otherwise
+    * env only contains these properties *when rendered by an editor*:
+      * `save` Method with the signature `(newPayload, transition=false)`. Replaces payload with `newPayload` and transitions to display mode if `transition` is true
+      * `cancel` Method with no args. Exit edit mode without saving payload
+      * `edit` Method with no args. Change from display mode to edit mode
+      * `remove` Method with no args. Remove this card from the post abstract
+      * `postModel` The post abstract cardSection for this card (can be used with the `postEditor` to manipulate this card in other ways)
   * `options` The card options passed to the renderer
-  * `isInEditor` True when being rendered in an editor, false otherwise
-  * `editorEnv`
-    * editorEnv will be an object populated, when being rendered by an editor, with the following properties:
-    * `save` Method with the signature `(newPayload, transition=false)`. Replaces payload with `newPayload` and transitions to display mode if `transition` is true
-    * `cancel` Method with no args. Exit edit mode without saving payload
-    * `edit` Method with no args. Change from display mode to edit mode
-    * `remove` Method with no args. Remove this card from the post abstract
-    * `postModel` The post abstract cardSection for this card (can be used with the `postEditor` to manipulate this card in other ways)
   * `payload` The payload in the mobiledoc for this card
 
 ### Rendering a card
 
-The **return value** of the `render` method is the rendered result of the card. This should either be a dom node (for cards with type 'dom') or a string (for cards with type 'html' or 'text'). Renderers should validate that the return value is the correct type.
+The **return value** of the `render` method is the rendered result of the card. This should either be a dom node (for cards with type 'dom') or a string (for cards with type 'html' or 'text'). Renderers should validate that the return value is the correct type when given. A render method may also return `undefined` (this is the case for the ember-mobiledoc-dom-renderer, for instance, since it uses hooks from `options` to defer card rendering to ember components), which should also be considered a valid return value.
 
 ### Tearing down a card
 
@@ -61,7 +62,16 @@ The 80% use case is likely that most cards will not need to clean up after thems
 When cards need to manage their own cleanup, however, they can register a teardown callback by calling the `onTeardown` method with a function to be called on teardown, e.g.:
 
 ```
-onTeardown(() => doTeardownStuff());
+card = {
+  name: ...,
+  type: ...,
+  render({env, options, payload}) {
+    let { name, onTeardown } = env;
+    onTeardown(() => {
+      console.log('tearing down ' + name + ' card');
+    });
+  }
+};
 ```
 
 ### Renderer
