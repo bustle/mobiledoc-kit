@@ -104,7 +104,7 @@ test('typing in empty post correctly adds a section to it', (assert) => {
   assert.hasElement('#editor');
   assert.hasNoElement('#editor p');
 
-  Helpers.dom.moveCursorTo($('#editor')[0]);
+  Helpers.dom.moveCursorTo(editorElement);
   Helpers.dom.insertText(editor, 'X');
   assert.hasElement('#editor p:contains(X)');
   Helpers.dom.insertText(editor, 'Y');
@@ -149,6 +149,7 @@ test('typing when on the start of a card is blocked', (assert) => {
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/215
 test('select-all and type text works ok', (assert) => {
+  let done = assert.async();
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([
       markupSection('p', [marker('abc')])
@@ -164,7 +165,9 @@ test('select-all and type text works ok', (assert) => {
   assert.hasElement('#editor p:contains(abc)', 'precond - renders p');
 
   Helpers.dom.insertText(editor, 'X');
-
-  assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
-  assert.hasElement('#editor p:contains(X)', 'inserts text');
+  setTimeout(function() {
+    assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
+    assert.hasElement('#editor p:contains(X)', 'inserts text');
+    done();
+  }, 0);
 });

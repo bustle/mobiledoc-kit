@@ -1,6 +1,7 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
+import { supportsSelectionExtend } from '../helpers/browsers';
 
 const { test, module } = Helpers;
 
@@ -169,57 +170,62 @@ module('Acceptance: Cursor Movement w/ shift', {
   }
 });
 
-test('left arrow when at the end of a card moves the cursor across the card', assert => {
-  let mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-    return post([
-      cardSection('my-card')
-    ]);
+if (supportsSelectionExtend()) {
+  // FIXME: Older versions of IE do not support `extends` on selection
+  // objects, and thus cannot support highlighting left until we implement
+  // selections without native APIs.
+  test('left arrow when at the end of a card moves the selection across the card', assert => {
+    let mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
+      return post([
+        cardSection('my-card')
+      ]);
+    });
+    editor = new Editor({mobiledoc, cards});
+    editor.render(editorElement);
+
+    // Before zwnj
+    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
+    Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
+    let { offsets } = editor.cursor;
+
+    assert.ok(offsets.head.section === editor.post.sections.head,
+              'selection head is positioned on first section');
+    assert.ok(offsets.tail.section === editor.post.sections.head,
+              'selection tail is positioned on first section');
+    assert.equal(offsets.head.offset, 0,
+                 'selection head is positioned at offset 0');
+    assert.equal(offsets.tail.offset, 1,
+                 'selection tail is positioned at offset 1');
+
+    // After zwnj
+    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
+    Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
+    offsets = editor.cursor.offsets;
+
+    assert.ok(offsets.head.section === editor.post.sections.head,
+              'selection head is positioned on first section');
+    assert.ok(offsets.tail.section === editor.post.sections.head,
+              'selection tail is positioned on first section');
+    assert.equal(offsets.head.offset, 0,
+                 'selection head is positioned at offset 0');
+    assert.equal(offsets.tail.offset, 1,
+                 'selection tail is positioned at offset 1');
+
+    // On wrapper
+    Helpers.dom.moveCursorTo(editorElement.firstChild, 2);
+    Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
+    offsets = editor.cursor.offsets;
+
+    assert.ok(offsets.head.section === editor.post.sections.head,
+              'selection head is positioned on first section');
+    assert.ok(offsets.tail.section === editor.post.sections.head,
+              'selection tail is positioned on first section');
+    assert.equal(offsets.head.offset, 0,
+                 'selection head is positioned at offset 0');
+    assert.equal(offsets.tail.offset, 1,
+                 'selection tail is positioned at offset 1');
   });
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
-
-  // Before zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
-  Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-  let { offsets } = editor.cursor;
-
-  assert.ok(offsets.head.section === editor.post.sections.head,
-            'selection head is positioned on first section');
-  assert.ok(offsets.tail.section === editor.post.sections.head,
-            'selection tail is positioned on first section');
-  assert.equal(offsets.head.offset, 0,
-               'selection head is positioned at offset 0');
-  assert.equal(offsets.tail.offset, 1,
-               'selection tail is positioned at offset 1');
-
-  // After zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
-  Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-  offsets = editor.cursor.offsets;
-
-  assert.ok(offsets.head.section === editor.post.sections.head,
-            'selection head is positioned on first section');
-  assert.ok(offsets.tail.section === editor.post.sections.head,
-            'selection tail is positioned on first section');
-  assert.equal(offsets.head.offset, 0,
-               'selection head is positioned at offset 0');
-  assert.equal(offsets.tail.offset, 1,
-               'selection tail is positioned at offset 1');
-
-  // On wrapper
-  Helpers.dom.moveCursorTo(editorElement.firstChild, 2);
-  Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-  offsets = editor.cursor.offsets;
-
-  assert.ok(offsets.head.section === editor.post.sections.head,
-            'selection head is positioned on first section');
-  assert.ok(offsets.tail.section === editor.post.sections.head,
-            'selection tail is positioned on first section');
-  assert.equal(offsets.head.offset, 0,
-               'selection head is positioned at offset 0');
-  assert.equal(offsets.tail.offset, 1,
-               'selection tail is positioned at offset 1');
-});
+}
 
 test('right arrow moves the cursor across the card', assert => {
   let mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {

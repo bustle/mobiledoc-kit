@@ -39,7 +39,7 @@ import { DIRECTION } from 'mobiledoc-kit/utils/key';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
-const ELEMENT_EVENTS = ['keydown', 'keyup', 'input', 'cut', 'copy', 'paste'];
+const ELEMENT_EVENTS = ['keydown', 'keyup', 'cut', 'copy', 'paste'];
 const DOCUMENT_EVENTS= ['mouseup'];
 
 const defaults = {
@@ -59,7 +59,8 @@ const CALLBACK_QUEUES = {
   DID_UPDATE: 'didUpdate',
   WILL_RENDER: 'willRender',
   DID_RENDER: 'didRender',
-  CURSOR_DID_CHANGE: 'cursorDidChange'
+  CURSOR_DID_CHANGE: 'cursorDidChange',
+  DID_REPARSE: 'didReparse'
 };
 
 /**
@@ -88,6 +89,10 @@ class Editor {
 
     this._parser   = new DOMParser(this.builder);
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
+
+    this._handleLastKeydownExpansion = () => {
+      this.handleExpansion(this._lastKeydownEvent);
+    };
 
     this.post = this.loadPost();
     this._renderTree = new RenderTree(this.post);
@@ -157,7 +162,9 @@ class Editor {
     this.run(() => {});
     this.rerender();
 
-    if (this.autofocus) { this.element.focus(); }
+    if (this.autofocus) {
+      this.element.focus();
+    }
   }
 
   _addTooltip() {
@@ -305,7 +312,6 @@ class Editor {
    */
   handleInput() {
     this.reparse();
-    this.didUpdate();
   }
 
   reparse() {
@@ -316,6 +322,7 @@ class Editor {
     // postEditor.
     this.run(() => {});
     this.rerender();
+    this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
     this.didUpdate();
   }
 
@@ -362,7 +369,9 @@ class Editor {
 
   _reparseCurrentSection() {
     const {headSection:currentSection } = this.cursor.offsets;
-    this._parser.reparseSection(currentSection, this._renderTree);
+    if (currentSection) {
+      this._parser.reparseSection(currentSection, this._renderTree);
+    }
   }
 
   serialize() {
@@ -376,6 +385,9 @@ class Editor {
 
   destroy() {
     this._isDestroyed = true;
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
+    }
     this.removeAllEventListeners();
     this.removeAllViews();
     this._renderer.destroy();
@@ -510,6 +522,15 @@ class Editor {
   }
 
   _setupListeners() {
+    this.mutationObserver = new MutationObserver(() => {
+      this.handleInput();
+    });
+    this.mutationObserver.observe(this.element, {
+      characterData: true,
+      childList: true,
+      subtree: true
+    });
+
     ELEMENT_EVENTS.forEach(eventName => {
       this.addEventListener(this.element, eventName,
         (...args) => this.handleEvent(eventName, ...args)
@@ -619,7 +640,8 @@ class Editor {
         break;
     }
 
-    this.handleExpansion(event);
+    this._lastKeydownEvent = event;
+    this.addCallbackOnce(CALLBACK_QUEUES.DID_REPARSE, this._handleLastKeydownExpansion);
   }
 
   /**

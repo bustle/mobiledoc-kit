@@ -17,4 +17,15 @@ export default class LifecycleCallbacksMixin {
     }
     this.callbackQueues[queueName].push(callback);
   }
+  addCallbackOnce(queueName, callback) {
+    if (!queueName) { throw new Error('Must pass queue name to addCallbackOnce'); }
+    let queue = this.callbackQueues[queueName];
+    if (!queue) {
+      this.callbackQueues[queueName] = queue = [];
+    }
+    let index = queue.indexOf(callback);
+    if (index === -1) {
+      queue.push(callback);
+    }
+  }
 }
