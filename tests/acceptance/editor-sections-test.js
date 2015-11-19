@@ -484,7 +484,7 @@ test('deleting when after deletion there is a trailing space positions cursor at
   Helpers.dom.insertText(editor, text);
 
   setTimeout(() => {
-    assert.equal($('#editor p:eq(0)').text(), `first ${text}`, 'character is placed after space');
+    assert.equal(editor.post.sections.head.text, `first ${text}`, 'character is placed after space');
 
     done();
   });
@@ -504,7 +504,7 @@ test('deleting when after deletion there is a leading space positions cursor at 
   Helpers.dom.insertText(editor, text);
 
   setTimeout(() => {
-    assert.equal($('#editor p:eq(1)').text(), `${text} section`, 'correct text after insertion');
+    assert.equal(editor.post.sections.tail.text, `${text} section`, 'correct text after insertion');
     done();
   });
 });
