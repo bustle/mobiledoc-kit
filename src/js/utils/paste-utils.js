@@ -1,5 +1,5 @@
 /* global JSON */
-import MobiledocParser from '../parsers/mobiledoc';
+import mobiledocParsers from '../parsers/mobiledoc';
 import HTMLParser from '../parsers/html';
 import HTMLRenderer from 'mobiledoc-html-renderer';
 import TextRenderer from 'mobiledoc-text-renderer';
@@ -31,7 +31,7 @@ export function parsePostFromPaste(pasteEvent, builder, cardParsers=[]) {
   if (mobiledocRegex.test(html)) {
     let mobiledocString = html.match(mobiledocRegex)[1];
     mobiledoc = JSON.parse(mobiledocString);
-    post = new MobiledocParser(builder).parse(mobiledoc);
+    post = mobiledocParsers.parse(builder, mobiledoc);
   } else {
     post = new HTMLParser(builder, {cardParsers}).parse(html);
   }

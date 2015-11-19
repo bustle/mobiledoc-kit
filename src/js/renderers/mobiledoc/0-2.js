@@ -1,5 +1,5 @@
-import {visit, visitArray, compile} from '../utils/compiler';
-import { objectToSortedKVArray } from '../utils/array-utils';
+import {visit, visitArray, compile} from '../../utils/compiler';
+import { objectToSortedKVArray } from '../../utils/array-utils';
 import {
   POST_TYPE,
   MARKUP_SECTION_TYPE,
@@ -9,7 +9,7 @@ import {
   MARKUP_TYPE,
   IMAGE_SECTION_TYPE,
   CARD_TYPE
-} from '../models/types';
+} from '../../models/types';
 
 export const MOBILEDOC_VERSION = '0.2.0';
 export const MOBILEDOC_MARKUP_SECTION_TYPE = 1;
