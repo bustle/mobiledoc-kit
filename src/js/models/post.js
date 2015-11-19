@@ -2,7 +2,7 @@ import { POST_TYPE } from './types';
 import LinkedList from 'mobiledoc-kit/utils/linked-list';
 import { forEach, compact } from 'mobiledoc-kit/utils/array-utils';
 import Set from 'mobiledoc-kit/utils/set';
-import MobiledocRenderer from 'mobiledoc-kit/renderers/mobiledoc';
+import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc';
 
 export default class Post {
   constructor() {
@@ -227,6 +227,6 @@ export default class Post {
       }
       post.sections.append(newSection);
     });
-    return MobiledocRenderer.render(post);
+    return mobiledocRenderers.render(post);
   }
 }

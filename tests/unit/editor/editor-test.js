@@ -236,11 +236,13 @@ test('useful error message when given invalid mobiledoc', (assert) => {
   assert.throws(() => {
     new Editor({mobiledoc: badMobiledoc}); // jshint ignore:line
   }, /unable to parse.*mobiledoc/i);
+});
 
+test('useful error message when given bad version of mobiledoc', (assert) => {
   let verybadMobiledoc = "not mobiledoc";
   assert.throws(() => {
     new Editor({mobiledoc: verybadMobiledoc}); // jshint ignore:line
-  }, /unable to parse.*mobiledoc/i);
+  }, /Unknown version of mobiledoc parser requested/i);
 });
 
 test('activeSections of a rendered blank mobiledoc is an empty array', (assert) => {

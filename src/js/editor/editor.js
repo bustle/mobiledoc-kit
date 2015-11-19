@@ -6,12 +6,12 @@ import ImageCard from '../cards/image';
 import Key from '../utils/key';
 import EventEmitter from '../utils/event-emitter';
 
-import MobiledocParser from '../parsers/mobiledoc';
+import mobiledocParsers from '../parsers/mobiledoc';
 import HTMLParser from '../parsers/html';
 import DOMParser from '../parsers/dom';
 import Renderer  from 'mobiledoc-kit/renderers/editor-dom';
 import RenderTree from 'mobiledoc-kit/models/render-tree';
-import MobiledocRenderer from '../renderers/mobiledoc';
+import mobiledocRenderers from '../renderers/mobiledoc';
 
 import { mergeWithOptions } from 'content-kit-utils';
 import { clearChildNodes, addClassName } from '../utils/dom-utils';
@@ -104,7 +104,7 @@ class Editor {
 
   loadPost() {
     if (this.mobiledoc) {
-      return new MobiledocParser(this.builder).parse(this.mobiledoc);
+      return mobiledocParsers.parse(this.builder, this.mobiledoc);
     } else if (this.html) {
       if (typeof this.html === 'string') {
         return new HTMLParser(this.builder).parse(this.html);
@@ -366,7 +366,7 @@ class Editor {
   }
 
   serialize() {
-    return MobiledocRenderer.render(this.post);
+    return mobiledocRenderers.render(this.post);
   }
 
   removeAllViews() {
