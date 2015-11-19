@@ -1,6 +1,6 @@
 import PostAbstractHelpers from './post-abstract';
 import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc';
-import MobiledocRenderer_0_2 from 'mobiledoc-kit/renderers/mobiledoc/0-2';
+import MobiledocRenderer_0_2, { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 
 /*
  * usage:
@@ -13,12 +13,13 @@ import MobiledocRenderer_0_2 from 'mobiledoc-kit/renderers/mobiledoc/0-2';
  *  )
  */
 function build(treeFn, version) {
+  let post = PostAbstractHelpers.build(treeFn);
   switch (version) {
-    case '0.2.0':
-      return MobiledocRenderer_0_2.render(PostAbstractHelpers.build(treeFn));
+    case MOBILEDOC_VERSION:
+      return MobiledocRenderer_0_2.render(post);
     case undefined:
     case null:
-      return mobiledocRenderers.render(PostAbstractHelpers.build(treeFn));
+      return mobiledocRenderers.render(post);
     default:
       throw new Error(`Unknown version of mobiledoc renderer requested: ${version}`);
   }

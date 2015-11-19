@@ -5,7 +5,7 @@ export { MOBILEDOC_VERSION };
 export default {
   render(post, version) {
     switch (version) {
-      case '0.2.0':
+      case MOBILEDOC_VERSION:
       case undefined:
       case null:
         return MobiledocRenderer_0_2.render(post);
