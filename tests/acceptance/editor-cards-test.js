@@ -2,7 +2,7 @@ import { Editor } from 'mobiledoc-kit';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import Position from 'mobiledoc-kit/utils/cursor/position';
 import Helpers from '../test-helpers';
-import { CARD_MODES } from 'mobiledoc-kit/models/cards';
+import { CARD_MODES } from 'mobiledoc-kit/models/card';
 
 const { test, module } = Helpers;
 
@@ -447,7 +447,6 @@ test('editor ignores events when focus is inside a card', (assert) => {
 test('a moved card retains its inital editing mode', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, cardSection}) => {
     let card = cardSection('simple-card');
-    card.setInitialMode(CARD_MODES.EDIT);
     return post([
       markupSection(),
       card
@@ -455,6 +454,7 @@ test('a moved card retains its inital editing mode', (assert) => {
   });
 
   editor = new Editor({mobiledoc, cards: [simpleCard]});
+  editor.post.sections.tail.setInitialMode(CARD_MODES.EDIT);
   editor.render(editorElement);
 
   assert.hasElement('#edit-button', 'precond - card is in edit mode');
