@@ -11,12 +11,14 @@ export function setClipboardCopyData(copyEvent, editor) {
   const range = cursor.offsets;
   const mobiledoc = post.cloneRange(range);
 
-  let cards = editor.cards;
-  let innerHTML = new HTMLRenderer().render(mobiledoc, cards);
+  let unknownCardHandler = () => {}; // ignore unknown cards
+  let {result: innerHTML } = new HTMLRenderer({unknownCardHandler})
+                                     .render(mobiledoc);
 
   const html =
     `<div data-mobiledoc='${JSON.stringify(mobiledoc)}'>${innerHTML}</div>`;
-  const plain = new TextRenderer().render(mobiledoc, cards);
+  const {result: plain} = new TextRenderer({unknownCardHandler})
+                      .render(mobiledoc);
 
   clipboardData.setData('text/plain', plain);
   clipboardData.setData('text/html', html);

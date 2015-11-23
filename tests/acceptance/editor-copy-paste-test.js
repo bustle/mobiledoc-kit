@@ -5,14 +5,9 @@ const { test, module } = Helpers;
 
 const cards = [{
   name: 'my-card',
-  display: {
-    setup() {},
-    teardown() {}
-  },
-  edit: {
-    setup() {},
-    teardown() {}
-  }
+  type: 'dom',
+  render() {},
+  edit() {}
 }];
 
 let editor, editorElement;
@@ -168,10 +163,9 @@ test('copy-paste can copy cards', (assert) => {
   });
   let cards = [{
     name: 'test-card',
-    display: {
-      setup(element, options, env, payload) {
-        $(element).append(`<div class='${payload.foo}'>${payload.foo}</div>`);
-      }
+    type: 'dom',
+    render({payload}) {
+      return $(`<div class='${payload.foo}'>${payload.foo}</div>`)[0];
     }
   }];
   editor = new Editor({mobiledoc, cards});

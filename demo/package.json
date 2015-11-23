@@ -35,8 +35,8 @@
     "ember-mobiledoc-editor": "0.2.0-beta1",
     "ember-disable-proxy-controllers": "^1.0.0",
     "ember-export-application-global": "^1.0.3",
-    "ember-mobiledoc-dom-renderer": "^0.1.1",
-    "ember-mobiledoc-html-renderer": "^0.1.0",
-    "ember-mobiledoc-text-renderer": "^0.1.0"
+    "ember-mobiledoc-dom-renderer": "^0.2.1",
+    "ember-mobiledoc-html-renderer": "^0.2.0",
+    "ember-mobiledoc-text-renderer": "^0.2.0"
   }
 }

@@ -48,7 +48,7 @@ const defaults = {
   autofocus: true,
   cards: [],
   cardOptions: {},
-  unknownCardHandler: (element, options, env) => {
+  unknownCardHandler: ({env}) => {
     throw new Error(`Unknown card encountered: ${env.name}`);
   },
   mobiledoc: null,
@@ -378,6 +378,7 @@ class Editor {
     this._isDestroyed = true;
     this.removeAllEventListeners();
     this.removeAllViews();
+    this._renderer.destroy();
   }
 
   /**

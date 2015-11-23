@@ -5,14 +5,9 @@ const { test, module } = Helpers;
 
 const cards = [{
   name: 'my-card',
-  display: {
-    setup() {},
-    teardown() {}
-  },
-  edit: {
-    setup() {},
-    teardown() {}
-  }
+  type: 'dom',
+  render() {},
+  edit() {}
 }];
 
 let editor, editorElement;
