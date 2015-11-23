@@ -1,133 +1,110 @@
-## Mobiledoc Cards
+# Mobiledoc Cards
 
 Cards are an API supported by
 [Mobiledoc Kit](https://github.com/bustlelabs/mobiledoc-kit),
 the [Mobiledoc format](https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md),
-the [Mobiledoc DOM Renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer)
-and [Mobiledoc HTML Renderer](https://github.com/bustlelabs/mobiledoc-html-renderer).
+the [Mobiledoc DOM Renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer),
+the [Mobiledoc HTML Renderer](https://github.com/bustlelabs/mobiledoc-html-renderer),
+and the [Mobiledoc Text Renderer](https://github.com/bustlelabs/mobiledoc-text-renderer).
 
-A card is an object with a name and at least one of several hooks defined. For example:
 
+## Card format
+
+A card is a javascript object with 3 *required* properties:
+
+  * `name` [string] - The name of this card in the mobiledoc
+  * `type` [string] - The output of this card. Valid values are 'dom', 'html', and 'text'
+  * `render` [function] - Invoked by the renderer to render this card
+
+And one optional property, if this card will be used by an editor:
+
+  * `edit` [function] - Has the same signature as `render`, and can be invoked when the card
+    is being rendered by an editor (as opposed to rendered for display) to switch between "display"
+    and "edit" modes for a card in the editor.
+
+## Card rendering
+
+The `render` and (when present) `edit` functions on a card have the same signature. They
+are called by an instance of a renderer and passed an object with the following three properties:
+
+  * `env` [object] - A set of environment-specific properties
+  * `options` [object] - Rendering options that were passed to the renderer (as `cardOptions`) when it was instantiated
+  * `payload` [object] - The data payload for this card from the mobiledoc
+
+The return value of the `render` (and `edit`) functions will be inserted by the renderer into the rendered mobiledoc.
+The return value can be null if a card does not have any output. If there is a return value it
+must be of the correct type (a DOM Node for the dom renderer, a string of html or text for the html or text renderers, respectively).
+
+#### `env`
+
+`env` always has the following properties:
+
+  * `isInEditor` [boolean] - true when the card is being rendered by an editor (not being rendered for display)
+  * `name` [string] - the name of the card
+  * `onTeardown` [function] - The card can pass a callback function: `onTeardown(callbackFn)`. The callback will be called when the rendered content is torn down.
+
+When being rendered by an editor (i.e., `env.isInEditor` is true), the env will have the following additional properties:
+
+  * `edit` [function] - This function can be called to switch the card to "edit" mode. It is a no-op if the card is already in edit mode
+  * `save` [function] - Used to save a new payload for a card. Typically called when the card is in "edit" mode to update the payload and transition
+                    back to "display" mode. The function signature is `save(newPayload, transition=true)`. When `transition` is false the payload is
+                    updated but the card is not switched to display mode
+  * `cancel` [function] - Called to transition from "edit" to "display" mode without changing the payload. It is a no-op if the card is in display mode already
+  * `remove` [function] - Removes this card from the document
+  * `postModel` [object] - The instance of this card's section in the editor's internal abstract tree. This can be used along with the mobiledoc-kit `postEditor` API to transform the card in other ways (for example, moving the card to a different section of the document)
+
+## Renderers
+
+All of the officially-supported mobiledoc renderers have the same signature and methods.
+To instantiate a renderer, call its constructor with an object of options that has any of the following optional properties:
+
+  * `cards` [array] - The cards that your mobiledoc includes and that the renderer will encounter
+  * `cardOptions` [object] - Options to be passed to the card `render` (or `edit`) function
+  * `unknownCardHandler` [function] - This function is called (with the same arguments as `render`) whenever the renderer encounters a card that doesn't
+    match one of the `cards` it has been provided
+
+An instance of a renderer has one method, `render`. This method accepts a mobiledoc and returns an object with two properties:
+  * `result` [mixed] - The rendered result. Its type depends on the renderer, and can be a DOM Node (dom renderer) or a string (html or text renderers)
+  * `teardown` [function] - Call this function to tear down the rendered mobiledoc. The dom renderer will remove the rendered dom from the screen. All renderers will call
+    the card teardown callbacks that were registered using `env.onTeardown(callbackFunction)`
+
+Example usage of a renderer:
 ```js
-var demoCard = {
-  name: 'demo',
-  display: {
-    setup(element) {
-      element.innerHTML = 'display demo content';
-    }
-  }
+let renderer = new DOMRenderer({cards: [card1, card2], cardOptions: {foo: 'bar'});
+let rendered = renderer.render(mobiledoc);
+
+document.body.appendChild(renderered.result);
+
+// later...
+
+rendered.teardown(); // removes the rendered items, calls teardown hooks
+```
+
+## Card examples
+
+Example dom card that renders an image:
+```js
+let card = {
+ name: 'simple-image',
+ type: 'dom',
+ render({env, options, payload}) {
+   let src = payload.src || 'http://placekitten.com/100x100';
+   let img = document.createElement('img');
+   img.src = src;
+   return img;
+ }
 };
 ```
 
-In this minimally viable demo, a `display` hook is defined showing some text.
-Given a Mobiledoc referencing `demo` as a card this text would render for that
-name.
-
-Cards are executed at runtime by a renderer. This means
-you must pass any cards you want available to an editor or renderer. See the
-documentation for each project on how to do this.
-
-### Available hooks
-
-Between the [Mobiledoc Kit](https://github.com/bustlelabs/mobiledoc-kit) provided
-editor,
-the [Mobiledoc DOM Renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer)
-and [Mobiledoc HTML Renderer](https://github.com/bustlelabs/mobiledoc-html-renderer)
-there are several hooks a complete card should define.
-
-|Hook|Used by Mobiledoc Kit|Used by DOM Renderer|Used by HTML Renderer|
-|---|---|---|---|
-|`display`|✓|✓||
-|`edit`|✓|||
-|`html`|||✓|
-
-Each hook has a `setup` and `teardown` method. The arguments are:
-
+Example dom card that registers a teardown callback:
 ```js
-var exampleCard = {
-  name: 'example',
-  display: {
-    setup(element, options, env, payload) {},
-    teardown(setupReturnValue) {}
-  },
-  edit: {
-    setup(element, options, env, payload) {},
-    teardown(setupReturnValue) {}
-  },
-  html: {
-    setup(buffer, options, env, payload) {},
-    teardown(setupReturnValue) {}
-  }
+let card = {
+ name: 'card-with-teardown-callback',
+ type: 'dom',
+ render({env, options, payload}) {
+   env.onTeardown(() => {
+    console.log('tearing down card named: ' + env.name);
+   });
+ }
 };
 ```
-
-* `element` is a DOM element for that section. Nodes of that view for a card
-  should be appended to the `element`.
-* `buffer` is an array passed to the `html` hook instead of a DOM element.
-  The content for the card should be pushed on that array as a string.
-* `options` is the `cardOptions` argument passed to the editor or renderer.
-* `env` contains information about the running of this hook. It may contain
-  the following properties:
-  * `env.name` The name of this card
-  * `env.save(payload)` will save a new payload for a card instance. `save`
-    also accepts a boolean as a second argument, `true` if the card should
-    be transitioned to `display` and `false` if it should remain in `edit`
-    mode. The default behavior is to transition to `display`.
-  * `env.cancel()` will swap a card in edit mode to display without changing
-    the payload.
-  * `env.edit()` is available to the `display` setup, and when called swaps
-    the instance to edit mode.
-  * `env.remove()` remove this card. This calls the current mode's `teardown()`
-    hook and removes the card from DOM and from the post abstract.
-    the instance to edit mode.
-  * `env.section` the CardSection from the Post -- this can be used when
-    programmatically interacting with the card, for example to move the card
-    using `editor.run(postEditor => postEditor.moveSectionUp(section)`.
-* `payload` is the payload for this card instance. It was either loaded from
-  a Mobiledoc or generated and passed into an `env.save` call.
-
-Additionally, *renderers may offer the ability to configure a non-standard
-hook name at runtime*. An example would be having the DOM renderer called with
-an option specifying the hook name `mobile-placeholder`. This allows for
-variants of a card in different situations.
-
-### Card Lifecycle
-
-Cards rendered by the Mobiledoc Kit editor may move between `edit` and `display` hooks
-many times after being added (or loaded from a Mobiledoc). The can do this
-by calling the functions passed to `env`.
-
-The `env.save` function accepts the argument of a payload, which is passed to
-later setup calls. A minimal editable component would look like:
-
-```js
-var displayTextCard = {
-  name: 'display-text',
-  display: {
-    setup(element, options, env, payload) {
-      $('<div>').text(payload.text).appendTo(element);
-      if (env.edit) {
-        $('<button>Edit</button>').appendTo(element).on('click', env.edit);
-      }
-      $('<button>Remove</button>').appendTo(element).on('click', env.remove);
-    }
-  },
-  edit: {
-    setup(element, options, env, payload) {
-      $('<div>Edit this card:</div>').appendTo(element);
-      let input = $('<input>');
-      if (payload.text) {
-        input.val(payload.text);
-      }
-      $('<button>Save</button>').appendTo(element).on('click', function() {
-        env.save(input.val());
-      });
-      $('<button>Cancel</button>').appendTo(element).on('click', env.cancel);
-    }
-  }
-};
-```
-
-Additionally, if anything is returned from `setup` that result will be passed
-to `teardown` as the only argument. This allows you to pass a reference to
-any objects you may have created during `setup` for destruction.

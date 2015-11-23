@@ -4,11 +4,12 @@
 
 [![Join the chat at https://gitter.im/bustlelabs/mobiledoc-kit](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bustlelabs/mobiledoc-kit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Mobiledoc Kit (WARNING: beta!!) is a library for buildling WYSIWYG editors
-supporting rich content via cards. Try a
-demo at [bustlelabs.github.io/mobiledoc-kit/demo](http://bustlelabs.github.io/mobiledoc-kit/demo/).
+Mobiledoc Kit (warning: beta) is a library for building WYSIWYG editors
+supporting rich content via cards.
 
-* Posts are serialized to a JSON payload called **Mobiledoc** instead of to
+**Try a demo at [bustlelabs.github.io/mobiledoc-kit/demo](http://bustlelabs.github.io/mobiledoc-kit/demo/)**.
+
+* Posts are serialized to a JSON format called **Mobiledoc** instead of to
   HTML. Mobiledoc can be rendered for the web, mobile web, or in theory on any
   platform. Mobiledoc is portable and fast.
 * The editor makes limited use of Content Editable, the siren-song of doomed
@@ -16,7 +17,7 @@ demo at [bustlelabs.github.io/mobiledoc-kit/demo](http://bustlelabs.github.io/mo
 * Mobiledoc is designed for *rich* content. We call these sections of an
   article "cards", and implementing a new one doesn't require an understanding
   of Mobiledoc editor internals. Adding a new card takes an afternoon, not several
-  days.
+  days. To learn more about cards and mobiledoc renderers, see the **[Cards docs](https://github.com/bustlelabs/mobiledoc-kit/blob/master/CARDS.md)**.
 
 To learn more about the ideas behind Mobiledoc and the editor (note that the
 editor used to be named Content-Kit), see these blog posts:
@@ -25,8 +26,8 @@ editor used to be named Content-Kit), see these blog posts:
 * [Building the Content-Kit Editor on Content Editable](https://medium.com/@bantic/building-content-kit-editor-on-contenteditable-99a94871c951)
 * [Content-Kit: Programmatic Editing](http://madhatted.com/2015/8/25/content-kit-programmatic-editing)
 
-The Mobiledoc kit saves posts to
-**[Mobiledoc](https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md)**.
+The Mobiledoc kit saves posts in
+**[Mobiledoc format](https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md)**.
 
 ### Usage
 
@@ -50,11 +51,12 @@ editor.render(element);
 
 `options` is an object which may include the following properties:
 
-* `placeholder` - default text to show before a user starts typing.
-* `spellcheck` - a boolean option enabling spellcheck. Default is true.
-* `autofocus` - a boolean option for grabbing input focus when an editor is
-  rendered.
-* `cards` - an object describing available cards.
+* `placeholder` - [string] default text to show before a user starts typing.
+* `spellcheck` - [boolean] whether to enable spellcheck. Defaults to true.
+* `autofocus` - [boolean] When true, focuses on the editor when it is rendered.
+* `cards` - [array] The list of cards that the editor may render
+* `cardOptions` - [object] Options passed to 
+* `unknownCardHandler` - [function] This will be invoked by the editor-renderer whenever it encounters an unknown card
 
 ### Editor API
 
@@ -159,21 +161,7 @@ Modifiers can be any of `CTRL`, `META`, `SHIFT`, or `ALT`.
 
 The key can be any of the alphanumeric characters on the keyboard, or one of the following special keys:
 
-* `BACKSPACE`
-* `TAB`
-* `ENTER`
-* `ESC`
-* `SPACE`
-* `PAGEUP`
-* `PAGEDOWN`
-* `END`
-* `HOME`
-* `LEFT`
-* `UP`
-* `RIGHT`
-* `DOWN`
-* `INS`
-* `DEL`
+`BACKSPACE`, `TAB`, `ENTER`, `ESC`, `SPACE`, `PAGEUP`, `PAGEDOWN`, `END`, `HOME`, `LEFT`, `UP`, `RIGHT`, `DOWN`, `INS`, `DEL`
 
 #### Overriding built-in keys
 
@@ -194,9 +182,9 @@ To fall-back to the default behavior, return `false` from `run`.
 
 ### Configuring text expansions
 
-Text expansions can also be registered with the editor. These are methods that
+Text expansions can also be registered with the editor. These are functions that
 are run when a text string is entered and then a trigger character is entered.
-For example, the text `"*"` followed by a space character triggers a method that
+For example, the text `"*"` followed by a space character triggers a function that
 turns the current section into a list item. To register a text expansion call
 `editor.registerExpansion` with an object that has `text`, `trigger` and `run`
 properties, e.g.:
