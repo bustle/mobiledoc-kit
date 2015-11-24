@@ -1,6 +1,6 @@
 {
   "name": "mobiledoc-kit",
-  "version": "0.6.2-beta1",
+  "version": "0.7.0",
   "description": "A toolkit for building WYSIWYG editors with Mobiledoc",
   "repository": "https://github.com/bustlelabs/mobiledoc-kit",
   "scripts": {
