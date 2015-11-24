@@ -1,24 +1,45 @@
+<a name="0.7.0"></a>
+# 0.7.0 (2015-11-24)
+
+
+
+
+<a name="0.7.0"></a>
+# 0.7.0 (2015-11-24)
+
+
+* 0.7.0 ([afbeb5e](https://github.com/bustlelabs/mobiledoc-kit/commit/afbeb5e))
+* Merge pull request #245 from bustlelabs/update-card-docs ([7febf3f](https://github.com/bustlelabs/mobiledoc-kit/commit/7febf3f))
+* update card docs ([5b87106](https://github.com/bustlelabs/mobiledoc-kit/commit/5b87106))
+* Use ember-mobiledoc-editor@0.2.2-beta1 ([bd83fc5](https://github.com/bustlelabs/mobiledoc-kit/commit/bd83fc5))
+
+
+
+<a name="0.6.2-beta1"></a>
+## 0.6.2-beta1 (2015-11-23)
+
+
+* Add versioning for Mobiledoc renderer, parser ([69a93e4](https://github.com/bustlelabs/mobiledoc-kit/commit/69a93e4))
+* Fix DOM-dependent tests for IE Edge ([49bc53d](https://github.com/bustlelabs/mobiledoc-kit/commit/49bc53d))
+* Fix un-executed tests ([d4ce7b9](https://github.com/bustlelabs/mobiledoc-kit/commit/d4ce7b9))
+* Implement card refactor for editor-dom renderer ([3baafbe](https://github.com/bustlelabs/mobiledoc-kit/commit/3baafbe)), closes [#236](https://github.com/bustlelabs/mobiledoc-kit/issues/236) [#239](https://github.com/bustlelabs/mobiledoc-kit/issues/239)
+* Merge pull request #238 from bustlelabs/update-editor-dom-card-renderer-236 ([0332d67](https://github.com/bustlelabs/mobiledoc-kit/commit/0332d67))
+* Merge pull request #240 from mixonic/foobar ([0aa068c](https://github.com/bustlelabs/mobiledoc-kit/commit/0aa068c))
+* Merge pull request #241 from mixonic/version-mobiledoc ([79d6f6c](https://github.com/bustlelabs/mobiledoc-kit/commit/79d6f6c))
+* Merge pull request #242 from mixonic/ie-edge ([d4105e8](https://github.com/bustlelabs/mobiledoc-kit/commit/d4105e8))
+* Silence testing-only failues on IE Edge ([0dc9ec6](https://github.com/bustlelabs/mobiledoc-kit/commit/0dc9ec6))
+* Update changelog ([915a287](https://github.com/bustlelabs/mobiledoc-kit/commit/915a287))
+* Use more constants for mobiledoc versions ([2d1b59f](https://github.com/bustlelabs/mobiledoc-kit/commit/2d1b59f))
+* v0.6.2-beta1 ([ebdd180](https://github.com/bustlelabs/mobiledoc-kit/commit/ebdd180))
+
+
+
 <a name="0.6.1"></a>
 ## 0.6.1 (2015-11-18)
-
-
-
-
-<a name="0.6.1"></a>
-## 0.6.1 (2015-11-18)
-
-
-* 0.6.1 ([ff637c1](https://github.com/bustlelabs/mobiledoc-kit/commit/ff637c1))
-* Merge pull request #237 from mixonic/retain-edit-mode ([7b781de](https://github.com/bustlelabs/mobiledoc-kit/commit/7b781de))
-* Retain edit mode on cloned cards ([ebe19b8](https://github.com/bustlelabs/mobiledoc-kit/commit/ebe19b8))
-
-
-
-<a name="0.6.0"></a>
-# 0.6.0 (2015-11-16)
 
 
 * 0.6.0 ([0001015](https://github.com/bustlelabs/mobiledoc-kit/commit/0001015))
+* 0.6.1 ([ff637c1](https://github.com/bustlelabs/mobiledoc-kit/commit/ff637c1))
 * Add `update-changelog` npm script, update readme ([29e5278](https://github.com/bustlelabs/mobiledoc-kit/commit/29e5278))
 * add changelog ([1aa18a6](https://github.com/bustlelabs/mobiledoc-kit/commit/1aa18a6))
 * add logo to demo assets ([45e3b42](https://github.com/bustlelabs/mobiledoc-kit/commit/45e3b42))
@@ -31,6 +52,8 @@
 * Merge pull request #227 from bustlelabs/update-demos ([fb16ec0](https://github.com/bustlelabs/mobiledoc-kit/commit/fb16ec0))
 * Merge pull request #230 from bustlelabs/add-changelog ([852350e](https://github.com/bustlelabs/mobiledoc-kit/commit/852350e))
 * Merge pull request #231 from bustlelabs/use-html-and-text-renderers-205 ([16326b0](https://github.com/bustlelabs/mobiledoc-kit/commit/16326b0))
+* Merge pull request #237 from mixonic/retain-edit-mode ([7b781de](https://github.com/bustlelabs/mobiledoc-kit/commit/7b781de))
+* Retain edit mode on cloned cards ([ebe19b8](https://github.com/bustlelabs/mobiledoc-kit/commit/ebe19b8))
 * Update demo for mobiledoc 0.2.0-beta ([e078eeb](https://github.com/bustlelabs/mobiledoc-kit/commit/e078eeb))
 * Update demos, add different renderers ([1d9b124](https://github.com/bustlelabs/mobiledoc-kit/commit/1d9b124))
 * Update links to mobiledoc renderers ([d5d573e](https://github.com/bustlelabs/mobiledoc-kit/commit/d5d573e))
