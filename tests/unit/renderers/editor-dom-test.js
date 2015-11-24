@@ -189,7 +189,7 @@ test('renders a card section', (assert) => {
 
   // Use a wrapper an innerHTML to satisfy different browser attribute
   // ordering quirks
-  let expectedWrapper = $(`<div>${ZWNJ}<div contenteditable="false" class="ck-card">I am a card</div>${ZWNJ}</div>`);
+  let expectedWrapper = $(`<div>${ZWNJ}<div contenteditable="false" class="__mobiledoc-card">I am a card</div>${ZWNJ}</div>`);
   assert.equal(renderTree.rootElement.firstChild.innerHTML,
                expectedWrapper.html(),
               'card is rendered');

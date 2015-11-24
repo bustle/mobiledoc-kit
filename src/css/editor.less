@@ -6,7 +6,7 @@
 @themeColor     : rgb(62, 163, 255);
 @themeColorText : darken(@themeColor, 10%);
 
-.ck-editor {
+.__mobiledoc-editor {
   font-family: 'Lora', Georgia, serif;
   margin: 1em 0;
   color: #454545;
@@ -18,39 +18,39 @@
   font-size: 120%;
   line-height: 160%;
 }
-.ck-editor:focus {
+.__mobiledoc-editor:focus {
   outline: none;
 }
-.ck-editor:empty:before {
+.__mobiledoc-editor:empty:before {
   content: attr(data-placeholder);
   color: #bbb;
   cursor: text;
 }
-.ck-editor > * {
+.__mobiledoc-editor > * {
   position: relative;
 }
-.ck-editor a {
+.__mobiledoc-editor a {
   color: @themeColorText;
 }
-.ck-editor {
+.__mobiledoc-editor {
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Merriweather Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: 800;
     letter-spacing: -0.02em;
   }
 }
-.ck-editor blockquote {
+.__mobiledoc-editor blockquote {
   border-left: 4px solid @themeColorText;
   margin: 1em 0 1em -1.2em;
   padding-left: 1.05em;
   color: #a0a0a0;
 }
-.ck-editor img {
+.__mobiledoc-editor img {
   display: block;
   max-width: 100%;
   margin: 0 auto;
 }
-.ck-editor div,
-.ck-editor iframe {
+.__mobiledoc-editor div,
+.__mobiledoc-editor iframe {
   max-width: 100%;
 }

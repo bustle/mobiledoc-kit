@@ -11,7 +11,7 @@
   100% { opacity: 1; }
 }
 
-.ck-tooltip {
+.__mobiledoc-tooltip {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 0.7em;
   white-space: nowrap;
@@ -24,7 +24,7 @@
   -webkit-animation: fade-in 0.2s;
           animation: fade-in 0.2s;
 }
-.ck-tooltip:before {
+.__mobiledoc-tooltip:before {
   content: '';
   position: absolute;
   left: 50%;
@@ -36,7 +36,7 @@
   top: -0.4em;
   margin-left: -0.4em;
 }
-.ck-tooltip:after { /* help keeps mouseover state when moving from link to tooltip */
+.__mobiledoc-tooltip:after { /* help keeps mouseover state when moving from link to tooltip */
   content: '';
   position: absolute;
   left: 0;
@@ -44,10 +44,10 @@
   top: -0.4em;
   height: 0.4em; 
 }
-.ck-tooltip a {
+.__mobiledoc-tooltip a {
   color: #FFF;
   text-decoration: none;
 }
-.ck-tooltip a:hover {
+.__mobiledoc-tooltip a:hover {
   text-decoration: underline;
 }
