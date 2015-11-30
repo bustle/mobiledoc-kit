@@ -56,16 +56,6 @@ const visitor = {
   }
 };
 
-// NOTE - naive implementation just for discussion
-function objectToCacheKey(obj) {
-  if (!obj) {
-    return 'none';
-  }
-
-  let attributesArray = objectToSortedKVArray(obj);
-  return attributesArray.join('-');
-}
-
 const postOpcodeCompiler = {
   openMarker(closeCount, value) {
     this.markupMarkerIds = [];
@@ -92,11 +82,11 @@ const postOpcodeCompiler = {
     this.sections.push([MOBILEDOC_IMAGE_SECTION_TYPE, url]);
   },
   openCardSection(name, payload) {
-    const index = this._findOrAddCardTypeIndex(name, payload);
+    const index = this._addCardTypeIndex(name, payload);
     this.sections.push([MOBILEDOC_CARD_SECTION_TYPE, index]);
   },
   openAtom(closeCount, name, value, payload) {
-    const index = this._findOrAddAtomTypeIndex(name, value, payload);
+    const index = this._addAtomTypeIndex(name, value, payload);
     this.markupMarkerIds = [];
     this.markers.push([
       MOBILEDOC_ATOM_MARKER_TYPE,
@@ -122,33 +112,15 @@ const postOpcodeCompiler = {
     const index = this._findOrAddMarkerTypeIndex(tagName, attributes);
     this.markupMarkerIds.push(index);
   },
-  _findOrAddCardTypeIndex(cardName, payload) {
-    if (!this._cardTypeCache) { this._cardTypeCache = {}; }
-    const key = `${cardName}-${objectToCacheKey(payload)}`;
-
-    let index = this._cardTypeCache[key];
-    if (index === undefined) {
-      let cardType = [cardName, payload];
-      this.cardTypes.push(cardType);
-
-      index =  this.cardTypes.length - 1;
-      this._cardTypeCache[key] = index;
-    }
-    return index;
+  _addCardTypeIndex(cardName, payload) {
+    let cardType = [cardName, payload];
+    this.cardTypes.push(cardType);
+    return this.cardTypes.length - 1;
   },
-  _findOrAddAtomTypeIndex(atomName, atomValue, payload) {
-    if (!this._atomTypeCache) { this._atomTypeCache = {}; }
-    const key = `${atomName}-${atomValue}-${objectToCacheKey(payload)}`;
-
-    let index = this._atomTypeCache[key];
-    if (index === undefined) {
-      let atomType = [atomName, atomValue, payload];
-      this.atomTypes.push(atomType);
-
-      index =  this.atomTypes.length - 1;
-      this._atomTypeCache[key] = index;
-    }
-    return index;
+  _addAtomTypeIndex(atomName, atomValue, payload) {
+    let atomType = [atomName, atomValue, payload];
+    this.atomTypes.push(atomType);
+    return this.atomTypes.length - 1;
   },
   _findOrAddMarkerTypeIndex(tagName, attributesArray) {
     if (!this._markerTypeCache) { this._markerTypeCache = {}; }

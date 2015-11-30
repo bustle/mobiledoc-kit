@@ -231,12 +231,13 @@ test('renders a post with multiple cards with identical payloads', (assert) => {
     version: MOBILEDOC_VERSION,
     atoms: [],
     cards: [
-      [cardName, payload1]
+      [cardName, payload1],
+      [cardName, payload2]
     ],
     markups: [],
     sections: [
       [10, 0],
-      [10, 0]
+      [10, 1]
     ]
   });
 });
