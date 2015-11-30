@@ -19,6 +19,7 @@ export const DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[0];
 const MarkupSection = class MarkupSection extends Markerable {
   constructor(tagName=DEFAULT_TAG_NAME, markers=[]) {
     super(MARKUP_SECTION_TYPE, tagName, markers);
+    this.isMarkupSection = true;
   }
 
   isValidTagName(normalizedTagName) {
@@ -33,7 +34,6 @@ const MarkupSection = class MarkupSection extends Markerable {
 
     return this._redistributeMarkers(beforeSection, afterSection, marker, offset);
   }
-
 };
 
 export default MarkupSection;

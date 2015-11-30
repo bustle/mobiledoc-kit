@@ -3,6 +3,7 @@ import Set from '../utils/set';
 
 import LinkedList from '../utils/linked-list';
 import Section from './_section';
+import Position from '../utils/cursor/position';
 
 export default class Markerable extends Section {
   constructor(type, tagName, markers=[]) {
@@ -17,10 +18,24 @@ export default class Markerable extends Section {
     markers.forEach(m => this.markers.append(m));
   }
 
+  canJoin(other) {
+    return other.isMarkerable &&
+      other.type === this.type &&
+      other.tagName === this.tagName;
+  }
+
   clone() {
     const newMarkers = this.markers.map(m => m.clone());
     return this.builder.createMarkerableSection(
       this.type, this.tagName, newMarkers);
+  }
+
+  headPosition() {
+    return new Position(this, 0);
+  }
+
+  tailPosition() {
+    return new Position(this, this.length);
   }
 
   get isBlank() {

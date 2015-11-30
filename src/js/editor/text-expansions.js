@@ -2,35 +2,32 @@ import Keycodes from '../utils/keycodes';
 import Key from '../utils/key';
 import { detect } from '../utils/array-utils';
 import { MARKUP_SECTION_TYPE } from '../models/types';
+import Range from '../utils/cursor/range';
 
 const { SPACE } = Keycodes;
 
 function replaceWithListSection(editor, listTagName) {
   const {head: {section}} = editor.cursor.offsets;
 
-  const newSection = editor.run(postEditor => {
+  editor.run(postEditor => {
     const {builder} = postEditor;
     const listItem = builder.createListItem();
     const listSection = builder.createListSection(listTagName, [listItem]);
 
     postEditor.replaceSection(section, listSection);
-    return listItem;
+    postEditor.setRange(Range.fromSection(listItem));
   });
-
-  editor.cursor.moveToSection(newSection);
 }
 
 function replaceWithHeaderSection(editor, headingTagName) {
   const {head: {section}} = editor.cursor.offsets;
 
-  const newSection = editor.run(postEditor => {
+  editor.run(postEditor => {
     const {builder} = postEditor;
     const newSection = builder.createMarkupSection(headingTagName);
     postEditor.replaceSection(section, newSection);
-    return newSection;
+    postEditor.setRange(Range.fromSection(newSection));
   });
-
-  editor.cursor.moveToSection(newSection);
 }
 
 export function validateExpansion(expansion) {

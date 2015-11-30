@@ -2,17 +2,21 @@ import Position from './position';
 import { DIRECTION } from '../key';
 
 export default class Range {
-  constructor(head, tail, direction) {
+  constructor(head, tail=head, direction=DIRECTION.FORWARD) {
     this.head = head;
     this.tail = tail;
     this.direction = direction;
   }
 
-  static create(headSection, headOffset, tailSection, tailOffset) {
+  static create(headSection, headOffset, tailSection=headSection, tailOffset=headOffset) {
     return new Range(
       new Position(headSection, headOffset),
       new Position(tailSection, tailOffset)
     );
+  }
+
+  static fromSection(section) {
+    return new Range(section.headPosition(), section.tailPosition());
   }
 
   static emptyRange() {
@@ -26,6 +30,7 @@ export default class Range {
    * FIXME -- if the section isn't the head or tail, it's assumed to be
    * wholly contained. It's possible to call `trimTo` with a selection that is
    * outside of the range, though, which would invalidate that assumption.
+   * There's no efficient way to determine if a section is within a range, yet.
    */
   trimTo(section) {
     const length = section.length;
@@ -47,6 +52,11 @@ export default class Range {
       default:
         return new Range(this.head, this.tail, direction).moveFocusedPosition(direction);
     }
+  }
+
+  isEqual(other) {
+    return this.head.isEqual(other.head) &&
+           this.tail.isEqual(other.tail);
   }
 
   // "legacy" APIs

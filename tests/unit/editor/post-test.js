@@ -72,7 +72,6 @@ test('#deleteFrom in middle of marker deletes char before offset', (assert) => {
   assert.equal(nextPosition.offset, 3, 'correct position offset');
 });
 
-
 test('#deleteFrom (forward) in middle of marker deletes char after offset', (assert) => {
   const postEditor = postEditorWithMobiledoc(({post, markupSection, marker}) =>
     post([
@@ -162,18 +161,24 @@ test('#deleteFrom (FORWARD) end of marker deletes first character of next marker
 });
 
 
+let selectedRange;
 module('Unit: PostEditor', {
   beforeEach() {
+    editorElement = $('#editor')[0];
     builder = new PostNodeBuilder();
     mockEditor = {
       rerender() {},
       didUpdate() {},
+      renderRange() {
+        selectedRange = this.range;
+      },
       builder
     };
     postEditor = new PostEditor(mockEditor);
   },
 
   afterEach() {
+    selectedRange = null;
     if (editor) {
       editor.destroy();
       editor = null;
@@ -913,7 +918,6 @@ test('moveSectionDown moves it down', (assert) => {
   assert.equal(post.sections.tail, movedSection, 'movedSection is returned');
   assert.equal(tailSection.name, 'listicle-card',
                'moveSectionDown is no-op when card is at bottom');
- 
 });
 
 test('#insertPost single section, insert at start', (assert) => {
@@ -1231,3 +1235,500 @@ test('#insertPost in empty section replaces empty section with list', (assert) =
   assert.equal(nextPosition.offset, section.items.head.length,
                'nextPosition.offset is end of list item');
 });
+
+test('#toggleSection changes single section to and from tag name', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection}) => {
+    return post([markupSection('p')]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post);
+  const range = Range.create(post.sections.head, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.tagName, 'blockquote');
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.tagName, 'p');
+  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection changes multiples sections to and from tag name', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post);
+  const range = Range.create(post.sections.head, 2,
+                             post.sections.tail, 2);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.tagName, 'blockquote');
+  assert.equal(post.sections.tail.tagName, 'blockquote');
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.tagName, 'p');
+  assert.equal(post.sections.tail.tagName, 'p');
+
+  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection skips over non-markerable sections', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      cardSection('my-card'),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post);
+  const range = Range.create(post.sections.head, 0,
+                             post.sections.tail, 2);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.tagName, 'blockquote');
+  assert.ok(post.sections.objectAt(1).isCardSection);
+  assert.equal(post.sections.tail.tagName, 'blockquote');
+
+  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection toggle single p -> list item', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, markupSection, marker, markup}) => {
+    return post([
+      markupSection('p', [marker('a'), marker('b', [markup('b')]), marker('c')])
+    ]);
+  });
+
+  let mockEditor = renderBuiltAbstract(post);
+  let range = Range.create(post.sections.head, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1);
+  let listSection = post.sections.head;
+  assert.ok(listSection.isListSection);
+  assert.equal(listSection.tagName, 'ul');
+  assert.equal(listSection.items.length, 1);
+  assert.equal(listSection.items.head.text, 'abc');
+  let item = listSection.items.head;
+  assert.equal(item.markers.length, 3);
+  assert.equal(item.markers.objectAt(0).value, 'a');
+  assert.equal(item.markers.objectAt(1).value, 'b');
+  assert.ok(item.markers.objectAt(1).hasMarkup('b'), 'b has b markup');
+  assert.equal(item.markers.objectAt(2).value, 'c');
+});
+
+test('#toggleSection toggle single list item -> p', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker, markup}) => {
+    return post([listSection('ul', [
+      listItem([marker('a'), marker('b', [markup('b')]), marker('c')])
+    ])]);
+  });
+
+  let mockEditor = renderBuiltAbstract(post);
+  let range = Range.create(post.sections.head.items.head, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1);
+  assert.equal(post.sections.head.tagName, 'p');
+  assert.equal(post.sections.head.text, 'abc');
+  assert.equal(post.sections.head.markers.length, 3);
+  assert.equal(post.sections.head.markers.objectAt(0).value, 'a');
+  assert.equal(post.sections.head.markers.objectAt(1).value, 'b');
+  assert.ok(post.sections.head.markers.objectAt(1).hasMarkup('b'), 'b has b markup');
+  assert.equal(post.sections.head.markers.objectAt(2).value, 'c');
+
+  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection toggle multiple ps -> list and list -> multiple ps', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  editor = new Editor({mobiledoc});
+  let { post } = editor;
+  editor.render(editorElement);
+  let range = Range.create(post.sections.head, 0, post.sections.tail, 2);
+
+  postEditor = new PostEditor(editor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  let listSection = post.sections.head;
+  assert.equal(post.sections.length, 1, 'post has 1 list section after toggle');
+  assert.ok(listSection.isListSection);
+  assert.equal(listSection.tagName, 'ul');
+  assert.equal(listSection.items.length, 2, '2 list items');
+  assert.equal(listSection.items.head.text, 'abc');
+  assert.equal(listSection.items.tail.text, '123');
+
+  range = Range.create(listSection.items.head, 0, listSection.items.tail, 0);
+  postEditor = new PostEditor(editor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 2, 'post has 2 sections after toggle');
+  assert.equal(post.sections.head.tagName, 'p');
+  assert.equal(post.sections.tail.tagName, 'p');
+  assert.equal(post.sections.head.text, 'abc');
+  assert.equal(post.sections.tail.text, '123');
+
+  assert.ok(editor.range.head.section === post.sections.head,
+            'selected head correct');
+  assert.equal(editor.range.head.offset, 0);
+});
+
+test('#toggleSection untoggle first list item changes it to markup section, retains markup', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker, markup}) => {
+    return post([listSection('ul', [
+      listItem([marker('a'), marker('b', [markup('b')]), marker('c')]),
+      listItem([marker('def')]),
+      listItem([marker('ghi')])
+    ])]);
+  });
+  let mockEditor = renderBuiltAbstract(post);
+  let range = Range.create(post.sections.head.items.head, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 2, '2 sections');
+  assert.equal(post.sections.head.tagName, 'p', 'head section is p');
+  assert.equal(post.sections.head.text, 'abc');
+  let section = post.sections.head;
+  assert.equal(section.markers.length, 3);
+  assert.equal(section.markers.objectAt(0).value, 'a');
+  assert.ok(section.markers.objectAt(1).hasMarkup('b'), 'b has b markup');
+  assert.equal(section.markers.objectAt(2).value, 'c');
+  assert.ok(post.sections.tail.isListSection, 'tail is list section');
+  assert.equal(post.sections.tail.items.length, 2, '2 items in list');
+  assert.equal(post.sections.tail.items.head.text, 'def');
+  assert.equal(post.sections.tail.items.tail.text, 'ghi');
+
+  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection untoggle middle list item changes it to markup section, retaining markup', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker, markup}) => {
+    return post([listSection('ul', [
+      listItem([marker('abc')]),
+      listItem([marker('d'), marker('e', [markup('b')]), marker('f')]),
+      listItem([marker('ghi')])
+    ])]);
+  });
+  let mockEditor = renderBuiltAbstract(post);
+  let range = Range.create(post.sections.head.items.objectAt(1), 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 3, '3 sections');
+  let section = post.sections.objectAt(1);
+  assert.equal(section.tagName, 'p', 'middle section is p');
+  assert.equal(section.text, 'def');
+  assert.equal(section.markers.length, 3);
+  assert.equal(section.markers.objectAt(0).value, 'd');
+  assert.equal(section.markers.objectAt(1).value, 'e');
+  assert.ok(section.markers.objectAt(1).hasMarkup('b'), 'e has b markup');
+  assert.equal(section.markers.objectAt(2).value, 'f');
+  assert.ok(selectedRange.head.section === section, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+
+  assert.ok(post.sections.head.isListSection, 'head section is list');
+  assert.ok(post.sections.tail.isListSection, 'tail section is list');
+  assert.equal(post.sections.head.items.length, 1, '1 item in first list');
+  assert.equal(post.sections.tail.items.length, 1, '1 item in last list');
+  assert.equal(post.sections.head.items.head.text, 'abc');
+  assert.equal(post.sections.tail.items.head.text, 'ghi');
+});
+
+test('#toggleSection toggle markup section -> ul between lists joins the lists', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(
+    ({post, listSection, listItem, marker, markupSection}) => {
+    return post([
+      listSection('ul', [listItem([marker('abc')])]),
+      markupSection('p', [marker('123')]),
+      listSection('ul', [listItem([marker('def')])])
+    ]);
+  });
+  editor = new Editor({mobiledoc});
+  let { post } = editor;
+  editor.render(editorElement);
+  let range = Range.create(post.sections.objectAt(1), 0);
+
+  postEditor = new PostEditor(editor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, '1 sections');
+  let section = post.sections.head;
+  assert.ok(section.isListSection, 'list section');
+  assert.equal(section.items.length, 3, '3 items');
+  assert.deepEqual(section.items.map(i => i.text), ['abc', '123', 'def']);
+
+  let listItem = section.items.objectAt(1);
+  assert.ok(editor.range.head.section === listItem, 'correct head selection');
+  assert.equal(editor.range.head.offset, 0);
+});
+
+test('#toggleSection untoggle multiple items at end of list changes them to markup sections', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [
+      listItem([marker('abc')]),
+      listItem([marker('def')]),
+      listItem([marker('ghi')])
+    ])]);
+  });
+  let mockEditor = renderBuiltAbstract(post);
+  let range = Range.create(post.sections.head.items.objectAt(1), 0,
+                           post.sections.head.items.tail, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 3, '3 sections');
+  assert.ok(post.sections.head.isListSection, 'head section is list');
+  assert.equal(post.sections.head.items.length, 1, 'head section has 1 item');
+  assert.equal(post.sections.head.items.head.text, 'abc');
+
+  assert.equal(post.sections.objectAt(1).tagName, 'p', 'middle is p');
+  assert.equal(post.sections.objectAt(1).text, 'def');
+  assert.equal(post.sections.tail.tagName, 'p', 'tail is p');
+  assert.equal(post.sections.tail.text, 'ghi');
+
+  assert.ok(selectedRange.head.section === post.sections.objectAt(1), 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection untoggle multiple items at start of list changes them to markup sections', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [
+      listItem([marker('abc')]),
+      listItem([marker('def')]),
+      listItem([marker('ghi')])
+    ])]);
+  });
+  let mockEditor = renderBuiltAbstract(post);
+  let range = Range.create(post.sections.head.items.head, 0,
+                           post.sections.head.items.objectAt(1), 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 3, '3 sections');
+  assert.equal(post.sections.head.tagName, 'p', 'head section is p');
+  assert.equal(post.sections.head.text, 'abc');
+
+  assert.equal(post.sections.objectAt(1).tagName, 'p', '2nd section is p');
+  assert.equal(post.sections.objectAt(1).text, 'def');
+
+  assert.ok(post.sections.objectAt(2).isListSection, '3rd section is list');
+  assert.equal(post.sections.objectAt(2).items.length, 1, 'list has 1 item');
+  assert.equal(post.sections.objectAt(2).items.head.text, 'ghi');
+
+  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection untoggle items and overflowing markup sections changes the overflow to items', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(
+    ({post, listSection, listItem, markupSection, marker}) => {
+    return post([
+      listSection('ul', [
+        listItem([marker('abc')]),
+        listItem([marker('def')]),
+        listItem([marker('ghi')])
+      ]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+  let { post } = editor;
+  let range = Range.create(post.sections.head.items.objectAt(1), 0,
+                           post.sections.tail, 0);
+
+  postEditor = new PostEditor(editor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.ok(post.sections.head.isListSection, 'head section is list');
+  assert.equal(post.sections.head.items.length, 4, 'list has 4 items');
+
+  let text = post.sections.head.items.toArray().map(i => i.text);
+  assert.deepEqual(text, ['abc', 'def', 'ghi', '123']);
+
+  assert.ok(editor.range.head.section === post.sections.head.items.objectAt(1), 'selected head correct');
+  assert.equal(editor.range.head.offset, 0);
+});
+
+test('#toggleSection untoggle last list item changes it to markup section', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [
+      listItem([marker('abc')]),
+      listItem([marker('def')]),
+      listItem([marker('ghi')])
+    ])]);
+  });
+  let mockEditor = renderBuiltAbstract(post);
+  let range = Range.create(post.sections.head.items.tail, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 2, '2 sections');
+  assert.ok(post.sections.head.isListSection, 'head section is list');
+  assert.equal(post.sections.tail.tagName, 'p', 'tail is p');
+  assert.equal(post.sections.tail.text, 'ghi');
+
+  assert.equal(post.sections.head.items.length, 2, '2 items in list');
+  assert.equal(post.sections.head.items.head.text, 'abc');
+  assert.equal(post.sections.head.items.tail.text, 'def');
+
+  assert.ok(selectedRange.head.section === post.sections.tail, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection toggle list item to different type of list item', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [listItem([marker('abc')])])]);
+  });
+
+  let range = Range.create(post.sections.head.items.head, 0);
+
+  let mockEditor = renderBuiltAbstract(post);
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ol', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.ok(post.sections.head.isListSection, 'section is list');
+  assert.equal(post.sections.head.tagName, 'ol', 'section is ol list');
+  assert.equal(post.sections.head.items.length, 1, '1 item');
+  assert.equal(post.sections.head.items.head.text, 'abc');
+
+  assert.ok(selectedRange.head.section === post.sections.head.items.head, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection toggle list item to different type of list item when other sections precede it', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker, markupSection}) => {
+    return post([
+      markupSection('p', [marker('123')]),
+      listSection('ul', [listItem([marker('abc')])])
+    ]);
+  });
+
+  let range = Range.create(post.sections.tail.items.head, 0);
+
+  let mockEditor = renderBuiltAbstract(post);
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ol', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 2, '2 section');
+  assert.equal(post.sections.head.tagName, 'p', '1st section is p');
+  assert.equal(post.sections.head.text, '123');
+  assert.ok(post.sections.tail.isListSection, 'section is list');
+  assert.equal(post.sections.tail.tagName, 'ol', 'section is ol list');
+  assert.equal(post.sections.tail.items.length, 1, '1 item');
+  assert.equal(post.sections.tail.items.head.text, 'abc');
+
+  assert.ok(selectedRange.head.section === post.sections.tail.items.head, 'selected head correct');
+  assert.equal(selectedRange.head.offset, 0);
+});
+
+test('#toggleSection toggle when cursor on card section is no-op', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, cardSection}) => {
+    return post([cardSection('my-card')]);
+  });
+
+  let range = Range.create(post.sections.head, 0);
+
+  let mockEditor = renderBuiltAbstract(post);
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('ol', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.ok(post.sections.head.isCardSection, 'still card section');
+
+  assert.ok(!selectedRange, 'cursor position not changed');
+});
+
+test('#toggleSection joins contiguous list items', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(
+    ({post, listSection, listItem, marker}) => {
+    return post([
+      listSection('ul', [listItem([marker('abc')])]),
+      listSection('ol', [listItem([marker('123')])]),
+      listSection('ul', [listItem([marker('def')])])
+    ]);
+  });
+
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+  let { post } = editor;
+  let range = Range.create(post.sections.objectAt(1).items.head, 0);
+  postEditor = new PostEditor(editor);
+  postEditor.toggleSection('ul', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.length, 1, '1 section');
+  assert.ok(post.sections.head.isListSection, 'is list');
+  assert.equal(post.sections.head.items.length, 3, '3 items');
+  assert.deepEqual(post.sections.head.items.map(i => i.text),
+                   ['abc', '123', 'def']);
+});
+

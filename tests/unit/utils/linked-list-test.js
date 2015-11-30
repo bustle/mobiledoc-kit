@@ -40,7 +40,7 @@ INSERTION_METHODS.forEach(method => {
     assert.equal(adoptedItem, item, 'item is adopted');
   });
 
-  test(`#${method} throws if item is in this list`, (assert) => {
+  test(`#${method} throws when inserting item that is already in this list`, (assert) => {
     let list = new LinkedList();
     let item = new LinkedItem();
     list[method](item);
@@ -298,6 +298,25 @@ test(`#forEach iterates one`, (assert) => {
   assert.deepEqual(indexes, [0], 'indexes correct');
 });
 
+test('#forEach exits early if item is removed by callback', (assert) => {
+  let list = new LinkedList();
+  [0,1,2].forEach(val => {
+    let i = new LinkedItem();
+    i.value = val;
+    list.append(i);
+  });
+
+  let iterated = [];
+  list.forEach((item, index) => {
+    iterated.push(item.value);
+    if (index === 1) {
+      list.remove(item); // iteration stops, skipping value 2
+    }
+  });
+
+  assert.deepEqual(iterated, [0,1], 'iteration stops when item.next is null');
+});
+
 test(`#readRange walks from start to end`, (assert) => {
   let list = new LinkedList();
   let itemOne = new LinkedItem();
@@ -492,30 +511,6 @@ test('#removeBy calls `freeItem` for each item removed', (assert) => {
   list.removeBy(i => i.shouldRemove);
 
   assert.deepEqual(freed, [items[0], items[1]]);
-});
-
-test('#insertBefore throws if item to be inserted is already in this list', (assert) => {
-  let item1 = new LinkedItem();
-  let list1 = new LinkedList();
-  list1.append(item1);
-
-  assert.throws(() => {
-    list1.insertBefore(item1, null);
-  });
-});
-
-test('#insertBefore throws if item to be inserted is in another non-empty list', (assert) => {
-  let item1 = new LinkedItem();
-  let item2 = new LinkedItem();
-  let list1 = new LinkedList();
-  list1.append(item1);
-  list1.append(item2);
-
-  let list2 = new LinkedList();
-
-  assert.throws(() => {
-    list2.insertBefore(item1, null);
-  });
 });
 
 test('#every', (assert) => {

@@ -20,6 +20,7 @@ import { setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
 import EventListenerMixin from '../utils/event-listener';
 import Cursor from '../utils/cursor';
+import Range from '../utils/cursor/range';
 import PostNodeBuilder from '../models/post-node-builder';
 import {
   DEFAULT_TEXT_EXPANSIONS, findExpansion, validateExpansion
@@ -232,14 +233,16 @@ class Editor {
     const range = this.cursor.offsets;
 
     if (this.cursor.hasSelection()) {
-      let nextPosition = this.run(postEditor => postEditor.deleteRange(range));
-      this.cursor.moveToPosition(nextPosition);
-    } else if (event) {
-      const key = Key.fromEvent(event);
-      const nextPosition = this.run(postEditor => {
-        return postEditor.deleteFrom(range.head, key.direction);
+      this.run(postEditor => {
+        let nextPosition = postEditor.deleteRange(range);
+        postEditor.setRange(new Range(nextPosition));
       });
-      this.cursor.moveToPosition(nextPosition);
+    } else if (event) {
+      let key = Key.fromEvent(event);
+      this.run(postEditor => {
+        let nextPosition = postEditor.deleteFrom(range.head, key.direction);
+        postEditor.setRange(new Range(nextPosition));
+      });
     }
   }
 
@@ -248,17 +251,20 @@ class Editor {
 
     event.preventDefault();
 
-    const range = this.cursor.offsets;
-    const cursorSection = this.run(postEditor => {
+    let range = this.cursor.offsets;
+    this.run(postEditor => {
+      let cursorSection;
       if (!range.isCollapsed) {
-        let nextPosition = postEditor.deleteRange(range);
-        if (nextPosition.section.isBlank) {
-          return nextPosition.section;
+        let nextPosition  = postEditor.deleteRange(range);
+        cursorSection = nextPosition.section;
+        if (cursorSection && cursorSection.isBlank) {
+          postEditor.setRange(Range.fromSection(cursorSection));
+          return;
         }
       }
-      return postEditor.splitSection(range.head)[1];
+      cursorSection = postEditor.splitSection(range.head)[1];
+      postEditor.setRange(Range.fromSection(cursorSection));
     });
-    this.cursor.moveToSection(cursorSection);
   }
 
   showPrompt(message, defaultValue, callback) {
@@ -271,25 +277,44 @@ class Editor {
 
   selectSections(sections=[]) {
     if (sections.length) {
-      this.cursor.selectSections(sections);
+      let headSection = sections[0],
+          tailSection = sections[sections.length - 1];
+      this.selectRange(new Range(headSection.headPosition(),
+                                 tailSection.tailPosition()));
     } else {
       this.cursor.clearSelection();
     }
     this._reportSelectionState();
   }
 
-  selectRange(range){
-    this.cursor.selectRange(range);
-    this._reportSelectionState();
+  selectRange(range) {
+    this.range = range;
+    this.renderRange();
   }
 
-  moveToPosition(position) {
-    this.cursor.moveToPosition(position);
+  // @private
+  renderRange() {
+    this.cursor.selectRange(this.range);
     this._reportSelectionState();
+
+    // ensure that the range is "cleaned"/un-cached after
+    // rendering a cursor range
+    this.range = null;
   }
 
   get cursor() {
     return new Cursor(this);
+  }
+
+  // "read" the range from dom unless it has been set explicitly
+  // Any method that sets the range explicitly should ensure that
+  // the range is rendered and cleaned later
+  get range() {
+    return this._range || this.cursor.offsets;
+  }
+
+  set range(newRange) {
+    this._range = newRange;
   }
 
   setPlaceholder(placeholder) {
@@ -476,6 +501,7 @@ class Editor {
    */
   run(callback) {
     const postEditor = new PostEditor(this);
+    postEditor.begin();
     const result = callback(postEditor);
     this.runCallbacks(CALLBACK_QUEUES.DID_UPDATE, [postEditor]);
     postEditor.complete();
@@ -582,12 +608,11 @@ class Editor {
   }
 
   _insertEmptyMarkupSectionAtCursor() {
-    const section = this.run(postEditor => {
+    this.run(postEditor => {
       const section = postEditor.builder.createMarkupSection('p');
       postEditor.insertSectionBefore(this.post.sections, section);
-      return section;
+      postEditor.setRange(Range.fromSection(section));
     });
-    this.cursor.moveToSection(section);
   }
 
   handleKeydown(event) {
@@ -612,12 +637,13 @@ class Editor {
         if (position.section.isCardSection) {
           nextPosition = position.move(key.direction);
           if (nextPosition) {
+            let newRange;
             if (key.isShift()) {
-              let newRange = range.moveFocusedPosition(key.direction);
-              this.cursor.selectRange(newRange);
+              newRange = range.moveFocusedPosition(key.direction);
             } else {
-              this.cursor.moveToPosition(nextPosition);
+              newRange = new Range(nextPosition);
             }
+            this.selectRange(newRange);
             event.preventDefault();
           }
         }
@@ -640,10 +666,10 @@ class Editor {
           if (key.isTab() && !range.head.section.isCardSection) {
             nextPosition = postEditor.insertText(nextPosition, TAB);
           }
+          if (nextPosition && nextPosition !== range.head) {
+            postEditor.setRange(new Range(nextPosition));
+          }
         });
-        if (nextPosition !== range.head) {
-          this.cursor.moveToPosition(nextPosition);
-        }
         if (
           (isCollapsed && range.head.section.isCardSection) ||
           key.isTab()
@@ -711,12 +737,10 @@ class Editor {
 
     let pastedPost = parsePostFromPaste(event, this.builder, this._cardParsers);
 
-    let nextPosition;
     this.run(postEditor => {
-      nextPosition = postEditor.insertPost(position, pastedPost);
+      let nextPosition = postEditor.insertPost(position, pastedPost);
+      postEditor.setRange(new Range(nextPosition));
     });
-
-    this.cursor.moveToPosition(nextPosition);
   }
 
   // @private

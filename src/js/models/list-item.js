@@ -12,6 +12,7 @@ export const VALID_LIST_ITEM_TAGNAMES = [
 export default class ListItem extends Markerable {
   constructor(tagName, markers=[]) {
     super(LIST_ITEM_TYPE, tagName, markers);
+    this.isListItem = true;
   }
 
   isValidTagName(normalizedTagName) {
@@ -32,10 +33,6 @@ export default class ListItem extends Markerable {
 
     return this._redistributeMarkers(
       beforeSection, afterSection, marker, offset);
-  }
-
-  splitIntoSections() {
-    return this.parent.splitAtListItem(this);
   }
 
   clone() {

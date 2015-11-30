@@ -78,17 +78,6 @@ const Cursor = class Cursor {
     return this.post.sections.readRange(head.section, tail.section);
   }
 
-  // moves cursor to the start of the section
-  moveToSection(section, offsetInSection=0) {
-    this.moveToPosition(new Position(section, offsetInSection));
-  }
-
-  selectSections(sections) {
-    const headSection = sections[0], tailSection = sections[sections.length - 1];
-    const range = Range.create(headSection, 0, tailSection, tailSection.length);
-    this.selectRange(range);
-  }
-
   _findNodeForPosition(position) {
     const { section } = position;
     let node, offset;
@@ -124,10 +113,6 @@ const Cursor = class Cursor {
 
   selectedText() {
     return this.selection.toString();
-  }
-
-  moveToPosition(position) {
-    this.selectRange(new Range(position, position));
   }
 
   /**
