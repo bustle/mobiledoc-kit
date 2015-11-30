@@ -14,6 +14,7 @@ import { addClassName } from '../utils/dom-utils';
 import { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section';
 import assert from '../utils/assert';
 
+const CARD_ELEMENT_CLASS_NAME = '__mobiledoc-card';
 export const NO_BREAK_SPACE = '\u00A0';
 export const SPACE = ' ';
 
@@ -85,7 +86,7 @@ function renderCard() {
   let wrapper = document.createElement('div');
   let cardElement = document.createElement('div');
   cardElement.contentEditable = false;
-  addClassName(cardElement, 'ck-card');
+  addClassName(cardElement, CARD_ELEMENT_CLASS_NAME);
   wrapper.appendChild(document.createTextNode('\u200c'));
   wrapper.appendChild(cardElement);
   wrapper.appendChild(document.createTextNode('\u200c'));

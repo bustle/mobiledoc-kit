@@ -7,7 +7,7 @@ export default class Tooltip extends View {
   constructor(options) {
     let { rootElement } = options;
     let timeout;
-    options.classNames = ['ck-tooltip'];
+    options.classNames = ['__mobiledoc-tooltip'];
     super(options);
 
     this.addEventListener(rootElement, 'mouseover', (e) => {

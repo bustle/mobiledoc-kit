@@ -37,7 +37,7 @@ import {
 } from '../utils/paste-utils';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 
-export const EDITOR_ELEMENT_CLASS_NAME = 'ck-editor';
+export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
 const ELEMENT_EVENTS = ['keydown', 'keyup', 'input', 'cut', 'copy', 'paste'];
 const DOCUMENT_EVENTS= ['mouseup'];
