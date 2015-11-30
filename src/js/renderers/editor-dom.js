@@ -230,7 +230,7 @@ function validateAtoms(atoms=[]) {
       atom.type === 'dom'
     );
     assert(
-      `Card "${atom.name}" must define \`render\` method`,
+      `Atom "${atom.name}" must define \`render\` method`,
       !!atom.render
     );
   });
@@ -238,11 +238,12 @@ function validateAtoms(atoms=[]) {
 }
 
 class Visitor {
-  constructor(editor, cards, atoms, unknownCardHandler, options) {
+  constructor(editor, cards, atoms, unknownCardHandler, unknownAtomHandler, options) {
     this.editor = editor;
     this.cards = validateCards(cards);
     this.atoms = validateAtoms(atoms);
     this.unknownCardHandler = unknownCardHandler;
+    this.unknownAtomHandler = unknownAtomHandler;
     this.options = options;
   }
 
@@ -262,6 +263,24 @@ class Visitor {
       type: 'dom',
       render: this.unknownCardHandler,
       edit:   this.unknownCardHandler
+    };
+  }
+
+  _findAtom(atomName) {
+    let atom = detect(this.atoms, atom => atom.name === atomName);
+    return atom || this._createUnknownAtom(atomName);
+  }
+
+  _createUnknownAtom(atomName) {
+    assert(
+      `Unknown atom "${atomName}" found, but no unknownAtomHandler is defined`,
+      !!this.unknownAtomHandler
+    );
+
+    return {
+      name: atomName,
+      type: 'dom',
+      render: this.unknownAtomHandler
     };
   }
 
@@ -378,22 +397,16 @@ class Visitor {
 
     const {editor, options} = this;
     const atomElement = renderAtom(parentElement, renderNode.prev);
-    const atom = detect(this.atoms, atom => atom.name === atomModel.name);
+    const atom = this._findAtom(atomModel.name);
 
-    if (atom) {
-      const atomNode = new AtomNode(
-        editor, atom, atomModel, atomElement, options
-      );
+    const atomNode = new AtomNode(
+      editor, atom, atomModel, atomElement, options
+    );
 
-      atomNode.render();
+    atomNode.render();
 
-      renderNode.atomNode = atomNode;
-      renderNode.element = atomElement;
-    } else {
-      const env = { name: atomModel.name };
-      this.unknownAtomHandler( // TODO - pass this in...
-        atomElement, options, env, atomModel.payload);
-    }
+    renderNode.atomNode = atomNode;
+    renderNode.element = atomElement;
   }
 }
 
@@ -444,15 +457,16 @@ let destroyHooks = {
     }
     removeRenderNodeSectionFromParent(renderNode, section);
     removeRenderNodeElementFromParent(renderNode);
-  }
+  },
 
-  // [ATOM_TYPE](renderNode, atom) {
-  //   if (renderNode.atomNode) {
-  //     renderNode.atomNode.teardown();
-  //   }
-  //
-  //   // TODO - same/similar logic as markers?
-  // }
+  [ATOM_TYPE](renderNode, atom) {
+    if (renderNode.atomNode) {
+      renderNode.atomNode.teardown();
+    }
+
+    // an atom is a kind of marker so just call its destroy hook vs copying here
+    destroyHooks[MARKER_TYPE](renderNode, atom);
+  }
 };
 
 // removes children from parentNode (a RenderNode) that are scheduled for removal
@@ -485,9 +499,9 @@ function lookupNode(renderTree, parentNode, postNode, previousNode) {
 }
 
 export default class Renderer {
-  constructor(editor, cards, atoms, unknownCardHandler, options) {
+  constructor(editor, cards, atoms, unknownCardHandler, unknownAtomHandler, options) {
     this.editor = editor;
-    this.visitor = new Visitor(editor, cards, atoms, unknownCardHandler, options);
+    this.visitor = new Visitor(editor, cards, atoms, unknownCardHandler, unknownAtomHandler, options);
     this.nodes = [];
     this.hasRendered = false;
   }

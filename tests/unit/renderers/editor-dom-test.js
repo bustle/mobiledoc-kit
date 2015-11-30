@@ -205,9 +205,8 @@ test('renders a post with atom', (assert) => {
     {
       name: 'mention',
       type: 'dom',
-      render({fragment, value/*, options, env, payload*/}) {
-        let textNode = document.createTextNode(value);
-        fragment.appendChild(textNode);
+      render({value/*, options, env, payload*/}) {
+        return document.createTextNode(value);
       }
     }
   ]);
@@ -234,8 +233,7 @@ test('renders a post with mixed markups and atoms', (assert) => {
       name: 'mention',
       type: 'dom',
       render({fragment, value/*, options, env, payload*/}) {
-        let textNode = document.createTextNode(value);
-        fragment.appendChild(textNode);
+        return document.createTextNode(value);
       }
     }
   ]);

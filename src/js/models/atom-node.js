@@ -1,4 +1,4 @@
-import { clearChildNodes } from '../utils/dom-utils';
+import assert from '../utils/assert';
 
 export default class AtomNode {
   constructor(editor, atom, model, element, atomOptions) {
@@ -8,37 +8,53 @@ export default class AtomNode {
     this.atomOptions = atomOptions;
     this.element = element;
 
-    this._teardown = null;
+    this._teardownCallback = null;
+    this._rendered         = null;
   }
 
   render() {
     this.teardown();
 
-    let fragment = document.createDocumentFragment();
-
-    this._teardown = this.atom.render({
+    let rendered = this.atom.render({
       options: this.atomOptions,
       env: this.env,
       value: this.model.value,
-      payload: this.model.payload,
-      fragment
+      payload: this.model.payload
     });
 
-    this.element.appendChild(fragment);
+    this._validateAndAppendRenderResult(rendered);
   }
 
   get env() {
     return {
-      name: this.atom.name
+      name: this.atom.name,
+      onTeardown: (callback) => this._teardownCallback = callback
     };
   }
 
   teardown() {
-    if (this._teardown) {
-      this._teardown();
+    if (this._teardownCallback) {
+      this._teardownCallback();
+      this._teardownCallback = null;
+    }
+    if (this._rendered) {
+      this.element.removeChild(this._rendered);
+      this._rendered = null;
+    }
+  }
+
+  _validateAndAppendRenderResult(rendered) {
+    if (!rendered) {
+      return;
     }
 
-    clearChildNodes(this.element);
+    let { atom: { name } } = this;
+    assert(
+      `Atom "${name}" must render dom (render value was: "${rendered}")`,
+      !!rendered.nodeType
+    );
+    this.element.appendChild(rendered);
+    this._rendered = rendered;
   }
 
 }
