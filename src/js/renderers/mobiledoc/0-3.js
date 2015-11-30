@@ -18,8 +18,8 @@ export const MOBILEDOC_IMAGE_SECTION_TYPE = 2;
 export const MOBILEDOC_LIST_SECTION_TYPE = 3;
 export const MOBILEDOC_CARD_SECTION_TYPE = 10;
 
-export const MOBILEDOC_MARKUP_CONTENT_TYPE = 0;
-export const MOBILEDOC_ATOM_CONTENT_TYPE = 1;
+export const MOBILEDOC_MARKUP_MARKER_TYPE = 0;
+export const MOBILEDOC_ATOM_MARKER_TYPE = 1;
 
 const visitor = {
   [POST_TYPE](node, opcodes) {
@@ -70,7 +70,7 @@ const postOpcodeCompiler = {
   openMarker(closeCount, value) {
     this.markupMarkerIds = [];
     this.markers.push([
-      MOBILEDOC_MARKUP_CONTENT_TYPE,
+      MOBILEDOC_MARKUP_MARKER_TYPE,
       this.markupMarkerIds,
       closeCount,
       value || ''
@@ -99,7 +99,7 @@ const postOpcodeCompiler = {
     const index = this._findOrAddAtomTypeIndex(name, value, payload);
     this.markupMarkerIds = [];
     this.markers.push([
-      MOBILEDOC_ATOM_CONTENT_TYPE,
+      MOBILEDOC_ATOM_MARKER_TYPE,
       this.markupMarkerIds,
       closeCount,
       index
