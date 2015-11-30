@@ -12,7 +12,7 @@ import {
   ATOM_TYPE
 } from '../../models/types';
 
-export const MOBILEDOC_VERSION = '0.2.0';
+export const MOBILEDOC_VERSION = '0.3.0';
 export const MOBILEDOC_MARKUP_SECTION_TYPE = 1;
 export const MOBILEDOC_IMAGE_SECTION_TYPE = 2;
 export const MOBILEDOC_LIST_SECTION_TYPE = 3;
