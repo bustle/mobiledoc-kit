@@ -147,8 +147,13 @@ const Cursor = class Cursor {
 
     const range = document.createRange();
     range.setStart(node, offset);
-    this.selection.addRange(range);
-    this.selection.extend(endNode, endOffset);
+    if (direction === DIRECTION.BACKWARD && !!this.selection.extend) {
+      this.selection.addRange(range);
+      this.selection.extend(endNode, endOffset);
+    } else {
+      range.setEnd(endNode, endOffset);
+      this.selection.addRange(range);
+    }
   }
 
   _hasSelection() {

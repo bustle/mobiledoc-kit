@@ -44,6 +44,7 @@ function testStatefulCommand({modifier, key, command, markupName}) {
     // command. Skip these tests in IE until we can implement non-parsing
     // text entry.
     test(`${command} applies ${markupName} to next entered text`, (assert) => {
+      let done = assert.async();
       let initialText = 'something';
       const mobiledoc = Helpers.mobiledoc.build(
         ({post, markupSection, marker}) => post([
@@ -59,19 +60,21 @@ function testStatefulCommand({modifier, key, command, markupName}) {
         initialText.length);
       Helpers.dom.triggerKeyCommand(editor, key, modifier);
       Helpers.dom.insertText(editor, 'z');
-
-      let changedMobiledoc = editor.serialize();
-      let expectedMobiledoc = Helpers.mobiledoc.build(
-        ({post, markupSection, marker, markup: buildMarkup}) => {
-          let markup = buildMarkup(markupName);
-          return post([
-            markupSection('p', [
-              marker(initialText),
-              marker('z', [markup])
-            ])
-          ]);
-      });
-      assert.deepEqual(changedMobiledoc, expectedMobiledoc);
+      window.setTimeout(() => {
+        let changedMobiledoc = editor.serialize();
+        let expectedMobiledoc = Helpers.mobiledoc.build(
+          ({post, markupSection, marker, markup: buildMarkup}) => {
+            let markup = buildMarkup(markupName);
+            return post([
+              markupSection('p', [
+                marker(initialText),
+                marker('z', [markup])
+              ])
+            ]);
+        });
+        assert.deepEqual(changedMobiledoc, expectedMobiledoc);
+        done();
+      },0);
     });
   }
 }

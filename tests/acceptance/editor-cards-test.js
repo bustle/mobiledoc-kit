@@ -347,17 +347,17 @@ test('editor ignores events when focus is inside a card', (assert) => {
   assert.hasElement('#simple-card-input', 'precond - renders card');
 
   let inputEvents = 0;
-  editor.handleInput = () => inputEvents++;
+  editor.handleKeyup = () => inputEvents++;
 
   let input = $('#simple-card-input')[0];
-  Helpers.dom.triggerEvent(input, 'input');
+  Helpers.dom.triggerEvent(input, 'keyup');
 
-  assert.equal(inputEvents, 0, 'editor does not handle input event when in card');
+  assert.equal(inputEvents, 0, 'editor does not handle keyup event when in card');
 
   let p = $('#editor p')[0];
-  Helpers.dom.triggerEvent(p, 'input');
+  Helpers.dom.triggerEvent(p, 'keyup');
 
-  assert.equal(inputEvents, 1, 'editor handles input event outside of card');
+  assert.equal(inputEvents, 1, 'editor handles keyup event outside of card');
 });
 
 test('a moved card retains its inital editing mode', (assert) => {

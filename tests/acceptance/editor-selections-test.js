@@ -274,18 +274,23 @@ test('keystroke of printable character while text is selected deletes the text',
 });
 
 test('selecting text bounded by space and typing replaces it', (assert) => {
+  let done = assert.async();
   editor = new Editor({mobiledoc: mobileDocWithSection});
   editor.render(editorElement);
 
   Helpers.dom.selectText('trick', editorElement);
   Helpers.dom.insertText(editor, 'X');
+  window.setTimeout(() => {
+    assert.equal(editor.post.sections.head.text, 'one X pony',
+                 'new text present');
 
-  assert.equal(editor.post.sections.head.text, 'one X pony',
-               'new text present');
-
-  Helpers.dom.insertText(editor, 'Y');
-  assert.equal(editor.post.sections.head.text, 'one XY pony',
-               'further new text present');
+    Helpers.dom.insertText(editor, 'Y');
+    window.setTimeout(() => {
+      assert.equal(editor.post.sections.head.text, 'one XY pony',
+                   'further new text present');
+      done();
+    }, 0);
+  }, 0);
 });
 
 test('selecting all text across sections and hitting enter deletes and moves cursor to empty section', (assert) => {

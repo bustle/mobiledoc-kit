@@ -147,17 +147,59 @@ function triggerEnter(editor) {
   editor.triggerEvent(editor.element, 'keydown', event);
 }
 
+// IE11 and earlier cannot exec the `insertText` command. This version
+// check takes the place of actually detecting support for the
+// functionality, which would be very difficult.
+const canExecCommandInsertText = (() => {
+  let userAgent = navigator.userAgent;
+  return userAgent.indexOf("MSIE ") === -1 && userAgent.indexOf("Trident/") === -1;
+})();
+
+// keyCodes and charCodes are similar but not the same.;
+function keyCodeForChar(letter) {
+  let keyCode;
+  switch (letter) {
+    case '.':
+      keyCode = 190;
+      break;
+    default:
+      keyCode = letter.charCodeAt(0);
+  }
+  return keyCode;
+}
+
+function _insertTextIntoDOM(letter) {
+  if (canExecCommandInsertText) {
+    document.execCommand('insertText', false, letter);
+  } else {
+    // Without execCommand('insertText'), creating a text node and inserting
+    // it manually is used instead. First find the current cursor location and
+    // append a textNode to it.
+    var selection = window.getSelection();
+    var range = selection.getRangeAt(0);
+    var textNode = document.createTextNode(letter);
+    range.insertNode(textNode);
+    selection.removeAllRanges();
+    // Next move the cursor forward to the next position, as if the user was
+    // typing normally.
+    let nextCursorRange = document.createRange();
+    nextCursorRange.setStart(textNode, textNode.length);
+    selection.addRange(nextCursorRange);
+  }
+}
+
 function insertText(editor, string) {
   if (!string && editor) { throw new Error('Must pass `editor` to `insertText`'); }
 
   string.split('').forEach(letter => {
     let stop = false;
+    let keyCode = keyCodeForChar(letter);
     let keydown = createMockEvent('keydown', editor.element, {
-      keyCode: letter.charCodeAt(0),
+      keyCode,
       preventDefault() { stop = true; }
     });
     let keyup = createMockEvent('keyup', editor.element, {
-      keyCode: letter.charCodeAt(0),
+      keyCode,
       preventDefault() { stop = true; }
     });
     let input = createMockEvent('input', editor.element, {
@@ -168,7 +210,7 @@ function insertText(editor, string) {
     if (stop) {
       return;
     }
-    document.execCommand('insertText', false, letter);
+    _insertTextIntoDOM(letter);
     editor.triggerEvent(editor.element, 'input', input);
     if (stop) {
       return;

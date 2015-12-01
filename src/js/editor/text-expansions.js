@@ -88,5 +88,9 @@ export function findExpansion(expansions, keyEvent, editor) {
   const _text = section.textUntil(offset);
   return detect(
     expansions,
-    ({trigger, text}) => key.keyCode === trigger && _text === text);
+    ({trigger, text}) => {
+      return key.keyCode === trigger &&
+             _text === (text + String.fromCharCode(trigger));
+    }
+  );
 }
