@@ -3,7 +3,6 @@
 var builder = require('broccoli-multi-builder');
 var mergeTrees = require('broccoli-merge-trees');
 var testTreeBuilder = require('broccoli-test-builder');
-var styles = require('./broccoli/styles');
 var jquery = require('./broccoli/jquery');
 
 var vendoredModules = [
@@ -26,6 +25,5 @@ module.exports = mergeTrees([
   builder.build('amd', buildOptions),
   builder.build('global', buildOptions),
   builder.build('commonjs', buildOptions),
-  styles(),
   testTree
 ]);
