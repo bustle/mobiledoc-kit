@@ -35,7 +35,6 @@
   "devDependencies": {
     "broccoli": "^0.16.3",
     "broccoli-funnel": "^0.2.8",
-    "broccoli-less-single": "^0.4.0",
     "broccoli-merge-trees": "^0.2.1",
     "broccoli-multi-builder": "^0.2.8",
     "broccoli-test-builder": "^0.1.0",
