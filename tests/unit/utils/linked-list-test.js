@@ -3,6 +3,8 @@ const {module, test} = QUnit;
 import LinkedList from 'mobiledoc-kit/utils/linked-list';
 import LinkedItem from 'mobiledoc-kit/utils/linked-item';
 
+const INSERTION_METHODS = ['append', 'prepend', 'insertBefore', 'insertAfter'];
+
 module('Unit: Utils: LinkedList');
 
 test('initial state', (assert) => {
@@ -13,7 +15,7 @@ test('initial state', (assert) => {
   assert.equal(list.isEmpty, true, 'isEmpty is true');
 });
 
-['append', 'prepend', 'insertBefore', 'insertAfter'].forEach(method => {
+INSERTION_METHODS.forEach(method => {
   test(`#${method} initial item`, (assert) => {
     let list = new LinkedList();
     let item = new LinkedItem();
@@ -26,7 +28,7 @@ test('initial state', (assert) => {
     assert.equal(item.prev, null, 'item prev is null');
   });
 
-  test(`#${method} call adoptItem`, (assert) => {
+  test(`#${method} calls adoptItem`, (assert) => {
     let adoptedItem;
     let list = new LinkedList({
       adoptItem(item) {
@@ -36,6 +38,29 @@ test('initial state', (assert) => {
     let item = new LinkedItem();
     list[method](item);
     assert.equal(adoptedItem, item, 'item is adopted');
+  });
+
+  test(`#${method} throws if item is in this list`, (assert) => {
+    let list = new LinkedList();
+    let item = new LinkedItem();
+    list[method](item);
+
+    assert.throws(
+      () => list[method](item),
+      /Cannot insert.*already in a list/
+    );
+  });
+
+  test(`#${method} throws if item is in another list`, (assert) => {
+    let [list, otherList] = [new LinkedList(), new LinkedList()];
+    let [item, otherItem] = [new LinkedItem(), new LinkedItem()];
+    list[method](item);
+    otherList[method](otherItem);
+
+    assert.throws(
+      () => list[method](otherItem),
+      /Cannot insert.*already in a list/
+    );
   });
 });
 
@@ -54,7 +79,7 @@ test(`#append second item`, (assert) => {
   assert.equal(itemTwo.next, null, 'itemTwo next is null');
 });
 
-test(`#prepend first item`, (assert) => {
+test(`#prepend additional item`, (assert) => {
   let list = new LinkedList();
   let itemOne = new LinkedItem();
   let itemTwo = new LinkedItem();
@@ -88,6 +113,22 @@ test(`#insertBefore a middle item`, (assert) => {
   assert.equal(itemThree.next, null, 'itemThree next is null');
 });
 
+test('#insertBefore null reference item appends the item', (assert) => {
+  let list = new LinkedList();
+  let item1 = new LinkedItem();
+  let item2 = new LinkedItem();
+  list.append(item1);
+  list.insertBefore(item2, null);
+
+  assert.equal(list.length, 2);
+  assert.equal(list.tail, item2, 'item2 is appended');
+  assert.equal(list.head, item1, 'item1 is at head');
+  assert.equal(item2.prev, item1, 'item2.prev');
+  assert.equal(item1.next, item2, 'item1.next');
+  assert.equal(item2.next, null);
+  assert.equal(item1.prev, null);
+});
+
 test(`#insertAfter a middle item`, (assert) => {
   let list = new LinkedList();
   let itemOne = new LinkedItem();
@@ -96,6 +137,8 @@ test(`#insertAfter a middle item`, (assert) => {
   list.prepend(itemOne);
   list.append(itemThree);
   list.insertAfter(itemTwo, itemOne);
+
+  assert.equal(list.length, 3);
   assert.equal(list.head, itemOne, 'head is itemOne');
   assert.equal(list.tail, itemThree, 'tail is itemThree');
   assert.equal(itemOne.prev, null, 'itemOne prev is null');
@@ -110,22 +153,16 @@ test('#insertAfter null reference item prepends the item', (assert) => {
   let list = new LinkedList();
   let item1 = new LinkedItem();
   let item2 = new LinkedItem();
-  list.append(item1);
-  list.insertAfter(item2, null);
+  list.append(item2);
+  list.insertAfter(item1, null);
 
-  assert.equal(list.head, item2, 'item2 is appended');
-  assert.equal(list.tail, item1, 'item1 is at tail');
-});
-
-test('#insertBefore null reference item appends the item', (assert) => {
-  let list = new LinkedList();
-  let item1 = new LinkedItem();
-  let item2 = new LinkedItem();
-  list.append(item1);
-  list.insertBefore(item2, null);
-
-  assert.equal(list.tail, item2, 'item2 is appended');
-  assert.equal(list.head, item1, 'item1 is at head');
+  assert.equal(list.length, 2);
+  assert.equal(list.head, item1,  'item2 is appended');
+  assert.equal(list.tail, item2,  'item1 is at tail');
+  assert.equal(item1.next, item2, 'item1.next = item2');
+  assert.equal(item1.prev, null,  'item1.prev = null');
+  assert.equal(item2.prev, item1, 'item2.prev = item1');
+  assert.equal(item2.next, null,  'item2.next = null');
 });
 
 test(`#remove an only item`, (assert) => {
@@ -142,16 +179,16 @@ test(`#remove an only item`, (assert) => {
 });
 
 test(`#remove calls freeItem`, (assert) => {
-  let freedItem;
+  let freed = [];
   let list = new LinkedList({
     freeItem(item) {
-      freedItem = item;
+      freed.push(item);
     }
   });
   let item = new LinkedItem();
   list.append(item);
   list.remove(item);
-  assert.equal(freedItem, item, 'item is freed');
+  assert.deepEqual(freed, [item]);
 });
 
 test(`#remove a first item`, (assert) => {
@@ -161,7 +198,8 @@ test(`#remove a first item`, (assert) => {
   list.append(itemOne);
   list.append(itemTwo);
   list.remove(itemOne);
-  assert.equal(list.length, 1, 'length is one');
+
+  assert.equal(list.length, 1);
   assert.equal(list.head, itemTwo, 'head is itemTwo');
   assert.equal(list.tail, itemTwo, 'tail is itemTwo');
   assert.equal(itemOne.prev, null, 'itemOne prev is null');
@@ -170,13 +208,14 @@ test(`#remove a first item`, (assert) => {
   assert.equal(itemTwo.next, null, 'itemTwo next is null');
 });
 
-test(`#remove a second item`, (assert) => {
+test(`#remove a last item`, (assert) => {
   let list = new LinkedList();
   let itemOne = new LinkedItem();
   let itemTwo = new LinkedItem();
   list.append(itemOne);
   list.append(itemTwo);
   list.remove(itemTwo);
+  assert.equal(list.length, 1);
   assert.equal(list.head, itemOne, 'head is itemOne');
   assert.equal(list.tail, itemOne, 'tail is itemOne');
   assert.equal(itemOne.prev, null, 'itemOne prev is null');
@@ -194,6 +233,8 @@ test(`#remove a middle item`, (assert) => {
   list.append(itemTwo);
   list.append(itemThree);
   list.remove(itemTwo);
+
+  assert.equal(list.length, 2);
   assert.equal(list.head, itemOne, 'head is itemOne');
   assert.equal(list.tail, itemThree, 'tail is itemThree');
   assert.equal(itemOne.prev, null, 'itemOne prev is null');
@@ -202,6 +243,27 @@ test(`#remove a middle item`, (assert) => {
   assert.equal(itemTwo.next, null, 'itemTwo next is null');
   assert.equal(itemThree.prev, itemOne, 'itemThree prev is itemOne');
   assert.equal(itemThree.next, null, 'itemThree next is null');
+});
+
+test(`#remove item that is not in the list is no-op`, (assert) => {
+  let list = new LinkedList();
+  let otherItem = new LinkedItem();
+
+  list.remove(otherItem);
+  assert.equal(list.length, 0);
+});
+
+test(`#remove throws if item is in another list`, (assert) => {
+  let list      = new LinkedList();
+  let otherList = new LinkedList();
+  let otherItem = new LinkedItem();
+  
+  otherList.append(otherItem);
+
+  assert.throws(
+    () => list.remove(otherItem),
+    /Cannot remove.*other list/
+  );
 });
 
 test(`#forEach iterates many`, (assert) => {
