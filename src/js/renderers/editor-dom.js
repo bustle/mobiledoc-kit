@@ -112,6 +112,7 @@ function renderCard() {
 
 function renderAtom(element, previousRenderNode) {
   let atomElement = document.createElement('span');
+  atomElement.contentEditable = false;
   addClassName(atomElement, '-mobiledoc-kit__atom');
 
   if (previousRenderNode) {
