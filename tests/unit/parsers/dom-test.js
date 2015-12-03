@@ -3,6 +3,7 @@ import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Helpers from '../../test-helpers';
 import { Editor } from 'mobiledoc-kit';
 import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
+import { TAB } from 'mobiledoc-kit/utils/characters';
 
 const {module, test} = Helpers;
 
@@ -59,6 +60,14 @@ test('#parse can parse spaces and breaking spaces', (assert) => {
   const s1 = post.sections.head;
   assert.equal(s1.markers.length, 1, 's1 has 1 marker');
   assert.equal(s1.markers.head.value, 'some  text   for    you', 'has text');
+});
+
+test('#parse can parse tabs', (assert) => {
+  let element = buildDOM("<p>a\u2003b</p>");
+  let post = parser.parse(element);
+  let s1 = post.sections.head;
+  assert.equal(s1.markers.length, 1, 's1 has 1 marker');
+  assert.equal(s1.markers.head.value, `a${TAB}b`);
 });
 
 test('editor#reparse catches changes to section', (assert) => {

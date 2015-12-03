@@ -36,6 +36,7 @@ import {
   setClipboardCopyData
 } from '../utils/paste-utils';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
+import { TAB } from 'mobiledoc-kit/utils/characters';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
@@ -598,8 +599,7 @@ class Editor {
       this._insertEmptyMarkupSectionAtCursor();
     }
 
-    const key = Key.fromEvent(event);
-
+    let key = Key.fromEvent(event);
     let range, nextPosition;
 
     switch(true) {
@@ -630,11 +630,24 @@ class Editor {
         this.handleNewline(event);
         break;
       case key.isPrintable():
-        let range = this.cursor.offsets;
-        if (this.cursor.hasSelection()) {
-          let nextPosition = this.run(postEditor => postEditor.deleteRange(range));
+        let { offsets: range } = this.cursor;
+        let { isCollapsed } = range;
+        let nextPosition = range.head;
+        this.run(postEditor => {
+          if (!isCollapsed) {
+            nextPosition = postEditor.deleteRange(range);
+          }
+          if (key.isTab() && !range.head.section.isCardSection) {
+            nextPosition = postEditor.insertText(nextPosition, TAB);
+          }
+        });
+        if (nextPosition !== range.head) {
           this.cursor.moveToPosition(nextPosition);
-        } else if (range.head.section.isCardSection) {
+        }
+        if (
+          (isCollapsed && range.head.section.isCardSection) ||
+          key.isTab()
+        ) {
           event.preventDefault();
         }
         break;

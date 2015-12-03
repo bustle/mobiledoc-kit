@@ -108,6 +108,10 @@ const Key = class Key {
     return this.keyCode === Keycodes.SPACE;
   }
 
+  isTab() {
+    return this.keyCode === Keycodes.TAB;
+  }
+
   isEnter() {
     return this.keyCode === Keycodes.ENTER;
   }
@@ -158,6 +162,7 @@ const Key = class Key {
     return (
       (code >= Keycodes['0'] && code <= Keycodes['9']) ||         // number keys
       this.isSpace() ||
+      this.isTab()   ||
       this.isEnter() ||
       (code >= Keycodes.A && code <= Keycodes.Z) ||               // letter keys
       (code >= Keycodes.NUMPAD_0 && code <= Keycodes.NUMPAD_9) || // numpad keys

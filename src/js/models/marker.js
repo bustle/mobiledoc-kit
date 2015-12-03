@@ -4,10 +4,6 @@ import { normalizeTagName } from '../utils/dom-utils';
 import { detect, commonItemLength, forEach, filter } from '../utils/array-utils';
 import LinkedItem from '../utils/linked-item';
 
-function trim(str) {
-  return str.replace(/^\s+/, '').replace(/\s+$/, '');
-}
-
 const Marker = class Marker extends LinkedItem {
   constructor(value='', markups=[]) {
     super();
@@ -27,7 +23,7 @@ const Marker = class Marker extends LinkedItem {
   }
 
   get isBlank() {
-    return trim(this.value).length === 0;
+    return this.value.length === 0;
   }
 
   get length() {

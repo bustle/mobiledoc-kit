@@ -674,6 +674,29 @@ class PostEditor {
     return this.moveSectionBefore(collection, renderedSection, beforeSection);
   }
 
+  insertText(position, text) {
+    let section = position.section;
+    if (!section.isMarkerable) {
+      return;
+    }
+
+    let {marker,offset} = position.markerPosition;
+    let nextPosition = position;
+    if (!marker) {
+      marker = this.builder.createMarker(text);
+      section.markers.append(marker);
+      this._markDirty(section);
+      nextPosition = new Position(section, 1);
+    } else if (marker) {
+      let markerHead = marker.value.slice(0, offset);
+      let markerTail = marker.value.slice(offset, marker.length);
+      marker.value = `${markerHead}${text}${markerTail}`;
+      this._markDirty(marker);
+      nextPosition = position.moveRight();
+    }
+    return nextPosition;
+  }
+
   _replaceSection(section, newSections) {
     let nextSection = section.next;
     let collection = section.parent.sections;

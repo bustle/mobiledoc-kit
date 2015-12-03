@@ -1,5 +1,6 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
+import { TAB } from 'mobiledoc-kit/utils/characters';
 
 const { test, module } = Helpers;
 
@@ -145,6 +146,32 @@ test('typing when on the start of a card is blocked', (assert) => {
   Helpers.dom.moveCursorTo(startingZWNJ, 1);
   Helpers.dom.insertText(editor, 'Y');
   assert.hasNoElement('#editor div:contains(Y)');
+});
+
+test('typing tab enters a tab character', (assert) => {
+  let done = assert.async();
+  let mobiledoc = Helpers.mobiledoc.build(({post}) => post());
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor');
+  assert.hasNoElement('#editor p');
+
+  Helpers.dom.moveCursorTo($('#editor')[0]);
+  Helpers.dom.insertText(editor, TAB);
+  Helpers.dom.insertText(editor, 'Y');
+  window.setTimeout(() => {
+    let editedMobiledoc = editor.serialize();
+    assert.deepEqual(editedMobiledoc.sections, [
+      [],
+      [
+        [1, 'p', [
+          [[], 0, `${TAB}Y`]
+        ]]
+      ]
+    ], 'correctly encoded');
+    done();
+  }, 0);
 });
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/215

@@ -13,9 +13,11 @@ import { startsWith, endsWith } from '../utils/string-utils';
 import { addClassName } from '../utils/dom-utils';
 import { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section';
 import assert from '../utils/assert';
+import { TAB } from 'mobiledoc-kit/utils/characters';
 
 const CARD_ELEMENT_CLASS_NAME = '__mobiledoc-card';
 export const NO_BREAK_SPACE = '\u00A0';
+export const TAB_CHARACTER = '\u2003';
 export const SPACE = ' ';
 
 function createElementFromMarkup(doc, markup) {
@@ -40,9 +42,8 @@ function renderHTMLText(marker) {
   } else if ((!marker.prev || endsWith(marker.prev.value, SPACE)) && startsWith(text, SPACE)) {
     text = NO_BREAK_SPACE + text.substr(1);
   }
-  text = text.replace(/ ( )/g, () => {
-    return ' '+NO_BREAK_SPACE;
-  });
+  text = text.replace(/ ( )/g, ' '+NO_BREAK_SPACE);
+  text = text.replace(new RegExp(TAB, 'g'), TAB_CHARACTER);
   return text;
 }
 
