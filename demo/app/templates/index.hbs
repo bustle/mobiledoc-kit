@@ -29,11 +29,13 @@
         <option value='inputCard'>Card with Input</option>
         <option value='selfieCard'>Selfie Card</option>
         <option value='codemirrorCard'>Codemirror Card</option>
+        <option value='mentionAtom'>Mention Atom</option>
       </select>
       {{#mobiledoc-editor
           class='post-editor__editor'
           mobiledoc=mobiledoc
           cards=(mobiledoc-cards-list)
+          atoms=(mobiledoc-atoms-list)
           on-change=(action 'didEdit')
         as |editor|}}
         <button {{action editor.addCardInEditMode 'image-card'}}>Add image</button>
