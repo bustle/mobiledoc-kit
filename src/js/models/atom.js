@@ -10,6 +10,7 @@ export default class Atom extends LinkedItem {
     this.value = value;
     this.payload = payload;
     this.type = ATOM_TYPE;
+    this.isAtom = true;
     this.length = 1;
 
     this.markups = [];

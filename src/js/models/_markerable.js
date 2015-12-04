@@ -13,8 +13,8 @@ export default class Markerable extends Section {
     this.tagName = tagName;
     this.markers = new LinkedList({
       adoptItem: m => {
-        assert(`Cannot insert non-marker into markerable (was: ${m.type})`,
-               m.isMarker);
+        assert(`Can only insert markers and atoms into markerable (was: ${m.type})`,
+               m.isMarker || m.isAtom);
         m.section = m.parent = this;
       },
       freeItem: m => m.section = m.parent = null

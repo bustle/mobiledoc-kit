@@ -12,7 +12,9 @@ module('Unit: Editor: Atom Lifecycle', {
   },
   afterEach() {
     if (editor) {
-      editor.destroy();
+      try {
+        editor.destroy();
+      } catch(e) {}
       editor = null;
     }
   }

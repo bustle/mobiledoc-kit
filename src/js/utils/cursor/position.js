@@ -1,5 +1,5 @@
 import {
-  isTextNode, findOffsetInElement
+  isTextNode
 } from 'mobiledoc-kit/utils/dom-utils';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import assert from 'mobiledoc-kit/utils/assert';
@@ -19,18 +19,32 @@ function findParentSectionFromNode(renderTree, node) {
 }
 
 function findOffsetInSection(section, node, offset) {
-  if (!section.isCardSection) {
-    return findOffsetInElement(section.renderNode.element,
-                               node, offset);
+  if (section.isCardSection) {
+    let wrapperNode = section.renderNode.element;
+    let endTextNode = wrapperNode.lastChild;
+    return (node === endTextNode) ? 1 : 0;
+  } else {
+    let offsetInSection = 0;
+    let marker = section.markers.head;
+    while (marker) {
+      let markerNode = marker.renderNode.element;
+      if (markerNode === node) {
+        return offsetInSection + offset;
+      } else if (marker.isAtom) {
+        if (marker.renderNode.headTextNode === node) {
+          return offsetInSection;
+        } else if (marker.renderNode.tailTextNode === node) {
+          return offsetInSection + 1;
+        }
+      }
+
+      offsetInSection += marker.length;
+      marker = marker.next;
+    }
+
+    return offsetInSection;
   }
 
-  // Only the card case
-  let wrapperNode = section.renderNode.element;
-  let endTextNode = wrapperNode.lastChild;
-  if (node === endTextNode) {
-    return 1;
-  }
-  return 0;
 }
 
 const Position = class Position {
@@ -174,7 +188,7 @@ const Position = class Position {
       assert('Could not find parent section from element node', !!section);
 
       if (section.isCardSection) {
-        // Selections in cards are usually made on a text node containing a &zwnj; 
+        // Selections in cards are usually made on a text node containing a &zwnj;
         // on one side or the other of the card but some scenarios (Firefox) will result in
         // selecting the card's wrapper div. If the offset is 2 we've selected
         // the final zwnj and should consider the cursor at the end of the card (offset 1). Otherwise,
@@ -194,6 +208,7 @@ const Position = class Position {
    */
   get markerPosition() {
     assert('Cannot get markerPosition without a section', !!this.section);
+    assert('cannot get markerPosition of a non-markerable', !!this.section.isMarkerable);
     return this.section.markerPositionAtOffset(this.offset);
   }
 
