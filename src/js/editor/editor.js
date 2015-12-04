@@ -622,8 +622,12 @@ class Editor {
         if (range.direction === DIRECTION.BACKWARD) {
           position = range.head;
         }
-        if (position.section.isCardSection) {
-          nextPosition = position.move(key.direction);
+        nextPosition = position.move(key.direction);
+        if (
+          position.section.isCardSection ||
+          (position.marker && position.marker.isAtom) ||
+          (nextPosition && nextPosition.marker && nextPosition.marker.isAtom)
+        ) {
           if (nextPosition) {
             let newRange;
             if (key.isShift()) {

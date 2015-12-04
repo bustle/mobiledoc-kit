@@ -12,6 +12,14 @@ const cards = [{
   edit() {}
 }];
 
+const atoms = [{
+  name: 'my-atom',
+  type: 'dom',
+  render() {
+    return document.createTextNode('my-atom');
+  }
+}];
+
 let editor, editorElement;
 
 module('Acceptance: Cursor Movement', {
@@ -80,7 +88,6 @@ test('left arrow when at the start of a card moves the cursor to the previous se
   assert.positionIsEqual(offsets.tail, sectionTail);
 
   // After zwnj
-  sectionElement = editor.post.sections.tail.renderNode.element;
   Helpers.dom.moveCursorTo(sectionElement.firstChild, 1);
   Helpers.dom.triggerLeftArrowKey(editor);
   offsets = editor.cursor.offsets;
@@ -168,7 +175,6 @@ test('right arrow at end of card moves cursor to next section', assert => {
   assert.positionIsEqual(offsets.tail, sectionHead);
 
   // After zwnj
-  sectionElement = editor.post.sections.head.renderNode.element;
   Helpers.dom.moveCursorTo(sectionElement.lastChild, 1);
   Helpers.dom.triggerRightArrowKey(editor);
   offsets = editor.cursor.offsets;
@@ -210,6 +216,120 @@ test('right arrow at end of card moves cursor to next list item', assert => {
 
   assert.positionIsEqual(offsets.head, itemHead);
   assert.positionIsEqual(offsets.tail, itemHead);
+});
+
+test('left arrow when at the head of an atom moves the cursor left off the atom', assert => {
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [
+        marker('aa'),
+        atom('my-atom'),
+        marker('cc')
+      ])
+    ]);
+  // TODO just make 0.3.0 default
+  }, '0.3.0');
+  editor = new Editor({mobiledoc, atoms});
+  editor.render(editorElement);
+
+  let atomWrapper = editor.post.sections.head.markers.objectAt(1).renderNode.element;
+
+  // Before zwnj, assert moving left
+  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 0);
+  Helpers.dom.triggerLeftArrowKey(editor);
+  let range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+
+  // After zwnj, assert moving left
+  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 1);
+  Helpers.dom.triggerLeftArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+
+  // On wrapper, assert moving left
+  Helpers.dom.moveCursorTo(atomWrapper, 3);
+  Helpers.dom.triggerLeftArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+
+  // After wrapper, asseat moving left
+  Helpers.dom.moveCursorTo(atomWrapper.nextSibling, 0);
+  Helpers.dom.triggerLeftArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+});
+
+test('right arrow when at the head of an atom moves the cursor across the atom', assert => {
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [
+        marker('aa'),
+        atom('my-atom'),
+        marker('cc')
+      ])
+    ]);
+  // TODO just make 0.3.0 default
+  }, '0.3.0');
+  editor = new Editor({mobiledoc, atoms});
+  editor.render(editorElement);
+
+  let atomWrapper = editor.post.sections.head.markers.objectAt(1).renderNode.element;
+
+  // Before zwnj, assert moving right
+  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 0);
+  Helpers.dom.triggerRightArrowKey(editor);
+  let range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+
+  // After zwnj, assert moving right
+  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 1);
+  Helpers.dom.triggerRightArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+
+  // On wrapper, assert moving right
+  Helpers.dom.moveCursorTo(atomWrapper, 1);
+  Helpers.dom.triggerRightArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+
+  // After wrapper, assert moving right
+  Helpers.dom.moveCursorTo(atomWrapper.previousSibling, 2);
+  Helpers.dom.triggerRightArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
 });
 
 module('Acceptance: Cursor Movement w/ shift', {

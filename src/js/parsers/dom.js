@@ -1,6 +1,7 @@
 import {
   NO_BREAK_SPACE,
-  TAB_CHARACTER
+  TAB_CHARACTER,
+  ATOM_CLASS_NAME
 } from '../renderers/editor-dom';
 import {
   MARKUP_SECTION_TYPE,
@@ -10,6 +11,8 @@ import {
 import {
   isTextNode,
   isCommentNode,
+  isElementNode,
+  getAttributes,
   normalizeTagName
 } from '../utils/dom-utils';
 import {
@@ -19,7 +22,6 @@ import {
 import { TAB } from 'mobiledoc-kit/utils/characters';
 
 import SectionParser from 'mobiledoc-kit/parsers/section';
-import { getAttributes, walkTextNodes } from '../utils/dom-utils';
 import Markup from 'mobiledoc-kit/models/markup';
 
 const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/;
@@ -64,6 +66,26 @@ function remapTagName(tagName) {
 
 function trim(str) {
   return str.replace(/^\s+/, '').replace(/\s+$/, '');
+}
+
+function walkMarkerableNodes(parent, callback) {
+  let currentNode = parent;
+
+  if (
+    isTextNode(currentNode) ||
+    (
+      isElementNode(currentNode) &&
+      currentNode.classList.contains(ATOM_CLASS_NAME)
+    )
+  ) {
+    callback(currentNode);
+  } else {
+    currentNode = currentNode.firstChild;
+    while (currentNode) {
+      walkMarkerableNodes(currentNode, callback);
+      currentNode = currentNode.nextSibling;
+    }
+  }
 }
 
 /**
@@ -169,30 +191,34 @@ export default class DOMParser {
   }
 
   _reparseSectionContainingMarkers(section, renderTree) {
-    const element = section.renderNode.element;
+    let element = section.renderNode.element;
     let seenRenderNodes = [];
     let previousMarker;
 
-    walkTextNodes(element, (textNode) => {
-      const text = transformHTMLText(textNode.textContent);
-      let markups = this.collectMarkups(textNode, element);
-
+    walkMarkerableNodes(element, (node) => {
       let marker;
-
-      let renderNode = renderTree.getElementRenderNode(textNode);
+      let renderNode = renderTree.getElementRenderNode(node);
       if (renderNode) {
-        if (text.length) {
+        if (renderNode.postNode.isMarker) {
+          let text = transformHTMLText(node.textContent);
+          let markups = this.collectMarkups(node, element);
+          if (text.length) {
+            marker = renderNode.postNode;
+            marker.value = text;
+            marker.markups = markups;
+          } else {
+            renderNode.scheduleForRemoval();
+          }
+        } else if (renderNode.postNode.isAtom) {
           marker = renderNode.postNode;
-          marker.value = text;
-          marker.markups = markups;
-        } else {
-          renderNode.scheduleForRemoval();
         }
-      } else {
+      } else if (isTextNode(node)) {
+        let text = transformHTMLText(node.textContent);
+        let markups = this.collectMarkups(node, element);
         marker = this.builder.createMarker(text, markups);
 
         renderNode = renderTree.buildRenderNode(marker);
-        renderNode.element = textNode;
+        renderNode.element = node;
         renderNode.markClean();
         section.renderNode.markDirty();
 
@@ -201,7 +227,7 @@ export default class DOMParser {
         section.renderNode.childNodes.insertAfter(renderNode, previousRenderNode);
 
         let parentNodeCount = marker.closedMarkups.length;
-        let nextMarkerElement = textNode.parentNode;
+        let nextMarkerElement = node.parentNode;
         while (parentNodeCount--) {
           nextMarkerElement = nextMarkerElement.parentNode;
         }

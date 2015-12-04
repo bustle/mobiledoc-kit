@@ -22,6 +22,7 @@ export const NO_BREAK_SPACE = '\u00A0';
 export const TAB_CHARACTER = '\u2003';
 export const SPACE = ' ';
 export const ZWNJ = '\u200c';
+export const ATOM_CLASS_NAME = '-mobiledoc-kit__atom';
 
 function createElementFromMarkup(doc, markup) {
   let element = doc.createElement(markup.tagName);
@@ -58,7 +59,7 @@ function renderHTMLText(marker) {
     text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
   }
   if (startsWithSpace(text) &&
-      (!marker.prev || endsWithSpace(marker.prev.value))) {
+      (!marker.prev || (marker.prev.isMarker && endsWithSpace(marker.prev.value)))) {
     text = NO_BREAK_SPACE + text.substr(1);
   }
   return text;
@@ -114,17 +115,29 @@ function renderCard() {
 function renderAtom(element, previousRenderNode) {
   let atomElement = document.createElement('span');
   atomElement.contentEditable = false;
-  addClassName(atomElement, '-mobiledoc-kit__atom');
+
+  let wrapper = document.createElement('span');
+  addClassName(wrapper, ATOM_CLASS_NAME);
+  let headTextNode = document.createTextNode('\u200c');
+  let tailTextNode = document.createTextNode('\u200c');
+  wrapper.appendChild(headTextNode);
+  wrapper.appendChild(atomElement);
+  wrapper.appendChild(tailTextNode);
 
   if (previousRenderNode) {
     let previousSibling = previousRenderNode.element;
     let previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
-    element.insertBefore(atomElement, previousSiblingPenultimate.nextSibling);
+    element.insertBefore(wrapper, previousSiblingPenultimate.nextSibling);
   } else {
-    element.insertBefore(atomElement, element.firstChild);
+    element.insertBefore(wrapper, element.firstChild);
   }
 
-  return atomElement;
+  return {
+    wrapper,
+    atomElement,
+    headTextNode,
+    tailTextNode
+  };
 }
 
 function getNextMarkerElement(renderNode) {
@@ -396,8 +409,13 @@ class Visitor {
       parentElement = renderNode.parent.element;
     }
 
-    const {editor, options} = this;
-    const atomElement = renderAtom(parentElement, renderNode.prev);
+    const { editor, options } = this;
+    const {
+      wrapper,
+      atomElement,
+      headTextNode,
+      tailTextNode
+    } = renderAtom(parentElement, renderNode.prev);
     const atom = this._findAtom(atomModel.name);
 
     const atomNode = new AtomNode(
@@ -407,7 +425,9 @@ class Visitor {
     atomNode.render();
 
     renderNode.atomNode = atomNode;
-    renderNode.element = atomElement;
+    renderNode.element = wrapper;
+    renderNode.headTextNode = headTextNode;
+    renderNode.tailTextNode = tailTextNode;
   }
 }
 
