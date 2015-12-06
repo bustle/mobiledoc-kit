@@ -34,17 +34,17 @@
   "license": "MIT",
   "devDependencies": {
     "broccoli": "^0.16.3",
-    "broccoli-funnel": "^0.2.8",
-    "broccoli-less-single": "^0.4.0",
-    "broccoli-merge-trees": "^0.2.1",
+    "broccoli-funnel": "^1.0.1",
+    "broccoli-less-single": "^0.6.0",
+    "broccoli-merge-trees": "^1.0.0",
     "broccoli-multi-builder": "^0.2.8",
-    "broccoli-test-builder": "^0.1.0",
+    "broccoli-test-builder": "^0.2.0",
     "content-kit-utils": "^0.2.0",
     "conventional-changelog": "^0.5.1",
     "jquery": "^2.1.4",
     "mobiledoc-html-renderer": "^0.2.0",
     "mobiledoc-text-renderer": "^0.2.0",
-    "testem": "^0.8.4"
+    "testem": "^0.9.11"
   },
   "main": "dist/commonjs/mobiledoc-kit/index.js"
 }
