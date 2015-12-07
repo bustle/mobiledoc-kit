@@ -3,6 +3,7 @@ import Renderer from 'mobiledoc-kit/renderers/editor-dom';
 import RenderTree from 'mobiledoc-kit/models/render-tree';
 import Helpers from '../../test-helpers';
 import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
+import { TAB } from 'mobiledoc-kit/utils/characters';
 const { module, test } = Helpers;
 
 const ZWNJ = '\u200c';
@@ -124,6 +125,19 @@ test('renders a post with marker', (assert) => {
   const renderTree = new RenderTree(post);
   render(renderTree);
   assert.equal(renderTree.rootElement.innerHTML, '<p><strong>Hi</strong></p>');
+});
+
+test('renders a post with marker with a tab', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker(`a${TAB}b`)])
+    ]);
+  });
+
+  const renderTree = new RenderTree(post);
+  render(renderTree);
+  assert.equal(renderTree.rootElement.innerHTML, '<p>a\u2003b</p>',
+               'HTML for a tab character is correct');
 });
 
 test('renders a post with markup empty section', (assert) => {

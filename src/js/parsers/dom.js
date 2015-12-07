@@ -1,4 +1,7 @@
-import { NO_BREAK_SPACE } from '../renderers/editor-dom';
+import {
+  NO_BREAK_SPACE,
+  TAB_CHARACTER
+} from '../renderers/editor-dom';
 import {
   MARKUP_SECTION_TYPE,
   LIST_SECTION_TYPE,
@@ -12,6 +15,7 @@ import {
   detect,
   forEach,
 } from '../utils/array-utils';
+import { TAB } from 'mobiledoc-kit/utils/characters';
 
 import SectionParser from 'mobiledoc-kit/parsers/section';
 import { getAttributes, walkTextNodes } from '../utils/dom-utils';
@@ -20,9 +24,11 @@ import Markup from 'mobiledoc-kit/models/markup';
 const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/;
 
 const NO_BREAK_SPACE_REGEX = new RegExp(NO_BREAK_SPACE, 'g');
+const TAB_CHARACTER_REGEX = new RegExp(TAB_CHARACTER, 'g');
 export function transformHTMLText(textContent) {
   let text = textContent;
   text = text.replace(NO_BREAK_SPACE_REGEX, ' ');
+  text = text.replace(TAB_CHARACTER_REGEX, TAB);
   return text;
 }
 
@@ -54,6 +60,10 @@ function remapTagName(tagName) {
   return remapped || normalized;
 }
 
+function trim(str) {
+  return str.replace(/^\s+/, '').replace(/\s+$/, '');
+}
+
 /**
  * Parses DOM element -> Post
  */
@@ -80,7 +90,7 @@ export default class DOMParser {
   }
 
   appendSection(post, section) {
-    if (section.isBlank) {
+    if (section.isBlank || (section.isMarkerable && trim(section.text) === '')) {
       return;
     }
 
