@@ -1,6 +1,7 @@
-const {module, test} = QUnit;
-
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
+import TestHelpers from '../../test-helpers';
+
+const {module, test} = TestHelpers;
 
 let builder;
 module('Unit: Markup Section', {
@@ -147,4 +148,108 @@ test('instantiating with invalid tagName throws', (assert) => {
   assert.throws(() => {
     builder.createMarkupSection('blah');
   }, /Cannot set.*tagName.*blah/);
+});
+
+test('markerBeforeOffset returns marker the ends at offset', (assert) => {
+  let marker = builder.createMarker;
+  let section = builder.createMarkupSection('p', [
+    marker('a'), marker('bc'), marker('def')
+  ]);
+
+  assert.ok(section.markerBeforeOffset(1) === section.markers.head);
+  assert.ok(section.markerBeforeOffset(3) === section.markers.objectAt(1));
+  assert.ok(section.markerBeforeOffset(6) === section.markers.tail);
+});
+
+test('markerBeforeOffset throws if offset is not between markers', (assert) => {
+  let marker = builder.createMarker;
+  let section = builder.createMarkupSection('p', [
+    marker('a'), marker('bc'), marker('def')
+  ]);
+
+  assert.throws(
+    () => section.markerBeforeOffset(0),
+    /not between/
+  );
+  assert.throws(
+    () => section.markerBeforeOffset(2),
+    /not between/
+  );
+  assert.throws(
+    () => section.markerBeforeOffset(4),
+    /not between/
+  );
+  assert.throws(
+    () => section.markerBeforeOffset(5),
+    /not between/
+  );
+});
+
+test('markerBeforeOffset returns first marker if it is empty and offset is 0', (assert) => {
+  let marker = (text) => builder.createMarker(text);
+  let section = builder.createMarkupSection('p', [
+    marker(''), marker('bc'), marker('def')
+  ]);
+
+  assert.ok(section.markerBeforeOffset(0) === section.markers.head);
+});
+
+test('splitMarkerAtOffset inserts empty marker when offset is 0', (assert) => {
+  let section = builder.createMarkupSection('p', [builder.createMarker('abc')]);
+
+  section.splitMarkerAtOffset(0);
+
+  assert.equal(section.markers.length, 2);
+  assert.deepEqual(section.markers.map(m => m.value), ['', 'abc']);
+});
+
+test('splitMarkerAtOffset inserts empty marker if section is blank', (assert) => {
+  let section = builder.createMarkupSection('p');
+
+  section.splitMarkerAtOffset(0);
+
+  assert.equal(section.markers.length, 1);
+  assert.deepEqual(section.markers.map(m => m.value), ['']);
+});
+
+test('splitMarkerAtOffset splits marker if offset is contained by marker', (assert) => {
+  let section = builder.createMarkupSection('p', [builder.createMarker('abc')]);
+
+  section.splitMarkerAtOffset(1);
+
+  assert.equal(section.markers.length, 2);
+  assert.deepEqual(section.markers.map(m => m.value),
+                   ['a', 'bc']);
+});
+
+test('splitMarkerAtOffset is no-op when offset is at end of marker', (assert) => {
+  let section = builder.createMarkupSection('p', [builder.createMarker('abc')]);
+
+  section.splitMarkerAtOffset(3);
+
+  assert.equal(section.markers.length, 1);
+  assert.deepEqual(section.markers.map(m => m.value), ['abc']);
+});
+
+test('splitMarkerAtOffset does nothing if the is offset is at end', (assert) => {
+  let marker = (text) => builder.createMarker(text);
+  let section = builder.createMarkupSection('p', [marker('a'), marker('bc')]);
+
+  section.splitMarkerAtOffset(3);
+
+  assert.equal(section.markers.length, 2);
+  assert.deepEqual(section.markers.map(m => m.value), ['a', 'bc']);
+});
+
+test('splitMarkerAtOffset splits a marker deep in the middle', (assert) => {
+  let marker = (text) => builder.createMarker(text);
+  let section = builder.createMarkupSection('p', [
+    marker('a'), marker('bc'), marker('def'), marker('ghi')
+  ]);
+
+  section.splitMarkerAtOffset(5);
+
+  assert.equal(section.markers.length, 5);
+  assert.deepEqual(section.markers.map(m => m.value),
+                   ['a', 'bc', 'de', 'f', 'ghi']);
 });

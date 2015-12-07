@@ -311,3 +311,30 @@ test('pasting when on the end of a card is blocked', (assert) => {
     ]
   ], 'no paste has occurred');
 });
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/249
+test('pasting when replacing a list item works', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(
+    ({post, listSection, listItem, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('X')]),
+      listSection('ul', [
+        listItem([marker('Y')])
+      ])
+    ]);
+  });
+
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor li:contains(Y)', 'precond: has li with Y');
+
+  Helpers.dom.selectText('X', editorElement);
+  Helpers.dom.triggerCopyEvent(editor);
+
+  Helpers.dom.selectText('Y', editorElement);
+  Helpers.dom.triggerPasteEvent(editor);
+
+  assert.hasElement('#editor li:contains(X)', 'replaces Y with X in li');
+  assert.hasNoElement('#editor li:contains(Y)', 'li with Y is gone');
+});

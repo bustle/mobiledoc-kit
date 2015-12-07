@@ -7,10 +7,6 @@ import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
-import {
-  LIST_SECTION_TYPE,
-  CARD_TYPE
-} from 'mobiledoc-kit/models/types';
 
 const { FORWARD } = DIRECTION;
 
@@ -41,6 +37,18 @@ function renderBuiltAbstract(post) {
   let renderTree = new RenderTree(post);
   renderer.render(renderTree);
   return mockEditor;
+}
+
+let renderedRange;
+function buildEditorWithMobiledoc(builderFn) {
+  let mobiledoc = Helpers.mobiledoc.build(builderFn);
+  let unknownCardHandler = () => {};
+  editor = new Editor({mobiledoc, unknownCardHandler});
+  editor.render(editorElement);
+  editor.renderRange = function() {
+    renderedRange = this.range;
+  };
+  return editor;
 }
 
 module('Unit: PostEditor with mobiledoc', {
@@ -920,322 +928,6 @@ test('moveSectionDown moves it down', (assert) => {
                'moveSectionDown is no-op when card is at bottom');
 });
 
-test('#insertPost single section, insert at start', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker}) => {
-    post1 = post([markupSection('p', [marker('abc')])]);
-    post2 = post([markupSection('p', [marker('def')])]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 0);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 1, '1 section');
-  assert.equal(post1.sections.head.text, 'defabc', 'inserts text');
-
-  assert.ok(nextPosition.section === post1.sections.head,
-            'nextPosition.section is correct');
-  assert.equal(nextPosition.offset, 3,
-            'nextPosition.offset is correct');
-});
-
-test('#insertPost single section, insert at end', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker}) => {
-    post1 = post([markupSection('p', [marker('abc')])]);
-    post2 = post([markupSection('p', [marker('def')])]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, post1.sections.head.length);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 1, '1 section');
-  assert.equal(post1.sections.head.text, 'abcdef', 'inserts text');
-
-  assert.ok(nextPosition.section === post1.sections.head,
-            'nextPosition.section is correct');
-  assert.equal(nextPosition.offset, 6,
-            'nextPosition.offset is correct');
-});
-
-test('#insertPost single section, insert at middle', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker}) => {
-    post1 = post([markupSection('p', [marker('abc')])]);
-    post2 = post([markupSection('p', [marker('def')])]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 1);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 1, '1 section');
-  assert.equal(post1.sections.head.text, 'adefbc', 'inserts text');
-
-  assert.ok(nextPosition.section === post1.sections.head,
-            'nextPosition.section is correct');
-  assert.equal(nextPosition.offset, 4,
-            'nextPosition.offset is correct');
-});
-
-test('#insertPost multiple sections, insert at start', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker}) => {
-    post1 = post([markupSection('p', [marker('abc')])]);
-    post2 = post([
-      markupSection('p', [marker('123')]),
-      markupSection('p', [marker('456')])
-    ]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 0);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 3, '3 sections');
-  assert.equal(post1.sections.objectAt(0).text, '123',
-               'inserts text in section 1');
-  assert.equal(post1.sections.objectAt(1).text, '456',
-               'inserts text in section 2');
-  assert.equal(post1.sections.objectAt(2).text, 'abc',
-               'inserts text in section 3');
-
-  assert.ok(nextPosition.section === post1.sections.objectAt(1),
-            'nextPosition section is correct');
-  assert.equal(nextPosition.offset, post1.sections.objectAt(1).length,
-            'nextPosition offset is correct');
-});
-
-test('#insertPost multiple sections, insert at end', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker}) => {
-    post1 = post([markupSection('p', [marker('abc')])]);
-    post2 = post([
-      markupSection('p', [marker('123')]),
-      markupSection('p', [marker('456')])
-    ]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, post1.sections.head.length);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 2, '2 sections');
-  assert.equal(post1.sections.head.text, 'abc123', 'inserts text in section 1');
-  assert.equal(post1.sections.tail.text, '456', 'inserts text in section 2');
-
-  assert.ok(nextPosition.section === post1.sections.tail,
-            'nextPosition.section is correct');
-  assert.equal(nextPosition.offset, post1.sections.tail.length,
-            'nextPosition.offset is correct');
-});
-
-test('#insertPost multiple sections, insert at middle', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker}) => {
-    post1 = post([markupSection('p', [marker('abc')])]);
-    post2 = post([
-      markupSection('p', [marker('123')]),
-      markupSection('p', [marker('456')])
-    ]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 1);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 3, '3 sections');
-  assert.equal(post1.sections.objectAt(0).text, 'a123',
-               'inserts text in section 1');
-  assert.equal(post1.sections.objectAt(1).text, '456',
-               'inserts text in section 2');
-  assert.equal(post1.sections.objectAt(2).text, 'bc',
-               'inserts text in section 3');
-  assert.ok(nextPosition.section === post1.sections.objectAt(1),
-            'nextPosition.section is correct');
-  assert.equal(nextPosition.offset, post1.sections.objectAt(1).length,
-            'nextPosition.offset is correct');
-});
-
-test('#insertPost insert empty post does nothing', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker}) => {
-    post1 = post([markupSection('p', [marker('abc')])]);
-    post2 = post();
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 1);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 1, 'still 1 section');
-  assert.equal(post1.sections.head.text, 'abc', 'same section text');
-  assert.ok(nextPosition.section === post1.sections.head,
-            'nextPosition.section correct');
-  assert.equal(nextPosition.offset, 1, 'nextPosition.offset correct');
-});
-
-test('#insertPost can insert a single list section', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker, listSection, listItem}) => {
-    post1 = post([markupSection('p', [marker('abc')])]);
-    post2 = post([listSection('ul', [
-                    listItem([marker('123')]),
-                    listItem([marker('4')])
-                 ])]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 1);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 3, '3 sections');
-  assert.equal(post1.sections.head.text, 'a', 'head section truncated');
-  let section2 = post1.sections.objectAt(1);
-  assert.equal(section2.type, LIST_SECTION_TYPE, 'second section is list section');
-  assert.equal(section2.items.length, 2, '2 list items');
-  assert.equal(section2.items.objectAt(0).text, '123');
-  assert.equal(section2.items.objectAt(1).text, '4');
-
-  let section3 = post1.sections.objectAt(2);
-  assert.equal(section3.text, 'bc', 'last section text is correct');
-
-  assert.ok(nextPosition.section === section2.items.tail,
-            'nextPosition.section correct');
-  assert.equal(nextPosition.offset, section2.items.tail.length,
-               'nextPosition.offset correct');
-});
-
-test('#insertPost can insert a single cardSection', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker, cardSection}) => {
-    post1 = post([markupSection('p', [marker('abc')])]);
-    post2 = post([cardSection('test-card')]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 1);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 3, '3 sections');
-  assert.equal(post1.sections.objectAt(0).text, 'a', 'first section split');
-  let section2 = post1.sections.objectAt(1);
-  assert.equal(section2.type, CARD_TYPE, '2nd section is card section');
-  assert.equal(section2.name, 'test-card', '2nd section is test-card');
-  let section3 = post1.sections.objectAt(2);
-  assert.equal(section3.text, 'bc', '3rd section split');
-
-  assert.ok(nextPosition.section === section2,
-            'nextPosition.section is card');
-});
-
-test('#insertPost in empty section merges markup', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker}) => {
-    post1 = post([markupSection('p', [marker('')])]);
-    post2 = post([markupSection('p', [marker('abc')])]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 0);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 1, '1 section');
-  assert.equal(post1.sections.objectAt(0).text, 'abc', 'correct text');
-  assert.ok(nextPosition.section === post1.sections.objectAt(0),
-            'nextPosition.section correct');
-  assert.equal(nextPosition.offset, 3,
-            'nextPosition.offset correct');
-});
-
-test('#insertPost in empty section replaces empty section with card', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker, cardSection}) => {
-    post1 = post([markupSection('p', [marker('')])]);
-    post2 = post([cardSection('test-card')]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 0);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 1, '1 sections');
-  let section = post1.sections.objectAt(0);
-  assert.equal(section.type, CARD_TYPE, 'is card section');
-  assert.ok(nextPosition.section === section,
-            'nextPosition.section is card section');
-});
-
-test('#insertPost in empty section replaces empty section with list', (assert) => {
-  const build = Helpers.postAbstract.build;
-  let post1, post2;
-  build(({post, markupSection, marker, listSection, listItem}) => {
-    post1 = post([markupSection('p', [marker('')])]);
-    post2 = post([listSection('ul',[listItem([marker('abc')])])]);
-  });
-
-  const mockEditor = renderBuiltAbstract(post1);
-  const position = new Position(post1.sections.head, 0);
-
-  postEditor = new PostEditor(mockEditor);
-  let nextPosition = postEditor.insertPost(position, post2);
-  postEditor.complete();
-
-  assert.equal(post1.sections.length, 1, '1 section');
-  let section = post1.sections.objectAt(0);
-  assert.equal(section.type, LIST_SECTION_TYPE, 'is list section');
-  assert.ok(nextPosition.section === section.items.head,
-            'nextPosition.section is list item section');
-  assert.equal(nextPosition.offset, section.items.head.length,
-               'nextPosition.offset is end of list item');
-});
-
 test('#toggleSection changes single section to and from tag name', (assert) => {
   let post = Helpers.postAbstract.build(({post, markupSection}) => {
     return post([markupSection('p')]);
@@ -1732,3 +1424,167 @@ test('#toggleSection joins contiguous list items', (assert) => {
                    ['abc', '123', 'def']);
 });
 
+test('#insertMarkers inserts the markers in middle, merging markups', (assert) => {
+  let toInsert, expected;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    toInsert = [
+      marker('123', [markup('b')]), marker('456')
+    ];
+    expected = post([
+      markupSection('p', [
+        marker('abc'),
+        marker('123', [markup('b')]),
+        marker('456def')
+    ])]);
+  });
+
+  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abcdef')])]);
+  });
+  let position = new Position(editor.post.sections.head, 'abc'.length);
+  postEditor = new PostEditor(editor);
+  postEditor.insertMarkers(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(
+    renderedRange.head,
+    new Position(editor.post.sections.head, 'abc123456'.length)
+  );
+});
+
+test('#insertMarkers inserts the markers when the markerable has no markers', (assert) => {
+  let toInsert, expected;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    toInsert = [
+      marker('123', [markup('b')]), marker('456')
+    ];
+    expected = post([
+      markupSection('p', [
+        marker('123', [markup('b')]),
+        marker('456')
+    ])]);
+  });
+
+  editor = buildEditorWithMobiledoc(({post, markupSection}) => {
+    return post([markupSection()]);
+  });
+  let position = editor.post.sections.head.headPosition();
+  postEditor = new PostEditor(editor);
+  postEditor.insertMarkers(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(
+    renderedRange.head,
+    new Position(editor.post.sections.head, '123456'.length)
+  );
+});
+
+test('#insertMarkers inserts the markers at start', (assert) => {
+  let toInsert, expected;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    toInsert = [
+      marker('123', [markup('b')]), marker('456')
+    ];
+    expected = post([
+      markupSection('p', [
+        marker('123', [markup('b')]),
+        marker('456abc')
+    ])]);
+  });
+
+  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  let position = editor.post.sections.head.headPosition();
+  postEditor = new PostEditor(editor);
+  postEditor.insertMarkers(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(
+    renderedRange.head,
+    new Position(editor.post.sections.head, '123456'.length)
+  );
+});
+
+test('#insertMarkers inserts the markers at end', (assert) => {
+  let toInsert, expected;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    toInsert = [
+      marker('123', [markup('b')]), marker('456')
+    ];
+    expected = post([
+      markupSection('p', [
+        marker('abc'),
+        marker('123', [markup('b')]),
+        marker('456')
+    ])]);
+  });
+
+  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  let position = editor.post.sections.head.tailPosition();
+  postEditor = new PostEditor(editor);
+  postEditor.insertMarkers(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(
+    renderedRange.head,
+    editor.post.sections.head.tailPosition()
+  );
+});
+
+test('#_splitListItem creates two list items', (assert) => {
+  let expected = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker, markup}) => {
+    return post([listSection('ul', [
+      listItem([marker('abc'), marker('bo', [markup('b')])]),
+      listItem([marker('ld', [markup('b')])])
+    ])]);
+  });
+  editor = buildEditorWithMobiledoc(
+    ({post, listSection, listItem, marker, markup}) => {
+    return post([listSection('ul', [
+      listItem([marker('abc'), marker('bold', [markup('b')])])
+    ])]);
+  });
+
+  let item = editor.post.sections.head.items.head;
+  let position = new Position(item, 'abcbo'.length);
+  postEditor = new PostEditor(editor);
+  postEditor._splitListItem(item, position);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
+
+test('#_splitListItem when position is start creates blank list item', (assert) => {
+  let expected = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [
+      listItem([marker('')]),
+      listItem([marker('abc')])
+    ])]);
+  });
+  editor = buildEditorWithMobiledoc(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [listItem([marker('abc')])])]);
+  });
+
+  let item = editor.post.sections.head.items.head;
+  let position = item.headPosition();
+  postEditor = new PostEditor(editor);
+  postEditor._splitListItem(item, position);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+});

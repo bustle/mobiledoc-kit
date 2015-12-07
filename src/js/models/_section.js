@@ -17,6 +17,7 @@ export default class Section extends LinkedItem {
     assert('Cannot create section without type', !!type);
     this.type = type;
     this.isMarkerable = false;
+    this.isNested = false;
   }
 
   set tagName(val) {

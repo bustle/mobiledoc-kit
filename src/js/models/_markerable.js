@@ -4,6 +4,7 @@ import Set from '../utils/set';
 import LinkedList from '../utils/linked-list';
 import Section from './_section';
 import Position from '../utils/cursor/position';
+import assert from '../utils/assert';
 
 export default class Markerable extends Section {
   constructor(type, tagName, markers=[]) {
@@ -11,7 +12,11 @@ export default class Markerable extends Section {
     this.isMarkerable = true;
     this.tagName = tagName;
     this.markers = new LinkedList({
-      adoptItem: m => m.section = m.parent = this,
+      adoptItem: m => {
+        assert(`Cannot insert non-marker into markerable (was: ${m.type})`,
+               m.isMarker);
+        m.section = m.parent = this;
+      },
       freeItem: m => m.section = m.parent = null
     });
 
@@ -111,18 +116,40 @@ export default class Markerable extends Section {
    * there is now a marker boundary at that offset (useful for later applying
    * a markup to a range)
    * @param {Number} sectionOffset The offset relative to start of this section
-   * @return {EditObject} An edit object with 'removed' and 'added' keys with arrays of Markers
+   * @return {EditObject} An edit object with 'removed' and 'added' keys with arrays of Markers. The added markers may be blank.
+   * After calling `splitMarkerAtOffset(offset)`, there will always be a valid
+   * result returned from `markerBeforeOffset(offset)`.
    */
   splitMarkerAtOffset(sectionOffset) {
-    const edit = {removed:[], added:[]};
-    const {marker,offset} = this.markerPositionAtOffset(sectionOffset);
-    if (!marker) { return edit; }
+    assert('Cannot splitMarkerAtOffset when offset is > length',
+           sectionOffset <= this.length);
+    let markerOffset;
+    let len = 0;
+    let currentMarker = this.markers.head;
+    let edit = {added: [], removed: []};
 
-    const newMarkers = filter(marker.split(offset), m => !m.isEmpty);
-    this.markers.splice(marker, 1, newMarkers);
-
-    edit.removed = [marker];
-    edit.added = newMarkers;
+    if (!currentMarker) {
+      let blankMarker = this.builder.createMarker();
+      this.markers.prepend(blankMarker);
+      edit.added.push(blankMarker);
+    } else {
+      while (currentMarker) {
+        len += currentMarker.length;
+        if (len === sectionOffset) {
+          // nothing to do, there is a gap at the requested offset
+          break;
+        } else if (len > sectionOffset) {
+          markerOffset = currentMarker.length - (len - sectionOffset);
+          let newMarkers = currentMarker.splitAtOffset(markerOffset);
+          edit.added.push(...newMarkers);
+          edit.removed.push(currentMarker);
+          this.markers.splice(currentMarker, 1, newMarkers);
+          break;
+        } else {
+          currentMarker = currentMarker.next;
+        }
+      }
+    }
 
     return edit;
   }
@@ -130,6 +157,25 @@ export default class Markerable extends Section {
   splitAtPosition(position) {
     const {marker, offsetInMarker} = position;
     return this.splitAtMarker(marker, offsetInMarker);
+  }
+
+  // returns the marker just before this offset.
+  // It is an error to call this method with an offset that is in the middle
+  // of a marker.
+  markerBeforeOffset(sectionOffset) {
+    let len = 0;
+    let currentMarker = this.markers.head;
+
+    while (currentMarker) {
+      len += currentMarker.length;
+      if (len === sectionOffset) {
+        return currentMarker;
+      } else {
+        assert('markerBeforeOffset called with sectionOffset not between markers',
+               len < sectionOffset);
+        currentMarker = currentMarker.next;
+      }
+    }
   }
 
   markerPositionAtOffset(offset) {

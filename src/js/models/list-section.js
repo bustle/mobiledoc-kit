@@ -3,6 +3,7 @@ import { forEach, contains } from '../utils/array-utils';
 import { LIST_SECTION_TYPE } from './types';
 import Section from './_section';
 import { normalizeTagName } from '../utils/dom-utils';
+import assert from '../utils/assert';
 
 export const VALID_LIST_SECTION_TAGNAMES = [
   'ul', 'ol'
@@ -17,7 +18,11 @@ export default class ListSection extends Section {
     this.isListSection = true;
 
     this.items = new LinkedList({
-      adoptItem: i => i.section = i.parent = this,
+      adoptItem: i => {
+        assert(`Cannot insert non-list-item to list (is: ${i.type})`,
+               i.isListItem);
+        i.section = i.parent = this;
+      },
       freeItem:  i => i.section = i.parent = null
     });
     this.sections = this.items;
@@ -46,7 +51,7 @@ export default class ListSection extends Section {
   }
 
   clone() {
-    let newSection = this.builder.createListSection();
+    let newSection = this.builder.createListSection(this.tagName);
     forEach(this.items, i => newSection.items.append(i.clone()));
     return newSection;
   }

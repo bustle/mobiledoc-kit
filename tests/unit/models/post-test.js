@@ -456,3 +456,86 @@ test('#cloneRange copies card sections', (assert) => {
 
   assert.deepEqual(mobiledoc, expectedMobiledoc);
 });
+
+test('#cloneRange when range starts and ends in a list item', (assert) => {
+  let buildPost = Helpers.postAbstract.build,
+      buildMobiledoc = Helpers.mobiledoc.build;
+
+  let post = buildPost(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [listItem([marker('abc')])])]);
+  });
+
+  let range = Range.create(post.sections.head.items.head, 0,
+                           post.sections.head.items.head, 'ab'.length);
+
+  let mobiledoc = post.cloneRange(range);
+  let expected = buildMobiledoc(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [listItem([marker('ab')])])]);
+  });
+
+  assert.deepEqual(mobiledoc, expected);
+});
+
+test('#cloneRange when range contains multiple list items', (assert) => {
+  let buildPost = Helpers.postAbstract.build,
+      buildMobiledoc = Helpers.mobiledoc.build;
+
+  let post = buildPost(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [
+      listItem([marker('abc')]),
+      listItem([marker('def')]),
+      listItem([marker('ghi')])
+    ])]);
+  });
+
+  let range = Range.create(post.sections.head.items.head, 'ab'.length,
+                           post.sections.head.items.tail, 'gh'.length);
+
+  let mobiledoc = post.cloneRange(range);
+  let expected = buildMobiledoc(
+    ({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [
+      listItem([marker('c')]),
+      listItem([marker('def')]),
+      listItem([marker('gh')])
+    ])]);
+  });
+
+  assert.deepEqual(mobiledoc, expected);
+});
+
+test('#cloneRange when range contains multiple list items and more sections', (assert) => {
+  let buildPost = Helpers.postAbstract.build,
+      buildMobiledoc = Helpers.mobiledoc.build;
+
+  let post = buildPost(
+    ({post, listSection, listItem, markupSection, marker}) => {
+    return post([listSection('ul', [
+      listItem([marker('abc')]),
+      listItem([marker('def')]),
+      listItem([marker('ghi')])
+    ]), markupSection('p', [
+      marker('123')
+    ])]);
+  });
+
+  let range = Range.create(post.sections.head.items.head, 'ab'.length,
+                           post.sections.tail, '12'.length);
+
+  let mobiledoc = post.cloneRange(range);
+  let expected = buildMobiledoc(
+    ({post, listSection, listItem, markupSection, marker}) => {
+    return post([listSection('ul', [
+      listItem([marker('c')]),
+      listItem([marker('def')]),
+      listItem([marker('ghi')])
+    ]), markupSection('p', [
+      marker('12')
+    ])]);
+  });
+
+  assert.deepEqual(mobiledoc, expected);
+});
