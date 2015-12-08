@@ -119,15 +119,19 @@ export default class Post {
   walkLeafSections(range, callback) {
     const { head, tail } = range;
 
+    let nextSection, shouldStop;
     let currentSection = head.section;
 
     while (currentSection) {
+      nextSection = this._nextLeafSection(currentSection);
+      shouldStop = currentSection === tail.section;
+
       callback(currentSection);
 
-      if (currentSection === tail.section) {
+      if (shouldStop) {
         break;
       } else {
-        currentSection = this._nextLeafSection(currentSection);
+        currentSection = nextSection;
       }
     }
   }

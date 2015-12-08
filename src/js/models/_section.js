@@ -1,24 +1,28 @@
 import { LIST_ITEM_TYPE } from './types';
 import { normalizeTagName } from '../utils/dom-utils';
 import LinkedItem from '../utils/linked-item';
+import assert from '../utils/assert';
 
 function isChild(section) {
   return section.type === LIST_ITEM_TYPE;
 }
 
+function unimplementedMethod(methodName, me) {
+  throw new Error(`\`${methodName}()\` must be implemented by ${me.constructor.name}`);
+}
+
 export default class Section extends LinkedItem {
   constructor(type) {
     super();
-    if (!type) { throw new Error('Cannot create section without type'); }
+    assert('Cannot create section without type', !!type);
     this.type = type;
     this.isMarkerable = false;
   }
 
   set tagName(val) {
     let normalizedTagName = normalizeTagName(val);
-    if (!this.isValidTagName(normalizedTagName)) {
-      throw new Error(`Cannot set section tagName to ${val}`);
-    }
+    assert(`Cannot set section tagName to ${val}`,
+           this.isValidTagName(normalizedTagName));
     this._tagName = normalizedTagName;
   }
 
@@ -27,15 +31,31 @@ export default class Section extends LinkedItem {
   }
 
   isValidTagName(/* normalizedTagName */) {
-    throw new Error('`isValidTagName` must be implemented by subclass');
+    unimplementedMethod('isValidTagName', this);
   }
 
   get isBlank() {
-    throw new Error('`isBlank` must be implemented by subclass');
+    unimplementedMethod('isBlank', this);
   }
 
   clone() {
-    throw new Error('`clone()` must be implemented by subclass');
+    unimplementedMethod('clone', this);
+  }
+
+  canJoin(/* otherSection */) {
+    unimplementedMethod('canJoin', this);
+  }
+
+  headPosition() {
+    unimplementedMethod('headPosition', this);
+  }
+
+  tailPosition() {
+    unimplementedMethod('tailPosition', this);
+  }
+
+  join() {
+    unimplementedMethod('join', this);
   }
 
   nextLeafSection() {

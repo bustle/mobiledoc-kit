@@ -384,7 +384,6 @@ test('selecting text that starts in a list item and ends in a markup section', (
 
   Helpers.dom.selectText('23', editorElement, 'de', editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
-
   Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('#editor li:contains(1f)',

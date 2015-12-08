@@ -1,6 +1,6 @@
 import { Editor } from 'mobiledoc-kit';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
-import Position from 'mobiledoc-kit/utils/cursor/position';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 import Helpers from '../test-helpers';
 import { CARD_MODES } from 'mobiledoc-kit/models/card';
 
@@ -135,7 +135,7 @@ test('delete when cursor is positioned at end of a card deletes card, replace wi
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.cursor.moveToPosition(new Position(editor.post.sections.head, 1));
+  editor.selectRange(Range.create(editor.post.sections.head, 1));
   Helpers.dom.triggerDelete(editor);
 
   assert.hasNoElement('#my-simple-card', 'removes card after delete');
@@ -156,7 +156,7 @@ test('delete when cursor is at start of a card and prev section is blank deletes
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasElement('#editor p', 'precond - has blank markup section');
 
-  editor.cursor.moveToPosition(new Position(editor.post.sections.tail, 0));
+  editor.selectRange(Range.create(editor.post.sections.tail, 0));
   Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('#my-simple-card', 'card still exists after delete');
@@ -174,7 +174,7 @@ test('forward-delete when cursor is positioned at start of a card deletes card, 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.cursor.moveToPosition(new Position(editor.post.sections.head, 0));
+  editor.selectRange(Range.create(editor.post.sections.head, 0));
   Helpers.dom.triggerDelete(editor, DIRECTION.FORWARD);
 
   assert.hasNoElement('#my-simple-card', 'removes card after delete');
@@ -195,7 +195,7 @@ test('forward-delete when cursor is positioned at end of a card and next section
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasElement('#editor p', 'precond - has blank markup section');
 
-  editor.cursor.moveToPosition(new Position(editor.post.sections.head, 1));
+  editor.selectRange(Range.create(editor.post.sections.head, 1));
   Helpers.dom.triggerDelete(editor, DIRECTION.FORWARD);
 
   assert.hasElement('#my-simple-card', 'still has card after delete');
@@ -258,7 +258,7 @@ test('deleting at start of empty markup section with prev card deletes the marku
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasElement('#editor p', 'precond - has blank markup section');
 
-  editor.cursor.moveToPosition(new Position(editor.post.sections.tail, 0));
+  editor.selectRange(Range.create(editor.post.sections.tail, 0));
   Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('#my-simple-card', 'has card after delete');
@@ -282,7 +282,7 @@ test('press enter at end of card inserts section after card', (assert) => {
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.cursor.moveToPosition(new Position(editor.post.sections.tail, 1));
+  editor.selectRange(Range.create(editor.post.sections.tail, 1));
   Helpers.dom.triggerEnter(editor);
 
   assert.hasElement('#my-simple-card', 'has card after enter');
@@ -308,7 +308,7 @@ test('press enter at start of card inserts section before card', (assert) => {
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.cursor.moveToPosition(new Position(editor.post.sections.tail, 0));
+  editor.selectRange(Range.create(editor.post.sections.tail, 0));
   Helpers.dom.triggerEnter(editor);
 
   assert.hasElement('#my-simple-card', 'has card after enter');

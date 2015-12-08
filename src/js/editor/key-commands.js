@@ -1,8 +1,8 @@
 import Key from '../utils/key';
 import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
 import { filter, reduce } from '../utils/array-utils';
-import Position from '../utils/cursor/position';
 import assert from '../utils/assert';
+import Range from '../utils/cursor/range';
 
 export const DEFAULT_KEY_COMMANDS = [{
   str: 'META+B',
@@ -45,10 +45,12 @@ export const DEFAULT_KEY_COMMANDS = [{
   run(editor) {
     let range = editor.cursor.offsets;
     if (!editor.cursor.hasSelection()) {
-      range.tail = new Position(range.head.section, range.head.section.length);
+      range.tail = range.head.section.tailPosition();
     }
-    let nextPosition = editor.run(postEditor => postEditor.deleteRange(range));
-    editor.cursor.moveToPosition(nextPosition);
+    editor.run(postEditor => {
+      let nextPosition = postEditor.deleteRange(range);
+      postEditor.setRange(new Range(nextPosition));
+    });
   }
 }, {
   str: 'META+K',

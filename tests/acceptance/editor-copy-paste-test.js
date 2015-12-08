@@ -1,5 +1,6 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const { test, module } = Helpers;
 
@@ -264,7 +265,7 @@ test('pasting when on the end of a card is blocked', (assert) => {
   Helpers.dom.selectText('abc', editorElement);
   Helpers.dom.triggerCopyEvent(editor);
 
-  editor.cursor.moveToSection(editor.post.sections.head, 0);
+  editor.selectRange(new Range(editor.post.sections.head.headPosition()));
   Helpers.dom.triggerPasteEvent(editor);
 
   let updatedMobiledoc = editor.serialize();
@@ -278,7 +279,7 @@ test('pasting when on the end of a card is blocked', (assert) => {
     ]
   ], 'no paste has occurred');
 
-  editor.cursor.moveToSection(editor.post.sections.head, 1);
+  editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
   Helpers.dom.triggerPasteEvent(editor);
 
   updatedMobiledoc = editor.serialize();

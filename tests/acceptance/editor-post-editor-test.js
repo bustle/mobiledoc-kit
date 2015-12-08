@@ -1,5 +1,6 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const { module, test } = Helpers;
 
@@ -239,4 +240,37 @@ test('#toggleMarkup does nothing with an empty selection', (assert) => {
   editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
   assert.hasNoElement('#editor strong', 'strong not added, nothing selected');
+});
+
+test('postEditor reads editor range, sets it with #setRange', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  let { post } = editor;
+
+  Helpers.dom.selectText('bc', editorElement);
+
+  let range, originalRange, expectedRange;
+  editor.run(postEditor => {
+    originalRange = range = editor.range;
+    expectedRange = Range.create(post.sections.head, 1, post.sections.head, 3);
+    assert.ok(range.isEqual(expectedRange), 'postEditor.range is correct');
+
+    expectedRange = Range.create(post.sections.head, 0, post.sections.head, 1);
+    postEditor.setRange(expectedRange);
+    range = editor.range;
+    assert.ok(range.isEqual(expectedRange),
+              'postEditor.range is correct after set');
+
+    assert.ok(!originalRange.isEqual(expectedRange),
+              'original range has diverged');
+    assert.ok(editor.cursor.offsets.isEqual(originalRange),
+              'dom range is not changed');
+  });
+
+  assert.ok(editor.range.isEqual(expectedRange),
+            'range is set from postEditor.range after run');
 });

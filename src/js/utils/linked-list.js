@@ -37,6 +37,12 @@ export default class LinkedList {
     let nextItem = prevItem ? prevItem.next : this.head;
     this.insertBefore(item, nextItem);
   }
+  _ensureItemIsNotAlreadyInList(item){
+    assert(
+      'Cannot insert an item into a list if it is already in a list',
+      !item.next && !item.prev && this.head !== item
+    );
+  }
   insertBefore(item, nextItem) {
     this._ensureItemIsNotInList(item);
     this.adoptItem(item);
@@ -108,8 +114,7 @@ export default class LinkedList {
     let item = this.head;
     let index = 0;
     while (item) {
-      callback(item, index);
-      index++;
+      callback(item, index++);
       item = item.next;
     }
   }
