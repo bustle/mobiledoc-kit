@@ -79,12 +79,11 @@ Object.keys(GoogleDocs).forEach(key => {
 test('img in span can use a cardParser to turn img into image-card', function(assert) {
   let example = GoogleDocs['img in span'];
   let options = {
-    cardParsers: [{
-      parse(element, builder) {
-        if (element.tagName === 'IMG') {
-          let payload = {url: element.src};
-          return builder.createCardSection('image-card', payload);
-        }
+    plugins: [function(element, builder, {addSection}) {
+      if (element.tagName === 'IMG') {
+        let payload = {url: element.src};
+        let cardSection = builder.createCardSection('image-card', payload);
+        addSection(cardSection);
       }
     }]
   };
