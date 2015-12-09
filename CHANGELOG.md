@@ -2,12 +2,6 @@
 ## 0.7.1 (2015-12-09)
 
 
-
-
-<a name="0.7.1"></a>
-## 0.7.1 (2015-12-09)
-
-
 * 0.7.0 ([afbeb5e](https://github.com/bustlelabs/mobiledoc-kit/commit/afbeb5e))
 * 0.7.1 ([49dafd8](https://github.com/bustlelabs/mobiledoc-kit/commit/49dafd8))
 * Add better guard against inserting item from other list into linked list ([f7a4ef2](https://github.com/bustlelabs/mobiledoc-kit/commit/f7a4ef2))
