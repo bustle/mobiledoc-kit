@@ -199,6 +199,47 @@ const expansion = {
 };
 ```
 
+### DOM Parsing hooks
+
+A developer can override the default parsing behavior for leaf DOM nodes in
+pasted HTML.
+
+For example, when an `img` tag is pasted it may be appropriate to
+fetch that image, upload it to an authoritative source, and create a specific
+kind of image card with the new URL in its payload.
+
+A demonstration of this:
+
+```js
+function imageToCardParser(node, builder, {addSection, addMarkerable, nodeFinished}) {
+  if (node.nodeType !== 1 || node.tagName !== 'IMG') {
+    return;
+  }
+  var payload = { src: node.src };
+  var cardSection = builder.createCardSection('my-image', payload);
+  addSection(cardSection);
+  nodeFinished();
+}
+var options = {
+  parserPlugins: [imageToCardParser]
+};
+var editor = new Mobiledoc.Editor(options);
+var element = document.querySelector('#editor');
+editor.render(element);
+```
+
+Parser hooks are called with two arguments:
+
+* `node` - The node of DOM being parsed. This may be a text node or an element.
+* `builder` - The abstract model builder.
+* `env` - An object containing three callbacks to modify the abstract
+  * `addSection` - Close the current section and add a new one
+  * `addMarkerable` - Add a markerable (marker or atom) to the current section
+  * `nodeFinished` - Bypass all remaining parse steps for this node
+
+Note that you *must* call `nodeFinished` to stop a DOM node from being
+parsed by the next plugin or the default parser.
+
 ### Contributing
 
 Fork the repo, write a test, make a change, open a PR.

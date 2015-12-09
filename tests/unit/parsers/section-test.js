@@ -104,21 +104,21 @@ test('#parse turns a textNode into a section', (assert) => {
   assert.equal(m1.value, 'I am a text node');
 });
 
-test('#parse allows passing in cardParsers that can override parsing', (assert) => {
+test('#parse allows passing in parserPlugins that can override element parsing', (assert) => {
   let container = buildDOM(`
     <p>text 1<img src="http://placehold.it/100x100">text 2</p>
   `);
 
   let element = container.firstChild;
-  let cardParsers = [{
-    parse(element, builder) {
-      if (element.tagName === 'IMG') {
-        let payload = {url: element.src};
-        return builder.createCardSection('test-image', payload);
-      }
+  let plugins = [function(element, builder, {addSection}) {
+    if (element.tagName !== 'IMG') {
+      return;
     }
+    let payload = {url: element.src};
+    let cardSection = builder.createCardSection('test-image', payload);
+    addSection(cardSection);
   }];
-  parser = new SectionParser(builder, {cardParsers});
+  parser = new SectionParser(builder, {plugins});
   const sections = parser.parse(element);
 
   assert.equal(sections.length, 3, '3 sections');
@@ -129,4 +129,25 @@ test('#parse allows passing in cardParsers that can override parsing', (assert) 
   let cardSection = sections[1];
   assert.equal(cardSection.name, 'test-image');
   assert.deepEqual(cardSection.payload, {url: 'http://placehold.it/100x100'});
+});
+
+test('#parse allows passing in parserPlugins that can override text parsing', (assert) => {
+  let container = buildDOM(`
+    <p>text 1<img src="http://placehold.it/100x100">text 2</p>
+  `);
+
+  let element = container.firstChild;
+  let plugins = [function(element, builder, {addMarkerable, nodeFinished}) {
+    if (element.nodeType === 3) {
+      if (element.textContent === 'text 1') {
+        addMarkerable(builder.createMarker('oh my'));
+      }
+      nodeFinished();
+    }
+  }];
+  parser = new SectionParser(builder, {plugins});
+  const sections = parser.parse(element);
+
+  assert.equal(sections.length, 1, '1 section');
+  assert.equal(sections[0].text, 'oh my');
 });

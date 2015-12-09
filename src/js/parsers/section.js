@@ -39,6 +39,8 @@ import {
   transformHTMLText
 } from '../parsers/dom';
 
+import assert from '../utils/assert';
+
 function isListSection(section) {
   return section.type === LIST_SECTION_TYPE;
 }
@@ -55,7 +57,7 @@ function isListItem(section) {
 export default class SectionParser {
   constructor(builder, options={}) {
     this.builder = builder;
-    this.cardParsers = options.cardParsers || [];
+    this.plugins = options.plugins || [];
   }
 
   parse(element) {
@@ -90,9 +92,47 @@ export default class SectionParser {
     });
   }
 
+  runPlugins(node) {
+    let isNodeFinished = false;
+    let env = {
+      addSection: (section) => {
+        this._closeCurrentSection();
+        this.sections.push(section);
+      },
+      addMarkerable: (marker) => {
+        let { state } = this;
+        let { section } = state;
+        assert(
+          'Markerables can only be appended to markup sections and list item sections',
+          section && section.isMarkerable
+        );
+        if (state.text) {
+          this._createMarker();
+        }
+        section.markers.append(marker);
+      },
+      nodeFinished() {
+        isNodeFinished = true;
+      }
+    };
+    for (let i=0; i<this.plugins.length; i++) {
+      let plugin = this.plugins[i];
+      plugin(node, this.builder, env);
+      if (isNodeFinished) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   parseNode(node) {
     if (!this.state.section) {
       this._updateStateFromElement(node);
+    }
+
+    let nodeFinished = this.runPlugins(node);
+    if (nodeFinished) {
+      return;
     }
 
     switch (node.nodeType) {
@@ -107,26 +147,8 @@ export default class SectionParser {
     }
   }
 
-  parseCard(element) {
-    let { builder } = this;
-
-    for (let i=0; i<this.cardParsers.length; i++) {
-      let card = this.cardParsers[i].parse(element, builder);
-      if (card) {
-        this._closeCurrentSection();
-        this.sections.push(card);
-        return true;
-      }
-    }
-  }
-
   parseElementNode(element) {
     let { state } = this;
-
-    let parsedCard = this.parseCard(element);
-    if (parsedCard) {
-      return;
-    }
 
     const markups = this._markupsFromElement(element);
     if (markups.length && state.text.length) {
