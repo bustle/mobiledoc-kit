@@ -2,8 +2,6 @@ import Ember from 'ember';
 import cards from '../mobiledoc-cards/dom';
 import Renderer from 'ember-mobiledoc-dom-renderer';
 
-let { run } = Ember;
-
 let renderer = new Renderer({cards});
 
 export default Ember.Component.extend({
@@ -13,16 +11,21 @@ export default Ember.Component.extend({
       return;
     }
 
-    run(() => {
-      if (this._teardownRender) {
-        this._teardownRender();
-        this._teardownRender = null;
-      }
+    if (this._teardownRender) {
+      this._teardownRender();
+      this._teardownRender = null;
+    }
 
-      let target = this.$();
+    let target = this.$();
+    target.empty();
+    try {
       let { result, teardown } = renderer.render(mobiledoc);
       target.append(result);
       this._teardownRender = teardown;
-    });
+    } catch(e) {
+      console.error(e);
+      let result = document.createTextNode(e.message);
+      target.append(result);
+    }
   }
 });
