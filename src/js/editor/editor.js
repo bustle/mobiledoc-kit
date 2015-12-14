@@ -258,12 +258,12 @@ class Editor {
         let nextPosition  = postEditor.deleteRange(range);
         cursorSection = nextPosition.section;
         if (cursorSection && cursorSection.isBlank) {
-          postEditor.setRange(Range.fromSection(cursorSection));
+          postEditor.setRange(new Range(cursorSection.headPosition()));
           return;
         }
       }
       cursorSection = postEditor.splitSection(range.head)[1];
-      postEditor.setRange(Range.fromSection(cursorSection));
+      postEditor.setRange(new Range(cursorSection.headPosition()));
     });
   }
 
