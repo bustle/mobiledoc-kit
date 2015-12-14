@@ -2,12 +2,6 @@
 ## 0.7.2 (2015-12-14)
 
 
-
-
-<a name="0.7.2"></a>
-## 0.7.2 (2015-12-14)
-
-
 * 0.7.2 ([fc25f1d](https://github.com/bustlelabs/mobiledoc-kit/commit/fc25f1d))
 * Avoid reparse after initial render ([a30897b](https://github.com/bustlelabs/mobiledoc-kit/commit/a30897b))
 * built website from ea57d2f4ae42f7e855d44bb9f4e6690b6fe621d1 ([abf204a](https://github.com/bustlelabs/mobiledoc-kit/commit/abf204a))
