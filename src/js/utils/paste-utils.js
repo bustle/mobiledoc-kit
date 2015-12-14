@@ -30,6 +30,11 @@ export function parsePostFromPaste(pasteEvent, builder, plugins=[]) {
 
   let html = pasteEvent.clipboardData.getData('text/html');
 
+  // Fallback to 'text/plain'
+  if (!html || html.length === 0) {
+    html = pasteEvent.clipboardData.getData('text/plain');
+  }
+
   if (mobiledocRegex.test(html)) {
     let mobiledocString = html.match(mobiledocRegex)[1];
     mobiledoc = JSON.parse(mobiledocString);

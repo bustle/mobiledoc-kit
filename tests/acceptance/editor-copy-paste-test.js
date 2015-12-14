@@ -42,6 +42,24 @@ test('simple copy-paste at end of section works', (assert) => {
   assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
 });
 
+test('paste from external text source', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  let textNode = $('#editor p')[0].childNodes[0];
+  assert.equal(textNode.textContent, 'abc'); //precond
+  Helpers.dom.moveCursorTo(textNode, textNode.length);
+
+  Helpers.dom.setCopyData('text/plain', 'abc');
+  Helpers.dom.triggerPasteEvent(editor);
+
+  assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+});
+
 test('can cut and then paste content', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
