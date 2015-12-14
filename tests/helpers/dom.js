@@ -160,7 +160,10 @@ function keyCodeForChar(letter) {
   let keyCode;
   switch (letter) {
     case '.':
-      keyCode = 190;
+      keyCode = KEY_CODES['.'];
+      break;
+    case '\n':
+      keyCode = KEY_CODES.ENTER;
       break;
     default:
       keyCode = letter.charCodeAt(0);

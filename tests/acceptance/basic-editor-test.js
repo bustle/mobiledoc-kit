@@ -1,6 +1,11 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
-import { TAB } from 'mobiledoc-kit/utils/characters';
+import Range from 'mobiledoc-kit/utils/cursor/range';
+import Position from 'mobiledoc-kit/utils/cursor/position';
+import {
+  TAB,
+  ENTER
+} from 'mobiledoc-kit/utils/characters';
 
 const { test, module } = Helpers;
 
@@ -195,6 +200,39 @@ test('select-all and type text works ok', (assert) => {
   setTimeout(function() {
     assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
     assert.hasElement('#editor p:contains(X)', 'inserts text');
+    done();
+  }, 0);
+});
+
+test('typing enter splits lines, sets cursor', (assert) => {
+  let done = assert.async();
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [ marker('hihey') ])
+    ]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor p');
+
+  Helpers.dom.moveCursorTo($('#editor p')[0].firstChild, 2);
+  Helpers.dom.insertText(editor, ENTER);
+  window.setTimeout(() => {
+    let editedMobiledoc = editor.serialize();
+    assert.deepEqual(editedMobiledoc.sections, [
+      [],
+      [
+        [1, 'p', [
+          [[], 0, `hi`]
+        ]],
+        [1, 'p', [
+          [[], 0, `hey`]
+        ]]
+      ]
+    ], 'correctly encoded');
+    let expectedRange = new Range(new Position(editor.post.sections.tail, 0));
+    assert.ok(expectedRange.isEqual(editor.range), 'range is at start of new section');
     done();
   }, 0);
 });
