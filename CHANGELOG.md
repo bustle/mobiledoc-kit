@@ -1,40 +1,81 @@
+<a name="0.7.2"></a>
+## 0.7.2 (2015-12-14)
+
+
+
+
+<a name="0.7.2"></a>
+## 0.7.2 (2015-12-14)
+
+
+* 0.7.2 ([fc25f1d](https://github.com/bustlelabs/mobiledoc-kit/commit/fc25f1d))
+* Avoid reparse after initial render ([a30897b](https://github.com/bustlelabs/mobiledoc-kit/commit/a30897b))
+* built website from ea57d2f4ae42f7e855d44bb9f4e6690b6fe621d1 ([abf204a](https://github.com/bustlelabs/mobiledoc-kit/commit/abf204a))
+* Catch, display and log rendering errors ([ce06ef3](https://github.com/bustlelabs/mobiledoc-kit/commit/ce06ef3))
+* Clean up changelog ([eaaed00](https://github.com/bustlelabs/mobiledoc-kit/commit/eaaed00))
+* Drop mutation observer during rerender ([26d3d78](https://github.com/bustlelabs/mobiledoc-kit/commit/26d3d78))
+* Fix issue #256:  Copy-pasting from Notepad does not work ([e251455](https://github.com/bustlelabs/mobiledoc-kit/commit/e251455)), closes [#256](https://github.com/bustlelabs/mobiledoc-kit/issues/256)
+* Merge pull request #262 from YoranBrondsema/yb-fix-bug-256 ([15dfb9e](https://github.com/bustlelabs/mobiledoc-kit/commit/15dfb9e)), closes [#256](https://github.com/bustlelabs/mobiledoc-kit/issues/256)
+* Merge pull request #264 from mixonic/avoid-reparse ([69e7394](https://github.com/bustlelabs/mobiledoc-kit/commit/69e7394))
+* Merge pull request #265 from mixonic/fix-newline ([3b00baf](https://github.com/bustlelabs/mobiledoc-kit/commit/3b00baf))
+* Merge pull request #266 from mixonic/safe-website ([4af6d90](https://github.com/bustlelabs/mobiledoc-kit/commit/4af6d90))
+* Optimize the compiler loop ([eeca363](https://github.com/bustlelabs/mobiledoc-kit/commit/eeca363))
+* Set cursor to collapsed after hitting enter ([68cfa16](https://github.com/bustlelabs/mobiledoc-kit/commit/68cfa16))
+* Update changelog ([ea57d2f](https://github.com/bustlelabs/mobiledoc-kit/commit/ea57d2f))
+
+
+
 <a name="0.7.1"></a>
 ## 0.7.1 (2015-12-09)
 
 
-* 0.7.0 ([afbeb5e](https://github.com/bustlelabs/mobiledoc-kit/commit/afbeb5e))
 * 0.7.1 ([49dafd8](https://github.com/bustlelabs/mobiledoc-kit/commit/49dafd8))
 * Add better guard against inserting item from other list into linked list ([f7a4ef2](https://github.com/bustlelabs/mobiledoc-kit/commit/f7a4ef2))
 * Add postEditor#toggleSection, works with ul/ol sections ([1e47433](https://github.com/bustlelabs/mobiledoc-kit/commit/1e47433)), closes [#186](https://github.com/bustlelabs/mobiledoc-kit/issues/186)
 * Add support for tabs ([a677599](https://github.com/bustlelabs/mobiledoc-kit/commit/a677599))
-* Add versioning for Mobiledoc renderer, parser ([69a93e4](https://github.com/bustlelabs/mobiledoc-kit/commit/69a93e4))
 * built website from 4a39224e72873b155d12e922865b5e9d426ea8c4 ([5c890e2](https://github.com/bustlelabs/mobiledoc-kit/commit/5c890e2))
 * Document parser hooks ([06b1406](https://github.com/bustlelabs/mobiledoc-kit/commit/06b1406))
-* Fix DOM-dependent tests for IE Edge ([49bc53d](https://github.com/bustlelabs/mobiledoc-kit/commit/49bc53d))
-* Fix un-executed tests ([d4ce7b9](https://github.com/bustlelabs/mobiledoc-kit/commit/d4ce7b9))
 * IE11 Support ([3eeb2ba](https://github.com/bustlelabs/mobiledoc-kit/commit/3eeb2ba))
-* Implement card refactor for editor-dom renderer ([3baafbe](https://github.com/bustlelabs/mobiledoc-kit/commit/3baafbe)), closes [#236](https://github.com/bustlelabs/mobiledoc-kit/issues/236) [#239](https://github.com/bustlelabs/mobiledoc-kit/issues/239)
 * Implement parserPlugins API ([f52d97e](https://github.com/bustlelabs/mobiledoc-kit/commit/f52d97e))
-* Merge pull request #238 from bustlelabs/update-editor-dom-card-renderer-236 ([0332d67](https://github.com/bustlelabs/mobiledoc-kit/commit/0332d67))
-* Merge pull request #240 from mixonic/foobar ([0aa068c](https://github.com/bustlelabs/mobiledoc-kit/commit/0aa068c))
-* Merge pull request #241 from mixonic/version-mobiledoc ([79d6f6c](https://github.com/bustlelabs/mobiledoc-kit/commit/79d6f6c))
-* Merge pull request #242 from mixonic/ie-edge ([d4105e8](https://github.com/bustlelabs/mobiledoc-kit/commit/d4105e8))
 * Merge pull request #244 from mixonic/ie-11 ([0bcb2a5](https://github.com/bustlelabs/mobiledoc-kit/commit/0bcb2a5))
-* Merge pull request #245 from bustlelabs/update-card-docs ([7febf3f](https://github.com/bustlelabs/mobiledoc-kit/commit/7febf3f))
 * Merge pull request #247 from bustlelabs/remove-ck-prefix ([38736a0](https://github.com/bustlelabs/mobiledoc-kit/commit/38736a0))
 * Merge pull request #248 from bustlelabs/toggle-list-sections-186 ([f4fc3cc](https://github.com/bustlelabs/mobiledoc-kit/commit/f4fc3cc))
 * Merge pull request #251 from bustlelabs/ll-refactor ([e0013dd](https://github.com/bustlelabs/mobiledoc-kit/commit/e0013dd))
 * Merge pull request #254 from mixonic/tab-next ([3cfdd87](https://github.com/bustlelabs/mobiledoc-kit/commit/3cfdd87))
 * Merge pull request #255 from bustlelabs/update-outdated-npm-modules ([6eff771](https://github.com/bustlelabs/mobiledoc-kit/commit/6eff771))
 * Merge pull request #257 from mixonic/parser-hooks ([01fec18](https://github.com/bustlelabs/mobiledoc-kit/commit/01fec18))
-* Silence testing-only failues on IE Edge ([0dc9ec6](https://github.com/bustlelabs/mobiledoc-kit/commit/0dc9ec6))
-* update card docs ([5b87106](https://github.com/bustlelabs/mobiledoc-kit/commit/5b87106))
-* Update changelog ([915a287](https://github.com/bustlelabs/mobiledoc-kit/commit/915a287))
 * Update changelog ([a72fe64](https://github.com/bustlelabs/mobiledoc-kit/commit/a72fe64))
 * update outdated modules (used updtr) ([0c5f102](https://github.com/bustlelabs/mobiledoc-kit/commit/0c5f102))
 * Use '__mobiledoc-' prefix for element class names ([10eb490](https://github.com/bustlelabs/mobiledoc-kit/commit/10eb490))
 * use ember-mobiledoc-editor v0.3.0 ([4a39224](https://github.com/bustlelabs/mobiledoc-kit/commit/4a39224))
+
+
+
+<a name="0.7.0"></a>
+# 0.7.0 (2015-11-24)
+
+
+* 0.7.0 ([afbeb5e](https://github.com/bustlelabs/mobiledoc-kit/commit/afbeb5e))
+* Merge pull request #245 from bustlelabs/update-card-docs ([7febf3f](https://github.com/bustlelabs/mobiledoc-kit/commit/7febf3f))
+* update card docs ([5b87106](https://github.com/bustlelabs/mobiledoc-kit/commit/5b87106))
 * Use ember-mobiledoc-editor@0.2.2-beta1 ([bd83fc5](https://github.com/bustlelabs/mobiledoc-kit/commit/bd83fc5))
+
+
+
+<a name="0.6.2-beta1"></a>
+## 0.6.2-beta1 (2015-11-23)
+
+
+* Add versioning for Mobiledoc renderer, parser ([69a93e4](https://github.com/bustlelabs/mobiledoc-kit/commit/69a93e4))
+* Fix DOM-dependent tests for IE Edge ([49bc53d](https://github.com/bustlelabs/mobiledoc-kit/commit/49bc53d))
+* Fix un-executed tests ([d4ce7b9](https://github.com/bustlelabs/mobiledoc-kit/commit/d4ce7b9))
+* Implement card refactor for editor-dom renderer ([3baafbe](https://github.com/bustlelabs/mobiledoc-kit/commit/3baafbe)), closes [#236](https://github.com/bustlelabs/mobiledoc-kit/issues/236) [#239](https://github.com/bustlelabs/mobiledoc-kit/issues/239)
+* Merge pull request #238 from bustlelabs/update-editor-dom-card-renderer-236 ([0332d67](https://github.com/bustlelabs/mobiledoc-kit/commit/0332d67))
+* Merge pull request #240 from mixonic/foobar ([0aa068c](https://github.com/bustlelabs/mobiledoc-kit/commit/0aa068c))
+* Merge pull request #241 from mixonic/version-mobiledoc ([79d6f6c](https://github.com/bustlelabs/mobiledoc-kit/commit/79d6f6c))
+* Merge pull request #242 from mixonic/ie-edge ([d4105e8](https://github.com/bustlelabs/mobiledoc-kit/commit/d4105e8))
+* Silence testing-only failues on IE Edge ([0dc9ec6](https://github.com/bustlelabs/mobiledoc-kit/commit/0dc9ec6))
+* Update changelog ([915a287](https://github.com/bustlelabs/mobiledoc-kit/commit/915a287))
 * Use more constants for mobiledoc versions ([2d1b59f](https://github.com/bustlelabs/mobiledoc-kit/commit/2d1b59f))
 * v0.6.2-beta1 ([ebdd180](https://github.com/bustlelabs/mobiledoc-kit/commit/ebdd180))
 
