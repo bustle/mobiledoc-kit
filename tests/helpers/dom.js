@@ -291,6 +291,10 @@ function getCopyData(type) {
   return lastCopyData[type];
 }
 
+function setCopyData(type, value) {
+  lastCopyData[type] = value;
+}
+
 function fromHTML(html) {
   html = $.trim(html);
   let div = document.createElement('div');
@@ -319,6 +323,7 @@ const DOMHelper = {
   triggerCutEvent,
   triggerPasteEvent,
   getCopyData,
+  setCopyData,
   createMockEvent
 };
 
