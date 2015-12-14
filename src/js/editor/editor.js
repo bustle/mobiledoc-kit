@@ -145,18 +145,18 @@ class Editor {
       throw new Error('Cannot render an editor twice. Use `rerender` to update the rendering of an existing editor instance');
     }
 
-    this.element = element;
 
-    addClassName(this.element, EDITOR_ELEMENT_CLASS_NAME);
+    addClassName(element, EDITOR_ELEMENT_CLASS_NAME);
     element.spellcheck = this.spellcheck;
+
+    clearChildNodes(element);
+
+    this.element = element;
 
     if (this.isEditable === null) {
       this.enableEditing();
     }
 
-    clearChildNodes(element);
-
-    this._setupListeners();
     this._addTooltip();
 
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
@@ -167,6 +167,8 @@ class Editor {
     if (this.autofocus) {
       this.element.focus();
     }
+
+    this._setupListeners();
   }
 
   _addTooltip() {
