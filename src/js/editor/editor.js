@@ -89,6 +89,10 @@ class Editor {
     DEFAULT_TEXT_EXPANSIONS.forEach(e => this.registerExpansion(e));
     DEFAULT_KEY_COMMANDS.forEach(kc => this.registerKeyCommand(kc));
 
+    this._mutationObserver = new MutationObserver(() => {
+      this.handleInput();
+    });
+    this._isMutationObserved = false;
     this._parser   = new DOMParser(this.builder);
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
@@ -136,7 +140,9 @@ class Editor {
     }
 
     this.runCallbacks(CALLBACK_QUEUES.WILL_RENDER);
+    this.removeMutationObserver();
     this._renderer.render(this._renderTree);
+    this.ensureMutationObserver();
     this.runCallbacks(CALLBACK_QUEUES.DID_RENDER);
   }
 
@@ -145,18 +151,18 @@ class Editor {
       throw new Error('Cannot render an editor twice. Use `rerender` to update the rendering of an existing editor instance');
     }
 
-    this.element = element;
 
-    addClassName(this.element, EDITOR_ELEMENT_CLASS_NAME);
+    addClassName(element, EDITOR_ELEMENT_CLASS_NAME);
     element.spellcheck = this.spellcheck;
+
+    clearChildNodes(element);
+
+    this.element = element;
 
     if (this.isEditable === null) {
       this.enableEditing();
     }
 
-    clearChildNodes(element);
-
-    this._setupListeners();
     this._addTooltip();
 
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
@@ -167,6 +173,8 @@ class Editor {
     if (this.autofocus) {
       this.element.focus();
     }
+
+    this._setupListeners();
   }
 
   _addTooltip() {
@@ -409,11 +417,28 @@ class Editor {
     this._views = [];
   }
 
+  ensureMutationObserver() {
+    if (!this._isMutationObserved) {
+      this._mutationObserver.observe(this.element, {
+        characterData: true,
+        childList: true,
+        subtree: true
+      });
+      this._isMutationObserved = true;
+    }
+  }
+
+  removeMutationObserver() {
+    if (this._isMutationObserved) {
+      this._mutationObserver.disconnect();
+      this._isMutationObserved = false;
+    }
+  }
+
   destroy() {
     this._isDestroyed = true;
-    if (this.mutationObserver) {
-      this.mutationObserver.disconnect();
-    }
+    this.removeMutationObserver();
+    this._mutationObserver = null;
     this.removeAllEventListeners();
     this.removeAllViews();
     this._renderer.destroy();
@@ -549,15 +574,6 @@ class Editor {
   }
 
   _setupListeners() {
-    this.mutationObserver = new MutationObserver(() => {
-      this.handleInput();
-    });
-    this.mutationObserver.observe(this.element, {
-      characterData: true,
-      childList: true,
-      subtree: true
-    });
-
     ELEMENT_EVENTS.forEach(eventName => {
       this.addEventListener(this.element, eventName,
         (...args) => this.handleEvent(eventName, ...args)
