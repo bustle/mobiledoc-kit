@@ -298,6 +298,12 @@ function setCopyData(type, value) {
   lastCopyData[type] = value;
 }
 
+function clearCopyData() {
+  Object.keys(lastCopyData).forEach(key => {
+    delete lastCopyData[key];
+  });
+}
+
 function fromHTML(html) {
   html = $.trim(html);
   let div = document.createElement('div');
@@ -327,6 +333,7 @@ const DOMHelper = {
   triggerPasteEvent,
   getCopyData,
   setCopyData,
+  clearCopyData,
   createMockEvent
 };
 

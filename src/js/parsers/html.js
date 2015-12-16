@@ -9,6 +9,10 @@ export default class HTMLParser {
     this.options = options;
   }
 
+  /**
+   * @param {String} html to parse
+   * @return {Post} A post abstract
+   */
   parse(html) {
     let dom = parseHTML(html);
     let parser = new DOMParser(this.builder, this.options);
