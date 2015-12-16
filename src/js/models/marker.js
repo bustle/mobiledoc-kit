@@ -1,8 +1,8 @@
 import { MARKER_TYPE } from './types';
-
 import { normalizeTagName } from '../utils/dom-utils';
 import { detect, commonItemLength, forEach, filter } from '../utils/array-utils';
 import LinkedItem from '../utils/linked-item';
+import assert from '../utils/assert';
 
 const Marker = class Marker extends LinkedItem {
   constructor(value='', markups=[]) {
@@ -10,6 +10,7 @@ const Marker = class Marker extends LinkedItem {
     this.value = value;
     this.markups = [];
     this.type = MARKER_TYPE;
+    this.isMarker = true;
     markups.forEach(m => this.addMarkup(m));
   }
 
@@ -114,6 +115,25 @@ const Marker = class Marker extends LinkedItem {
 
     this.markups.forEach(mu => markers.forEach(m => m.addMarkup(mu)));
     return markers;
+  }
+
+  /**
+   * @return {Array} 2 markers either or both of which could be blank
+   */
+  splitAtOffset(offset) {
+    assert('Cannot split a marker at an offset > its length',
+           offset <= this.length);
+    let { value, builder } = this;
+
+    let pre  = builder.createMarker(value.substring(0, offset));
+    let post = builder.createMarker(value.substring(offset));
+
+    this.markups.forEach(markup => {
+      pre.addMarkup(markup);
+      post.addMarkup(markup);
+    });
+
+    return [pre, post];
   }
 
   get openedMarkups() {

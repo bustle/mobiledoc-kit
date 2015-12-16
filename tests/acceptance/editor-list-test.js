@@ -135,6 +135,7 @@ test('can split list item with <enter>', (assert) => {
 });
 
 test('can hit enter at end of list item to add new item', (assert) => {
+  let done = assert.async();
   createEditorWithListMobiledoc();
 
   const li = $('#editor li:contains(first item)')[0];
@@ -148,13 +149,16 @@ test('can hit enter at end of list item to add new item', (assert) => {
   assert.equal(newLi.text(), '', 'new li has no text');
 
   Helpers.dom.insertText(editor, 'X');
-  assert.hasElement('#editor li:contains(X)', 'text goes in right spot');
+  setTimeout(() => {
+    assert.hasElement('#editor li:contains(X)', 'text goes in right spot');
 
-  const liCount = $('#editor li').length;
-  Helpers.dom.triggerEnter(editor);
-  Helpers.dom.triggerEnter(editor);
+    const liCount = $('#editor li').length;
+    Helpers.dom.triggerEnter(editor);
+    Helpers.dom.triggerEnter(editor);
 
-  assert.equal($('#editor li').length, liCount+2, 'adds two new empty list items');
+    assert.equal($('#editor li').length, liCount+2, 'adds two new empty list items');
+    done();
+  });
 });
 
 test('hitting enter to add list item, deleting to remove it, adding new list item, exiting list and typing', (assert) => {

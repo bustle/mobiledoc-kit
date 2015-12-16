@@ -6,6 +6,7 @@ import mixin from '../utils/mixin';
 import assert from '../utils/assert';
 import { normalizeTagName } from '../utils/dom-utils';
 import Range from '../utils/cursor/range';
+import PostInserter from './post/post-inserter';
 
 function isListSectionTagName(tagName) {
   return tagName === 'ul' || tagName === 'ol';
@@ -606,25 +607,20 @@ class PostEditor {
     if (section.isCardSection) {
       return this._splitCardSection(section, position);
     } else if (section.isListItem) {
-      let [beforeSection, afterSection] = section.splitAtPosition(position);
-      this._coalesceMarkers(beforeSection);
-      this._coalesceMarkers(afterSection);
+      let isLastAndBlank = section.isBlank && !section.next;
+      if (isLastAndBlank) {
+        // if is last, replace the item with a blank markup section
+        let parent = section.parent;
+        let collection = this.editor.post.sections;
+        let blank = this.builder.createMarkupSection();
+        this.removeSection(section);
+        this.insertSectionBefore(collection, blank, parent.next);
 
-      let newSections = [beforeSection, afterSection];
-      let replacementSections = [beforeSection, afterSection];
-
-      if (beforeSection.isBlank && section.isBlank) {
-        const isLastItemInList = section === section.parent.items.tail;
-
-        if (isLastItemInList) {
-          // when hitting enter in a final empty list item, do not insert a new
-          // empty item
-          replacementSections.shift();
-        }
+        return [null, blank];
+      } else {
+        let [pre, post] = this._splitListItem(section, position);
+        return [pre, post];
       }
-
-      this._replaceSection(section, replacementSections);
-      return newSections;
     } else {
       let splitSections = section.splitAtPosition(position);
       splitSections.forEach(s => this._coalesceMarkers(s));
@@ -720,6 +716,29 @@ class PostEditor {
     return this.moveSectionBefore(collection, renderedSection, beforeSection);
   }
 
+  insertMarkers(position, markers) {
+    let { section, offset } = position;
+    assert('Cannot insert markers at non-markerable position',
+           section.isMarkerable);
+
+    let edit = section.splitMarkerAtOffset(offset);
+    edit.removed.forEach(marker => this._scheduleForRemoval(marker));
+
+    let prevMarker = section.markerBeforeOffset(offset);
+    markers.forEach(marker => {
+      section.markers.insertAfter(marker, prevMarker);
+      offset += marker.length;
+      prevMarker = marker;
+    });
+
+    this._coalesceMarkers(section);
+    this._markDirty(section);
+
+    let nextPosition = new Position(position.section, offset);
+    this.setRange(new Range(nextPosition));
+    return nextPosition;
+  }
+
   insertText(position, text) {
     let section = position.section;
     if (!section.isMarkerable) {
@@ -749,7 +768,8 @@ class PostEditor {
 
     let nextNewSection = newSections[0];
     if (nextNewSection.isMarkupSection && section.isListItem) {
-      // put the new section after the ListSection (section.parent) instead of after the ListItem
+      // put the new section after the ListSection (section.parent)
+      // instead of after the ListItem
       collection = section.parent.parent.sections;
       nextSection = section.parent.next;
     }
@@ -923,6 +943,82 @@ class PostEditor {
   }
 
   /**
+   * Splits the item at the position given.
+   * If thse position is at the start or end of the item, the pre- or post-item
+   * will contain a single empty ("") marker.
+   * @return {Array} the pre-item and post-item on either side of the split
+   */
+  _splitListItem(item, position) {
+    let { section, offset } = position;
+    assert('Cannot split list item at position that does not include item',
+           item === section);
+
+    item.splitMarkerAtOffset(offset);
+    let prevMarker = item.markerBeforeOffset(offset);
+    let preItem  = this.builder.createListItem(),
+        postItem = this.builder.createListItem();
+
+    let currentItem = preItem;
+    item.markers.forEach(marker => {
+      currentItem.markers.append(marker.clone());
+      if (marker === prevMarker) {
+        currentItem = postItem;
+      }
+    });
+    this._replaceSection(item, [preItem, postItem]);
+    return [preItem, postItem];
+  }
+
+  /**
+   * Splits the list at the position given.
+   * @return {Array} pre-split list and post-split list, either of which could
+   * be blank (0-item list) if the position is at the start or end of the list.
+   *
+   * Note: Contiguous list sections will be joined in the before_complete queue
+   * of the postEditor.
+   */
+  _splitListAtPosition(list, position) {
+    assert('Cannot split list at position not in list',
+           position.section.parent === list);
+
+    let positionIsMiddle = !position.isHead() && !position.isTail();
+    if (positionIsMiddle) {
+      let item = position.section;
+      let [pre, post] = // jshint ignore:line
+        this._splitListItem(item, position);
+      position = pre.tailPosition();
+    }
+
+    let positionIsStart = position.isEqual(list.headPosition()),
+        positionIsEnd   = position.isEqual(list.tailPosition());
+
+    if (positionIsStart || positionIsEnd) {
+      let blank = this.builder.createListSection(list.tagName);
+      let reference = position.isEqual(list.headPosition()) ? list :
+                                                              list.next;
+      let collection = this.editor.post.sections;
+      this.insertSectionBefore(collection, blank, reference);
+
+      let lists = positionIsStart ? [blank, list] : [list, blank];
+      return lists;
+    } else {
+      let preList  = this.builder.createListSection(list.tagName),
+          postList = this.builder.createListSection(list.tagName);
+      let preItem = position.section;
+      let currentList = preList;
+      list.items.forEach(item => {
+        currentList.items.append(item.clone());
+        if (item === preItem) {
+          currentList = postList;
+        }
+      });
+
+      this._replaceSection(list, [preList, postList]);
+      return [preList, postList];
+    }
+  }
+
+  /**
    * @return Array of [prev, mid, next] lists. `prev` and `next` can
    *         be blank, depending on the position of `item`. `mid` will always
    *         be a 1-item list containing `item`. `prev` and `next` will be
@@ -973,10 +1069,11 @@ class PostEditor {
   }
 
   _changeSectionFromListItem(section, newTagName) {
-    assert('Must pass list item to `_changeSectionFromListItem`', section.isListItem);
-    let { builder } = this;
+    assert('Must pass list item to `_changeSectionFromListItem`',
+           section.isListItem);
+
     let listSection = section.parent;
-    let markupSection = builder.createMarkupSection(newTagName);
+    let markupSection = this.builder.createMarkupSection(newTagName);
     markupSection.join(section);
 
     let [prev, mid, next] = this._splitListAtItem(listSection, section); // jshint ignore:line
@@ -1061,46 +1158,12 @@ class PostEditor {
    * @method insertPost
    * @param {Position} position
    * @param {Post} post
-   * @return {Position} position at end of inserted content
    * @private
    */
   insertPost(position, newPost) {
-    if (newPost.isBlank) {
-      return position;
-    }
-    const post = this.editor.post;
-
-    let [preSplit, postSplit] = this.splitSection(position);
-    let nextPosition = position.clone();
-
-    newPost.sections.forEach((section, index) => {
-      if (index === 0 && preSplit.canJoin(section)) {
-          preSplit.join(section);
-          this._markDirty(preSplit);
-
-          nextPosition = preSplit.tailPosition();
-      } else {
-        section = section.clone();
-        this.insertSectionBefore(post.sections, section, postSplit);
-
-        nextPosition = section.tailPosition();
-      }
-    });
-
-    if (postSplit.isBlank) {
-      this.removeSection(postSplit);
-    }
-
-    if (preSplit.canJoin(postSplit) && preSplit.next === postSplit) {
-      nextPosition = preSplit.tailPosition();
-
-      preSplit.join(postSplit);
-      this._markDirty(preSplit);
-      this.removeSection(postSplit);
-    } else if (preSplit.isBlank) {
-      this.removeSection(preSplit);
-    }
-
+    let post = this.editor.post;
+    let inserter = new PostInserter(this, post);
+    let nextPosition = inserter.insert(position, newPost);
     return nextPosition;
   }
 
@@ -1184,16 +1247,14 @@ class PostEditor {
   }
 
   /**
-   * Flush any work on the queue. `editor.run` already does this, calling this
+   * Flush any work on the queue. `editor.run` already does this. Calling this
    * method directly should not be needed outside `editor.run`.
    *
    * @method complete
    * @private
    */
   complete() {
-    if (this._didComplete) {
-      throw new Error('Post editing can only be completed once');
-    }
+    assert('Post editing can only be completed once', !this._didComplete);
 
     this.runCallbacks(CALLBACK_QUEUES.BEFORE_COMPLETE);
     this._didComplete = true;

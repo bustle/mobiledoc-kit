@@ -13,6 +13,7 @@ export default class ListItem extends Markerable {
   constructor(tagName, markers=[]) {
     super(LIST_ITEM_TYPE, tagName, markers);
     this.isListItem = true;
+    this.isNested = true;
   }
 
   isValidTagName(normalizedTagName) {

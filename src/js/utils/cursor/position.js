@@ -68,6 +68,14 @@ const Position = class Position {
            this.offset  === position.offset;
   }
 
+  isHead() {
+    return this.isEqual(this.section.headPosition());
+  }
+
+  isTail() {
+    return this.isEqual(this.section.tailPosition());
+  }
+
   move(direction) {
     switch (direction) {
       case DIRECTION.BACKWARD:

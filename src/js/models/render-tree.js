@@ -33,7 +33,7 @@ export default class RenderTree {
   }
   /**
    * @param {DOMNode} element
-   * Walk up from the element until we find a renderNode element
+   * Walk up from the dom element until we find a renderNode element
    */
   findRenderNodeFromElement(element, conditionFn=()=>true) {
     let renderNode;

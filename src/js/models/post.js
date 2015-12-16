@@ -3,6 +3,7 @@ import LinkedList from 'mobiledoc-kit/utils/linked-list';
 import { forEach, compact } from 'mobiledoc-kit/utils/array-utils';
 import Set from 'mobiledoc-kit/utils/set';
 import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 export default class Post {
   constructor() {
@@ -99,21 +100,10 @@ export default class Post {
     return markups.toArray();
   }
 
-  // FIXME if range.head is a listItem this will not work properly
-  walkPostSections(range, callback) {
-    const {head, tail} = range;
-
-    let currentSection = head.section;
-
-    while (currentSection) {
-      callback(currentSection);
-
-      if (currentSection === tail.section) {
-        break;
-      } else {
-        currentSection = currentSection.next;
-      }
-    }
+  walkAllLeafSections(callback) {
+    let range = new Range(this.sections.head.headPosition(),
+                          this.sections.tail.tailPosition());
+    return this.walkLeafSections(range, callback);
   }
 
   walkLeafSections(range, callback) {
@@ -217,10 +207,27 @@ export default class Post {
     const post = this.builder.createPost();
     const { builder } = this;
 
-    this.walkPostSections(range, section => {
+    let sectionParent = post,
+        listParent = null;
+    this.walkLeafSections(range, section => {
       let newSection;
       if (section.isMarkerable) {
-        newSection = builder.createMarkupSection(section.tagName);
+        if (section.isListItem) {
+          if (listParent) {
+            sectionParent = null;
+          } else {
+            listParent = builder.createListSection(section.parent.tagName);
+            post.sections.append(listParent);
+            sectionParent = null;
+          }
+          newSection = builder.createListItem();
+          listParent.items.append(newSection);
+        } else {
+          listParent = null;
+          sectionParent = post;
+          newSection = builder.createMarkupSection(section.tagName);
+        }
+
         let currentRange = range.trimTo(section);
         forEach(
           section.markersFor(currentRange.headSectionOffset, currentRange.tailSectionOffset),
@@ -229,7 +236,9 @@ export default class Post {
       } else {
         newSection = section.clone();
       }
-      post.sections.append(newSection);
+      if (sectionParent) {
+        sectionParent.sections.append(newSection);
+      }
     });
     return mobiledocRenderers.render(post);
   }
