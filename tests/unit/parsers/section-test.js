@@ -151,3 +151,13 @@ test('#parse allows passing in parserPlugins that can override text parsing', (a
   assert.equal(sections.length, 1, '1 section');
   assert.equal(sections[0].text, 'oh my');
 });
+
+test('#parse skips STYLE nodes', (assert) => {
+  let element = buildDOM(`
+    <style>.rule { font-color: red; }</style>
+  `).firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 0, 'does not parse style');
+});
