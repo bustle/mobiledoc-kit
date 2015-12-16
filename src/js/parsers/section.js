@@ -41,18 +41,14 @@ import {
 
 import assert from '../utils/assert';
 
-function isListSection(section) {
-  return section.type === LIST_SECTION_TYPE;
-}
-
-function isListItem(section) {
-  return section.type === LIST_ITEM_TYPE;
-}
+const SKIPPABLE_ELEMENT_TAG_NAMES = [
+  'style', 'head', 'title', 'meta'
+].map(normalizeTagName);
 
 /**
  * parses an element into a section, ignoring any non-markup
  * elements contained within
- * @return {Section}
+ * @return {Array} sections
  */
 export default class SectionParser {
   constructor(builder, options={}) {
@@ -61,6 +57,9 @@ export default class SectionParser {
   }
 
   parse(element) {
+    if (this._isSkippable(element)) {
+      return [];
+    }
     this.sections = [];
     this.state = {};
 
@@ -68,7 +67,7 @@ export default class SectionParser {
 
     let childNodes = isTextNode(element) ? [element] : element.childNodes;
 
-    if (isListSection(this.state.section)) {
+    if (this.state.section.isListSection) {
       this.parseListItems(childNodes);
     } else {
       forEach(childNodes, el => {
@@ -86,7 +85,7 @@ export default class SectionParser {
     forEach(childNodes, el => {
       let parsed = new this.constructor(this.builder).parse(el);
       let li = parsed[0];
-      if (li && isListItem(li)) {
+      if (li && li.isListItem) {
         state.section.items.append(li);
       }
     });
@@ -300,4 +299,9 @@ export default class SectionParser {
     return section;
   }
 
+  _isSkippable(element) {
+    return element.nodeType === ELEMENT_NODE &&
+           contains(SKIPPABLE_ELEMENT_TAG_NAMES,
+                    normalizeTagName(element.tagName));
+  }
 }
