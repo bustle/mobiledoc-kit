@@ -1,6 +1,10 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
+import {
+  MIME_TEXT_PLAIN,
+  MIME_TEXT_HTML
+} from 'mobiledoc-kit/utils/paste-utils';
 
 const { test, module } = Helpers;
 
@@ -18,7 +22,11 @@ module('Acceptance: editor: copy-paste', {
     editorElement = $('#editor')[0];
   },
   afterEach() {
-    if (editor) { editor.destroy(); }
+    if (editor) {
+      editor.destroy();
+      editor = null;
+    }
+    Helpers.dom.clearCopyData();
   }
 });
 
@@ -42,7 +50,7 @@ test('simple copy-paste at end of section works', (assert) => {
   assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
 });
 
-test('paste from external text source', (assert) => {
+test('paste plain text', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
@@ -54,10 +62,49 @@ test('paste from external text source', (assert) => {
   assert.equal(textNode.textContent, 'abc'); //precond
   Helpers.dom.moveCursorTo(textNode, textNode.length);
 
-  Helpers.dom.setCopyData('text/plain', 'abc');
+  Helpers.dom.setCopyData(MIME_TEXT_PLAIN, 'abc');
   Helpers.dom.triggerPasteEvent(editor);
 
   assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+});
+
+test('paste plain text with line breaks', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  let textNode = $('#editor p')[0].childNodes[0];
+  assert.equal(textNode.textContent, 'abc'); //precond
+  Helpers.dom.moveCursorTo(textNode, textNode.length);
+
+  Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['abc', 'def'].join('\n'));
+  Helpers.dom.triggerPasteEvent(editor);
+
+  assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+  assert.hasElement('#editor p:contains(def)', 'second section is pasted');
+  assert.equal($('#editor p').length, 2, 'adds a second section');
+});
+
+test('paste plain text with list items', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  let textNode = $('#editor p')[0].childNodes[0];
+  assert.equal(textNode.textContent, 'abc'); //precond
+  Helpers.dom.moveCursorTo(textNode, textNode.length);
+
+  Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['* abc', '* def'].join('\n'));
+  Helpers.dom.triggerPasteEvent(editor);
+
+  assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+  assert.hasElement('#editor ul li:contains(def)', 'list item is pasted');
 });
 
 test('can cut and then paste content', (assert) => {
@@ -253,20 +300,14 @@ test('copy sets html & text for pasting externally', (assert) => {
 
   Helpers.dom.triggerCopyEvent(editor);
 
-  let text = Helpers.dom.getCopyData('text/plain');
-  let html = Helpers.dom.getCopyData('text/html');
-  assert.equal(text, [
-    "heading",
-    "h2 subheader",
-    "The text"
-  ].join('\n'), 'gets plain text');
+  let text = Helpers.dom.getCopyData(MIME_TEXT_PLAIN);
+  let html = Helpers.dom.getCopyData(MIME_TEXT_HTML);
+  assert.equal(text, ["heading", "h2 subheader", "The text" ].join('\n'),
+               'gets plain text');
 
-  assert.ok(html.indexOf("<h1>heading") !== -1,
-            'html has h1');
-  assert.ok(html.indexOf("<h2>h2 subheader") !== -1,
-            'html has h2');
-  assert.ok(html.indexOf("<p>The text") !== -1,
-            'html has p');
+  assert.ok(html.indexOf("<h1>heading") !== -1, 'html has h1');
+  assert.ok(html.indexOf("<h2>h2 subheader") !== -1, 'html has h2');
+  assert.ok(html.indexOf("<p>The text") !== -1, 'html has p');
 });
 
 test('pasting when on the end of a card is blocked', (assert) => {
