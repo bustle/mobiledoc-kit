@@ -259,3 +259,43 @@ test('activeSections of a rendered blank mobiledoc is an empty array', (assert) 
   assert.equal(0, editor.activeSections.length,
                'empty activeSections');
 });
+
+test('editor.cursor.hasCursor() is false before rendering', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(({post}) => post());
+  editor = new Editor({mobiledoc});
+
+  assert.ok(!editor.cursor.hasCursor(), 'no cursor before rendering');
+
+  Helpers.dom.moveCursorTo(editorElement, 0);
+
+  assert.ok(!editor.cursor.hasCursor(),
+            'no cursor before rendering, even when selection exists');
+});
+
+test('#destroy clears selection if it has one', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(({post}) => post());
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.moveCursorTo(editorElement, 0);
+  assert.ok(editor.cursor.hasCursor(), 'precond - has cursor');
+
+  editor.destroy();
+
+  assert.equal(window.getSelection().rangeCount, 0,
+               'selection is cleared');
+});
+
+test('#destroy does not clear selection if it is outside the editor element', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(({post}) => post());
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.moveCursorTo($('#qunit-fixture')[0], 0);
+  assert.ok(!editor.cursor.hasCursor(), 'precond - has no cursor');
+  assert.equal(window.getSelection().rangeCount, 1, 'precond - has selection');
+
+  editor.destroy();
+
+  assert.equal(window.getSelection().rangeCount, 1, 'selection is not cleared');
+});

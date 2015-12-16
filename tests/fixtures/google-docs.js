@@ -3,12 +3,20 @@ export default {
     expected: "<p>simple paragraph</p>",
     raw: `<meta charset='utf-8'><meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-d75a90f6-8c07-deca-96cb-4b79c9ad7a7f"><span style="font-size:14.666666666666666px;font-family:Arial;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre-wrap;">simple paragraph</span></b>`
   },
+  'simple paragraph as span (Chrome - Windows)': {
+    expected: "<p>simple paragraph</p>",
+    raw: `<html><body><!--StartFragment--><meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-af1f8f2c-cacc-6998-07a1-89da38d9c501"><span style="font-size:14.666666666666666px;font-family:Arial;color:#222222;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre-wrap;">simple paragraph</span></b><!--EndFragment--></body></html>`
+  },
 
   // when selecting a line without including the end of the line, the html represention
   // includes a <span> or series of <span>s
   'paragraph with bold as span': {
     expected: "<p>paragraph with <strong>bold</strong></p>",
     raw: `<meta charset='utf-8'><meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-d75a90f6-8c09-8dc9-fb2f-f7eb880e143d"><span style="font-size:14.666666666666666px;font-family:Arial;color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre-wrap;">paragraph with </span><span style="font-size:14.666666666666666px;font-family:Arial;color:#000000;background-color:transparent;font-weight:700;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre-wrap;">bold</span></b>`
+  },
+  'paragraph with bold as span (Chrome - Windows)': {
+    expected: "<p>paragraph with <strong>bold</strong></p>",
+    raw: `<html><body><!--StartFragment--><meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-af1f8f2c-cacd-c884-b763-ee9510747969"><span style="font-size:14.666666666666666px;font-family:Arial;color:#222222;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre-wrap;">paragraph with </span><span style="font-size:14.666666666666666px;font-family:Arial;color:#222222;background-color:transparent;font-weight:700;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre-wrap;">bold</span></b><!--EndFragment--></body></html>`
   },
 
   // when selecting a line that includes the end (using, e.g., shift+up to selection the entire line),

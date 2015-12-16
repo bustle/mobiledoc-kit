@@ -25,11 +25,13 @@ const Cursor = class Cursor {
    * editor's element or a selection that is contained in the editor's element
    */
   hasCursor() {
-    return this._hasCollapsedSelection() || this._hasSelection();
+    return this.editor.hasRendered &&
+           (this._hasCollapsedSelection() || this._hasSelection());
   }
 
   hasSelection() {
-    return this._hasSelection();
+    return this.editor.hasRendered &&
+           this._hasSelection();
   }
 
   /**

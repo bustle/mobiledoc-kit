@@ -18,6 +18,8 @@ export default {
       []
     ]
   },
+  'null': null,
+  blank: '',
   inputCard: {
     version: '0.2.0',
     sections: [

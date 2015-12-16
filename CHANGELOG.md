@@ -1,3 +1,30 @@
+<a name="0.7.3"></a>
+## 0.7.3 (2015-12-17)
+
+
+
+
+<a name="0.7.3"></a>
+## 0.7.3 (2015-12-17)
+
+
+* 0.7.3 ([45b3b87](https://github.com/bustlelabs/mobiledoc-kit/commit/45b3b87))
+* Add text parser, use it for handling pasted text ([c3e2ffd](https://github.com/bustlelabs/mobiledoc-kit/commit/c3e2ffd)), closes [#263](https://github.com/bustlelabs/mobiledoc-kit/issues/263)
+* built website from 94507c9f49d15caa600469752480d6ea3ff4aa96 ([76b01fb](https://github.com/bustlelabs/mobiledoc-kit/commit/76b01fb))
+* Clear selection in editor#destroy, make editorDomRenderer#destroy safer ([15ceb0f](https://github.com/bustlelabs/mobiledoc-kit/commit/15ceb0f))
+* ensure style tags are skipped when parsing HTML/dom ([5409b1a](https://github.com/bustlelabs/mobiledoc-kit/commit/5409b1a))
+* Merge pull request #267 from bustlelabs/copy-paste-refactor-259 ([e687d3d](https://github.com/bustlelabs/mobiledoc-kit/commit/e687d3d))
+* Merge pull request #268 from bustlelabs/text-parser-263 ([e003067](https://github.com/bustlelabs/mobiledoc-kit/commit/e003067))
+* Merge pull request #269 from bustlelabs/skip-style-nodes ([a23670d](https://github.com/bustlelabs/mobiledoc-kit/commit/a23670d))
+* Merge pull request #271 from bustlelabs/cursor-movement-with-card-and-list-270 ([00de273](https://github.com/bustlelabs/mobiledoc-kit/commit/00de273))
+* Merge pull request #273 from bustlelabs/editor-destroy-fixes ([d12ee9a](https://github.com/bustlelabs/mobiledoc-kit/commit/d12ee9a))
+* Refactor Position#move to work correctly when prev/next is list section ([3c73d86](https://github.com/bustlelabs/mobiledoc-kit/commit/3c73d86)), closes [#270](https://github.com/bustlelabs/mobiledoc-kit/issues/270)
+* Refactor postEditor#insertPost to handle more situations ([cda1e7e](https://github.com/bustlelabs/mobiledoc-kit/commit/cda1e7e)), closes [#249](https://github.com/bustlelabs/mobiledoc-kit/issues/249) [#259](https://github.com/bustlelabs/mobiledoc-kit/issues/259)
+* Tweak changelog ([94507c9](https://github.com/bustlelabs/mobiledoc-kit/commit/94507c9))
+* Update changelog ([ed299a7](https://github.com/bustlelabs/mobiledoc-kit/commit/ed299a7))
+
+
+
 <a name="0.7.2"></a>
 ## 0.7.2 (2015-12-14)
 
@@ -79,17 +106,8 @@
 ## 0.6.1 (2015-11-18)
 
 
-* 0.6.1 ([ff637c1](https://github.com/bustlelabs/mobiledoc-kit/commit/ff637c1))
-* Merge pull request #237 from mixonic/retain-edit-mode ([7b781de](https://github.com/bustlelabs/mobiledoc-kit/commit/7b781de))
-* Retain edit mode on cloned cards ([ebe19b8](https://github.com/bustlelabs/mobiledoc-kit/commit/ebe19b8))
-
-
-
-<a name="0.6.0"></a>
-# 0.6.0 (2015-11-16)
-
-
 * 0.6.0 ([0001015](https://github.com/bustlelabs/mobiledoc-kit/commit/0001015))
+* 0.6.1 ([ff637c1](https://github.com/bustlelabs/mobiledoc-kit/commit/ff637c1))
 * Add `update-changelog` npm script, update readme ([29e5278](https://github.com/bustlelabs/mobiledoc-kit/commit/29e5278))
 * add changelog ([1aa18a6](https://github.com/bustlelabs/mobiledoc-kit/commit/1aa18a6))
 * add logo to demo assets ([45e3b42](https://github.com/bustlelabs/mobiledoc-kit/commit/45e3b42))
@@ -102,6 +120,8 @@
 * Merge pull request #227 from bustlelabs/update-demos ([fb16ec0](https://github.com/bustlelabs/mobiledoc-kit/commit/fb16ec0))
 * Merge pull request #230 from bustlelabs/add-changelog ([852350e](https://github.com/bustlelabs/mobiledoc-kit/commit/852350e))
 * Merge pull request #231 from bustlelabs/use-html-and-text-renderers-205 ([16326b0](https://github.com/bustlelabs/mobiledoc-kit/commit/16326b0))
+* Merge pull request #237 from mixonic/retain-edit-mode ([7b781de](https://github.com/bustlelabs/mobiledoc-kit/commit/7b781de))
+* Retain edit mode on cloned cards ([ebe19b8](https://github.com/bustlelabs/mobiledoc-kit/commit/ebe19b8))
 * Update demo for mobiledoc 0.2.0-beta ([e078eeb](https://github.com/bustlelabs/mobiledoc-kit/commit/e078eeb))
 * Update demos, add different renderers ([1d9b124](https://github.com/bustlelabs/mobiledoc-kit/commit/1d9b124))
 * Update links to mobiledoc renderers ([d5d573e](https://github.com/bustlelabs/mobiledoc-kit/commit/d5d573e))
