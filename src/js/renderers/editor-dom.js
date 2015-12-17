@@ -393,9 +393,13 @@ export default class Renderer {
     this.editor = editor;
     this.visitor = new Visitor(editor, cards, unknownCardHandler, options);
     this.nodes = [];
+    this.hasRendered = false;
   }
 
   destroy() {
+    if (!this.hasRendered) {
+      return;
+    }
     let renderNode = this.renderTree.rootNode;
     let force = true;
     removeDestroyedChildren(renderNode, force);
@@ -413,6 +417,7 @@ export default class Renderer {
   }
 
   render(renderTree) {
+    this.hasRendered = true;
     this.renderTree = renderTree;
     let renderNode = renderTree.rootNode;
     let method, postNode;

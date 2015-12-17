@@ -11,15 +11,22 @@ const ZWNJ = '\u200c';
 import placeholderImageSrc from 'mobiledoc-kit/utils/placeholder-image-src';
 let builder;
 
+let renderer;
 function render(renderTree, cards=[]) {
   let editor = {};
-  let renderer = new Renderer(editor, cards);
+  renderer = new Renderer(editor, cards);
   return renderer.render(renderTree);
 }
 
 module('Unit: Renderer: Editor-Dom', {
   beforeEach() {
     builder = new PostNodeBuilder();
+  },
+  afterEach() {
+    if (renderer) {
+      renderer.destroy();
+      renderer = null;
+    }
   }
 });
 
@@ -173,7 +180,6 @@ test('renders a post with multiple markers', (assert) => {
   render(renderTree);
   assert.equal(renderTree.rootElement.innerHTML, '<p>hello <b>bold, <i>italic,</i></b> world.</p>');
 });
-
 
 test('renders a post with image', (assert) => {
   let url = placeholderImageSrc;
@@ -596,6 +602,17 @@ test('renders a bunch of spaces with nbsp', (assert) => {
   });
 
   assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
+});
+
+test('#destroy is safe to call if renderer has not rendered', (assert) => {
+  let mockEditor = {}, cards = [];
+  let renderer = new Renderer(mockEditor, cards);
+
+  assert.ok(!renderer.hasRendered, 'precond - has not rendered');
+
+  renderer.destroy();
+
+  assert.ok(true, 'ok to destroy');
 });
 
 /*
