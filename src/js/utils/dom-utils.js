@@ -16,7 +16,7 @@ function isCommentNode(node) {
 }
 
 function isElementNode(node) {
-  return node.nodeType === ELEMENT_NODE_TYPE;
+  return node.nodeType === NODE_TYPES.ELEMENT;
 }
 
 // perform a pre-order tree traversal of the dom, calling `callbackFn(node)`
