@@ -76,6 +76,14 @@ const Position = class Position {
     return this.isEqual(this.section.tailPosition());
   }
 
+  /**
+   * This method returns a new Position instance, it does not modify
+   * this instance.
+   *
+   * @param {Direction} direction to move
+   * @return {Position|null} Return the position one unit in the given
+   * direction, or null if it is not possible to move that direction
+   */
   move(direction) {
     switch (direction) {
       case DIRECTION.BACKWARD:
@@ -87,23 +95,27 @@ const Position = class Position {
     }
   }
 
+  /**
+   * @return {Position|null}
+   */
   moveLeft() {
-    if (this.offset > 0) {
-      return new Position(this.section, this.offset - 1);
-    } else if (this.section.prev) {
-      return new Position(this.section.prev, this.section.prev.length);
+    if (this.isHead()) {
+      let prev = this.section.previousLeafSection();
+      return prev && prev.tailPosition();
     } else {
-      return null;
+      return new Position(this.section, this.offset - 1);
     }
   }
 
+  /**
+   * @return {Position|null}
+   */
   moveRight() {
-    if (this.offset < this.section.length) {
-      return new Position(this.section, this.offset + 1);
-    } else if (this.section.next) {
-      return new Position(this.section.next, 0);
+    if (this.isTail()) {
+      let next = this.section.nextLeafSection();
+      return next && next.headPosition();
     } else {
-      return null;
+      return new Position(this.section, this.offset + 1);
     }
   }
 
@@ -123,7 +135,8 @@ const Position = class Position {
       const marker = renderNode.postNode;
       section = marker.section;
 
-      if (!section) { throw new Error(`Could not find parent section for mapped text node "${textNode.textContent}"`); }
+      assert(`Could not find parent section for mapped text node "${textNode.textContent}"`,
+             !!section);
       offsetInSection = section.offsetOfMarker(marker, offsetInNode);
     } else {
       // all text nodes should be rendered by markers except:
@@ -131,7 +144,8 @@ const Position = class Position {
       //   * text nodes created by the browser during text input
       // both of these should have rendered parent sections, though
       section = findParentSectionFromNode(renderTree, textNode);
-      if (!section) { throw new Error(`Could not find parent section for un-mapped text node "${textNode.textContent}"`); }
+      assert(`Could not find parent section for un-mapped text node "${textNode.textContent}"`,
+             !!section);
 
       offsetInSection = findOffsetInSection(section, textNode, offsetInNode);
     }
@@ -178,7 +192,7 @@ const Position = class Position {
    * @private
    */
   get markerPosition() {
-    if (!this.section) { throw new Error('cannot get markerPosition without a section'); }
+    assert('Cannot get markerPosition without a section', !!this.section);
     return this.section.markerPositionAtOffset(this.offset);
   }
 
