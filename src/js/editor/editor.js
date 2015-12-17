@@ -38,6 +38,7 @@ import {
 } from '../utils/paste-utils';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import { TAB } from 'mobiledoc-kit/utils/characters';
+import assert from '../utils/assert';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
@@ -119,8 +120,9 @@ class Editor {
     } else if (this.html) {
       if (typeof this.html === 'string') {
         return new HTMLParser(this.builder).parse(this.html);
-      } else { // DOM
-        return this._parser.parse(this.html);
+      } else {
+        let dom = this.html;
+        return this._parser.parse(dom);
       }
     } else {
       return this.builder.createPost();
@@ -132,9 +134,8 @@ class Editor {
 
     // if we haven't rendered this post's renderNode before, mark it dirty
     if (!postRenderNode.element) {
-      if (!this.element) {
-        throw new Error('Initial call to `render` must happen before `rerender` can be called.');
-      }
+      assert('Must call `render` before `rerender` can be called',
+             this.hasRendered);
       postRenderNode.element = this.element;
       postRenderNode.markDirty();
     }
@@ -147,10 +148,9 @@ class Editor {
   }
 
   render(element) {
-    if (this.element) {
-      throw new Error('Cannot render an editor twice. Use `rerender` to update the rendering of an existing editor instance');
-    }
-
+    assert('Cannot render an editor twice. Use `rerender` to update the ' +
+           'rendering of an existing editor instance.',
+           !this.hasRendered);
 
     addClassName(element, EDITOR_ELEMENT_CLASS_NAME);
     element.spellcheck = this.spellcheck;
@@ -437,6 +437,9 @@ class Editor {
 
   destroy() {
     this._isDestroyed = true;
+    if (this.cursor.hasCursor()) {
+      this.cursor.clearSelection();
+    }
     this.removeMutationObserver();
     this._mutationObserver = null;
     this.removeAllEventListeners();
@@ -768,6 +771,10 @@ class Editor {
     } else {
       cardSection.setInitialMode(mode);
     }
+  }
+
+  get hasRendered() {
+    return !!this.element;
   }
 }
 
