@@ -268,6 +268,40 @@ test('keystroke of delete removes that character', (assert) => {
                    'cursor is at start of new text node');
 });
 
+test('keystroke of delete removes emoji character', (assert) => {
+  let monkey = 'monkey🙈';
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker(monkey)])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+  let textNode = editorElement.firstChild. // section
+                               firstChild; // marker 
+  assert.equal(textNode.textContent, monkey, 'precond - correct text');
+
+  Helpers.dom.moveCursorTo(textNode, monkey.length);
+  Helpers.dom.triggerDelete(editor);
+
+  assert.equal($('#editor p:eq(0)').text(), 'monkey', 'deletes the emoji');
+});
+
+test('keystroke of forward delete removes emoji character', (assert) => {
+  let monkey = 'monkey🙈';
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker(monkey)])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+  let textNode = editorElement.firstChild. // section
+                               firstChild; // marker 
+  assert.equal(textNode.textContent, monkey, 'precond - correct text');
+
+  Helpers.dom.moveCursorTo(textNode, 'monkey'.length);
+  Helpers.dom.triggerForwardDelete(editor);
+
+  assert.equal($('#editor p:eq(0)').text(), 'monkey', 'deletes the emoji');
+});
+
 test('keystroke of delete when cursor is at beginning of marker removes character from previous marker', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWith2Markers});
   editor.render(editorElement);
