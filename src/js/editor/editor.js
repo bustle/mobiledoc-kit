@@ -439,6 +439,7 @@ class Editor {
     this._isDestroyed = true;
     if (this.cursor.hasCursor()) {
       this.cursor.clearSelection();
+      this.element.blur();
     }
     this.removeMutationObserver();
     this._mutationObserver = null;
