@@ -5,21 +5,15 @@ import Helpers from '../../test-helpers';
 
 const {module, test} = Helpers;
 
-let editorElement, builder, parser, editor;
+let parser;
 
 module('Unit: Parser: TextParser', {
   beforeEach() {
-    editorElement = $('#editor')[0];
-    builder = new PostNodeBuilder();
+    const builder = new PostNodeBuilder();
     parser = new TextParser(builder);
   },
   afterEach() {
-    builder = null;
     parser = null;
-    if (editor) {
-      editor.destroy();
-      editor = null;
-    }
   }
 });
 
@@ -77,7 +71,7 @@ test('#parse returns multiple sections when lines are separated by CR', (assert)
 
 test('#parse returns list section when text starts with "*"', (assert) => {
   let text = '* a list item';
-  
+
   let post = parser.parse(text);
   let expected = Helpers.postAbstract.build(({post, listSection, listItem, marker}) => {
     return post([
@@ -90,7 +84,7 @@ test('#parse returns list section when text starts with "*"', (assert) => {
 
 test('#parse returns list section with multiple items when text starts with "*"', (assert) => {
   let text = ['* first', '* second'].join(SECTION_BREAK);
-  
+
   let post = parser.parse(text);
   let expected = Helpers.postAbstract.build(({post, listSection, listItem, marker}) => {
     return post([
@@ -106,7 +100,7 @@ test('#parse returns list section with multiple items when text starts with "*"'
 
 test('#parse returns list sections separated by markup sections', (assert) => {
   let text = ['* first list', 'middle section', '* second list'].join(SECTION_BREAK);
-  
+
   let post = parser.parse(text);
   let expected = Helpers.postAbstract.build(
     ({post, listSection, listItem, markupSection, marker}) => {
@@ -126,7 +120,7 @@ test('#parse returns list sections separated by markup sections', (assert) => {
 
 test('#parse returns ordered list items', (assert) => {
   let text = '1. first list';
-  
+
   let post = parser.parse(text);
   let expected = Helpers.postAbstract.build(
     ({post, listSection, listItem, markupSection, marker}) => {
@@ -138,7 +132,7 @@ test('#parse returns ordered list items', (assert) => {
 
 test('#parse can have ordered and unordered lists together', (assert) => {
   let text = ['1. ordered list', '* unordered list'].join(SECTION_BREAK);
-  
+
   let post = parser.parse(text);
   let expected = Helpers.postAbstract.build(
     ({post, listSection, listItem, markupSection, marker}) => {

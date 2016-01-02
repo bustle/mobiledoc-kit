@@ -1,6 +1,3 @@
-const TEXT_NODE = 3;
-const ELEMENT_NODE = 1;
-
 import {
   DEFAULT_TAG_NAME,
   VALID_MARKUP_SECTION_TAGNAMES
@@ -27,7 +24,9 @@ import {
 import {
   getAttributes,
   normalizeTagName,
-  isTextNode
+  isTextNode,
+  isCommentNode,
+  NODE_TYPES
 } from 'mobiledoc-kit/utils/dom-utils';
 
 import {
@@ -135,10 +134,10 @@ export default class SectionParser {
     }
 
     switch (node.nodeType) {
-      case TEXT_NODE:
+      case NODE_TYPES.TEXT:
         this.parseTextNode(node);
         break;
-      case ELEMENT_NODE:
+      case NODE_TYPES.ELEMENT:
         this.parseElementNode(node);
         break;
       default:
@@ -300,8 +299,9 @@ export default class SectionParser {
   }
 
   _isSkippable(element) {
-    return element.nodeType === ELEMENT_NODE &&
-           contains(SKIPPABLE_ELEMENT_TAG_NAMES,
-                    normalizeTagName(element.tagName));
+    return isCommentNode(element) ||
+           (element.nodeType === NODE_TYPES.ELEMENT &&
+            contains(SKIPPABLE_ELEMENT_TAG_NAMES,
+                    normalizeTagName(element.tagName)));
   }
 }
