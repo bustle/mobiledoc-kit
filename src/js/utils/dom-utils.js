@@ -1,9 +1,17 @@
 import { forEach } from './array-utils';
 
-const TEXT_NODE_TYPE = 3;
+export const NODE_TYPES = {
+  ELEMENT: 1,
+  TEXT: 3,
+  COMMENT: 8
+};
 
 function isTextNode(node) {
-  return node.nodeType === TEXT_NODE_TYPE;
+  return node.nodeType === NODE_TYPES.TEXT;
+}
+
+function isCommentNode(node) {
+  return node.nodeType === NODE_TYPES.COMMENT;
 }
 
 // perform a pre-order tree traversal of the dom, calling `callbackFn(node)`
@@ -112,6 +120,7 @@ export {
   addClassName,
   normalizeTagName,
   isTextNode,
+  isCommentNode,
   parseHTML,
   findOffsetInElement
 };

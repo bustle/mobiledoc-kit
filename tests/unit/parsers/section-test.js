@@ -161,3 +161,13 @@ test('#parse skips STYLE nodes', (assert) => {
 
   assert.equal(sections.length, 0, 'does not parse style');
 });
+
+test('#parse skips Comment nodes', (assert) => {
+  let element = buildDOM(`
+    <!--Some comment-->
+  `).firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 0, 'does not parse comments');
+});

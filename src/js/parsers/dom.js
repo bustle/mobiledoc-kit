@@ -9,11 +9,12 @@ import {
 } from '../models/types';
 import {
   isTextNode,
+  isCommentNode,
   normalizeTagName
 } from '../utils/dom-utils';
 import {
   detect,
-  forEach,
+  forEach
 } from '../utils/array-utils';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 
@@ -34,6 +35,7 @@ export function transformHTMLText(textContent) {
 
 function isGoogleDocsContainer(element) {
   return !isTextNode(element) &&
+         !isCommentNode(element) &&
          normalizeTagName(element.tagName) === normalizeTagName('b') &&
          GOOGLE_DOCS_CONTAINER_ID_REGEX.test(element.id);
 }
