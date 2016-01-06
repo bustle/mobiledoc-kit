@@ -1,11 +1,6 @@
-import { LIST_ITEM_TYPE } from './types';
 import { normalizeTagName } from '../utils/dom-utils';
 import LinkedItem from '../utils/linked-item';
 import assert from '../utils/assert';
-
-function isChild(section) {
-  return section.type === LIST_ITEM_TYPE;
-}
 
 function unimplementedMethod(methodName, me) {
   throw new Error(`\`${methodName}()\` must be implemented by ${me.constructor.name}`);
@@ -68,7 +63,7 @@ export default class Section extends LinkedItem {
         return next;
       }
     } else {
-      if (isChild(this)) {
+      if (this.isNested) {
         return this.parent.nextLeafSection();
       }
     }
@@ -92,7 +87,7 @@ export default class Section extends LinkedItem {
         return prev;
       }
     } else {
-      if (isChild(this)) {
+      if (this.isNested) {
         return this.parent.previousLeafSection();
       }
     }

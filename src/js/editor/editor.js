@@ -98,7 +98,11 @@ class Editor {
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
     this._handleLastKeydownExpansion = () => {
-      this.handleExpansion(this._lastKeydownEvent);
+      // Chrome does not report cursor selection properly from a Mutation event
+      // until the next frame of JavaScript
+      setTimeout(() => {
+        this.handleExpansion(this._lastKeydownEvent);
+      }, 0);
     };
 
     this.post = this.loadPost();

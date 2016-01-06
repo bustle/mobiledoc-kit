@@ -1,7 +1,6 @@
 import Keycodes from '../utils/keycodes';
 import Key from '../utils/key';
 import { detect } from '../utils/array-utils';
-import { MARKUP_SECTION_TYPE } from '../models/types';
 import Range from '../utils/cursor/range';
 
 const { SPACE } = Keycodes;
@@ -15,7 +14,7 @@ function replaceWithListSection(editor, listTagName) {
     const listSection = builder.createListSection(listTagName, [listItem]);
 
     postEditor.replaceSection(section, listSection);
-    postEditor.setRange(Range.fromSection(listItem));
+    postEditor.setRange(new Range(listSection.tailPosition()));
   });
 }
 
@@ -25,8 +24,9 @@ function replaceWithHeaderSection(editor, headingTagName) {
   editor.run(postEditor => {
     const {builder} = postEditor;
     const newSection = builder.createMarkupSection(headingTagName);
+
     postEditor.replaceSection(section, newSection);
-    postEditor.setRange(Range.fromSection(newSection));
+    postEditor.setRange(new Range(newSection.tailPosition()));
   });
 }
 
@@ -76,8 +76,9 @@ export function findExpansion(expansions, keyEvent, editor) {
   const key = Key.fromEvent(keyEvent);
   if (!key.isPrintable()) { return; }
 
-  const {head:{section, offset}} = editor.cursor.offsets;
-  if (section.type !== MARKUP_SECTION_TYPE) { return; }
+  const {head, head:{section, offset}} = editor.cursor.offsets;
+  if (!section.isMarkupSection) { return; }
+  if (!head.isEqual(section.tailPosition())) { return; }
 
   // FIXME this is potentially expensive to calculate and might be better
   // perf to first find expansions matching the trigger and only if matches
