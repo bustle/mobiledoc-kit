@@ -39,7 +39,7 @@ test('typing "## " converts to h2', (assert) => {
       assert.hasElement('#editor h2:contains(X)', 'text is inserted correctly');
       done();
     }, 0);
-  }, 0);
+  }, 30);
 });
 
 test('space is required to trigger "## " expansion', (assert) => {
@@ -73,7 +73,7 @@ test('typing "### " converts to h3', (assert) => {
       assert.hasElement('#editor h3:contains(X)', 'text is inserted correctly');
       done();
     }, 0);
-  }, 0);
+  }, 30);
 });
 
 test('typing "* " converts to ul > li', (assert) => {
@@ -93,7 +93,24 @@ test('typing "* " converts to ul > li', (assert) => {
       assert.hasElement('#editor li:contains(X)', 'text is inserted correctly');
       done();
     }, 0);
-  }, 0);
+  }, 30);
+});
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/280
+test('typing "* " at start of markup section does not remove it', (assert) => {
+  let done = assert.async();
+  const mobiledoc = Helpers.mobiledoc.build(({post, marker, markupSection}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+  insertText('* ');
+  window.setTimeout(() => {
+    assert.hasElement('#editor p:contains(* abc)', 'p is still there');
+    done();
+  }, 30);
+  
 });
 
 test('typing "* " inside of a list section does not create a new list section', (assert) => {
@@ -133,7 +150,7 @@ test('typing "1 " converts to ol > li', (assert) => {
       assert.hasElement('#editor li:contains(X)', 'text is inserted correctly');
       done();
     }, 0);
-  }, 0);
+  }, 30);
 });
 
 test('typing "1. " converts to ol > li', (assert) => {
@@ -154,7 +171,7 @@ test('typing "1. " converts to ol > li', (assert) => {
       assert.hasElement('#editor li:contains(X)', 'text is inserted correctly');
       done();
     }, 0);
-  }, 0);
+  }, 30);
 });
 
 test('a new expansion can be registered', (assert) => {
@@ -174,5 +191,5 @@ test('a new expansion can be registered', (assert) => {
   window.setTimeout(() => {
     assert.ok(didExpand, 'expansion was run');
     done();
-  }, 0);
+  }, 30);
 });
