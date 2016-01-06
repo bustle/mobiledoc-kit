@@ -4,6 +4,16 @@ import { detect, commonItemLength, forEach, filter } from '../utils/array-utils'
 import LinkedItem from '../utils/linked-item';
 import assert from '../utils/assert';
 
+// Unicode uses a pair of "surrogate" characters" (a high- and low-surrogate)
+// to encode characters outside the basic multilingual plane (like emoji and
+// some languages).
+// These values are the unicode code points for the start and end of the
+// high- and low-surrogate characters.
+// See "high surrogate" and "low surrogate" on
+// https://en.wikipedia.org/wiki/Unicode_block
+const HIGH_SURROGATE_RANGE = [0xD800, 0xDBFF];
+const LOW_SURROGATE_RANGE  = [0xDC00, 0xDFFF];
+
 const Marker = class Marker extends LinkedItem {
   constructor(value='', markups=[]) {
     super();
@@ -29,14 +39,6 @@ const Marker = class Marker extends LinkedItem {
 
   get length() {
     return this.value.length;
-  }
-
-  truncateFrom(offset) {
-    this.value = this.value.substr(0, offset);
-  }
-
-  truncateTo(offset) {
-    this.value = this.value.substr(offset);
   }
 
   clearMarkups() {
@@ -69,17 +71,34 @@ const Marker = class Marker extends LinkedItem {
     }
   }
 
-  // delete the character at this offset,
-  // update the value with the new value
+  /**
+   * delete the character at this offset,
+   * update the value with the new value.
+   * This method mutates the marker.
+   *
+   * @return {Number} the length of the change
+   * (usually 1 but can be 2 when deleting an emoji, e.g.)
+   */
   deleteValueAtOffset(offset) {
-    if (offset < 0 || offset > this.length) {
-      throw new Error(`Invalid offset "${offset}"`);
+    assert('Cannot delete value at offset outside bounds',
+           offset >= 0 && offset <= this.length);
+
+    let width = 1;
+    let code = this.value.charCodeAt(offset);
+    if (code >= HIGH_SURROGATE_RANGE[0] && code <= HIGH_SURROGATE_RANGE[1]) {
+      width = 2;
+    } else if (code >= LOW_SURROGATE_RANGE[0] && code <= LOW_SURROGATE_RANGE[1]) {
+      width = 2;
+      offset = offset - 1;
     }
+
     const [ left, right ] = [
       this.value.slice(0, offset),
-      this.value.slice(offset+1)
+      this.value.slice(offset+width)
     ];
     this.value = left + right;
+
+    return width;
   }
 
   hasMarkup(tagNameOrMarkup) {

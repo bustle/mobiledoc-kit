@@ -515,8 +515,8 @@ class PostEditor {
 
     const offsetToDeleteAt = markerOffset - 1;
 
-    marker.deleteValueAtOffset(offsetToDeleteAt);
-    nextPosition.offset -= 1;
+    let lengthChange = marker.deleteValueAtOffset(offsetToDeleteAt);
+    nextPosition.offset -= lengthChange;
     this._markDirty(marker);
 
     return nextPosition;

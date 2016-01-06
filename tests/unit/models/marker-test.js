@@ -12,24 +12,6 @@ module('Unit: Marker', {
   }
 });
 
-test('a marker can truncated from an offset', (assert) => {
-  const m1 = builder.createMarker('hi there!');
-
-  const offset = 5;
-  m1.truncateFrom(offset);
-
-  assert.equal(m1.value, 'hi th');
-});
-
-test('a marker can truncated to an offset', (assert) => {
-  const m1 = builder.createMarker('hi there!');
-
-  const offset = 5;
-  m1.truncateTo(offset);
-
-  assert.equal(m1.value, 'ere!');
-});
-
 test('a marker can have a markup applied to it', (assert) => {
   const m1 = builder.createMarker('hi there!');
   m1.addMarkup(builder.createMarkup('b'));
@@ -123,4 +105,18 @@ test('#clone a marker', (assert) => {
   assert.equal(marker.builder, cloned.builder, 'builder is present');
   assert.equal(marker.value, cloned.value, 'value is present');
   assert.equal(marker.markups.length, cloned.markups.length, 'markup length is the same');
+});
+
+// https://github.com/bustlelabs/mobiledoc-kit/issues/274
+test('#deleteValueAtOffset handles emoji', (assert) => {
+  let str = 'monkey 🙈';
+  assert.equal(str.length, 'monkey '.length + 2,
+               'string length reports monkey emoji as length 2');
+  let marker = builder.createMarker(str);
+  marker.deleteValueAtOffset(str.length - 1);
+  assert.equal(marker.value, 'monkey ', 'deletes correctly from low surrogate');
+
+  marker = builder.createMarker(str);
+  marker.deleteValueAtOffset(str.length - 2);
+  assert.equal(marker.value, 'monkey ', 'deletes correctly from high surrogate');
 });
