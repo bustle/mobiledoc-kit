@@ -13,7 +13,7 @@ import Renderer  from 'mobiledoc-kit/renderers/editor-dom';
 import RenderTree from 'mobiledoc-kit/models/render-tree';
 import mobiledocRenderers from '../renderers/mobiledoc';
 
-import { mergeWithOptions } from 'content-kit-utils';
+import { mergeWithOptions } from '../utils/merge';
 import { clearChildNodes, addClassName } from '../utils/dom-utils';
 import { forEach, filter, contains } from '../utils/array-utils';
 import { setData } from '../utils/element-utils';
