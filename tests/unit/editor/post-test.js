@@ -53,10 +53,12 @@ function buildEditorWithMobiledoc(builderFn) {
 
 module('Unit: PostEditor with mobiledoc', {
   beforeEach() {
+    renderedRange = null;
     editorElement = $('#editor')[0];
   },
 
   afterEach() {
+    renderedRange = null;
     if (editor) {
       editor.destroy();
       editor = null;
@@ -169,16 +171,16 @@ test('#deleteFrom (FORWARD) end of marker deletes first character of next marker
 });
 
 
-let selectedRange;
 module('Unit: PostEditor', {
   beforeEach() {
+    renderedRange = null;
     editorElement = $('#editor')[0];
     builder = new PostNodeBuilder();
     mockEditor = {
       rerender() {},
       didUpdate() {},
       renderRange() {
-        selectedRange = this.range;
+        renderedRange = this.range;
       },
       builder
     };
@@ -186,7 +188,7 @@ module('Unit: PostEditor', {
   },
 
   afterEach() {
-    selectedRange = null;
+    renderedRange = null;
     if (editor) {
       editor.destroy();
       editor = null;
@@ -947,8 +949,7 @@ test('#toggleSection changes single section to and from tag name', (assert) => {
   postEditor.complete();
 
   assert.equal(post.sections.head.tagName, 'p');
-  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection changes multiples sections to and from tag name', (assert) => {
@@ -977,8 +978,7 @@ test('#toggleSection changes multiples sections to and from tag name', (assert) 
   assert.equal(post.sections.head.tagName, 'p');
   assert.equal(post.sections.tail.tagName, 'p');
 
-  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection skips over non-markerable sections', (assert) => {
@@ -1003,8 +1003,7 @@ test('#toggleSection skips over non-markerable sections', (assert) => {
   assert.ok(post.sections.objectAt(1).isCardSection);
   assert.equal(post.sections.tail.tagName, 'blockquote');
 
-  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection toggle single p -> list item', (assert) => {
@@ -1060,8 +1059,7 @@ test('#toggleSection toggle single list item -> p', (assert) => {
   assert.ok(post.sections.head.markers.objectAt(1).hasMarkup('b'), 'b has b markup');
   assert.equal(post.sections.head.markers.objectAt(2).value, 'c');
 
-  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection toggle multiple ps -> list and list -> multiple ps', (assert) => {
@@ -1135,8 +1133,7 @@ test('#toggleSection untoggle first list item changes it to markup section, reta
   assert.equal(post.sections.tail.items.head.text, 'def');
   assert.equal(post.sections.tail.items.tail.text, 'ghi');
 
-  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection untoggle middle list item changes it to markup section, retaining markup', (assert) => {
@@ -1164,8 +1161,7 @@ test('#toggleSection untoggle middle list item changes it to markup section, ret
   assert.equal(section.markers.objectAt(1).value, 'e');
   assert.ok(section.markers.objectAt(1).hasMarkup('b'), 'e has b markup');
   assert.equal(section.markers.objectAt(2).value, 'f');
-  assert.ok(selectedRange.head.section === section, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, section.headPosition());
 
   assert.ok(post.sections.head.isListSection, 'head section is list');
   assert.ok(post.sections.tail.isListSection, 'tail section is list');
@@ -1231,8 +1227,7 @@ test('#toggleSection untoggle multiple items at end of list changes them to mark
   assert.equal(post.sections.tail.tagName, 'p', 'tail is p');
   assert.equal(post.sections.tail.text, 'ghi');
 
-  assert.ok(selectedRange.head.section === post.sections.objectAt(1), 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.objectAt(1).headPosition());
 });
 
 test('#toggleSection untoggle multiple items at start of list changes them to markup sections', (assert) => {
@@ -1263,8 +1258,7 @@ test('#toggleSection untoggle multiple items at start of list changes them to ma
   assert.equal(post.sections.objectAt(2).items.length, 1, 'list has 1 item');
   assert.equal(post.sections.objectAt(2).items.head.text, 'ghi');
 
-  assert.ok(selectedRange.head.section === post.sections.head, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection untoggle items and overflowing markup sections changes the overflow to items', (assert) => {
@@ -1325,8 +1319,7 @@ test('#toggleSection untoggle last list item changes it to markup section', (ass
   assert.equal(post.sections.head.items.head.text, 'abc');
   assert.equal(post.sections.head.items.tail.text, 'def');
 
-  assert.ok(selectedRange.head.section === post.sections.tail, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.tail.headPosition());
 });
 
 test('#toggleSection toggle list item to different type of list item', (assert) => {
@@ -1348,8 +1341,7 @@ test('#toggleSection toggle list item to different type of list item', (assert) 
   assert.equal(post.sections.head.items.length, 1, '1 item');
   assert.equal(post.sections.head.items.head.text, 'abc');
 
-  assert.ok(selectedRange.head.section === post.sections.head.items.head, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.head.items.head.headPosition());
 });
 
 test('#toggleSection toggle list item to different type of list item when other sections precede it', (assert) => {
@@ -1376,8 +1368,7 @@ test('#toggleSection toggle list item to different type of list item when other 
   assert.equal(post.sections.tail.items.length, 1, '1 item');
   assert.equal(post.sections.tail.items.head.text, 'abc');
 
-  assert.ok(selectedRange.head.section === post.sections.tail.items.head, 'selected head correct');
-  assert.equal(selectedRange.head.offset, 0);
+  assert.positionIsEqual(renderedRange.head, post.sections.tail.items.head.headPosition());
 });
 
 test('#toggleSection toggle when cursor on card section is no-op', (assert) => {
@@ -1396,7 +1387,7 @@ test('#toggleSection toggle when cursor on card section is no-op', (assert) => {
   assert.equal(post.sections.length, 1, '1 section');
   assert.ok(post.sections.head.isCardSection, 'still card section');
 
-  assert.ok(!selectedRange, 'cursor position not changed');
+  assert.ok(!renderedRange, 'cursor position not changed');
 });
 
 test('#toggleSection joins contiguous list items', (assert) => {
@@ -1532,6 +1523,119 @@ test('#insertMarkers inserts the markers at end', (assert) => {
   let position = editor.post.sections.head.tailPosition();
   postEditor = new PostEditor(editor);
   postEditor.insertMarkers(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(
+    renderedRange.head,
+    editor.post.sections.head.tailPosition()
+  );
+});
+
+test('#insertMarkers throws if the position is not markerable', (assert) => {
+  let toInsert;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    toInsert = [marker('123', [markup('b')]), marker('456')];
+  });
+
+  editor = buildEditorWithMobiledoc(({post, cardSection}) => {
+    return post([cardSection('some-card')]);
+  });
+  let position = editor.post.sections.head.tailPosition();
+  postEditor = new PostEditor(editor);
+
+  assert.throws(() => {
+    postEditor.insertMarkers(position, toInsert);
+  }, /cannot insert.*non-markerable/i);
+});
+
+test('#insertText is no-op if the position section is not markerable', (assert) => {
+  let toInsert = '123';
+  let expected = Helpers.postAbstract.build(({post, cardSection}) => {
+    return post([cardSection('test-card')]);
+  });
+  editor = buildEditorWithMobiledoc(({post, cardSection}) => {
+    return post([cardSection('test-card')]);
+  });
+  let position = editor.post.sections.head.headPosition();
+  postEditor = new PostEditor(editor);
+  postEditor.insertText(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.ok(!renderedRange, 'no range is rendered since nothing happened');
+});
+
+test('#insertText inserts the text at start', (assert) => {
+  let toInsert, expected;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    toInsert = '123';
+    expected = post([
+      markupSection('p', [
+        marker('123abc', [markup('b')])
+    ])]);
+  });
+
+  editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [marker('abc', [markup('b')])])]);
+  });
+  let position = editor.post.sections.head.headPosition();
+  postEditor = new PostEditor(editor);
+  postEditor.insertText(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(
+    renderedRange.head,
+    new Position(editor.post.sections.head, '123'.length)
+  );
+});
+
+test('#insertText inserts text in the middle', (assert) => {
+  let toInsert, expected;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    toInsert = '123';
+    expected = post([
+      markupSection('p', [
+        marker('ab123c', [markup('b')])
+    ])]);
+  });
+
+  editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [marker('abc', [markup('b')])])]);
+  });
+  let position = new Position(editor.post.sections.head, 'ab'.length);
+  postEditor = new PostEditor(editor);
+  postEditor.insertText(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(
+    renderedRange.head,
+    new Position(editor.post.sections.head, 'ab123'.length)
+  );
+});
+
+test('#insertText inserts text at the end', (assert) => {
+  let toInsert, expected;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    toInsert = '123';
+    expected = post([
+      markupSection('p', [
+        marker('abc123', [markup('b')])
+    ])]);
+  });
+
+  editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [marker('abc', [markup('b')])])]);
+  });
+  let position = editor.post.sections.head.tailPosition();
+  postEditor = new PostEditor(editor);
+  postEditor.insertText(position, toInsert);
   postEditor.complete();
 
   assert.postIsSimilar(editor.post, expected);

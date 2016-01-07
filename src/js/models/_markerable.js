@@ -235,9 +235,8 @@ export default class Markerable extends Section {
   // for each marker that is wholly or partially contained in the range.
   _markersInRange(range, callback) {
     const { head, tail } = range;
-    if (head.section !== this || tail.section !== this) {
-      throw new Error('Cannot call #_markersInRange if range expands beyond this');
-    }
+    assert('Cannot call #_markersInRange if range expands beyond this section',
+           head.section === this && tail.section === this);
     const {offset:headOffset} = head, {offset:tailOffset} = tail;
 
     let currentHead = 0, currentTail = 0, currentMarker = this.markers.head;
