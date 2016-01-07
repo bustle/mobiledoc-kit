@@ -3,7 +3,7 @@ import { forEach } from 'mobiledoc-kit/utils/array-utils';
 import KEY_CODES from 'mobiledoc-kit/utils/keycodes';
 import { DIRECTION, MODIFIERS }  from 'mobiledoc-kit/utils/key';
 import { isTextNode } from 'mobiledoc-kit/utils/dom-utils';
-import { merge } from 'content-kit-utils';
+import { merge } from 'mobiledoc-kit/utils/merge';
 
 // walks DOWN the dom from node to childNodes, returning the element
 // for which `conditionFn(element)` is true
