@@ -740,26 +740,13 @@ class PostEditor {
   }
 
   insertText(position, text) {
-    let section = position.section;
-    if (!section.isMarkerable) {
-      return;
-    }
+    let { section } = position;
+    if (!section.isMarkerable) { return; }
 
-    let {marker,offset} = position.markerPosition;
-    let nextPosition = position;
-    if (!marker) {
-      marker = this.builder.createMarker(text);
-      section.markers.append(marker);
-      this._markDirty(section);
-      nextPosition = new Position(section, 1);
-    } else if (marker) {
-      let markerHead = marker.value.slice(0, offset);
-      let markerTail = marker.value.slice(offset, marker.length);
-      marker.value = `${markerHead}${text}${markerTail}`;
-      this._markDirty(marker);
-      nextPosition = position.moveRight();
-    }
-    return nextPosition;
+    let markups = position.marker && position.marker.markups;
+    markups = markups || [];
+    let marker = this.builder.createMarker(text, markups.slice());
+    return this.insertMarkers(position, [marker]);
   }
 
   _replaceSection(section, newSections) {
@@ -927,10 +914,13 @@ class PostEditor {
   }
 
   /**
-   * @param {ListSection|ListItem|MarkupSection} section
+   * @param {Markerable} section
    * @private
    */
   changeSectionTagName(section, newTagName) {
+    assert('Cannot pass non-markerable section to `changeSectionTagName`',
+           section.isMarkerable);
+
     if (isListSectionTagName(newTagName)) {
       return this._changeSectionToListItem(section, newTagName);
     } else if (section.isListItem) {
