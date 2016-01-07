@@ -1,6 +1,25 @@
-<a name="0.7.3"></a>
-## 0.7.3 (2015-12-17)
+<a name="0.8.0-beta.1"></a>
+# 0.8.0-beta.1 (2016-01-07)
 
+
+
+
+<a name="0.8.0-beta.1"></a>
+# 0.8.0-beta.1 (2016-01-07)
+
+
+* 0.8.0-beta.1 ([704bb20](https://github.com/bustlelabs/mobiledoc-kit/commit/704bb20))
+* Blur element focus on destroy, add null/blank demos ([845c041](https://github.com/bustlelabs/mobiledoc-kit/commit/845c041))
+* Fix bug #276: Copy-pasting from Google Docs and Sheets does not work on Chrome on Windows ([b3aac9e](https://github.com/bustlelabs/mobiledoc-kit/commit/b3aac9e)), closes [#276](https://github.com/bustlelabs/mobiledoc-kit/issues/276)
+* marker#deleteValueAtOffset detects if the character is outside the BMP ([f3b72ae](https://github.com/bustlelabs/mobiledoc-kit/commit/f3b72ae)), closes [#274](https://github.com/bustlelabs/mobiledoc-kit/issues/274)
+* Merge pull request #275 from bustlelabs/fix-marker-emoji-deletion-274 ([b662def](https://github.com/bustlelabs/mobiledoc-kit/commit/b662def))
+* Merge pull request #279 from mixonic/blank ([1754844](https://github.com/bustlelabs/mobiledoc-kit/commit/1754844))
+* Merge pull request #281 from mixonic/yb-fix-bug-276 ([96ea818](https://github.com/bustlelabs/mobiledoc-kit/commit/96ea818))
+* Merge pull request #282 from bustlelabs/fix-text-expansions-280 ([1892043](https://github.com/bustlelabs/mobiledoc-kit/commit/1892043))
+* Merge pull request #284 from bustlelabs/change-dependencies ([adda41d](https://github.com/bustlelabs/mobiledoc-kit/commit/adda41d))
+* only find text expansion when at end of markup section ([9c3fa90](https://github.com/bustlelabs/mobiledoc-kit/commit/9c3fa90)), closes [#280](https://github.com/bustlelabs/mobiledoc-kit/issues/280)
+* Remove content-kit-utils, move mobiledoc renderers to dependencies ([a625f7a](https://github.com/bustlelabs/mobiledoc-kit/commit/a625f7a))
+* Update changelog ([8f83e6d](https://github.com/bustlelabs/mobiledoc-kit/commit/8f83e6d))
 
 
 
