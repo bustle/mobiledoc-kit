@@ -849,13 +849,10 @@ class PostEditor {
    * @param {Markup|String} markupOrString Either a markup object created using
    * the builder (useful when adding a markup with attributes, like an 'a' markup),
    * or, if a string, the tag name of the markup (e.g. 'strong', 'em') to toggle.
+   * @param {Range} range in which to toggle, defaults to current editor range
    * @public
    */
-  toggleMarkup(markupOrMarkupString) {
-    const range = this.editor.cursor.offsets;
-    if (range.isCollapsed) {
-      return;
-    }
+  toggleMarkup(markupOrMarkupString, range=this.editor.range) {
     const markup = typeof markupOrMarkupString === 'string' ?
                      this.builder.createMarkup(markupOrMarkupString) :
                      markupOrMarkupString;
@@ -869,7 +866,8 @@ class PostEditor {
     } else {
       this.addMarkupToRange(range, markup);
     }
-    this.scheduleAfterRender(() => this.editor.selectRange(range));
+
+    this.setRange(range);
   }
 
   /**
@@ -887,6 +885,7 @@ class PostEditor {
   toggleSection(sectionTagName, range=this.editor.range) {
     sectionTagName = normalizeTagName(sectionTagName);
     let { post } = this.editor;
+    let nextRange = range;
 
     let everySectionHasTagName = true;
     post.walkMarkerableSections(range, section => {
@@ -903,8 +902,9 @@ class PostEditor {
     });
 
     if (firstChanged) {
-      this.setRange(new Range(firstChanged.headPosition()));
+      nextRange = new Range(firstChanged.headPosition());
     }
+    this.setRange(nextRange);
   }
 
   _isSameSectionType(section, sectionTagName) {

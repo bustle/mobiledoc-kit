@@ -7,6 +7,7 @@ import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
+import { clearSelection } from 'mobiledoc-kit/utils/selection-utils';
 
 const { FORWARD } = DIRECTION;
 
@@ -1006,6 +1007,53 @@ test('#toggleSection skips over non-markerable sections', (assert) => {
   assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
 });
 
+test('#toggleSection when cursor is in non-markerable section changes nothing', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      cardSection('my-card')
+    ]);
+  });
+
+  const mockEditor = renderBuiltAbstract(post);
+  const range = new Range(post.sections.head.headPosition());
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.ok(post.sections.head.isCardSection, 'card section not changed');
+  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
+});
+
+test('#toggleSection when editor has no cursor does nothing', (assert) => {
+  editor = buildEditorWithMobiledoc(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      cardSection('my-card')
+    ]);
+  });
+  let expected = Helpers.postAbstract.build(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      cardSection('my-card')
+    ]);
+  });
+
+  editorElement.blur();
+  clearSelection();
+
+  postEditor = new PostEditor(editor);
+  postEditor.toggleSection('blockquote');
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.ok(document.activeElement !== editorElement,
+            'editor element is not active');
+  assert.ok(renderedRange.isBlank, 'rendered range is blank');
+  assert.equal(window.getSelection().rangeCount, 0, 'nothing selected');
+});
+
 test('#toggleSection toggle single p -> list item', (assert) => {
   let post = Helpers.postAbstract.build(
     ({post, markupSection, marker, markup}) => {
@@ -1387,7 +1435,8 @@ test('#toggleSection toggle when cursor on card section is no-op', (assert) => {
   assert.equal(post.sections.length, 1, '1 section');
   assert.ok(post.sections.head.isCardSection, 'still card section');
 
-  assert.ok(!renderedRange, 'cursor position not changed');
+  assert.positionIsEqual(renderedRange.head, range.head, 'range head is set to same');
+  assert.positionIsEqual(renderedRange.tail, range.tail, 'range tail is set to same');
 });
 
 test('#toggleSection joins contiguous list items', (assert) => {
@@ -1413,6 +1462,134 @@ test('#toggleSection joins contiguous list items', (assert) => {
   assert.equal(post.sections.head.items.length, 3, '3 items');
   assert.deepEqual(post.sections.head.items.map(i => i.text),
                    ['abc', '123', 'def']);
+});
+
+test('#toggleMarkup when cursor is in non-markerable does nothing', (assert) => {
+  editor = buildEditorWithMobiledoc(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      cardSection('my-card')
+    ]);
+  });
+
+  const range = new Range(editor.post.sections.head.headPosition());
+  postEditor = new PostEditor(editor);
+  postEditor.toggleMarkup('b', range);
+  postEditor.complete();
+
+  assert.ok(editor.post.sections.head.isCardSection);
+  assert.positionIsEqual(renderedRange.head,
+                         editor.post.sections.head.headPosition());
+});
+
+test('#toggleMarkup when cursor surrounds non-markerable does nothing', (assert) => {
+  editor = buildEditorWithMobiledoc(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      cardSection('my-card')
+    ]);
+  });
+
+  const range = Range.fromSection(editor.post.sections.head);
+  postEditor = new PostEditor(editor);
+  postEditor.toggleMarkup('b', range);
+  postEditor.complete();
+
+  assert.ok(editor.post.sections.head.isCardSection);
+  assert.positionIsEqual(renderedRange.head,
+                         editor.post.sections.head.headPosition());
+});
+
+test('#toggleMarkup when range has the markup removes it', (assert) => {
+  editor = buildEditorWithMobiledoc(
+    ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [marker('abc', [markup('b')])])]);
+  });
+  let expected = Helpers.postAbstract.build(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+
+  const range = Range.fromSection(editor.post.sections.head);
+  postEditor = new PostEditor(editor);
+  postEditor.toggleMarkup('b', range);
+  postEditor.complete();
+
+  assert.positionIsEqual(renderedRange.head, editor.post.sections.head.headPosition());
+  assert.positionIsEqual(renderedRange.tail, editor.post.sections.head.tailPosition());
+  assert.postIsSimilar(editor.post, expected);
+});
+
+test('#toggleMarkup when only some of the range has it removes it', (assert) => {
+  editor = buildEditorWithMobiledoc(
+    ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [
+      marker('a'),
+      marker('b', [markup('b')]),
+      marker('c')
+    ])]);
+  });
+  let expected = Helpers.postAbstract.build(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+
+  const range = Range.fromSection(editor.post.sections.head);
+  postEditor = new PostEditor(editor);
+  postEditor.toggleMarkup('b', range);
+  postEditor.complete();
+
+  assert.positionIsEqual(renderedRange.head,
+                         editor.post.sections.head.headPosition());
+  assert.positionIsEqual(renderedRange.tail,
+                         editor.post.sections.head.tailPosition());
+  assert.postIsSimilar(editor.post, expected);
+});
+
+test('#toggleMarkup when range does not have the markup adds it', (assert) => {
+  editor = buildEditorWithMobiledoc(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  let expected = Helpers.postAbstract.build(
+    ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [marker('abc', [markup('b')])])]);
+  });
+
+  const range = Range.fromSection(editor.post.sections.head);
+  postEditor = new PostEditor(editor);
+  postEditor.toggleMarkup('b', range);
+  postEditor.complete();
+
+  assert.positionIsEqual(renderedRange.head,
+                         editor.post.sections.head.headPosition());
+  assert.positionIsEqual(renderedRange.tail,
+                         editor.post.sections.head.tailPosition());
+  assert.postIsSimilar(editor.post, expected);
+});
+
+test('#toggleMarkup when the editor has no cursor', (assert) => {
+  editor = buildEditorWithMobiledoc(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  let expected = Helpers.postAbstract.build(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+
+  editorElement.blur();
+  clearSelection();
+  postEditor = new PostEditor(editor);
+  postEditor.toggleMarkup('b');
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.equal(window.getSelection().rangeCount, 0,
+               'nothing is selected');
+  assert.ok(document.activeElement !== editorElement,
+            'active element is not editor element');
+  assert.ok(renderedRange.isBlank, 'rendered range is blank');
 });
 
 test('#insertMarkers inserts the markers in middle, merging markups', (assert) => {
