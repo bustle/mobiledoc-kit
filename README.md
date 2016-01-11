@@ -59,7 +59,7 @@ editor.render(element);
 * `spellcheck` - [boolean] whether to enable spellcheck. Defaults to true.
 * `autofocus` - [boolean] When true, focuses on the editor when it is rendered.
 * `cards` - [array] The list of cards that the editor may render
-* `cardOptions` - [object] Options passed to
+* `cardOptions` - [object] Options passed to cards and atoms
 * `unknownCardHandler` - [function] This will be invoked by the editor-renderer whenever it encounters an unknown card
 
 ### Editor API
