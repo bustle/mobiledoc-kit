@@ -10,7 +10,8 @@ import {
   POST_TYPE,
   LIST_ITEM_TYPE,
   CARD_TYPE,
-  IMAGE_SECTION_TYPE
+  IMAGE_SECTION_TYPE,
+  ATOM_TYPE
 } from 'mobiledoc-kit/models/types';
 
 function comparePostNode(actual, expected, assert, path='root', deepCompare=false) {
@@ -36,6 +37,7 @@ function comparePostNode(actual, expected, assert, path='root', deepCompare=fals
         });
       }
       break;
+    case ATOM_TYPE:
     case MARKER_TYPE:
       if (actual.value !== expected.value) {
         assert.equal(actual.value, expected.value, `wrong value at ${path}`);

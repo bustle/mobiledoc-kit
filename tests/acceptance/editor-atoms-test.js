@@ -62,3 +62,53 @@ test('keystroke of character in section with atom keeps atom', (assert) => {
 
   assert.hasElement(`#editor #simple-atom`, 'still has atom');
 });
+
+test('keystroke of delete removes character after atom', (assert) => {
+  editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
+  editor.render(editorElement);
+
+  let pNode = $('#editor p')[0];
+  Helpers.dom.moveCursorTo(pNode.lastChild, 1);
+  Helpers.dom.triggerDelete(editor);
+
+  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+    ({post, markupSection, atom, marker}) => {
+      return post([markupSection('p', [
+        marker('text before atom'),
+        atom('simple-atom', 'Bob'),
+        marker('ext after atom')
+      ])]);
+    }));
+});
+
+test('keystroke of delete removes atom', (assert) => {
+  editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
+  editor.render(editorElement);
+
+  let pNode = $('#editor p')[0];
+  Helpers.dom.moveCursorTo(pNode.lastChild, 0);
+  Helpers.dom.triggerDelete(editor);
+
+  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+    ({post, markupSection, atom, marker}) => {
+      return post([markupSection('p', [
+        marker('text before atomtext after atom')
+      ])]);
+    }));
+});
+
+test('keystroke of forward delete removes atom', (assert) => {
+  editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
+  editor.render(editorElement);
+
+  let pNode = $('#editor p')[0];
+  Helpers.dom.moveCursorTo(pNode.firstChild, 16);
+  Helpers.dom.triggerForwardDelete(editor);
+
+  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+    ({post, markupSection, atom, marker}) => {
+      return post([markupSection('p', [
+        marker('text before atomtext after atom')
+      ])]);
+    }));
+});

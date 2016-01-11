@@ -11,8 +11,8 @@ import assert from '../utils/assert';
 // high- and low-surrogate characters.
 // See "high surrogate" and "low surrogate" on
 // https://en.wikipedia.org/wiki/Unicode_block
-const HIGH_SURROGATE_RANGE = [0xD800, 0xDBFF];
-const LOW_SURROGATE_RANGE  = [0xDC00, 0xDFFF];
+export const HIGH_SURROGATE_RANGE = [0xD800, 0xDBFF];
+export const LOW_SURROGATE_RANGE  = [0xDC00, 0xDFFF];
 
 const Marker = class Marker extends LinkedItem {
   constructor(value='', markups=[]) {
