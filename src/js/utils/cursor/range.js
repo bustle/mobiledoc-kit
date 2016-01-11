@@ -19,8 +19,8 @@ export default class Range {
     return new Range(section.headPosition(), section.tailPosition());
   }
 
-  static emptyRange() {
-    return new Range(Position.emptyPosition(), Position.emptyPosition());
+  static blankRange() {
+    return new Range(Position.blankPosition(), Position.blankPosition());
   }
 
   /**
@@ -57,6 +57,10 @@ export default class Range {
   isEqual(other) {
     return this.head.isEqual(other.head) &&
            this.tail.isEqual(other.tail);
+  }
+
+  get isBlank() {
+    return this.head.isBlank && this.tail.isBlank;
   }
 
   // "legacy" APIs

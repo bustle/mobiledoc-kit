@@ -54,6 +54,14 @@ export default class Section extends LinkedItem {
     unimplementedMethod('join', this);
   }
 
+  /**
+   * Markerable sections should override this method
+   */
+  splitMarkerAtOffset() {
+    let blankEdit = { added: [], removed: [] };
+    return blankEdit;
+  }
+
   nextLeafSection() {
     const next = this.next;
     if (next) {

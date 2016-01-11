@@ -59,7 +59,7 @@ const Cursor = class Cursor {
    * @return {Range} Cursor#Range object
    */
   get offsets() {
-    if (!this.hasCursor()) { return Range.emptyRange(); }
+    if (!this.hasCursor()) { return Range.blankRange(); }
 
     const { selection, renderTree } = this;
 

@@ -306,7 +306,11 @@ class Editor {
 
   // @private
   renderRange() {
-    this.cursor.selectRange(this.range);
+    if (this.range.isBlank) {
+      this.cursor.clearSelection();
+    } else {
+      this.cursor.selectRange(this.range);
+    }
     this._reportSelectionState();
 
     // ensure that the range is "cleaned"/un-cached after

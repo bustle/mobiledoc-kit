@@ -37,16 +37,17 @@ const Position = class Position {
   constructor(section, offset=0) {
     this.section = section;
     this.offset = offset;
+    this.isBlank = false;
   }
 
-  static emptyPosition() {
+  static blankPosition() {
     return {
       section: null,
       offset: 0,
       marker: null,
       offsetInTextNode: 0,
-      _isEmpty: true,
-      isEqual(other) { return other._isEmpty; },
+      isBlank: true,
+      isEqual(other) { return other.isBlank; },
       markerPosition: {}
     };
   }
