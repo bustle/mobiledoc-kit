@@ -212,7 +212,10 @@ class PostEditor {
     while (marker && marker.next) {
       nextMarker = marker.next;
 
-      if (isArrayEqual(marker.markups, nextMarker.markups)) {
+      if (
+        marker.type === nextMarker.type &&
+        isArrayEqual(marker.markups, nextMarker.markups)
+      ) {
         nextMarker.value = marker.value + nextMarker.value;
         this._markDirty(nextMarker);
         this.removeMarker(marker);
@@ -450,6 +453,15 @@ class PostEditor {
     return nextPosition;
   }
 
+  /**
+   * delete 1 character forward from the markerPosition, which in turn is
+   * a {marker, offset} object.
+   *
+   * @method _deleteForwardFromMarkerPosition
+   * @param {Object} markerPosition {marker, offset}
+   * @return {Position} The position the cursor should be put after this deletion
+   * @private
+   */
   _deleteForwardFromMarkerPosition(markerPosition) {
     const {marker, offset} = markerPosition;
     const {section} = marker;
@@ -472,6 +484,8 @@ class PostEditor {
           this.removeSection(nextSection);
         }
       }
+    } else if (marker.length === 1 && offset === 0) {
+      this.removeMarker(marker);
     } else {
       marker.deleteValueAtOffset(offset);
       this._markDirty(marker);
@@ -501,22 +515,24 @@ class PostEditor {
       }
     }
 
-    let nextPosition = position.clone();
-
     // if position is end of a card, replace the card with a markup section
     if (section.isCardSection) {
       let newSection = this.builder.createMarkupSection();
       this.replaceSection(section, newSection);
       return newSection.headPosition();
     }
- 
-    const { marker, offset:markerOffset } = position.markerPosition;
 
+    let nextPosition = position.moveLeft();
+
+    const { marker, offset:markerOffset } = position.markerPosition;
     const offsetToDeleteAt = markerOffset - 1;
 
-    let lengthChange = marker.deleteValueAtOffset(offsetToDeleteAt);
-    nextPosition.offset -= lengthChange;
-    this._markDirty(marker);
+    if (marker.length === 1 && offsetToDeleteAt === 0) {
+      this.removeMarker(marker);
+    } else {
+      marker.deleteValueAtOffset(offsetToDeleteAt);
+      this._markDirty(marker);
+    }
 
     return nextPosition;
   }

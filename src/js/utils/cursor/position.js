@@ -3,6 +3,10 @@ import {
 } from 'mobiledoc-kit/utils/dom-utils';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import assert from 'mobiledoc-kit/utils/assert';
+import {
+  HIGH_SURROGATE_RANGE,
+  LOW_SURROGATE_RANGE
+} from 'mobiledoc-kit/models/marker';
 
 function findParentSectionFromNode(renderTree, node) {
   let renderNode =  renderTree.findRenderNodeFromElement(
@@ -134,7 +138,14 @@ const Position = class Position {
       let prev = this.section.previousLeafSection();
       return prev && prev.tailPosition();
     } else {
-      return new Position(this.section, this.offset - 1);
+      let offset = this.offset - 1;
+      if (!this.section.isCardSection && this.marker.value) {
+        let code = this.marker.value.charCodeAt(offset);
+        if (code >= LOW_SURROGATE_RANGE[0] && code <= LOW_SURROGATE_RANGE[1]) {
+          offset = offset - 1;
+        }
+      }
+      return new Position(this.section, offset);
     }
   }
 
@@ -146,7 +157,14 @@ const Position = class Position {
       let next = this.section.nextLeafSection();
       return next && next.headPosition();
     } else {
-      return new Position(this.section, this.offset + 1);
+      let offset = this.offset + 1;
+      if (!this.section.isCardSection && this.marker.value) {
+        let code = this.marker.value.charCodeAt(offset);
+        if (code >= HIGH_SURROGATE_RANGE[0] && code <= HIGH_SURROGATE_RANGE[1]) {
+          offset = offset + 1;
+        }
+      }
+      return new Position(this.section, offset);
     }
   }
 
