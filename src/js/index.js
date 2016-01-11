@@ -1,9 +1,11 @@
 import Editor from './editor/editor';
 import ImageCard from './cards/image';
+import Range from './utils/cursor/range';
 
 const Mobiledoc = {
   Editor,
-  ImageCard
+  ImageCard,
+  Range
 };
 
 export function registerGlobal(global) {

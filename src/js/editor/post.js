@@ -1222,7 +1222,7 @@ class PostEditor {
   /**
    * Add a didUpdate job to the queue
    *
-   * @method scheduleDidRender
+   * @method scheduleDidUpdate
    * @public
    */
   scheduleDidUpdate() {
