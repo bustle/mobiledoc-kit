@@ -50,7 +50,7 @@ export default class AtomNode {
 
     let { atom: { name } } = this;
     assert(
-      `Atom "${name}" must render dom (render value was: "${rendered}")`,
+      `Atom "${name}" must return a DOM node (returned value was: "${rendered}")`,
       !!rendered.nodeType
     );
     this.element.appendChild(rendered);

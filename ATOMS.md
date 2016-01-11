@@ -4,7 +4,7 @@ Atoms are effectively read-only inline cards.
 
 ## Atom format
 
-An atom is a javascript object with 3 *required* properties:
+An atom is a JavaScript object with 3 *required* properties:
 
   * `name` [string] - The name of this atom in the mobiledoc
   * `type` [string] - The output of this atom. Valid values are 'dom', 'html', and 'text'

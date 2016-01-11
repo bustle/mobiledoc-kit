@@ -59,7 +59,7 @@ editor.render(element);
 * `spellcheck` - [boolean] whether to enable spellcheck. Defaults to true.
 * `autofocus` - [boolean] When true, focuses on the editor when it is rendered.
 * `cards` - [array] The list of cards that the editor may render
-* `cardOptions` - [object] Options passed to
+* `cardOptions` - [object] Options passed to cards and atoms
 * `unknownCardHandler` - [function] This will be invoked by the editor-renderer whenever it encounters an unknown card
 
 ### Editor API
@@ -141,9 +141,7 @@ editor.run(postEditor => {
   const mention = postEditor.builder.createAtom("mention", "John Doe", { id: 42 });
   // insert at current cursor position:
   // or should the user have to grab the current position from the editor first?
-  postEditor.insert(mention);
-  // or specify a different position:
-  postEditor.insert(mention, position);
+  postEditor.insertMarkers(editor.range.head, [mention]);
 });
 ```
 

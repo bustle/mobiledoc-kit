@@ -14,6 +14,23 @@ import {
   ATOM_TYPE
 } from 'mobiledoc-kit/models/types';
 
+/*jshint latedef: false */
+function compareMarkers(actual, expected, assert, path, deepCompare) {
+  if (actual.value !== expected.value) {
+    assert.equal(actual.value, expected.value, `wrong value at ${path}`);
+  }
+  if (actual.markups.length !== expected.markups.length) {
+    assert.equal(actual.markups.length, expected.markups.length,
+                 `wrong markups at ${path}`);
+  }
+  if (deepCompare) {
+    actual.markups.forEach((markup, index) => {
+      comparePostNode(markup, expected.markups[index],
+                      assert, `${path}:${index}`, deepCompare);
+    });
+  }
+}
+
 function comparePostNode(actual, expected, assert, path='root', deepCompare=false) {
   if (!actual || !expected) {
     assert.ok(!!actual, `missing actual post node at ${path}`);
@@ -38,20 +55,13 @@ function comparePostNode(actual, expected, assert, path='root', deepCompare=fals
       }
       break;
     case ATOM_TYPE:
+      if (actual.name !== expected.name) {
+        assert.equal(actual.name, expected.name, `wrong atom name at ${path}`);
+      }
+      compareMarkers(actual, expected, assert, path, deepCompare);
+      break;
     case MARKER_TYPE:
-      if (actual.value !== expected.value) {
-        assert.equal(actual.value, expected.value, `wrong value at ${path}`);
-      }
-      if (actual.markups.length !== expected.markups.length) {
-        assert.equal(actual.markups.length, expected.markups.length,
-                     `wrong markups at ${path}`);
-      }
-      if (deepCompare) {
-        actual.markups.forEach((markup, index) => {
-          comparePostNode(markup, expected.markups[index],
-                          assert, `${path}:${index}`, deepCompare);
-        });
-      }
+      compareMarkers(actual, expected, assert, path, deepCompare);
       break;
     case MARKUP_SECTION_TYPE:
     case LIST_ITEM_TYPE:

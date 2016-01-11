@@ -44,7 +44,8 @@ let renderedRange;
 function buildEditorWithMobiledoc(builderFn) {
   let mobiledoc = Helpers.mobiledoc.build(builderFn);
   let unknownCardHandler = () => {};
-  editor = new Editor({mobiledoc, unknownCardHandler});
+  let unknownAtomHandler = () => {};
+  editor = new Editor({mobiledoc, unknownCardHandler, unknownAtomHandler});
   editor.render(editorElement);
   editor.renderRange = function() {
     renderedRange = this.range;
@@ -1590,6 +1591,36 @@ test('#toggleMarkup when the editor has no cursor', (assert) => {
   assert.ok(document.activeElement !== editorElement,
             'active element is not editor element');
   assert.ok(renderedRange.isBlank, 'rendered range is blank');
+});
+
+test('#insertMarkers inserts an atom', (assert) => {
+  let toInsert, expected;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup, atom}) => {
+    toInsert = [
+      atom('simple-atom', '123', [markup('b')])
+    ];
+    expected = post([
+      markupSection('p', [
+        marker('abc'),
+        atom('simple-atom', '123', [markup('b')]),
+        marker('def')
+    ])]);
+  });
+
+  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abcdef')])]);
+  });
+  let position = new Position(editor.post.sections.head, 'abc'.length);
+  postEditor = new PostEditor(editor);
+  postEditor.insertMarkers(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(
+    renderedRange.head,
+    new Position(editor.post.sections.head, 4)
+  );
 });
 
 test('#insertMarkers inserts the markers in middle, merging markups', (assert) => {

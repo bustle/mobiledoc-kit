@@ -113,7 +113,7 @@ test('returning wrong type from render throws', (assert) => {
 
   assert.throws(() => {
     editor.render(editorElement);
-  }, new RegExp(`Atom "${atomName}" must render dom`));
+  }, new RegExp(`Atom "${atomName}" must return a DOM node`));
 });
 
 test('returning undefined from render is ok', (assert) => {
