@@ -55,10 +55,10 @@ function renderHTMLText(marker) {
   // the cursor.
   // See https://github.com/bustlelabs/mobiledoc-kit/issues/68
   //   and https://github.com/bustlelabs/mobiledoc-kit/issues/75
-  if (endsWithSpace(text) && !marker.next) {
+  if (marker.isMarker && endsWithSpace(text) && !marker.next) {
     text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
   }
-  if (startsWithSpace(text) &&
+  if (marker.isMarker && startsWithSpace(text) &&
       (!marker.prev || (marker.prev.isMarker && endsWithSpace(marker.prev.value)))) {
     text = NO_BREAK_SPACE + text.substr(1);
   }
@@ -101,38 +101,69 @@ function renderCursorPlaceholder() {
   return document.createElement('br');
 }
 
+function renderInlineCursorPlaceholder() {
+  return document.createTextNode(ZWNJ);
+}
+
 function renderCard() {
   let wrapper = document.createElement('div');
   let cardElement = document.createElement('div');
   cardElement.contentEditable = false;
   addClassName(cardElement, CARD_ELEMENT_CLASS_NAME);
-  wrapper.appendChild(document.createTextNode(ZWNJ));
+  wrapper.appendChild(renderInlineCursorPlaceholder());
   wrapper.appendChild(cardElement);
-  wrapper.appendChild(document.createTextNode(ZWNJ));
+  wrapper.appendChild(renderInlineCursorPlaceholder());
   return { wrapper, cardElement };
 }
 
-function renderAtom(element, previousRenderNode) {
+/**
+ * Wrap the element in all of the opened markups
+ * @return {DOMElement} the wrapped element
+ */
+function wrapElement(element, openedMarkups) {
+  let wrappedElement = element;
+
+  for (let i=openedMarkups.length - 1; i>=0; i--) {
+    let markup = openedMarkups[i];
+    let openedElement = createElementFromMarkup(document, markup);
+    openedElement.appendChild(wrappedElement);
+    wrappedElement = openedElement;
+  }
+
+  return wrappedElement;
+}
+
+// Attach the element to its parent element at the correct position based on the
+// previousRenderNode
+function attachElementToParent(element, parentElement, previousRenderNode=null) {
+  if (previousRenderNode) {
+    let previousSibling = previousRenderNode.element;
+    let previousSiblingPenultimate = penultimateParentOf(previousSibling,
+                                                         parentElement);
+    parentElement.insertBefore(element, previousSiblingPenultimate.nextSibling);
+  } else {
+    parentElement.insertBefore(element, parentElement.firstChild);
+  }
+}
+
+function renderAtom(atom, element, previousRenderNode) {
   let atomElement = document.createElement('span');
   atomElement.contentEditable = false;
 
   let wrapper = document.createElement('span');
   addClassName(wrapper, ATOM_CLASS_NAME);
-  let headTextNode = document.createTextNode('\u200c');
-  let tailTextNode = document.createTextNode('\u200c');
+  let headTextNode = renderInlineCursorPlaceholder();
+  let tailTextNode = renderInlineCursorPlaceholder();
+
   wrapper.appendChild(headTextNode);
   wrapper.appendChild(atomElement);
   wrapper.appendChild(tailTextNode);
 
-  if (previousRenderNode) {
-    let previousSibling = previousRenderNode.element;
-    let previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
-    element.insertBefore(wrapper, previousSiblingPenultimate.nextSibling);
-  } else {
-    element.insertBefore(wrapper, element.firstChild);
-  }
+  let wrappedElement = wrapElement(wrapper, atom.openedMarkups);
+  attachElementToParent(wrappedElement, element, previousRenderNode);
 
   return {
+    markupElement: wrappedElement,
     wrapper,
     atomElement,
     headTextNode,
@@ -165,33 +196,15 @@ function renderMarker(marker, parentElement, previousRenderNode) {
   let text = renderHTMLText(marker);
 
   let element = document.createTextNode(text);
-  let markupElement = element;
-  let markup;
-
-  const openTypes = marker.openedMarkups;
-  for (let j=openTypes.length-1;j>=0;j--) {
-    markup = openTypes[j];
-    let openedElement = createElementFromMarkup(document, markup);
-    openedElement.appendChild(markupElement);
-    markupElement = openedElement;
-  }
-
-  let referenceElement;
-
-  if (previousRenderNode) {
-    let previousSibling = previousRenderNode.element;
-    let previousSiblingPenultimate = penultimateParentOf(previousSibling, parentElement);
-    referenceElement = previousSiblingPenultimate.nextSibling;
-  } else {
-    referenceElement = parentElement.firstChild;
-  }
-
-  parentElement.insertBefore(markupElement, referenceElement);
+  let markupElement = wrapElement(element, marker.openedMarkups);
+  attachElementToParent(markupElement, parentElement, previousRenderNode);
 
   return { element, markupElement };
 }
 
-function attachRenderNodeElementToDOM(renderNode, originalElement) {
+// Attach the render node's element to the DOM,
+// replacing the originalElement if it exists
+function attachRenderNodeElementToDOM(renderNode, originalElement=null) {
   const element = renderNode.element;
   const hasRendered = !!originalElement;
 
@@ -412,10 +425,11 @@ class Visitor {
     const { editor, options } = this;
     const {
       wrapper,
+      markupElement,
       atomElement,
       headTextNode,
       tailTextNode
-    } = renderAtom(parentElement, renderNode.prev);
+    } = renderAtom(atomModel, parentElement, renderNode.prev);
     const atom = this._findAtom(atomModel.name);
 
     const atomNode = new AtomNode(
@@ -428,6 +442,7 @@ class Visitor {
     renderNode.element = wrapper;
     renderNode.headTextNode = headTextNode;
     renderNode.tailTextNode = tailTextNode;
+    renderNode.markupElement = markupElement;
   }
 }
 

@@ -29,6 +29,32 @@ test('#move moves forward and backward in markup section', (assert) => {
   assert.positionIsEqual(position.moveLeft(), leftPosition, 'left position');
 });
 
+test('#move is emoji-aware', (assert) => {
+  let emoji = '🙈';
+  let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker(`a${emoji}z`)])]);
+  });
+  let marker = post.sections.head.markers.head;
+  assert.equal(marker.length, 'a'.length + 2 + 'z'.length); // precond
+  let position = post.sections.head.headPosition();
+
+  position = position.moveRight();
+  assert.equal(position.offset, 1);
+  position = position.moveRight();
+  assert.equal(position.offset, 3); // l-to-r across emoji
+  position = position.moveRight();
+  assert.equal(position.offset, 4);
+
+  position = position.moveLeft();
+  assert.equal(position.offset, 3);
+
+  position = position.moveLeft(); // r-to-l across emoji
+  assert.equal(position.offset, 1);
+
+  position = position.moveLeft();
+  assert.equal(position.offset, 0);
+});
+
 test('#move moves forward and backward between markup sections', (assert) => {
   let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
     return post([

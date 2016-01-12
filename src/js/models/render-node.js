@@ -16,6 +16,14 @@ export default class RenderNode extends LinkedItem {
 
     // RenderNodes for Markers keep track of their markupElement
     this.markupElement = null;
+
+    // RenderNodes for Atoms use these properties
+    this.headTextNode = null;
+    this.tailTextNode = null;
+    this.atomNode = null;
+
+    // RenderNodes for cards use this property
+    this.cardNode = null;
   }
   isAttached() {
     assert('Cannot check if a renderNode is attached without an element.',

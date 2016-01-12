@@ -163,6 +163,32 @@ test('renders a post with atom', (assert) => {
   });
 });
 
+test('renders a post with atom and markup', (assert) => {
+  const post = Helpers.postAbstract.build(({post, markupSection, marker, markup, atom}) => {
+    const strong = markup('strong');
+    return post([
+      markupSection('p', [
+        atom('mention', '@bob', { id: 42 }, [strong])
+      ])
+    ]);
+  });
+
+  let mobiledoc = render(post);
+  assert.deepEqual(mobiledoc, {
+    version: MOBILEDOC_VERSION,
+    atoms: [
+      ['mention', '@bob', { id: 42 }]
+    ],
+    cards: [],
+    markups: [['strong']],
+    sections: [
+      [1, normalizeTagName('P'), [
+        [1, [0], 1, 0]
+      ]]
+    ]
+  });
+});
+
 test('renders a post with atom inside markup', (assert) => {
   const post = Helpers.postAbstract.build(({post, markupSection, marker, markup, atom}) => {
     const strong = markup('strong');

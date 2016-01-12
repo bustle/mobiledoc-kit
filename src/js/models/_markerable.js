@@ -3,7 +3,6 @@ import Set from '../utils/set';
 
 import LinkedList from '../utils/linked-list';
 import Section from './_section';
-import Position from '../utils/cursor/position';
 import assert from '../utils/assert';
 
 export default class Markerable extends Section {
@@ -35,14 +34,6 @@ export default class Markerable extends Section {
       this.type, this.tagName, newMarkers);
   }
 
-  headPosition() {
-    return new Position(this, 0);
-  }
-
-  tailPosition() {
-    return new Position(this, this.length);
-  }
-
   get isBlank() {
     if (!this.markers.length) {
       return true;
@@ -56,7 +47,7 @@ export default class Markerable extends Section {
    *
    * @return {Number} The offset relative to the start of this section
    */
-  offsetOfMarker(marker, markerOffset) {
+  offsetOfMarker(marker, markerOffset=0) {
     assert(`Cannot get offsetOfMarker for marker that is not child of this`,
            marker.section === this);
 
@@ -82,7 +73,7 @@ export default class Markerable extends Section {
    * @return {Array} the new markers that replaced `marker`
    */
   splitMarker(marker, offset, endOffset=marker.length) {
-    const newMarkers = filter(marker.split(offset, endOffset), m => !m.isEmpty);
+    const newMarkers = filter(marker.split(offset, endOffset), m => !m.isBlank);
     this.markers.splice(marker, 1, newMarkers);
     return newMarkers;
   }
@@ -203,7 +194,7 @@ export default class Markerable extends Section {
   }
 
   get length() {
-    return this.text.length;
+    return reduce(this.markers, (prev, m) => prev + m.length, 0);
   }
 
   /**
@@ -215,9 +206,14 @@ export default class Markerable extends Section {
                    tail: {section:this, offset:tailOffset}};
 
     let markers = [];
-    this._markersInRange(range, (marker, {markerHead, markerTail}) => {
+    this._markersInRange(range, (marker, {markerHead, markerTail, isContained}) => {
       const cloned = marker.clone();
-      cloned.value = marker.value.slice(markerHead, markerTail);
+      if (!isContained) {
+        // cannot do marker.value.slice if the marker is an atom -- this breaks the atom's "atomic" value
+        // If a marker is an atom `isContained` should always be true so
+        // we shouldn't hit this code path. FIXME add tests
+        cloned.value = marker.value.slice(markerHead, markerTail);
+      }
       markers.push(cloned);
     });
     return markers;
@@ -266,7 +262,7 @@ export default class Markerable extends Section {
     let afterMarker = null;
 
     otherSection.markers.forEach(m => {
-      if (!m.isEmpty) {
+      if (!m.isBlank) {
         m = m.clone();
         this.markers.append(m);
         if (!afterMarker) {

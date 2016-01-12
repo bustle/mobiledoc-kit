@@ -96,11 +96,13 @@ const Cursor = class Cursor {
     } else {
       let {marker, offsetInMarker} = position;
       if (marker.isAtom) {
-        offset = 0;
-        if (offsetInMarker === 0) {
-          node = marker.renderNode.headTextNode;
-        } else {
+        if (offsetInMarker > 0) {
+          // FIXME -- if there is a next marker, focus on it?
+          offset = 0;
           node = marker.renderNode.tailTextNode;
+        } else {
+          offset = 0;
+          node = marker.renderNode.headTextNode;
         }
       } else {
         node = marker.renderNode.element;

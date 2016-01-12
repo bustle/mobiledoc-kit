@@ -1,5 +1,5 @@
 import Position from '../utils/cursor/position';
-import { isArrayEqual, forEach, filter } from '../utils/array-utils';
+import { forEach, filter } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 import mixin from '../utils/mixin';
@@ -193,14 +193,14 @@ class PostEditor {
 
   _coalesceMarkers(section) {
     if (section.isMarkerable) {
-      this._removeEmptyMarkers(section);
+      this._removeBlankMarkers(section);
       this._joinSimilarMarkers(section);
     }
   }
 
-  _removeEmptyMarkers(section) {
+  _removeBlankMarkers(section) {
     forEach(
-      filter(section.markers, m => m.isEmpty),
+      filter(section.markers, m => m.isBlank),
       m => this.removeMarker(m)
     );
   }
@@ -212,10 +212,7 @@ class PostEditor {
     while (marker && marker.next) {
       nextMarker = marker.next;
 
-      if (
-        marker.type === nextMarker.type &&
-        isArrayEqual(marker.markups, nextMarker.markups)
-      ) {
+      if (marker.canJoin(nextMarker)) {
         nextMarker.value = marker.value + nextMarker.value;
         this._markDirty(nextMarker);
         this.removeMarker(marker);
@@ -401,19 +398,17 @@ class PostEditor {
    * @private
    */
   _deleteForwardFrom(position) {
-    const { section, offset } = position;
+    const { section } = position;
 
     if (section.isBlank) {
       // remove this section, focus on start of next markerable section
-      const nextPosition = position.clone();
       const next = section.immediatelyNextMarkerableSection();
       if (next) {
         this.removeSection(section);
-        nextPosition.section = next;
-        nextPosition.offset = 0;
+        position = next.headPosition();
       }
-      return nextPosition;
-    } else if (offset === section.length) {
+      return position;
+    } else if (position.isTail()) {
       if (section.isCardSection)  {
         if (section.next && section.next.isBlank) {
           this.removeSection(section.next);
@@ -424,12 +419,10 @@ class PostEditor {
         return this._joinPositionToNextSection(position);
       }
     } else {
-      if (section.isCardSection) {
-        if (offset === 0) {
-          let newSection = this.builder.createMarkupSection();
-          this.replaceSection(section, newSection);
-          return newSection.headPosition();
-        }
+      if (section.isCardSection && position.isHead()) {
+        let newSection = this.builder.createMarkupSection();
+        this.replaceSection(section, newSection);
+        return newSection.headPosition();
       } else {
         return this._deleteForwardFromMarkerPosition(position.markerPosition);
       }
@@ -438,7 +431,6 @@ class PostEditor {
 
   _joinPositionToNextSection(position) {
     const { section } = position;
-    let nextPosition = position.clone();
 
     assert('Cannot join non-markerable section to next section',
            section.isMarkerable);
@@ -450,12 +442,11 @@ class PostEditor {
       this.removeSection(next);
     }
 
-    return nextPosition;
+    return position;
   }
 
   /**
-   * delete 1 character forward from the markerPosition, which in turn is
-   * a {marker, offset} object.
+   * delete 1 character forward from the markerPosition
    *
    * @method _deleteForwardFromMarkerPosition
    * @param {Object} markerPosition {marker, offset}
@@ -484,7 +475,7 @@ class PostEditor {
           this.removeSection(nextSection);
         }
       }
-    } else if (marker.length === 1 && offset === 0) {
+    } else if (marker.isAtom) { // atoms are deleted "atomically"
       this.removeMarker(marker);
     } else {
       marker.deleteValueAtOffset(offset);
@@ -502,9 +493,9 @@ class PostEditor {
    * @private
    */
   _deleteBackwardFrom(position) {
-    const { section, offset:sectionOffset } = position;
+    const { section } = position;
 
-    if (sectionOffset === 0) {
+    if (position.isHead()) {
       if (section.isCardSection) {
         if (section.prev && section.prev.isBlank) {
           this.removeSection(section.prev);
@@ -515,7 +506,7 @@ class PostEditor {
       }
     }
 
-    // if position is end of a card, replace the card with a markup section
+    // if position is end of a card, replace the card with a blank markup section
     if (section.isCardSection) {
       let newSection = this.builder.createMarkupSection();
       this.replaceSection(section, newSection);
@@ -527,7 +518,7 @@ class PostEditor {
     const { marker, offset:markerOffset } = position.markerPosition;
     const offsetToDeleteAt = markerOffset - 1;
 
-    if (marker.length === 1 && offsetToDeleteAt === 0) {
+    if (marker.isAtom) {
       this.removeMarker(marker);
     } else {
       marker.deleteValueAtOffset(offsetToDeleteAt);

@@ -359,4 +359,3 @@ test('returning false from key command still runs built-in functionality', (asse
 
   assert.equal($('#editor p').length, 2, 'has added a new paragraph');
 });
-

@@ -67,7 +67,4 @@ export default class RenderTree {
     postNode.renderNode = renderNode;
     return renderNode;
   }
-  getRenderNode(postNode) {
-    return postNode.renderNode;
-  }
 }

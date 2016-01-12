@@ -7,6 +7,7 @@ import {
   MOBILEDOC_ATOM_MARKER_TYPE
 } from 'mobiledoc-kit/renderers/mobiledoc/0-3';
 import { kvArrayToObject, filter } from "../../utils/array-utils";
+import assert from 'mobiledoc-kit/utils/assert';
 
 /*
  * Parses from mobiledoc -> post
@@ -82,23 +83,19 @@ export default class MobiledocParser {
         this.parseListSection(section, post);
         break;
       default:
-        throw new Error(`Unexpected section type ${type}`);
+        assert('Unexpected section type ${type}', false);
     }
   }
 
   getAtomTypeFromIndex(index) {
     const atomType = this.atomTypes[index];
-    if (!atomType) {
-      throw new Error(`No atom definition found at index ${index}`);
-    }
+    assert(`No atom definition found at index ${index}`, !!atomType);
     return atomType;
   }
 
   getCardTypeFromIndex(index) {
     const cardType = this.cardTypes[index];
-    if (!cardType) {
-      throw new Error(`No card definition found at index ${index}`);
-    }
+    assert(`No card definition found at index ${index}`, !!cardType);
     return cardType;
   }
 
@@ -117,9 +114,9 @@ export default class MobiledocParser {
     const section = this.builder.createMarkupSection(tagName);
     post.sections.append(section);
     this.parseMarkers(markers, section);
-    // Strip blank markers after the have been created. This ensures any
+    // Strip blank markers after they have been created. This ensures any
     // markup they include has been correctly populated.
-    filter(section.markers, m => m.isEmpty).forEach(m => {
+    filter(section.markers, m => m.isBlank).forEach(m => {
       section.markers.remove(m);
     });
   }
@@ -161,9 +158,9 @@ export default class MobiledocParser {
         return this.builder.createMarker(value, this.markups.slice());
       case MOBILEDOC_ATOM_MARKER_TYPE:
         const [atomName, atomValue, atomPayload] = this.getAtomTypeFromIndex(value);
-        return this.builder.createAtom(atomName, atomValue, atomPayload);
+        return this.builder.createAtom(atomName, atomValue, atomPayload, this.markups.slice());
       default:
-        throw new Error(`Unexpected marker type ${type}`);
+        assert(`Unexpected marker type ${type}`, false);
     }
   }
 }

@@ -103,7 +103,7 @@ export default class PostNodeBuilder {
     return marker;
   }
 
-  createAtom(name, text, payload={}, markups=[]) {
+  createAtom(name, text='', payload={}, markups=[]) {
     const atom = new Atom(name, text, payload, markups);
     atom.builder = this;
     return atom;

@@ -3,6 +3,7 @@ import mixin from '../utils/mixin';
 import MarkuperableMixin from '../utils/markuperable';
 import LinkedItem from '../utils/linked-item';
 import assert from '../utils/assert';
+import { isArrayEqual } from '../utils/array-utils';
 
 // Unicode uses a pair of "surrogate" characters" (a high- and low-surrogate)
 // to encode characters outside the basic multilingual plane (like emoji and
@@ -18,9 +19,11 @@ const Marker = class Marker extends LinkedItem {
   constructor(value='', markups=[]) {
     super();
     this.value = value;
+    assert('Marker must have value', value !== undefined && value !== null);
     this.markups = [];
     this.type = MARKER_TYPE;
     this.isMarker = true;
+    this.isAtom = false;
     markups.forEach(m => this.addMarkup(m));
   }
 
@@ -30,11 +33,11 @@ const Marker = class Marker extends LinkedItem {
   }
 
   get isEmpty() {
-    return this.length === 0;
+    return this.isBlank;
   }
 
   get isBlank() {
-    return this.value.length === 0;
+    return this.length === 0;
   }
 
   get length() {
@@ -65,18 +68,12 @@ const Marker = class Marker extends LinkedItem {
     return width;
   }
 
-  join(other) {
-    const joined = this.builder.createMarker(this.value + other.value);
-    this.markups.forEach(m => joined.addMarkup(m));
-    other.markups.forEach(m => joined.addMarkup(m));
-
-    return joined;
+  canJoin(other) {
+    return other && other.isMarker && isArrayEqual(this.markups, other.markups);
   }
 
   split(offset=0, endOffset=this.length) {
-    let markers = [];
-
-    markers = [
+    let markers = [
       this.builder.createMarker(this.value.substring(0, offset)),
       this.builder.createMarker(this.value.substring(offset, endOffset)),
       this.builder.createMarker(this.value.substring(endOffset))

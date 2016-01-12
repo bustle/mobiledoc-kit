@@ -2,6 +2,7 @@ import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import { supportsSelectionExtend } from '../helpers/browsers';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const { test, module } = Helpers;
 
@@ -21,6 +22,7 @@ const atoms = [{
 }];
 
 let editor, editorElement;
+let editorOptions = {cards, atoms};
 
 module('Acceptance: Cursor Movement', {
   beforeEach() {
@@ -332,6 +334,48 @@ test('right arrow when at the head of an atom moves the cursor across the atom',
                'Cursor is positioned at offset 3');
 });
 
+test('left/right arrows moves cursor l-to-r and r-to-l across atom', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+    return post([markupSection('p', [atom('my-atom', 'first')])]);
+  }, editorOptions);
+
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  Helpers.dom.triggerLeftArrowKey(editor);
+  assert.positionIsEqual(editor.range.head, editor.post.headPosition());
+  assert.positionIsEqual(editor.range.tail, editor.post.headPosition());
+
+  editor.selectRange(new Range(editor.post.headPosition()));
+  Helpers.dom.triggerRightArrowKey(editor);
+  assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
+  assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
+});
+
+test('left arrow at start atom moves to end of prev section', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [atom('my-atom', 'first')])
+    ]);
+  }, editorOptions);
+
+  editor.selectRange(new Range(editor.post.sections.tail.headPosition()));
+  Helpers.dom.triggerLeftArrowKey(editor);
+  assert.positionIsEqual(editor.range.head, editor.post.sections.head.tailPosition());
+});
+
+test('right arrow at end of end atom moves to start of next section', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [atom('my-atom', 'first')]),
+      markupSection('p', [marker('abc')])
+    ]);
+  }, editorOptions);
+
+  editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
+  Helpers.dom.triggerRightArrowKey(editor);
+  assert.positionIsEqual(editor.range.head, editor.post.sections.tail.headPosition());
+});
+
 module('Acceptance: Cursor Movement w/ shift', {
   beforeEach() {
     editorElement = $('#editor')[0];
@@ -535,4 +579,20 @@ test('right arrow at end of card moves to next list item', (assert) => {
 
   assert.positionIsEqual(offsets.head, cardTail);
   assert.positionIsEqual(offsets.tail, itemHead);
+});
+
+test('left/right arrows move selection l-to-r and r-to-l across atom', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+    return post([markupSection('p', [atom('my-atom', 'first')])]);
+  }, editorOptions);
+
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
+  assert.positionIsEqual(editor.range.head, editor.post.headPosition());
+  assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
+
+  editor.selectRange(new Range(editor.post.headPosition()));
+  Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
+  assert.positionIsEqual(editor.range.head, editor.post.headPosition());
+  assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
 });
