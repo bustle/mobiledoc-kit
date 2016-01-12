@@ -16,6 +16,36 @@ export default class Atom extends LinkedItem {
     this.markups = [];
     markups.forEach(m => this.addMarkup(m));
   }
+
+  clone() {
+    let clonedMarkups = this.markups.slice();
+    return this.builder.createAtom(
+      this.name, this.value, this.payload, clonedMarkups
+    );
+  }
+
+  split(offset=0, endOffset=1) {
+    let markers = [];
+
+    if (endOffset === 0) {
+      markers.push(
+        this.builder.createMarker('', this.markups.slice())
+      );
+    }
+
+    markers.push(
+      this.clone()
+    );
+
+    if (offset === 1) {
+      markers.push(
+        this.builder.createMarker('', this.markups.slice())
+      );
+    }
+
+    return markers;
+  }
+
 }
 
 mixin(Atom, MarkuperableMixin);

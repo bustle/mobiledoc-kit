@@ -74,9 +74,7 @@ const Marker = class Marker extends LinkedItem {
   }
 
   split(offset=0, endOffset=this.length) {
-    let markers = [];
-
-    markers = [
+    let markers = [
       this.builder.createMarker(this.value.substring(0, offset)),
       this.builder.createMarker(this.value.substring(offset, endOffset)),
       this.builder.createMarker(this.value.substring(endOffset))

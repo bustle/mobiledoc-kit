@@ -112,3 +112,70 @@ test('keystroke of forward delete removes atom', (assert) => {
       ])]);
     }));
 });
+
+test('keystroke of enter in section with atom creates new section', (assert) => {
+  editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
+  editor.render(editorElement);
+
+  let pNode = $('#editor p')[0];
+  Helpers.dom.moveCursorTo(pNode.lastChild, 1);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+    ({post, markupSection, atom, marker}) => {
+      return post([
+        markupSection('p', [
+          marker('text before atom'),
+          atom('simple-atom', 'Bob'),
+          marker('t')
+        ]),
+        markupSection('p', [
+          marker('ext after atom')
+        ])
+      ]);
+    }));
+});
+
+test('keystroke of enter after atom and before marker creates new section', (assert) => {
+  editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
+  editor.render(editorElement);
+
+  let pNode = $('#editor p')[0];
+  Helpers.dom.moveCursorTo(pNode.lastChild, 0);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+    ({post, markupSection, atom, marker}) => {
+      return post([
+        markupSection('p', [
+          marker('text before atom'),
+          atom('simple-atom', 'Bob')
+        ]),
+        markupSection('p', [
+          marker('text after atom')
+        ])
+      ]);
+    }));
+});
+
+test('keystroke of enter before atom and after marker creates new section', (assert) => {
+  editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
+  editor.render(editorElement);
+
+  let pNode = $('#editor p')[0];
+  Helpers.dom.moveCursorTo(pNode.firstChild, 16);
+  Helpers.dom.triggerEnter(editor);
+
+  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+    ({post, markupSection, atom, marker}) => {
+      return post([
+        markupSection('p', [
+          marker('text before atom')
+        ]),
+        markupSection('p', [
+          atom('simple-atom', 'Bob'),
+          marker('text after atom')
+        ])
+      ]);
+    }));
+});
