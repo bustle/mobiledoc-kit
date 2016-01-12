@@ -123,7 +123,7 @@ function renderCard() {
   return { wrapper, cardElement };
 }
 
-function renderAtom(element, previousRenderNode) {
+function renderAtom(atom, element, previousRenderNode) {
   let atomElement = document.createElement('span');
   atomElement.contentEditable = false;
 
@@ -134,6 +134,14 @@ function renderAtom(element, previousRenderNode) {
   wrapper.appendChild(headTextNode);
   wrapper.appendChild(atomElement);
   wrapper.appendChild(tailTextNode);
+
+  let openTypes = atom.openedMarkups;
+  for (let j=openTypes.length-1;j>=0;j--) {
+    let markup = openTypes[j];
+    let openedElement = createElementFromMarkup(document, markup);
+    openedElement.appendChild(wrapper);
+    wrapper = openedElement;
+  }
 
   if (previousRenderNode) {
     let previousSibling = previousRenderNode.element;
@@ -408,7 +416,7 @@ class Visitor {
       atomElement,
       headTextNode,
       tailTextNode
-    } = renderAtom(parentElement, renderNode.prev);
+    } = renderAtom(atomModel, parentElement, renderNode.prev);
     const atom = this._findAtom(atomModel.name);
 
     const atomNode = new AtomNode(

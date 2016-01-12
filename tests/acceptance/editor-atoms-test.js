@@ -179,3 +179,26 @@ test('keystroke of enter before atom and after marker creates new section', (ass
       ]);
     }));
 });
+
+test('marking atom with markup adds markup', (assert) => {
+  editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
+  editor.render(editorElement);
+
+  let pNode = $('#editor p')[0];
+  Helpers.dom.selectRange(pNode.firstChild, 16, pNode.lastChild, 0);
+  editor.run(postEditor => {
+    let markup = editor.builder.createMarkup('strong');
+    postEditor.addMarkupToRange(editor.range, markup);
+  });
+
+  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+    ({post, markupSection, atom, marker, markup}) => {
+      return post([
+        markupSection('p', [
+          marker('text before atom'),
+          atom('simple-atom', 'Bob', {}, [markup('strong')]),
+          marker('text after atom')
+        ])
+      ]);
+    }));
+});

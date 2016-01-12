@@ -53,6 +53,7 @@ const visitor = {
   },
   [ATOM_TYPE](node, opcodes) {
     opcodes.push(['openAtom', node.closedMarkups.length, node.name, node.value, node.payload]);
+    visitArray(visitor, node.openedMarkups, opcodes);
   }
 };
 

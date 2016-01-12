@@ -210,6 +210,30 @@ test('renders a post with atom', (assert) => {
   assert.equal(renderTree.rootElement.innerHTML, `<p><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">@bob</span>${ZWNJ}</span></p>`);
 });
 
+test('renders a post with atom with markup', (assert) => {
+  let post = Helpers.postAbstract.build(({ markupSection, post, atom, marker, markup }) => {
+    let b = markup('B');
+    let i = markup('I');
+
+    return post([markupSection('p', [
+      atom('mention', '@bob', {}, [b, i])
+    ])]);
+  });
+
+  const renderTree = new RenderTree(post);
+  render(renderTree, [], [
+    {
+      name: 'mention',
+      type: 'dom',
+      render({fragment, value/*, options, env, payload*/}) {
+        return document.createTextNode(value);
+      }
+    }
+  ]);
+
+  assert.equal(renderTree.rootElement.innerHTML, `<p><b><i><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">@bob</span>${ZWNJ}</span></i></b></p>`);
+});
+
 test('renders a post with mixed markups and atoms', (assert) => {
   let post = Helpers.postAbstract.build(({ markupSection, post, atom, marker, markup }) => {
     let b = markup('B');
