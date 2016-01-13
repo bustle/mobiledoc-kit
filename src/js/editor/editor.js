@@ -74,9 +74,8 @@ const CALLBACK_QUEUES = {
  */
 class Editor {
   constructor(options={}) {
-    if (!options || options.nodeType) {
-      throw new Error('editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation');
-    }
+    assert('editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation',
+          (options && !options.nodeType));
     this._elementListeners = [];
     this._views = [];
     this.isEditable = null;
@@ -207,9 +206,7 @@ class Editor {
    * @public
    */
   registerExpansion(expansion) {
-    if (!validateExpansion(expansion)) {
-      throw new Error('Expansion is not valid');
-    }
+    assert('Expansion is not valid', validateExpansion(expansion));
     this.expansions.push(expansion);
   }
 
@@ -223,9 +220,7 @@ class Editor {
    */
   registerKeyCommand(rawKeyCommand) {
     const keyCommand = buildKeyCommand(rawKeyCommand);
-    if (!validateKeyCommand(keyCommand)) {
-      throw new Error('Key Command is not valid');
-    }
+    assert('Key Command is not valid', validateKeyCommand(keyCommand));
     this.keyCommands.unshift(keyCommand);
   }
 
@@ -609,7 +604,8 @@ class Editor {
     }
 
     const methodName = `handle${capitalize(eventName)}`;
-    if (!this[methodName]) { throw new Error(`No handler for ${eventName}`); }
+    assert(`No handler "${methodName}" for ${eventName}`, !!this[methodName]);
+
     this[methodName](...args);
   }
 

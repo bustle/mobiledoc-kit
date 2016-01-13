@@ -57,9 +57,9 @@ export default class Markerable extends Section {
    * @return {Number} The offset relative to the start of this section
    */
   offsetOfMarker(marker, markerOffset) {
-    if (marker.section !== this) {
-      throw new Error(`Cannot get offsetOfMarker for marker that is not child of this`);
-    }
+    assert(`Cannot get offsetOfMarker for marker that is not child of this`,
+           marker.section === this);
+
     // FIXME it is possible, when we get a cursor position before having finished reparsing,
     // for markerOffset to be > marker.length. We shouldn't rely on this functionality.
 
@@ -108,7 +108,7 @@ export default class Markerable extends Section {
   }
 
   splitAtMarker(/*marker, offset=0*/) {
-    throw new Error('splitAtMarker must be implemented by sub-class');
+    assert('splitAtMarker must be implemented by sub-class', false);
   }
 
   /**

@@ -15,10 +15,10 @@ import {
 import {
   DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME
 } from '../models/markup-section';
-
 import {
   DEFAULT_TAG_NAME as DEFAULT_LIST_SECTION_TAG_NAME
 } from '../models/list-section';
+import assert from '../utils/assert';
 
 function cacheKey(tagName, attributes) {
   return `${normalizeTagName(tagName)}-${objectToSortedKVArray(attributes).join('-')}`;
@@ -54,7 +54,7 @@ export default class PostNodeBuilder {
       case MARKUP_SECTION_TYPE:
         return this.createMarkupSection(tagName, markers);
       default:
-        throw new Error(`Cannot create markerable section of type ${type}`);
+        assert(`Cannot create markerable section of type ${type}`, false);
     }
   }
 

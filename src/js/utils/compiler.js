@@ -1,10 +1,9 @@
 import { forEach } from './array-utils';
+import assert from './assert';
 
 export function visit(visitor, node, opcodes) {
   const method = node.type;
-  if (!visitor[method]) {
-    throw new Error(`Cannot visit unknown type ${method}`);
-  }
+  assert(`Cannot visit unknown type ${method}`, !!visitor[method]);
   visitor[method](node, opcodes);
 }
 
