@@ -28,22 +28,36 @@ function createElementFromMarkup(doc, markup) {
   return element;
 }
 
+const TWO_SPACES         = `${SPACE}${SPACE}`;
+const SPACE_AND_NO_BREAK = `${SPACE}${NO_BREAK_SPACE}`;
+const SPACES_REGEX       = new RegExp(TWO_SPACES, 'g');
+const TAB_REGEX          = new RegExp(TAB, 'g');
+const endsWithSpace = function(text) {
+  return endsWith(text, SPACE);
+};
+const startsWithSpace = function(text) {
+  return startsWith(text, SPACE);
+};
+
 // FIXME: This can be done more efficiently with a single pass
 // building a correct string based on the original.
 function renderHTMLText(marker) {
   let text = marker.value;
+  text = text.replace(SPACES_REGEX, SPACE_AND_NO_BREAK)
+             .replace(TAB_REGEX,    TAB_CHARACTER);
+
   // If the first marker has a leading space or the last marker has a
   // trailing space, the browser will collapse the space when we position
   // the cursor.
   // See https://github.com/bustlelabs/mobiledoc-kit/issues/68
   //   and https://github.com/bustlelabs/mobiledoc-kit/issues/75
-  if (!marker.next && endsWith(text, SPACE)) {
+  if (endsWithSpace(text) && !marker.next) {
     text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
-  } else if ((!marker.prev || endsWith(marker.prev.value, SPACE)) && startsWith(text, SPACE)) {
+  }
+  if (startsWithSpace(text) &&
+      (!marker.prev || endsWithSpace(marker.prev.value))) {
     text = NO_BREAK_SPACE + text.substr(1);
   }
-  text = text.replace(/ ( )/g, ' '+NO_BREAK_SPACE);
-  text = text.replace(new RegExp(TAB, 'g'), TAB_CHARACTER);
   return text;
 }
 

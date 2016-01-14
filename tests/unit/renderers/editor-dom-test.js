@@ -590,7 +590,7 @@ test('renders markup section "pull-quote" as <div class="pull-quote"></div>', (a
   assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
 });
 
-test('renders a bunch of spaces with nbsp', (assert) => {
+test('renders characters and spaces with nbsps', (assert) => {
   const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('a b  c    d ')])]);
   });
@@ -599,6 +599,62 @@ test('renders a bunch of spaces with nbsp', (assert) => {
 
   const expectedDOM = Helpers.dom.build(t => {
     return t('p', {}, [t.text(`a b ${NO_BREAK_SPACE}c ${NO_BREAK_SPACE} ${NO_BREAK_SPACE}d${NO_BREAK_SPACE}`)]);
+  });
+
+  assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
+});
+
+test('renders all spaces with nbsps', (assert) => {
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('   ')])]);
+  });
+  const renderTree = new RenderTree(post);
+  render(renderTree);
+
+  const expectedDOM = Helpers.dom.build(t => {
+    return t('p', {}, [t.text(`${NO_BREAK_SPACE}${NO_BREAK_SPACE}${NO_BREAK_SPACE}`)]);
+  });
+
+  assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
+});
+
+test('renders leading space with nbsp', (assert) => {
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker(' a')])]);
+  });
+  const renderTree = new RenderTree(post);
+  render(renderTree);
+
+  const expectedDOM = Helpers.dom.build(t => {
+    return t('p', {}, [t.text(`${NO_BREAK_SPACE}a`)]);
+  });
+
+  assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
+});
+
+test('renders trailing space with nbsp', (assert) => {
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('a ')])]);
+  });
+  const renderTree = new RenderTree(post);
+  render(renderTree);
+
+  const expectedDOM = Helpers.dom.build(t => {
+    return t('p', {}, [t.text(`a${NO_BREAK_SPACE}`)]);
+  });
+
+  assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
+});
+
+test('renders leading and trailing space with nbsp', (assert) => {
+  const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker(' a ')])]);
+  });
+  const renderTree = new RenderTree(post);
+  render(renderTree);
+
+  const expectedDOM = Helpers.dom.build(t => {
+    return t('p', {}, [t.text(`${NO_BREAK_SPACE}a${NO_BREAK_SPACE}`)]);
   });
 
   assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
