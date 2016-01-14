@@ -37,7 +37,7 @@ import {
   setClipboardCopyData
 } from '../utils/paste-utils';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
-import { TAB } from 'mobiledoc-kit/utils/characters';
+import { TAB, SPACE } from 'mobiledoc-kit/utils/characters';
 import assert from '../utils/assert';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
@@ -96,14 +96,6 @@ class Editor {
     this._isMutationObserved = false;
     this._parser   = new DOMParser(this.builder);
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
-
-    this._handleLastKeydownExpansion = () => {
-      // Chrome does not report cursor selection properly from a Mutation event
-      // until the next frame of JavaScript
-      setTimeout(() => {
-        this.handleExpansion(this._lastKeydownEvent);
-      }, 0);
-    };
 
     this.post = this.loadPost();
     this._renderTree = new RenderTree(this.post);
@@ -227,14 +219,6 @@ class Editor {
       throw new Error('Key Command is not valid');
     }
     this.keyCommands.unshift(keyCommand);
-  }
-
-  handleExpansion(event) {
-    const expansion = findExpansion(this.expansions, event, this);
-    if (expansion) {
-      event.preventDefault();
-      expansion.run(this);
-    }
   }
 
   /**
@@ -687,28 +671,49 @@ class Editor {
         let { offsets: range } = this.cursor;
         let { isCollapsed } = range;
         let nextPosition = range.head;
+
+        if (this.handleExpansion(event)) {
+          event.preventDefault();
+          break;
+        }
+
+        let shouldPreventDefault = isCollapsed && range.head.section.isCardSection;
         this.run(postEditor => {
           if (!isCollapsed) {
             nextPosition = postEditor.deleteRange(range);
           }
-          if (key.isTab() && !range.head.section.isCardSection) {
-            nextPosition = postEditor.insertText(nextPosition, TAB);
+          let isMarkerable = range.head.section.isMarkerable;
+          if (isMarkerable &&
+              (key.isTab() || key.isSpace())
+             ) {
+            let toInsert = key.isTab() ? TAB : SPACE;
+            shouldPreventDefault = true;
+            nextPosition = postEditor.insertText(nextPosition, toInsert);
           }
           if (nextPosition && nextPosition !== range.head) {
             postEditor.setRange(new Range(nextPosition));
           }
         });
-        if (
-          (isCollapsed && range.head.section.isCardSection) ||
-          key.isTab()
-        ) {
+        if (shouldPreventDefault) {
           event.preventDefault();
         }
         break;
     }
+  }
 
-    this._lastKeydownEvent = event;
-    this.addCallbackOnce(CALLBACK_QUEUES.DID_REPARSE, this._handleLastKeydownExpansion);
+  /**
+   * Finds and runs first matching text expansion for this event
+   * @param {Event} event keyboard event
+   * @return {Boolean} True when an expansion was found and run
+   * @private
+   */
+  handleExpansion(keyEvent) {
+    let expansion = findExpansion(this.expansions, keyEvent, this);
+    if (expansion) {
+      expansion.run(this);
+      return true;
+    }
+    return false;
   }
 
   /**

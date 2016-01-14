@@ -73,22 +73,25 @@ export const DEFAULT_TEXT_EXPANSIONS = [
 ];
 
 export function findExpansion(expansions, keyEvent, editor) {
-  const key = Key.fromEvent(keyEvent);
+  let key = Key.fromEvent(keyEvent);
   if (!key.isPrintable()) { return; }
 
-  const {head, head:{section, offset}} = editor.cursor.offsets;
-  if (!section.isMarkupSection) { return; }
-  if (!head.isEqual(section.tailPosition())) { return; }
+  let { range } = editor;
+  if (!range.isCollapsed) { return; }
 
-  // FIXME this is potentially expensive to calculate and might be better
-  // perf to first find expansions matching the trigger and only if matches
-  // are found then calculating the _text
-  const _text = section.textUntil(offset);
-  return detect(
-    expansions,
-    ({trigger, text}) => {
-      return key.keyCode === trigger &&
-             _text === (text + String.fromCharCode(trigger));
-    }
-  );
+  let {head, head:{section}} = range;
+
+  if (head.isBlank) { return; }
+  if (!section.isMarkupSection) { return; }
+
+  let marker = head.marker;
+
+  // Only fire expansions at start of section
+  if (marker && marker.prev) { return; }
+
+  let _text = marker && marker.value;
+
+  return detect(expansions, ({trigger, text}) => {
+    return key.keyCode === trigger && _text === text;
+  });
 }

@@ -543,6 +543,19 @@ test('deleting when after deletion there is a leading space positions cursor at 
   });
 });
 
+test('inserting multiple spaces renders them with nbsps', (assert) => {
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection}) => {
+    return post([markupSection()]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.insertText(editor, '   ');
+  assert.equal($('#editor p:eq(0)').text(),
+               `${NO_BREAK_SPACE}${NO_BREAK_SPACE}${NO_BREAK_SPACE}`,
+               'correct nbsps in text');
+});
+
 test('deleting when the previous section is also blank', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWithNoCharacter});
   editor.render(editorElement);

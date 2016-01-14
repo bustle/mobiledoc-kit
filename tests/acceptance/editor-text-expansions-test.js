@@ -1,17 +1,11 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
+import Range from 'mobiledoc-kit/utils/cursor/range';
+import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 
 const { module, test } = Helpers;
 
 let editor, editorElement;
-
-function insertText(text, cursorNode) {
-  if (!cursorNode) {
-    cursorNode = $('#editor p:eq(0)')[0];
-  }
-  Helpers.dom.moveCursorTo(cursorNode);
-  Helpers.dom.insertText(editor, text);
-}
 
 module('Acceptance: Editor: Text Expansions', {
   beforeEach() {
@@ -22,174 +16,126 @@ module('Acceptance: Editor: Text Expansions', {
   }
 });
 
-test('typing "## " converts to h2', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection}) => post([markupSection()]));
-
+function renderMobiledoc(builderFn) {
+  let mobiledoc = Helpers.mobiledoc.build(builderFn);
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
-  insertText('## ');
-  window.setTimeout(() => {
-    assert.hasNoElement('#editor p', 'p is gone');
-    assert.hasElement('#editor h2', 'p -> h2');
+  editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
+}
 
-    Helpers.dom.insertText(editor, 'X');
-    window.setTimeout(() => {
-      assert.hasElement('#editor h2:contains(X)', 'text is inserted correctly');
-      done();
-    }, 0);
-  }, 30);
+test('typing "## " converts to h2', (assert) => {
+  renderMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p',[marker('##')])]);
+  });
+
+  Helpers.dom.insertText(editor, ' ');
+  assert.hasNoElement('#editor p', 'p is gone');
+  assert.hasElement('#editor h2', 'p -> h2');
+
+  Helpers.dom.insertText(editor, 'X');
+  assert.hasElement('#editor h2:contains(X)', 'text is inserted correctly');
 });
 
 test('space is required to trigger "## " expansion', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection}) => post([markupSection()]));
-
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-  insertText('##X');
-  window.setTimeout(() => {
-    assert.hasElement('#editor p:contains(##X)', 'text inserted, no expansion');
-    done();
+  renderMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p',[marker('##')])]);
   });
+
+  Helpers.dom.insertText(editor, 'X');
+  assert.hasElement('#editor p:contains(##X)', 'text is inserted , no expansion');
 });
 
 test('typing "### " converts to h3', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection}) => post([markupSection()]));
+  renderMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p',[marker('###')])]);
+  });
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-  insertText('### ');
-  window.setTimeout(() => {
-    assert.hasNoElement('#editor p', 'p is gone');
-    assert.hasElement('#editor h3', 'p -> h3');
+  Helpers.dom.insertText(editor, ' ');
+  assert.hasNoElement('#editor p', 'p is gone');
+  assert.hasElement('#editor h3', 'p -> h3');
 
-    Helpers.dom.insertText(editor, 'X');
-    window.setTimeout(() => {
-      assert.hasElement('#editor h3:contains(X)', 'text is inserted correctly');
-      done();
-    }, 0);
-  }, 30);
+  Helpers.dom.insertText(editor, 'X');
+  assert.hasElement('#editor h3:contains(X)', 'text is inserted correctly');
 });
 
 test('typing "* " converts to ul > li', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection}) => post([markupSection()]));
+  renderMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p',[marker('*')])]);
+  });
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-  insertText('* ');
-  window.setTimeout(() => {
-    assert.hasNoElement('#editor p', 'p is gone');
-    assert.hasElement('#editor ul > li', 'p -> "ul > li"');
+  Helpers.dom.insertText(editor, ' ');
+  assert.hasNoElement('#editor p', 'p is gone');
+  assert.hasElement('#editor ul > li', 'p -> "ul > li"');
 
-    Helpers.dom.insertText(editor, 'X');
-    window.setTimeout(() => {
-      assert.hasElement('#editor li:contains(X)', 'text is inserted correctly');
-      done();
-    }, 0);
-  }, 30);
+  Helpers.dom.insertText(editor, 'X');
+  assert.hasElement('#editor ul > li:contains(X)', 'text is inserted correctly');
 });
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/280
 test('typing "* " at start of markup section does not remove it', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(({post, marker, markupSection}) => {
-    return post([markupSection('p', [marker('abc')])]);
+  renderMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p',[marker('*abc')])]);
   });
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-  insertText('* ');
-  window.setTimeout(() => {
-    assert.hasElement('#editor p:contains(* abc)', 'p is still there');
-    done();
-  }, 30);
-  
+  let position = editor.post.sections.head.headPosition();
+  position.offset = 1;
+  editor.selectRange(new Range(position));
+
+  Helpers.dom.insertText(editor, ' ');
+  assert.hasElement('#editor p:contains(* abc)', 'p is still there');
 });
 
 test('typing "* " inside of a list section does not create a new list section', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, listSection, listItem}) => post([listSection('ul', [listItem()])]));
+  renderMobiledoc(({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [listItem([marker('*')])])]);
+  });
+  let position = editor.post.sections.head.items.head.tailPosition();
+  editor.selectRange(new Range(position));
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+  assert.hasElement('#editor ul > li:contains(*)', 'precond - has li');
 
-  assert.hasElement('#editor ul > li', 'precond - has li');
-
-  const cursorNode = $('#editor li:eq(0)')[0];
-  insertText('* ', cursorNode);
-  window.setTimeout(() => {
-    // note: the actual text is "*&nbsp;", so only check that the "*" is there,
-    // because checking for "* " will fail
-    assert.hasElement('#editor ul > li:contains(*)', 'adds text without expanding it');
-    done();
-  }, 0);
+  Helpers.dom.insertText(editor, ' ');
+  // note: the actual text is "*&nbsp;", so only check that the "*" is there,
+  assert.hasElement('#editor ul > li', 'still has li');
+  let el = $('#editor ul > li')[0];
+  assert.equal(el.textContent, `*${NO_BREAK_SPACE}`);
 });
 
 test('typing "1 " converts to ol > li', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection}) => post([markupSection()]));
+  renderMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('1')])]);
+  });
+  Helpers.dom.insertText(editor, ' ');
+  assert.hasNoElement('#editor p', 'p is gone');
+  assert.hasElement('#editor ol > li', 'p -> "ol > li"');
+  Helpers.dom.insertText(editor, 'X');
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-  insertText('1 ');
-  window.setTimeout(() => {
-    assert.hasNoElement('#editor p', 'p is gone');
-    assert.hasElement('#editor ol > li', 'p -> "ol > li"');
-
-    Helpers.dom.insertText(editor, 'X');
-    window.setTimeout(() => {
-      assert.hasElement('#editor li:contains(X)', 'text is inserted correctly');
-      done();
-    }, 0);
-  }, 30);
+  assert.hasElement('#editor li:contains(X)', 'text is inserted correctly');
 });
 
 test('typing "1. " converts to ol > li', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection}) => {
-    return post([markupSection()]);
+  renderMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('1.')])]);
   });
+  Helpers.dom.insertText(editor, ' ');
+  assert.hasNoElement('#editor p', 'p is gone');
+  assert.hasElement('#editor ol > li', 'p -> "ol > li"');
+  Helpers.dom.insertText(editor, 'X');
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-  insertText('1. ');
-  window.setTimeout(() => {
-    assert.hasNoElement('#editor p', 'p is gone');
-    assert.hasElement('#editor ol > li', 'p -> "ol > li"');
-
-    Helpers.dom.insertText(editor, 'X');
-    window.setTimeout(() => {
-      assert.hasElement('#editor li:contains(X)', 'text is inserted correctly');
-      done();
-    }, 0);
-  }, 30);
+  assert.hasElement('#editor li:contains(X)', 'text is inserted correctly');
 });
 
 test('a new expansion can be registered', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection}) => post([markupSection()]));
+  renderMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('quote')])]);
+  });
 
   let didExpand = false;
-  editor = new Editor({mobiledoc});
   editor.registerExpansion({
     trigger: ' '.charCodeAt(0),
     text: 'quote',
     run: () => didExpand = true
   });
-  editor.render(editorElement);
-  insertText('quote ');
-  window.setTimeout(() => {
-    assert.ok(didExpand, 'expansion was run');
-    done();
-  }, 30);
+  Helpers.dom.insertText(editor, ' ');
+  assert.ok(didExpand, 'expansion was run');
 });
