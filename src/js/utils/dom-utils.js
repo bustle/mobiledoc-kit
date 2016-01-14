@@ -1,4 +1,5 @@
 import { forEach } from './array-utils';
+import assert from './assert';
 
 export const NODE_TYPES = {
   ELEMENT: 1,
@@ -99,9 +100,8 @@ function findOffsetInElement(elementNode, textNode, offsetInTextNode=0) {
       offset += _textNode.textContent.length;
     }
   });
-  if (!found) {
-    throw new Error('Unable to find offset of text node in element, it is not a child.');
-  }
+  assert('Unable to find offset of text node in element, it is not a child.',
+         found);
   return offset;
 }
 

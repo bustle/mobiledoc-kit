@@ -437,15 +437,14 @@ class PostEditor {
     const { section } = position;
     let nextPosition = position.clone();
 
-    if (!section.isMarkerable) {
-      throw new Error('Cannot join non-markerable section to next section');
-    } else {
-      const next = section.immediatelyNextMarkerableSection();
-      if (next) {
-        section.join(next);
-        this._markDirty(section);
-        this.removeSection(next);
-      }
+    assert('Cannot join non-markerable section to next section',
+           section.isMarkerable);
+
+    const next = section.immediatelyNextMarkerableSection();
+    if (next) {
+      section.join(next);
+      this._markDirty(section);
+      this.removeSection(next);
     }
 
     return nextPosition;

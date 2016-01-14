@@ -5,6 +5,7 @@ import {
   MOBILEDOC_CARD_SECTION_TYPE
 } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 import { kvArrayToObject, filter } from "../../utils/array-utils";
+import assert from 'mobiledoc-kit/utils/assert';
 
 /*
  * Parses from mobiledoc -> post
@@ -32,7 +33,7 @@ export default class MobiledocParser {
 
       return post;
     } catch (e) {
-      throw new Error(`Unable to parse mobiledoc: ${e.message}`);
+      assert(`Unable to parse mobiledoc: ${e.message}`, false);
     }
   }
 
@@ -65,7 +66,7 @@ export default class MobiledocParser {
         this.parseListSection(section, post);
         break;
       default:
-        throw new Error(`Unexpected section type ${type}`);
+        assert(`Unexpected section type ${type}`, false);
     }
   }
 

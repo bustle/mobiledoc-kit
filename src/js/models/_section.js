@@ -3,7 +3,8 @@ import LinkedItem from '../utils/linked-item';
 import assert from '../utils/assert';
 
 function unimplementedMethod(methodName, me) {
-  throw new Error(`\`${methodName}()\` must be implemented by ${me.constructor.name}`);
+  assert(`\`${methodName}()\` must be implemented by ${me.constructor.name}`,
+         false);
 }
 
 export default class Section extends LinkedItem {

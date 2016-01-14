@@ -1,5 +1,7 @@
+import MobiledocError from './mobiledoc-error';
+
 export default function(message, conditional) {
   if (!conditional) {
-    throw new Error(message);
+    throw new MobiledocError(message);
   }
 }

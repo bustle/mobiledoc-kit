@@ -1,6 +1,7 @@
 import LinkedItem from 'mobiledoc-kit/utils/linked-item';
 import LinkedList from 'mobiledoc-kit/utils/linked-list';
 import { containsNode } from 'mobiledoc-kit/utils/dom-utils';
+import assert from 'mobiledoc-kit/utils/assert';
 
 export default class RenderNode extends LinkedItem {
   constructor(postNode, renderTree) {
@@ -14,9 +15,8 @@ export default class RenderNode extends LinkedItem {
     this.renderTree = renderTree;
   }
   isAttached() {
-    if (!this.element) {
-      throw new Error('Cannot check if a renderNode is attached without an element.');
-    }
+    assert('Cannot check if a renderNode is attached without an element.',
+           !!this.element);
     return containsNode(this.renderTree.rootElement, this.element);
   }
   get childNodes() {

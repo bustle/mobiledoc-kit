@@ -141,7 +141,8 @@ export default class SectionParser {
         this.parseElementNode(node);
         break;
       default:
-        throw new Error(`parseNode got unexpected element type ${node.nodeType} ` + node);
+        assert(`parseNode got unexpected element type ${node.nodeType} ` + node,
+               false);
     }
   }
 
@@ -292,7 +293,7 @@ export default class SectionParser {
         section._inferredTagName = inferredTagName;
         break;
       default:
-        throw new Error('Cannot parse section from element');
+        assert('Cannot parse section from element', false);
     }
 
     return section;

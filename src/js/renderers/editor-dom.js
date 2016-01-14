@@ -319,7 +319,7 @@ class Visitor {
 
 let destroyHooks = {
   [POST_TYPE](/*renderNode, post*/) {
-    throw new Error('post destruction is not supported by the renderer');
+    assert('post destruction is not supported by the renderer', false);
   },
 
   [MARKUP_SECTION_TYPE](renderNode, section) {
@@ -380,9 +380,7 @@ function removeDestroyedChildren(parentNode, forceRemoval=false) {
     if (child.isRemoved || forceRemoval) {
       removeDestroyedChildren(child, true);
       method = child.postNode.type;
-      if (!destroyHooks[method]) {
-        throw new Error(`editor-dom cannot destroy "${method}"`);
-      }
+      assert(`editor-dom cannot destroy "${method}"`, !!destroyHooks[method]);
       destroyHooks[method](child, child.postNode);
       parentNode.childNodes.remove(child);
     }
@@ -441,9 +439,7 @@ export default class Renderer {
       postNode = renderNode.postNode;
 
       method = postNode.type;
-      if (!this.visitor[method]) {
-        throw new Error(`EditorDom visitor cannot handle type ${method}`);
-      }
+      assert(`EditorDom visitor cannot handle type ${method}`, !!this.visitor[method]);
       this.visitor[method](renderNode, postNode,
                            (...args) => this.visit(renderTree, ...args));
       renderNode.markClean();

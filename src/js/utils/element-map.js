@@ -1,3 +1,5 @@
+import assert from 'mobiledoc-kit/utils/assert';
+
 // start at one to make the falsy semantics easier
 let uuidGenerator = 1;
 
@@ -19,9 +21,7 @@ class ElementMap {
     return null;
   }
   remove(key) {
-    if (!key._uuid) {
-      throw new Error('tried to fetch a value for an element not seen before');
-    }
+    assert('tried to fetch a value for an element not seen before', !!key._uuid);
     delete this._map[key._uuid];
   }
 
