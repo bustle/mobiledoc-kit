@@ -299,3 +299,15 @@ test('#destroy does not clear selection if it is outside the editor element', (a
 
   assert.equal(window.getSelection().rangeCount, 1, 'selection is not cleared');
 });
+
+test('editor parses HTML post using parser plugins', (assert) => {
+  let seenTagNames = [];
+  let parserPlugin = function(element) {
+    seenTagNames.push(element.tagName);
+  };
+  let html = '<p><textarea></textarea><img></p>';
+  let editor = new Editor({html, parserPlugins: [parserPlugin]});
+  assert.ok(!!editor.post, 'editor loads post');
+
+  assert.deepEqual(seenTagNames, ['TEXTAREA', 'IMG']);
+});
