@@ -63,14 +63,21 @@ export const DEFAULT_KEY_COMMANDS = [{
     let defaultUrl = '';
     if (selectedText.indexOf('http') !== -1) { defaultUrl = selectedText; }
 
-    editor.showPrompt('Enter a URL', defaultUrl, url => {
-      if (!url) { return; }
+    let range = editor.range;
+    let hasLink = editor.detectMarkupInRange(range, 'a');
 
-      editor.run(postEditor => {
-        let markup = postEditor.builder.createMarkup('a', {href: url});
-        postEditor.toggleMarkup(markup);
+    if (hasLink) {
+      editor.run(postEditor => postEditor.toggleMarkup('a'));
+    } else {
+      editor.showPrompt('Enter a URL', defaultUrl, url => {
+        if (!url) { return; }
+
+        editor.run(postEditor => {
+          let markup = postEditor.builder.createMarkup('a', {href: url});
+          postEditor.toggleMarkup(markup);
+        });
       });
-    });
+    }
   }
 }];
 

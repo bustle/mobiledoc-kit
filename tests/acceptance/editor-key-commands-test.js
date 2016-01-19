@@ -161,6 +161,51 @@ test(`ctrl-k clears selected text`, (assert) => {
                    'mobiledoc updated appropriately');
 });
 
+test('cmd-k links selected text', (assert) => {
+  assert.expect(2);
+
+  let url = 'http://bustle.com';
+  let mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker('something')])
+    ]));
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+  editor.showPrompt = (prompt, defaultUrl, callback) => {
+    assert.ok(true, 'calls showPrompt');
+    callback(url);
+  };
+
+  Helpers.dom.selectText('something', editorElement);
+  Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.META);
+
+  assert.hasElement(`#editor a[href="${url}"]:contains(something)`);
+});
+
+test('cmd-k unlinks selected text if it was already linked', (assert) => {
+  assert.expect(3);
+
+  let url = 'http://bustle.com';
+  let mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker, markup}) => post([
+      markupSection('p', [marker('something', [markup('a', {href:url})])])
+    ]));
+  editor = new Editor({mobiledoc});
+  editor.showPrompt = () => {
+    assert.ok(false, 'should not call showPrompt');
+  };
+  editor.render(editorElement);
+  assert.hasElement(`#editor a[href="${url}"]:contains(something)`,
+                    'precond -- has link');
+
+  Helpers.dom.selectText('something', editorElement);
+  Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.META);
+
+  assert.hasNoElement(`#editor a[href="${url}"]:contains(something)`,
+                     'removes linked text');
+  assert.hasElement(`#editor p:contains(something)`, 'unlinked text remains');
+});
+
 test('new key commands can be registered', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => post([
