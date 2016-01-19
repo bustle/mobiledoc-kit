@@ -114,7 +114,8 @@ class Editor {
       return mobiledocParsers.parse(this.builder, this.mobiledoc);
     } else if (this.html) {
       if (typeof this.html === 'string') {
-        return new HTMLParser(this.builder).parse(this.html);
+        let options = {plugins: this._parserPlugins};
+        return new HTMLParser(this.builder, options).parse(this.html);
       } else {
         let dom = this.html;
         return this._parser.parse(dom);
