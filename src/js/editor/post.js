@@ -213,6 +213,7 @@ class PostEditor {
       nextMarker = marker.next;
 
       if (
+        marker.isMarker &&
         marker.type === nextMarker.type &&
         isArrayEqual(marker.markups, nextMarker.markups)
       ) {
@@ -527,7 +528,7 @@ class PostEditor {
     const { marker, offset:markerOffset } = position.markerPosition;
     const offsetToDeleteAt = markerOffset - 1;
 
-    if (marker.length === 1 && offsetToDeleteAt === 0) {
+    if (marker.isAtom) {
       this.removeMarker(marker);
     } else {
       marker.deleteValueAtOffset(offsetToDeleteAt);

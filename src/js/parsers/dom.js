@@ -229,6 +229,7 @@ export default class DOMParser {
 
               let newPreviousRenderNode = renderTree.buildRenderNode(newPreviousMarker);
               newPreviousRenderNode.markDirty();
+              section.renderNode.markDirty();
 
               seenRenderNodes.push(newPreviousRenderNode);
               section.renderNode.childNodes.insertBefore(newPreviousRenderNode,
@@ -257,8 +258,10 @@ export default class DOMParser {
               section.markers.insertAfter(newMarker, postNode);
 
               let newRenderNode = renderTree.buildRenderNode(newMarker);
-              newRenderNode.markDirty();
               seenRenderNodes.push(newRenderNode);
+
+              newRenderNode.markDirty();
+              section.renderNode.markDirty();
 
               section.renderNode.childNodes.insertAfter(newRenderNode, renderNode);
             }
