@@ -687,6 +687,7 @@ class Editor {
           if (!isCollapsed) {
             nextPosition = postEditor.deleteRange(range);
           }
+
           let isMarkerable = range.head.section.isMarkerable;
           if (isMarkerable &&
               (key.isTab() || key.isSpace())
@@ -694,6 +695,15 @@ class Editor {
             let toInsert = key.isTab() ? TAB : SPACE;
             shouldPreventDefault = true;
             nextPosition = postEditor.insertText(nextPosition, toInsert);
+          }
+
+          if (nextPosition.marker && nextPosition.marker.isAtom && nextPosition.markerPosition.offset === 1) {
+            this.addCallbackOnce(CALLBACK_QUEUES.DID_REPARSE, () => {
+              let position = nextPosition.move(DIRECTION.FORWARD);
+              let nextRange = new Range(position);
+
+              this.run(postEditor => postEditor.setRange(nextRange));
+            });
           }
           if (nextPosition && nextPosition !== range.head) {
             postEditor.setRange(new Range(nextPosition));

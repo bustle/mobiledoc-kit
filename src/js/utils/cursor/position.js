@@ -74,8 +74,12 @@ const Position = class Position {
     return new Position(this.section, this.offset);
   }
 
+  get isMarkerable() {
+    return this.section && this.section.isMarkerable;
+  }
+
   get marker() {
-    return this.markerPosition.marker;
+    return this.isMarkerable && this.markerPosition.marker;
   }
 
   get offsetInMarker() {

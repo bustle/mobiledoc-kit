@@ -21,6 +21,8 @@ import {
 } from '../utils/array-utils';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 
+const ZWNJ = '\u200c';
+
 import SectionParser from 'mobiledoc-kit/parsers/section';
 import Markup from 'mobiledoc-kit/models/markup';
 
@@ -210,7 +212,48 @@ export default class DOMParser {
             renderNode.scheduleForRemoval();
           }
         } else if (renderNode.postNode.isAtom) {
-          marker = renderNode.postNode;
+          let { headTextNode, tailTextNode } = renderNode;
+          if (headTextNode.textContent !== ZWNJ) {
+            let value = headTextNode.textContent.replace(new RegExp(ZWNJ, 'g'), '');
+            headTextNode.textContent = ZWNJ;
+            if (previousMarker && previousMarker.isMarker) {
+              previousMarker.value += value;
+              if (previousMarker.renderNode) {
+                previousMarker.renderNode.markDirty();
+              }
+            } else {
+              let newMarkups = renderNode.postNode.markups.slice();
+              let newPreviousMarker = this.builder.createMarker(value, newMarkups);
+              section.markers.insertBefore(newPreviousMarker, renderNode.postNode);
+            }
+          }
+          if (tailTextNode.textContent !== ZWNJ) {
+            let value = tailTextNode.textContent.replace(new RegExp(ZWNJ, 'g'), '');
+            tailTextNode.textContent = ZWNJ;
+
+            if (renderNode.postNode.next && renderNode.postNode.next.isMarker) {
+              let nextMarker = renderNode.postNode.next;
+
+              if (nextMarker.renderNode) {
+                let nextValue = nextMarker.renderNode.element.textContent;
+                nextMarker.renderNode.element.textContent = value + nextValue;
+              } else {
+                let nextValue = value + nextMarker.value;
+                nextMarker.value = nextValue;
+              }
+            } else {
+              let newMarkups = renderNode.postNode.markups.slice();
+              let newNextMarker = this.builder.createMarker(value, newMarkups);
+              section.markers.insertAfter(newNextMarker, renderNode.postNode);
+
+              seenRenderNodes.push(renderNode);
+              renderNode = null;
+              marker = newNextMarker;
+            }
+          }
+          if (renderNode) {
+            marker = renderNode.postNode;
+          }
         }
       } else if (isTextNode(node)) {
         let text = transformHTMLText(node.textContent);
@@ -233,7 +276,9 @@ export default class DOMParser {
         renderNode.nextMarkerElement = nextMarkerElement;
       }
 
-      seenRenderNodes.push(renderNode);
+      if (renderNode) {
+        seenRenderNodes.push(renderNode);
+      }
       previousMarker = marker;
     });
 

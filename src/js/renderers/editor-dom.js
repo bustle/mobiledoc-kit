@@ -56,21 +56,9 @@ function renderHTMLText(marker) {
   //   and https://github.com/bustlelabs/mobiledoc-kit/issues/75
   if (endsWithSpace(text) && !marker.next) {
     text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
-<<<<<<< HEAD
   }
   if (startsWithSpace(text) &&
       (!marker.prev || endsWithSpace(marker.prev.value))) {
-=======
-  } else if (
-    (
-      !marker.prev ||
-      (
-        marker.prev.isMarker &&
-        endsWith(marker.prev.value, SPACE)
-      )
-    ) && startsWith(text, SPACE)
-  ) {
->>>>>>> Atoms with cursor movement, reparsing
     text = NO_BREAK_SPACE + text.substr(1);
   }
   return text;

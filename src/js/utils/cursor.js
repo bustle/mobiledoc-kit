@@ -95,13 +95,19 @@ const Cursor = class Cursor {
       offset = 0;
     } else {
       let {marker, offsetInMarker} = position;
-      if (marker.isAtom) {
+      if (offsetInMarker === marker.length && marker.next) {
         offset = 0;
-        if (offsetInMarker === 0) {
-          node = marker.renderNode.headTextNode;
+        let nextRenderNode = marker.renderNode.next;
+        if (nextRenderNode.headTextNode) {
+          node = nextRenderNode.headTextNode;
         } else {
-          node = marker.renderNode.tailTextNode;
+          node = nextRenderNode.element;
         }
+      } else if (marker.isAtom) {
+        // This is only true when at offset=0 of the atom
+
+        offset = 0;
+        node = marker.renderNode.headTextNode;
       } else {
         node = marker.renderNode.element;
         offset = offsetInMarker;
