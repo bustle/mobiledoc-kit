@@ -2,7 +2,14 @@ export default {
   mentionAtom: {
     version: '0.3.0',
     atoms: [
-      ['mention-atom', 'Bob', {}]
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['image-atom', 'n/a', {}]
     ],
     markups: [],
     cards: [],
@@ -13,7 +20,24 @@ export default {
       [1, 'P', [
         [0, [], 0, 'Text before the atom. '],
         [1, [], 0, 0],
-        [0, [], 0, ' Text after the atom.']
+        [0, [], 0, ' Text after the atom, before image: '],
+        [1, [], 0, 7],
+        [0, [], 0, ' text after the image atom']
+      ]],
+      [1, 'P', [
+        [1, [], 0, 1],
+        [0, [], 0, ' atom at start']
+      ]],
+      [1, 'P', [
+        [0, [], 0, 'atom at end '],
+        [1, [], 0, 2]
+      ]],
+      [1, 'P', [
+        [1, [], 0, 3],
+        [1, [], 0, 4],
+        [0, [], 0, ' multiple atoms at start and end '],
+        [1, [], 0, 5],
+        [1, [], 0, 6]
       ]]
     ]
   },
@@ -49,7 +73,7 @@ export default {
     ],
     sections: [
       [1, 'H2', [
-        [[], 0, 'Input Card']
+        [0, [], 0, 'Input Card']
       ]],
       [10, 0],
       [1, 'P', [
