@@ -14,6 +14,21 @@ export default {
         [0, [], 0, 'Text before the atom. '],
         [1, [], 0, 0],
         [0, [], 0, ' Text after the atom.']
+      ]],
+      [1, 'P', [
+        [1, [], 0, 0],
+        [0, [], 0, ' atom at start']
+      ]],
+      [1, 'P', [
+        [0, [], 0, 'atom at end '],
+        [1, [], 0, 0]
+      ]],
+      [1, 'P', [
+        [1, [], 0, 0],
+        [1, [], 0, 0],
+        [0, [], 0, ' multiple atoms at start and end '],
+        [1, [], 0, 0],
+        [1, [], 0, 0]
       ]]
     ]
   },
