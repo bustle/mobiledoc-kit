@@ -3,7 +3,6 @@ import Set from '../utils/set';
 
 import LinkedList from '../utils/linked-list';
 import Section from './_section';
-import Position from '../utils/cursor/position';
 import assert from '../utils/assert';
 
 export default class Markerable extends Section {
@@ -33,14 +32,6 @@ export default class Markerable extends Section {
     const newMarkers = this.markers.map(m => m.clone());
     return this.builder.createMarkerableSection(
       this.type, this.tagName, newMarkers);
-  }
-
-  headPosition() {
-    return new Position(this, 0);
-  }
-
-  tailPosition() {
-    return new Position(this, this.length);
   }
 
   get isBlank() {
@@ -203,7 +194,7 @@ export default class Markerable extends Section {
   }
 
   get length() {
-    return this.text.length;
+    return reduce(this.markers, (prev, m) => prev + m.length, 0);
   }
 
   /**

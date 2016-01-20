@@ -1,7 +1,7 @@
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
-import TestHelpers from '../../test-helpers';
+import Helpers from '../../test-helpers';
 
-const {module, test} = TestHelpers;
+const {module, test} = Helpers;
 
 let builder;
 module('Unit: Markup Section', {
@@ -252,4 +252,44 @@ test('splitMarkerAtOffset splits a marker deep in the middle', (assert) => {
   assert.equal(section.markers.length, 5);
   assert.deepEqual(section.markers.map(m => m.value),
                    ['a', 'bc', 'de', 'f', 'ghi']);
+});
+
+test('#length is correct', (assert) => {
+  let expectations;
+  Helpers.postAbstract.build(({markupSection, marker, atom}) => {
+    expectations = [{
+      name: 'blank section',
+      length: 0,
+      section: markupSection()
+    }, {
+      name: 'section with empty marker',
+      length: 0,
+      section: markupSection('p', [marker('')])
+    }, {
+      name: 'section with single marker',
+      length: 'abc'.length,
+      section: markupSection('p', [marker('abc')])
+    }, {
+      name: 'section with multiple markers',
+      length: 'abc'.length + 'defg'.length,
+      section: markupSection('p', [marker('abc'),marker('defg')])
+    }, {
+      name: 'section with atom',
+      length: 1,
+      section: markupSection('p', [atom('mention', 'bob')])
+    }, {
+      name: 'section with multiple atoms',
+      length: 2,
+      section: markupSection('p', [atom('mention', 'bob'), atom('mention','other')])
+    }, {
+      name: 'section with atom and markers',
+      length: 'abc'.length + 1,
+      section: markupSection('p', [marker('abc'), atom('mention', 'bob')])
+    }];
+  });
+
+  assert.expect(expectations.length);
+  expectations.forEach(({name, length, section}) => {
+    assert.equal(section.length, length, `${name} has correct length`);
+  });
 });
