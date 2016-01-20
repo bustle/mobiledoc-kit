@@ -2,6 +2,12 @@ export default {
   mentionAtom: {
     version: '0.3.0',
     atoms: [
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
+      ['mention-atom', 'Bob', {}],
       ['mention-atom', 'Bob', {}]
     ],
     markups: [],
@@ -16,19 +22,19 @@ export default {
         [0, [], 0, ' Text after the atom.']
       ]],
       [1, 'P', [
-        [1, [], 0, 0],
+        [1, [], 0, 1],
         [0, [], 0, ' atom at start']
       ]],
       [1, 'P', [
         [0, [], 0, 'atom at end '],
-        [1, [], 0, 0]
+        [1, [], 0, 2]
       ]],
       [1, 'P', [
-        [1, [], 0, 0],
-        [1, [], 0, 0],
+        [1, [], 0, 3],
+        [1, [], 0, 4],
         [0, [], 0, ' multiple atoms at start and end '],
-        [1, [], 0, 0],
-        [1, [], 0, 0]
+        [1, [], 0, 5],
+        [1, [], 0, 6]
       ]]
     ]
   },
