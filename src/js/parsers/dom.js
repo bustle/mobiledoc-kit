@@ -222,9 +222,17 @@ export default class DOMParser {
                 previousMarker.renderNode.markDirty();
               }
             } else {
-              let newMarkups = renderNode.postNode.markups.slice();
+              let postNode = renderNode.postNode;
+              let newMarkups = postNode.markups.slice();
               let newPreviousMarker = this.builder.createMarker(value, newMarkups);
-              section.markers.insertBefore(newPreviousMarker, renderNode.postNode);
+              section.markers.insertBefore(newPreviousMarker, postNode);
+
+              let newPreviousRenderNode = renderTree.buildRenderNode(newPreviousMarker);
+              newPreviousRenderNode.markDirty();
+
+              seenRenderNodes.push(newPreviousRenderNode);
+              section.renderNode.childNodes.insertBefore(newPreviousRenderNode,
+                                                         renderNode);
             }
           }
           if (tailTextNode.textContent !== ZWNJ) {
@@ -267,13 +275,6 @@ export default class DOMParser {
         let previousRenderNode = previousMarker && previousMarker.renderNode;
         section.markers.insertAfter(marker, previousMarker);
         section.renderNode.childNodes.insertAfter(renderNode, previousRenderNode);
-
-        let parentNodeCount = marker.closedMarkups.length;
-        let nextMarkerElement = node.parentNode;
-        while (parentNodeCount--) {
-          nextMarkerElement = nextMarkerElement.parentNode;
-        }
-        renderNode.nextMarkerElement = nextMarkerElement;
       }
 
       if (renderNode) {

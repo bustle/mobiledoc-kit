@@ -444,19 +444,20 @@ let destroyHooks = {
     // FIXME before we render marker, should delete previous renderNode's element
     // and up until the next marker element
 
-    let element = renderNode.element;
-    let nextMarkerElement = getNextMarkerElement(renderNode);
-    while (element.parentNode && element.parentNode !== nextMarkerElement) {
-      element = element.parentNode;
+    if (renderNode.isRendered) {
+      let element = renderNode.element;
+      let nextMarkerElement = getNextMarkerElement(renderNode);
+      while (element.parentNode && element.parentNode !== nextMarkerElement) {
+        element = element.parentNode;
+      }
+      if (element.parentNode) {
+        // if no parentNode, the browser already removed this element
+        element.parentNode.removeChild(element);
+      }
     }
 
     if (marker.section) {
       marker.section.markers.remove(marker);
-    }
-
-    if (element.parentNode) {
-      // if no parentNode, the browser already removed this element
-      element.parentNode.removeChild(element);
     }
   },
 
