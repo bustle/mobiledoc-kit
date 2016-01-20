@@ -250,13 +250,17 @@ export default class DOMParser {
                 nextMarker.value = nextValue;
               }
             } else {
-              let newMarkups = renderNode.postNode.markups.slice();
-              let newNextMarker = this.builder.createMarker(value, newMarkups);
-              section.markers.insertAfter(newNextMarker, renderNode.postNode);
+              let postNode = renderNode.postNode;
+              let newMarkups = postNode.markups.slice();
+              let newMarker = this.builder.createMarker(value, newMarkups);
 
-              seenRenderNodes.push(renderNode);
-              renderNode = null;
-              marker = newNextMarker;
+              section.markers.insertAfter(newMarker, postNode);
+
+              let newRenderNode = renderTree.buildRenderNode(newMarker);
+              newRenderNode.markDirty();
+              seenRenderNodes.push(newRenderNode);
+
+              section.renderNode.childNodes.insertAfter(newRenderNode, renderNode);
             }
           }
           if (renderNode) {

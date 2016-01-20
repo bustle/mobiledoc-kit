@@ -178,7 +178,24 @@ test('editor#parse fixes text in atom headTextNode when atom is at start of sect
   assert.renderTreeIsEqual(editor._renderTree, expected);
 });
 
-// test('editor#parse fixes text in atom headTextNode when atom has atom before it', (assert) => {
+test('editor#parse fixes text in atom headTextNode when atom has atom before it', (assert) => {
+  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'first'), marker('X'), atom('mention', 'last')])]);
+  });
+
+  editor = renderMobiledoc(({post, atom, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'first'), atom('mention', 'last')])]);
+  });
+
+  let headTextNode = editor.post.sections.head.markers.tail.renderNode.headTextNode;
+  assert.ok(!!headTextNode, 'precond - headTextNode');
+  headTextNode.textContent = ZWNJ + 'X';
+
+  editor.reparse();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
 
 test('editor#parse fixes text in atom headTextNode when atom has marker before it', (assert) => {
   let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
@@ -199,7 +216,25 @@ test('editor#parse fixes text in atom headTextNode when atom has marker before i
   assert.renderTreeIsEqual(editor._renderTree, expected);
 });
 
-// test('editor#parse fixes text in atom tailTextNode when atom is at end of section', (assert) => {
+test('editor#parse fixes text in atom tailTextNode when atom is at end of section', (assert) => {
+  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'bob'), marker('X')])]);
+  });
+
+  editor = renderMobiledoc(({post, atom, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'bob')])]);
+  });
+
+  let tailTextNode = editor.post.sections.head.markers.head.renderNode.tailTextNode;
+  assert.ok(!!tailTextNode, 'precond - tailTextNode');
+  tailTextNode.textContent = ZWNJ + 'X';
+
+  editor.reparse();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
+
 // test('editor#parse fixes text in atom tailTextNode when atom has atom after it', (assert) => {
 // test('editor#parse fixes text in atom tailTextNode when atom has marker after it', (assert) => {
 
