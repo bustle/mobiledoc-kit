@@ -697,7 +697,9 @@ class Editor {
             nextPosition = postEditor.insertText(nextPosition, toInsert);
           }
 
-          if (nextPosition.marker && nextPosition.marker.isAtom && nextPosition.markerPosition.offset === 1) {
+          if (nextPosition.marker && nextPosition.marker.isAtom) {
+            // ensure that the cursor is properly repositioned one character forward
+            // after typing on either side of an atom
             this.addCallbackOnce(CALLBACK_QUEUES.DID_REPARSE, () => {
               let position = nextPosition.move(DIRECTION.FORWARD);
               let nextRange = new Range(position);

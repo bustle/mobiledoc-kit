@@ -206,9 +206,14 @@ export default class Markerable extends Section {
                    tail: {section:this, offset:tailOffset}};
 
     let markers = [];
-    this._markersInRange(range, (marker, {markerHead, markerTail}) => {
+    this._markersInRange(range, (marker, {markerHead, markerTail, isContained}) => {
       const cloned = marker.clone();
-      cloned.value = marker.value.slice(markerHead, markerTail);
+      if (!isContained) {
+        // cannot do marker.value.slice if the marker is an atom -- this breaks the atom's "atomic" value
+        // If a marker is an atom `isContained` should always be true so
+        // we shouldn't hit this code path. FIXME add tests
+        cloned.value = marker.value.slice(markerHead, markerTail);
+      }
       markers.push(cloned);
     });
     return markers;

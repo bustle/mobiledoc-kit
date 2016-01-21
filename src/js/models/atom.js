@@ -3,6 +3,8 @@ import mixin from '../utils/mixin';
 import MarkuperableMixin from '../utils/markuperable';
 import LinkedItem from '../utils/linked-item';
 
+const ATOM_LENGTH = 1;
+
 export default class Atom extends LinkedItem {
   constructor(name, value, payload, markups=[]) {
     super();
@@ -11,7 +13,7 @@ export default class Atom extends LinkedItem {
     this.payload = payload;
     this.type = ATOM_TYPE;
     this.isAtom = true;
-    this.length = 1;
+    this.length = ATOM_LENGTH;
 
     this.markups = [];
     markups.forEach(m => this.addMarkup(m));
@@ -28,24 +30,17 @@ export default class Atom extends LinkedItem {
     let markers = [];
 
     if (endOffset === 0) {
-      markers.push(
-        this.builder.createMarker('', this.markups.slice())
-      );
+      markers.push(this.builder.createMarker('', this.markups.slice()));
     }
 
-    markers.push(
-      this.clone()
-    );
+    markers.push(this.clone());
 
-    if (offset === 1) {
-      markers.push(
-        this.builder.createMarker('', this.markups.slice())
-      );
+    if (offset === ATOM_LENGTH) {
+      markers.push(this.builder.createMarker('', this.markups.slice()));
     }
 
     return markers;
   }
-
 }
 
 mixin(Atom, MarkuperableMixin);
