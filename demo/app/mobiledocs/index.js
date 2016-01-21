@@ -8,7 +8,8 @@ export default {
       ['mention-atom', 'Bob', {}],
       ['mention-atom', 'Bob', {}],
       ['mention-atom', 'Bob', {}],
-      ['mention-atom', 'Bob', {}]
+      ['mention-atom', 'Bob', {}],
+      ['image-atom', 'n/a', {}]
     ],
     markups: [],
     cards: [],
@@ -19,7 +20,9 @@ export default {
       [1, 'P', [
         [0, [], 0, 'Text before the atom. '],
         [1, [], 0, 0],
-        [0, [], 0, ' Text after the atom.']
+        [0, [], 0, ' Text after the atom, before image: '],
+        [1, [], 0, 7],
+        [0, [], 0, ' text after the image atom']
       ]],
       [1, 'P', [
         [1, [], 0, 1],
