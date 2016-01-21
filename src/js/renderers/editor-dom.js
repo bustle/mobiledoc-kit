@@ -124,19 +124,20 @@ function renderAtom(atom, element, previousRenderNode) {
   wrapper.appendChild(tailTextNode);
 
   let openTypes = atom.openedMarkups;
+  let elementWrapper = wrapper;
   for (let j=openTypes.length-1;j>=0;j--) {
     let markup = openTypes[j];
     let openedElement = createElementFromMarkup(document, markup);
-    openedElement.appendChild(wrapper);
-    wrapper = openedElement;
+    openedElement.appendChild(elementWrapper);
+    elementWrapper = openedElement;
   }
 
   if (previousRenderNode) {
     let previousSibling = previousRenderNode.element;
     let previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
-    element.insertBefore(wrapper, previousSiblingPenultimate.nextSibling);
+    element.insertBefore(elementWrapper, previousSiblingPenultimate.nextSibling);
   } else {
-    element.insertBefore(wrapper, element.firstChild);
+    element.insertBefore(elementWrapper, element.firstChild);
   }
 
   return {
