@@ -20,8 +20,7 @@ import {
   forEach
 } from '../utils/array-utils';
 import { TAB } from 'mobiledoc-kit/utils/characters';
-
-const ZWNJ = '\u200c';
+import { ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
 
 import SectionParser from 'mobiledoc-kit/parsers/section';
 import Markup from 'mobiledoc-kit/models/markup';
