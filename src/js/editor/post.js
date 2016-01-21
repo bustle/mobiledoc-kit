@@ -1,5 +1,5 @@
 import Position from '../utils/cursor/position';
-import { isArrayEqual, forEach, filter } from '../utils/array-utils';
+import { forEach, filter } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 import mixin from '../utils/mixin';
@@ -193,14 +193,14 @@ class PostEditor {
 
   _coalesceMarkers(section) {
     if (section.isMarkerable) {
-      this._removeEmptyMarkers(section);
+      this._removeBlankMarkers(section);
       this._joinSimilarMarkers(section);
     }
   }
 
-  _removeEmptyMarkers(section) {
+  _removeBlankMarkers(section) {
     forEach(
-      filter(section.markers, m => m.isEmpty),
+      filter(section.markers, m => m.isBlank),
       m => this.removeMarker(m)
     );
   }
@@ -212,11 +212,7 @@ class PostEditor {
     while (marker && marker.next) {
       nextMarker = marker.next;
 
-      if (
-        marker.isMarker &&
-        marker.type === nextMarker.type &&
-        isArrayEqual(marker.markups, nextMarker.markups)
-      ) {
+      if (marker.canJoin(nextMarker)) {
         nextMarker.value = marker.value + nextMarker.value;
         this._markDirty(nextMarker);
         this.removeMarker(marker);

@@ -2,6 +2,7 @@ import { ATOM_TYPE } from './types';
 import mixin from '../utils/mixin';
 import MarkuperableMixin from '../utils/markuperable';
 import LinkedItem from '../utils/linked-item';
+import assert from '../utils/assert';
 
 const ATOM_LENGTH = 1;
 
@@ -13,7 +14,6 @@ export default class Atom extends LinkedItem {
     this.payload = payload;
     this.type = ATOM_TYPE;
     this.isAtom = true;
-    this.length = ATOM_LENGTH;
 
     this.markups = [];
     markups.forEach(m => this.addMarkup(m));
@@ -24,6 +24,18 @@ export default class Atom extends LinkedItem {
     return this.builder.createAtom(
       this.name, this.value, this.payload, clonedMarkups
     );
+  }
+
+  get isBlank() {
+    return false;
+  }
+
+  get length() {
+    return ATOM_LENGTH;
+  }
+
+  canJoin(/* other */) {
+    return false;
   }
 
   split(offset=0, endOffset=1) {
@@ -40,6 +52,30 @@ export default class Atom extends LinkedItem {
     }
 
     return markers;
+  }
+
+  splitAtOffset(offset) {
+    assert('Cannot split a marker at an offset > its length',
+           offset <= this.length);
+
+    let { builder } = this;
+    let clone = this.clone();
+    let blankMarker = builder.createMarker('');
+    let pre, post;
+
+    if (offset === 0) {
+      ([pre, post] = [clone, blankMarker]);
+    } else if (offset === ATOM_LENGTH) {
+      ([pre, post] = [blankMarker, clone]);
+    } else {
+      assert(`Invalid offset given to Atom#splitAtOffset: "${offset}"`, false);
+    }
+
+    this.markups.forEach(markup => {
+      pre.addMarkup(markup);
+      post.addMarkup(markup);
+    });
+    return [pre, post];
   }
 }
 

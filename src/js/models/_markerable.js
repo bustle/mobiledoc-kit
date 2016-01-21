@@ -73,7 +73,7 @@ export default class Markerable extends Section {
    * @return {Array} the new markers that replaced `marker`
    */
   splitMarker(marker, offset, endOffset=marker.length) {
-    const newMarkers = filter(marker.split(offset, endOffset), m => !m.isEmpty);
+    const newMarkers = filter(marker.split(offset, endOffset), m => !m.isBlank);
     this.markers.splice(marker, 1, newMarkers);
     return newMarkers;
   }
@@ -262,7 +262,7 @@ export default class Markerable extends Section {
     let afterMarker = null;
 
     otherSection.markers.forEach(m => {
-      if (!m.isEmpty) {
+      if (!m.isBlank) {
         m = m.clone();
         this.markers.append(m);
         if (!afterMarker) {

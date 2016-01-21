@@ -86,7 +86,7 @@ export default class MobiledocParser {
     this.parseMarkers(markers, section);
     // Strip blank markers after the have been created. This ensures any
     // markup they include has been correctly populated.
-    filter(section.markers, m => m.isEmpty).forEach(m => {
+    filter(section.markers, m => m.isBlank).forEach(m => {
       section.markers.remove(m);
     });
   }
