@@ -98,5 +98,16 @@ export default {
         ]]
       ]
     ]
-  }
+  },
+  emberCard: {
+    version: '0.2.0',
+    sections: [
+      [],
+      [
+        [1, 'p', [[[], 0, 'before']]],
+        [10, 'ember-card'],
+        [1, 'p', [[[], 0, 'after']]]
+      ]
+    ]
+  },
 };
