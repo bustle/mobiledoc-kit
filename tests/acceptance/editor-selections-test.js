@@ -517,3 +517,26 @@ test('editor#selectSections works when given an empty array', (assert) => {
   editor.selectSections([]);
   assert.selectedText(null, 'no text selected after selecting no sections');
 });
+
+test('placing cursor inside a strong section should cause markupsInSelection to contain "strong"', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, markup}) => {
+    const b = markup('strong');
+    return post([markupSection('p', [
+      marker('before'),
+      marker('loud',[b]),
+      marker('after')
+    ])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+
+  Helpers.dom.moveCursorTo($('#editor strong')[0].firstChild, 1);
+
+  let bold = editor.builder.createMarkup('strong');
+  assert.ok(editor.markupsInSelection.indexOf(bold) !== -1, 'strong is in selection');
+
+  Helpers.dom.moveCursorTo($('#editor')[0].childNodes[0], 1);
+
+  assert.ok(editor.markupsInSelection.indexOf(bold) === -1, 'strong is not in selection');
+});
