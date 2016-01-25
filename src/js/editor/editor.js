@@ -381,7 +381,7 @@ class Editor {
   }
 
   get markupsInSelection() {
-    if (this.cursor.hasSelection()) {
+    if (this.cursor.hasCursor()) {
       const range = this.cursor.offsets;
       return this.post.markupsInRange(range);
     } else {
