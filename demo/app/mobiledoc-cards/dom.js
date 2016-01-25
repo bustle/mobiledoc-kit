@@ -3,11 +3,13 @@ import simpleCard from './dom/simple';
 import selfieCard from './dom/selfie';
 import imageCard from './dom/image';
 import codemirrorCard from './dom/codemirror';
+import createComponentCard from 'ember-mobiledoc-editor/utils/create-component-card';
 
 export default [
   inputCard,
   simpleCard,
   selfieCard,
   imageCard,
-  codemirrorCard
+  codemirrorCard,
+  createComponentCard('ember-card')
 ];
