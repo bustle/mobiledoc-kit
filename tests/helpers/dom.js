@@ -19,7 +19,9 @@ function walkDOMUntil(topNode, conditionFn=() => {}) {
       return currentElement;
     }
 
-    forEach(currentElement.childNodes, (el) => stack.push(el));
+    // jshint -W083
+    forEach(currentElement.childNodes, el => stack.push(el));
+    // jshint +W083
   }
 }
 

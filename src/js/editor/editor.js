@@ -665,6 +665,7 @@ class Editor {
         this.handleNewline(event);
         break;
       case key.isPrintable():
+      {
         let { offsets: range } = this.cursor;
         let { isCollapsed } = range;
         let nextPosition = range.head;
@@ -695,6 +696,7 @@ class Editor {
           event.preventDefault();
         }
         break;
+      }
     }
   }
 
