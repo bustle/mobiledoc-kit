@@ -1,7 +1,7 @@
 import Editor from 'mobiledoc-kit/editor/editor';
 import { EDITOR_ELEMENT_CLASS_NAME } from 'mobiledoc-kit/editor/editor';
 import { normalizeTagName } from 'mobiledoc-kit/utils/dom-utils';
-import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
+import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import Helpers from '../../test-helpers';
 
@@ -139,17 +139,9 @@ test('editor fires update event', (assert) => {
 });
 
 test('editor parses and renders mobiledoc format', (assert) => {
-  const mobiledoc = {
-    version: MOBILEDOC_VERSION,
-    sections: [
-      [],
-      [
-        [1, normalizeTagName('p'), [
-          [[], 0, 'hello world']
-        ]]
-      ]
-    ]
-  };
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('hello world')])]);
+  });
   editorElement.innerHTML = '<p>something here</p>';
   editor = new Editor({mobiledoc});
   editor.render(editorElement);

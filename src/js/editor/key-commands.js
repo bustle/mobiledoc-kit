@@ -53,6 +53,26 @@ export const DEFAULT_KEY_COMMANDS = [{
     });
   }
 }, {
+  // FIXME restrict to OS X only?
+  str: 'CTRL+A',
+  run(editor) {
+    let range = editor.cursor.offsets;
+    let {head: {section}} = range;
+    editor.run(postEditor => {
+      postEditor.setRange(new Range(section.headPosition()));
+    });
+  }
+}, {
+  // FIXME restrict to OS X only?
+  str: 'CTRL+E',
+  run(editor) {
+    let range = editor.cursor.offsets;
+    let {tail: {section}} = range;
+    editor.run(postEditor => {
+      postEditor.setRange(new Range(section.tailPosition()));
+    });
+  }
+}, {
   str: 'META+K',
   run(editor) {
     if (!editor.cursor.hasSelection()) {

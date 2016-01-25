@@ -1,8 +1,9 @@
 import Ember from 'ember';
 import cards from '../mobiledoc-cards/text';
+import atoms from '../mobiledoc-atoms/text';
 import Renderer from 'ember-mobiledoc-text-renderer';
 
-let renderer = new Renderer({cards});
+let renderer = new Renderer({cards, atoms});
 
 let addHTMLEntitites = (str) => {
   return str.replace(/</g,  '&lt;')

@@ -1,6 +1,7 @@
 import {
   NO_BREAK_SPACE,
-  TAB_CHARACTER
+  TAB_CHARACTER,
+  ATOM_CLASS_NAME
 } from '../renderers/editor-dom';
 import {
   MARKUP_SECTION_TYPE,
@@ -10,6 +11,8 @@ import {
 import {
   isTextNode,
   isCommentNode,
+  isElementNode,
+  getAttributes,
   normalizeTagName
 } from '../utils/dom-utils';
 import {
@@ -17,9 +20,9 @@ import {
   forEach
 } from '../utils/array-utils';
 import { TAB } from 'mobiledoc-kit/utils/characters';
+import { ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
 
 import SectionParser from 'mobiledoc-kit/parsers/section';
-import { getAttributes, walkTextNodes } from '../utils/dom-utils';
 import Markup from 'mobiledoc-kit/models/markup';
 
 const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/;
@@ -64,6 +67,26 @@ function remapTagName(tagName) {
 
 function trim(str) {
   return str.replace(/^\s+/, '').replace(/\s+$/, '');
+}
+
+function walkMarkerableNodes(parent, callback) {
+  let currentNode = parent;
+
+  if (
+    isTextNode(currentNode) ||
+    (
+      isElementNode(currentNode) &&
+      currentNode.classList.contains(ATOM_CLASS_NAME)
+    )
+  ) {
+    callback(currentNode);
+  } else {
+    currentNode = currentNode.firstChild;
+    while (currentNode) {
+      walkMarkerableNodes(currentNode, callback);
+      currentNode = currentNode.nextSibling;
+    }
+  }
 }
 
 /**
@@ -169,45 +192,100 @@ export default class DOMParser {
   }
 
   _reparseSectionContainingMarkers(section, renderTree) {
-    const element = section.renderNode.element;
+    let element = section.renderNode.element;
     let seenRenderNodes = [];
     let previousMarker;
 
-    walkTextNodes(element, (textNode) => {
-      const text = transformHTMLText(textNode.textContent);
-      let markups = this.collectMarkups(textNode, element);
-
+    walkMarkerableNodes(element, (node) => {
       let marker;
-
-      let renderNode = renderTree.getElementRenderNode(textNode);
+      let renderNode = renderTree.getElementRenderNode(node);
       if (renderNode) {
-        if (text.length) {
-          marker = renderNode.postNode;
-          marker.value = text;
-          marker.markups = markups;
-        } else {
-          renderNode.scheduleForRemoval();
+        if (renderNode.postNode.isMarker) {
+          let text = transformHTMLText(node.textContent);
+          let markups = this.collectMarkups(node, element);
+          if (text.length) {
+            marker = renderNode.postNode;
+            marker.value = text;
+            marker.markups = markups;
+          } else {
+            renderNode.scheduleForRemoval();
+          }
+        } else if (renderNode.postNode.isAtom) {
+          let { headTextNode, tailTextNode } = renderNode;
+          if (headTextNode.textContent !== ZWNJ) {
+            let value = headTextNode.textContent.replace(new RegExp(ZWNJ, 'g'), '');
+            headTextNode.textContent = ZWNJ;
+            if (previousMarker && previousMarker.isMarker) {
+              previousMarker.value += value;
+              if (previousMarker.renderNode) {
+                previousMarker.renderNode.markDirty();
+              }
+            } else {
+              let postNode = renderNode.postNode;
+              let newMarkups = postNode.markups.slice();
+              let newPreviousMarker = this.builder.createMarker(value, newMarkups);
+              section.markers.insertBefore(newPreviousMarker, postNode);
+
+              let newPreviousRenderNode = renderTree.buildRenderNode(newPreviousMarker);
+              newPreviousRenderNode.markDirty();
+              section.renderNode.markDirty();
+
+              seenRenderNodes.push(newPreviousRenderNode);
+              section.renderNode.childNodes.insertBefore(newPreviousRenderNode,
+                                                         renderNode);
+            }
+          }
+          if (tailTextNode.textContent !== ZWNJ) {
+            let value = tailTextNode.textContent.replace(new RegExp(ZWNJ, 'g'), '');
+            tailTextNode.textContent = ZWNJ;
+
+            if (renderNode.postNode.next && renderNode.postNode.next.isMarker) {
+              let nextMarker = renderNode.postNode.next;
+
+              if (nextMarker.renderNode) {
+                let nextValue = nextMarker.renderNode.element.textContent;
+                nextMarker.renderNode.element.textContent = value + nextValue;
+              } else {
+                let nextValue = value + nextMarker.value;
+                nextMarker.value = nextValue;
+              }
+            } else {
+              let postNode = renderNode.postNode;
+              let newMarkups = postNode.markups.slice();
+              let newMarker = this.builder.createMarker(value, newMarkups);
+
+              section.markers.insertAfter(newMarker, postNode);
+
+              let newRenderNode = renderTree.buildRenderNode(newMarker);
+              seenRenderNodes.push(newRenderNode);
+
+              newRenderNode.markDirty();
+              section.renderNode.markDirty();
+
+              section.renderNode.childNodes.insertAfter(newRenderNode, renderNode);
+            }
+          }
+          if (renderNode) {
+            marker = renderNode.postNode;
+          }
         }
-      } else {
+      } else if (isTextNode(node)) {
+        let text = transformHTMLText(node.textContent);
+        let markups = this.collectMarkups(node, element);
         marker = this.builder.createMarker(text, markups);
 
         renderNode = renderTree.buildRenderNode(marker);
-        renderNode.element = textNode;
+        renderNode.element = node;
         renderNode.markClean();
 
         let previousRenderNode = previousMarker && previousMarker.renderNode;
         section.markers.insertAfter(marker, previousMarker);
         section.renderNode.childNodes.insertAfter(renderNode, previousRenderNode);
-
-        let parentNodeCount = marker.closedMarkups.length;
-        let nextMarkerElement = textNode.parentNode;
-        while (parentNodeCount--) {
-          nextMarkerElement = nextMarkerElement.parentNode;
-        }
-        renderNode.nextMarkerElement = nextMarkerElement;
       }
 
-      seenRenderNodes.push(renderNode);
+      if (renderNode) {
+        seenRenderNodes.push(renderNode);
+      }
       previousMarker = marker;
     });
 

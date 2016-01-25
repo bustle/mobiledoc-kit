@@ -15,6 +15,10 @@ function isCommentNode(node) {
   return node.nodeType === NODE_TYPES.COMMENT;
 }
 
+function isElementNode(node) {
+  return node.nodeType === NODE_TYPES.ELEMENT;
+}
+
 // perform a pre-order tree traversal of the dom, calling `callbackFn(node)`
 // for every node for which `conditionFn(node)` is true
 function walkDOM(topNode, callbackFn=()=>{}, conditionFn=()=>true) {
@@ -121,6 +125,7 @@ export {
   normalizeTagName,
   isTextNode,
   isCommentNode,
+  isElementNode,
   parseHTML,
   findOffsetInElement
 };

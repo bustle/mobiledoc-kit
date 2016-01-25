@@ -1,5 +1,6 @@
 import CardNode from 'mobiledoc-kit/models/card-node';
 import { detect, forEach } from 'mobiledoc-kit/utils/array-utils';
+import AtomNode from 'mobiledoc-kit/models/atom-node';
 import {
   POST_TYPE,
   MARKUP_SECTION_TYPE,
@@ -7,7 +8,8 @@ import {
   LIST_ITEM_TYPE,
   MARKER_TYPE,
   IMAGE_SECTION_TYPE,
-  CARD_TYPE
+  CARD_TYPE,
+  ATOM_TYPE
 } from '../models/types';
 import { startsWith, endsWith } from '../utils/string-utils';
 import { addClassName } from '../utils/dom-utils';
@@ -19,6 +21,8 @@ const CARD_ELEMENT_CLASS_NAME = '__mobiledoc-card';
 export const NO_BREAK_SPACE = '\u00A0';
 export const TAB_CHARACTER = '\u2003';
 export const SPACE = ' ';
+export const ATOM_CLASS_NAME = '-mobiledoc-kit__atom';
+export const ZWNJ = '\u200c';
 
 function createElementFromMarkup(doc, markup) {
   var element = doc.createElement(markup.tagName);
@@ -97,15 +101,73 @@ function renderCursorPlaceholder() {
   return document.createElement('br');
 }
 
+function renderInlineCursorPlaceholder() {
+  return document.createTextNode(ZWNJ);
+}
+
 function renderCard() {
   let wrapper = document.createElement('div');
   let cardElement = document.createElement('div');
   cardElement.contentEditable = false;
   addClassName(cardElement, CARD_ELEMENT_CLASS_NAME);
-  wrapper.appendChild(document.createTextNode('\u200c'));
+  wrapper.appendChild(renderInlineCursorPlaceholder());
   wrapper.appendChild(cardElement);
-  wrapper.appendChild(document.createTextNode('\u200c'));
+  wrapper.appendChild(renderInlineCursorPlaceholder());
   return { wrapper, cardElement };
+}
+
+/**
+ * Wrap the element in all of the opened markups
+ * @return {DOMElement} the wrapped element
+ */
+function wrapElement(element, openedMarkups) {
+  let wrappedElement = element;
+
+  for (let i=openedMarkups.length - 1; i>=0; i--) {
+    let markup = openedMarkups[i];
+    let openedElement = createElementFromMarkup(document, markup);
+    openedElement.appendChild(wrappedElement);
+    wrappedElement = openedElement;
+  }
+
+  return wrappedElement;
+}
+
+// Attach the element to its parent element at the right position based on the
+// previousRenderNode
+function attachElementToParent(element, parentElement, previousRenderNode=null) {
+  if (previousRenderNode) {
+    let previousSibling = previousRenderNode.element;
+    let previousSiblingPenultimate = penultimateParentOf(previousSibling,
+                                                         parentElement);
+    parentElement.insertBefore(element, previousSiblingPenultimate.nextSibling);
+  } else {
+    parentElement.insertBefore(element, parentElement.firstChild);
+  }
+}
+
+function renderAtom(atom, element, previousRenderNode) {
+  let atomElement = document.createElement('span');
+  atomElement.contentEditable = false;
+
+  let wrapper = document.createElement('span');
+  addClassName(wrapper, ATOM_CLASS_NAME);
+  let headTextNode = renderInlineCursorPlaceholder();
+  let tailTextNode = renderInlineCursorPlaceholder();
+
+  wrapper.appendChild(headTextNode);
+  wrapper.appendChild(atomElement);
+  wrapper.appendChild(tailTextNode);
+
+  let wrappedElement = wrapElement(wrapper, atom.openedMarkups);
+  attachElementToParent(wrappedElement, element, previousRenderNode);
+
+  return {
+    wrapper,
+    atomElement,
+    headTextNode,
+    tailTextNode
+  };
 }
 
 function getNextMarkerElement(renderNode) {
@@ -124,28 +186,16 @@ function renderMarker(marker, element, previousRenderNode) {
 
   let textNode = document.createTextNode(text);
   let currentElement = textNode;
-  let markup;
 
-  const openTypes = marker.openedMarkups;
-  for (let j=openTypes.length-1;j>=0;j--) {
-    markup = openTypes[j];
-    let openedElement = createElementFromMarkup(document, markup);
-    openedElement.appendChild(currentElement);
-    currentElement = openedElement;
-  }
-
-  if (previousRenderNode) {
-    let previousSibling = previousRenderNode.element;
-    let previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
-    element.insertBefore(currentElement, previousSiblingPenultimate.nextSibling);
-  } else {
-    element.insertBefore(currentElement, element.firstChild);
-  }
+  let wrappedElement = wrapElement(currentElement, marker.openedMarkups);
+  attachElementToParent(wrappedElement, element, previousRenderNode);
 
   return textNode;
 }
 
-function attachRenderNodeElementToDOM(renderNode, originalElement) {
+// Attach the render node's element to the DOM,
+// replacing the originalElement if it exists
+function attachRenderNodeElementToDOM(renderNode, originalElement=null) {
   const element = renderNode.element;
   const hasRendered = !!originalElement;
 
@@ -191,11 +241,27 @@ function validateCards(cards=[]) {
   return cards;
 }
 
+function validateAtoms(atoms=[]) {
+  forEach(atoms, atom => {
+    assert(
+      `Atom "${atom.name}" must define type "dom", has: "${atom.type}"`,
+      atom.type === 'dom'
+    );
+    assert(
+      `Atom "${atom.name}" must define \`render\` method`,
+      !!atom.render
+    );
+  });
+  return atoms;
+}
+
 class Visitor {
-  constructor(editor, cards, unknownCardHandler, options) {
+  constructor(editor, cards, atoms, unknownCardHandler, unknownAtomHandler, options) {
     this.editor = editor;
     this.cards = validateCards(cards);
+    this.atoms = validateAtoms(atoms);
     this.unknownCardHandler = unknownCardHandler;
+    this.unknownAtomHandler = unknownAtomHandler;
     this.options = options;
   }
 
@@ -215,6 +281,24 @@ class Visitor {
       type: 'dom',
       render: this.unknownCardHandler,
       edit:   this.unknownCardHandler
+    };
+  }
+
+  _findAtom(atomName) {
+    let atom = detect(this.atoms, atom => atom.name === atomName);
+    return atom || this._createUnknownAtom(atomName);
+  }
+
+  _createUnknownAtom(atomName) {
+    assert(
+      `Unknown atom "${atomName}" found, but no unknownAtomHandler is defined`,
+      !!this.unknownAtomHandler
+    );
+
+    return {
+      name: atomName,
+      type: 'dom',
+      render: this.unknownAtomHandler
     };
   }
 
@@ -315,6 +399,36 @@ class Visitor {
     const initialMode = section._initialMode;
     cardNode[initialMode]();
   }
+
+  [ATOM_TYPE](renderNode, atomModel) {
+    let parentElement;
+
+    if (renderNode.prev) {
+      parentElement = getNextMarkerElement(renderNode.prev);
+    } else {
+      parentElement = renderNode.parent.element;
+    }
+
+    const { editor, options } = this;
+    const {
+      wrapper,
+      atomElement,
+      headTextNode,
+      tailTextNode
+    } = renderAtom(atomModel, parentElement, renderNode.prev);
+    const atom = this._findAtom(atomModel.name);
+
+    const atomNode = new AtomNode(
+      editor, atom, atomModel, atomElement, options
+    );
+
+    atomNode.render();
+
+    renderNode.atomNode = atomNode;
+    renderNode.element = wrapper;
+    renderNode.headTextNode = headTextNode;
+    renderNode.tailTextNode = tailTextNode;
+  }
 }
 
 let destroyHooks = {
@@ -341,19 +455,20 @@ let destroyHooks = {
     // FIXME before we render marker, should delete previous renderNode's element
     // and up until the next marker element
 
-    let element = renderNode.element;
-    let nextMarkerElement = getNextMarkerElement(renderNode);
-    while (element.parentNode && element.parentNode !== nextMarkerElement) {
-      element = element.parentNode;
+    if (renderNode.isRendered) {
+      let element = renderNode.element;
+      let nextMarkerElement = getNextMarkerElement(renderNode);
+      while (element.parentNode && element.parentNode !== nextMarkerElement) {
+        element = element.parentNode;
+      }
+      if (element.parentNode) {
+        // if no parentNode, the browser already removed this element
+        element.parentNode.removeChild(element);
+      }
     }
 
     if (marker.section) {
       marker.section.markers.remove(marker);
-    }
-
-    if (element.parentNode) {
-      // if no parentNode, the browser already removed this element
-      element.parentNode.removeChild(element);
     }
   },
 
@@ -368,6 +483,15 @@ let destroyHooks = {
     }
     removeRenderNodeSectionFromParent(renderNode, section);
     removeRenderNodeElementFromParent(renderNode);
+  },
+
+  [ATOM_TYPE](renderNode, atom) {
+    if (renderNode.atomNode) {
+      renderNode.atomNode.teardown();
+    }
+
+    // an atom is a kind of marker so just call its destroy hook vs copying here
+    destroyHooks[MARKER_TYPE](renderNode, atom);
   }
 };
 
@@ -401,9 +525,9 @@ function lookupNode(renderTree, parentNode, postNode, previousNode) {
 }
 
 export default class Renderer {
-  constructor(editor, cards, unknownCardHandler, options) {
+  constructor(editor, cards, atoms, unknownCardHandler, unknownAtomHandler, options) {
     this.editor = editor;
-    this.visitor = new Visitor(editor, cards, unknownCardHandler, options);
+    this.visitor = new Visitor(editor, cards, atoms, unknownCardHandler, unknownAtomHandler, options);
     this.nodes = [];
     this.hasRendered = false;
   }

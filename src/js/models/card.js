@@ -1,7 +1,6 @@
 import Section from './_section';
 import { CARD_TYPE } from './types';
 import { shallowCopyObject } from '../utils/copy';
-import Position from '../utils/cursor/position';
 
 export const CARD_MODES = {
   DISPLAY: 'display',
@@ -17,7 +16,6 @@ export default class Card extends Section {
     this.payload = payload;
     this.setInitialMode(DEFAULT_INITIAL_MODE);
     this.isCardSection = true;
-    this.length = 1;
   }
 
   get isBlank() {
@@ -28,12 +26,8 @@ export default class Card extends Section {
     return false;
   }
 
-  headPosition() {
-    return new Position(this, 0);
-  }
-
-  tailPosition() {
-    return new Position(this, 1);
+  get length() {
+    return 1;
   }
 
   clone() {

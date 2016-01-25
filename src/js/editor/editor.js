@@ -50,9 +50,13 @@ const defaults = {
   spellcheck: true,
   autofocus: true,
   cards: [],
+  atoms: [],
   cardOptions: {},
   unknownCardHandler: ({env}) => {
     throw new Error(`Unknown card encountered: ${env.name}`);
+  },
+  unknownAtomHandler: ({env}) => {
+    throw new Error(`Unknown atom encountered: ${env.name}`);
   },
   mobiledoc: null,
   html: null
@@ -94,7 +98,7 @@ class Editor {
     });
     this._isMutationObserved = false;
     this._parser   = new DOMParser(this.builder);
-    this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
+    this._renderer = new Renderer(this, this.cards, this.atoms, this.unknownCardHandler, this.unknownAtomHandler, this.cardOptions);
 
     this.post = this.loadPost();
     this._renderTree = new RenderTree(this.post);
@@ -643,8 +647,12 @@ class Editor {
         if (range.direction === DIRECTION.BACKWARD) {
           position = range.head;
         }
-        if (position.section.isCardSection) {
-          nextPosition = position.move(key.direction);
+        nextPosition = position.move(key.direction);
+        if (
+          position.section.isCardSection ||
+          (position.marker && position.marker.isAtom) ||
+          (nextPosition && nextPosition.marker && nextPosition.marker.isAtom)
+        ) {
           if (nextPosition) {
             let newRange;
             if (key.isShift()) {
@@ -680,6 +688,7 @@ class Editor {
           if (!isCollapsed) {
             nextPosition = postEditor.deleteRange(range);
           }
+
           let isMarkerable = range.head.section.isMarkerable;
           if (isMarkerable &&
               (key.isTab() || key.isSpace())
@@ -687,6 +696,17 @@ class Editor {
             let toInsert = key.isTab() ? TAB : SPACE;
             shouldPreventDefault = true;
             nextPosition = postEditor.insertText(nextPosition, toInsert);
+          }
+
+          if (nextPosition.marker && nextPosition.marker.isAtom) {
+            // ensure that the cursor is properly repositioned one character forward
+            // after typing on either side of an atom
+            this.addCallbackOnce(CALLBACK_QUEUES.DID_REPARSE, () => {
+              let position = nextPosition.move(DIRECTION.FORWARD);
+              let nextRange = new Range(position);
+
+              this.run(postEditor => postEditor.setRange(nextRange));
+            });
           }
           if (nextPosition && nextPosition !== range.head) {
             postEditor.setRange(new Range(nextPosition));

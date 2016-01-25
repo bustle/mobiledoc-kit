@@ -6,9 +6,27 @@ import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 
 const {module, test} = Helpers;
+const ZWNJ = '\u200c';
 
 let editorElement, builder, parser, editor;
 let buildDOM = Helpers.dom.fromHTML;
+
+function renderMobiledoc(builderFn) {
+  let mobiledoc = Helpers.mobiledoc.build(builderFn);
+  let mentionAtom = {
+    name: 'mention',
+    type: 'dom',
+    render({value}) {
+      let element = document.createElement('span');
+      element.setAttribute('id', 'mention-atom');
+      element.appendChild(document.createTextNode(value));
+      return element;
+    }
+  };
+  editor = new Editor({mobiledoc, atoms: [mentionAtom]});
+  editor.render(editorElement);
+  return editor;
+}
 
 module('Unit: Parser: DOMParser', {
   beforeEach() {
@@ -139,6 +157,120 @@ test('editor#reparse catches changes to list section', (assert) => {
 
   const listItem = editor.post.sections.head.items.head;
   assert.equal(listItem.text, 'the NEW list item');
+});
+
+test('editor#parse fixes text in atom headTextNode when atom is at start of section', (assert) => {
+  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
+    return post([markupSection('p', [marker('X'), atom('mention', 'bob')])]);
+  });
+
+  editor = renderMobiledoc(({post, atom, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'bob')])]);
+  });
+
+  let headTextNode = editor.post.sections.head.markers.head.renderNode.headTextNode;
+  assert.ok(!!headTextNode, 'precond - headTextNode');
+  headTextNode.textContent = ZWNJ + 'X';
+
+  editor.reparse();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
+
+test('editor#parse fixes text in atom headTextNode when atom has atom before it', (assert) => {
+  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'first'), marker('X'), atom('mention', 'last')])]);
+  });
+
+  editor = renderMobiledoc(({post, atom, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'first'), atom('mention', 'last')])]);
+  });
+
+  let headTextNode = editor.post.sections.head.markers.tail.renderNode.headTextNode;
+  assert.ok(!!headTextNode, 'precond - headTextNode');
+  headTextNode.textContent = ZWNJ + 'X';
+
+  editor.reparse();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
+
+test('editor#parse fixes text in atom headTextNode when atom has marker before it', (assert) => {
+  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
+    return post([markupSection('p', [marker('textX'), atom('mention', 'bob')])]);
+  });
+
+  editor = renderMobiledoc(({post, atom, markupSection, marker}) => {
+    return post([markupSection('p', [marker('text'), atom('mention', 'bob')])]);
+  });
+
+  let headTextNode = editor.post.sections.head.markers.objectAt(1).renderNode.headTextNode;
+  assert.ok(!!headTextNode, 'precond - headTextNode');
+  headTextNode.textContent = ZWNJ + 'X';
+
+  editor.reparse();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
+
+test('editor#parse fixes text in atom tailTextNode when atom is at end of section', (assert) => {
+  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'bob'), marker('X')])]);
+  });
+
+  editor = renderMobiledoc(({post, atom, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'bob')])]);
+  });
+
+  let tailTextNode = editor.post.sections.head.markers.head.renderNode.tailTextNode;
+  assert.ok(!!tailTextNode, 'precond - tailTextNode');
+  tailTextNode.textContent = ZWNJ + 'X';
+
+  editor.reparse();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
+
+test('editor#parse fixes text in atom tailTextNode when atom has atom after it', (assert) => {
+  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'first'), marker('X'), atom('mention', 'last')])]);
+  });
+
+  editor = renderMobiledoc(({post, atom, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'first'), atom('mention', 'last')])]);
+  });
+
+  let tailTextNode = editor.post.sections.head.markers.head.renderNode.tailTextNode;
+  assert.ok(!!tailTextNode, 'precond - tailTextNode');
+  tailTextNode.textContent = ZWNJ + 'X';
+
+  editor.reparse();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
+
+test('editor#parse fixes text in atom tailTextNode when atom has marker after it', (assert) => {
+  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
+    return post([markupSection('p', [atom('mention', 'bob'), marker('Xabc')])]);
+  });
+
+  editor = renderMobiledoc(({post, atom, markupSection, marker}) => {
+    return post([markupSection('p', [atom('mention', 'bob'), marker('abc')])]);
+  });
+
+  let tailTextNode = editor.post.sections.head.markers.head.renderNode.tailTextNode;
+  assert.ok(!!tailTextNode, 'precond - tailTextNode');
+  tailTextNode.textContent = ZWNJ + 'X';
+
+  editor.reparse();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
 });
 
 test('parse empty content', (assert) => {

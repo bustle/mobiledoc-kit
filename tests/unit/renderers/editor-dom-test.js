@@ -2,19 +2,17 @@ import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Renderer from 'mobiledoc-kit/renderers/editor-dom';
 import RenderTree from 'mobiledoc-kit/models/render-tree';
 import Helpers from '../../test-helpers';
-import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
+import { NO_BREAK_SPACE, ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 const { module, test } = Helpers;
-
-const ZWNJ = '\u200c';
 
 import placeholderImageSrc from 'mobiledoc-kit/utils/placeholder-image-src';
 let builder;
 
 let renderer;
-function render(renderTree, cards=[]) {
+function render(renderTree, cards=[], atoms=[]) {
   let editor = {};
-  renderer = new Renderer(editor, cards);
+  renderer = new Renderer(editor, cards, atoms);
   return renderer.render(renderTree);
 }
 
@@ -192,6 +190,201 @@ test('renders a post with image', (assert) => {
   assert.equal(renderTree.rootElement.innerHTML, `<img src="${url}">`);
 });
 
+test('renders a post with atom', (assert) => {
+  let post = Helpers.postAbstract.build(({ markupSection, post, atom }) => {
+    return post([markupSection('p', [atom('mention', '@bob', {})])]);
+  });
+
+  const renderTree = new RenderTree(post);
+  render(renderTree, [], [
+    {
+      name: 'mention',
+      type: 'dom',
+      render({value/*, options, env, payload*/}) {
+        return document.createTextNode(value);
+      }
+    }
+  ]);
+  assert.equal(renderTree.rootElement.innerHTML, `<p><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">@bob</span>${ZWNJ}</span></p>`);
+});
+
+test('rerenders an atom with markup correctly when adjacent nodes change', (assert) => {
+  let bold, italic, marker1, marker2, atom1, markupSection1;
+  let post = Helpers.postAbstract.build(({ markupSection, post, atom, marker, markup }) => {
+    bold = markup('b');
+    italic = markup('em');
+    marker1 = marker('abc');
+    atom1 = atom('mention', 'bob', {}, [bold]);
+    marker2 = marker('def');
+    markupSection1 = markupSection('p', [marker1, atom1, marker2]);
+    return post([markupSection1]);
+  });
+
+  const renderTree = new RenderTree(post);
+  let cards = [], atoms = [{
+    name: 'mention',
+    type: 'dom',
+    render({value/*, options, env, payload*/}) {
+      return document.createTextNode(value);
+    }
+  }];
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p>abc<b><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob</span>${ZWNJ}</span></b>def</p>`,
+              'initial render correct');
+
+  marker1.value = 'ABC';
+  marker1.renderNode.markDirty();
+
+  // rerender
+  render(renderTree, cards, atoms);
+
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p>ABC<b><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob</span>${ZWNJ}</span></b>def</p>`,
+              'rerender is correct');
+
+  atom1.removeMarkup(bold);
+  atom1.renderNode.markDirty();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p>ABC<span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob</span>${ZWNJ}</span>def</p>`,
+              'rerender is correct');
+
+  marker2.renderNode.scheduleForRemoval();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p>ABC<span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob</span>${ZWNJ}</span></p>`,
+              'rerender is correct');
+
+  marker1.addMarkup(bold);
+  marker1.renderNode.markDirty();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p><b>ABC</b><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob</span>${ZWNJ}</span></p>`,
+              'rerender is correct');
+
+  marker1.renderNode.scheduleForRemoval();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob</span>${ZWNJ}</span></p>`,
+              'rerender is correct');
+
+  atom1.renderNode.scheduleForRemoval();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p><br></p>`,
+              'rerender is correct');
+
+  let newAtom = builder.createAtom('mention', 'bob2', {}, [bold, italic]);
+  markupSection1.markers.append(newAtom);
+  markupSection1.renderNode.markDirty();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p><b><em><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob2</span>${ZWNJ}</span></em></b></p>`,
+              'rerender is correct');
+
+  let newMarker = builder.createMarker('pre', [bold, italic]);
+  markupSection1.markers.insertBefore(newMarker, newAtom);
+  markupSection1.renderNode.markDirty();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p><b><em>pre<span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob2</span>${ZWNJ}</span></em></b></p>`,
+              'rerender is correct');
+
+  newMarker = builder.createMarker('post', [bold, italic]);
+  markupSection1.markers.append(newMarker);
+  markupSection1.renderNode.markDirty();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p><b><em>pre<span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob2</span>${ZWNJ}</span>post</em></b></p>`,
+              'rerender is correct');
+
+  newAtom.removeMarkup(bold);
+  newAtom.renderNode.markDirty();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p><b><em>pre</em></b><em><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">bob2</span>${ZWNJ}</span></em><b><em>post</em></b></p>`,
+              'rerender is correct');
+
+  newAtom.renderNode.scheduleForRemoval();
+
+  // rerender
+  render(renderTree, cards, atoms);
+  assert.equal(renderTree.rootElement.innerHTML,
+               `<p><b><em>prepost</em></b></p>`,
+              'rerender is correct');
+});
+
+test('renders a post with atom with markup', (assert) => {
+  let post = Helpers.postAbstract.build(({ markupSection, post, atom, marker, markup }) => {
+    let b = markup('B');
+    let i = markup('I');
+
+    return post([markupSection('p', [
+      atom('mention', '@bob', {}, [b, i])
+    ])]);
+  });
+
+  const renderTree = new RenderTree(post);
+  render(renderTree, [], [
+    {
+      name: 'mention',
+      type: 'dom',
+      render({fragment, value/*, options, env, payload*/}) {
+        return document.createTextNode(value);
+      }
+    }
+  ]);
+
+  assert.equal(renderTree.rootElement.innerHTML, `<p><b><i><span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">@bob</span>${ZWNJ}</span></i></b></p>`);
+});
+
+test('renders a post with mixed markups and atoms', (assert) => {
+  let post = Helpers.postAbstract.build(({ markupSection, post, atom, marker, markup }) => {
+    let b = markup('B');
+    let i = markup('I');
+
+    return post([markupSection('p', [
+      marker('bold', [b]),
+      marker('italic ', [b, i]),
+      atom('mention', '@bob', {}, [b, i]),
+      marker(' bold', [b]),
+      builder.createMarker('text.')
+    ])]);
+  });
+
+  const renderTree = new RenderTree(post);
+  render(renderTree, [], [
+    {
+      name: 'mention',
+      type: 'dom',
+      render({fragment, value/*, options, env, payload*/}) {
+        return document.createTextNode(value);
+      }
+    }
+  ]);
+
+  assert.equal(renderTree.rootElement.innerHTML, `<p><b>bold<i>italic <span class="-mobiledoc-kit__atom">${ZWNJ}<span contenteditable="false">@bob</span>${ZWNJ}</span></i> bold</b>text.</p>`);
+});
+
 test('renders a card section', (assert) => {
   let post = builder.createPost();
   let cardSection = builder.createCardSection('my-card');
@@ -215,42 +408,15 @@ test('renders a card section', (assert) => {
               'card is rendered');
 });
 
-/*
- * renderTree:
- *
- *     post
- *       |
- *    section
- *       |
- *       |----------------|
- *       |                |
- *     marker1 [b]      marker2 []
- *       |                |
- *     <text1>           <text2>
- *
- *  add "b" markup to marker2, new tree should be:
- *
- *     post
- *       |
- *    section
- *       |
- *       |
- *       |      
- *     marker1 [b]
- *       |       
- *     <text1> + <text2>
- */
-
 test('rerender a marker after adding a markup to it', (assert) => {
-  const post = builder.createPost();
-  const section = builder.createMarkupSection('p');
-  const b = builder.createMarkup('B');
-  const marker1 = builder.createMarker('text1', [b]);
-  const marker2 = builder.createMarker('text2');
-
-  section.markers.append(marker1);
-  section.markers.append(marker2);
-  post.sections.append(section);
+  let bold, marker2;
+  let post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    bold = markup('B');
+    marker2 = marker('text2');
+    return post([
+      markupSection('p', [marker('text1', [bold]), marker2])
+    ]);
+  });
 
   const renderTree = new RenderTree(post);
   render(renderTree);
@@ -258,14 +424,13 @@ test('rerender a marker after adding a markup to it', (assert) => {
   assert.equal(renderTree.rootElement.innerHTML,
                '<p><b>text1</b>text2</p>');
 
-  marker2.addMarkup(b);
+  marker2.addMarkup(bold);
   marker2.renderNode.markDirty();
 
   // rerender
   render(renderTree);
 
-  assert.equal(renderTree.rootElement.innerHTML,
-               '<p><b>text1text2</b></p>');
+  assert.equal(renderTree.rootElement.innerHTML, '<p><b>text1text2</b></p>');
 });
 
 test('rerender a marker after removing a markup from it', (assert) => {
@@ -428,7 +593,7 @@ test('contiguous markers have overlapping markups', (assert) => {
 });
 
 test('renders and rerenders list items', (assert) => {
-  const post = Helpers.postAbstract.build(({post, listSection, listItem, marker}) => 
+  const post = Helpers.postAbstract.build(({post, listSection, listItem, marker}) =>
     post([
       listSection('ul', [
         listItem([marker('first item')]),

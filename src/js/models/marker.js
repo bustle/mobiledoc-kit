@@ -1,8 +1,9 @@
 import { MARKER_TYPE } from './types';
-import { normalizeTagName } from '../utils/dom-utils';
-import { detect, commonItemLength, forEach, filter } from '../utils/array-utils';
+import mixin from '../utils/mixin';
+import MarkuperableMixin from '../utils/markuperable';
 import LinkedItem from '../utils/linked-item';
 import assert from '../utils/assert';
+import { isArrayEqual } from '../utils/array-utils';
 
 // Unicode uses a pair of "surrogate" characters" (a high- and low-surrogate)
 // to encode characters outside the basic multilingual plane (like emoji and
@@ -11,8 +12,8 @@ import assert from '../utils/assert';
 // high- and low-surrogate characters.
 // See "high surrogate" and "low surrogate" on
 // https://en.wikipedia.org/wiki/Unicode_block
-const HIGH_SURROGATE_RANGE = [0xD800, 0xDBFF];
-const LOW_SURROGATE_RANGE  = [0xDC00, 0xDFFF];
+export const HIGH_SURROGATE_RANGE = [0xD800, 0xDBFF];
+export const LOW_SURROGATE_RANGE  = [0xDC00, 0xDFFF];
 
 const Marker = class Marker extends LinkedItem {
   constructor(value='', markups=[]) {
@@ -30,55 +31,19 @@ const Marker = class Marker extends LinkedItem {
   }
 
   get isEmpty() {
-    return this.length === 0;
+    return this.isBlank;
   }
 
   get isBlank() {
-    return this.value.length === 0;
+    return this.length === 0;
   }
 
   get length() {
     return this.value.length;
   }
 
-  clearMarkups() {
-    this.markups = [];
-  }
-
-  addMarkup(markup) {
-    this.markups.push(markup);
-  }
-
-  removeMarkup(markupOrMarkupCallback) {
-    let callback;
-    if (typeof markupOrMarkupCallback === 'function') {
-      callback = markupOrMarkupCallback;
-    } else {
-      let markup = markupOrMarkupCallback;
-      callback = (_markup) => _markup === markup;
-    }
-
-    forEach(
-      filter(this.markups, callback),
-      m => this._removeMarkup(m)
-    );
-  }
-
-  _removeMarkup(markup) {
-    const index = this.markups.indexOf(markup);
-    if (index !== -1) {
-      this.markups.splice(index, 1);
-    }
-  }
-
-  /**
-   * delete the character at this offset,
-   * update the value with the new value.
-   * This method mutates the marker.
-   *
-   * @return {Number} the length of the change
-   * (usually 1 but can be 2 when deleting an emoji, e.g.)
-   */
+  // delete the character at this offset,
+  // update the value with the new value
   deleteValueAtOffset(offset) {
     assert('Cannot delete value at offset outside bounds',
            offset >= 0 && offset <= this.length);
@@ -101,32 +66,12 @@ const Marker = class Marker extends LinkedItem {
     return width;
   }
 
-  hasMarkup(tagNameOrMarkup) {
-    return !!this.getMarkup(tagNameOrMarkup);
-  }
-
-  getMarkup(tagNameOrMarkup) {
-    if (typeof tagNameOrMarkup === 'string') {
-      let tagName = normalizeTagName(tagNameOrMarkup);
-      return detect(this.markups, markup => markup.tagName === tagName);
-    } else {
-      let targetMarkup = tagNameOrMarkup;
-      return detect(this.markups, markup => markup === targetMarkup);
-    }
-  }
-
-  join(other) {
-    const joined = this.builder.createMarker(this.value + other.value);
-    this.markups.forEach(m => joined.addMarkup(m));
-    other.markups.forEach(m => joined.addMarkup(m));
-
-    return joined;
+  canJoin(other) {
+    return other && other.isMarker && isArrayEqual(this.markups, other.markups);
   }
 
   split(offset=0, endOffset=this.length) {
-    let markers = [];
-
-    markers = [
+    let markers = [
       this.builder.createMarker(this.value.substring(0, offset)),
       this.builder.createMarker(this.value.substring(offset, endOffset)),
       this.builder.createMarker(this.value.substring(endOffset))
@@ -155,24 +100,8 @@ const Marker = class Marker extends LinkedItem {
     return [pre, post];
   }
 
-  get openedMarkups() {
-    let count = 0;
-    if (this.prev) {
-      count = commonItemLength(this.markups, this.prev.markups);
-    }
-
-    return this.markups.slice(count);
-  }
-
-  get closedMarkups() {
-    let count = 0;
-    if (this.next) {
-      count = commonItemLength(this.markups, this.next.markups);
-    }
-
-    return this.markups.slice(count);
-  }
-
 };
+
+mixin(Marker, MarkuperableMixin);
 
 export default Marker;

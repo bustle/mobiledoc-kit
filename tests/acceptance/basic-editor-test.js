@@ -166,15 +166,14 @@ test('typing tab enters a tab character', (assert) => {
   Helpers.dom.insertText(editor, TAB);
   Helpers.dom.insertText(editor, 'Y');
   window.setTimeout(() => {
-    let editedMobiledoc = editor.serialize();
-    assert.deepEqual(editedMobiledoc.sections, [
-      [],
-      [
-        [1, 'p', [
-          [[], 0, `${TAB}Y`]
-        ]]
-      ]
-    ], 'correctly encoded');
+    let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+      return post([
+        markupSection('p', [
+          marker(`${TAB}Y`)
+        ])
+      ]);
+    });
+    assert.postIsSimilar(editor.post, expectedPost);
     done();
   }, 0);
 });
@@ -219,18 +218,17 @@ test('typing enter splits lines, sets cursor', (assert) => {
   Helpers.dom.moveCursorTo($('#editor p')[0].firstChild, 2);
   Helpers.dom.insertText(editor, ENTER);
   window.setTimeout(() => {
-    let editedMobiledoc = editor.serialize();
-    assert.deepEqual(editedMobiledoc.sections, [
-      [],
-      [
-        [1, 'p', [
-          [[], 0, `hi`]
-        ]],
-        [1, 'p', [
-          [[], 0, `hey`]
-        ]]
-      ]
-    ], 'correctly encoded');
+    let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+      return post([
+        markupSection('p', [
+          marker(`hi`)
+        ]),
+        markupSection('p', [
+          marker(`hey`)
+        ])
+      ]);
+    });
+    assert.postIsSimilar(editor.post, expectedPost, 'correctly encoded');
     let expectedRange = new Range(new Position(editor.post.sections.tail, 0));
     assert.ok(expectedRange.isEqual(editor.range), 'range is at start of new section');
     done();
