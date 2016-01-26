@@ -1,6 +1,8 @@
 import PostAbstractHelpers from './post-abstract';
 import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc';
 import MobiledocRenderer_0_2, { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
+import Editor from 'mobiledoc-kit/editor/editor';
+import { mergeWithOptions } from 'mobiledoc-kit/utils/merge';
 
 /*
  * usage:
@@ -25,6 +27,15 @@ function build(treeFn, version) {
   }
 }
 
+function renderInto(element, treeFn, editorOptions={}) {
+  let mobiledoc = build(treeFn);
+  mergeWithOptions(editorOptions, {mobiledoc});
+  let editor = new Editor(editorOptions);
+  editor.render(element);
+  return editor;
+}
+
 export default {
-  build
+  build,
+  renderInto
 };

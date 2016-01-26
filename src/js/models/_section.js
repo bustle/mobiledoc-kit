@@ -14,6 +14,8 @@ export default class Section extends LinkedItem {
     this.type = type;
     this.isMarkerable = false;
     this.isNested = false;
+    this.isSection = true;
+    this.isLeafSection = true;
   }
 
   set tagName(val) {

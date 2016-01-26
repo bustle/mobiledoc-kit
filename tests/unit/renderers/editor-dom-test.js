@@ -2,11 +2,9 @@ import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Renderer from 'mobiledoc-kit/renderers/editor-dom';
 import RenderTree from 'mobiledoc-kit/models/render-tree';
 import Helpers from '../../test-helpers';
-import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
+import { NO_BREAK_SPACE, ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 const { module, test } = Helpers;
-
-const ZWNJ = '\u200c';
 
 import placeholderImageSrc from 'mobiledoc-kit/utils/placeholder-image-src';
 let builder;
