@@ -4,6 +4,7 @@ import { forEach, compact } from 'mobiledoc-kit/utils/array-utils';
 import Set from 'mobiledoc-kit/utils/set';
 import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc';
 import Range from 'mobiledoc-kit/utils/cursor/range';
+import Position from 'mobiledoc-kit/utils/cursor/position';
 
 export default class Post {
   constructor() {
@@ -12,6 +13,22 @@ export default class Post {
       adoptItem: s => s.post = s.parent = this,
       freeItem: s => s.post = s.parent = null
     });
+  }
+
+  headPosition() {
+    if (this.isBlank) {
+      return Position.blankPosition();
+    } else {
+      return this.sections.head.headPosition();
+    }
+  }
+
+  tailPosition() {
+    if (this.isBlank) {
+      return Position.blankPosition();
+    } else {
+      return this.sections.tail.tailPosition();
+    }
   }
 
   get isBlank() {

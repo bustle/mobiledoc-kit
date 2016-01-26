@@ -187,10 +187,10 @@ export default function registerAssertions() {
       this.push(false,
                 `${position.section.type}:${position.section.tagName}`,
                 `${expected.section.type}:${expected.section.tagName}`,
-               `incorrect position section`);
+               `incorrect position section (${message})`);
     } else if (position.offset !== expected.offset) {
       this.push(false, position.offset, expected.offset,
-                `incorrect position offset`);
+                `incorrect position offset (${message})`);
     } else {
       this.push(true, position, expected, message);
     }

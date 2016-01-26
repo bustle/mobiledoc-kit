@@ -16,6 +16,7 @@ export default class ListSection extends Section {
     super(LIST_SECTION_TYPE);
     this.tagName = tagName;
     this.isListSection = true;
+    this.isLeafSection = false;
 
     this.items = new LinkedList({
       adoptItem: i => {

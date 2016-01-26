@@ -253,3 +253,8 @@ test('splitMarkerAtOffset splits a marker deep in the middle', (assert) => {
   assert.deepEqual(section.markers.map(m => m.value),
                    ['a', 'bc', 'de', 'f', 'ghi']);
 });
+
+test('a section has property `isSection`', (assert) => {
+  let section = builder.createMarkupSection();
+  assert.ok(section.isSection, 'section.isSection');
+});

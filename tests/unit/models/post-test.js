@@ -1,5 +1,6 @@
 import Helpers from '../../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
+import Position from 'mobiledoc-kit/utils/cursor/position';
 
 const {module, test} = Helpers;
 
@@ -538,4 +539,31 @@ test('#cloneRange when range contains multiple list items and more sections', (a
   });
 
   assert.deepEqual(mobiledoc, expected);
+});
+
+test('#headPosition and #tailPosition returns head and tail', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  let head = post.headPosition();
+  let tail = post.tailPosition();
+
+  assert.positionIsEqual(head, post.sections.head.headPosition(), 'head pos');
+  assert.positionIsEqual(tail, post.sections.tail.tailPosition(), 'tail pos');
+});
+
+test('#headPosition and #tailPosition when post is blank return blank', (assert) => {
+  let post = Helpers.postAbstract.build(({post}) => {
+    return post();
+  });
+
+  let head = post.headPosition();
+  let tail = post.tailPosition();
+
+  assert.positionIsEqual(head, Position.blankPosition(), 'head pos');
+  assert.positionIsEqual(tail, Position.blankPosition(), 'tail pos');
 });

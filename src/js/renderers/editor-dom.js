@@ -15,10 +15,11 @@ import { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section';
 import assert from '../utils/assert';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 
-const CARD_ELEMENT_CLASS_NAME = '__mobiledoc-card';
+export const CARD_ELEMENT_CLASS_NAME = '__mobiledoc-card';
 export const NO_BREAK_SPACE = '\u00A0';
 export const TAB_CHARACTER = '\u2003';
 export const SPACE = ' ';
+export const ZWNJ = '\u200c';
 
 function createElementFromMarkup(doc, markup) {
   var element = doc.createElement(markup.tagName);
@@ -102,9 +103,9 @@ function renderCard() {
   let cardElement = document.createElement('div');
   cardElement.contentEditable = false;
   addClassName(cardElement, CARD_ELEMENT_CLASS_NAME);
-  wrapper.appendChild(document.createTextNode('\u200c'));
+  wrapper.appendChild(document.createTextNode(ZWNJ));
   wrapper.appendChild(cardElement);
-  wrapper.appendChild(document.createTextNode('\u200c'));
+  wrapper.appendChild(document.createTextNode(ZWNJ));
   return { wrapper, cardElement };
 }
 
