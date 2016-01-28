@@ -3,7 +3,7 @@ const { test, module } = Helpers;
 
 let editor, editorElement;
 
-module('Acceptance: editor: reparsing', {
+module('Acceptance: Editor: Reparsing', {
   beforeEach() {
     editorElement = $('#editor')[0];
   },
@@ -21,9 +21,6 @@ test('changing text node content causes reparse of section', (assert) => {
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let reparsed = false;
-  editor.didReparse(() => reparsed = true);
-
   let section = editor.post.sections.head;
   let node = section.markers.head.renderNode.element;
 
@@ -35,7 +32,6 @@ test('changing text node content causes reparse of section', (assert) => {
   setTimeout(() => {
     assert.equal(section.text, 'def', 'section reparsed correctly');
     assert.postIsSimilar(editor.post, expected);
-    assert.ok(reparsed, 'did reparse');
     done();
   });
 });
@@ -49,9 +45,6 @@ test('removing text node causes reparse of section', (assert) => {
     return post([markupSection('p', [marker('abc'), marker('def')])]);
   });
 
-  let reparsed = false;
-  editor.didReparse(() => reparsed = true);
-
   let section = editor.post.sections.head;
   let node = section.markers.head.renderNode.element;
 
@@ -63,7 +56,6 @@ test('removing text node causes reparse of section', (assert) => {
   setTimeout(() => {
     assert.equal(section.text, 'def', 'section reparsed correctly');
     assert.postIsSimilar(editor.post, expected);
-    assert.ok(reparsed, 'did reparse');
     done();
   });
 });
@@ -80,9 +72,6 @@ test('removing section node causes reparse of post', (assert) => {
     ]);
   });
 
-  let reparsed = false;
-  editor.didReparse(() => reparsed = true);
-
   let node = editor.post.sections.head.renderNode.element;
   assert.equal(node.innerHTML, 'abc', 'precond - correct node');
 
@@ -90,7 +79,6 @@ test('removing section node causes reparse of post', (assert) => {
 
   setTimeout(() => {
     assert.postIsSimilar(editor.post, expected);
-    assert.ok(reparsed, 'did reparse');
     done();
   });
 });
@@ -106,9 +94,6 @@ test('inserting styled span in section causes section reparse', (assert) => {
     ]);
   });
 
-  let reparsed = false;
-  editor.didReparse(() => reparsed = true);
-
   let node = editor.post.sections.head.renderNode.element;
   assert.equal(node.innerHTML, 'abc', 'precond - correct node');
 
@@ -119,7 +104,6 @@ test('inserting styled span in section causes section reparse', (assert) => {
 
   setTimeout(() => {
     assert.postIsSimilar(editor.post, expected);
-    assert.ok(reparsed, 'did reparse');
     done();
   });
 });
@@ -136,16 +120,12 @@ test('inserting new top-level node causes reparse of post', (assert) => {
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let reparsed = false;
-  editor.didReparse(() => reparsed = true);
-
   let span = document.createElement('span');
   span.appendChild(document.createTextNode('123'));
   editorElement.appendChild(span);
 
   setTimeout(() => {
     assert.postIsSimilar(editor.post, expected);
-    assert.ok(reparsed, 'did reparse');
     done();
   });
 });
@@ -159,16 +139,12 @@ test('inserting node into blank post causes reparse', (assert) => {
     return post();
   });
 
-  let reparsed = false;
-  editor.didReparse(() => reparsed = true);
-
   let span = document.createElement('span');
   span.appendChild(document.createTextNode('123'));
   editorElement.appendChild(span);
 
   setTimeout(() => {
     assert.postIsSimilar(editor.post, expected);
-    assert.ok(reparsed, 'did reparse');
     done();
   });
 });
@@ -190,17 +166,12 @@ test('after reparsing post, mutations still handled properly', (assert) => {
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let reparsed = false;
-  editor.didReparse(() => reparsed = true);
-
   let span = document.createElement('span');
   span.appendChild(document.createTextNode('123'));
   editorElement.appendChild(span);
 
   setTimeout(() => {
     assert.postIsSimilar(editor.post, expected1);
-    assert.ok(reparsed, 'did reparse');
-    reparsed = false;
 
     let node = editorElement.firstChild.firstChild;
     assert.equal(node.textContent, 'abc', 'precond - correct node');
@@ -208,7 +179,6 @@ test('after reparsing post, mutations still handled properly', (assert) => {
     node.textContent = 'def';
 
     setTimeout(() => {
-      assert.ok(reparsed, 'reparsed again');
       assert.postIsSimilar(editor.post, expected2);
 
       done();

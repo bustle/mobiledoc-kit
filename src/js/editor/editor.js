@@ -540,16 +540,6 @@ class Editor {
     this.addCallback(CALLBACK_QUEUES.CURSOR_DID_CHANGE, callback);
   }
 
-  /**
-   * @method didReparse
-   * @param {Function} callback This callback is called after any part of the
-   *        post is reparsed
-   * @public
-   */
-  didReparse(callback) {
-    this.addCallback(CALLBACK_QUEUES.DID_REPARSE, callback);
-  }
-
   _setupListeners() {
     ELEMENT_EVENTS.forEach(eventName => {
       this.addEventListener(this.element, eventName,
