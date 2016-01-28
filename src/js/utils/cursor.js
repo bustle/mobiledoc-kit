@@ -81,7 +81,7 @@ const Cursor = class Cursor {
   }
 
   _findNodeForPosition(position) {
-    const { section } = position;
+    let { section } = position;
     let node, offset;
     if (section.isCardSection) {
       offset = 0;
@@ -94,9 +94,20 @@ const Cursor = class Cursor {
       node = section.renderNode.element;
       offset = 0;
     } else {
-      const {marker, offsetInMarker} = position;
-      node = marker.renderNode.element;
-      offset = offsetInMarker;
+      let {marker, offsetInMarker} = position;
+      if (marker.isAtom) {
+        if (offsetInMarker > 0) {
+          // FIXME -- if there is a next marker, focus on it?
+          offset = 0;
+          node = marker.renderNode.tailTextNode;
+        } else {
+          offset = 0;
+          node = marker.renderNode.headTextNode;
+        }
+      } else {
+        node = marker.renderNode.element;
+        offset = offsetInMarker;
+      }
     }
 
     return {node, offset};

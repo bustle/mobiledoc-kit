@@ -1,3 +1,4 @@
+import Atom from '../models/atom';
 import Post from '../models/post';
 import MarkupSection from '../models/markup-section';
 import ListSection from '../models/list-section';
@@ -100,6 +101,12 @@ export default class PostNodeBuilder {
     const marker = new Marker(value, markups);
     marker.builder = this;
     return marker;
+  }
+
+  createAtom(name, text, payload={}, markups=[]) {
+    const atom = new Atom(name, text, payload, markups);
+    atom.builder = this;
+    return atom;
   }
 
   /**

@@ -10,6 +10,14 @@ const cards = [{
   edit() {}
 }];
 
+const atoms = [{
+  name: 'my-atom',
+  type: 'dom',
+  render() {
+    return document.createTextNode('my-atom');
+  }
+}];
+
 let editor, editorElement;
 
 module('Acceptance: Cursor Position', {
@@ -215,4 +223,118 @@ test('selecting the entire editor element reports a selection range of the entir
   assert.ok(offsets.tail.section === editor.post.sections.tail,
             'tail section correct');
   assert.equal(offsets.tail.offset, 4, 'tail offset equals section length');
+});
+
+test('when at the head of an atom', assert => {
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [
+        marker('aa'),
+        atom('my-atom'),
+        marker('cc')
+      ])
+    ]);
+  // TODO just make 0.3.0 default
+  }, '0.3.0');
+  editor = new Editor({mobiledoc, atoms});
+  editor.render(editorElement);
+
+  let atomWrapper = editor.post.sections.head.markers.objectAt(1).renderNode.element;
+
+  // Before zwnj
+  //
+  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 0);
+  let range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+
+  // After zwnj
+  //
+  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 1);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+
+  // On wrapper
+  //
+  Helpers.dom.moveCursorTo(atomWrapper, 1);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 3');
+
+  // After wrapper
+  //
+  Helpers.dom.moveCursorTo(atomWrapper.previousSibling, 2);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+});
+
+test('when at the tail of an atom', assert => {
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [
+        marker('aa'),
+        atom('my-atom'),
+        marker('cc')
+      ])
+    ]);
+  // TODO just make 0.3.0 default
+  }, '0.3.0');
+  editor = new Editor({mobiledoc, atoms});
+  editor.render(editorElement);
+
+  let atomWrapper = editor.post.sections.head.markers.objectAt(1).renderNode.element;
+
+  // Before zwnj
+  //
+  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 0);
+  let range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+
+  // After zwnj
+  //
+  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 1);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+
+  // On wrapper
+  //
+  Helpers.dom.moveCursorTo(atomWrapper, 2);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+
+  // After wrapper
+  //
+  Helpers.dom.moveCursorTo(atomWrapper.nextSibling, 0);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
 });

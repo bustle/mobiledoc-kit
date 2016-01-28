@@ -20,7 +20,8 @@ function build(treeFn) {
     marker        : (...args) => builder.createMarker(...args),
     listSection   : (...args) => builder.createListSection(...args),
     listItem      : (...args) => builder.createListItem(...args),
-    cardSection   : (...args) => builder.createCardSection(...args)
+    cardSection   : (...args) => builder.createCardSection(...args),
+    atom          : (...args) => builder.createAtom(...args)
   };
 
   return treeFn(simpleBuilder);

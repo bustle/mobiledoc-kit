@@ -315,6 +315,7 @@ function fromHTML(html) {
 
 const DOMHelper = {
   moveCursorTo,
+  selectRange,
   selectText,
   clearSelection,
   triggerEvent,
