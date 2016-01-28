@@ -10,6 +10,10 @@ export default class Set {
     }
   }
 
+  get length() {
+    return this.items.length;
+  }
+
   has(item) {
     return this.items.indexOf(item) !== -1;
   }

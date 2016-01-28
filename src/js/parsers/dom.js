@@ -194,6 +194,7 @@ export default class DOMParser {
         renderNode = renderTree.buildRenderNode(marker);
         renderNode.element = textNode;
         renderNode.markClean();
+        section.renderNode.markDirty();
 
         let previousRenderNode = previousMarker && previousMarker.renderNode;
         section.markers.insertAfter(marker, previousMarker);

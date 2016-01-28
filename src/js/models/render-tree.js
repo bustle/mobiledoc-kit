@@ -12,6 +12,12 @@ export default class RenderTree {
   get rootNode() {
     return this._rootNode;
   }
+  /**
+   * @return {Boolean}
+   */
+  get isDirty() {
+    return this.rootNode && this.rootNode.isDirty;
+  }
   /*
    * @return {DOMNode} The root DOM element in this tree
    */

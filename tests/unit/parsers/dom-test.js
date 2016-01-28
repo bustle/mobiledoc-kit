@@ -1,8 +1,6 @@
 import DOMParser from 'mobiledoc-kit/parsers/dom';
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Helpers from '../../test-helpers';
-import { Editor } from 'mobiledoc-kit';
-import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 
 const {module, test} = Helpers;
@@ -68,77 +66,6 @@ test('#parse can parse tabs', (assert) => {
   let s1 = post.sections.head;
   assert.equal(s1.markers.length, 1, 's1 has 1 marker');
   assert.equal(s1.markers.head.value, `a${TAB}b`);
-});
-
-test('editor#reparse catches changes to section', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) =>
-    post([
-      markupSection('p', [marker('the marker')])
-    ])
-  );
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  assert.hasElement('#editor p:contains(the marker)', 'precond - rendered correctly');
-
-  const p = $('#editor p:eq(0)')[0];
-  p.childNodes[0].textContent = 'the NEW marker';
-
-  // In Firefox, changing the text content changes the selection, so re-set it
-  Helpers.dom.moveCursorTo(p.childNodes[0]);
-
-  editor.reparse();
-
-  const section = editor.post.sections.head;
-  assert.equal(section.text, 'the NEW marker');
-});
-
-test('editor#reparse parses spaces and breaking spaces', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) =>
-    post([
-      markupSection('p', [marker('the marker')])
-    ])
-  );
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  assert.hasElement('#editor p:contains(the marker)', 'precond - rendered correctly');
-
-  const p = $('#editor p:eq(0)')[0];
-  p.childNodes[0].textContent = `some ${NO_BREAK_SPACE}text ${NO_BREAK_SPACE}${NO_BREAK_SPACE}for ${NO_BREAK_SPACE} ${NO_BREAK_SPACE}you`;
-
-  // In Firefox, changing the text content changes the selection, so re-set it
-  Helpers.dom.moveCursorTo(p.childNodes[0]);
-
-  editor.reparse();
-
-  const section = editor.post.sections.head;
-  assert.equal(section.text, 'some  text   for    you');
-});
-
-test('editor#reparse catches changes to list section', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, listSection, listItem, marker}) =>
-    post([
-      listSection('ul', [
-        listItem([marker('the list item')])
-      ])
-    ])
-  );
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  assert.hasElement('#editor li:contains(list item)', 'precond - rendered correctly');
-
-  const li = $('#editor li:eq(0)')[0];
-  li.childNodes[0].textContent = 'the NEW list item';
-
-  // In Firefox, changing the text content changes the selection, so re-set it
-  Helpers.dom.moveCursorTo(li.childNodes[0]);
-
-  editor.reparse();
-
-  const listItem = editor.post.sections.head.items.head;
-  assert.equal(listItem.text, 'the NEW list item');
 });
 
 test('parse empty content', (assert) => {
