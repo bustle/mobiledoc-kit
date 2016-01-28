@@ -12,6 +12,7 @@ export default class Section extends LinkedItem {
     super();
     assert('Cannot create section without type', !!type);
     this.type = type;
+    this.isSection = true;
     this.isMarkerable = false;
     this.isNested = false;
     this.isSection = true;

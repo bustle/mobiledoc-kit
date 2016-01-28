@@ -39,6 +39,7 @@ import {
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import { TAB, SPACE } from 'mobiledoc-kit/utils/characters';
 import assert from '../utils/assert';
+import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
@@ -89,10 +90,6 @@ class Editor {
     DEFAULT_TEXT_EXPANSIONS.forEach(e => this.registerExpansion(e));
     DEFAULT_KEY_COMMANDS.forEach(kc => this.registerKeyCommand(kc));
 
-    this._mutationObserver = new MutationObserver(() => {
-      this.handleInput();
-    });
-    this._isMutationObserved = false;
     this._parser   = new DOMParser(this.builder);
     this._renderer = new Renderer(this, this.cards, this.unknownCardHandler, this.cardOptions);
 
@@ -137,9 +134,9 @@ class Editor {
     }
 
     this.runCallbacks(CALLBACK_QUEUES.WILL_RENDER);
-    this.removeMutationObserver();
-    this._renderer.render(this._renderTree);
-    this.ensureMutationObserver();
+    this._mutationHandler.suspendObservation(() => {
+      this._renderer.render(this._renderTree);
+    });
     this.runCallbacks(CALLBACK_QUEUES.DID_RENDER);
   }
 
@@ -154,6 +151,8 @@ class Editor {
     clearChildNodes(element);
 
     this.element = element;
+    this._mutationHandler = new MutationHandler(this);
+    this._mutationHandler.startObserving();
 
     if (this.isEditable === null) {
       this.enableEditing();
@@ -317,33 +316,33 @@ class Editor {
     setData(this.element, 'placeholder', placeholder);
   }
 
-  /**
-   * types of input to handle:
-   *   * delete from beginning of section
-   *       joins 2 sections
-   *   * delete when multiple sections selected
-   *       removes wholly-selected sections,
-   *       joins the partially-selected sections
-   *   * hit enter (handled by capturing 'keydown' for enter key and `handleNewline`)
-   *       if anything is selected, delete it first, then
-   *       split the current marker at the cursor position,
-   *         schedule removal of every marker after the split,
-   *         create new section, append it to post
-   *         append the after-split markers onto the new section
-   *         rerender -- this should render the new section at the appropriate spot
-   */
-  handleInput() {
-    this.reparse();
+  _reparsePost() {
+    this.post = this._parser.parse(this.element);
+    this._renderTree = new RenderTree(this.post);
+    clearChildNodes(this.element);
+    this.rerender();
+
+    this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
+    this.didUpdate();
   }
 
-  reparse() {
-    this._reparseCurrentSection();
+  _reparseSections(sections=[]) {
+    let currentRange;
+    sections.forEach(section => {
+      this._parser.reparseSection(section, this._renderTree);
+    });
     this._removeDetachedSections();
 
-    // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
-    // postEditor.
+    if (this._renderTree.isDirty) {
+      currentRange = this.range;
+    }
+
     this.run(() => {});
     this.rerender();
+    if (currentRange) {
+      this.selectRange(currentRange);
+    }
+
     this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
     this.didUpdate();
   }
@@ -389,13 +388,6 @@ class Editor {
     }
   }
 
-  _reparseCurrentSection() {
-    const {headSection:currentSection } = this.cursor.offsets;
-    if (currentSection) {
-      this._parser.reparseSection(currentSection, this._renderTree);
-    }
-  }
-
   serialize() {
     return mobiledocRenderers.render(this.post);
   }
@@ -405,32 +397,15 @@ class Editor {
     this._views = [];
   }
 
-  ensureMutationObserver() {
-    if (!this._isMutationObserved) {
-      this._mutationObserver.observe(this.element, {
-        characterData: true,
-        childList: true,
-        subtree: true
-      });
-      this._isMutationObserved = true;
-    }
-  }
-
-  removeMutationObserver() {
-    if (this._isMutationObserved) {
-      this._mutationObserver.disconnect();
-      this._isMutationObserved = false;
-    }
-  }
-
   destroy() {
     this._isDestroyed = true;
     if (this.cursor.hasCursor()) {
       this.cursor.clearSelection();
       this.element.blur();
     }
-    this.removeMutationObserver();
-    this._mutationObserver = null;
+    if (this._mutationHandler) {
+      this._mutationHandler.destroy();
+    }
     this.removeAllEventListeners();
     this.removeAllViews();
     this._renderer.destroy();
@@ -665,8 +640,7 @@ class Editor {
         this.handleNewline(event);
         break;
       case key.isPrintable():
-      {
-        let { offsets: range } = this.cursor;
+        let { range } = this;
         let { isCollapsed } = range;
         let nextPosition = range.head;
 
@@ -696,7 +670,6 @@ class Editor {
           event.preventDefault();
         }
         break;
-      }
     }
   }
 
