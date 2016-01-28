@@ -162,7 +162,7 @@ test('#parse skips STYLE nodes', (assert) => {
   assert.equal(sections.length, 0, 'does not parse style');
 });
 
-test('#parse skips Comment nodes', (assert) => {
+test('#parse skips top-level Comment nodes', (assert) => {
   let element = buildDOM(`
     <!--Some comment-->
   `).firstChild;
@@ -170,4 +170,17 @@ test('#parse skips Comment nodes', (assert) => {
   let sections = parser.parse(element);
 
   assert.equal(sections.length, 0, 'does not parse comments');
+});
+
+test('#parse skips nested Comment nodes', (assert) => {
+  let element = buildDOM(`
+   <p><!--Some comment-->some text<!-- another comment --></p>
+  `).firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1);
+  let section = sections[0];
+  assert.equal(section.text, 'some text', 'parses text surrounded by comments');
+  assert.equal(section.markers.length, 1, 'only 1 marker');
 });
