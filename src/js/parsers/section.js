@@ -140,9 +140,6 @@ export default class SectionParser {
       case NODE_TYPES.ELEMENT:
         this.parseElementNode(node);
         break;
-      default:
-        assert(`parseNode got unexpected element type ${node.nodeType} ` + node,
-               false);
     }
   }
 
