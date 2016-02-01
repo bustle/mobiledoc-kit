@@ -16,14 +16,19 @@ function render(renderTree, cards=[]) {
   return renderer.render(renderTree);
 }
 
+let editor, editorElement;
 module('Unit: Renderer: Editor-Dom', {
   beforeEach() {
     builder = new PostNodeBuilder();
+    editorElement = $('#editor')[0];
   },
   afterEach() {
     if (renderer) {
       renderer.destroy();
       renderer = null;
+    }
+    if (editor) {
+      editor.destroy();
     }
   }
 });
@@ -667,6 +672,45 @@ test('#destroy is safe to call if renderer has not rendered', (assert) => {
   renderer.destroy();
 
   assert.ok(true, 'ok to destroy');
+});
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/306
+test('rerender after adding markup to a marker when the marker siblings have that markup', (assert) => {
+  let strong, expected;
+  let post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    strong = markup('strong');
+    expected = post([markupSection('p', [marker('aXc', [strong])])]);
+    return post([markupSection('p', [marker('a', [strong]), marker('X'), marker('c', [strong])])]);
+  });
+
+  let renderTree = new RenderTree(post);
+  render(renderTree);
+
+  let markers = post.sections.head.markers.toArray();
+  assert.equal(markers.length, 3);
+
+  // step 1: add markup to the marker
+  markers[1].addMarkup(strong);
+
+  // step 2, join the markers
+  markers[1].value = 'aX';
+  markers[1].renderNode.markDirty();
+  markers[0].renderNode.scheduleForRemoval();
+  markers[0].section.markers.remove(markers[0]);
+
+  markers[2].value = 'aXc';
+  markers[2].renderNode.markDirty();
+  markers[1].renderNode.scheduleForRemoval();
+  markers[1].section.markers.remove(markers[1]);
+
+  render(renderTree);
+
+  assert.renderTreeIsEqual(renderTree, expected);
+
+  markers = post.sections.head.markers.toArray();
+  assert.equal(markers.length, 1);
+  assert.ok(markers[0].hasMarkup(strong), 'marker has strong');
+  assert.equal(markers[0].value, 'aXc');
 });
 
 /*

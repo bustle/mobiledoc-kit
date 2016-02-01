@@ -236,3 +236,34 @@ test('typing enter splits lines, sets cursor', (assert) => {
     done();
   }, 0);
 });
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/306
+test('adding/removing bold text between two bold markers works', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, markup}) => {
+    return post([
+      markupSection('p', [
+        marker('abc', [markup('b')]),
+        marker('123', []),
+        marker('def', [markup('b')])
+      ])
+    ]);
+  });
+
+  // preconditions
+  assert.hasElement('#editor b:contains(abc)');
+  assert.hasElement('#editor b:contains(def)');
+  assert.hasNoElement('#editor b:contains(123)');
+
+  Helpers.dom.selectText('123', editorElement);
+  editor.run(postEditor => postEditor.toggleMarkup('b'));
+
+  assert.hasElement('#editor b:contains(abc123def)', 'adds B to selection');
+
+  assert.equal(Helpers.dom.getSelectedText(), '123', '123 still selected');
+
+  editor.run(postEditor => postEditor.toggleMarkup('b'));
+
+  assert.hasElement('#editor b:contains(abc)', 'removes B from middle, leaves abc');
+  assert.hasElement('#editor b:contains(def)', 'removes B from middle, leaves def');
+  assert.hasNoElement('#editor b:contains(123)', 'removes B from middle');
+});

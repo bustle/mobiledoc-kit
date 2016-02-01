@@ -22,7 +22,7 @@ export const SPACE = ' ';
 export const ZWNJ = '\u200c';
 
 function createElementFromMarkup(doc, markup) {
-  var element = doc.createElement(markup.tagName);
+  let element = doc.createElement(markup.tagName);
   Object.keys(markup.attributes).forEach(k => {
     element.setAttribute(k, markup.attributes[k]);
   });
@@ -120,30 +120,44 @@ function getNextMarkerElement(renderNode) {
   return element;
 }
 
-function renderMarker(marker, element, previousRenderNode) {
+/**
+ * Render the marker
+ * @param {Marker} marker the marker to render
+ * @param {DOMNode} element the element to attach the rendered marker to
+ * @param {RenderNode} [previousRenderNode] The render node before this one, which
+ *        affects the determination of where to insert this rendered marker.
+ * @return {element, markupElement} The element (textNode) that has the text for
+ *         this marker, and the outermost rendered element. If the marker has no
+ *         markups, element and markupElement will be the same textNode
+ */
+function renderMarker(marker, parentElement, previousRenderNode) {
   let text = renderHTMLText(marker);
 
-  let textNode = document.createTextNode(text);
-  let currentElement = textNode;
+  let element = document.createTextNode(text);
+  let markupElement = element;
   let markup;
 
   const openTypes = marker.openedMarkups;
   for (let j=openTypes.length-1;j>=0;j--) {
     markup = openTypes[j];
     let openedElement = createElementFromMarkup(document, markup);
-    openedElement.appendChild(currentElement);
-    currentElement = openedElement;
+    openedElement.appendChild(markupElement);
+    markupElement = openedElement;
   }
+
+  let referenceElement;
 
   if (previousRenderNode) {
     let previousSibling = previousRenderNode.element;
-    let previousSiblingPenultimate = penultimateParentOf(previousSibling, element);
-    element.insertBefore(currentElement, previousSiblingPenultimate.nextSibling);
+    let previousSiblingPenultimate = penultimateParentOf(previousSibling, parentElement);
+    referenceElement = previousSiblingPenultimate.nextSibling;
   } else {
-    element.insertBefore(currentElement, element.firstChild);
+    referenceElement = parentElement.firstChild;
   }
 
-  return textNode;
+  parentElement.insertBefore(markupElement, referenceElement);
+
+  return { element, markupElement };
 }
 
 function attachRenderNodeElementToDOM(renderNode, originalElement) {
@@ -274,7 +288,11 @@ class Visitor {
       parentElement = renderNode.parent.element;
     }
 
-    renderNode.element = renderMarker(marker, parentElement, renderNode.prev);
+    let { element, markupElement } =
+      renderMarker(marker, parentElement, renderNode.prev);
+
+    renderNode.element = element;
+    renderNode.markupElement = markupElement;
   }
 
   [IMAGE_SECTION_TYPE](renderNode, section) {
@@ -342,19 +360,15 @@ let destroyHooks = {
     // FIXME before we render marker, should delete previous renderNode's element
     // and up until the next marker element
 
-    let element = renderNode.element;
-    let nextMarkerElement = getNextMarkerElement(renderNode);
-    while (element.parentNode && element.parentNode !== nextMarkerElement) {
-      element = element.parentNode;
-    }
+    let { markupElement } = renderNode;
 
     if (marker.section) {
       marker.section.markers.remove(marker);
     }
 
-    if (element.parentNode) {
+    if (markupElement.parentNode) {
       // if no parentNode, the browser already removed this element
-      element.parentNode.removeChild(element);
+      markupElement.parentNode.removeChild(markupElement);
     }
   },
 
