@@ -13,6 +13,9 @@ export default class RenderNode extends LinkedItem {
     this._childNodes = null;
     this._element = null;
     this.renderTree = renderTree;
+
+    // RenderNodes for Markers keep track of their markupElement
+    this.markupElement = null;
   }
   isAttached() {
     assert('Cannot check if a renderNode is attached without an element.',
