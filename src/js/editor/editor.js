@@ -648,9 +648,9 @@ class Editor {
         this.handleNewline(event);
         break;
       case key.isPrintable():
-        let { range } = this;
+        range = this.range;
         let { isCollapsed } = range;
-        let nextPosition = range.head;
+        nextPosition = range.head;
 
         if (this.handleExpansion(event)) {
           event.preventDefault();
