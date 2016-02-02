@@ -242,3 +242,12 @@ hr {
   font-weight: bold;
   background-color: aliceblue;
 }
+
+.mention-atom {
+  background-color: #CCC;
+  border-radius: 5px;
+  color: #FFF;
+  padding: 0 5px;
+  font-size: 0.75em;
+}
+

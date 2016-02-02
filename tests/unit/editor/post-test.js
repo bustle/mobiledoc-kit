@@ -34,7 +34,10 @@ function postEditorWithMobiledoc(treeFn) {
 
 function renderBuiltAbstract(post) {
   mockEditor.post = post;
-  let renderer = new EditorDomRenderer(mockEditor, [], () => {}, {});
+  let unknownCardHandler = () => {};
+  let unknownAtomHandler = () => {};
+  let renderer = new EditorDomRenderer(
+    mockEditor, [], [], unknownCardHandler, unknownAtomHandler);
   let renderTree = new RenderTree(post);
   renderer.render(renderTree);
   return mockEditor;
@@ -44,7 +47,8 @@ let renderedRange;
 function buildEditorWithMobiledoc(builderFn) {
   let mobiledoc = Helpers.mobiledoc.build(builderFn);
   let unknownCardHandler = () => {};
-  editor = new Editor({mobiledoc, unknownCardHandler});
+  let unknownAtomHandler = () => {};
+  editor = new Editor({mobiledoc, unknownCardHandler, unknownAtomHandler});
   editor.render(editorElement);
   editor.renderRange = function() {
     renderedRange = this.range;
@@ -770,7 +774,54 @@ test('markers with identical non-attribute markups get coalesced after applying 
   assert.ok(section.markers.head.hasMarkup(strong), 'bold marker has bold');
 });
 
-test('#removeMarkup silently does nothing when invoked with an empty range', (assert) => {
+test('markers do not get coalesced with atoms', (assert) => {
+  let strong, section;
+  let post = Helpers.postAbstract.build(({post, markupSection, marker, atom, markup}) => {
+    strong = markup('strong');
+    section = markupSection('p', [atom('the-atom', 'A'), marker('b',[strong])]);
+    return post([section]);
+  });
+  renderBuiltAbstract(post);
+
+  // removing the strong from the "b"
+  let range = Range.create(section, 0, section, 2);
+  postEditor = new PostEditor(mockEditor);
+  postEditor.removeMarkupFromRange(range, strong);
+  postEditor.complete();
+
+  assert.equal(section.markers.length, 2, 'still 2 markers');
+  assert.equal(section.markers.head.value, 'A', 'head marker value is correct');
+  assert.ok(section.markers.head.isAtom, 'head marker is atom');
+  assert.equal(section.markers.tail.value, 'b', 'tail marker value is correct');
+  assert.ok(section.markers.tail.isMarker, 'tail marker is marker');
+
+  assert.ok(!section.markers.head.hasMarkup(strong), 'head marker has no bold');
+  assert.ok(!section.markers.tail.hasMarkup(strong), 'tail marker has no bold');
+});
+
+test('neighboring atoms do not get coalesced', (assert) => {
+  let strong, section;
+  let post = Helpers.postAbstract.build(({post, markupSection, marker, atom, markup}) => {
+    strong = markup('strong');
+    section = markupSection('p', [
+      atom('the-atom', 'A', {}, [strong]),
+      atom('the-atom', 'A', {}, [strong])
+    ]);
+    return post([section]);
+  });
+  renderBuiltAbstract(post);
+
+  let range = Range.create(section, 0, section, 2);
+  postEditor = new PostEditor(mockEditor);
+  postEditor.removeMarkupFromRange(range, strong);
+  postEditor.complete();
+
+  assert.equal(section.markers.length, 2, 'atoms not coalesced');
+  assert.ok(!section.markers.head.hasMarkup(strong));
+  assert.ok(!section.markers.tail.hasMarkup(strong));
+});
+
+test('#removeMarkupFromRange silently does nothing when invoked with an empty range', (assert) => {
   let section, markup;
   const post = Helpers.postAbstract.build(({
     post, markupSection, marker, markup: buildMarkup
@@ -790,6 +841,65 @@ test('#removeMarkup silently does nothing when invoked with an empty range', (as
   assert.equal(section.markers.length, 1, 'similar markers are coalesced');
   assert.equal(section.markers.head.value, 'abc', 'marker value is correct');
   assert.ok(!section.markers.head.hasMarkup(markup), 'marker has no markup');
+});
+
+test('#removeMarkupFromRange splits markers when necessary', (assert) => {
+  let bold, section;
+  let post = Helpers.postAbstract.build(
+    ({post, marker, markup, markupSection}) => {
+    bold = markup('b');
+    section = markupSection('p', [
+      marker('abc', [bold]),
+      marker('def')
+    ]);
+    return post([section]);
+  });
+
+  renderBuiltAbstract(post);
+
+  let range = Range.create(section, 'a'.length,
+                           section, 'abcd'.length);
+
+  postEditor.removeMarkupFromRange(range, bold);
+  postEditor.complete();
+
+  assert.equal(section.text, 'abcdef', 'text still correct');
+  assert.equal(section.markers.length, 2, '2 markers');
+
+  let [head, tail] = section.markers.toArray();
+  assert.equal(head.value, 'a', 'head marker value');
+  assert.ok(head.hasMarkup(bold), 'head has bold');
+  assert.equal(tail.value, 'bcdef', 'tail marker value');
+  assert.ok(!tail.hasMarkup(bold), 'tail has no bold');
+});
+
+test('#removeMarkupFromRange handles atoms correctly', (assert) => {
+  let bold, section;
+  let post = Helpers.postAbstract.build(
+    ({post, marker, markup, atom, markupSection}) => {
+    bold = markup('b');
+    section = markupSection('p', [
+      atom('the-atom', 'n/a', {}, [bold]),
+      marker('X')
+    ]);
+    return post([section]);
+  });
+
+  renderBuiltAbstract(post);
+
+  let range = Range.create(section, 0, section, 2);
+
+  postEditor.removeMarkupFromRange(range, bold);
+  postEditor.complete();
+
+  assert.equal(section.markers.length, 2, '2 markers');
+
+  let [head, tail] = section.markers.toArray();
+  assert.ok(head.isAtom, 'head is atom');
+  assert.ok(!head.hasMarkup(bold), 'head has no bold');
+
+  assert.equal(tail.value, 'X', 'tail marker value');
+  assert.ok(!tail.hasMarkup(bold), 'tail has no bold');
 });
 
 test('#addMarkupToRange silently does nothing when invoked with an empty range', (assert) => {
@@ -1590,6 +1700,36 @@ test('#toggleMarkup when the editor has no cursor', (assert) => {
   assert.ok(document.activeElement !== editorElement,
             'active element is not editor element');
   assert.ok(renderedRange.isBlank, 'rendered range is blank');
+});
+
+test('#insertMarkers inserts an atom', (assert) => {
+  let toInsert, expected;
+  Helpers.postAbstract.build(({post, markupSection, marker, markup, atom}) => {
+    toInsert = [
+      atom('simple-atom', '123', [markup('b')])
+    ];
+    expected = post([
+      markupSection('p', [
+        marker('abc'),
+        atom('simple-atom', '123', [markup('b')]),
+        marker('def')
+    ])]);
+  });
+
+  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abcdef')])]);
+  });
+  let position = new Position(editor.post.sections.head, 'abc'.length);
+  postEditor = new PostEditor(editor);
+  postEditor.insertMarkers(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(
+    renderedRange.head,
+    new Position(editor.post.sections.head, 4)
+  );
 });
 
 test('#insertMarkers inserts the markers in middle, merging markups', (assert) => {

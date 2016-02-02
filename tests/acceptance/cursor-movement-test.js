@@ -2,6 +2,7 @@ import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import { supportsSelectionExtend } from '../helpers/browsers';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const { test, module } = Helpers;
 
@@ -12,7 +13,16 @@ const cards = [{
   edit() {}
 }];
 
+const atoms = [{
+  name: 'my-atom',
+  type: 'dom',
+  render() {
+    return document.createTextNode('my-atom');
+  }
+}];
+
 let editor, editorElement;
+let editorOptions = {cards, atoms};
 
 module('Acceptance: Cursor Movement', {
   beforeEach() {
@@ -80,7 +90,6 @@ test('left arrow when at the start of a card moves the cursor to the previous se
   assert.positionIsEqual(offsets.tail, sectionTail);
 
   // After zwnj
-  sectionElement = editor.post.sections.tail.renderNode.element;
   Helpers.dom.moveCursorTo(sectionElement.firstChild, 1);
   Helpers.dom.triggerLeftArrowKey(editor);
   offsets = editor.cursor.offsets;
@@ -168,7 +177,6 @@ test('right arrow at end of card moves cursor to next section', assert => {
   assert.positionIsEqual(offsets.tail, sectionHead);
 
   // After zwnj
-  sectionElement = editor.post.sections.head.renderNode.element;
   Helpers.dom.moveCursorTo(sectionElement.lastChild, 1);
   Helpers.dom.triggerRightArrowKey(editor);
   offsets = editor.cursor.offsets;
@@ -210,6 +218,162 @@ test('right arrow at end of card moves cursor to next list item', assert => {
 
   assert.positionIsEqual(offsets.head, itemHead);
   assert.positionIsEqual(offsets.tail, itemHead);
+});
+
+test('left arrow when at the head of an atom moves the cursor left off the atom', assert => {
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [
+        marker('aa'),
+        atom('my-atom'),
+        marker('cc')
+      ])
+    ]);
+  // TODO just make 0.3.0 default
+  }, '0.3.0');
+  editor = new Editor({mobiledoc, atoms});
+  editor.render(editorElement);
+
+  let atomWrapper = editor.post.sections.head.markers.objectAt(1).renderNode.element;
+
+  // Before zwnj, assert moving left
+  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 0);
+  Helpers.dom.triggerLeftArrowKey(editor);
+  let range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+
+  // After zwnj, assert moving left
+  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 1);
+  Helpers.dom.triggerLeftArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+
+  // On wrapper, assert moving left
+  Helpers.dom.moveCursorTo(atomWrapper, 3);
+  Helpers.dom.triggerLeftArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+
+  // After wrapper, asseat moving left
+  Helpers.dom.moveCursorTo(atomWrapper.nextSibling, 0);
+  Helpers.dom.triggerLeftArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 2,
+               'Cursor is positioned at offset 2');
+});
+
+test('right arrow when at the head of an atom moves the cursor across the atom', assert => {
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [
+        marker('aa'),
+        atom('my-atom'),
+        marker('cc')
+      ])
+    ]);
+  // TODO just make 0.3.0 default
+  }, '0.3.0');
+  editor = new Editor({mobiledoc, atoms});
+  editor.render(editorElement);
+
+  let atomWrapper = editor.post.sections.head.markers.objectAt(1).renderNode.element;
+
+  // Before zwnj, assert moving right
+  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 0);
+  Helpers.dom.triggerRightArrowKey(editor);
+  let range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+
+  // After zwnj, assert moving right
+  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 1);
+  Helpers.dom.triggerRightArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+
+  // On wrapper, assert moving right
+  Helpers.dom.moveCursorTo(atomWrapper, 1);
+  Helpers.dom.triggerRightArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+
+  // After wrapper, assert moving right
+  Helpers.dom.moveCursorTo(atomWrapper.previousSibling, 2);
+  Helpers.dom.triggerRightArrowKey(editor);
+  range = editor.range;
+
+  assert.ok(range.head.section === editor.post.sections.head,
+            'Cursor is positioned on first section');
+  assert.equal(range.head.offset, 3,
+               'Cursor is positioned at offset 3');
+});
+
+test('left/right arrows moves cursor l-to-r and r-to-l across atom', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+    return post([markupSection('p', [atom('my-atom', 'first')])]);
+  }, editorOptions);
+
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  Helpers.dom.triggerLeftArrowKey(editor);
+  assert.positionIsEqual(editor.range.head, editor.post.headPosition());
+  assert.positionIsEqual(editor.range.tail, editor.post.headPosition());
+
+  editor.selectRange(new Range(editor.post.headPosition()));
+  Helpers.dom.triggerRightArrowKey(editor);
+  assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
+  assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
+});
+
+test('left arrow at start atom moves to end of prev section', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [atom('my-atom', 'first')])
+    ]);
+  }, editorOptions);
+
+  editor.selectRange(new Range(editor.post.sections.tail.headPosition()));
+  Helpers.dom.triggerLeftArrowKey(editor);
+  assert.positionIsEqual(editor.range.head, editor.post.sections.head.tailPosition());
+});
+
+test('right arrow at end of end atom moves to start of next section', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+    return post([
+      markupSection('p', [atom('my-atom', 'first')]),
+      markupSection('p', [marker('abc')])
+    ]);
+  }, editorOptions);
+
+  editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
+  Helpers.dom.triggerRightArrowKey(editor);
+  assert.positionIsEqual(editor.range.head, editor.post.sections.tail.headPosition());
 });
 
 module('Acceptance: Cursor Movement w/ shift', {
@@ -415,4 +579,20 @@ test('right arrow at end of card moves to next list item', (assert) => {
 
   assert.positionIsEqual(offsets.head, cardTail);
   assert.positionIsEqual(offsets.tail, itemHead);
+});
+
+test('left/right arrows move selection l-to-r and r-to-l across atom', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+    return post([markupSection('p', [atom('my-atom', 'first')])]);
+  }, editorOptions);
+
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
+  assert.positionIsEqual(editor.range.head, editor.post.headPosition());
+  assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
+
+  editor.selectRange(new Range(editor.post.headPosition()));
+  Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
+  assert.positionIsEqual(editor.range.head, editor.post.headPosition());
+  assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
 });

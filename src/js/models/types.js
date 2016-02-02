@@ -6,3 +6,4 @@ export const POST_TYPE = 'post';
 export const LIST_ITEM_TYPE = 'list-item';
 export const CARD_TYPE = 'card-section';
 export const IMAGE_SECTION_TYPE = 'image-section';
+export const ATOM_TYPE = 'atom';

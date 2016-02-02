@@ -1,5 +1,4 @@
 import { forEach } from './array-utils';
-import assert from './assert';
 
 export const NODE_TYPES = {
   ELEMENT: 1,
@@ -13,6 +12,10 @@ function isTextNode(node) {
 
 function isCommentNode(node) {
   return node.nodeType === NODE_TYPES.COMMENT;
+}
+
+function isElementNode(node) {
+  return node.nodeType === NODE_TYPES.ELEMENT;
 }
 
 // perform a pre-order tree traversal of the dom, calling `callbackFn(node)`
@@ -83,28 +86,6 @@ function normalizeTagName(tagName) {
   return tagName.toLowerCase();
 }
 
-/*
- * @param {Node} elementNode not a text node
- * @param {Node} textNode a text node
- * @param {Number} offsetInTextNode optional, the offset relative to the text node
- * @return {Number} The offset relative to all the text nodes in the element node
- */
-function findOffsetInElement(elementNode, textNode, offsetInTextNode=0) {
-  let offset = 0, found = false;
-  walkTextNodes(elementNode, _textNode => {
-    if (found) { return; }
-    if (_textNode === textNode) {
-      found = true;
-      offset += offsetInTextNode;
-    } else {
-      offset += _textNode.textContent.length;
-    }
-  });
-  assert('Unable to find offset of text node in element, it is not a child.',
-         found);
-  return offset;
-}
-
 function parseHTML(html) {
   var div = document.createElement('div');
   div.innerHTML = html;
@@ -121,6 +102,6 @@ export {
   normalizeTagName,
   isTextNode,
   isCommentNode,
-  parseHTML,
-  findOffsetInElement
+  isElementNode,
+  parseHTML
 };
