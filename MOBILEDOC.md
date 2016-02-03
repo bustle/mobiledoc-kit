@@ -37,19 +37,19 @@ The wrapper signature:
 ```
 {
   version: "0.3",                         ──── Versioning information
-  markups: [                              ──── List of markup types
+  markups: [                              ──── Ordered list of markup types
     markup,
     markup
   ],
-  atoms: [                                ──── List of atom types
+  atoms: [                                ──── Ordered list of atom types
     atom,
     atom
   ],
-  cards: [                                ──── List of card types
+  cards: [                                ──── Ordered list of card types
     card,
     card
   ],
-  sections: [                             ──── List of sections.
+  sections: [                             ──── Ordered list of sections.
     section,
     section,
     section
@@ -66,7 +66,7 @@ Markups have a tagName, and optionally an array of `attributeName, attributeValu
   version: "0.3",
   markups: [
     [tagName, optionalAttributes],        ──── Markup
-    ['em'],                               ──── Example simple markup
+    ['em'],                               ──── Example simple markup with no attributes
     ['a', ['href', 'http://google.com']], ──── Example markup with attributes
   ]
 }
@@ -125,11 +125,11 @@ Markup sections, in addition to plain text, can include markups and atoms.
     [1, "p", [
       [textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, value],
       [0, [], 0, "Example with no markup"],      ──── textTypeIdentifier for markup is always 0
-      [0, [0], 1, "Example wrapped in b tag"],
-      [0, [1], 0, "Example opening i tag"],
-      [0, [], 1, "Example closing i tag"],
-      [0, [1, 0], 1, "Example opening i tag and b tag, closing b tag"],
-      [0, [], 1, "Example closing b tag"],
+      [0, [0], 1, "Example wrapped in b tag (opened markup #0), 1 closed markup"],
+      [0, [1], 0, "Example opening i tag (opened markup with #1, 0 closed markups)"],
+      [0, [], 1, "Example closing i tag (no opened markups, 1 closed markup)"],
+      [0, [1, 0], 1, "Example opening i tag and b tag, closing b tag (opened markups #1 and #0, 1 closed markup [closes markup #1])"],
+      [0, [], 1, "Example closing b tag, (no opened markups, 1 closed markup [closes markup #0])"],
     ]],
     [1, "p", [
       [textTypeIdentifier, atomIndex, openMarkupsIndexes, numberOfClosedMarkups],
