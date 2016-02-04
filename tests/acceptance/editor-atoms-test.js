@@ -236,6 +236,56 @@ test('keystroke of enter before atom and after marker creates new section', (ass
     }));
 });
 
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/313
+test('keystroke of enter at markup section head before atom creates new section', (assert) => {
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, atom}) => {
+    expected = post([
+      markupSection('p'), markupSection('p', [atom('simple-atom')])
+    ]);
+    return post([markupSection('p', [atom('simple-atom')])]);
+  }, editorOptions);
+
+  editor.run(postEditor => {
+    postEditor.setRange(new Range(editor.post.headPosition()));
+  });
+  Helpers.dom.triggerEnter(editor);
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(editor.range.head,
+                         editor.post.sections.tail.headPosition());
+});
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/313
+test('keystroke of enter at list item head before atom creates new section', (assert) => {
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, listSection, listItem, atom, marker}) => {
+    let blankMarker = marker();
+    expected = post([
+      listSection('ul', [
+        listItem([blankMarker]),
+        listItem([atom('simple-atom', 'X')])
+      ])
+    ]);
+    return post([listSection('ul', [listItem([atom('simple-atom', 'X')])])]);
+  }, editorOptions);
+
+  editor.run(postEditor => {
+    postEditor.setRange(new Range(editor.post.headPosition()));
+  });
+  Helpers.dom.triggerEnter(editor);
+
+  assert.postIsSimilar(editor.post, expected);
+  // FIXME the render tree does not have the blank marker render node
+  // because ListItem#isBlank is true, so it simply renders a cursor-positioning
+  // `<br>` tag instead of an empy marker, so the following render tree check
+  // is not accurate:
+  // assert.renderTreeIsEqual(editor._renderTree, expected);
+  assert.positionIsEqual(editor.range.head,
+                         editor.post.sections.head.items.tail.headPosition());
+});
+
 test('marking atom with markup adds markup', (assert) => {
   editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
   editor.render(editorElement);
