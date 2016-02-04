@@ -36,7 +36,7 @@ The wrapper signature:
 
 ```
 {
-  version: "0.3",                         ──── Versioning information
+  version: "0.3.0",                         ──── Versioning information
   markups: [                              ──── Ordered list of markup types
     markup,
     markup
@@ -63,7 +63,7 @@ Markups have a tagName, and optionally an array of `attributeName, attributeValu
 
 ```
 {
-  version: "0.3",
+  version: "0.3.0",
   markups: [
     [tagName, optionalAttributes],        ──── Markup
     ['em'],                               ──── Example simple markup with no attributes
@@ -78,7 +78,7 @@ Atoms have a name, text value and arbitrary payload.
 
 ```
 {
-  version: "0.3",
+  version: "0.3.0",
   atoms: [
     [atomName, atomText, atomPayload],    ──── Atom
     ['mention', '@bob', { id: 42 }]       ──── Example 'mention' atom
@@ -92,7 +92,7 @@ Cards have a name and arbitrary payload.
 
 ```
 {
-  version: "0.3",
+  version: "0.3.0",
   cards: [
     [cardName, cardPayload],            ──── Card
     ['image', {                         ──── Example 'image' card
@@ -108,7 +108,7 @@ Markup sections, in addition to plain text, can include markups and atoms.
 
 ```
 {
-  version: "0.3",
+  version: "0.3.0",
   markups: [
     ["b"],                                ──── Markup at index 0
     ["i"]                                 ──── Markup at index 1
@@ -160,7 +160,7 @@ value of the atom will be rendered as plain text as a fallback.
 
 ```
 {
-  version: "0.3",
+  version: "0.3.0",
   cards: [
     ["card-name", { cardPayload }]
   ],
