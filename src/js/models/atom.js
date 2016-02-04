@@ -6,7 +6,7 @@ import assert from '../utils/assert';
 
 const ATOM_LENGTH = 1;
 
-export default class Atom extends LinkedItem {
+class Atom extends LinkedItem {
   constructor(name, value, payload, markups=[]) {
     super();
     this.name = name;
@@ -40,7 +40,7 @@ export default class Atom extends LinkedItem {
     return false;
   }
 
-  split(offset=0, endOffset=1) {
+  split(offset=0, endOffset=offset) {
     let markers = [];
 
     if (endOffset === 0) {
@@ -66,9 +66,9 @@ export default class Atom extends LinkedItem {
     let pre, post;
 
     if (offset === 0) {
-      ([pre, post] = [clone, blankMarker]);
-    } else if (offset === ATOM_LENGTH) {
       ([pre, post] = [blankMarker, clone]);
+    } else if (offset === ATOM_LENGTH) {
+      ([pre, post] = [clone, blankMarker]);
     } else {
       assert(`Invalid offset given to Atom#splitAtOffset: "${offset}"`, false);
     }
@@ -82,3 +82,5 @@ export default class Atom extends LinkedItem {
 }
 
 mixin(Atom, MarkuperableMixin);
+
+export default Atom;
