@@ -1,6 +1,21 @@
-<a name="0.8.0"></a>
-# 0.8.0 (2016-02-04)
+<a name="0.8.1"></a>
+## 0.8.1 (2016-02-04)
 
+
+
+
+<a name="0.8.1"></a>
+## 0.8.1 (2016-02-04)
+
+
+### demo
+
+* demo: update dependencies ([2a9d41f](https://github.com/bustlelabs/mobiledoc-kit/commit/2a9d41f))
+
+* 0.8.1 ([ee86120](https://github.com/bustlelabs/mobiledoc-kit/commit/ee86120))
+* built website from 35234813b8c468d118501e255c66b847e3048f90 ([ec8aaad](https://github.com/bustlelabs/mobiledoc-kit/commit/ec8aaad))
+* Update changelog ([3523481](https://github.com/bustlelabs/mobiledoc-kit/commit/3523481))
+* update dependencies for html and text renderers to ^0.3.0 ([144bfd3](https://github.com/bustlelabs/mobiledoc-kit/commit/144bfd3))
 
 
 
