@@ -1,6 +1,96 @@
-<a name="0.8.0-beta.1"></a>
-# 0.8.0-beta.1 (2016-01-07)
+<a name="0.8.0"></a>
+# 0.8.0 (2016-02-04)
 
+
+
+
+<a name="0.8.0"></a>
+# 0.8.0 (2016-02-04)
+
+
+* 0.8.0 ([07280ce](https://github.com/bustlelabs/mobiledoc-kit/commit/07280ce))
+* Atom deletion with keystrokes ([add705f](https://github.com/bustlelabs/mobiledoc-kit/commit/add705f))
+* Atoms should not be editable ([573453a](https://github.com/bustlelabs/mobiledoc-kit/commit/573453a))
+* Atoms with cursor movement, reparsing ([5020b91](https://github.com/bustlelabs/mobiledoc-kit/commit/5020b91))
+* Convert demo cards to 0.3.0 format, add an example Atom ([5b887b1](https://github.com/bustlelabs/mobiledoc-kit/commit/5b887b1))
+* Document and test insertMarkers for atoms ([e199416](https://github.com/bustlelabs/mobiledoc-kit/commit/e199416))
+* Don’t de-duplicate cards/atoms based on payload ([a831097](https://github.com/bustlelabs/mobiledoc-kit/commit/a831097))
+* Export the right version from 0.3 renderer ([cfbee1c](https://github.com/bustlelabs/mobiledoc-kit/commit/cfbee1c))
+* Hitting enter when atom is first in markupSection/listItem inserts newline ([1307b90](https://github.com/bustlelabs/mobiledoc-kit/commit/1307b90)), closes [#313](https://github.com/bustlelabs/mobiledoc-kit/issues/313)
+* Implement Mobiledoc parser for v0.3.0 format ([2c32894](https://github.com/bustlelabs/mobiledoc-kit/commit/2c32894))
+* Implement Mobiledoc renderer v0.3 with atom support ([a9c2d80](https://github.com/bustlelabs/mobiledoc-kit/commit/a9c2d80))
+* Implement unknownAtomHandler & lifecycle hooks ([67e556a](https://github.com/bustlelabs/mobiledoc-kit/commit/67e556a))
+* Improve atom demos ([bc3fa94](https://github.com/bustlelabs/mobiledoc-kit/commit/bc3fa94))
+* Initial atoms and Mobiledoc 0.3 design ([0a51e71](https://github.com/bustlelabs/mobiledoc-kit/commit/0a51e71))
+* Initial atoms implementation ([11158e7](https://github.com/bustlelabs/mobiledoc-kit/commit/11158e7))
+* Keep track and use markupElement for marker when rendering/destroying ([b5eaff5](https://github.com/bustlelabs/mobiledoc-kit/commit/b5eaff5)), closes [#306](https://github.com/bustlelabs/mobiledoc-kit/issues/306) [#299](https://github.com/bustlelabs/mobiledoc-kit/issues/299)
+* Make Mobiledoc 0.3 the default version ([568eef6](https://github.com/bustlelabs/mobiledoc-kit/commit/568eef6))
+* Merge pull request #309 from bustlelabs/rerender-bold-tags-306 ([d1907a0](https://github.com/bustlelabs/mobiledoc-kit/commit/d1907a0))
+* Merge pull request #311 from bustlelabs/atoms-rebased-unsquashed ([08da228](https://github.com/bustlelabs/mobiledoc-kit/commit/08da228))
+* Merge pull request #312 from bustlelabs/ctr-a-ctr-e-mac-only ([68d9182](https://github.com/bustlelabs/mobiledoc-kit/commit/68d9182))
+* Merge pull request #314 from bustlelabs/hit-enter-with-atom-313 ([aa48042](https://github.com/bustlelabs/mobiledoc-kit/commit/aa48042))
+* Refined Atom behaviors wrt parsing, rerendering ([b5957a6](https://github.com/bustlelabs/mobiledoc-kit/commit/b5957a6))
+* restrict ctr-A and ctr-E key commands to Mac ([3684551](https://github.com/bustlelabs/mobiledoc-kit/commit/3684551))
+* Update ATOMS.md, MOBILEDOC.md ([3b063de](https://github.com/bustlelabs/mobiledoc-kit/commit/3b063de))
+
+
+
+<a name="0.8.0-beta.4"></a>
+# 0.8.0-beta.4 (2016-01-28)
+
+
+* 0.8.0-beta.4 ([08f37ac](https://github.com/bustlelabs/mobiledoc-kit/commit/08f37ac))
+* Add a demo card written in Ember ([6a1015e](https://github.com/bustlelabs/mobiledoc-kit/commit/6a1015e))
+* Add edit/save/cancel to Ember demo card ([6c4a43b](https://github.com/bustlelabs/mobiledoc-kit/commit/6c4a43b))
+* Add MutationHandler, reparse entire post when new nodes appear ([34ab629](https://github.com/bustlelabs/mobiledoc-kit/commit/34ab629)), closes [#300](https://github.com/bustlelabs/mobiledoc-kit/issues/300)
+* built website from 3d34f06cadd5927e5cca8300297ffc80a08cd327 ([b86f015](https://github.com/bustlelabs/mobiledoc-kit/commit/b86f015))
+* built website from 445d075a8e891d8845480eebe5c95156ace05726 ([6498862](https://github.com/bustlelabs/mobiledoc-kit/commit/6498862))
+* Bump ember-mobiledoc-editor for fallback ember cards ([225fdaf](https://github.com/bustlelabs/mobiledoc-kit/commit/225fdaf))
+* cmd-K unlinks text if it already has a link in it ([6c50c1f](https://github.com/bustlelabs/mobiledoc-kit/commit/6c50c1f)), closes [#295](https://github.com/bustlelabs/mobiledoc-kit/issues/295)
+* Drop dummy demo tests ([445d075](https://github.com/bustlelabs/mobiledoc-kit/commit/445d075))
+* handle spaces semantically ([fb093f7](https://github.com/bustlelabs/mobiledoc-kit/commit/fb093f7)), closes [#292](https://github.com/bustlelabs/mobiledoc-kit/issues/292)
+* Make the font be secure-domain happy ([b7020fd](https://github.com/bustlelabs/mobiledoc-kit/commit/b7020fd))
+* Merge pull request #293 from bustlelabs/unify-error-assertions ([2fff20a](https://github.com/bustlelabs/mobiledoc-kit/commit/2fff20a))
+* Merge pull request #294 from bustlelabs/handle-spacebar-292 ([920aa7b](https://github.com/bustlelabs/mobiledoc-kit/commit/920aa7b))
+* Merge pull request #297 from bustlelabs/use-parser-plugins-for-editor-load-post ([fb39f81](https://github.com/bustlelabs/mobiledoc-kit/commit/fb39f81))
+* Merge pull request #298 from bustlelabs/fix-linking-and-unlinking-295 ([3d34f06](https://github.com/bustlelabs/mobiledoc-kit/commit/3d34f06))
+* Merge pull request #301 from mixonic/demo-cards ([4bd1224](https://github.com/bustlelabs/mobiledoc-kit/commit/4bd1224))
+* Merge pull request #303 from ef4/fix-jshint ([bc7835b](https://github.com/bustlelabs/mobiledoc-kit/commit/bc7835b))
+* Merge pull request #304 from ef4/active-markups ([0c58846](https://github.com/bustlelabs/mobiledoc-kit/commit/0c58846))
+* Merge pull request #305 from bustlelabs/refactor-cursor-positioning ([6f5033d](https://github.com/bustlelabs/mobiledoc-kit/commit/6f5033d))
+* Merge pull request #307 from bustlelabs/better-reparse-300 ([5310111](https://github.com/bustlelabs/mobiledoc-kit/commit/5310111))
+* Merge pull request #308 from bustlelabs/fix-comment-node-parsing ([1aa90a9](https://github.com/bustlelabs/mobiledoc-kit/commit/1aa90a9))
+* Pass parser plugins to HTMLParser from editor#loadPost ([6b3da6e](https://github.com/bustlelabs/mobiledoc-kit/commit/6b3da6e)), closes [#296](https://github.com/bustlelabs/mobiledoc-kit/issues/296)
+* Refactor cursor positioning ([af5ae91](https://github.com/bustlelabs/mobiledoc-kit/commit/af5ae91))
+* Remove editor#didReparse hook ([eda9a2b](https://github.com/bustlelabs/mobiledoc-kit/commit/eda9a2b))
+* Replace `throw Error` usage with `assert`, use custom `MobiledocError` ([ea09b52](https://github.com/bustlelabs/mobiledoc-kit/commit/ea09b52))
+* Report active markups even when selection is collapsed ([b85724e](https://github.com/bustlelabs/mobiledoc-kit/commit/b85724e))
+* Satisfy newer jshint ([2eba3b5](https://github.com/bustlelabs/mobiledoc-kit/commit/2eba3b5))
+* Skip all non-text, non-element nodes in SectionParser ([4d5b4d2](https://github.com/bustlelabs/mobiledoc-kit/commit/4d5b4d2))
+* Suggest secure domain for selfie card ([c4966fd](https://github.com/bustlelabs/mobiledoc-kit/commit/c4966fd))
+
+
+
+<a name="0.8.0-beta.3"></a>
+# 0.8.0-beta.3 (2016-01-11)
+
+
+* Always `setRange` in `toggleMarkup` and `toggleSection` ([5ae07ee](https://github.com/bustlelabs/mobiledoc-kit/commit/5ae07ee)), closes [#285](https://github.com/bustlelabs/mobiledoc-kit/issues/285) [#287](https://github.com/bustlelabs/mobiledoc-kit/issues/287)
+* Merge pull request #291 from bustlelabs/fix-toggle-section-marker-285 ([3a22d87](https://github.com/bustlelabs/mobiledoc-kit/commit/3a22d87))
+* v0.8.0-beta.3 ([819085b](https://github.com/bustlelabs/mobiledoc-kit/commit/819085b))
+
+
+
+<a name="0.8.0-beta.2"></a>
+# 0.8.0-beta.2 (2016-01-11)
+
+
+* Expose Mobiledoc.Range ([c4aebef](https://github.com/bustlelabs/mobiledoc-kit/commit/c4aebef))
+* Merge pull request #288 from bustlelabs/refactor-insert-text ([a067d22](https://github.com/bustlelabs/mobiledoc-kit/commit/a067d22))
+* Merge pull request #290 from bustlelabs/expose-mobiledoc-range ([c5401a7](https://github.com/bustlelabs/mobiledoc-kit/commit/c5401a7))
+* Refactor postEditor#insertText to use #insertMarkers ([33e6bf0](https://github.com/bustlelabs/mobiledoc-kit/commit/33e6bf0))
+* Update changelog ([95acc75](https://github.com/bustlelabs/mobiledoc-kit/commit/95acc75))
+* v0.8.0-beta.2 ([2cf1ff8](https://github.com/bustlelabs/mobiledoc-kit/commit/2cf1ff8))
 
 
 
