@@ -84,9 +84,9 @@ export default class MobiledocParser {
     const section = this.builder.createMarkupSection(tagName);
     post.sections.append(section);
     this.parseMarkers(markers, section);
-    // Strip blank markers after the have been created. This ensures any
+    // Strip blank markers after they have been created. This ensures any
     // markup they include has been correctly populated.
-    filter(section.markers, m => m.isEmpty).forEach(m => {
+    filter(section.markers, m => m.isBlank).forEach(m => {
       section.markers.remove(m);
     });
   }

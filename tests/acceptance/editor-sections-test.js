@@ -1,6 +1,6 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
-import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
+import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 
 const { test, module } = Helpers;
@@ -276,7 +276,7 @@ test('keystroke of delete removes emoji character', (assert) => {
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
   let textNode = editorElement.firstChild. // section
-                               firstChild; // marker 
+                               firstChild; // marker
   assert.equal(textNode.textContent, monkey, 'precond - correct text');
 
   Helpers.dom.moveCursorTo(textNode, monkey.length);
@@ -293,7 +293,7 @@ test('keystroke of forward delete removes emoji character', (assert) => {
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
   let textNode = editorElement.firstChild. // section
-                               firstChild; // marker 
+                               firstChild; // marker
   assert.equal(textNode.textContent, monkey, 'precond - correct text');
 
   Helpers.dom.moveCursorTo(textNode, 'monkey'.length);

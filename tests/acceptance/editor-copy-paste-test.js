@@ -327,30 +327,24 @@ test('pasting when on the end of a card is blocked', (assert) => {
   editor.selectRange(new Range(editor.post.sections.head.headPosition()));
   Helpers.dom.triggerPasteEvent(editor);
 
-  let updatedMobiledoc = editor.serialize();
-  assert.deepEqual(updatedMobiledoc.sections, [
-    [],
-    [
-      [10, 'my-card', {}],
-      [1, 'p', [
-        [[], 0, 'abc']
-      ]]
-    ]
-  ], 'no paste has occurred');
+  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+    ({post, cardSection, markupSection, marker}) => {
+      return post([
+        cardSection('my-card'),
+        markupSection('p', [marker('abc')])
+      ]);
+    }), 'no paste has occurred');
 
   editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
   Helpers.dom.triggerPasteEvent(editor);
 
-  updatedMobiledoc = editor.serialize();
-  assert.deepEqual(updatedMobiledoc.sections, [
-    [],
-    [
-      [10, 'my-card', {}],
-      [1, 'p', [
-        [[], 0, 'abc']
-      ]]
-    ]
-  ], 'no paste has occurred');
+  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+    ({post, cardSection, markupSection, marker}) => {
+      return post([
+        cardSection('my-card'),
+        markupSection('p', [marker('abc')])
+      ]);
+    }), 'no paste has occurred');
 });
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/249

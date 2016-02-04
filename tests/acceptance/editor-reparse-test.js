@@ -1,7 +1,20 @@
 import Helpers from '../test-helpers';
 const { test, module } = Helpers;
+import { ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
+
+const simpleAtom = {
+  name: 'simple-atom',
+  type: 'dom',
+  render({value}) {
+    let element = document.createElement('span');
+    element.setAttribute('id', 'simple-atom');
+    element.appendChild(document.createTextNode(value));
+    return element;
+  }
+};
 
 let editor, editorElement;
+let editorOptions = { atoms: [simpleAtom] };
 
 module('Acceptance: Editor: Reparsing', {
   beforeEach() {
@@ -15,7 +28,7 @@ module('Acceptance: Editor: Reparsing', {
 test('changing text node content causes reparse of section', (assert) => {
   let done = assert.async();
   let expected;
-  let editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     expected = post([markupSection('p', [marker('def')])]);
 
     return post([markupSection('p', [marker('abc')])]);
@@ -39,7 +52,7 @@ test('changing text node content causes reparse of section', (assert) => {
 test('removing text node causes reparse of section', (assert) => {
   let done = assert.async();
   let expected;
-  let editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     expected = post([markupSection('p', [marker('def')])]);
 
     return post([markupSection('p', [marker('abc'), marker('def')])]);
@@ -63,7 +76,7 @@ test('removing text node causes reparse of section', (assert) => {
 test('removing section node causes reparse of post', (assert) => {
   let done = assert.async();
   let expected;
-  let editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     expected = post([markupSection('p', [marker('123')])]);
 
     return post([
@@ -86,7 +99,7 @@ test('removing section node causes reparse of post', (assert) => {
 test('inserting styled span in section causes section reparse', (assert) => {
   let done = assert.async();
   let expected;
-  let editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     expected = post([markupSection('p', [marker('abc'), marker('def')])]);
 
     return post([
@@ -111,7 +124,7 @@ test('inserting styled span in section causes section reparse', (assert) => {
 test('inserting new top-level node causes reparse of post', (assert) => {
   let done = assert.async();
   let expected;
-  let editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     expected = post([
       markupSection('p', [marker('abc')]),
       markupSection('p', [marker('123')])
@@ -134,7 +147,7 @@ test('inserting node into blank post causes reparse', (assert) => {
   let done = assert.async();
   let expected;
 
-  let editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     expected = post([markupSection('p', [marker('123')])]);
     return post();
   });
@@ -152,7 +165,7 @@ test('inserting node into blank post causes reparse', (assert) => {
 test('after reparsing post, mutations still handled properly', (assert) => {
   let done = assert.async();
   let expected1, expected2;
-  let editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     expected1 = post([
       markupSection('p', [marker('abc')]),
       markupSection('p', [marker('123')])
@@ -180,6 +193,46 @@ test('after reparsing post, mutations still handled properly', (assert) => {
 
     setTimeout(() => {
       assert.postIsSimilar(editor.post, expected2);
+
+      done();
+    });
+  });
+});
+
+test('inserting text into text node on left/right of atom is reparsed correctly', (assert) => {
+  let done = assert.async();
+  let expected1, expected2;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+    expected1 = post([
+      markupSection('p', [atom('simple-atom', 'first'), marker('Z')]),
+    ]);
+
+    expected2 = post([
+      markupSection('p', [marker('A'), atom('simple-atom', 'first'), marker('Z')]),
+    ]);
+
+    return post([markupSection('p', [atom('simple-atom','first')])]);
+  }, editorOptions);
+
+  let atom = editor.post.sections.head.markers.head;
+  let rightCursorNode = atom.renderNode.tailTextNode;
+
+  assert.ok(rightCursorNode && rightCursorNode.textContent === ZWNJ,
+            'precond - correct right cursor node');
+
+  rightCursorNode.textContent = 'Z';
+  setTimeout(() => {
+    assert.postIsSimilar(editor.post, expected1);
+    assert.renderTreeIsEqual(editor._renderTree, expected1);
+
+    let leftCursorNode = atom.renderNode.headTextNode;
+    assert.ok(leftCursorNode && leftCursorNode.textContent === ZWNJ,
+              'precond - correct left cursor node');
+    leftCursorNode.textContent = 'A';
+
+    setTimeout(() => {
+      assert.postIsSimilar(editor.post, expected2);
+      assert.renderTreeIsEqual(editor._renderTree, expected2);
 
       done();
     });

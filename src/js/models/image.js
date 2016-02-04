@@ -1,6 +1,5 @@
 import { IMAGE_SECTION_TYPE } from './types';
 import Section from './_section';
-import Position from '../utils/cursor/position';
 
 export default class Image extends Section {
   constructor() {
@@ -12,11 +11,7 @@ export default class Image extends Section {
     return false;
   }
 
-  headPosition() {
-    return new Position(this, 0);
-  }
-
-  tailPosition() {
-    return new Position(this, 1);
+  get length() {
+    return 1;
   }
 }

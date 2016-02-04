@@ -1,8 +1,12 @@
 import {
-  isTextNode, findOffsetInElement
+  isTextNode
 } from 'mobiledoc-kit/utils/dom-utils';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import assert from 'mobiledoc-kit/utils/assert';
+import {
+  HIGH_SURROGATE_RANGE,
+  LOW_SURROGATE_RANGE
+} from 'mobiledoc-kit/models/marker';
 
 function findParentSectionFromNode(renderTree, node) {
   let renderNode =  renderTree.findRenderNodeFromElement(
@@ -13,9 +17,31 @@ function findParentSectionFromNode(renderTree, node) {
   return renderNode && renderNode.postNode;
 }
 
+function findOffsetInMarkerable(markerable, node, offset) {
+  let offsetInSection = 0;
+  let marker = markerable.markers.head;
+  while (marker) {
+    let markerNode = marker.renderNode.element;
+    if (markerNode === node) {
+      return offsetInSection + offset;
+    } else if (marker.isAtom) {
+      if (marker.renderNode.headTextNode === node) {
+        return offsetInSection;
+      } else if (marker.renderNode.tailTextNode === node) {
+        return offsetInSection + 1;
+      }
+    }
+
+    offsetInSection += marker.length;
+    marker = marker.next;
+  }
+
+  return offsetInSection;
+}
+
 function findOffsetInSection(section, node, offset) {
   if (section.isMarkerable) {
-    return findOffsetInElement(section.renderNode.element, node, offset);
+    return findOffsetInMarkerable(section, node, offset);
   } else {
     assert('findOffsetInSection must be called with markerable or card section',
            section.isCardSection);
@@ -57,8 +83,12 @@ const Position = class Position {
     return new Position(this.section, this.offset);
   }
 
+  get isMarkerable() {
+    return this.section && this.section.isMarkerable;
+  }
+
   get marker() {
-    return this.markerPosition.marker;
+    return this.isMarkerable && this.markerPosition.marker;
   }
 
   get offsetInMarker() {
@@ -105,7 +135,14 @@ const Position = class Position {
       let prev = this.section.previousLeafSection();
       return prev && prev.tailPosition();
     } else {
-      return new Position(this.section, this.offset - 1);
+      let offset = this.offset - 1;
+      if (this.isMarkerable && this.marker) {
+        let code = this.marker.value.charCodeAt(offset);
+        if (code >= LOW_SURROGATE_RANGE[0] && code <= LOW_SURROGATE_RANGE[1]) {
+          offset = offset - 1;
+        }
+      }
+      return new Position(this.section, offset);
     }
   }
 
@@ -117,7 +154,14 @@ const Position = class Position {
       let next = this.section.nextLeafSection();
       return next && next.headPosition();
     } else {
-      return new Position(this.section, this.offset + 1);
+      let offset = this.offset + 1;
+      if (this.isMarkerable && this.marker) {
+        let code = this.marker.value.charCodeAt(offset - 1);
+        if (code >= HIGH_SURROGATE_RANGE[0] && code <= HIGH_SURROGATE_RANGE[1]) {
+          offset = offset + 1;
+        }
+      }
+      return new Position(this.section, offset);
     }
   }
 
@@ -169,16 +213,35 @@ const Position = class Position {
       assert('Could not find parent section from element node', !!section);
 
       if (section.isCardSection) {
-        // Selections in cards are usually made on a text node containing a &zwnj; 
-        // on one side or the other of the card but some scenarios (Firefox) will result in
-        // selecting the card's wrapper div. If the offset is 2 we've selected
-        // the final zwnj and should consider the cursor at the end of the card (offset 1). Otherwise,
-        // the cursor is at the start of the card
+        // Selections in cards are usually made on a text node
+        // containing a &zwnj;  on one side or the other of the card but
+        // some scenarios (Firefox) will result in selecting the
+        // card's wrapper div. If the offset is 2 we've selected
+        // the final zwnj and should consider the cursor at the
+        // end of the card (offset 1). Otherwise,  the cursor is at
+        // the start of the card
         position = offset < 2 ? section.headPosition() : section.tailPosition();
       } else {
-        // The offset is 0 if the cursor is on an element node (e.g., a <br> tag in
-        // a blank markup section)
-        position = section.headPosition();
+
+        // In Firefox it is possible for the cursor to be on an atom's wrapper
+        // element. (In Chrome/Safari, the browser corrects this to be on
+        // one of the text nodes surrounding the wrapper).
+        // This code corrects for when the browser reports the cursor position
+        // to be on the wrapper element itself
+        let renderNode = renderTree.getElementRenderNode(elementNode);
+        let postNode = renderNode && renderNode.postNode;
+        if (postNode && postNode.isAtom) {
+          let sectionOffset = section.offsetOfMarker(postNode);
+          if (offset > 1) {
+            // we are on the tail side of the atom
+            sectionOffset += postNode.length;
+          }
+          position = new Position(section, sectionOffset);
+        } else {
+          // The offset is 0 if the cursor is on a non-atom-wrapper element node
+          // (e.g., a <br> tag in a blank markup section)
+          position = section.headPosition();
+        }
       }
     }
 
@@ -190,6 +253,7 @@ const Position = class Position {
    */
   get markerPosition() {
     assert('Cannot get markerPosition without a section', !!this.section);
+    assert('cannot get markerPosition of a non-markerable', !!this.section.isMarkerable);
     return this.section.markerPositionAtOffset(this.offset);
   }
 

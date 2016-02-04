@@ -14,6 +14,9 @@ test('renders a blank post', (assert) => {
   let mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {
     version: MOBILEDOC_VERSION,
-    sections: [[], []]
+    atoms: [],
+    cards: [],
+    markups: [],
+    sections: []
   });
 });

@@ -14,10 +14,14 @@ supporting rich content via cards.
   platform. Mobiledoc is portable and fast.
 * The editor makes limited use of Content Editable, the siren-song of doomed
   web editor technologies.
-* Mobiledoc is designed for *rich* content. We call these sections of an
-  article "cards", and implementing a new one doesn't require an understanding
-  of Mobiledoc editor internals. Adding a new card takes an afternoon, not several
-  days. To learn more about cards and mobiledoc renderers, see the **[Cards docs](https://github.com/bustlelabs/mobiledoc-kit/blob/master/CARDS.md)**.
+* Mobiledoc is designed for *rich* content. We call rich sections of an
+  article "cards" and rich inline elements "atoms" and implementing a new one doesn't require an understanding
+  of Mobiledoc editor internals. Adding a new atom or card takes an afternoon, not several
+  days. To learn more, see the docs for
+  **[Atoms](https://github.com/bustlelabs/mobiledoc-kit/blob/master/ATOMS.md)**,
+  **[Cards](https://github.com/bustlelabs/mobiledoc-kit/blob/master/CARDS.md)**
+  and
+  **[Mobiledoc Renderers](https://github.com/bustlelabs/mobiledoc-kit/blob/master/RENDERERS.md)**
 
 To learn more about the ideas behind Mobiledoc and the editor (note that the
 editor used to be named Content-Kit), see these blog posts:
@@ -55,7 +59,7 @@ editor.render(element);
 * `spellcheck` - [boolean] whether to enable spellcheck. Defaults to true.
 * `autofocus` - [boolean] When true, focuses on the editor when it is rendered.
 * `cards` - [array] The list of cards that the editor may render
-* `cardOptions` - [object] Options passed to 
+* `cardOptions` - [object] Options passed to cards and atoms
 * `unknownCardHandler` - [function] This will be invoked by the editor-renderer whenever it encounters an unknown card
 
 ### Editor API
@@ -132,10 +136,19 @@ It is important that you make changes to posts, sections, and markers through
 the `run` and `postEditor` API. This API allows the Mobiledoc editor to conserve
 and better understand changes being made to the post.
 
+```js
+editor.run(postEditor => {
+  const mention = postEditor.builder.createAtom("mention", "John Doe", { id: 42 });
+  // insert at current cursor position:
+  // or should the user have to grab the current position from the editor first?
+  postEditor.insertMarkers(editor.range.head, [mention]);
+});
+```
+
 For more details on the API of `postEditor`, see the [API documentation](https://github.com/bustlelabs/mobiledoc-kit/blob/master/src/js/editor/post.js).
 
 For more details on the API for the builder, required to create new sections
-and markers, see the [builder API](https://github.com/bustlelabs/mobiledoc-kit/blob/master/src/js/models/post-node-builder.js).
+atoms, and markers, see the [builder API](https://github.com/bustlelabs/mobiledoc-kit/blob/master/src/js/models/post-node-builder.js).
 
 ### Configuring hot keys
 

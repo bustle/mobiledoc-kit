@@ -1,6 +1,7 @@
 import { normalizeTagName } from '../utils/dom-utils';
 import LinkedItem from '../utils/linked-item';
 import assert from '../utils/assert';
+import Position from '../utils/cursor/position';
 
 function unimplementedMethod(methodName, me) {
   assert(`\`${methodName}()\` must be implemented by ${me.constructor.name}`,
@@ -47,11 +48,13 @@ export default class Section extends LinkedItem {
   }
 
   headPosition() {
-    unimplementedMethod('headPosition', this);
+    return new Position(this, 0);
   }
 
   tailPosition() {
-    unimplementedMethod('tailPosition', this);
+    assert('Cannot determine tailPosition without length',
+           this.length !== undefined && this.length !== null);
+    return new Position(this, this.length);
   }
 
   join() {
