@@ -3,6 +3,7 @@ import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
 import { filter, reduce } from '../utils/array-utils';
 import assert from '../utils/assert';
 import Range from '../utils/cursor/range';
+import Browser from '../utils/browser';
 
 export const DEFAULT_KEY_COMMANDS = [{
   str: 'META+B',
@@ -53,9 +54,11 @@ export const DEFAULT_KEY_COMMANDS = [{
     });
   }
 }, {
-  // FIXME restrict to OS X only?
   str: 'CTRL+A',
   run(editor) {
+    if (!Browser.isMac) {
+      return false;
+    }
     let range = editor.cursor.offsets;
     let {head: {section}} = range;
     editor.run(postEditor => {
@@ -63,9 +66,11 @@ export const DEFAULT_KEY_COMMANDS = [{
     });
   }
 }, {
-  // FIXME restrict to OS X only?
   str: 'CTRL+E',
   run(editor) {
+    if (!Browser.isMac) {
+      return false;
+    }
     let range = editor.cursor.offsets;
     let {tail: {section}} = range;
     editor.run(postEditor => {
