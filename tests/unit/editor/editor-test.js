@@ -154,6 +154,26 @@ test('editor parses and renders mobiledoc format', (assert) => {
                    'serialized editor === mobiledoc');
 });
 
+test('#serialize serializes to MOBILEDOC_VERSION by default', (assert) => {
+  let mobiledoc2 = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  }, '0.2.0');
+  let mobiledoc3 = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  }, '0.3.0');
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+
+  assert.deepEqual(editor.serialize('0.2.0'), mobiledoc2, 'serializes 0.2.0');
+  assert.deepEqual(editor.serialize('0.3.0'), mobiledoc3, 'serializes 0.3.0');
+
+  assert.throws(
+    () => editor.serialize('unknown'),
+    /Unknown version/
+  );
+});
+
 test('editor parses and renders html', (assert) => {
   editorElement.innerHTML = '<p>something here</p>';
   editor = new Editor({html: '<p>hello world</p>'});

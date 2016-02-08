@@ -40,6 +40,7 @@ import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import { TAB, SPACE } from 'mobiledoc-kit/utils/characters';
 import assert from '../utils/assert';
 import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
+import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
@@ -392,8 +393,8 @@ class Editor {
     }
   }
 
-  serialize() {
-    return mobiledocRenderers.render(this.post);
+  serialize(version=MOBILEDOC_VERSION) {
+    return mobiledocRenderers.render(this.post, version);
   }
 
   removeAllViews() {
