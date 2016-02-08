@@ -106,7 +106,7 @@ test('#parse turns a textNode into a section', (assert) => {
 
 test('#parse allows passing in parserPlugins that can override element parsing', (assert) => {
   let container = buildDOM(`
-    <p>text 1<img src="http://placehold.it/100x100">text 2</p>
+    <p>text 1<img src="https://placehold.it/100x100">text 2</p>
   `);
 
   let element = container.firstChild;
@@ -128,12 +128,12 @@ test('#parse allows passing in parserPlugins that can override element parsing',
 
   let cardSection = sections[1];
   assert.equal(cardSection.name, 'test-image');
-  assert.deepEqual(cardSection.payload, {url: 'http://placehold.it/100x100'});
+  assert.deepEqual(cardSection.payload, {url: 'https://placehold.it/100x100'});
 });
 
 test('#parse allows passing in parserPlugins that can override text parsing', (assert) => {
   let container = buildDOM(`
-    <p>text 1<img src="http://placehold.it/100x100">text 2</p>
+    <p>text 1<img src="https://placehold.it/100x100">text 2</p>
   `);
 
   let element = container.firstChild;
