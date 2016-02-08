@@ -47,26 +47,26 @@ test('left arrow when at the end of a card moves the cursor across the card', as
   // Before zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
   Helpers.dom.triggerLeftArrowKey(editor);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, cardHead);
-  assert.positionIsEqual(offsets.tail, cardHead);
+  assert.positionIsEqual(range.head, cardHead);
+  assert.positionIsEqual(range.tail, cardHead);
 
   // After zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
   Helpers.dom.triggerLeftArrowKey(editor);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, cardHead);
-  assert.positionIsEqual(offsets.tail, cardHead);
+  assert.positionIsEqual(range.head, cardHead);
+  assert.positionIsEqual(range.tail, cardHead);
 
   // On wrapper
   Helpers.dom.moveCursorTo(editorElement.firstChild, 2);
   Helpers.dom.triggerLeftArrowKey(editor);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, cardHead);
-  assert.positionIsEqual(offsets.tail, cardHead);
+  assert.positionIsEqual(range.head, cardHead);
+  assert.positionIsEqual(range.tail, cardHead);
 });
 
 test('left arrow when at the start of a card moves the cursor to the previous section', assert => {
@@ -84,18 +84,18 @@ test('left arrow when at the start of a card moves the cursor to the previous se
   let sectionElement = editor.post.sections.tail.renderNode.element;
   Helpers.dom.moveCursorTo(sectionElement.firstChild, 0);
   Helpers.dom.triggerLeftArrowKey(editor);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, sectionTail);
-  assert.positionIsEqual(offsets.tail, sectionTail);
+  assert.positionIsEqual(range.head, sectionTail);
+  assert.positionIsEqual(range.tail, sectionTail);
 
   // After zwnj
   Helpers.dom.moveCursorTo(sectionElement.firstChild, 1);
   Helpers.dom.triggerLeftArrowKey(editor);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, sectionTail);
-  assert.positionIsEqual(offsets.tail, sectionTail);
+  assert.positionIsEqual(range.head, sectionTail);
+  assert.positionIsEqual(range.tail, sectionTail);
 });
 
 test('left arrow when at the start of a card moves to previous list item', assert => {
@@ -114,19 +114,19 @@ test('left arrow when at the start of a card moves to previous list item', asser
   let sectionElement = editor.post.sections.tail.renderNode.element;
   Helpers.dom.moveCursorTo(sectionElement.firstChild, 0);
   Helpers.dom.triggerLeftArrowKey(editor);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, itemTail);
-  assert.positionIsEqual(offsets.tail, itemTail);
+  assert.positionIsEqual(range.head, itemTail);
+  assert.positionIsEqual(range.tail, itemTail);
 
   // After zwnj
   sectionElement = editor.post.sections.tail.renderNode.element;
   Helpers.dom.moveCursorTo(sectionElement.firstChild, 1);
   Helpers.dom.triggerLeftArrowKey(editor);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, itemTail);
-  assert.positionIsEqual(offsets.tail, itemTail);
+  assert.positionIsEqual(range.head, itemTail);
+  assert.positionIsEqual(range.tail, itemTail);
 });
 
 test('right arrow at start of card moves the cursor across the card', assert => {
@@ -142,18 +142,18 @@ test('right arrow at start of card moves the cursor across the card', assert => 
   // Before zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0);
   Helpers.dom.triggerRightArrowKey(editor);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, cardTail);
-  assert.positionIsEqual(offsets.tail, cardTail);
+  assert.positionIsEqual(range.head, cardTail);
+  assert.positionIsEqual(range.tail, cardTail);
 
   // After zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 1);
   Helpers.dom.triggerRightArrowKey(editor);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, cardTail);
-  assert.positionIsEqual(offsets.tail, cardTail);
+  assert.positionIsEqual(range.head, cardTail);
+  assert.positionIsEqual(range.tail, cardTail);
 });
 
 test('right arrow at end of card moves cursor to next section', assert => {
@@ -171,23 +171,23 @@ test('right arrow at end of card moves cursor to next section', assert => {
   let sectionElement = editor.post.sections.head.renderNode.element;
   Helpers.dom.moveCursorTo(sectionElement.lastChild, 0);
   Helpers.dom.triggerRightArrowKey(editor);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, sectionHead);
-  assert.positionIsEqual(offsets.tail, sectionHead);
+  assert.positionIsEqual(range.head, sectionHead);
+  assert.positionIsEqual(range.tail, sectionHead);
 
   // After zwnj
   Helpers.dom.moveCursorTo(sectionElement.lastChild, 1);
   Helpers.dom.triggerRightArrowKey(editor);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
   // On wrapper
   Helpers.dom.moveCursorTo(editorElement.firstChild, 2);
   Helpers.dom.triggerRightArrowKey(editor);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, sectionHead);
-  assert.positionIsEqual(offsets.tail, sectionHead);
+  assert.positionIsEqual(range.head, sectionHead);
+  assert.positionIsEqual(range.tail, sectionHead);
 });
 
 test('right arrow at end of card moves cursor to next list item', assert => {
@@ -206,18 +206,18 @@ test('right arrow at end of card moves cursor to next list item', assert => {
   let sectionElement = editor.post.sections.head.renderNode.element;
   Helpers.dom.moveCursorTo(sectionElement.lastChild, 0);
   Helpers.dom.triggerRightArrowKey(editor);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, itemHead);
-  assert.positionIsEqual(offsets.tail, itemHead);
+  assert.positionIsEqual(range.head, itemHead);
+  assert.positionIsEqual(range.tail, itemHead);
 
   // After zwnj
   Helpers.dom.moveCursorTo(sectionElement.lastChild, 1);
   Helpers.dom.triggerRightArrowKey(editor);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, itemHead);
-  assert.positionIsEqual(offsets.tail, itemHead);
+  assert.positionIsEqual(range.head, itemHead);
+  assert.positionIsEqual(range.tail, itemHead);
 });
 
 test('left arrow when at the head of an atom moves the cursor left off the atom', assert => {
@@ -405,26 +405,26 @@ if (supportsSelectionExtend()) {
     // Before zwnj
     Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-    let { offsets } = editor.cursor;
+    let { range } = editor;
 
-    assert.positionIsEqual(offsets.head, cardHead);
-    assert.positionIsEqual(offsets.tail, cardTail);
+    assert.positionIsEqual(range.head, cardHead);
+    assert.positionIsEqual(range.tail, cardTail);
 
     // After zwnj
     Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-    offsets = editor.cursor.offsets;
+    range = editor.range;
 
-    assert.positionIsEqual(offsets.head, cardHead);
-    assert.positionIsEqual(offsets.tail, cardTail);
+    assert.positionIsEqual(range.head, cardHead);
+    assert.positionIsEqual(range.tail, cardTail);
 
     // On wrapper
     Helpers.dom.moveCursorTo(editorElement.firstChild, 2);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-    offsets = editor.cursor.offsets;
+    range = editor.range;
 
-    assert.positionIsEqual(offsets.head, cardHead);
-    assert.positionIsEqual(offsets.tail, cardTail);
+    assert.positionIsEqual(range.head, cardHead);
+    assert.positionIsEqual(range.tail, cardTail);
   });
 
   test('left arrow at start of card moves selection to prev section', assert => {
@@ -444,18 +444,18 @@ if (supportsSelectionExtend()) {
     // Before zwnj
     Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 0);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-    let { offsets } = editor.cursor;
+    let { range } = editor;
 
-    assert.positionIsEqual(offsets.head, sectionTail);
-    assert.positionIsEqual(offsets.tail, cardHead);
+    assert.positionIsEqual(range.head, sectionTail);
+    assert.positionIsEqual(range.tail, cardHead);
 
     // After zwnj
     Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 1);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-    offsets = editor.cursor.offsets;
+    range = editor.range;
 
-    assert.positionIsEqual(offsets.head, sectionTail);
-    assert.positionIsEqual(offsets.tail, cardHead);
+    assert.positionIsEqual(range.head, sectionTail);
+    assert.positionIsEqual(range.tail, cardHead);
   });
 
   test('left arrow at start of card moves selection to prev list item', assert => {
@@ -475,18 +475,18 @@ if (supportsSelectionExtend()) {
     // Before zwnj
     Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 0);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-    let { offsets } = editor.cursor;
+    let { range } = editor;
 
-    assert.positionIsEqual(offsets.head, sectionTail);
-    assert.positionIsEqual(offsets.tail, cardHead);
+    assert.positionIsEqual(range.head, sectionTail);
+    assert.positionIsEqual(range.tail, cardHead);
 
     // After zwnj
     Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 1);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-    offsets = editor.cursor.offsets;
+    range = editor.range;
 
-    assert.positionIsEqual(offsets.head, sectionTail);
-    assert.positionIsEqual(offsets.tail, cardHead);
+    assert.positionIsEqual(range.head, sectionTail);
+    assert.positionIsEqual(range.tail, cardHead);
   });
 }
 
@@ -505,18 +505,18 @@ test('right arrow at start of card moves the cursor across the card', assert => 
   // Before zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0);
   Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, cardHead);
-  assert.positionIsEqual(offsets.tail, cardTail);
+  assert.positionIsEqual(range.head, cardHead);
+  assert.positionIsEqual(range.tail, cardTail);
 
   // After zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 1);
   Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, cardHead);
-  assert.positionIsEqual(offsets.tail, cardTail);
+  assert.positionIsEqual(range.head, cardHead);
+  assert.positionIsEqual(range.tail, cardTail);
 });
 
 test('right arrow at end of card moves to next section', (assert) => {
@@ -536,18 +536,18 @@ test('right arrow at end of card moves to next section', (assert) => {
   // Before zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
   Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, cardTail);
-  assert.positionIsEqual(offsets.tail, sectionHead);
+  assert.positionIsEqual(range.head, cardTail);
+  assert.positionIsEqual(range.tail, sectionHead);
 
   // After zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
   Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, cardTail);
-  assert.positionIsEqual(offsets.tail, sectionHead);
+  assert.positionIsEqual(range.head, cardTail);
+  assert.positionIsEqual(range.tail, sectionHead);
 });
 
 test('right arrow at end of card moves to next list item', (assert) => {
@@ -567,18 +567,18 @@ test('right arrow at end of card moves to next list item', (assert) => {
   // Before zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
   Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, cardTail);
-  assert.positionIsEqual(offsets.tail, itemHead);
+  assert.positionIsEqual(range.head, cardTail);
+  assert.positionIsEqual(range.tail, itemHead);
 
   // After zwnj
   Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
   Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  offsets = editor.cursor.offsets;
+  range = editor.range;
 
-  assert.positionIsEqual(offsets.head, cardTail);
-  assert.positionIsEqual(offsets.tail, itemHead);
+  assert.positionIsEqual(range.head, cardTail);
+  assert.positionIsEqual(range.tail, itemHead);
 });
 
 test('left/right arrows move selection l-to-r and r-to-l across atom', (assert) => {

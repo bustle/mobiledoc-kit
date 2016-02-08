@@ -264,10 +264,10 @@ test('deleting at start of empty markup section with prev card deletes the marku
   assert.hasElement('#my-simple-card', 'has card after delete');
   assert.hasNoElement('#editor p', 'paragraph is gone');
 
-  let { offsets } = editor.cursor;
-  assert.ok(offsets.head.section === editor.post.sections.head,
+  let { range } = editor;
+  assert.ok(range.head.section === editor.post.sections.head,
             'correct cursor position');
-  assert.equal(offsets.head.offset, 1,
+  assert.equal(range.head.offset, 1,
             'correct cursor offset');
 });
 
@@ -288,12 +288,12 @@ test('press enter at end of card inserts section after card', (assert) => {
   assert.hasElement('#my-simple-card', 'has card after enter');
   assert.hasElement('#editor p', 'markup section is added');
 
-  let { offsets } = editor.cursor;
+  let { range } = editor;
   assert.ok(!editor.post.sections.tail.isCardSection,
             'markup section (not card secton) is at end of post abstract');
-  assert.ok(offsets.head.section === editor.post.sections.tail,
+  assert.ok(range.head.section === editor.post.sections.tail,
             'correct cursor position');
-  assert.equal(offsets.head.offset, 0,
+  assert.equal(range.head.offset, 0,
             'correct cursor offset');
 });
 
@@ -314,14 +314,14 @@ test('press enter at start of card inserts section before card', (assert) => {
   assert.hasElement('#my-simple-card', 'has card after enter');
   assert.hasElement('#editor p', 'markup section is added');
 
-  let { offsets } = editor.cursor;
+  let { range } = editor;
   assert.ok(editor.post.sections.head.isMarkerable,
             'markup section at head of post');
   assert.ok(editor.post.sections.tail.isCardSection,
             'card section at end of post');
-  assert.ok(offsets.head.section === editor.post.sections.tail,
+  assert.ok(range.head.section === editor.post.sections.tail,
             'correct cursor position');
-  assert.equal(offsets.head.offset, 0,
+  assert.equal(range.head.offset, 0,
             'correct cursor offset');
 });
 

@@ -39,11 +39,11 @@ test('cursor in a markup section reports its position correctly', assert => {
   editor.render(editorElement);
 
   Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 1);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.ok(offsets.head.section === editor.post.sections.head,
+  assert.ok(range.head.section === editor.post.sections.head,
             'Cursor is positioned on first section');
-  assert.equal(offsets.head.offset, 1,
+  assert.equal(range.head.offset, 1,
                'Cursor is positioned at offset 1');
 });
 
@@ -55,9 +55,9 @@ test('cursor blank section reports its position correctly', (assert) => {
   editor.render(editorElement);
 
   Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, editor.post.sections.head.headPosition());
+  assert.positionIsEqual(range.head, editor.post.sections.head.headPosition());
 });
 
 test('cursor moved left from section after card is reported as on the card with offset 1', (assert) => {
@@ -70,9 +70,9 @@ test('cursor moved left from section after card is reported as on the card with 
   editor.render(editorElement);
 
   Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head,
+  assert.positionIsEqual(range.head,
                          new Position(editor.post.sections.head, 1));
 });
 
@@ -89,9 +89,9 @@ test('cursor moved up from end of section after card is reported as on the card 
   editor.render(editorElement);
 
   Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, editor.post.sections.head.tailPosition());
+  assert.positionIsEqual(range.head, editor.post.sections.head.tailPosition());
 });
 
 test('cursor moved right from end of section before card is reported as on the card with offset 0', (assert) => {
@@ -104,9 +104,9 @@ test('cursor moved right from end of section before card is reported as on the c
   editor.render(editorElement);
 
   Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 0);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, editor.post.sections.tail.headPosition());
+  assert.positionIsEqual(range.head, editor.post.sections.tail.headPosition());
 });
 
 test('cursor moved right from end of section before card is reported as on the card with offset 0', (assert) => {
@@ -119,9 +119,9 @@ test('cursor moved right from end of section before card is reported as on the c
   editor.render(editorElement);
 
   Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 1);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, editor.post.sections.tail.headPosition());
+  assert.positionIsEqual(range.head, editor.post.sections.tail.headPosition());
 });
 
 test('cursor focused on card wrapper with 2 offset', (assert) => {
@@ -139,9 +139,9 @@ test('cursor focused on card wrapper with 2 offset', (assert) => {
   Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0, 
                            editorElement.lastChild, 2);
 
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.tail, editor.post.sections.tail.tailPosition());
+  assert.positionIsEqual(range.tail, editor.post.sections.tail.tailPosition());
 });
 
 // This can happen when using arrow+shift keys to select left across a card
@@ -158,9 +158,9 @@ test('cursor focused on card wrapper with 0 offset', (assert) => {
   // in order for the tail to end up focused on a div instead of a text node
   Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0,
                            editorElement.lastChild, 0);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.tail, editor.post.sections.tail.headPosition());
+  assert.positionIsEqual(range.tail, editor.post.sections.tail.headPosition());
 });
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/215
@@ -176,10 +176,10 @@ test('selecting the entire editor element reports a selection range of the entir
 
   Helpers.dom.moveCursorTo(editorElement, 0,
                            editorElement, editorElement.childNodes.length);
-  let { offsets } = editor.cursor;
+  let { range } = editor;
 
-  assert.positionIsEqual(offsets.head, editor.post.sections.head.headPosition());
-  assert.positionIsEqual(offsets.tail, editor.post.sections.tail.tailPosition());
+  assert.positionIsEqual(range.head, editor.post.sections.head.headPosition());
+  assert.positionIsEqual(range.tail, editor.post.sections.tail.tailPosition());
 });
 
 test('when at the head of an atom', assert => {
