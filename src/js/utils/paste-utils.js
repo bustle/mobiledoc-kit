@@ -35,11 +35,10 @@ function parsePostFromText(text, builder, plugins) {
  * @return null
  */
 export function setClipboardCopyData(copyEvent, editor) {
-  const { cursor, post } = editor;
-  const { clipboardData } = copyEvent;
+  let { range, post } = editor;
+  let { clipboardData } = copyEvent;
 
-  const range = cursor.offsets;
-  const mobiledoc = post.cloneRange(range);
+  let mobiledoc = post.cloneRange(range);
 
   let unknownCardHandler = () => {}; // ignore unknown cards
   let unknownAtomHandler = () => {}; // ignore unknown atoms

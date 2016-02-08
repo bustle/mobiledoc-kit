@@ -437,7 +437,7 @@ test('when selection incorrectly contains P end tag, editor reports correct sele
     let {
       headSection, tailSection, headMarker, tailMarker,
       headSectionOffset, tailSectionOffset, headMarkerOffset, tailMarkerOffset
-    } = editor.cursor.offsets;
+    } = editor.range;
 
     assert.ok(headSection === editor.post.sections.objectAt(0),
               'returns first section head');
@@ -475,7 +475,7 @@ test('when selection incorrectly contains P start tag, editor reports correct se
     let {
       headSection, tailSection, headMarker, tailMarker,
       headSectionOffset, tailSectionOffset, headMarkerOffset, tailMarkerOffset
-    } = editor.cursor.offsets;
+    } = editor.range;
 
     assert.equal(headSection, editor.post.sections.objectAt(0),
                  'returns first section head');

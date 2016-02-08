@@ -48,7 +48,7 @@ class PostEditor {
    *
    * Usage:
    *
-   *     const range = editor.cursor.offsets;
+   *     let { range } = editor;
    *     editor.run((postEditor) => {
    *       postEditor.deleteRange(range);
    *     });
@@ -531,7 +531,7 @@ class PostEditor {
   /**
    * Split markers at two positions, once at the head, and if necessary once
    * at the tail. This method is designed to accept a range
-   * (e.g. `editor.cursor.offsets`) as an argument.
+   * (e.g. `editor.range`) as an argument.
    *
    * Usage:
    *
@@ -772,14 +772,14 @@ class PostEditor {
   }
 
   /**
-   * Given a markerRange (for example `editor.cursor.offsets`) mark all markers
+   * Given a markerRange (for example `editor.range`) mark all markers
    * inside it as a given markup. The markup must be provided as a post
    * abstract node.
    *
    * Usage:
    *
-   *     const range = editor.cursor.offsets;
-   *     const strongMarkup = editor.builder.createMarkup('strong');
+   *     let range = editor.range;
+   *     let strongMarkup = editor.builder.createMarkup('strong');
    *     editor.run((postEditor) => {
    *       postEditor.addMarkupToRange(range, strongMarkup);
    *     });
@@ -805,13 +805,13 @@ class PostEditor {
   }
 
   /**
-   * Given a markerRange (for example `editor.cursor.offsets`) remove the given
+   * Given a markerRange (for example `editor.range`) remove the given
    * markup from all contained markers.
    *
    * Usage:
    *
-   *     const range = editor.cursor.offsets;
-   *     const markup = markerRange.headMarker.markups[0];
+   *     let { range } = editor;
+   *     let markup = markerRange.headMarker.markups[0];
    *     editor.run(postEditor => {
    *       postEditor.removeMarkupFromRange(range, markup);
    *     });
@@ -1105,7 +1105,7 @@ class PostEditor {
    *
    * Usage:
    *
-   *     let markerRange = editor.cursor.offsets;
+   *     let markerRange = editor.range;
    *     let sectionWithCursor = markerRange.headMarker.section;
    *     let section = editor.builder.createCardSection('my-image');
    *     let collection = sectionWithCursor.parent.sections;
@@ -1168,8 +1168,8 @@ class PostEditor {
    *
    * Usage:
    *
-   *     const range = editor.cursor.offsets;
-   *     const sectionWithCursor = range.head.section;
+   *     let { range } = editor;
+   *     let sectionWithCursor = range.head.section;
    *     editor.run((postEditor) => {
    *       postEditor.removeSection(sectionWithCursor);
    *     });

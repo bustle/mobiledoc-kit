@@ -92,21 +92,14 @@ callback function. For example:
 
 ```js
 editor.didUpdatePost(postEditor => {
-  let { offsets } = editor.cursor,
-      cursorSection;
+  let { range } = editor;
+  let cursorSection = range.head.section;
 
-  if (offset.headSection.text === 'add-section-when-i-type-this') {
+  if (cursorSection.text === 'add-section-when-i-type-this') {
     let section = editor.builder.createMarkupSection('p');
     postEditor.insertSectionBefore(section, cursorSection.next);
-    cursorSection = section;
+    postEditor.setRange(new Mobiledoc.Range(section.headPosition));
   }
-
-  postEditor.scheduleRerender();
-  postEditor.schedule(() => {
-    if (cursorSection) {
-      editor.moveToSection(cursorSection, 0);
-    }
-  });
 });
 ```
 

@@ -8,45 +8,45 @@ import Browser from '../utils/browser';
 export const DEFAULT_KEY_COMMANDS = [{
   str: 'META+B',
   run(editor) {
-    if (editor.cursor.hasSelection()) {
-      editor.run(postEditor => postEditor.toggleMarkup('strong'));
-    } else {
+    if (editor.range.isCollapsed) {
       document.execCommand('bold', false, null);
+    } else {
+      editor.run(postEditor => postEditor.toggleMarkup('strong'));
     }
   }
 }, {
   str: 'CTRL+B',
   run(editor) {
-    if (editor.cursor.hasSelection()) {
-      editor.run(postEditor => postEditor.toggleMarkup('strong'));
-    } else {
+    if (editor.range.isCollapsed) {
       document.execCommand('bold', false, null);
+    } else {
+      editor.run(postEditor => postEditor.toggleMarkup('strong'));
     }
   }
 }, {
   str: 'META+I',
   run(editor) {
-    if (editor.cursor.hasSelection()) {
-      editor.run(postEditor => postEditor.toggleMarkup('em'));
-    } else {
+    if (editor.range.isCollapsed) {
       document.execCommand('italic', false, null);
+    } else {
+      editor.run(postEditor => postEditor.toggleMarkup('em'));
     }
   }
 }, {
   str: 'CTRL+I',
   run(editor) {
-    if (editor.cursor.hasSelection()) {
-      editor.run(postEditor => postEditor.toggleMarkup('em'));
-    } else {
+    if (editor.range.isCollapsed) {
       document.execCommand('italic', false, null);
+    } else {
+      editor.run(postEditor => postEditor.toggleMarkup('em'));
     }
   }
 }, {
   str: 'CTRL+K',
   run(editor) {
-    let range = editor.cursor.offsets;
-    if (!editor.cursor.hasSelection()) {
-      range.tail = range.head.section.tailPosition();
+    let { range } = editor;
+    if (range.isCollapsed) {
+      range = new Range(range.head, range.head.section.tailPosition());
     }
     editor.run(postEditor => {
       let nextPosition = postEditor.deleteRange(range);
@@ -59,7 +59,7 @@ export const DEFAULT_KEY_COMMANDS = [{
     if (!Browser.isMac) {
       return false;
     }
-    let range = editor.cursor.offsets;
+    let {range} = editor;
     let {head: {section}} = range;
     editor.run(postEditor => {
       postEditor.setRange(new Range(section.headPosition()));
@@ -71,7 +71,7 @@ export const DEFAULT_KEY_COMMANDS = [{
     if (!Browser.isMac) {
       return false;
     }
-    let range = editor.cursor.offsets;
+    let {range} = editor;
     let {tail: {section}} = range;
     editor.run(postEditor => {
       postEditor.setRange(new Range(section.tailPosition()));
@@ -80,7 +80,7 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'META+K',
   run(editor) {
-    if (!editor.cursor.hasSelection()) {
+    if (editor.range.isCollapsed) {
       return;
     }
 
@@ -88,7 +88,7 @@ export const DEFAULT_KEY_COMMANDS = [{
     let defaultUrl = '';
     if (selectedText.indexOf('http') !== -1) { defaultUrl = selectedText; }
 
-    let range = editor.range;
+    let {range} = editor;
     let hasLink = editor.detectMarkupInRange(range, 'a');
 
     if (hasLink) {

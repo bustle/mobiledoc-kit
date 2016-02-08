@@ -226,9 +226,9 @@ class Editor {
    * @private
    */
   handleDeletion(event=null) {
-    const range = this.cursor.offsets;
+    let { range } = this;
 
-    if (this.cursor.hasSelection()) {
+    if (!range.isCollapsed) {
       this.run(postEditor => {
         let nextPosition = postEditor.deleteRange(range);
         postEditor.setRange(new Range(nextPosition));
@@ -247,7 +247,7 @@ class Editor {
 
     event.preventDefault();
 
-    let range = this.cursor.offsets;
+    let { range } = this;
     this.run(postEditor => {
       let cursorSection;
       if (!range.isCollapsed) {
@@ -386,7 +386,7 @@ class Editor {
 
   get markupsInSelection() {
     if (this.cursor.hasCursor()) {
-      const range = this.cursor.offsets;
+      let { range } = this;
       return this.post.markupsInRange(range);
     } else {
       return [];
@@ -477,7 +477,7 @@ class Editor {
    *
    * Usage:
    *
-   *     let markerRange = this.cursor.offsets;
+   *     let markerRange = this.range;
    *     editor.run((postEditor) => {
    *       postEditor.deleteRange(markerRange);
    *       // editing surface not updated yet
