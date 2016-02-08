@@ -1,6 +1,22 @@
-<a name="0.8.1"></a>
-## 0.8.1 (2016-02-04)
+<a name="0.8.2"></a>
+## 0.8.2 (2016-02-08)
 
+
+
+
+<a name="0.8.2"></a>
+## 0.8.2 (2016-02-08)
+
+
+* 0.8.2 ([64ddb89](https://github.com/bustlelabs/mobiledoc-kit/commit/64ddb89))
+* built website from 1d2b96df65db79a8e3a9debae0f98003fe43f84f ([81f94f1](https://github.com/bustlelabs/mobiledoc-kit/commit/81f94f1))
+* built website from 2a90e8a48c5dc9e0eeac16ea785adcd74060290e ([bd4093a](https://github.com/bustlelabs/mobiledoc-kit/commit/bd4093a))
+* built website from a3096f4ce144a5bb7df74f35a2067718a5158838 ([2a90e8a](https://github.com/bustlelabs/mobiledoc-kit/commit/2a90e8a))
+* Change "0.3" to "0.3.0" in MOBILEDOC.md ([a3096f4](https://github.com/bustlelabs/mobiledoc-kit/commit/a3096f4))
+* editor#serialize accepts version parameter ([e27bf9b](https://github.com/bustlelabs/mobiledoc-kit/commit/e27bf9b))
+* https URLs for placeholder ([1d2b96d](https://github.com/bustlelabs/mobiledoc-kit/commit/1d2b96d))
+* Merge pull request #315 from bustlelabs/editor-serialize-version ([18ddc1d](https://github.com/bustlelabs/mobiledoc-kit/commit/18ddc1d))
+* Update changelog ([2667468](https://github.com/bustlelabs/mobiledoc-kit/commit/2667468))
 
 
 
