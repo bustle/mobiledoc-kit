@@ -62,12 +62,14 @@ editor.render(element);
 * `spellcheck` - [boolean] whether to enable spellcheck. Defaults to true.
 * `autofocus` - [boolean] When true, focuses on the editor when it is rendered.
 * `cards` - [array] The list of cards that the editor may render
+* `atoms` - [array] The list of atoms that the editor may render
 * `cardOptions` - [object] Options passed to cards and atoms
 * `unknownCardHandler` - [function] This will be invoked by the editor-renderer whenever it encounters an unknown card
+* `unknownAtomHandler` - [function] This will be invoked by the editor-renderer whenever it encounters an unknown atom
 
 ### Editor API
 
-* `editor.serialize()` - serialize the current post for persistence. Returns
+* `editor.serialize(version="0.3.0")` - serialize the current post for persistence. Returns
   Mobiledoc.
 * `editor.destroy()` - teardown the editor event listeners, free memory etc.
 * `editor.disableEditing()` - stop the user from being able to edit the
