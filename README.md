@@ -40,12 +40,15 @@ optionally a Mobiledoc to load. For example:
 
 ```js
 var simpleMobiledoc = {
-  version: "0.1",
-  sections: [[], [
+  version: "0.3.0",
+  markups: [],
+  atoms: [],
+  cards: [],
+  sections: [
     [1, "p", [
-      [[], 0, "Welcome to Mobiledoc"]
+      [0, [], 0, "Welcome to Mobiledoc"]
     ]]
-  ]]
+  ]
 };
 var element = document.querySelector('#editor');
 var options = { mobiledoc: simpleMobiledoc };
