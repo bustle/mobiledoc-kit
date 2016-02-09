@@ -41,6 +41,7 @@ import { TAB, SPACE } from 'mobiledoc-kit/utils/characters';
 import assert from '../utils/assert';
 import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
+import EditHistory from 'mobiledoc-kit/editor/edit-history';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
@@ -51,6 +52,7 @@ const defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
+  undoDepth: 5,
   cards: [],
   atoms: [],
   cardOptions: {},
@@ -100,6 +102,8 @@ class Editor {
 
     this.post = this.loadPost();
     this._renderTree = new RenderTree(this.post);
+
+    this._editHistory = new EditHistory(this, this.undoDepth);
   }
 
   addView(view) {
@@ -237,7 +241,8 @@ class Editor {
       let key = Key.fromEvent(event);
       this.run(postEditor => {
         let nextPosition = postEditor.deleteFrom(range.head, key.direction);
-        postEditor.setRange(new Range(nextPosition));
+        let newRange = new Range(nextPosition);
+        postEditor.setRange(newRange);
       });
     }
   }
@@ -342,7 +347,13 @@ class Editor {
       currentRange = this.range;
     }
 
-    this.run(() => {});
+    // force the current snapshot's range to remain the same rather than
+    // rereading it from DOM after the new character is applied and the browser
+    // updates the cursor position
+    let range = this._editHistory._pendingSnapshot.range;
+    this.run(() => {
+      this._editHistory._pendingSnapshot.range = range;
+    });
     this.rerender();
     if (currentRange) {
       this.selectRange(currentRange);
@@ -499,9 +510,14 @@ class Editor {
   run(callback) {
     const postEditor = new PostEditor(this);
     postEditor.begin();
+    this._editHistory.snapshot();
     const result = callback(postEditor);
     this.runCallbacks(CALLBACK_QUEUES.DID_UPDATE, [postEditor]);
     postEditor.complete();
+    if (postEditor._shouldCancelSnapshot) {
+      this._editHistory._pendingSnapshot = null;
+    }
+    this._editHistory.storeSnapshot();
     return result;
   }
 
@@ -659,21 +675,26 @@ class Editor {
         }
 
         let shouldPreventDefault = isCollapsed && range.head.section.isCardSection;
+
+        let didEdit = false;
+        let isMarkerable = range.head.section.isMarkerable;
+        let isVisibleWhitespace = isMarkerable && (key.isTab() || key.isSpace());
+
         this.run(postEditor => {
           if (!isCollapsed) {
             nextPosition = postEditor.deleteRange(range);
+            didEdit = true;
           }
 
-          let isMarkerable = range.head.section.isMarkerable;
-          if (isMarkerable &&
-              (key.isTab() || key.isSpace())
-             ) {
+          if (isVisibleWhitespace) {
             let toInsert = key.isTab() ? TAB : SPACE;
             shouldPreventDefault = true;
+            didEdit = true;
             nextPosition = postEditor.insertText(nextPosition, toInsert);
           }
 
           if (nextPosition.marker && nextPosition.marker.isAtom) {
+            didEdit = true;
             // ensure that the cursor is properly repositioned one character forward
             // after typing on either side of an atom
             this.addCallbackOnce(CALLBACK_QUEUES.DID_REPARSE, () => {
@@ -684,7 +705,13 @@ class Editor {
             });
           }
           if (nextPosition && nextPosition !== range.head) {
+            didEdit = true;
             postEditor.setRange(new Range(nextPosition));
+          }
+
+          if (!didEdit) {
+            // this ensures we don't push an empty snapshot onto the undo stack
+            postEditor.cancelSnapshot();
           }
         });
         if (shouldPreventDefault) {

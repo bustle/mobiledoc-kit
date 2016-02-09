@@ -1261,6 +1261,18 @@ class PostEditor {
     // will read the dom
     this.editor.range = null;
   }
+
+  undoLastChange() {
+    this.editor._editHistory.stepBackward(this);
+  }
+
+  redoLastChange() {
+    this.editor._editHistory.stepForward(this);
+  }
+
+  cancelSnapshot() {
+    this._shouldCancelSnapshot = true;
+  }
 }
 
 mixin(PostEditor, LifecycleCallbacksMixin);

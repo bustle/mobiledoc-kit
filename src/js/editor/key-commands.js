@@ -104,6 +104,20 @@ export const DEFAULT_KEY_COMMANDS = [{
       });
     }
   }
+}, {
+  str: 'META+Z',
+  run(editor) {
+    editor.run(postEditor => {
+      postEditor.undoLastChange();
+    });
+  }
+}, {
+  str: 'META+SHIFT+Z',
+  run(editor) {
+    editor.run(postEditor => {
+      postEditor.redoLastChange();
+    });
+  }
 }];
 
 function modifierNamesToMask(modiferNames) {

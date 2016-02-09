@@ -1,5 +1,5 @@
 import { clearSelection } from 'mobiledoc-kit/utils/selection-utils';
-import { forEach } from 'mobiledoc-kit/utils/array-utils';
+import { forEach, contains } from 'mobiledoc-kit/utils/array-utils';
 import KEY_CODES from 'mobiledoc-kit/utils/keycodes';
 import { DIRECTION, MODIFIERS }  from 'mobiledoc-kit/utils/key';
 import { isTextNode } from 'mobiledoc-kit/utils/dom-utils';
@@ -226,11 +226,15 @@ function insertText(editor, string) {
 
 // triggers a key sequence like cmd-B on the editor, to test out
 // registered keyCommands
-function triggerKeyCommand(editor, string, modifier) {
+function triggerKeyCommand(editor, string, modifiers=[]) {
+  if (typeof modifiers === "number") {
+    modifiers = [modifiers]; // convert singular to array
+  }
   let keyEvent = createMockEvent('keydown', editor.element, {
     keyCode: string.toUpperCase().charCodeAt(0),
-    metaKey: modifier === MODIFIERS.META,
-    ctrlKey: modifier === MODIFIERS.CTRL
+    shiftKey: contains(modifiers, MODIFIERS.SHIFT),
+    metaKey: contains(modifiers, MODIFIERS.META),
+    ctrlKey: contains(modifiers, MODIFIERS.CTRL)
   });
   editor.triggerEvent(editor.element, 'keydown', keyEvent);
 }
@@ -313,6 +317,12 @@ function fromHTML(html) {
   return div;
 }
 
+function findTextNode(parentElement, text) {
+  return walkDOMUntil(parentElement, node => {
+    return isTextNode(node) && node.textContent.indexOf(text) !== -1;
+  });
+}
+
 const DOMHelper = {
   moveCursorTo,
   selectRange,
@@ -337,7 +347,8 @@ const DOMHelper = {
   getCopyData,
   setCopyData,
   clearCopyData,
-  createMockEvent
+  createMockEvent,
+  findTextNode
 };
 
 export { triggerEvent };
