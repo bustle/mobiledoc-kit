@@ -116,7 +116,8 @@ export default class MutationHandler {
         break;
     }
 
-    let attachedNodes = filter(nodes, node => !!node.parentNode);
+    let element = this.editor.element;
+    let attachedNodes = filter(nodes, node => element.contains(node));
     return attachedNodes;
   }
 
