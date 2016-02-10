@@ -126,6 +126,7 @@ export default class Post {
   walkLeafSections(range, callback) {
     const { head, tail } = range;
 
+    let index = 0;
     let nextSection, shouldStop;
     let currentSection = head.section;
 
@@ -133,7 +134,8 @@ export default class Post {
       nextSection = this._nextLeafSection(currentSection);
       shouldStop = currentSection === tail.section;
 
-      callback(currentSection);
+      callback(currentSection, index);
+      index++;
 
       if (shouldStop) {
         break;
@@ -164,8 +166,8 @@ export default class Post {
       }
     };
 
-    const headTopLevelSection = findParent(head.section, s => !!s.post);
-    const tailTopLevelSection = findParent(tail.section, s => !!s.post);
+    const headTopLevelSection = findParent(head.section, s => s.parent === s.post);
+    const tailTopLevelSection = findParent(tail.section, s => s.parent === s.post);
 
     if (headTopLevelSection === tailTopLevelSection) {
       return containedSections;
@@ -196,9 +198,8 @@ export default class Post {
     if (!section) { return null; }
     const hasChildren  = s => !!s.items;
     const firstChild   = s => s.items.head;
-    const isChild      = s => s.parent && !s.post;
-    const parent       = s => s.parent;
 
+    // FIXME this can be refactored to use `isLeafSection`
     const next = section.next;
     if (next) {
       if (hasChildren(next)) { // e.g. a ListSection
@@ -206,13 +207,11 @@ export default class Post {
       } else {
         return next;
       }
-    } else {
-      if (isChild(section)) {
-        // if there is no section after this, but this section is a child
-        // (e.g. a ListItem inside a ListSection), check for a markerable
-        // section after its parent
-        return this._nextLeafSection(parent(section));
-      }
+    } else if (section.isNested) {
+      // if there is no section after this, but this section is a child
+      // (e.g. a ListItem inside a ListSection), check for a markerable
+      // section after its parent
+      return this._nextLeafSection(section.parent);
     }
   }
 

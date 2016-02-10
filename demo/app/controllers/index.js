@@ -7,7 +7,7 @@ let { $ } = Ember;
 export default Ember.Controller.extend({
   init() {
     this._super.apply(this, arguments);
-    let mobiledoc = mobiledocs['mentionAtom'];
+    let mobiledoc = mobiledocs['simple'];
     this.set('mobiledoc', mobiledoc);
     this.set('editedMobiledoc', mobiledoc);
     this.set('rendererName', 'dom');

@@ -114,6 +114,28 @@ test('#walkMarkerableSections skips non-markerable sections', (assert) => {
 
 });
 
+test('#walkAllLeafSections returns markup section that follows a list section', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker, listSection, listItem}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('def')]),
+      listSection('ul', [
+        listItem([marker('123')])
+      ]),
+      markupSection('p')
+    ]);
+  });
+
+  let sections = [];
+  post.walkAllLeafSections(s => sections.push(s));
+
+  assert.equal(sections.length, 4);
+  assert.ok(sections[0] === post.sections.head, 'section 0');
+  assert.ok(sections[1] === post.sections.objectAt(1), 'section 1');
+  assert.ok(sections[2] === post.sections.objectAt(2).items.head, 'section 2');
+  assert.ok(sections[3] === post.sections.tail, 'section 3');
+});
+
 test('#markupsInRange returns all markups', (assert) => {
   let b, i, a1, a2, found;
   const post = Helpers.postAbstract.build(builder => {

@@ -83,6 +83,17 @@ const Position = class Position {
     return new Position(this.section, this.offset);
   }
 
+  get leafSectionIndex() {
+    let post = this.section.post;
+    let leafSectionIndex;
+    post.walkAllLeafSections((section, index) => {
+      if (section === this.section) {
+        leafSectionIndex = index;
+      }
+    });
+    return leafSectionIndex;
+  }
+
   get isMarkerable() {
     return this.section && this.section.isMarkerable;
   }

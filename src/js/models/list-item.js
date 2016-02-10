@@ -41,4 +41,8 @@ export default class ListItem extends Markerable {
     this.markers.forEach(m => item.markers.append(m.clone()));
     return item;
   }
+
+  get post() {
+    return this.section.post;
+  }
 }

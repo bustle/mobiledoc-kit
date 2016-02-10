@@ -61,11 +61,15 @@ editor.render(element);
 * `placeholder` - [string] default text to show before a user starts typing.
 * `spellcheck` - [boolean] whether to enable spellcheck. Defaults to true.
 * `autofocus` - [boolean] When true, focuses on the editor when it is rendered.
+* `undoDepth` - [number] How many undo levels should be available. Default
+  value is five. Set this to zero to disable undo/redo.
 * `cards` - [array] The list of cards that the editor may render
 * `atoms` - [array] The list of atoms that the editor may render
 * `cardOptions` - [object] Options passed to cards and atoms
-* `unknownCardHandler` - [function] This will be invoked by the editor-renderer whenever it encounters an unknown card
-* `unknownAtomHandler` - [function] This will be invoked by the editor-renderer whenever it encounters an unknown atom
+* `unknownCardHandler` - [function] This will be invoked by the editor-renderer
+  whenever it encounters an unknown card
+* `unknownAtomHandler` - [function] This will be invoked by the editor-renderer
+  whenever it encounters an unknown atom
 
 ### Editor API
 
