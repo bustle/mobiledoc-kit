@@ -197,7 +197,7 @@ test('undo insertion of character to a list item', (assert) => {
     assert.positionIsEqual(tail, new Position(section, 'abcD'.length));
 
     done();
-  });
+  }, 0);
 });
 
 test('undo stack length can be configured', (assert) => {
@@ -232,7 +232,7 @@ test('undo stack length can be configured', (assert) => {
       assert.positionIsEqual(editor.range.head, editor.post.sections.head.tailPosition());
 
       done();
-    });
+    }, 0);
   });
 });
 
@@ -262,7 +262,7 @@ test('undo stack length can be configured', (assert) => {
       assert.positionIsEqual(editor.range.head, editor.post.sections.head.tailPosition());
 
       done();
-    });
+    }, 0);
   });
 
 });
@@ -285,6 +285,86 @@ test('taking and restoring a snapshot with no cursor', (assert) => {
   assert.postIsSimilar(editor.post, afterUndo, 'text is removed');
 });
 
-// FIXME test that the queue length is respected (only 5 undoes or redoes)
-// FIXME test that making a change clears the redo queue
-// FIXME test undoing, redoing, undoing again
+test('take and undo a snapshot based on drag/dropping of text', (assert) => {
+  let done = assert.async();
+  let text = 'abc';
+  let beforeUndo, afterUndo;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+     beforeUndo = post([markupSection('p', [marker(text)])]);
+     afterUndo = post([markupSection('p', [marker('a')])]);
+     return afterUndo;
+  });
+
+  let textNode = Helpers.dom.findTextNode(editorElement, 'a');
+  textNode.textContent = text;
+
+  // Allow the mutation observer to fire, then...
+  setTimeout(function() {
+    assert.postIsSimilar(editor.post, beforeUndo, 'precond - text is added');
+    undo(editor);
+    assert.postIsSimilar(editor.post, afterUndo, 'text is removed');
+    done();
+  }, 0);
+});
+
+test('take and undo a snapshot when adding a card', (assert) => {
+  let text = 'abc';
+  let myCard = {
+    name: 'my-card',
+    type: 'dom',
+    render() {
+      return document.createTextNode('card contents');
+    }
+  };
+
+  let beforeUndo, afterUndo;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, cardSection}) => {
+     beforeUndo = post([
+       markupSection('p', [marker(text)]),
+       cardSection('my-card', {})
+     ]);
+     afterUndo = post([markupSection('p', [marker(text)])]);
+     return afterUndo;
+  }, {
+    cards: [myCard]
+  });
+
+  editor.run(postEditor => {
+    let card = editor.builder.createCardSection('my-card', {});
+    postEditor.insertSectionBefore(editor.post.sections, card, null);
+  });
+
+  assert.postIsSimilar(editor.post, beforeUndo, 'precond - card is added');
+  undo(editor);
+  assert.postIsSimilar(editor.post, afterUndo, 'card is removed');
+});
+
+test('take and undo a snapshot when removing an atom', (assert) => {
+  let text = 'abc';
+  let myAtom = {
+    name: 'my-atom',
+    type: 'dom',
+    render() {
+      return document.createTextNode('atom contents');
+    }
+  };
+
+  let beforeUndo, afterUndo;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+     beforeUndo = post([markupSection('p', [marker(text)])]);
+     afterUndo = post([
+       markupSection('p', [marker(text), atom('my-atom', 'content', {})]),
+     ]);
+     return afterUndo;
+  }, {
+    atoms: [myAtom]
+  });
+
+  editor.run(postEditor => {
+    postEditor.removeMarker(editor.post.sections.head.markers.tail);
+  });
+
+  assert.postIsSimilar(editor.post, beforeUndo, 'precond - atom is removed');
+  undo(editor);
+  assert.postIsSimilar(editor.post, afterUndo, 'atom is restored');
+});
