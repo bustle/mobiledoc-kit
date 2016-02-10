@@ -1,6 +1,19 @@
-<a name="0.8.3"></a>
-## 0.8.3 (2016-02-10)
+<a name="0.8.4"></a>
+## 0.8.4 (2016-02-10)
 
+
+
+
+<a name="0.8.4"></a>
+## 0.8.4 (2016-02-10)
+
+
+* 0.8.4 ([bc9da8b](https://github.com/bustlelabs/mobiledoc-kit/commit/bc9da8b))
+* Add further undo/redo tests ([2164ea5](https://github.com/bustlelabs/mobiledoc-kit/commit/2164ea5))
+* Do not permit changes inside cards to reparse ([7b5c272](https://github.com/bustlelabs/mobiledoc-kit/commit/7b5c272))
+* Merge pull request #320 from mixonic/undo-redo-tests ([7690aa1](https://github.com/bustlelabs/mobiledoc-kit/commit/7690aa1))
+* Merge pull request #321 from mixonic/mutation-observer-cards ([174e287](https://github.com/bustlelabs/mobiledoc-kit/commit/174e287))
+* Update changelog ([e94e13f](https://github.com/bustlelabs/mobiledoc-kit/commit/e94e13f))
 
 
 
