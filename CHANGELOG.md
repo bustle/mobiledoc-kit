@@ -1,14 +1,20 @@
-<a name="0.8.2"></a>
-## 0.8.2 (2016-02-08)
+<a name="0.8.3"></a>
+## 0.8.3 (2016-02-10)
 
 
 
 
-<a name="0.8.2"></a>
-## 0.8.2 (2016-02-08)
+<a name="0.8.3"></a>
+## 0.8.3 (2016-02-10)
 
 
-* 0.8.2 ([64ddb89](https://github.com/bustlelabs/mobiledoc-kit/commit/64ddb89))
+### demo
+
+* demo: use simple mobiledoc by default ([00e9388](https://github.com/bustlelabs/mobiledoc-kit/commit/00e9388))
+
+* 0.8.2 ([b215e45](https://github.com/bustlelabs/mobiledoc-kit/commit/b215e45))
+* 0.8.3 ([75f117b](https://github.com/bustlelabs/mobiledoc-kit/commit/75f117b))
+* Add EditHistory, wire META+Z to undo last change ([5e6a3d5](https://github.com/bustlelabs/mobiledoc-kit/commit/5e6a3d5))
 * built website from 1d2b96df65db79a8e3a9debae0f98003fe43f84f ([81f94f1](https://github.com/bustlelabs/mobiledoc-kit/commit/81f94f1))
 * built website from 2a90e8a48c5dc9e0eeac16ea785adcd74060290e ([bd4093a](https://github.com/bustlelabs/mobiledoc-kit/commit/bd4093a))
 * built website from a3096f4ce144a5bb7df74f35a2067718a5158838 ([2a90e8a](https://github.com/bustlelabs/mobiledoc-kit/commit/2a90e8a))
@@ -16,7 +22,15 @@
 * editor#serialize accepts version parameter ([e27bf9b](https://github.com/bustlelabs/mobiledoc-kit/commit/e27bf9b))
 * https URLs for placeholder ([1d2b96d](https://github.com/bustlelabs/mobiledoc-kit/commit/1d2b96d))
 * Merge pull request #315 from bustlelabs/editor-serialize-version ([18ddc1d](https://github.com/bustlelabs/mobiledoc-kit/commit/18ddc1d))
+* Merge pull request #316 from mixonic/range ([3b27afe](https://github.com/bustlelabs/mobiledoc-kit/commit/3b27afe))
+* Merge pull request #317 from bustlelabs/use-node-contains-mutation-handling ([f8962c4](https://github.com/bustlelabs/mobiledoc-kit/commit/f8962c4))
+* Merge pull request #318 from bustlelabs/undo-redo-149 ([83f12ac](https://github.com/bustlelabs/mobiledoc-kit/commit/83f12ac))
+* Migrate cursor API usage over to range ([b56aa16](https://github.com/bustlelabs/mobiledoc-kit/commit/b56aa16))
 * Update changelog ([2667468](https://github.com/bustlelabs/mobiledoc-kit/commit/2667468))
+* Update changelog ([4aeaedb](https://github.com/bustlelabs/mobiledoc-kit/commit/4aeaedb))
+* Update README.md ([94bb0a3](https://github.com/bustlelabs/mobiledoc-kit/commit/94bb0a3))
+* Update README.md ([6e972dd](https://github.com/bustlelabs/mobiledoc-kit/commit/6e972dd))
+* Use `node.contains` instead of checking element.parentNode in mutations ([ea9c849](https://github.com/bustlelabs/mobiledoc-kit/commit/ea9c849))
 
 
 
