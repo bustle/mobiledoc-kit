@@ -238,3 +238,36 @@ test('inserting text into text node on left/right of atom is reparsed correctly'
     });
   });
 });
+
+test('mutation inside card element does not cause reparse', (assert) => {
+  let done = assert.async();
+  let parseCount = 0;
+  let myCard = {
+    name: 'my-card',
+    type: 'dom',
+    render() {
+      return document.createTextNode('howdy');
+    }
+  };
+
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, cardSection}) => {
+    return post([
+      cardSection('my-card', {})
+    ]);
+  }, {
+    cards: [myCard]
+  });
+
+  editor.didUpdatePost(() => {
+    parseCount++;
+  });
+
+  let textNode = Helpers.dom.findTextNode(editorElement, 'howdy');
+  textNode.textContent = 'adios';
+
+  // Allow the mutation observer to fire then...
+  setTimeout(function() {
+    assert.equal(0, parseCount);
+    done();
+  }, 0);
+});

@@ -85,9 +85,12 @@ export default class MutationHandler {
       let nodes = this._findTargetNodes(mutations[i]);
 
       for (let j=0; j < nodes.length; j++) {
-        let section = this._findSectionFromNode(nodes[j]);
-        if (section) {
-          sections.add(section);
+        let node = nodes[j];
+        let renderNode = this._findSectionRenderNodeFromNode(node);
+        if (renderNode) {
+          if (renderNode.reparsesMutationOfChildNode(node)) {
+            sections.add(renderNode.postNode);
+          }
         } else {
           reparsePost = true;
           break;
@@ -121,10 +124,10 @@ export default class MutationHandler {
     return attachedNodes;
   }
 
-  _findSectionFromNode(node) {
-    let rn = this.renderTree.findRenderNodeFromElement(node, (rn) => {
+  _findSectionRenderNodeFromNode(node) {
+    return this.renderTree.findRenderNodeFromElement(node, (rn) => {
       return rn.postNode.isSection;
     });
-    return rn && rn.postNode;
   }
+
 }

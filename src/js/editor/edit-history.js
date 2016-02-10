@@ -23,7 +23,7 @@ export class Snapshot {
 
   snapshotRange() {
     let { range, cursor } = this.editor;
-    if (cursor.hasCursor()) {
+    if (cursor.hasCursor() && !range.isBlank) {
       let { head, tail } = range;
       this.range = {
         head: [head.leafSectionIndex, head.offset],
@@ -99,16 +99,8 @@ export default class EditHistory {
     let { builder, post } = editor;
     let restoredPost = mobiledocParsers.parse(builder, mobiledoc);
 
-    // remove existing sections
-    post.sections.toArray().forEach(section => {
-      postEditor.removeSection(section);
-    });
-
-    // append restored sections
-    restoredPost.sections.toArray().forEach(section => {
-      restoredPost.sections.remove(section);
-      postEditor.insertSectionBefore(post.sections, section, null);
-    });
+    postEditor.removeAllSections();
+    postEditor.migrateSectionsFromPost(restoredPost);
 
     // resurrect snapshotted range if it exists
     let newRange = snapshot.getRange(post);

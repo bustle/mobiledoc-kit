@@ -74,4 +74,10 @@ export default class RenderNode extends LinkedItem {
     this.postNode = null;
     this.renderTree = null;
   }
+  reparsesMutationOfChildNode(node) {
+    if (this.postNode.isCardSection) {
+      return !this.cardNode.element.contains(node);
+    }
+    return true;
+  }
 }

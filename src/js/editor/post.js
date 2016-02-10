@@ -1188,6 +1188,19 @@ class PostEditor {
     }
   }
 
+  removeAllSections() {
+    this.editor.post.sections.toArray().forEach(section => {
+      this.removeSection(section);
+    });
+  }
+
+  migrateSectionsFromPost(post) {
+    post.sections.toArray().forEach(section => {
+      post.sections.remove(section);
+      this.insertSectionBefore(this.editor.post.sections, section, null);
+    });
+  }
+
   _scheduleListRemovalIfEmpty(listSection) {
     this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, () => {
       // if the list is attached and blank after we do other rendering stuff,
