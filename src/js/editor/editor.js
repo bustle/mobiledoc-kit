@@ -327,10 +327,11 @@ class Editor {
   }
 
   _reparsePost() {
-    this.post = this._parser.parse(this.element);
-    this._renderTree = new RenderTree(this.post);
-    clearChildNodes(this.element);
-    this.rerender();
+    let post = this._parser.parse(this.element);
+    this.run(postEditor => {
+      postEditor.removeAllSections();
+      postEditor.migrateSectionsFromPost(post);
+    });
 
     this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
     this.didUpdate();
