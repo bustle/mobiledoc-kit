@@ -1,6 +1,18 @@
-<a name="0.8.4"></a>
-## 0.8.4 (2016-02-10)
+<a name="0.8.5"></a>
+## 0.8.5 (2016-02-11)
 
+
+
+
+<a name="0.8.5"></a>
+## 0.8.5 (2016-02-11)
+
+
+* 0.8.5 ([d062577](https://github.com/bustlelabs/mobiledoc-kit/commit/d062577))
+* bump to 0.8.5 ([037ff4a](https://github.com/bustlelabs/mobiledoc-kit/commit/037ff4a))
+* Expose version ([9a49660](https://github.com/bustlelabs/mobiledoc-kit/commit/9a49660))
+* Merge pull request #324 from bustlelabs/expose-version ([c5bee61](https://github.com/bustlelabs/mobiledoc-kit/commit/c5bee61))
+* Update changelog ([3a097cd](https://github.com/bustlelabs/mobiledoc-kit/commit/3a097cd))
 
 
 
