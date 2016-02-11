@@ -2,7 +2,6 @@ import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-3';
 import Range from 'mobiledoc-kit/utils/cursor/range';
-import { detectIE11 } from '../helpers/browsers';
 
 const { test, module } = Helpers;
 
@@ -48,96 +47,88 @@ module('Acceptance: Atoms', {
   }
 });
 
-if (!detectIE11()) {
-  // TODO: Make this test pass on IE11
-  test('keystroke of character before starting atom inserts character', (assert) => {
-    let done = assert.async();
-    let expected;
-    editor = Helpers.mobiledoc.renderInto(editorElement, ({post, atom, markupSection, marker}) => {
-      expected = post([markupSection('p', [marker('A'), atom('simple-atom', 'first')])]);
-      return post([markupSection('p', [atom('simple-atom', 'first')])]);
-    }, editorOptions);
+test('keystroke of character before starting atom inserts character', (assert) => {
+  let done = assert.async();
+  assert.expect(2);
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, atom, markupSection, marker}) => {
+    expected = post([markupSection('p', [marker('A'), atom('simple-atom', 'first')])]);
+    return post([markupSection('p', [atom('simple-atom', 'first')])]);
+  }, editorOptions);
 
-    editor.selectRange(new Range(editor.post.headPosition()));
-    Helpers.dom.insertText(editor, 'A');
+  editor.selectRange(new Range(editor.post.headPosition()));
+  Helpers.dom.insertText(editor, 'A');
 
-    setTimeout(() => {
-      assert.postIsSimilar(editor.post, expected);
-      assert.renderTreeIsEqual(editor._renderTree, expected);
-      done();
-    });
+  setTimeout(() => {
+    assert.postIsSimilar(editor.post, expected);
+    assert.renderTreeIsEqual(editor._renderTree, expected);
+    done();
   });
-}
+});
 
-if (!detectIE11()) {
-  // TODO: Make this test pass on IE11
-  test('keystroke of character before mid-text atom inserts character', (assert) => {
-    let done = assert.async();
-    let expected;
-    editor = Helpers.mobiledoc.renderInto(editorElement, ({post, atom, markupSection, marker}) => {
-      expected = post([markupSection('p', [marker('ABC'), atom('simple-atom', 'first')])]);
-      return post([markupSection('p', [marker('AB'), atom('simple-atom', 'first')])]);
-    }, editorOptions);
+test('keystroke of character before mid-text atom inserts character', (assert) => {
+  let done = assert.async();
+  assert.expect(2);
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, atom, markupSection, marker}) => {
+    expected = post([markupSection('p', [marker('ABC'), atom('simple-atom', 'first')])]);
+    return post([markupSection('p', [marker('AB'), atom('simple-atom', 'first')])]);
+  }, editorOptions);
 
-    editor.selectRange(Range.create(editor.post.sections.head, 'AB'.length));
-    Helpers.dom.insertText(editor, 'C');
+  editor.selectRange(Range.create(editor.post.sections.head, 'AB'.length));
+  Helpers.dom.insertText(editor, 'C');
 
-    setTimeout(() => {
-      assert.postIsSimilar(editor.post, expected);
-      assert.renderTreeIsEqual(editor._renderTree, expected);
-      done();
-    });
+  setTimeout(() => {
+    assert.postIsSimilar(editor.post, expected);
+    assert.renderTreeIsEqual(editor._renderTree, expected);
+    done();
   });
-}
+});
 
-if (!detectIE11()) {
-  // TODO: Make this test pass on IE11
-  test('keystroke of character after mid-text atom inserts character', (assert) => {
-    let done = assert.async();
-    let expected;
-    editor = Helpers.mobiledoc.renderInto(editorElement, ({post, atom, markupSection, marker}) => {
-      expected = post([markupSection('p', [atom('simple-atom', 'first'), marker('ABC')])]);
-      return post([markupSection('p', [atom('simple-atom', 'first'), marker('BC')])]);
-    }, editorOptions);
+test('keystroke of character after mid-text atom inserts character', (assert) => {
+  let done = assert.async();
+  assert.expect(2);
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, atom, markupSection, marker}) => {
+    expected = post([markupSection('p', [atom('simple-atom', 'first'), marker('ABC')])]);
+    return post([markupSection('p', [atom('simple-atom', 'first'), marker('BC')])]);
+  }, editorOptions);
 
-    editor.selectRange(Range.create(editor.post.sections.head, 1));
-    Helpers.dom.insertText(editor, 'A');
+  editor.selectRange(Range.create(editor.post.sections.head, 1));
+  Helpers.dom.insertText(editor, 'A');
 
-    setTimeout(() => {
-      assert.postIsSimilar(editor.post, expected);
-      assert.renderTreeIsEqual(editor._renderTree, expected);
-      done();
-    });
+  setTimeout(() => {
+    assert.postIsSimilar(editor.post, expected);
+    assert.renderTreeIsEqual(editor._renderTree, expected);
+    done();
   });
-}
+});
 
-if (!detectIE11()) {
-  // TODO: Make this test pass on IE11
-  test('keystroke of character after end-text atom inserts character', (assert) => {
-    let done = assert.async();
-    let expected;
-    editor = Helpers.mobiledoc.renderInto(editorElement, ({post, atom, markupSection, marker}) => {
-      expected = post([markupSection('p', [atom('simple-atom', 'first'), marker('A')])]);
-      return post([markupSection('p', [atom('simple-atom', 'first')])]);
-    }, editorOptions);
+test('keystroke of character after end-text atom inserts character', (assert) => {
+  let done = assert.async();
+  assert.expect(2);
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, atom, markupSection, marker}) => {
+    expected = post([markupSection('p', [atom('simple-atom', 'first'), marker('A')])]);
+    return post([markupSection('p', [atom('simple-atom', 'first')])]);
+  }, editorOptions);
 
-    editor.selectRange(Range.create(editor.post.sections.head, 1));
-    Helpers.dom.insertText(editor, 'A');
+  editor.selectRange(Range.create(editor.post.sections.head, 1));
+  Helpers.dom.insertText(editor, 'A');
 
-    setTimeout(() => {
-      assert.postIsSimilar(editor.post, expected);
-      assert.renderTreeIsEqual(editor._renderTree, expected);
-      done();
-    });
+  setTimeout(() => {
+    assert.postIsSimilar(editor.post, expected);
+    assert.renderTreeIsEqual(editor._renderTree, expected);
+    done();
   });
-}
+});
 
 test('keystroke of delete removes character after atom', (assert) => {
   editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
   editor.render(editorElement);
 
   let pNode = $('#editor p')[0];
-  Helpers.dom.moveCursorTo(pNode.lastChild, 1);
+  Helpers.dom.moveCursorTo(editor, pNode.lastChild, 1);
   Helpers.dom.triggerDelete(editor);
 
   assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
@@ -155,7 +146,7 @@ test('keystroke of delete removes atom', (assert) => {
   editor.render(editorElement);
 
   let pNode = $('#editor p')[0];
-  Helpers.dom.moveCursorTo(pNode.lastChild, 0);
+  Helpers.dom.moveCursorTo(editor, pNode.lastChild, 0);
   Helpers.dom.triggerDelete(editor);
 
   assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
@@ -171,7 +162,7 @@ test('keystroke of forward delete removes atom', (assert) => {
   editor.render(editorElement);
 
   let pNode = $('#editor p')[0];
-  Helpers.dom.moveCursorTo(pNode.firstChild, 16);
+  Helpers.dom.moveCursorTo(editor, pNode.firstChild, 16);
   Helpers.dom.triggerForwardDelete(editor);
 
   assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
@@ -187,7 +178,7 @@ test('keystroke of enter in section with atom creates new section', (assert) => 
   editor.render(editorElement);
 
   let pNode = $('#editor p')[0];
-  Helpers.dom.moveCursorTo(pNode.lastChild, 1);
+  Helpers.dom.moveCursorTo(editor, pNode.lastChild, 1);
   Helpers.dom.triggerEnter(editor);
 
   assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
@@ -210,7 +201,7 @@ test('keystroke of enter after atom and before marker creates new section', (ass
   editor.render(editorElement);
 
   let pNode = $('#editor p')[0];
-  Helpers.dom.moveCursorTo(pNode.lastChild, 0);
+  Helpers.dom.moveCursorTo(editor, pNode.lastChild, 0);
   Helpers.dom.triggerEnter(editor);
 
   assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
@@ -232,7 +223,7 @@ test('keystroke of enter before atom and after marker creates new section', (ass
   editor.render(editorElement);
 
   let pNode = $('#editor p')[0];
-  Helpers.dom.moveCursorTo(pNode.firstChild, 16);
+  Helpers.dom.moveCursorTo(editor, pNode.firstChild, 16);
   Helpers.dom.triggerEnter(editor);
 
   assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
@@ -322,35 +313,34 @@ test('marking atom with markup adds markup', (assert) => {
     }));
 });
 
-if (!detectIE11()) {
-  // TODO: Make this test pass on IE11
-  test('typing between two atoms inserts character', (assert) => {
-    let done = assert.async();
-    let expected;
-    editor = Helpers.mobiledoc.renderInto(
-      editorElement, ({post, markupSection, atom, marker}) => {
-        expected = post([markupSection('p', [
-          atom('simple-atom', 'first'),
-          marker('A'),
-          atom('simple-atom', 'last')
-        ])]);
-        return post([markupSection('p', [
-          atom('simple-atom', 'first'),
-          atom('simple-atom', 'last')
-        ])]);
-      }, editorOptions);
+test('typing between two atoms inserts character', (assert) => {
+  let done = assert.async();
+  assert.expect(2);
 
-      editor.selectRange(Range.create(editor.post.sections.head, 1));
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(
+    editorElement, ({post, markupSection, atom, marker}) => {
+      expected = post([markupSection('p', [
+        atom('simple-atom', 'first'),
+        marker('A'),
+        atom('simple-atom', 'last')
+      ])]);
+      return post([markupSection('p', [
+        atom('simple-atom', 'first'),
+        atom('simple-atom', 'last')
+      ])]);
+    }, editorOptions);
 
-      Helpers.dom.insertText(editor, 'A');
+    editor.selectRange(Range.create(editor.post.sections.head, 1));
 
-      setTimeout(() => {
-        assert.postIsSimilar(editor.post, expected);
-        assert.renderTreeIsEqual(editor._renderTree, expected);
-        done();
-      });
-  });
-}
+    Helpers.dom.insertText(editor, 'A');
+
+    setTimeout(() => {
+      assert.postIsSimilar(editor.post, expected);
+      assert.renderTreeIsEqual(editor._renderTree, expected);
+      done();
+    });
+});
 
 test('delete selected text including atom deletes atom', (assert) => {
   let expected;

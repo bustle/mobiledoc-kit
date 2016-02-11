@@ -124,4 +124,13 @@ export default class PostNodeBuilder {
 
     return markup;
   }
+
+  /**
+   * @param {Markup|String} markupOrString
+   * @return {Markup}
+   */
+  _coerceMarkup(markupOrString, attributes={}) {
+    let tagName = typeof markupOrString === 'string' ? markupOrString : markupOrString.tagName;
+    return this.createMarkup(tagName, attributes);
+  }
 }

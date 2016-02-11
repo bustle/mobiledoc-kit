@@ -107,12 +107,19 @@ export default class Post {
   markupsInRange(range) {
     const markups = new Set();
 
-    this.walkMarkerableSections(range, (section) => {
-      forEach(
-        section.markupsInRange(range.trimTo(section)),
-        m => markups.add(m)
-      );
-    });
+    if (range.isCollapsed) {
+      let marker = range.head.marker;
+      if (marker) {
+        marker.markups.forEach(m => markups.add(m));
+      }
+    } else {
+      this.walkMarkerableSections(range, (section) => {
+        forEach(
+          section.markupsInRange(range.trimTo(section)),
+          m => markups.add(m)
+        );
+      });
+    }
 
     return markups.toArray();
   }

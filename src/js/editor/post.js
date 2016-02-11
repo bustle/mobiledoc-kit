@@ -27,19 +27,18 @@ class PostEditor {
     this._didScheduleUpdate = false;
     this._didComplete = false;
 
-    this._renderRange = () => this.editor.renderRange();
+    this._renderRange = () => this.editor.renderRange(this._range);
   }
 
   begin() {
-    // mark the editor's range as "dirty"
-    // this forces the editor to cache its range so that
-    // it doesn't try to read from DOM while we are modifying the post abstract
-    this.editor.range = this.editor.cursor.offsets;
+    // cache the editor's range
+    this._range = this.editor.range;
   }
 
   setRange(range) {
-    // TODO validate that the range is valid (does not contain marked-for-removal head or tail sections?)
-    this.editor.range = range;
+    // TODO validate that the range is valid
+    // (does not contain marked-for-removal head or tail sections?)
+    this._range = range;
     this.addCallbackOnce(CALLBACK_QUEUES.AFTER_COMPLETE, this._renderRange);
   }
 
@@ -248,7 +247,8 @@ class PostEditor {
   }
 
   _joinContiguousListSections() {
-    let { post, range } = this.editor;
+    let { post } = this.editor;
+    let range = this._range;
     let prev;
     let groups = [];
     let currentGroup;
@@ -745,14 +745,23 @@ class PostEditor {
     return nextPosition;
   }
 
+  insertTextWithMarkup(position, text, markups=[]) {
+    let { section } = position;
+    if (!section.isMarkerable) { return; }
+    let marker = this.builder.createMarker(text, markups);
+    return this.insertMarkers(position, [marker]);
+  }
+
+  /**
+   * Insert the text at the given position
+   * Inherits the markups already at that position, if any
+   */
   insertText(position, text) {
     let { section } = position;
     if (!section.isMarkerable) { return; }
-
     let markups = position.marker && position.marker.markups;
     markups = markups || [];
-    let marker = this.builder.createMarker(text, markups.slice());
-    return this.insertMarkers(position, [marker]);
+    return this.insertTextWithMarkup(position, text, markups);
   }
 
   _replaceSection(section, newSections) {
@@ -858,7 +867,7 @@ class PostEditor {
    * @param {Range} range in which to toggle, defaults to current editor range
    * @public
    */
-  toggleMarkup(markupOrMarkupString, range=this.editor.range) {
+  toggleMarkup(markupOrMarkupString, range=this._range) {
     const markup = typeof markupOrMarkupString === 'string' ?
                      this.builder.createMarkup(markupOrMarkupString) :
                      markupOrMarkupString;
@@ -888,7 +897,7 @@ class PostEditor {
    * a list section
    * @public
    */
-  toggleSection(sectionTagName, range=this.editor.range) {
+  toggleSection(sectionTagName, range=this._range) {
     sectionTagName = normalizeTagName(sectionTagName);
     let { post } = this.editor;
     let nextRange = range;
@@ -1270,9 +1279,7 @@ class PostEditor {
     this.runCallbacks(CALLBACK_QUEUES.COMPLETE);
     this.runCallbacks(CALLBACK_QUEUES.AFTER_COMPLETE);
 
-    // "clean" the editor's range so that subsequent reads of it
-    // will read the dom
-    this.editor.range = null;
+    this.editor._resetRange();
   }
 
   undoLastChange() {

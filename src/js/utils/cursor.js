@@ -73,13 +73,6 @@ const Cursor = class Cursor {
     return new Range(headPosition, tailPosition, direction);
   }
 
-  get activeSections() {
-    if (!this.hasCursor()) { return []; }
-
-    const {head, tail} = this.offsets;
-    return this.post.sections.readRange(head.section, tail.section);
-  }
-
   _findNodeForPosition(position) {
     let { section } = position;
     let node, offset;

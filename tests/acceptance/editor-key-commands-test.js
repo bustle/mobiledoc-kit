@@ -1,7 +1,6 @@
 import { Editor } from 'mobiledoc-kit';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Helpers from '../test-helpers';
-import { detectIE } from '../helpers/browsers';
 
 const { module, test } = Helpers;
 
@@ -31,52 +30,60 @@ function testStatefulCommand({modifier, key, command, markupName}) {
     editor.render(editorElement);
 
     assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
-    Helpers.dom.selectText(initialText, editorElement);
+    Helpers.dom.selectText(editor ,initialText, editorElement);
     Helpers.dom.triggerKeyCommand(editor, key, modifier);
 
     assert.hasElement(`#editor ${markupName}:contains(${initialText})`,
                       `text wrapped in ${markupName}`);
   });
 
-  if (!detectIE()) {
-    // FIXME: IE does not respect the current typing styles (such as an
-    // `execCommand('bold', false, null)`) when calling the `insertText`
-    // command. Skip these tests in IE until we can implement non-parsing
-    // text entry.
-    test(`${command} applies ${markupName} to next entered text`, (assert) => {
-      let done = assert.async();
-      let initialText = 'something';
-      const mobiledoc = Helpers.mobiledoc.build(
-        ({post, markupSection, marker}) => post([
-          markupSection('p', [marker(initialText)])
-        ]));
+  test(`${command} toggles ${markupName} for next entered text`, (assert) => {
+    let initialText = 'something';
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => post([
+        markupSection('p', [marker(initialText)])
+      ]));
 
-      editor = new Editor({mobiledoc});
-      editor.render(editorElement);
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
-      assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
-      Helpers.dom.moveCursorTo(
-        editor.post.sections.head.markers.head.renderNode.element,
-        initialText.length);
-      Helpers.dom.triggerKeyCommand(editor, key, modifier);
-      Helpers.dom.insertText(editor, 'z');
-      window.setTimeout(() => {
-        let changedMobiledoc = editor.serialize();
-        let expectedMobiledoc = Helpers.mobiledoc.build(
-          ({post, markupSection, marker, markup: buildMarkup}) => {
-            let markup = buildMarkup(markupName);
-            return post([
-              markupSection('p', [
-                marker(initialText),
-                marker('z', [markup])
-              ])
-            ]);
-        });
-        assert.deepEqual(changedMobiledoc, expectedMobiledoc);
-        done();
-      },0);
+    assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
+    Helpers.dom.moveCursorTo(editor, 
+      editor.post.sections.head.markers.head.renderNode.element,
+      initialText.length);
+    Helpers.dom.triggerKeyCommand(editor, key, modifier);
+    Helpers.dom.insertText(editor, 'z');
+
+    let expected1 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+      return post([
+        markupSection('p', [
+          marker(initialText),
+          marker('z', [markup(markupName)])
+        ])
+      ]);
     });
-  }
+    let expected2 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+      return post([
+        markupSection('p', [
+          marker(initialText),
+          marker('z', [markup(markupName)]),
+          marker('x')
+        ])
+      ]);
+    });
+
+    assert.postIsSimilar(editor.post, expected1);
+    assert.renderTreeIsEqual(editor._renderTree, expected1);
+    assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
+
+    // un-toggles markup
+    Helpers.dom.triggerKeyCommand(editor, key, modifier);
+    Helpers.dom.insertText(editor, 'x');
+
+    assert.postIsSimilar(editor.post, expected2);
+    assert.renderTreeIsEqual(editor._renderTree, expected2);
+    assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
+  });
 }
 
 testStatefulCommand({
@@ -89,7 +96,7 @@ testStatefulCommand({
 testStatefulCommand({
   modifier: MODIFIERS.CTRL,
   key: 'B',
-  command: 'command-B',
+  command: 'ctrl-B',
   markupName: 'strong'
 });
 
@@ -103,7 +110,7 @@ testStatefulCommand({
 testStatefulCommand({
   modifier: MODIFIERS.CTRL,
   key: 'I',
-  command: 'command-I',
+  command: 'ctrl-I',
   markupName: 'em'
 });
 
@@ -118,7 +125,7 @@ test(`ctrl-k clears to the end of a line`, (assert) => {
   editor.render(editorElement);
 
   let textElement = editor.post.sections.head.markers.head.renderNode.element;
-  Helpers.dom.moveCursorTo(textElement, 4);
+  Helpers.dom.moveCursorTo(editor, textElement, 4);
   Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.CTRL);
 
   let changedMobiledoc = editor.serialize();
@@ -145,7 +152,7 @@ test(`ctrl-k clears selected text`, (assert) => {
   editor.render(editorElement);
 
   let textElement = editor.post.sections.head.markers.head.renderNode.element;
-  Helpers.dom.moveCursorTo(textElement, 4, textElement, 8);
+  Helpers.dom.moveCursorTo(editor, textElement, 4, textElement, 8);
   Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.CTRL);
 
   let changedMobiledoc = editor.serialize();
@@ -176,7 +183,7 @@ test('cmd-k links selected text', (assert) => {
     callback(url);
   };
 
-  Helpers.dom.selectText('something', editorElement);
+  Helpers.dom.selectText(editor ,'something', editorElement);
   Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.META);
 
   assert.hasElement(`#editor a[href="${url}"]:contains(something)`);
@@ -198,7 +205,7 @@ test('cmd-k unlinks selected text if it was already linked', (assert) => {
   assert.hasElement(`#editor a[href="${url}"]:contains(something)`,
                     'precond -- has link');
 
-  Helpers.dom.selectText('something', editorElement);
+  Helpers.dom.selectText(editor ,'something', editorElement);
   Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.META);
 
   assert.hasNoElement(`#editor a[href="${url}"]:contains(something)`,
@@ -324,7 +331,7 @@ test('key commands can override built-in functionality', (assert) => {
   editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
-  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 5);
+  Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 5);
   Helpers.dom.triggerEnter(editor);
 
   assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
@@ -352,7 +359,7 @@ test('returning false from key command still runs built-in functionality', (asse
   editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
-  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 5);
+  Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 5);
   Helpers.dom.triggerEnter(editor);
 
   assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');

@@ -2,6 +2,8 @@ import Set from 'mobiledoc-kit/utils/set';
 import { forEach, filter } from 'mobiledoc-kit/utils/array-utils';
 import assert from 'mobiledoc-kit/utils/assert';
 import { containsNode } from 'mobiledoc-kit/utils/dom-utils';
+import Logger from 'mobiledoc-kit/utils/logger';
+let log = Logger.for('mutation-handler');
 
 const MUTATION = {
   NODES_CHANGED: 'childList',
@@ -17,6 +19,10 @@ export default class MutationHandler {
     this._observer = new MutationObserver((mutations) => {
       this._handleMutations(mutations);
     });
+  }
+
+  init() {
+    this.startObserving();
   }
 
   destroy() {
@@ -100,8 +106,10 @@ export default class MutationHandler {
     }
 
     if (reparsePost) {
+      log(`reparsePost (${mutations.length} mutations)`);
       this.reparsePost();
     } else if (sections.length) {
+      log(`reparse ${sections.length} sections (${mutations.length} mutations)`);
       this.reparseSections(sections.toArray());
     }
   }

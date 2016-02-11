@@ -104,7 +104,7 @@ test('typing enter inserts new section', (assert) => {
   editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
-  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 5);
+  Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 5);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor p').length, 2, 'has 2 paragraphs after typing return');
@@ -117,7 +117,7 @@ test('typing enter inserts new section from blank section', (assert) => {
   editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
-  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 0);
+  Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 0);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor p').length, 2, 'has 2 paragraphs after typing return');
@@ -128,7 +128,7 @@ test('hitting enter in first section splits it correctly', (assert) => {
   editor.render(editorElement);
   assert.equal($('#editor p').length, 2, 'precond - has 2 paragraphs');
 
-  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 3);
+  Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 3);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor p').length, 3, 'has 3 paragraphs after typing return');
@@ -147,7 +147,7 @@ test('hitting enter at start of a section creates empty section where cursor was
   editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
-  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 0);
+  Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 0);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor p').length, 2, 'has 2 paragraphs after typing return');
@@ -166,7 +166,7 @@ test('hitting enter at end of a section creates new empty section', (assert) => 
   editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 section to start');
 
-  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 'only section'.length);
+  Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 'only section'.length);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor p').length, 2, 'has 2 sections after typing return');
@@ -189,7 +189,7 @@ test('hitting enter in a section creates a new basic section', (assert) => {
   assert.hasElement('#editor h2:contains(abc)', 'precond - h2 is there');
   assert.hasNoElement('#editor p', 'precond - no p tag');
 
-  Helpers.dom.moveCursorTo($('#editor h2')[0].childNodes[0], 'abc'.length);
+  Helpers.dom.moveCursorTo(editor, $('#editor h2')[0].childNodes[0], 'abc'.length);
   Helpers.dom.triggerEnter(editor);
   Helpers.dom.insertText(editor, 'X');
 
@@ -206,7 +206,7 @@ test('deleting across 2 sections does nothing if editing is disabled', (assert) 
   const p0 = $('#editor p:eq(0)')[0],
         p1 = $('#editor p:eq(1)')[0];
 
-  Helpers.dom.selectText('tion', p0, 'sec', p1);
+  Helpers.dom.selectText(editor ,'tion', p0, 'sec', p1);
   Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p').length, 2, 'still has 2 sections');
@@ -220,7 +220,7 @@ test('deleting across 2 sections merges them', (assert) => {
   const p0 = $('#editor p:eq(0)')[0],
         p1 = $('#editor p:eq(1)')[0];
 
-  Helpers.dom.selectText('tion', p0, 'sec', p1);
+  Helpers.dom.selectText(editor ,'tion', p0, 'sec', p1);
   Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p').length, 1, 'has only 1 paragraph after deletion');
@@ -238,7 +238,7 @@ test('deleting across 1 section removes it, joins the 2 boundary sections', (ass
         p2 = $('#editor p:eq(2)')[0];
   assert.ok(p0 && p1 && p2, 'precond - paragraphs exist');
 
-  Helpers.dom.selectText('section', p0, 'third ', p2);
+  Helpers.dom.selectText(editor ,'section', p0, 'third ', p2);
   Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p').length, 1, 'has only 1 paragraph after deletion');
@@ -255,7 +255,7 @@ test('keystroke of delete removes that character', (assert) => {
              firstChild; // marker
   };
   const textNode = getFirstTextNode();
-  Helpers.dom.moveCursorTo(textNode, 1);
+  Helpers.dom.moveCursorTo(editor, textNode, 1);
 
   Helpers.dom.triggerDelete(editor);
 
@@ -279,7 +279,7 @@ test('keystroke of delete removes emoji character', (assert) => {
                                firstChild; // marker
   assert.equal(textNode.textContent, monkey, 'precond - correct text');
 
-  Helpers.dom.moveCursorTo(textNode, monkey.length);
+  Helpers.dom.moveCursorTo(editor, textNode, monkey.length);
   Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p:eq(0)').text(), 'monkey', 'deletes the emoji');
@@ -296,7 +296,7 @@ test('keystroke of forward delete removes emoji character', (assert) => {
                                firstChild; // marker
   assert.equal(textNode.textContent, monkey, 'precond - correct text');
 
-  Helpers.dom.moveCursorTo(textNode, 'monkey'.length);
+  Helpers.dom.moveCursorTo(editor, textNode, 'monkey'.length);
   Helpers.dom.triggerForwardDelete(editor);
 
   assert.equal($('#editor p:eq(0)').text(), 'monkey', 'deletes the emoji');
@@ -310,7 +310,7 @@ test('keystroke of delete when cursor is at beginning of marker removes characte
                     childNodes[1]; // plain marker
 
   assert.ok(!!textNode, 'gets text node');
-  Helpers.dom.moveCursorTo(textNode, 0);
+  Helpers.dom.moveCursorTo(editor, textNode, 0);
 
   Helpers.dom.triggerDelete(editor);
 
@@ -335,7 +335,7 @@ test('keystroke of delete when cursor is after only char in only marker of secti
 
   let textNode = getTextNode();
   assert.ok(!!textNode, 'gets text node');
-  Helpers.dom.moveCursorTo(textNode, 1);
+  Helpers.dom.moveCursorTo(editor, textNode, 1);
 
   Helpers.dom.triggerDelete(editor);
 
@@ -353,7 +353,7 @@ test('keystroke of character in empty section adds character, moves cursor', (as
   let pNode = $('#editor p')[0];
 
   // Firefox requires that the cursor be placed explicitly for this test to pass
-  Helpers.dom.moveCursorTo(pNode, 0);
+  Helpers.dom.moveCursorTo(editor, pNode, 0);
 
   const letter = 'M';
   Helpers.dom.insertText(editor, letter);
@@ -375,7 +375,8 @@ test('keystroke of delete at start of section joins with previous section', (ass
   assert.equal(secondSectionTextNode.textContent, 'second section',
                'precond - section section text node');
 
-  Helpers.dom.moveCursorTo(secondSectionTextNode, 0);
+  Helpers.dom.moveCursorTo(editor, secondSectionTextNode, 0);
+  //editor.range = null;
   Helpers.dom.triggerDelete(editor);
 
   assert.equal(editor.element.childNodes.length, 1, 'only 1 section remaining');
@@ -402,7 +403,7 @@ test('keystroke of delete at start of first section does nothing', (assert) => {
   assert.equal(firstSectionTextNode.textContent, 'first section',
                'finds first section text node');
 
-  Helpers.dom.moveCursorTo(firstSectionTextNode, 0);
+  Helpers.dom.moveCursorTo(editor, firstSectionTextNode, 0);
 
   Helpers.dom.triggerDelete(editor);
 
@@ -427,7 +428,7 @@ test('when selection incorrectly contains P end tag, editor reports correct sele
   let secondSectionTextNode = editor.element.childNodes[1].firstChild;
   let firstSectionPNode = editor.element.childNodes[0];
 
-  Helpers.dom.moveCursorTo(firstSectionPNode, 0,
+  Helpers.dom.moveCursorTo(editor, firstSectionPNode, 0,
                            secondSectionTextNode, 0);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
@@ -465,7 +466,7 @@ test('when selection incorrectly contains P start tag, editor reports correct se
   let firstSectionTextNode = editor.element.childNodes[0].firstChild;
   let secondSectionPNode = editor.element.childNodes[1];
 
-  Helpers.dom.moveCursorTo(firstSectionTextNode, 0,
+  Helpers.dom.moveCursorTo(editor, firstSectionTextNode, 0,
                            secondSectionPNode, 0);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
@@ -501,7 +502,7 @@ test('deleting when after deletion there is a trailing space positions cursor at
   editor.render(editorElement);
 
   let firstSectionTextNode = editor.element.childNodes[0].firstChild;
-  Helpers.dom.moveCursorTo(firstSectionTextNode, 'first section'.length);
+  Helpers.dom.moveCursorTo(editor, firstSectionTextNode, 'first section'.length);
 
   let count = 'ection'.length;
   while (count--) {
@@ -530,7 +531,7 @@ test('deleting when after deletion there is a leading space positions cursor at 
   editor = new Editor({mobiledoc: mobileDocWith2Sections});
   editor.render(editorElement);
 
-  Helpers.dom.selectText('second', editorElement);
+  Helpers.dom.selectText(editor ,'second', editorElement);
   Helpers.dom.triggerDelete(editor);
 
   assert.equal($('#editor p:eq(1)').text(), `${NO_BREAK_SPACE}section`, 'correct text after deletion');
@@ -550,9 +551,10 @@ test('inserting multiple spaces renders them with nbsps', (assert) => {
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  Helpers.dom.insertText(editor, '   ');
+  let sp = ' ', nbsp = NO_BREAK_SPACE;
+  Helpers.dom.insertText(editor, sp + sp + sp);
   assert.equal($('#editor p:eq(0)').text(),
-               `${NO_BREAK_SPACE}${NO_BREAK_SPACE}${NO_BREAK_SPACE}`,
+               nbsp + nbsp + nbsp,
                'correct nbsps in text');
 });
 
@@ -560,7 +562,7 @@ test('deleting when the previous section is also blank', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWithNoCharacter});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement.childNodes[0].childNodes[0], 0);
+  Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 0);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor p').length, 2, 'has 2 paragraphs after typing return');

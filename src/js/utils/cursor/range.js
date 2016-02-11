@@ -55,8 +55,9 @@ export default class Range {
   }
 
   isEqual(other) {
-    return this.head.isEqual(other.head) &&
-           this.tail.isEqual(other.tail);
+    return other &&
+      this.head.isEqual(other.head) &&
+      this.tail.isEqual(other.tail);
   }
 
   get isBlank() {

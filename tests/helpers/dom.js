@@ -5,6 +5,7 @@ import { DIRECTION, MODIFIERS }  from 'mobiledoc-kit/utils/key';
 import { isTextNode } from 'mobiledoc-kit/utils/dom-utils';
 import { merge } from 'mobiledoc-kit/utils/merge';
 import { supportsStandardClipboardAPI } from './browsers';
+import { Editor } from 'mobiledoc-kit';
 
 // walks DOWN the dom from node to childNodes, returning the element
 // for which `conditionFn(element)` is true
@@ -26,6 +27,12 @@ function walkDOMUntil(topNode, conditionFn=() => {}) {
   }
 }
 
+function findTextNode(parentElement, text) {
+  return walkDOMUntil(parentElement, node => {
+    return isTextNode(node) && node.textContent.indexOf(text) !== -1;
+  });
+}
+
 function selectRange(startNode, startOffset, endNode, endOffset) {
   clearSelection();
 
@@ -37,17 +44,17 @@ function selectRange(startNode, startOffset, endNode, endOffset) {
   selection.addRange(range);
 }
 
-function selectText(startText,
+function selectText(editor,
+                    startText,
                     startContainingElement,
                     endText=startText,
                     endContainingElement=startContainingElement) {
-  const findTextNode = (text) => {
-    return (el) => isTextNode(el) && el.textContent.indexOf(text) !== -1;
-  };
-  const startTextNode = walkDOMUntil(
-    startContainingElement, findTextNode(startText));
-  const endTextNode   = walkDOMUntil(
-    endContainingElement,   findTextNode(endText));
+
+  if (!(editor instanceof Editor)) {
+    throw new Error('Must pass editor as first argument to `selectText`');
+  }
+  let startTextNode = findTextNode(startContainingElement, startText);
+  let endTextNode = findTextNode(endContainingElement, endText);
 
   if (!startTextNode) {
     throw new Error(`Could not find a starting textNode containing "${startText}"`);
@@ -59,11 +66,20 @@ function selectText(startText,
   const startOffset = startTextNode.textContent.indexOf(startText),
         endOffset   = endTextNode.textContent.indexOf(endText) + endText.length;
   selectRange(startTextNode, startOffset, endTextNode, endOffset);
+  editor._resetRange();
 }
 
-function moveCursorTo(node, offset=0, endNode=node, endOffset=offset) {
-  if (!node) { throw new Error('Cannot moveCursorTo node without node'); }
+function moveCursorWithoutNotifyingEditorTo(editor, node, offset=0, endNode=node, endOffset=offset) {
   selectRange(node, offset, endNode, endOffset);
+}
+
+function moveCursorTo(editor, node, offset=0, endNode=node, endOffset=offset) {
+  if (!(editor instanceof Editor)) {
+    throw new Error('Must pass editor as first argument to `moveCursorTo`');
+  }
+  if (!node) { throw new Error('Cannot moveCursorTo node without node'); }
+  moveCursorWithoutNotifyingEditorTo(editor, node, offset, endNode, endOffset);
+  editor._resetRange();
 }
 
 function triggerEvent(node, eventType) {
@@ -150,15 +166,7 @@ function triggerEnter(editor) {
   editor.triggerEvent(editor.element, 'keydown', event);
 }
 
-// IE11 and earlier cannot exec the `insertText` command. This version
-// check takes the place of actually detecting support for the
-// functionality, which would be very difficult.
-const canExecCommandInsertText = (() => {
-  let userAgent = navigator.userAgent;
-  return userAgent.indexOf("MSIE ") === -1 && userAgent.indexOf("Trident/") === -1;
-})();
-
-// keyCodes and charCodes are similar but not the same.;
+// keyCodes and charCodes are similar but not the same.
 function keyCodeForChar(letter) {
   let keyCode;
   switch (letter) {
@@ -174,50 +182,34 @@ function keyCodeForChar(letter) {
   return keyCode;
 }
 
-function _insertTextIntoDOM(letter) {
-  if (canExecCommandInsertText) {
-    document.execCommand('insertText', false, letter);
-  } else {
-    // Without execCommand('insertText'), creating a text node and inserting
-    // it manually is used instead. First find the current cursor location and
-    // append a textNode to it.
-    var selection = window.getSelection();
-    var range = selection.getRangeAt(0);
-    var textNode = document.createTextNode(letter);
-    range.insertNode(textNode);
-    selection.removeAllRanges();
-    // Next move the cursor forward to the next position, as if the user was
-    // typing normally.
-    let nextCursorRange = document.createRange();
-    nextCursorRange.setStart(textNode, textNode.length);
-    selection.addRange(nextCursorRange);
-  }
-}
-
 function insertText(editor, string) {
   if (!string && editor) { throw new Error('Must pass `editor` to `insertText`'); }
 
   string.split('').forEach(letter => {
     let stop = false;
     let keyCode = keyCodeForChar(letter);
+    let charCode = letter.charCodeAt(0);
+    let preventDefault = () => stop = true;
     let keydown = createMockEvent('keydown', editor.element, {
       keyCode,
-      preventDefault() { stop = true; }
+      charCode,
+      preventDefault
+    });
+    let keypress = createMockEvent('keypress', editor.element, {
+      keyCode,
+      charCode,
     });
     let keyup = createMockEvent('keyup', editor.element, {
       keyCode,
-      preventDefault() { stop = true; }
-    });
-    let input = createMockEvent('input', editor.element, {
-      preventDefault() { stop = true; }
+      charCode,
+      preventDefault
     });
 
     editor.triggerEvent(editor.element, 'keydown', keydown);
     if (stop) {
       return;
     }
-    _insertTextIntoDOM(letter);
-    editor.triggerEvent(editor.element, 'input', input);
+    editor.triggerEvent(editor.element, 'keypress', keypress);
     if (stop) {
       return;
     }
@@ -231,8 +223,11 @@ function triggerKeyCommand(editor, string, modifiers=[]) {
   if (typeof modifiers === "number") {
     modifiers = [modifiers]; // convert singular to array
   }
+  let charCode = string.toUpperCase().charCodeAt(0);
+  let keyCode = charCode;
   let keyEvent = createMockEvent('keydown', editor.element, {
-    keyCode: string.toUpperCase().charCodeAt(0),
+    charCode,
+    keyCode,
     shiftKey: contains(modifiers, MODIFIERS.SHIFT),
     metaKey: contains(modifiers, MODIFIERS.META),
     ctrlKey: contains(modifiers, MODIFIERS.CTRL)
@@ -241,7 +236,9 @@ function triggerKeyCommand(editor, string, modifiers=[]) {
 }
 
 function triggerRightArrowKey(editor, modifier) {
-  if (!editor) { throw new Error('Must pass editor to triggerRightArrowKey'); }
+  if (!(editor instanceof Editor)) {
+    throw new Error('Must pass editor to triggerRightArrowKey');
+  }
   let keydown = createMockEvent('keydown', editor.element, {
     keyCode: KEY_CODES.RIGHT,
     shiftKey: modifier === MODIFIERS.SHIFT
@@ -338,14 +335,19 @@ function fromHTML(html) {
   return div;
 }
 
-function findTextNode(parentElement, text) {
-  return walkDOMUntil(parentElement, node => {
-    return isTextNode(node) && node.textContent.indexOf(text) !== -1;
-  });
+/**
+ * Tests fail in IE when using `element.blur`, so remove focus by refocusing
+ * on another item instead of blurring the editor element
+ */
+function blur() {
+  let input = $('<input>');
+  input.appendTo('#qunit-fixture');
+  input.focus();
 }
 
 const DOMHelper = {
   moveCursorTo,
+  moveCursorWithoutNotifyingEditorTo,
   selectRange,
   selectText,
   clearSelection,
@@ -369,7 +371,8 @@ const DOMHelper = {
   setCopyData,
   clearCopyData,
   createMockEvent,
-  findTextNode
+  findTextNode,
+  blur
 };
 
 export { triggerEvent };

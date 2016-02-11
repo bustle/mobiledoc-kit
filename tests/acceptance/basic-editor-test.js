@@ -2,11 +2,7 @@ import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
-import {
-  TAB,
-  ENTER
-} from 'mobiledoc-kit/utils/characters';
-import { detectIE11 } from '../helpers/browsers';
+import { TAB, ENTER } from 'mobiledoc-kit/utils/characters';
 
 const { test, module } = Helpers;
 
@@ -111,7 +107,7 @@ test('typing in empty post correctly adds a section to it', (assert) => {
   assert.hasElement('#editor');
   assert.hasNoElement('#editor p');
 
-  Helpers.dom.moveCursorTo(editorElement);
+  Helpers.dom.moveCursorTo(editor, editorElement);
   Helpers.dom.insertText(editor, 'X');
   assert.hasElement('#editor p:contains(X)');
   Helpers.dom.insertText(editor, 'Y');
@@ -128,10 +124,10 @@ test('typing when on the end of a card is blocked', (assert) => {
   editor.render(editorElement);
 
   let endingZWNJ = $('#editor')[0].firstChild.lastChild;
-  Helpers.dom.moveCursorTo(endingZWNJ, 0);
+  Helpers.dom.moveCursorTo(editor, endingZWNJ, 0);
   Helpers.dom.insertText(editor, 'X');
   assert.hasNoElement('#editor div:contains(X)');
-  Helpers.dom.moveCursorTo(endingZWNJ, 1);
+  Helpers.dom.moveCursorTo(editor, endingZWNJ, 1);
   Helpers.dom.insertText(editor, 'Y');
   assert.hasNoElement('#editor div:contains(Y)');
 });
@@ -146,41 +142,40 @@ test('typing when on the start of a card is blocked', (assert) => {
   editor.render(editorElement);
 
   let startingZWNJ = $('#editor')[0].firstChild.firstChild;
-  Helpers.dom.moveCursorTo(startingZWNJ, 0);
+  Helpers.dom.moveCursorTo(editor, startingZWNJ, 0);
   Helpers.dom.insertText(editor, 'X');
   assert.hasNoElement('#editor div:contains(X)');
-  Helpers.dom.moveCursorTo(startingZWNJ, 1);
+  Helpers.dom.moveCursorTo(editor, startingZWNJ, 1);
   Helpers.dom.insertText(editor, 'Y');
   assert.hasNoElement('#editor div:contains(Y)');
 });
 
-if (!detectIE11()) {
-  // TODO: Make this test pass on IE11
-  test('typing tab enters a tab character', (assert) => {
-    let done = assert.async();
-    let mobiledoc = Helpers.mobiledoc.build(({post}) => post());
-    editor = new Editor({mobiledoc});
-    editor.render(editorElement);
+test('typing tab enters a tab character', (assert) => {
+  let done = assert.async();
+  assert.expect(3);
 
-    assert.hasElement('#editor');
-    assert.hasNoElement('#editor p');
+  let mobiledoc = Helpers.mobiledoc.build(({post}) => post());
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
 
-    Helpers.dom.moveCursorTo($('#editor')[0]);
-    Helpers.dom.insertText(editor, TAB);
-    Helpers.dom.insertText(editor, 'Y');
-    window.setTimeout(() => {
-      let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
-        return post([
-          markupSection('p', [
-            marker(`${TAB}Y`)
-          ])
-        ]);
-      });
-      assert.postIsSimilar(editor.post, expectedPost);
-      done();
-    }, 0);
+  assert.hasElement('#editor');
+  assert.hasNoElement('#editor p');
+
+  Helpers.dom.moveCursorTo(editor, $('#editor')[0]);
+  Helpers.dom.insertText(editor, TAB);
+  Helpers.dom.insertText(editor, 'Y');
+  window.setTimeout(() => {
+    let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+      return post([
+        markupSection('p', [
+          marker(`${TAB}Y`)
+        ])
+      ]);
+    });
+    assert.postIsSimilar(editor.post, expectedPost);
+    done();
   });
-}
+});
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/215
 test('select-all and type text works ok', (assert) => {
@@ -193,8 +188,9 @@ test('select-all and type text works ok', (assert) => {
   editor = new Editor({mobiledoc, cards});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement.firstChild, 0);
-  document.execCommand('selectAll');
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild, 0);
+  let post = editor.post;
+  editor.selectRange(new Range(post.headPosition(), post.tailPosition()));
 
   assert.selectedText('abc', 'precond - abc is selected');
   assert.hasElement('#editor p:contains(abc)', 'precond - renders p');
@@ -219,7 +215,7 @@ test('typing enter splits lines, sets cursor', (assert) => {
 
   assert.hasElement('#editor p');
 
-  Helpers.dom.moveCursorTo($('#editor p')[0].firstChild, 2);
+  Helpers.dom.moveCursorTo(editor, $('#editor p')[0].firstChild, 2);
   Helpers.dom.insertText(editor, ENTER);
   window.setTimeout(() => {
     let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
@@ -256,7 +252,7 @@ test('adding/removing bold text between two bold markers works', (assert) => {
   assert.hasElement('#editor b:contains(def)');
   assert.hasNoElement('#editor b:contains(123)');
 
-  Helpers.dom.selectText('123', editorElement);
+  Helpers.dom.selectText(editor, '123', editorElement);
   editor.run(postEditor => postEditor.toggleMarkup('b'));
 
   assert.hasElement('#editor b:contains(abc123def)', 'adds B to selection');

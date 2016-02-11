@@ -15,10 +15,9 @@ import mobiledocRenderers from '../renderers/mobiledoc';
 
 import { mergeWithOptions } from '../utils/merge';
 import { clearChildNodes, addClassName } from '../utils/dom-utils';
-import { forEach, filter, contains } from '../utils/array-utils';
+import { forEach, filter, contains, isArrayEqual } from '../utils/array-utils';
 import { setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
-import EventListenerMixin from '../utils/event-listener';
 import Cursor from '../utils/cursor';
 import Range from '../utils/cursor/range';
 import PostNodeBuilder from '../models/post-node-builder';
@@ -28,25 +27,25 @@ import {
 import {
   DEFAULT_KEY_COMMANDS, buildKeyCommand, findKeyCommands, validateKeyCommand
 } from './key-commands';
-import { capitalize } from '../utils/string-utils';
 import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 import { CARD_MODES } from '../models/card';
 import { detect } from '../utils/array-utils';
-import {
-  parsePostFromPaste,
-  setClipboardCopyData
-} from '../utils/paste-utils';
-import { DIRECTION } from 'mobiledoc-kit/utils/key';
-import { TAB, SPACE } from 'mobiledoc-kit/utils/characters';
 import assert from '../utils/assert';
 import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 import EditHistory from 'mobiledoc-kit/editor/edit-history';
+import EventManager from 'mobiledoc-kit/editor/event-manager';
+import EditState from 'mobiledoc-kit/editor/edit-state';
+import Logger from 'mobiledoc-kit/utils/logger';
+
+Logger.enableTypes([
+  'mutation-handler',
+  'event-manager',
+  'editor'
+]);
+Logger.disable();
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
-
-const ELEMENT_EVENTS  = ['keydown', 'keyup', 'cut', 'copy', 'paste'];
-const DOCUMENT_EVENTS = ['mouseup'];
 
 const defaults = {
   placeholder: 'Write here...',
@@ -84,7 +83,6 @@ class Editor {
   constructor(options={}) {
     assert('editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation',
           (options && !options.nodeType));
-    this._elementListeners = [];
     this._views = [];
     this.isEditable = null;
     this._parserPlugins = options.parserPlugins || [];
@@ -104,6 +102,10 @@ class Editor {
     this._renderTree = new RenderTree(this.post);
 
     this._editHistory = new EditHistory(this, this.undoDepth);
+    this._eventManager = new EventManager(this);
+    this._mutationHandler = new MutationHandler(this);
+    this._editState = new EditState(this);
+    this.hasRendered = false;
   }
 
   addView(view) {
@@ -160,8 +162,6 @@ class Editor {
     clearChildNodes(element);
 
     this.element = element;
-    this._mutationHandler = new MutationHandler(this);
-    this._mutationHandler.startObserving();
 
     if (this.isEditable === null) {
       this.enableEditing();
@@ -172,13 +172,18 @@ class Editor {
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
     // postEditor.
     this.run(() => {});
+
+    // Only set `hasRendered` to true after calling `run` to ensure that
+    // no cursorDidChange or other callbacks get fired before the editor is
+    // done rendering
+    this.hasRendered = true;
     this.rerender();
 
     if (this.autofocus) {
       this.element.focus();
     }
-
-    this._setupListeners();
+    this._mutationHandler.init();
+    this._eventManager.init();
   }
 
   _addTooltip() {
@@ -289,37 +294,63 @@ class Editor {
   }
 
   selectRange(range) {
-    this.range = range;
-    this.renderRange();
+    this.renderRange(range);
   }
 
-  // @private
-  renderRange() {
-    if (this.range.isBlank) {
+  /**
+   * @private
+   * If the range is different from the previous range, this method will
+   * fire 'rangeDidChange'-related callbacks
+   */
+  renderRange(range) {
+    let prevRange = this._range;
+    if (range.isBlank) {
       this.cursor.clearSelection();
     } else {
-      this.cursor.selectRange(this.range);
+      this.cursor.selectRange(range);
     }
-    this._reportSelectionState();
+    this.range = range;
 
-    // ensure that the range is "cleaned"/un-cached after
-    // rendering a cursor range
-    this.range = null;
+    if (prevRange && !prevRange.isEqual(range)) {
+      this._rangeDidChange();
+    }
   }
 
   get cursor() {
     return new Cursor(this);
   }
 
-  // "read" the range from dom unless it has been set explicitly
-  // Any method that sets the range explicitly should ensure that
-  // the range is rendered and cleaned later
+  /**
+   * Return the current range for the editor (may be cached).
+   * The #_resetRange method forces a re-read of
+   * the range from DOM.
+   */
   get range() {
-    return this._range || this.cursor.offsets;
+    if (this._range) {
+      return this._range;
+    }
+    let range = this.cursor.offsets;
+    if (!range.isBlank) {
+      this._range = range;
+    }
+    return range;
   }
 
   set range(newRange) {
     this._range = newRange;
+  }
+
+  /*
+   * force re-reading range from dom
+   * Fires `rangeDidChange`-related callbacks if the range is different
+   */
+  _resetRange() {
+    let prevRange = this._range;
+    delete this._range;
+    let range = this.range;
+    if (!range.isEqual(prevRange)) {
+      this._rangeDidChange();
+    }
   }
 
   setPlaceholder(placeholder) {
@@ -331,6 +362,7 @@ class Editor {
     this.run(postEditor => {
       postEditor.removeAllSections();
       postEditor.migrateSectionsFromPost(post);
+      postEditor.setRange(Range.blankRange());
     });
 
     this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
@@ -374,14 +406,10 @@ class Editor {
   }
 
   /*
-   * Returns the active sections. If the cursor selection is collapsed this will be
-   * an array of 1 item. Else will return an array containing each section that is either
-   * wholly or partly contained by the cursor selection.
-   *
    * @return {array} The sections from the cursor's selection start to the selection end
    */
   get activeSections() {
-    return this.cursor.activeSections;
+    return this._editState.activeSections;
   }
 
   get activeSection() {
@@ -396,13 +424,18 @@ class Editor {
     });
   }
 
+  get activeMarkups() {
+    return this._editState.activeMarkups;
+  }
+
+  hasActiveMarkup(markup) {
+    markup = this.builder._coerceMarkup(markup);
+    return contains(this.activeMarkups, markup);
+  }
+
   get markupsInSelection() {
-    if (this.cursor.hasCursor()) {
-      let { range } = this;
-      return this.post.markupsInRange(range);
-    } else {
-      return [];
-    }
+    // FIXME deprecate this
+    return this.activeMarkups;
   }
 
   serialize(version=MOBILEDOC_VERSION) {
@@ -418,12 +451,10 @@ class Editor {
     this._isDestroyed = true;
     if (this.cursor.hasCursor()) {
       this.cursor.clearSelection();
-      this.element.blur();
+      this.element.blur(); // FIXME This doesn't blur the element on IE11
     }
-    if (this._mutationHandler) {
-      this._mutationHandler.destroy();
-    }
-    this.removeAllEventListeners();
+    this._mutationHandler.destroy();
+    this._eventManager.destroy();
     this.removeAllViews();
     this._renderer.destroy();
   }
@@ -509,6 +540,14 @@ class Editor {
    * @public
    */
   run(callback) {
+    // FIXME we must keep track of the activeSectionTagNames before and after
+    // changing the post so that we can fire the cursorDidChange callback if the
+    // active sections changed.
+    // This is necessary for the ember-mobiledoc-editor's toolbar to update
+    // when toggling a section on/off (it only listens to the cursorDidChange
+    // action)
+    let activeSectionTagNames = this.activeSections.map(s => s.tagName);
+
     const postEditor = new PostEditor(this);
     postEditor.begin();
     this._editHistory.snapshot();
@@ -519,6 +558,13 @@ class Editor {
       this._editHistory._pendingSnapshot = null;
     }
     this._editHistory.storeSnapshot();
+
+    // FIXME This should be handled within the EditState object
+    let newActiveSectionTagNames = this.activeSections.map(s => s.tagName);
+    if (!isArrayEqual(activeSectionTagNames, newActiveSectionTagNames)) {
+      this._activeSectionsDidChange();
+    }
+
     return result;
   }
 
@@ -562,44 +608,6 @@ class Editor {
     this.addCallback(CALLBACK_QUEUES.CURSOR_DID_CHANGE, callback);
   }
 
-  _setupListeners() {
-    ELEMENT_EVENTS.forEach(eventName => {
-      this.addEventListener(this.element, eventName,
-        (...args) => this.handleEvent(eventName, ...args)
-      );
-    });
-
-    DOCUMENT_EVENTS.forEach(eventName => {
-      this.addEventListener(document, eventName,
-        (...args) => this.handleEvent(eventName, ...args)
-      );
-    });
-  }
-
-  handleEvent(eventName, ...args) {
-    if (contains(ELEMENT_EVENTS, eventName)) {
-      let [{target: element}] = args;
-      if (!this.cursor.isAddressable(element)) {
-        // abort handling this event
-        return true;
-      }
-    }
-
-    const methodName = `handle${capitalize(eventName)}`;
-    assert(`No handler "${methodName}" for ${eventName}`, !!this[methodName]);
-
-    this[methodName](...args);
-  }
-
-  handleMouseup() {
-    // mouseup does not correctly report a selection until the next tick
-    setTimeout(() => this._reportSelectionState(), 0);
-  }
-
-  handleKeyup() {
-    this._reportSelectionState();
-  }
-
   /*
      The following events/sequences can create a selection and are handled:
        * mouseup -- can happen anywhere in document, must wait until next tick to read selection
@@ -610,7 +618,45 @@ class Editor {
        * ctrl-click -> context menu -> click "select all"
    */
   _reportSelectionState() {
-    this.runCallbacks(CALLBACK_QUEUES.CURSOR_DID_CHANGE);
+    this._cursorDidChange();
+  }
+
+  _rangeDidChange() {
+    this._cursorDidChange();
+    this._resetActiveMarkups();
+  }
+
+  _cursorDidChange() {
+    if (this.hasRendered) {
+      this.runCallbacks(CALLBACK_QUEUES.CURSOR_DID_CHANGE);
+    }
+  }
+
+  /**
+   * Clear the cached active markups and force a re-read of the markups
+   * from the current range.
+   * If markups have changed, fires an event
+   */
+  _resetActiveMarkups() {
+    let activeMarkupsDidChange = this._editState.resetActiveMarkups();
+
+    if (activeMarkupsDidChange) {
+      this._activeMarkupsDidChange();
+    }
+  }
+
+  _activeMarkupsDidChange() {
+    // FIXME use a different callback queue for _activeMarkupsDidChange
+    // Using the cursorDidChange callback is necessary for the ember-mobiledoc-editor to notice
+    // when markups change but the cursor doesn't (i.e., type cmd-B)
+    this._cursorDidChange();
+  }
+
+  _activeSectionsDidChange() {
+    // FIXME use a different callback queue for _activeSectionsDidChange
+    // Using the cursorDidChange callback is necessary for the ember-mobiledoc-editor to notice
+    // when markups change but the cursor doesn't (i.e., type cmd-B)
+    this._cursorDidChange();
   }
 
   _insertEmptyMarkupSectionAtCursor() {
@@ -621,104 +667,13 @@ class Editor {
     });
   }
 
-  handleKeydown(event) {
-    if (!this.isEditable || this.handleKeyCommand(event)) {
-      return;
-    }
-
-    if (this.post.isBlank) {
-      this._insertEmptyMarkupSectionAtCursor();
-    }
-
-    let key = Key.fromEvent(event);
-    let range, nextPosition;
-
-    switch(true) {
-      case key.isHorizontalArrow():
-        range = this.cursor.offsets;
-        let position = range.tail;
-        if (range.direction === DIRECTION.BACKWARD) {
-          position = range.head;
-        }
-        nextPosition = position.move(key.direction);
-        if (
-          position.section.isCardSection ||
-          (position.marker && position.marker.isAtom) ||
-          (nextPosition && nextPosition.marker && nextPosition.marker.isAtom)
-        ) {
-          if (nextPosition) {
-            let newRange;
-            if (key.isShift()) {
-              newRange = range.moveFocusedPosition(key.direction);
-            } else {
-              newRange = new Range(nextPosition);
-            }
-            this.selectRange(newRange);
-            event.preventDefault();
-          }
-        }
-        break;
-      case key.isDelete():
-        this.handleDeletion(event);
-        event.preventDefault();
-        break;
-      case key.isEnter():
-        this.handleNewline(event);
-        break;
-      case key.isPrintable():
-        range = this.range;
-        let { isCollapsed } = range;
-        nextPosition = range.head;
-
-        if (this.handleExpansion(event)) {
-          event.preventDefault();
-          break;
-        }
-
-        let shouldPreventDefault = isCollapsed && range.head.section.isCardSection;
-
-        let didEdit = false;
-        let isMarkerable = range.head.section.isMarkerable;
-        let isVisibleWhitespace = isMarkerable && (key.isTab() || key.isSpace());
-
-        this.run(postEditor => {
-          if (!isCollapsed) {
-            nextPosition = postEditor.deleteRange(range);
-            didEdit = true;
-          }
-
-          if (isVisibleWhitespace) {
-            let toInsert = key.isTab() ? TAB : SPACE;
-            shouldPreventDefault = true;
-            didEdit = true;
-            nextPosition = postEditor.insertText(nextPosition, toInsert);
-          }
-
-          if (nextPosition.marker && nextPosition.marker.isAtom) {
-            didEdit = true;
-            // ensure that the cursor is properly repositioned one character forward
-            // after typing on either side of an atom
-            this.addCallbackOnce(CALLBACK_QUEUES.DID_REPARSE, () => {
-              let position = nextPosition.move(DIRECTION.FORWARD);
-              let nextRange = new Range(position);
-
-              this.run(postEditor => postEditor.setRange(nextRange));
-            });
-          }
-          if (nextPosition && nextPosition !== range.head) {
-            didEdit = true;
-            postEditor.setRange(new Range(nextPosition));
-          }
-
-          if (!didEdit) {
-            // this ensures we don't push an empty snapshot onto the undo stack
-            postEditor.cancelSnapshot();
-          }
-        });
-        if (shouldPreventDefault) {
-          event.preventDefault();
-        }
-        break;
+  toggleMarkup(markup) {
+    markup = this.post.builder.createMarkup(markup);
+    if (this.range.isCollapsed) {
+      this._editState.toggleMarkupState(markup);
+      this._activeMarkupsDidChange();
+    } else {
+      this.run(postEditor => postEditor.toggleMarkup(markup));
     }
   }
 
@@ -763,37 +718,15 @@ class Editor {
     return false;
   }
 
-  handleCut(event) {
-    event.preventDefault();
-
-    this.handleCopy(event);
-    this.handleDeletion();
-  }
-
-  handleCopy(event) {
-    event.preventDefault();
-
-    setClipboardCopyData(event, this);
-  }
-
-  handlePaste(event) {
-    event.preventDefault();
-
-    const { head: position } = this.cursor.offsets;
-
-    if (position.section.isCardSection) {
-      return;
-    }
-
-    if (this.cursor.hasSelection()) {
-      this.handleDeletion();
-    }
-
-    let pastedPost = parsePostFromPaste(event, this.builder, this._parserPlugins);
+  insertText(text) {
+    let { activeMarkups, range, range: { head: position } } = this;
 
     this.run(postEditor => {
-      let nextPosition = postEditor.insertPost(position, pastedPost);
-      postEditor.setRange(new Range(nextPosition));
+      if (!range.isCollapsed) {
+        position = postEditor.deleteRange(range);
+      }
+
+      postEditor.insertTextWithMarkup(position, text, activeMarkups);
     });
   }
 
@@ -808,13 +741,12 @@ class Editor {
     }
   }
 
-  get hasRendered() {
-    return !!this.element;
+  triggerEvent(context, eventName, event) {
+    this._eventManager._trigger(context, eventName, event);
   }
 }
 
 mixin(Editor, EventEmitter);
-mixin(Editor, EventListenerMixin);
 mixin(Editor, LifecycleCallbacksMixin);
 
 export default Editor;
