@@ -289,6 +289,7 @@ in `demo/`. To run the demo:
 
 #### Releasing
 
+* update version constant in `src/js/version.js`
 * `npm version patch` or `minor` or `major`
 * `npm run update-changelog`
 * `npm run build`
