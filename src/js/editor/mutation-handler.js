@@ -1,6 +1,7 @@
 import Set from 'mobiledoc-kit/utils/set';
 import { forEach, filter } from 'mobiledoc-kit/utils/array-utils';
 import assert from 'mobiledoc-kit/utils/assert';
+import { containsNode } from 'mobiledoc-kit/utils/dom-utils';
 
 const MUTATION = {
   NODES_CHANGED: 'childList',
@@ -107,6 +108,7 @@ export default class MutationHandler {
 
   _findTargetNodes(mutation) {
     let nodes = [];
+
     switch (mutation.type) {
       case MUTATION.CHARACTER_DATA:
         nodes.push(mutation.target);
@@ -120,7 +122,7 @@ export default class MutationHandler {
     }
 
     let element = this.editor.element;
-    let attachedNodes = filter(nodes, node => element.contains(node));
+    let attachedNodes = filter(nodes, node => containsNode(element, node));
     return attachedNodes;
   }
 

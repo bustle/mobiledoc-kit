@@ -76,7 +76,7 @@ export default class RenderNode extends LinkedItem {
   }
   reparsesMutationOfChildNode(node) {
     if (this.postNode.isCardSection) {
-      return !this.cardNode.element.contains(node);
+      return !containsNode(this.cardNode.element, node);
     }
     return true;
   }
