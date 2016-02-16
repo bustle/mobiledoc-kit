@@ -50,8 +50,12 @@ export function setClipboardCopyData(copyEvent, editor) {
   const {result: plain} =
     new TextRenderer({unknownCardHandler, unknownAtomHandler}).render(mobiledoc);
 
-  clipboardData.setData(MIME_TEXT_PLAIN, plain);
-  clipboardData.setData(MIME_TEXT_HTML, html);
+  if (clipboardData && clipboardData.setData) {
+    clipboardData.setData(MIME_TEXT_PLAIN, plain);
+    clipboardData.setData(MIME_TEXT_HTML, html);
+  } else if (window.clipboardData && window.clipboardData.setData) { // IE
+    window.clipboardData.setData('Text', html);
+  }
 }
 
 /**
@@ -62,13 +66,23 @@ export function setClipboardCopyData(copyEvent, editor) {
  */
 export function parsePostFromPaste(pasteEvent, builder, plugins=[]) {
   let post;
-  let html = pasteEvent.clipboardData.getData(MIME_TEXT_HTML);
+  let html;
+  let text;
 
-  if (!html || html.length === 0) { // Fallback to 'text/plain'
-    let text = pasteEvent.clipboardData.getData(MIME_TEXT_PLAIN);
-    post = parsePostFromText(text, builder, plugins);
-  } else {
+  if (pasteEvent.clipboardData && pasteEvent.clipboardData.getData) {
+    html = pasteEvent.clipboardData.getData(MIME_TEXT_HTML);
+
+    if (!html || html.length === 0) { // Fallback to 'text/plain'
+      text = pasteEvent.clipboardData.getData(MIME_TEXT_PLAIN);
+    }
+  } else if (window.clipboardData && window.clipboardData.getData) { // IE
+    html = window.clipboardData.getData('Text');
+  }
+
+  if (html && html.length > 0) {
     post = parsePostFromHTML(html, builder, plugins);
+  } else if (text && text.length > 0) {
+    post = parsePostFromText(text, builder, plugins);
   }
 
   return post;
