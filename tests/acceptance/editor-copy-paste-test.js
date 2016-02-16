@@ -1,6 +1,7 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
+import { supportsStandardClipboardAPI } from '../helpers/browsers';
 import {
   MIME_TEXT_PLAIN,
   MIME_TEXT_HTML
@@ -83,9 +84,14 @@ test('paste plain text with line breaks', (assert) => {
   Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['abc', 'def'].join('\n'));
   Helpers.dom.triggerPasteEvent(editor);
 
-  assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
-  assert.hasElement('#editor p:contains(def)', 'second section is pasted');
-  assert.equal($('#editor p').length, 2, 'adds a second section');
+  if (supportsStandardClipboardAPI()) {
+    assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+    assert.hasElement('#editor p:contains(def)', 'second section is pasted');
+    assert.equal($('#editor p').length, 2, 'adds a second section');
+  } else {
+    assert.hasElement('#editor p:contains(abcabc\ndef)', 'pastes the text');
+    assert.equal($('#editor p').length, 1, 'adds a second section');
+  }
 });
 
 test('paste plain text with list items', (assert) => {
@@ -103,8 +109,12 @@ test('paste plain text with list items', (assert) => {
   Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['* abc', '* def'].join('\n'));
   Helpers.dom.triggerPasteEvent(editor);
 
-  assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
-  assert.hasElement('#editor ul li:contains(def)', 'list item is pasted');
+  if (supportsStandardClipboardAPI()) {
+    assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+    assert.hasElement('#editor ul li:contains(def)', 'list item is pasted');
+  } else {
+    assert.hasElement('#editor p:contains(abc* abc\n* def)', 'pastes the text');
+  }
 });
 
 test('can cut and then paste content', (assert) => {
@@ -300,10 +310,12 @@ test('copy sets html & text for pasting externally', (assert) => {
 
   Helpers.dom.triggerCopyEvent(editor);
 
-  let text = Helpers.dom.getCopyData(MIME_TEXT_PLAIN);
   let html = Helpers.dom.getCopyData(MIME_TEXT_HTML);
-  assert.equal(text, ["heading", "h2 subheader", "The text" ].join('\n'),
-               'gets plain text');
+  if (supportsStandardClipboardAPI()) {
+    let text = Helpers.dom.getCopyData(MIME_TEXT_PLAIN);
+    assert.equal(text, ["heading", "h2 subheader", "The text" ].join('\n'),
+                 'gets plain text');
+  }
 
   assert.ok(html.indexOf("<h1>heading") !== -1, 'html has h1');
   assert.ok(html.indexOf("<h2>h2 subheader") !== -1, 'html has h2');

@@ -7,3 +7,9 @@ export function supportsSelectionExtend() {
   let selection = window.getSelection();
   return !!selection.extend;
 }
+
+// See http://caniuse.com/#feat=clipboard
+// This rules out the Internet Explorers.
+export function supportsStandardClipboardAPI() {
+  return !window.clipboardData;
+}

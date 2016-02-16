@@ -4,6 +4,7 @@ import KEY_CODES from 'mobiledoc-kit/utils/keycodes';
 import { DIRECTION, MODIFIERS }  from 'mobiledoc-kit/utils/key';
 import { isTextNode } from 'mobiledoc-kit/utils/dom-utils';
 import { merge } from 'mobiledoc-kit/utils/merge';
+import { supportsStandardClipboardAPI } from './browsers';
 
 // walks DOWN the dom from node to childNodes, returning the element
 // for which `conditionFn(element)` is true
@@ -270,11 +271,17 @@ function triggerLeftArrowKey(editor, modifier) {
 // Allows our fake copy and paste events to communicate with each other.
 const lastCopyData = {};
 function triggerCopyEvent(editor) {
-  let event = createMockEvent('copy', editor.element, {
-    clipboardData: {
-      setData(type, value) { lastCopyData[type] = value; }
-    }
-  });
+  let eventData = {};
+
+  if (supportsStandardClipboardAPI()) {
+    eventData = {
+      clipboardData: {
+        setData(type, value) { lastCopyData[type] = value; }
+      }
+    };
+  }
+
+  let event = createMockEvent('copy', editor.element, eventData);
   editor.triggerEvent(editor.element, 'copy', event);
 }
 
@@ -288,20 +295,34 @@ function triggerCutEvent(editor) {
 }
 
 function triggerPasteEvent(editor) {
-  let event = createMockEvent('copy', editor.element, {
-    clipboardData: {
-      getData(type) { return lastCopyData[type]; }
-    }
-  });
+  let eventData = {};
+
+  if (supportsStandardClipboardAPI()) {
+    eventData = {
+      clipboardData: {
+        getData(type) { return lastCopyData[type]; }
+      }
+    };
+  }
+
+  let event = createMockEvent('copy', editor.element, eventData);
   editor.triggerEvent(editor.element, 'paste', event);
 }
 
 function getCopyData(type) {
-  return lastCopyData[type];
+  if (supportsStandardClipboardAPI()) {
+    return lastCopyData[type];
+  } else {
+    return window.clipboardData.getData('Text');
+  }
 }
 
 function setCopyData(type, value) {
-  lastCopyData[type] = value;
+  if (supportsStandardClipboardAPI()) {
+    lastCopyData[type] = value;
+  } else {
+    window.clipboardData.setData('Text', value);
+  }
 }
 
 function clearCopyData() {
