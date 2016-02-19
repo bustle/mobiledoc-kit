@@ -29,20 +29,53 @@ function parsePostFromText(text, builder, plugins) {
   return post;
 }
 
+// Sets the clipboard data in a cross-browser way.
+function setClipboardData(clipboardData, html, plain) {
+  if (clipboardData && clipboardData.setData) {
+    clipboardData.setData(MIME_TEXT_HTML, html);
+    clipboardData.setData(MIME_TEXT_PLAIN, plain);
+  } else if (window.clipboardData && window.clipboardData.setData) { // IE
+    // The Internet Explorers (including Edge) have a non-standard way of interacting with the
+    // Clipboard API (see http://caniuse.com/#feat=clipboard). In short, they expose a global window.clipboardData
+    // object instead of the per-event event.clipboardData object on the other browsers.
+    window.clipboardData.setData('Text', html);
+  }
+}
+
+// Gets the clipboard data in a cross-browser way.
+function getClipboardData(clipboardData) {
+  let html;
+  let text;
+
+  if (clipboardData && clipboardData.getData) {
+    html = clipboardData.getData(MIME_TEXT_HTML);
+
+    if (!html || html.length === 0) { // Fallback to 'text/plain'
+      text = clipboardData.getData(MIME_TEXT_PLAIN);
+    }
+  } else if (window.clipboardData && window.clipboardData.getData) { // IE
+    // The Internet Explorers (including Edge) have a non-standard way of interacting with the
+    // Clipboard API (see http://caniuse.com/#feat=clipboard). In short, they expose a global window.clipboardData
+    // object instead of the per-event event.clipboardData object on the other browsers.
+    html = window.clipboardData.getData('Text');
+  }
+
+  return { html, text };
+}
+
 /**
  * @param {Event} copyEvent
  * @param {Editor}
  * @return null
  */
 export function setClipboardCopyData(copyEvent, editor) {
-  let { range, post } = editor;
-  let { clipboardData } = copyEvent;
+  const { range, post } = editor;
 
-  let mobiledoc = post.cloneRange(range);
+  const mobiledoc = post.cloneRange(range);
 
-  let unknownCardHandler = () => {}; // ignore unknown cards
-  let unknownAtomHandler = () => {}; // ignore unknown atoms
-  let {result: innerHTML} =
+  const unknownCardHandler = () => {}; // ignore unknown cards
+  const unknownAtomHandler = () => {}; // ignore unknown atoms
+  const {result: innerHTML} =
     new HTMLRenderer({unknownCardHandler, unknownAtomHandler}).render(mobiledoc);
 
   const html =
@@ -50,8 +83,7 @@ export function setClipboardCopyData(copyEvent, editor) {
   const {result: plain} =
     new TextRenderer({unknownCardHandler, unknownAtomHandler}).render(mobiledoc);
 
-  clipboardData.setData(MIME_TEXT_PLAIN, plain);
-  clipboardData.setData(MIME_TEXT_HTML, html);
+  setClipboardData(copyEvent.clipboardData, html, plain);
 }
 
 /**
@@ -62,13 +94,12 @@ export function setClipboardCopyData(copyEvent, editor) {
  */
 export function parsePostFromPaste(pasteEvent, builder, plugins=[]) {
   let post;
-  let html = pasteEvent.clipboardData.getData(MIME_TEXT_HTML);
 
-  if (!html || html.length === 0) { // Fallback to 'text/plain'
-    let text = pasteEvent.clipboardData.getData(MIME_TEXT_PLAIN);
-    post = parsePostFromText(text, builder, plugins);
-  } else {
+  const { html, text } = getClipboardData(pasteEvent.clipboardData);
+  if (html && html.length > 0) {
     post = parsePostFromHTML(html, builder, plugins);
+  } else if (text && text.length > 0) {
+    post = parsePostFromText(text, builder, plugins);
   }
 
   return post;
