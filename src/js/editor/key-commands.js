@@ -56,9 +56,7 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'CTRL+A',
   run(editor) {
-    if (!Browser.isMac) {
-      return false;
-    }
+    if (!Browser.isMac) { return false; }
     let {range} = editor;
     let {head: {section}} = range;
     editor.run(postEditor => {
@@ -68,9 +66,7 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'CTRL+E',
   run(editor) {
-    if (!Browser.isMac) {
-      return false;
-    }
+    if (!Browser.isMac) { return false; }
     let {range} = editor;
     let {tail: {section}} = range;
     editor.run(postEditor => {
@@ -117,6 +113,18 @@ export const DEFAULT_KEY_COMMANDS = [{
     editor.run(postEditor => {
       postEditor.redoLastChange();
     });
+  }
+}, {
+  str: 'CTRL+Z',
+  run(editor) {
+    if (Browser.isMac) { return false; }
+    editor.run(postEditor => postEditor.undoLastChange());
+  }
+}, {
+  str: 'CTRL+SHIFT+Z',
+  run(editor) {
+    if (Browser.isMac) { return false; }
+    editor.run(postEditor => postEditor.redoLastChange());
   }
 }];
 
