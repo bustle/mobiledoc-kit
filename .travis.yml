@@ -15,8 +15,8 @@ before_install:
   - wget https://s3.amazonaws.com/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2
   - tar -xjf phantomjs-2.0.0-ubuntu-12.04.tar.bz2
   - export PATH=$PWD:$PATH
-  - "npm config set spin false"
-  - "npm install -g npm@^2"
+  - npm config set spin false
+  - npm install -g npm@^2
 
 install:
   - npm install -g broccoli-cli
@@ -26,3 +26,6 @@ install:
 
 script:
   - npm test
+
+env:
+  - SAUCE_USERNAME=yoran SAUCE_ACCESS_KEY=87144ef7-569c-44b1-a11e-9c9c28c40780

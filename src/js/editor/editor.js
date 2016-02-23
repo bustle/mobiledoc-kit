@@ -45,8 +45,8 @@ import EditHistory from 'mobiledoc-kit/editor/edit-history';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
-const ELEMENT_EVENTS = ['keydown', 'keyup', 'cut', 'copy', 'paste'];
-const DOCUMENT_EVENTS= ['mouseup'];
+const ELEMENT_EVENTS  = ['keydown', 'keyup', 'cut', 'copy', 'paste'];
+const DOCUMENT_EVENTS = ['mouseup'];
 
 const defaults = {
   placeholder: 'Write here...',

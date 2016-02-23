@@ -5,7 +5,7 @@
   "repository": "https://github.com/bustlelabs/mobiledoc-kit",
   "scripts": {
     "start": "broccoli serve",
-    "test": "testem ci",
+    "test": "testem ci --port 8080",
     "build": "rm -rf dist && broccoli build dist",
     "build-website": "./bin/build-website.sh",
     "deploy-website": "./bin/deploy-website.sh",
@@ -45,7 +45,8 @@
     "broccoli-test-builder": "^0.2.0",
     "conventional-changelog": "^0.5.1",
     "jquery": "^2.1.4",
-    "testem": "^0.9.11"
+    "saucie": "^1.4.0",
+    "testem": "^1.4.0"
   },
   "main": "dist/commonjs/mobiledoc-kit/index.js"
 }

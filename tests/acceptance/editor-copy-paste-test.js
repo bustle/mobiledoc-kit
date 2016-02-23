@@ -6,6 +6,7 @@ import {
   MIME_TEXT_PLAIN,
   MIME_TEXT_HTML
 } from 'mobiledoc-kit/utils/paste-utils';
+import { detectIE11 } from '../helpers/browsers';
 
 const { test, module } = Helpers;
 
@@ -31,357 +32,361 @@ module('Acceptance: editor: copy-paste', {
   }
 });
 
-test('simple copy-paste at end of section works', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+if (!detectIE11()) {
+  // These tests do not work in Sauce Labs on IE11 because access to the clipboard must be manually allowed.
+  // TODO: Configure IE11 to automatically allow access to the clipboard.
+  test('simple copy-paste at end of section works', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker('abc')])]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
-  Helpers.dom.selectText('abc', editorElement);
-  Helpers.dom.triggerCopyEvent(editor);
+    Helpers.dom.selectText('abc', editorElement);
+    Helpers.dom.triggerCopyEvent(editor);
 
-  let textNode = $('#editor p')[0].childNodes[0];
-  assert.equal(textNode.textContent, 'abc'); //precond
-  Helpers.dom.moveCursorTo(textNode, textNode.length);
+    let textNode = $('#editor p')[0].childNodes[0];
+    assert.equal(textNode.textContent, 'abc'); //precond
+    Helpers.dom.moveCursorTo(textNode, textNode.length);
 
-  Helpers.dom.triggerPasteEvent(editor);
+    Helpers.dom.triggerPasteEvent(editor);
 
-  assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
-});
-
-test('paste plain text', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  let textNode = $('#editor p')[0].childNodes[0];
-  assert.equal(textNode.textContent, 'abc'); //precond
-  Helpers.dom.moveCursorTo(textNode, textNode.length);
-
-  Helpers.dom.setCopyData(MIME_TEXT_PLAIN, 'abc');
-  Helpers.dom.triggerPasteEvent(editor);
-
-  assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
-});
-
-test('paste plain text with line breaks', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  let textNode = $('#editor p')[0].childNodes[0];
-  assert.equal(textNode.textContent, 'abc'); //precond
-  Helpers.dom.moveCursorTo(textNode, textNode.length);
-
-  Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['abc', 'def'].join('\n'));
-  Helpers.dom.triggerPasteEvent(editor);
-
-  if (supportsStandardClipboardAPI()) {
     assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
-    assert.hasElement('#editor p:contains(def)', 'second section is pasted');
-    assert.equal($('#editor p').length, 2, 'adds a second section');
-  } else {
-    assert.hasElement('#editor p:contains(abcabc\ndef)', 'pastes the text');
-    assert.equal($('#editor p').length, 1, 'adds a second section');
-  }
-});
-
-test('paste plain text with list items', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
   });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
 
-  let textNode = $('#editor p')[0].childNodes[0];
-  assert.equal(textNode.textContent, 'abc'); //precond
-  Helpers.dom.moveCursorTo(textNode, textNode.length);
+  test('paste plain text', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker('abc')])]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
-  Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['* abc', '* def'].join('\n'));
-  Helpers.dom.triggerPasteEvent(editor);
+    let textNode = $('#editor p')[0].childNodes[0];
+    assert.equal(textNode.textContent, 'abc'); //precond
+    Helpers.dom.moveCursorTo(textNode, textNode.length);
 
-  if (supportsStandardClipboardAPI()) {
+    Helpers.dom.setCopyData(MIME_TEXT_PLAIN, 'abc');
+    Helpers.dom.triggerPasteEvent(editor);
+
     assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
-    assert.hasElement('#editor ul li:contains(def)', 'list item is pasted');
-  } else {
-    assert.hasElement('#editor p:contains(abc* abc\n* def)', 'pastes the text');
-  }
-});
-
-test('can cut and then paste content', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
   });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
 
-  assert.hasElement('#editor p:contains(abc)', 'precond - has p');
+  test('paste plain text with line breaks', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker('abc')])]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
-  Helpers.dom.selectText('abc', editorElement);
-  Helpers.dom.triggerCutEvent(editor);
+    let textNode = $('#editor p')[0].childNodes[0];
+    assert.equal(textNode.textContent, 'abc'); //precond
+    Helpers.dom.moveCursorTo(textNode, textNode.length);
 
-  assert.hasNoElement('#editor p:contains(abc)',
-                      'content removed after cutting');
+    Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['abc', 'def'].join('\n'));
+    Helpers.dom.triggerPasteEvent(editor);
 
-  let textNode = $('#editor p')[0].childNodes[0];
-  Helpers.dom.moveCursorTo(textNode, textNode.length);
-
-  Helpers.dom.triggerPasteEvent(editor);
-
-  assert.hasElement('#editor p:contains(abc)', 'pastes the text');
-});
-
-test('paste when text is selected replaces that text', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  assert.hasElement('#editor p:contains(abc)', 'precond - has p');
-
-  Helpers.dom.selectText('bc', editorElement);
-  Helpers.dom.triggerCopyEvent(editor);
-
-  Helpers.dom.selectText('a', editorElement);
-
-  Helpers.dom.triggerPasteEvent(editor);
-
-  assert.hasElement('#editor p:contains(bcbc)',
-                    'pastes, replacing the selection');
-});
-
-test('simple copy-paste with markup at end of section works', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker, markup}) => {
-    return post([markupSection('p', [
-      marker('a', [markup('strong')]),
-      marker('bc')
-    ])]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  Helpers.dom.selectText('a', editorElement, 'b', editorElement);
-  Helpers.dom.triggerCopyEvent(editor);
-
-  let textNode = $('#editor p')[0].childNodes[1];
-  assert.equal(textNode.textContent, 'bc'); //precond
-  Helpers.dom.moveCursorTo(textNode, textNode.length);
-
-  Helpers.dom.triggerPasteEvent(editor);
-
-  assert.hasElement('#editor p:contains(abcab)', 'pastes the text');
-  assert.equal($('#editor p strong:contains(a)').length, 2, 'two bold As');
-});
-
-test('simple copy-paste in middle of section works', (assert) => {
-   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abcd')])]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  Helpers.dom.selectText('c', editorElement);
-  Helpers.dom.triggerCopyEvent(editor);
-
-  let textNode = $('#editor p')[0].childNodes[0];
-  assert.equal(textNode.textContent, 'abcd'); //precond
-  Helpers.dom.moveCursorTo(textNode, 1);
-
-  Helpers.dom.triggerPasteEvent(editor);
-
-  assert.hasElement('#editor p:contains(acbcd)', 'pastes the text');
-  Helpers.dom.insertText(editor, 'X');
-  assert.hasElement('#editor p:contains(acXbcd)', 'inserts text in right spot');
-});
-
-test('simple copy-paste at start of section works', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abcd')])]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  Helpers.dom.selectText('c', editorElement);
-  Helpers.dom.triggerCopyEvent(editor);
-
-  let textNode = $('#editor p')[0].childNodes[0];
-  assert.equal(textNode.textContent, 'abcd'); //precond
-  Helpers.dom.moveCursorTo(textNode, 0);
-
-  Helpers.dom.triggerPasteEvent(editor);
-
-  assert.hasElement('#editor p:contains(cabcd)', 'pastes the text');
-  Helpers.dom.insertText(editor, 'X');
-  assert.hasElement('#editor p:contains(cXabcd)', 'inserts text in right spot');
-});
-
-test('copy-paste can copy cards', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker, cardSection}) => {
-    return post([
-      markupSection('p', [marker('abc')]),
-      cardSection('test-card', {foo: 'bar'}),
-      markupSection('p', [marker('123')])
-    ]);
-  });
-  let cards = [{
-    name: 'test-card',
-    type: 'dom',
-    render({payload}) {
-      return $(`<div class='${payload.foo}'>${payload.foo}</div>`)[0];
+    if (supportsStandardClipboardAPI()) {
+      assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+      assert.hasElement('#editor p:contains(def)', 'second section is pasted');
+      assert.equal($('#editor p').length, 2, 'adds a second section');
+    } else {
+      assert.hasElement('#editor p:contains(abcabc\ndef)', 'pastes the text');
+      assert.equal($('#editor p').length, 1, 'adds a second section');
     }
-  }];
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
-
-  assert.hasElement('#editor .bar', 'precond - renders card');
-
-  let startEl = $('#editor p:eq(0)')[0],
-      endEl = $('#editor p:eq(1)')[0];
-  assert.equal(endEl.textContent, '123', 'precond - endEl has correct text');
-  Helpers.dom.selectText('c', startEl, '1', endEl);
-
-  Helpers.dom.triggerCopyEvent(editor);
-
-  let textNode = $('#editor p')[1].childNodes[0];
-  assert.equal(textNode.textContent, '123', 'precond - correct textNode');
-
-  Helpers.dom.moveCursorTo(textNode, 2); // '3'
-  Helpers.dom.triggerPasteEvent(editor);
-
-  assert.equal($('#editor .bar').length, 2, 'renders a second card');
-});
-
-test('copy-paste can copy list sections', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker, listSection, listItem}) => {
-    return post([
-      markupSection('p', [marker('abc')]),
-      listSection('ul', [
-        listItem([marker('list')])
-      ]),
-      markupSection('p', [marker('123')])
-    ]);
   });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
 
-  Helpers.dom.selectText('c', editor.element, '1', editor.element);
+  test('paste plain text with list items', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker('abc')])]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
-  Helpers.dom.triggerCopyEvent(editor);
+    let textNode = $('#editor p')[0].childNodes[0];
+    assert.equal(textNode.textContent, 'abc'); //precond
+    Helpers.dom.moveCursorTo(textNode, textNode.length);
 
-  let textNode = $('#editor p')[1].childNodes[0];
-  assert.equal(textNode.textContent, '123', 'precond - correct textNode');
+    Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['* abc', '* def'].join('\n'));
+    Helpers.dom.triggerPasteEvent(editor);
 
-  Helpers.dom.moveCursorTo(textNode, 3); // end of node
-  Helpers.dom.triggerPasteEvent(editor);
+    if (supportsStandardClipboardAPI()) {
+      assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+      assert.hasElement('#editor ul li:contains(def)', 'list item is pasted');
+    } else {
+      assert.hasElement('#editor p:contains(abc* abc\n* def)', 'pastes the text');
+    }
+  });
 
-  assert.equal($('#editor ul').length, 2, 'pastes the list');
-  assert.hasElement($('#editor ul:eq(0) li:contains(list)'));
-});
+  test('can cut and then paste content', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker('abc')])]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
-test('copy sets html & text for pasting externally', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => {
+    assert.hasElement('#editor p:contains(abc)', 'precond - has p');
+
+    Helpers.dom.selectText('abc', editorElement);
+    Helpers.dom.triggerCutEvent(editor);
+
+    assert.hasNoElement('#editor p:contains(abc)',
+                        'content removed after cutting');
+
+    let textNode = $('#editor p')[0].childNodes[0];
+    Helpers.dom.moveCursorTo(textNode, textNode.length);
+
+    Helpers.dom.triggerPasteEvent(editor);
+
+    assert.hasElement('#editor p:contains(abc)', 'pastes the text');
+  });
+
+  test('paste when text is selected replaces that text', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker('abc')])]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
+
+    assert.hasElement('#editor p:contains(abc)', 'precond - has p');
+
+    Helpers.dom.selectText('bc', editorElement);
+    Helpers.dom.triggerCopyEvent(editor);
+
+    Helpers.dom.selectText('a', editorElement);
+
+    Helpers.dom.triggerPasteEvent(editor);
+
+    assert.hasElement('#editor p:contains(bcbc)',
+                      'pastes, replacing the selection');
+  });
+
+  test('simple copy-paste with markup at end of section works', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker, markup}) => {
+      return post([markupSection('p', [
+        marker('a', [markup('strong')]),
+        marker('bc')
+      ])]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
+
+    Helpers.dom.selectText('a', editorElement, 'b', editorElement);
+    Helpers.dom.triggerCopyEvent(editor);
+
+    let textNode = $('#editor p')[0].childNodes[1];
+    assert.equal(textNode.textContent, 'bc'); //precond
+    Helpers.dom.moveCursorTo(textNode, textNode.length);
+
+    Helpers.dom.triggerPasteEvent(editor);
+
+    assert.hasElement('#editor p:contains(abcab)', 'pastes the text');
+    assert.equal($('#editor p strong:contains(a)').length, 2, 'two bold As');
+  });
+
+  test('simple copy-paste in middle of section works', (assert) => {
+     const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker('abcd')])]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
+
+    Helpers.dom.selectText('c', editorElement);
+    Helpers.dom.triggerCopyEvent(editor);
+
+    let textNode = $('#editor p')[0].childNodes[0];
+    assert.equal(textNode.textContent, 'abcd'); //precond
+    Helpers.dom.moveCursorTo(textNode, 1);
+
+    Helpers.dom.triggerPasteEvent(editor);
+
+    assert.hasElement('#editor p:contains(acbcd)', 'pastes the text');
+    Helpers.dom.insertText(editor, 'X');
+    assert.hasElement('#editor p:contains(acXbcd)', 'inserts text in right spot');
+  });
+
+  test('simple copy-paste at start of section works', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker('abcd')])]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
+
+    Helpers.dom.selectText('c', editorElement);
+    Helpers.dom.triggerCopyEvent(editor);
+
+    let textNode = $('#editor p')[0].childNodes[0];
+    assert.equal(textNode.textContent, 'abcd'); //precond
+    Helpers.dom.moveCursorTo(textNode, 0);
+
+    Helpers.dom.triggerPasteEvent(editor);
+
+    assert.hasElement('#editor p:contains(cabcd)', 'pastes the text');
+    Helpers.dom.insertText(editor, 'X');
+    assert.hasElement('#editor p:contains(cXabcd)', 'inserts text in right spot');
+  });
+
+  test('copy-paste can copy cards', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker, cardSection}) => {
       return post([
-        markupSection('h1', [marker('h1 heading')]),
-        markupSection('h2', [marker('h2 subheader')]),
-        markupSection('p', [marker('The text')])
+        markupSection('p', [marker('abc')]),
+        cardSection('test-card', {foo: 'bar'}),
+        markupSection('p', [marker('123')])
       ]);
+    });
+    let cards = [{
+      name: 'test-card',
+      type: 'dom',
+      render({payload}) {
+        return $(`<div class='${payload.foo}'>${payload.foo}</div>`)[0];
+      }
+    }];
+    editor = new Editor({mobiledoc, cards});
+    editor.render(editorElement);
+
+    assert.hasElement('#editor .bar', 'precond - renders card');
+
+    let startEl = $('#editor p:eq(0)')[0],
+        endEl = $('#editor p:eq(1)')[0];
+    assert.equal(endEl.textContent, '123', 'precond - endEl has correct text');
+    Helpers.dom.selectText('c', startEl, '1', endEl);
+
+    Helpers.dom.triggerCopyEvent(editor);
+
+    let textNode = $('#editor p')[1].childNodes[0];
+    assert.equal(textNode.textContent, '123', 'precond - correct textNode');
+
+    Helpers.dom.moveCursorTo(textNode, 2); // '3'
+    Helpers.dom.triggerPasteEvent(editor);
+
+    assert.equal($('#editor .bar').length, 2, 'renders a second card');
   });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
 
-  Helpers.dom.selectText('heading', editor.element,
-                         'The text', editor.element);
+  test('copy-paste can copy list sections', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker, listSection, listItem}) => {
+      return post([
+        markupSection('p', [marker('abc')]),
+        listSection('ul', [
+          listItem([marker('list')])
+        ]),
+        markupSection('p', [marker('123')])
+      ]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
-  Helpers.dom.triggerCopyEvent(editor);
+    Helpers.dom.selectText('c', editor.element, '1', editor.element);
 
-  let html = Helpers.dom.getCopyData(MIME_TEXT_HTML);
-  if (supportsStandardClipboardAPI()) {
-    let text = Helpers.dom.getCopyData(MIME_TEXT_PLAIN);
-    assert.equal(text, ["heading", "h2 subheader", "The text" ].join('\n'),
-                 'gets plain text');
-  }
+    Helpers.dom.triggerCopyEvent(editor);
 
-  assert.ok(html.indexOf("<h1>heading") !== -1, 'html has h1');
-  assert.ok(html.indexOf("<h2>h2 subheader") !== -1, 'html has h2');
-  assert.ok(html.indexOf("<p>The text") !== -1, 'html has p');
-});
+    let textNode = $('#editor p')[1].childNodes[0];
+    assert.equal(textNode.textContent, '123', 'precond - correct textNode');
 
-test('pasting when on the end of a card is blocked', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, cardSection, markupSection, marker}) => {
-    return post([
-      cardSection('my-card'),
-      markupSection('p', [marker('abc')])
-    ]);
+    Helpers.dom.moveCursorTo(textNode, 3); // end of node
+    Helpers.dom.triggerPasteEvent(editor);
+
+    assert.equal($('#editor ul').length, 2, 'pastes the list');
+    assert.hasElement($('#editor ul:eq(0) li:contains(list)'));
   });
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
 
-  Helpers.dom.selectText('abc', editorElement);
-  Helpers.dom.triggerCopyEvent(editor);
+  test('copy sets html & text for pasting externally', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => {
+        return post([
+          markupSection('h1', [marker('h1 heading')]),
+          markupSection('h2', [marker('h2 subheader')]),
+          markupSection('p', [marker('The text')])
+        ]);
+    });
+    editor = new Editor({mobiledoc});
+    editor.render(editorElement);
 
-  editor.selectRange(new Range(editor.post.sections.head.headPosition()));
-  Helpers.dom.triggerPasteEvent(editor);
+    Helpers.dom.selectText('heading', editor.element,
+                           'The text', editor.element);
 
-  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, marker}) => {
+    Helpers.dom.triggerCopyEvent(editor);
+
+    let html = Helpers.dom.getCopyData(MIME_TEXT_HTML);
+    if (supportsStandardClipboardAPI()) {
+      let text = Helpers.dom.getCopyData(MIME_TEXT_PLAIN);
+      assert.equal(text, ["heading", "h2 subheader", "The text" ].join('\n'),
+                   'gets plain text');
+    }
+
+    assert.ok(html.indexOf("<h1>heading") !== -1, 'html has h1');
+    assert.ok(html.indexOf("<h2>h2 subheader") !== -1, 'html has h2');
+    assert.ok(html.indexOf("<p>The text") !== -1, 'html has p');
+  });
+
+  test('pasting when on the end of a card is blocked', (assert) => {
+    const mobiledoc = Helpers.mobiledoc.build(
+      ({post, cardSection, markupSection, marker}) => {
       return post([
         cardSection('my-card'),
         markupSection('p', [marker('abc')])
       ]);
-    }), 'no paste has occurred');
+    });
+    editor = new Editor({mobiledoc, cards});
+    editor.render(editorElement);
 
-  editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
-  Helpers.dom.triggerPasteEvent(editor);
+    Helpers.dom.selectText('abc', editorElement);
+    Helpers.dom.triggerCopyEvent(editor);
 
-  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, marker}) => {
-      return post([
-        cardSection('my-card'),
-        markupSection('p', [marker('abc')])
-      ]);
-    }), 'no paste has occurred');
-});
+    editor.selectRange(new Range(editor.post.sections.head.headPosition()));
+    Helpers.dom.triggerPasteEvent(editor);
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/249
-test('pasting when replacing a list item works', (assert) => {
-  let mobiledoc = Helpers.mobiledoc.build(
-    ({post, listSection, listItem, markupSection, marker}) => {
-    return post([
-      markupSection('p', [marker('X')]),
-      listSection('ul', [
-        listItem([marker('Y')])
-      ])
-    ]);
+    assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+      ({post, cardSection, markupSection, marker}) => {
+        return post([
+          cardSection('my-card'),
+          markupSection('p', [marker('abc')])
+        ]);
+      }), 'no paste has occurred');
+
+    editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
+    Helpers.dom.triggerPasteEvent(editor);
+
+    assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+      ({post, cardSection, markupSection, marker}) => {
+        return post([
+          cardSection('my-card'),
+          markupSection('p', [marker('abc')])
+        ]);
+      }), 'no paste has occurred');
   });
 
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
+  // see https://github.com/bustlelabs/mobiledoc-kit/issues/249
+  test('pasting when replacing a list item works', (assert) => {
+    let mobiledoc = Helpers.mobiledoc.build(
+      ({post, listSection, listItem, markupSection, marker}) => {
+      return post([
+        markupSection('p', [marker('X')]),
+        listSection('ul', [
+          listItem([marker('Y')])
+        ])
+      ]);
+    });
 
-  assert.hasElement('#editor li:contains(Y)', 'precond: has li with Y');
+    editor = new Editor({mobiledoc, cards});
+    editor.render(editorElement);
 
-  Helpers.dom.selectText('X', editorElement);
-  Helpers.dom.triggerCopyEvent(editor);
+    assert.hasElement('#editor li:contains(Y)', 'precond: has li with Y');
 
-  Helpers.dom.selectText('Y', editorElement);
-  Helpers.dom.triggerPasteEvent(editor);
+    Helpers.dom.selectText('X', editorElement);
+    Helpers.dom.triggerCopyEvent(editor);
 
-  assert.hasElement('#editor li:contains(X)', 'replaces Y with X in li');
-  assert.hasNoElement('#editor li:contains(Y)', 'li with Y is gone');
-});
+    Helpers.dom.selectText('Y', editorElement);
+    Helpers.dom.triggerPasteEvent(editor);
+
+    assert.hasElement('#editor li:contains(X)', 'replaces Y with X in li');
+    assert.hasNoElement('#editor li:contains(Y)', 'li with Y is gone');
+  });
+}

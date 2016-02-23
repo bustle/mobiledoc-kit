@@ -1,13 +1,48 @@
 {
   "framework": "qunit",
+  "parallel": 5,
   "test_page": "dist/tests/index.html",
+  "on_start": "./sauce_labs/saucie-connect.js",
+  "on_exit": "./sauce_labs/saucie-disconnect.js",
   "src_files": [
     "tests/**/*.js",
     "src/**/*.js"
   ],
   "before_tests": "npm run build",
+  "launchers": {
+    "SL_Chrome_Current": {
+      "exe": "saucie",
+      "args": ["-b", "chrome", "--no-ct", "-u"],
+      "protocol": "tap"
+    },
+    "SL_MS_Edge": {
+      "exe": "saucie",
+      "args": ["-b", "microsoftedge", "--no-ct", "-u"],
+      "protocol": "tap"
+    },
+    "SL_IE_11": {
+      "exe": "saucie",
+      "args": ["-b", "internet explorer", "-v", "11", "--no-ct", "-u"],
+      "protocol": "tap"
+    },
+    "SL_Firefox_Current": {
+      "exe": "saucie",
+      "args": ["-b", "firefox", "--no-ct", "-u"],
+      "protocol": "tap"
+    },
+    "SL_Safari_9": {
+      "exe": "saucie",
+      "args": ["-b", "safari", "-v", "9", "--no-ct", "-u"],
+      "protocol": "tap"
+    }
+  },
   "launch_in_ci": [
-    "PhantomJS"
+    "PhantomJS",
+    "SL_Chrome_Current",
+    "SL_MS_Edge",
+    "SL_IE_11",
+    "SL_Firefox_Current",
+    "SL_Safari_9"
   ],
   "launch_in_dev": [
     "PhantomJS",

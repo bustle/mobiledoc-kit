@@ -488,111 +488,111 @@ if (supportsSelectionExtend()) {
     assert.positionIsEqual(range.head, sectionTail);
     assert.positionIsEqual(range.tail, cardHead);
   });
+
+  test('right arrow at start of card moves the cursor across the card', assert => {
+    let mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
+      return post([
+        cardSection('my-card')
+      ]);
+    });
+    editor = new Editor({mobiledoc, cards});
+    editor.render(editorElement);
+
+    let cardHead = editor.post.sections.head.headPosition();
+    let cardTail = editor.post.sections.head.tailPosition();
+
+    // Before zwnj
+    Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0);
+    Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
+    let { range } = editor;
+
+    assert.positionIsEqual(range.head, cardHead);
+    assert.positionIsEqual(range.tail, cardTail);
+
+    // After zwnj
+    Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 1);
+    Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
+    range = editor.range;
+
+    assert.positionIsEqual(range.head, cardHead);
+    assert.positionIsEqual(range.tail, cardTail);
+  });
+
+  test('right arrow at end of card moves to next section', (assert) => {
+    let mobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker, cardSection}) => {
+      return post([
+        cardSection('my-card'),
+        markupSection('p', [marker('abc')])
+      ]);
+    });
+    editor = new Editor({mobiledoc, cards});
+    editor.render(editorElement);
+
+    let cardTail = editor.post.sections.head.tailPosition();
+    let sectionHead = editor.post.sections.tail.headPosition();
+
+    // Before zwnj
+    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
+    Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
+    let { range } = editor;
+
+    assert.positionIsEqual(range.head, cardTail);
+    assert.positionIsEqual(range.tail, sectionHead);
+
+    // After zwnj
+    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
+    Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
+    range = editor.range;
+
+    assert.positionIsEqual(range.head, cardTail);
+    assert.positionIsEqual(range.tail, sectionHead);
+  });
+
+  test('right arrow at end of card moves to next list item', (assert) => {
+    let mobiledoc = Helpers.mobiledoc.build(
+      ({post, listSection, listItem, marker, cardSection}) => {
+      return post([
+        cardSection('my-card'),
+        listSection('ul', [listItem([marker('abc')])])
+      ]);
+    });
+    editor = new Editor({mobiledoc, cards});
+    editor.render(editorElement);
+
+    let cardTail = editor.post.sections.head.tailPosition();
+    let itemHead = editor.post.sections.tail.items.head.headPosition();
+
+    // Before zwnj
+    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
+    Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
+    let { range } = editor;
+
+    assert.positionIsEqual(range.head, cardTail);
+    assert.positionIsEqual(range.tail, itemHead);
+
+    // After zwnj
+    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
+    Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
+    range = editor.range;
+
+    assert.positionIsEqual(range.head, cardTail);
+    assert.positionIsEqual(range.tail, itemHead);
+  });
+
+  test('left/right arrows move selection l-to-r and r-to-l across atom', (assert) => {
+    editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+      return post([markupSection('p', [atom('my-atom', 'first')])]);
+    }, editorOptions);
+
+    editor.selectRange(new Range(editor.post.tailPosition()));
+    Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
+    assert.positionIsEqual(editor.range.head, editor.post.headPosition());
+    assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
+
+    editor.selectRange(new Range(editor.post.headPosition()));
+    Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
+    assert.positionIsEqual(editor.range.head, editor.post.headPosition());
+    assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
+  });
 }
-
-test('right arrow at start of card moves the cursor across the card', assert => {
-  let mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-    return post([
-      cardSection('my-card')
-    ]);
-  });
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
-
-  let cardHead = editor.post.sections.head.headPosition();
-  let cardTail = editor.post.sections.head.tailPosition();
-
-  // Before zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0);
-  Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  let { range } = editor;
-
-  assert.positionIsEqual(range.head, cardHead);
-  assert.positionIsEqual(range.tail, cardTail);
-
-  // After zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 1);
-  Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  range = editor.range;
-
-  assert.positionIsEqual(range.head, cardHead);
-  assert.positionIsEqual(range.tail, cardTail);
-});
-
-test('right arrow at end of card moves to next section', (assert) => {
-  let mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker, cardSection}) => {
-    return post([
-      cardSection('my-card'),
-      markupSection('p', [marker('abc')])
-    ]);
-  });
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
-
-  let cardTail = editor.post.sections.head.tailPosition();
-  let sectionHead = editor.post.sections.tail.headPosition();
-
-  // Before zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
-  Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  let { range } = editor;
-
-  assert.positionIsEqual(range.head, cardTail);
-  assert.positionIsEqual(range.tail, sectionHead);
-
-  // After zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
-  Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  range = editor.range;
-
-  assert.positionIsEqual(range.head, cardTail);
-  assert.positionIsEqual(range.tail, sectionHead);
-});
-
-test('right arrow at end of card moves to next list item', (assert) => {
-  let mobiledoc = Helpers.mobiledoc.build(
-    ({post, listSection, listItem, marker, cardSection}) => {
-    return post([
-      cardSection('my-card'),
-      listSection('ul', [listItem([marker('abc')])])
-    ]);
-  });
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
-
-  let cardTail = editor.post.sections.head.tailPosition();
-  let itemHead = editor.post.sections.tail.items.head.headPosition();
-
-  // Before zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
-  Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  let { range } = editor;
-
-  assert.positionIsEqual(range.head, cardTail);
-  assert.positionIsEqual(range.tail, itemHead);
-
-  // After zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
-  Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  range = editor.range;
-
-  assert.positionIsEqual(range.head, cardTail);
-  assert.positionIsEqual(range.tail, itemHead);
-});
-
-test('left/right arrows move selection l-to-r and r-to-l across atom', (assert) => {
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
-    return post([markupSection('p', [atom('my-atom', 'first')])]);
-  }, editorOptions);
-
-  editor.selectRange(new Range(editor.post.tailPosition()));
-  Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
-  assert.positionIsEqual(editor.range.head, editor.post.headPosition());
-  assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
-
-  editor.selectRange(new Range(editor.post.headPosition()));
-  Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
-  assert.positionIsEqual(editor.range.head, editor.post.headPosition());
-  assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
-});
