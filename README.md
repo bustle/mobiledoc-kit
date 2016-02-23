@@ -88,7 +88,7 @@ editor.render(element);
 ### Editor Lifecycle Hooks
 
 API consumers may want to react to given interaction by the user (or by
-a programmatic edit of the post). Lifecyle hooks provide notification
+a programmatic edit of the post). Lifecycle hooks provide notification
 of change and opportunity to edit the post where appropriate.
 
 Register a lifecycle hook by calling the hook name on the editor with a
