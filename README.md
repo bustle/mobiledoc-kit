@@ -1,4 +1,6 @@
-## Mobiledoc Kit [![Build Status](https://travis-ci.org/bustlelabs/mobiledoc-kit.svg?branch=master)](https://travis-ci.org/bustlelabs/mobiledoc-kit)
+## Mobiledoc Kit
+
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/mobiledoc-kit.svg)](https://saucelabs.com/u/mobiledoc-kit)
 
 ![Mobiledoc Logo](https://raw.githubusercontent.com/bustlelabs/mobiledoc-kit/master/demo/public/images/mobiledoc-logo-color-small.png)
 
@@ -277,6 +279,8 @@ Run tests via the built-in broccoli server:
 Or run headless tests via testem:
 
   * `npm test`
+
+Tests in CI are run at Travis via Saucelabs (see the `test:ci` npm script).
 
 #### Demo
 

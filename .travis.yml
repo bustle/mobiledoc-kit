@@ -1,7 +1,7 @@
 ---
 language: node_js
 node_js:
-  - "0.12"
+  - "5.4.1"
 
 sudo: false
 
@@ -10,13 +10,13 @@ cache:
     - node_modules
 
 before_install:
-  # See https://mediocre.com/forum/topics/phantomjs-2-and-travis-ci-we-beat-our-heads-against-a-wall-so-you-dont-have-to
-  # modified to not use sudo (just puts $PWD on the path so that $PWD/phantomjs is the phantom used
-  - wget https://s3.amazonaws.com/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2
-  - tar -xjf phantomjs-2.0.0-ubuntu-12.04.tar.bz2
-  - export PATH=$PWD:$PATH
+  # See https://github.com/travis-ci/travis-ci/issues/3225#issuecomment-177592725
+  - mkdir travis-phantomjs
+  - wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2 -O $PWD/travis-phantomjs/phantomjs-2.1.1-linux-x86_64.tar.bz2
+  - tar -xvf $PWD/travis-phantomjs/phantomjs-2.1.1-linux-x86_64.tar.bz2 -C $PWD/travis-phantomjs
+  - export PATH=$PWD/travis-phantomjs/phantomjs-2.1.1-linux-x86_64/bin:$PATH
+  - echo $(phantomjs --version)
   - npm config set spin false
-  - npm install -g npm@^2
 
 install:
   - npm install -g broccoli-cli
@@ -25,7 +25,7 @@ install:
   - npm install
 
 script:
-  - npm test
+  - npm run test:ci
 
 env:
-  - SAUCE_USERNAME=yoran SAUCE_ACCESS_KEY=87144ef7-569c-44b1-a11e-9c9c28c40780
+  - SAUCE_USERNAME=mobiledoc-kit SAUCE_ACCESS_KEY=f9cad21d-1141-452d-8f64-c6ba3f43faa6
