@@ -1,6 +1,8 @@
 ## Mobiledoc Kit
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/mobiledoc-kit.svg)](https://saucelabs.com/u/mobiledoc-kit)
+[![Dependency Status](https://david-dm.org/bustlelabs/mobiledoc-kit/master.svg)](https://david-dm.org/bustlelabs/mobiledoc-kit/master)
+[![devDependency Status](https://david-dm.org/bustlelabs/mobiledoc-kit/master/dev-status.svg)](https://david-dm.org/bustlelabs/mobiledoc-kit/master#info=devDependencies)
 
 ![Mobiledoc Logo](https://raw.githubusercontent.com/bustlelabs/mobiledoc-kit/master/demo/public/images/mobiledoc-logo-color-small.png)
 
