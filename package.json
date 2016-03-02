@@ -5,7 +5,8 @@
   "repository": "https://github.com/bustlelabs/mobiledoc-kit",
   "scripts": {
     "start": "broccoli serve",
-    "test": "testem ci --port 8080",
+    "test:ci": "npm run build && testem ci -f testem-ci.json",
+    "test": "npm run build && testem ci -f testem.json",
     "build": "rm -rf dist && broccoli build dist",
     "build-website": "./bin/build-website.sh",
     "deploy-website": "./bin/deploy-website.sh",
