@@ -32,13 +32,13 @@
   "unused"        : true,     // Warn when variables are created but not used.
   "trailing"      : true,     // Prohibit trailing whitespaces.
   "esnext"        : true,     // Allow ES.next specific features such as `const` and `let`.
-  
+
   // == Relaxing Options ================================================
   //
   // These options allow you to suppress certain types of warnings. Use
   // them only if you are absolutely positive that you know what you are
   // doing.
-  
+
   "bitwise"       : false,    // Prohibit bitwise operators (&, |, ^, etc.).
   "plusplus"      : false,    // Prohibit use of `++` & `--`.
   "strict"        : false,    // Require `use strict` pragma in every file.
@@ -66,13 +66,13 @@
   "sub"           : false,    // Tolerate all forms of subscript notation besides dot notation e.g. `dict['key']` instead of `dict.key`.
   "supernew"      : false,    // Tolerate `new function () { ... };` and `new Object;`.
   "validthis"     : false,    // Tolerate strict violations when the code is running in strict mode and you use this in a non-constructor function.
-  
+
   // == Environments ====================================================
   //
   // These options pre-define global variables that are exposed by
   // popular JavaScript libraries and runtime environments—such as
   // browser or node.js.
-  
+
   "browser"       : true,     // Standard browser globals e.g. `window`, `document`.
   "devel"         : false,    // Allow development statements e.g. `console.log();`.
   "jquery"        : false,    // Enable globals exposed by jQuery JavaScript library.
@@ -82,7 +82,7 @@
   //
   // These options are legacy from JSLint. Aside from bug fixes they will
   // not be improved in any way and might be removed at any point.
-  
+
   "nomen"         : false,    // Prohibit use of initial or trailing underbars in names.
   "onevar"        : false,    // Allow only one `var` statement per function.
   "passfail"      : false,    // Stop on first error.
@@ -90,7 +90,7 @@
 
   // == Global Variables ====================================================
   //
-  // These options pre-define global variables specific 
+  // These options pre-define global variables specific
   // to your app that hang off `window`.
 
   "predef": [

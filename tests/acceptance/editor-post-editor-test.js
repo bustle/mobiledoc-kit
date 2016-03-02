@@ -158,7 +158,7 @@ test('after inserting a section, can use editor#editCard to switch it to edit mo
   assert.ok(!displayedCard, 'did not call display#setup again');
 });
 
-test('can call editor#displayCard to swtich card into display mode', (assert) => {
+test('can call editor#displayCard to switch card into display mode', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
     return post([cardSection('sample-card')]);
   });
