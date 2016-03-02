@@ -44,7 +44,7 @@
     "broccoli-merge-trees": "^1.0.0",
     "broccoli-multi-builder": "^0.2.8",
     "broccoli-test-builder": "^0.2.0",
-    "conventional-changelog": "^0.5.1",
+    "conventional-changelog": "^1.1.0",
     "jquery": "^2.1.4",
     "saucie": "^1.4.0",
     "testem": "^1.4.0"
