@@ -1,7 +1,8 @@
 import Set from 'mobiledoc-kit/utils/set';
 import { forEach, filter } from 'mobiledoc-kit/utils/array-utils';
 import assert from 'mobiledoc-kit/utils/assert';
-import { containsNode } from 'mobiledoc-kit/utils/dom-utils';
+import { containsNode, closest } from 'mobiledoc-kit/utils/dom-utils';
+import { ATOM_CLASS_NAME } from 'mobiledoc-kit/renderers/editor-dom';
 
 const MUTATION = {
   NODES_CHANGED: 'childList',
@@ -122,7 +123,8 @@ export default class MutationHandler {
     }
 
     let element = this.editor.element;
-    let attachedNodes = filter(nodes, node => containsNode(element, node));
+    let atomClass = `.${ATOM_CLASS_NAME}`;
+    let attachedNodes = filter(nodes, node => containsNode(element, node) && !closest(node, atomClass, true));
     return attachedNodes;
   }
 

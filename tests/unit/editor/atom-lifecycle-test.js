@@ -234,3 +234,39 @@ test('onTeardown hook is called when editor is destroyed', (assert) => {
 
   assert.ok(teardown, 'onTeardown hook called');
 });
+
+test('mutating the content of an atom does not trigger an update', (assert) => {
+  const done = assert.async();
+
+  const atomName = 'test-atom';
+
+  const atom = {
+    name: atomName,
+    type: 'dom',
+    render() {
+      return makeEl('the-atom');
+    }
+  };
+
+  const mobiledoc = build(({markupSection, post, atom}) =>
+    post([markupSection('p', [atom(atomName, '@bob', {})])])
+  );
+  editor = new Editor({mobiledoc, atoms: [atom]});
+
+  let updateTriggered = false;
+  editor.on("update", function() {
+    updateTriggered = true;
+  });
+
+  assert.hasNoElement('#editor #the-atom', 'precond - atom not rendered');
+  editor.render(editorElement);
+
+  $("#the-atom").html("updated");
+
+  // ensure the mutations have had time to trigger
+  // TODO - nicer way of waiting?
+  setTimeout(function(){
+    assert.ok(!updateTriggered);
+    done();
+  }, 100);
+});
