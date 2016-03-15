@@ -92,6 +92,25 @@ function parseHTML(html) {
   return div;
 }
 
+function closest(el, selector, contentOnly=false) {
+  if (!isElementNode(el)) {
+    el = el.parentElement;
+  }
+  var matchesSelector = el.matches || el.webkitMatchesSelector || el.mozMatchesSelector || el.msMatchesSelector;
+
+  if (contentOnly && matchesSelector.call(el, selector)) {
+    return null;
+  }
+
+  while (el) {
+    if (matchesSelector.call(el, selector)) {
+      break;
+    }
+    el = el.parentElement;
+  }
+  return el;
+}
+
 export {
   containsNode,
   clearChildNodes,
@@ -103,5 +122,6 @@ export {
   isTextNode,
   isCommentNode,
   isElementNode,
-  parseHTML
+  parseHTML,
+  closest
 };
