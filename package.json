@@ -1,6 +1,6 @@
 {
   "name": "mobiledoc-kit",
-  "version": "0.8.5",
+  "version": "0.9.0-beta.1",
   "description": "A toolkit for building WYSIWYG editors with Mobiledoc",
   "repository": "https://github.com/bustlelabs/mobiledoc-kit",
   "scripts": {
@@ -10,7 +10,7 @@
     "build": "rm -rf dist && broccoli build dist",
     "build-website": "./bin/build-website.sh",
     "deploy-website": "./bin/deploy-website.sh",
-    "update-changelog": "./node_modules/conventional-changelog/cli.js -i CHANGELOG.md -r 0 --overwrite && git add CHANGELOG.md && git commit -m 'Update changelog'"
+    "update-changelog": "./node_modules/conventional-changelog-cli/cli.js -i CHANGELOG.md -r 0 -s && git add CHANGELOG.md && git commit -m 'Update changelog'"
   },
   "keywords": [
     "html",
@@ -45,6 +45,7 @@
     "broccoli-multi-builder": "^0.2.8",
     "broccoli-test-builder": "^0.2.0",
     "conventional-changelog": "^1.1.0",
+    "conventional-changelog-cli": "^1.1.1",
     "jquery": "^2.2.2",
     "saucie": "^1.4.0",
     "testem": "^1.5.0"
