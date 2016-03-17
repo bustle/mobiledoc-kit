@@ -41,7 +41,7 @@ test('can type in middle of a list item', (assert) => {
   const listItem = $('#editor li:contains(first item)')[0];
   assert.ok(!!listItem, 'precond - has li');
 
-  Helpers.dom.moveCursorTo(listItem.childNodes[0], 'first'.length);
+  Helpers.dom.moveCursorTo(editor, listItem.childNodes[0], 'first'.length);
   Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor li:contains(firstX item)', 'inserts text at right spot');
@@ -53,7 +53,7 @@ test('can type at end of a list item', (assert) => {
   const listItem = $('#editor li:contains(first item)')[0];
   assert.ok(!!listItem, 'precond - has li');
 
-  Helpers.dom.moveCursorTo(listItem.childNodes[0], 'first item'.length);
+  Helpers.dom.moveCursorTo(editor, listItem.childNodes[0], 'first item'.length);
   Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor li:contains(first itemX)', 'inserts text at right spot');
@@ -65,7 +65,7 @@ test('can type at start of a list item', (assert) => {
   const listItem = $('#editor li:contains(first item)')[0];
   assert.ok(!!listItem, 'precond - has li');
 
-  Helpers.dom.moveCursorTo(listItem.childNodes[0], 0);
+  Helpers.dom.moveCursorTo(editor, listItem.childNodes[0], 0);
   Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor li:contains(Xfirst item)', 'inserts text at right spot');
@@ -80,7 +80,7 @@ test('can delete selection across list items', (assert) => {
   const listItem2 = $('#editor li:contains(second item)')[0];
   assert.ok(!!listItem2, 'precond - has li2');
 
-  Helpers.dom.selectText(' item', listItem, 'secon', listItem2);
+  Helpers.dom.selectText(editor ,' item', listItem, 'secon', listItem2);
   Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('#editor li:contains(d item)', 'results in correct text');
@@ -93,7 +93,7 @@ test('can exit list section altogether by deleting', (assert) => {
   const listItem2 = $('#editor li:contains(second item)')[0];
   assert.ok(!!listItem2, 'precond - has listItem2');
 
-  Helpers.dom.moveCursorTo(listItem2.childNodes[0], 0);
+  Helpers.dom.moveCursorTo(editor, listItem2.childNodes[0], 0);
   Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('#editor li:contains(first item)', 'still has first item');
@@ -111,7 +111,7 @@ test('can split list item with <enter>', (assert) => {
   let li = $('#editor li:contains(first item)')[0];
   assert.ok(!!li, 'precond');
 
-  Helpers.dom.moveCursorTo(li.childNodes[0], 'fir'.length);
+  Helpers.dom.moveCursorTo(editor, li.childNodes[0], 'fir'.length);
   Helpers.dom.triggerEnter(editor);
 
   assert.hasNoElement('#editor li:contains(first item)', 'first item is split');
@@ -125,7 +125,7 @@ test('can split list item with <enter>', (assert) => {
 
   li = $('#editor li:contains(fir)')[0];
   assert.ok(!!li, 'precond - has "fir"');
-  Helpers.dom.moveCursorTo(li.childNodes[0], 'fi'.length);
+  Helpers.dom.moveCursorTo(editor, li.childNodes[0], 'fi'.length);
   Helpers.dom.triggerEnter(editor);
 
   assert.hasNoElement('#editor li:contains(fir)');
@@ -141,7 +141,7 @@ test('can hit enter at end of list item to add new item', (assert) => {
   const li = $('#editor li:contains(first item)')[0];
   assert.ok(!!li, 'precond');
 
-  Helpers.dom.moveCursorTo(li.childNodes[0], 'first item'.length);
+  Helpers.dom.moveCursorTo(editor, li.childNodes[0], 'first item'.length);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor li').length, 3, 'adds a new li');
@@ -167,7 +167,7 @@ test('hitting enter to add list item, deleting to remove it, adding new list ite
   let li = $('#editor li:contains(first item)')[0];
   assert.ok(!!li, 'precond');
 
-  Helpers.dom.moveCursorTo(li.childNodes[0], 'first item'.length);
+  Helpers.dom.moveCursorTo(editor, li.childNodes[0], 'first item'.length);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor li').length, 3, 'adds a new li');
@@ -178,7 +178,7 @@ test('hitting enter to add list item, deleting to remove it, adding new list ite
   assert.equal($('#editor p').length, 1, 'adds a new paragraph section where delete happened');
 
   li = $('#editor li:contains(first item)')[0];
-  Helpers.dom.moveCursorTo(li.childNodes[0], 'first item'.length);
+  Helpers.dom.moveCursorTo(editor, li.childNodes[0], 'first item'.length);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor li').length, 3, 'adds a new li after enter again');
@@ -202,7 +202,7 @@ test('hitting enter at empty last list item exists list', (assert) => {
   const li = $('#editor li:contains(second item)')[0];
   assert.ok(!!li, 'precond');
 
-  Helpers.dom.moveCursorTo(li.childNodes[0], 'second item'.length);
+  Helpers.dom.moveCursorTo(editor, li.childNodes[0], 'second item'.length);
   Helpers.dom.triggerEnter(editor);
 
   assert.equal($('#editor li').length, 3, 'precond - adds a third li');
@@ -230,7 +230,7 @@ test('deleting at start of non-empty section after list item joins it with list 
   createEditorWithMobiledoc(mobiledoc);
 
   const p = $('#editor p:contains(def)')[0];
-  Helpers.dom.moveCursorTo(p.childNodes[0], 0);
+  Helpers.dom.moveCursorTo(editor, p.childNodes[0], 0);
   Helpers.dom.triggerDelete(editor);
 
   assert.hasNoElement('#editor p');
@@ -250,7 +250,7 @@ test('deleting at start of empty section after list item joins it with list item
 
   assert.hasElement('#editor p br', 'precond - br');
   const node = $('#editor p br')[0];
-  Helpers.dom.moveCursorTo(node, 0);
+  Helpers.dom.moveCursorTo(editor, node, 0);
   Helpers.dom.triggerDelete(editor);
 
   assert.hasNoElement('#editor p', 'removes p');
@@ -271,7 +271,7 @@ test('forward-delete in empty list item with nothing after it does nothing', (as
 
   assert.hasElement('#editor li br', 'precond - br');
   const node = $('#editor li br')[0];
-  Helpers.dom.moveCursorTo(node, 0);
+  Helpers.dom.moveCursorTo(editor, node, 0);
   Helpers.dom.triggerForwardDelete(editor);
 
   assert.hasElement('#editor li', 'li remains');
@@ -293,7 +293,7 @@ test('forward-delete in empty li with li after it joins with li', (assert) => {
   assert.equal($('#editor li').length, 2, 'precond - 2 lis');
   assert.hasElement('#editor li br', 'precond - br');
   const node = $('#editor li br')[0];
-  Helpers.dom.moveCursorTo(node, 0);
+  Helpers.dom.moveCursorTo(editor, node, 0);
   Helpers.dom.triggerForwardDelete(editor);
 
   assert.equal($('#editor li').length, 1, '1 li remains');
@@ -316,7 +316,7 @@ test('forward-delete in empty li with markup section after it deletes li', (asse
 
   assert.hasElement('#editor li br', 'precond - br');
   const node = $('#editor li br')[0];
-  Helpers.dom.moveCursorTo(node, 0);
+  Helpers.dom.moveCursorTo(editor, node, 0);
   Helpers.dom.triggerForwardDelete(editor);
 
   assert.hasNoElement('#editor li', 'li is removed');
@@ -338,7 +338,7 @@ test('forward-delete end of li with nothing after', (assert) => {
   createEditorWithMobiledoc(mobiledoc);
 
   const node = $('#editor li')[0].childNodes[0];
-  Helpers.dom.moveCursorTo(node, 'abc'.length);
+  Helpers.dom.moveCursorTo(editor, node, 'abc'.length);
   Helpers.dom.triggerForwardDelete(editor);
 
   assert.hasElement('#editor li:contains(abc)', 'li remains');
@@ -360,7 +360,7 @@ test('forward-delete end of li with li after', (assert) => {
 
   assert.equal($('#editor li').length, 2, 'precond - 2 lis');
   const node = $('#editor li')[0].childNodes[0];
-  Helpers.dom.moveCursorTo(node, 'abc'.length);
+  Helpers.dom.moveCursorTo(editor, node, 'abc'.length);
   Helpers.dom.triggerForwardDelete(editor);
 
   assert.hasElement('#editor li:contains(abcdef)', 'li is joined');
@@ -380,7 +380,7 @@ test('forward-delete end of li with markup section after', (assert) => {
   createEditorWithMobiledoc(mobiledoc);
 
   const node = $('#editor li')[0].childNodes[0];
-  Helpers.dom.moveCursorTo(node, 'abc'.length);
+  Helpers.dom.moveCursorTo(editor, node, 'abc'.length);
   Helpers.dom.triggerForwardDelete(editor);
 
   assert.hasElement('#editor li:contains(abcdef)', 'li is joined');
@@ -407,7 +407,7 @@ test('selecting empty list items does not cause error', (assert) => {
   createEditorWithMobiledoc(mobiledoc);
 
   assert.equal($('#editor li').length, 3, 'precond - 3 lis');
-  Helpers.dom.moveCursorTo($('#editor li:eq(1)')[0], 0,
+  Helpers.dom.moveCursorTo(editor, $('#editor li:eq(1)')[0], 0,
                            $('#editor li:eq(2)')[0], 0);
   Helpers.dom.triggerEvent(editor.element, 'click');
   setTimeout(() => {
@@ -441,7 +441,7 @@ test('selecting list item and deleting leaves following section intact', (assert
   const liTextNode  = $('#editor li:eq(0)')[0].childNodes[0];
   const emptyLiNode = $('#editor li:eq(1)')[0];
   assert.equal(liTextNode.textContent, 'abc'); // precond
-  Helpers.dom.moveCursorTo(liTextNode, 0, emptyLiNode, 0);
+  Helpers.dom.moveCursorTo(editor, liTextNode, 0, emptyLiNode, 0);
   Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('#editor p', 'does not delete p');

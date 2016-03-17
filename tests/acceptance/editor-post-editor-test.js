@@ -49,7 +49,7 @@ test('#insertSection inserts after the cursor active section', (assert) => {
   assert.hasElement('#editor p:eq(1):contains(def)');
   assert.hasNoElement('#editor p:contains(123)');
 
-  Helpers.dom.selectText('b', editorElement);
+  Helpers.dom.selectText(editor ,'b', editorElement);
 
   editor.run(postEditor => postEditor.insertSection(newSection));
   assert.hasElement('#editor p:eq(0):contains(abc)', 'still has 1st section');
@@ -204,7 +204,7 @@ test('#toggleMarkup adds markup by tag name', (assert) => {
   //precond
   assert.hasNoElement('#editor strong');
 
-  Helpers.dom.selectText('bc', editorElement, 'd', editorElement);
+  Helpers.dom.selectText(editor ,'bc', editorElement, 'd', editorElement);
   editor.run(postEditor => postEditor.toggleMarkup('strong'));
   assert.hasElement('#editor strong:contains(bcd)');
 });
@@ -222,7 +222,7 @@ test('#toggleMarkup removes markup by tag name', (assert) => {
   //precond
   assert.hasElement('#editor strong:contains(bcde)');
 
-  Helpers.dom.selectText('bc', editorElement, 'd', editorElement);
+  Helpers.dom.selectText(editor ,'bc', editorElement, 'd', editorElement);
   editor.run(postEditor => postEditor.toggleMarkup('strong'));
   assert.hasNoElement('#editor strong:contains(bcd)', 'markup removed from selection');
   assert.hasElement('#editor strong:contains(e)', 'unselected text still bold');
@@ -251,26 +251,17 @@ test('postEditor reads editor range, sets it with #setRange', (assert) => {
 
   let { post } = editor;
 
-  Helpers.dom.selectText('bc', editorElement);
+  Helpers.dom.selectText(editor ,'bc', editorElement);
+  let range = editor.range;
+  let expectedRange = Range.create(post.sections.head, 'a'.length,
+                                   post.sections.head, 'abc'.length);
+  assert.ok(range.isEqual(expectedRange), 'precond - editor.range is correct');
 
-  let range, originalRange, expectedRange;
+  let newRange;
   editor.run(postEditor => {
-    originalRange = range = editor.range;
-    expectedRange = Range.create(post.sections.head, 1, post.sections.head, 3);
-    assert.ok(range.isEqual(expectedRange), 'postEditor.range is correct');
-
-    expectedRange = Range.create(post.sections.head, 0, post.sections.head, 1);
-    postEditor.setRange(expectedRange);
-    range = editor.range;
-    assert.ok(range.isEqual(expectedRange),
-              'postEditor.range is correct after set');
-
-    assert.ok(!originalRange.isEqual(expectedRange),
-              'original range has diverged');
-    assert.ok(editor.cursor.offsets.isEqual(originalRange),
-              'dom range is not changed');
+    newRange = Range.create(post.sections.head, 0, post.sections.head, 1);
+    postEditor.setRange(newRange);
   });
 
-  assert.ok(editor.range.isEqual(expectedRange),
-            'range is set from postEditor.range after run');
+  assert.ok(editor.range.isEqual(newRange), 'newRange is rendered after run');
 });

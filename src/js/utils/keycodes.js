@@ -8,6 +8,8 @@ export default {
   '9':         57,
   A:           65,
   Z:           90,
+  a:           97,
+  z:          122,
   'NUMPAD_0': 186,
   'NUMPAD_9': 111,
   ';':        186,

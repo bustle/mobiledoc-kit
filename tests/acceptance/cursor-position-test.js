@@ -38,7 +38,7 @@ test('cursor in a markup section reports its position correctly', assert => {
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 1);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 1);
   let { range } = editor;
 
   assert.ok(range.head.section === editor.post.sections.head,
@@ -54,7 +54,7 @@ test('cursor blank section reports its position correctly', (assert) => {
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 0);
   let { range } = editor;
 
   assert.positionIsEqual(range.head, editor.post.sections.head.headPosition());
@@ -69,7 +69,7 @@ test('cursor moved left from section after card is reported as on the card with 
   editor = new Editor({mobiledoc, cards});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 1);
   let { range } = editor;
 
   assert.positionIsEqual(range.head,
@@ -88,7 +88,7 @@ test('cursor moved up from end of section after card is reported as on the card 
   editor = new Editor({mobiledoc, cards});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 0);
   let { range } = editor;
 
   assert.positionIsEqual(range.head, editor.post.sections.head.tailPosition());
@@ -103,7 +103,7 @@ test('cursor moved right from end of section before card is reported as on the c
   editor = new Editor({mobiledoc, cards});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 0);
+  Helpers.dom.moveCursorTo(editor, editorElement.lastChild.firstChild, 0);
   let { range } = editor;
 
   assert.positionIsEqual(range.head, editor.post.sections.tail.headPosition());
@@ -118,7 +118,7 @@ test('cursor moved right from end of section before card is reported as on the c
   editor = new Editor({mobiledoc, cards});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 1);
+  Helpers.dom.moveCursorTo(editor, editorElement.lastChild.firstChild, 1);
   let { range } = editor;
 
   assert.positionIsEqual(range.head, editor.post.sections.tail.headPosition());
@@ -136,7 +136,7 @@ test('cursor focused on card wrapper with 2 offset', (assert) => {
   // We need to create a selection starting from the markup section's node
   // in order for the tail to end up focused on a div instead of a text node
   // This only happens in Firefox
-  Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0, 
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 0, 
                            editorElement.lastChild, 2);
 
   let { range } = editor;
@@ -156,7 +156,7 @@ test('cursor focused on card wrapper with 0 offset', (assert) => {
 
   // We need to create a selection starting from the markup section's node
   // in order for the tail to end up focused on a div instead of a text node
-  Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0,
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 0,
                            editorElement.lastChild, 0);
   let { range } = editor;
 
@@ -174,7 +174,7 @@ test('selecting the entire editor element reports a selection range of the entir
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement, 0,
+  Helpers.dom.moveCursorTo(editor, editorElement, 0,
                            editorElement, editorElement.childNodes.length);
   let { range } = editor;
 
@@ -195,7 +195,7 @@ test('when at the head of an atom', assert => {
 
   // Before zwnj
   //
-  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 0);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.firstChild, 0);
   let range = editor.range;
 
   let positionBeforeAtom = new Position(editor.post.sections.head, 'aa'.length);
@@ -204,7 +204,7 @@ test('when at the head of an atom', assert => {
 
   // After zwnj
   //
-  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 1);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.firstChild, 1);
   range = editor.range;
 
   assert.positionIsEqual(range.head, positionBeforeAtom);
@@ -212,14 +212,14 @@ test('when at the head of an atom', assert => {
   // On wrapper
   //
   [0, 1].forEach(index => {
-    Helpers.dom.moveCursorTo(atomWrapper, index);
+    Helpers.dom.moveCursorTo(editor, atomWrapper, index);
     range = editor.range;
 
     assert.positionIsEqual(range.head, positionBeforeAtom);
   });
 
   // text node before wrapper
-  Helpers.dom.moveCursorTo(atomWrapper.previousSibling, 2);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.previousSibling, 2);
   range = editor.range;
 
   assert.positionIsEqual(range.head, positionBeforeAtom);
@@ -239,14 +239,14 @@ test('when at the tail of an atom', assert => {
 
   // Before zwnj
   //
-  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 0);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.lastChild, 0);
   let range = editor.range;
 
   assert.positionIsEqual(range.head, positionAfterAtom);
 
   // After zwnj
   //
-  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 1);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.lastChild, 1);
   range = editor.range;
 
   assert.positionIsEqual(range.head, positionAfterAtom);
@@ -254,7 +254,7 @@ test('when at the tail of an atom', assert => {
   // On wrapper
   //
   [2, 3].forEach(index => {
-    Helpers.dom.moveCursorTo(atomWrapper, index);
+    Helpers.dom.moveCursorTo(editor, atomWrapper, index);
     range = editor.range;
     assert.positionIsEqual(range.head, positionAfterAtom);
   });
@@ -262,7 +262,7 @@ test('when at the tail of an atom', assert => {
 
   // After wrapper
   //
-  Helpers.dom.moveCursorTo(atomWrapper.nextSibling, 0);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.nextSibling, 0);
   range = editor.range;
 
   assert.positionIsEqual(range.head, positionAfterAtom);

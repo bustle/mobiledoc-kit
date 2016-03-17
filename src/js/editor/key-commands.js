@@ -5,41 +5,31 @@ import assert from '../utils/assert';
 import Range from '../utils/cursor/range';
 import Browser from '../utils/browser';
 
+function selectAll(editor) {
+  let { post } = editor;
+  let allRange = new Range(post.headPosition(), post.tailPosition());
+  editor.selectRange(allRange);
+}
+
 export const DEFAULT_KEY_COMMANDS = [{
   str: 'META+B',
   run(editor) {
-    if (editor.range.isCollapsed) {
-      document.execCommand('bold', false, null);
-    } else {
-      editor.run(postEditor => postEditor.toggleMarkup('strong'));
-    }
+    editor.toggleMarkup('strong');
   }
 }, {
   str: 'CTRL+B',
   run(editor) {
-    if (editor.range.isCollapsed) {
-      document.execCommand('bold', false, null);
-    } else {
-      editor.run(postEditor => postEditor.toggleMarkup('strong'));
-    }
+    editor.toggleMarkup('strong');
   }
 }, {
   str: 'META+I',
   run(editor) {
-    if (editor.range.isCollapsed) {
-      document.execCommand('italic', false, null);
-    } else {
-      editor.run(postEditor => postEditor.toggleMarkup('em'));
-    }
+    editor.toggleMarkup('em');
   }
 }, {
   str: 'CTRL+I',
   run(editor) {
-    if (editor.range.isCollapsed) {
-      document.execCommand('italic', false, null);
-    } else {
-      editor.run(postEditor => postEditor.toggleMarkup('em'));
-    }
+    editor.toggleMarkup('em');
   }
 }, {
   str: 'CTRL+K',
@@ -56,12 +46,22 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'CTRL+A',
   run(editor) {
-    if (!Browser.isMac) { return false; }
-    let {range} = editor;
-    let {head: {section}} = range;
-    editor.run(postEditor => {
-      postEditor.setRange(new Range(section.headPosition()));
-    });
+    if (Browser.isMac) {
+      let {range} = editor;
+      let {head: {section}} = range;
+      editor.run(postEditor => {
+        postEditor.setRange(new Range(section.headPosition()));
+      });
+    } else {
+      selectAll(editor);
+    }
+  }
+}, {
+  str: 'META+A',
+  run(editor) {
+    if (Browser.isMac) {
+      selectAll(editor);
+    }
   }
 }, {
   str: 'CTRL+E',

@@ -45,7 +45,7 @@ test('left arrow when at the end of a card moves the cursor across the card', as
   let cardHead = editor.post.sections.head.headPosition();
 
   // Before zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 0);
   Helpers.dom.triggerLeftArrowKey(editor);
   let { range } = editor;
 
@@ -53,7 +53,7 @@ test('left arrow when at the end of a card moves the cursor across the card', as
   assert.positionIsEqual(range.tail, cardHead);
 
   // After zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 1);
   Helpers.dom.triggerLeftArrowKey(editor);
   range = editor.range;
 
@@ -61,7 +61,7 @@ test('left arrow when at the end of a card moves the cursor across the card', as
   assert.positionIsEqual(range.tail, cardHead);
 
   // On wrapper
-  Helpers.dom.moveCursorTo(editorElement.firstChild, 2);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild, 2);
   Helpers.dom.triggerLeftArrowKey(editor);
   range = editor.range;
 
@@ -82,7 +82,7 @@ test('left arrow when at the start of a card moves the cursor to the previous se
 
   // Before zwnj
   let sectionElement = editor.post.sections.tail.renderNode.element;
-  Helpers.dom.moveCursorTo(sectionElement.firstChild, 0);
+  Helpers.dom.moveCursorTo(editor, sectionElement.firstChild, 0);
   Helpers.dom.triggerLeftArrowKey(editor);
   let { range } = editor;
 
@@ -90,7 +90,7 @@ test('left arrow when at the start of a card moves the cursor to the previous se
   assert.positionIsEqual(range.tail, sectionTail);
 
   // After zwnj
-  Helpers.dom.moveCursorTo(sectionElement.firstChild, 1);
+  Helpers.dom.moveCursorTo(editor, sectionElement.firstChild, 1);
   Helpers.dom.triggerLeftArrowKey(editor);
   range = editor.range;
 
@@ -112,7 +112,7 @@ test('left arrow when at the start of a card moves to previous list item', asser
 
   // Before zwnj
   let sectionElement = editor.post.sections.tail.renderNode.element;
-  Helpers.dom.moveCursorTo(sectionElement.firstChild, 0);
+  Helpers.dom.moveCursorTo(editor, sectionElement.firstChild, 0);
   Helpers.dom.triggerLeftArrowKey(editor);
   let { range } = editor;
 
@@ -121,7 +121,7 @@ test('left arrow when at the start of a card moves to previous list item', asser
 
   // After zwnj
   sectionElement = editor.post.sections.tail.renderNode.element;
-  Helpers.dom.moveCursorTo(sectionElement.firstChild, 1);
+  Helpers.dom.moveCursorTo(editor, sectionElement.firstChild, 1);
   Helpers.dom.triggerLeftArrowKey(editor);
   range = editor.range;
 
@@ -140,7 +140,7 @@ test('right arrow at start of card moves the cursor across the card', assert => 
   let cardTail = editor.post.sections.head.tailPosition();
 
   // Before zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 0);
   Helpers.dom.triggerRightArrowKey(editor);
   let { range } = editor;
 
@@ -148,7 +148,7 @@ test('right arrow at start of card moves the cursor across the card', assert => 
   assert.positionIsEqual(range.tail, cardTail);
 
   // After zwnj
-  Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 1);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 1);
   Helpers.dom.triggerRightArrowKey(editor);
   range = editor.range;
 
@@ -169,7 +169,7 @@ test('right arrow at end of card moves cursor to next section', assert => {
 
   // Before zwnj
   let sectionElement = editor.post.sections.head.renderNode.element;
-  Helpers.dom.moveCursorTo(sectionElement.lastChild, 0);
+  Helpers.dom.moveCursorTo(editor, sectionElement.lastChild, 0);
   Helpers.dom.triggerRightArrowKey(editor);
   let { range } = editor;
 
@@ -177,12 +177,12 @@ test('right arrow at end of card moves cursor to next section', assert => {
   assert.positionIsEqual(range.tail, sectionHead);
 
   // After zwnj
-  Helpers.dom.moveCursorTo(sectionElement.lastChild, 1);
+  Helpers.dom.moveCursorTo(editor, sectionElement.lastChild, 1);
   Helpers.dom.triggerRightArrowKey(editor);
   range = editor.range;
 
   // On wrapper
-  Helpers.dom.moveCursorTo(editorElement.firstChild, 2);
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild, 2);
   Helpers.dom.triggerRightArrowKey(editor);
   range = editor.range;
 
@@ -204,7 +204,7 @@ test('right arrow at end of card moves cursor to next list item', assert => {
 
   // Before zwnj
   let sectionElement = editor.post.sections.head.renderNode.element;
-  Helpers.dom.moveCursorTo(sectionElement.lastChild, 0);
+  Helpers.dom.moveCursorTo(editor, sectionElement.lastChild, 0);
   Helpers.dom.triggerRightArrowKey(editor);
   let { range } = editor;
 
@@ -212,7 +212,7 @@ test('right arrow at end of card moves cursor to next list item', assert => {
   assert.positionIsEqual(range.tail, itemHead);
 
   // After zwnj
-  Helpers.dom.moveCursorTo(sectionElement.lastChild, 1);
+  Helpers.dom.moveCursorTo(editor, sectionElement.lastChild, 1);
   Helpers.dom.triggerRightArrowKey(editor);
   range = editor.range;
 
@@ -237,7 +237,7 @@ test('left arrow when at the head of an atom moves the cursor left off the atom'
   let atomWrapper = editor.post.sections.head.markers.objectAt(1).renderNode.element;
 
   // Before zwnj, assert moving left
-  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 0);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.lastChild, 0);
   Helpers.dom.triggerLeftArrowKey(editor);
   let range = editor.range;
 
@@ -247,7 +247,7 @@ test('left arrow when at the head of an atom moves the cursor left off the atom'
                'Cursor is positioned at offset 2');
 
   // After zwnj, assert moving left
-  Helpers.dom.moveCursorTo(atomWrapper.lastChild, 1);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.lastChild, 1);
   Helpers.dom.triggerLeftArrowKey(editor);
   range = editor.range;
 
@@ -257,7 +257,7 @@ test('left arrow when at the head of an atom moves the cursor left off the atom'
                'Cursor is positioned at offset 2');
 
   // On wrapper, assert moving left
-  Helpers.dom.moveCursorTo(atomWrapper, 3);
+  Helpers.dom.moveCursorTo(editor, atomWrapper, 3);
   Helpers.dom.triggerLeftArrowKey(editor);
   range = editor.range;
 
@@ -267,7 +267,7 @@ test('left arrow when at the head of an atom moves the cursor left off the atom'
                'Cursor is positioned at offset 2');
 
   // After wrapper, asseat moving left
-  Helpers.dom.moveCursorTo(atomWrapper.nextSibling, 0);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.nextSibling, 0);
   Helpers.dom.triggerLeftArrowKey(editor);
   range = editor.range;
 
@@ -294,7 +294,7 @@ test('right arrow when at the head of an atom moves the cursor across the atom',
   let atomWrapper = editor.post.sections.head.markers.objectAt(1).renderNode.element;
 
   // Before zwnj, assert moving right
-  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 0);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.firstChild, 0);
   Helpers.dom.triggerRightArrowKey(editor);
   let range = editor.range;
 
@@ -304,7 +304,7 @@ test('right arrow when at the head of an atom moves the cursor across the atom',
                'Cursor is positioned at offset 3');
 
   // After zwnj, assert moving right
-  Helpers.dom.moveCursorTo(atomWrapper.firstChild, 1);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.firstChild, 1);
   Helpers.dom.triggerRightArrowKey(editor);
   range = editor.range;
 
@@ -314,7 +314,7 @@ test('right arrow when at the head of an atom moves the cursor across the atom',
                'Cursor is positioned at offset 3');
 
   // On wrapper, assert moving right
-  Helpers.dom.moveCursorTo(atomWrapper, 1);
+  Helpers.dom.moveCursorTo(editor, atomWrapper, 1);
   Helpers.dom.triggerRightArrowKey(editor);
   range = editor.range;
 
@@ -324,7 +324,7 @@ test('right arrow when at the head of an atom moves the cursor across the atom',
                'Cursor is positioned at offset 3');
 
   // After wrapper, assert moving right
-  Helpers.dom.moveCursorTo(atomWrapper.previousSibling, 2);
+  Helpers.dom.moveCursorTo(editor, atomWrapper.previousSibling, 2);
   Helpers.dom.triggerRightArrowKey(editor);
   range = editor.range;
 
@@ -403,7 +403,7 @@ if (supportsSelectionExtend()) {
     let cardTail = editor.post.sections.head.tailPosition();
 
     // Before zwnj
-    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
+    Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 0);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
     let { range } = editor;
 
@@ -411,7 +411,7 @@ if (supportsSelectionExtend()) {
     assert.positionIsEqual(range.tail, cardTail);
 
     // After zwnj
-    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
+    Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 1);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
     range = editor.range;
 
@@ -419,7 +419,7 @@ if (supportsSelectionExtend()) {
     assert.positionIsEqual(range.tail, cardTail);
 
     // On wrapper
-    Helpers.dom.moveCursorTo(editorElement.firstChild, 2);
+    Helpers.dom.moveCursorTo(editor, editorElement.firstChild, 2);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
     range = editor.range;
 
@@ -442,7 +442,7 @@ if (supportsSelectionExtend()) {
     let sectionTail = editor.post.sections.head.tailPosition();
 
     // Before zwnj
-    Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 0);
+    Helpers.dom.moveCursorTo(editor, editorElement.lastChild.firstChild, 0);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
     let { range } = editor;
 
@@ -450,7 +450,7 @@ if (supportsSelectionExtend()) {
     assert.positionIsEqual(range.tail, cardHead);
 
     // After zwnj
-    Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 1);
+    Helpers.dom.moveCursorTo(editor, editorElement.lastChild.firstChild, 1);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
     range = editor.range;
 
@@ -473,7 +473,7 @@ if (supportsSelectionExtend()) {
     let sectionTail = editor.post.sections.head.items.head.tailPosition();
 
     // Before zwnj
-    Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 0);
+    Helpers.dom.moveCursorTo(editor, editorElement.lastChild.firstChild, 0);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
     let { range } = editor;
 
@@ -481,7 +481,7 @@ if (supportsSelectionExtend()) {
     assert.positionIsEqual(range.tail, cardHead);
 
     // After zwnj
-    Helpers.dom.moveCursorTo(editorElement.lastChild.firstChild, 1);
+    Helpers.dom.moveCursorTo(editor, editorElement.lastChild.firstChild, 1);
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
     range = editor.range;
 
@@ -502,7 +502,7 @@ if (supportsSelectionExtend()) {
     let cardTail = editor.post.sections.head.tailPosition();
 
     // Before zwnj
-    Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0);
+    Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 0);
     Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
     let { range } = editor;
 
@@ -510,7 +510,7 @@ if (supportsSelectionExtend()) {
     assert.positionIsEqual(range.tail, cardTail);
 
     // After zwnj
-    Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 1);
+    Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 1);
     Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
     range = editor.range;
 
@@ -533,7 +533,7 @@ if (supportsSelectionExtend()) {
     let sectionHead = editor.post.sections.tail.headPosition();
 
     // Before zwnj
-    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
+    Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 0);
     Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
     let { range } = editor;
 
@@ -541,7 +541,7 @@ if (supportsSelectionExtend()) {
     assert.positionIsEqual(range.tail, sectionHead);
 
     // After zwnj
-    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
+    Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 1);
     Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
     range = editor.range;
 
@@ -564,7 +564,7 @@ if (supportsSelectionExtend()) {
     let itemHead = editor.post.sections.tail.items.head.headPosition();
 
     // Before zwnj
-    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 0);
+    Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 0);
     Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
     let { range } = editor;
 
@@ -572,7 +572,7 @@ if (supportsSelectionExtend()) {
     assert.positionIsEqual(range.tail, itemHead);
 
     // After zwnj
-    Helpers.dom.moveCursorTo(editorElement.firstChild.lastChild, 1);
+    Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 1);
     Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
     range = editor.range;
 

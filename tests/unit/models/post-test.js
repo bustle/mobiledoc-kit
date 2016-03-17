@@ -136,8 +136,8 @@ test('#walkAllLeafSections returns markup section that follows a list section', 
   assert.ok(sections[3] === post.sections.tail, 'section 3');
 });
 
-test('#markupsInRange returns all markups', (assert) => {
-  let b, i, a1, a2, found;
+test('#markupsInRange returns all markups when range is not collapsed', (assert) => {
+  let b, i, a1, a2, found, collapsedRange;
   const post = Helpers.postAbstract.build(builder => {
     const {post, markupSection, cardSection, marker, markup} = builder;
 
@@ -169,9 +169,23 @@ test('#markupsInRange returns all markups', (assert) => {
   assert.equal(s2.text, 'link 1', 'precond s2');
   assert.equal(s3.text, 'link 2', 'precond s3');
 
-  const collapsedRange = Range.create(s1, 0, s1, 0);
+  collapsedRange = Range.create(s1, 0);
   assert.equal(post.markupsInRange(collapsedRange).length, 0,
-               'no markups in collapsed range');
+               'no markups in collapsed range at start');
+
+  collapsedRange = Range.create(s1, 'plain text'.length);
+  assert.equal(post.markupsInRange(collapsedRange).length, 0,
+               'no markups in collapsed range at end of plain text');
+
+  collapsedRange = Range.create(s1, 'plain textbold'.length);
+  found = post.markupsInRange(collapsedRange);
+  assert.equal(found.length, 1, 'markup in collapsed range in bold text');
+  assert.inArray(b, found, 'finds b in bold text');
+
+  collapsedRange = Range.create(s1, 'plain textbold text'.length);
+  found = post.markupsInRange(collapsedRange);
+  assert.equal(found.length, 1, 'markup in collapsed range at end of bold text');
+  assert.inArray(b, found, 'finds b at end of bold text');
 
   const simpleRange = Range.create(s1, 0, s1, 'plain text'.length);
   assert.equal(post.markupsInRange(simpleRange).length, 0,
@@ -183,7 +197,7 @@ test('#markupsInRange returns all markups', (assert) => {
   assert.equal(found.length, 1, 'finds markup in marker');
   assert.inArray(b, found, 'finds b');
 
-  const singleSectionRange = Range.create(s1, 0, s1, s1.text.length);
+  const singleSectionRange = Range.create(s1, 0, s1, s1.length);
   found = post.markupsInRange(singleSectionRange);
   assert.equal(found.length, 2, 'finds both markups in section');
   assert.inArray(b, found, 'finds b');

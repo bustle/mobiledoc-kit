@@ -45,7 +45,8 @@ export const SPECIAL_KEYS = {
 
 // heuristic for determining if `event` is a key event
 function isKeyEvent(event) {
-  return !!event.keyCode ||
+  return !!event.charCode ||
+    !!event.keyCode ||
     !!event.metaKey ||
     !!event.shiftKey ||
     !!event.ctrlKey;
@@ -59,6 +60,7 @@ function isKeyEvent(event) {
 const Key = class Key {
   constructor(event) {
     this.keyCode = event.keyCode;
+    this.charCode = event.charCode;
     this.event = event;
     this.modifierMask = modifierMask(event);
   }
@@ -67,6 +69,10 @@ const Key = class Key {
     assert('Must pass a Key event to Key.fromEvent',
            event && isKeyEvent(event));
     return new Key(event);
+  }
+
+  toString() {
+    return String.fromCharCode(this.charCode);
   }
 
   isEscape() {
@@ -82,9 +88,18 @@ const Key = class Key {
     return this.keyCode === Keycodes.DELETE;
   }
 
+  isArrow() {
+    return this.isHorizontalArrow() || this.isVerticalArrow();
+  }
+
   isHorizontalArrow() {
     return this.keyCode === Keycodes.LEFT ||
       this.keyCode === Keycodes.RIGHT;
+  }
+
+  isVerticalArrow() {
+    return this.keyCode === Keycodes.UP ||
+      this.keyCode === Keycodes.DOWN;
   }
 
   isLeftArrow() {
@@ -157,6 +172,10 @@ const Key = class Key {
       return false;
     }
 
+    if (this.toString().length) {
+      return true;
+    }
+
     const {keyCode:code} = this;
 
     return (
@@ -164,7 +183,10 @@ const Key = class Key {
       this.isSpace() ||
       this.isTab()   ||
       this.isEnter() ||
-      (code >= Keycodes.A && code <= Keycodes.Z) ||               // letter keys
+      (
+        (code >= Keycodes.A && code <= Keycodes.Z) ||               // letter keys
+        (code >= Keycodes.a && code <= Keycodes.z)
+      ) ||
       (code >= Keycodes.NUMPAD_0 && code <= Keycodes.NUMPAD_9) || // numpad keys
       (code >= Keycodes[';'] && code <= Keycodes['`']) ||         // punctuation
       (code >= Keycodes['['] && code <= Keycodes['"']) ||

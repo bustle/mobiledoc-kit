@@ -4,8 +4,9 @@ registerAssertions();
 import DOMHelpers from './helpers/dom';
 import MobiledocHelpers from './helpers/mobiledoc';
 import PostAbstract from './helpers/post-abstract';
+import { detectIE11 } from './helpers/browsers';
 
-const { test:qunitTest, module } = QUnit;
+const { test:qunitTest, module, skip } = QUnit;
 
 QUnit.config.urlConfig.push({
   id: 'debugTest',
@@ -23,6 +24,14 @@ const test = (msg, callback) => {
   qunitTest(msg, callback);
 };
 
+const skipInIE11 = (msg, callback) => {
+  if (detectIE11()) {
+    skip('SKIPPED IN IE11: ' + msg, callback);
+  } else {
+    test(msg, callback);
+  }
+};
+
 QUnit.testStart(() => {
   // The fixture is cleared between tests, clearing this
   $('<div id="editor"></div>').appendTo('#qunit-fixture');
@@ -33,5 +42,6 @@ export default {
   mobiledoc: MobiledocHelpers,
   postAbstract: PostAbstract,
   test,
-  module
+  module,
+  skipInIE11
 };

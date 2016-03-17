@@ -84,7 +84,7 @@ test('editor listeners are quieted for card actions', (assert) => {
   editor = new Editor({mobiledoc, cards});
   editor.render(editorElement);
 
-  Helpers.dom.selectText(cardText, editorElement);
+  Helpers.dom.selectText(editor ,cardText, editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
   setTimeout(() => {
@@ -116,7 +116,7 @@ test('removing last card from mobiledoc allows additional editing', (assert) => 
   setTimeout(() => {
     assert.hasNoElement('#editor button:contains(Click me)', 'button is removed');
     assert.hasNoElement('#editor p');
-    Helpers.dom.moveCursorTo($('#editor')[0]);
+    Helpers.dom.moveCursorTo(editor, $('#editor')[0]);
     Helpers.dom.insertText(editor, 'X');
     assert.hasElement('#editor p:contains(X)');
 
@@ -234,7 +234,7 @@ test('selecting a card and some text after and deleting deletes card and text', 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasElement('#editor p:contains(abc)', 'precond - has markup section');
 
-  Helpers.dom.moveCursorTo(editorElement.firstChild.firstChild, 0,
+  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 0,
                            editorElement.lastChild.firstChild, 1);
   Helpers.dom.triggerDelete(editor);
 
@@ -347,7 +347,7 @@ test('editor ignores events when focus is inside a card', (assert) => {
   assert.hasElement('#simple-card-input', 'precond - renders card');
 
   let inputEvents = 0;
-  editor.handleKeyup = () => inputEvents++;
+  editor._eventManager.keyup = () => inputEvents++;
 
   let input = $('#simple-card-input')[0];
   Helpers.dom.triggerEvent(input, 'keyup');

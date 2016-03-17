@@ -161,12 +161,14 @@ test('#serialize serializes to MOBILEDOC_VERSION by default', (assert) => {
   let mobiledoc3 = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
   }, '0.3.0');
+
   editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
   });
 
   assert.deepEqual(editor.serialize('0.2.0'), mobiledoc2, 'serializes 0.2.0');
   assert.deepEqual(editor.serialize('0.3.0'), mobiledoc3, 'serializes 0.3.0');
+  assert.deepEqual(editor.serialize(), mobiledoc3, 'serializes 0.3.0 by default');
 
   assert.throws(
     () => editor.serialize('unknown'),
@@ -278,7 +280,7 @@ test('editor.cursor.hasCursor() is false before rendering', (assert) => {
 
   assert.ok(!editor.cursor.hasCursor(), 'no cursor before rendering');
 
-  Helpers.dom.moveCursorTo(editorElement, 0);
+  Helpers.dom.moveCursorTo(editor, editorElement, 0);
 
   assert.ok(!editor.cursor.hasCursor(),
             'no cursor before rendering, even when selection exists');
@@ -289,7 +291,7 @@ test('#destroy clears selection if it has one', (assert) => {
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo(editorElement, 0);
+  Helpers.dom.moveCursorTo(editor, editorElement, 0);
   assert.ok(editor.cursor.hasCursor(), 'precond - has cursor');
 
   editor.destroy();
@@ -303,7 +305,7 @@ test('#destroy does not clear selection if it is outside the editor element', (a
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  Helpers.dom.moveCursorTo($('#qunit-fixture')[0], 0);
+  Helpers.dom.moveCursorTo(editor, $('#qunit-fixture')[0], 0);
   assert.ok(!editor.cursor.hasCursor(), 'precond - has no cursor');
   assert.equal(window.getSelection().rangeCount, 1, 'precond - has selection');
 
@@ -322,4 +324,29 @@ test('editor parses HTML post using parser plugins', (assert) => {
   assert.ok(!!editor.post, 'editor loads post');
 
   assert.deepEqual(seenTagNames, ['TEXTAREA', 'IMG']);
+});
+
+test('#activeMarkups returns the markups at cursor when range is collapsed', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [
+      marker('abc'),
+      marker('def', [markup('b')]),
+      marker('ghi')
+    ])]);
+  });
+
+  let head = editor.post.sections.head;
+  editor.selectRange(Range.create(head, 'abc'.length));
+  assert.equal(editor.activeMarkups.length, 0, 'no active markups at left of bold text');
+
+  editor.selectRange(Range.create(head, 'abcd'.length));
+  assert.equal(editor.activeMarkups.length, 1, 'active markups in bold text');
+  assert.ok(editor.hasActiveMarkup('b'), 'has bold active markup');
+
+  editor.selectRange(Range.create(head, 'abcdef'.length));
+  assert.equal(editor.activeMarkups.length, 1, 'active markups at end of bold text');
+  assert.ok(editor.hasActiveMarkup('b'), 'has bold active markup');
+
+  editor.selectRange(Range.create(head, 'abcdefg'.length));
+  assert.equal(editor.activeMarkups.length, 0, 'no active markups after end of bold text');
 });

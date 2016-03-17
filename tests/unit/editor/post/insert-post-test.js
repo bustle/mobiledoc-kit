@@ -25,8 +25,8 @@ function buildEditorWithMobiledoc(builderFn) {
   let unknownCardHandler = () => {};
   editor = new Editor({mobiledoc, unknownCardHandler});
   editor.render(editorElement);
-  editor.renderRange = function() {
-    renderedRange = this.range;
+  editor.renderRange = function(range) {
+    renderedRange = range;
   };
   return editor;
 }
@@ -888,7 +888,7 @@ test('in nested markerable at start and paste is list with 1 item and more secti
     return post([listSection('ul', [listItem([marker('abc')])])]);
   });
 
-  let position = editor.post.sections.head.headPosition();
+  let position = editor.post.headPosition();
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
