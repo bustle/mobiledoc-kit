@@ -297,8 +297,9 @@ in `demo/`. To run the demo:
 #### Releasing
 
 * update version constant in `src/js/version.js`
-* `npm version patch` or `minor` or `major`
+* Update version in `package.json`
 * `npm run update-changelog`
+* commit with message `v<version>` (e.g. "v0.9.0")
 * `npm run build`
 * `git push <origin> --follow-tags`
 * `npm publish`
