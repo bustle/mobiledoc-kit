@@ -301,6 +301,7 @@ in `demo/`. To run the demo:
 * `npm run update-changelog`
 * commit with message `v<version>` (e.g. "v0.9.0")
 * `npm run build`
+* `git tag v<version>`
 * `git push <origin> --follow-tags`
 * `npm publish`
 
