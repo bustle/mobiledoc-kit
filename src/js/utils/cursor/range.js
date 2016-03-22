@@ -2,16 +2,17 @@ import Position from './position';
 import { DIRECTION } from '../key';
 
 export default class Range {
-  constructor(head, tail=head, direction=DIRECTION.FORWARD) {
+  constructor(head, tail=head, direction=null) {
     this.head = head;
     this.tail = tail;
     this.direction = direction;
   }
 
-  static create(headSection, headOffset, tailSection=headSection, tailOffset=headOffset) {
+  static create(headSection, headOffset, tailSection=headSection, tailOffset=headOffset, direction=null) {
     return new Range(
       new Position(headSection, headOffset),
-      new Position(tailSection, tailOffset)
+      new Position(tailSection, tailOffset),
+      direction
     );
   }
 
@@ -43,15 +44,49 @@ export default class Range {
     return Range.create(section, headOffset, section, tailOffset);
   }
 
-  moveFocusedPosition(direction) {
-    switch (this.direction) {
+  /**
+   * Expands the range in the given direction
+   * @param {Direction} newDirection
+   * @return {Range} Always returns an expanded, non-collapsed range
+   * @public
+   */
+  extend(newDirection) {
+    let { head, tail, direction } = this;
+    switch (direction) {
       case DIRECTION.FORWARD:
-        return new Range(this.head, this.tail.move(direction), this.direction);
+        return new Range(head, tail.move(newDirection), direction);
       case DIRECTION.BACKWARD:
-        return new Range(this.head.move(direction), this.tail, this.direction);
+        return new Range(head.move(newDirection), tail, direction);
       default:
-        return new Range(this.head, this.tail, direction).moveFocusedPosition(direction);
+        return new Range(head, tail, newDirection).extend(newDirection);
     }
+  }
+
+  /**
+   * Moves this range in {newDirection}.
+   * If the range is collapsed, returns a collapsed range shifted 1 unit in
+   * {newDirection}, otherwise collapses this range to the position at the
+   * {newDirection} end of the range.
+   * @param {Direction} newDirection
+   * @return {Range} Always returns a collapsed range
+   * @public
+   */
+  move(newDirection) {
+    let { focusedPosition, isCollapsed } = this;
+
+    if (isCollapsed) {
+      return new Range(focusedPosition.move(newDirection));
+    } else {
+      return this._collapse(newDirection);
+    }
+  }
+
+  _collapse(direction) {
+    return new Range(direction === DIRECTION.BACKWARD ? this.head : this.tail);
+  }
+
+  get focusedPosition() {
+    return this.direction === DIRECTION.BACKWARD ? this.head : this.tail;
   }
 
   isEqual(other) {

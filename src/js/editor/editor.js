@@ -37,6 +37,7 @@ import EditHistory from 'mobiledoc-kit/editor/edit-history';
 import EventManager from 'mobiledoc-kit/editor/event-manager';
 import EditState from 'mobiledoc-kit/editor/edit-state';
 import Logger from 'mobiledoc-kit/utils/logger';
+let log = Logger.for('editor'); /* jshint ignore:line */
 
 Logger.enableTypes([
   'mutation-handler',

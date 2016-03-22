@@ -157,6 +157,20 @@ test('#move across and beyond card section into list section', (assert) => {
   assert.positionIsEqual(midTail.moveRight(), cHead, 'right to next section');
 });
 
+test('#move left at headPosition or right at tailPosition returns self', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('def')])
+    ]);
+  });
+
+  let head = post.headPosition(),
+      tail = post.tailPosition();
+  assert.positionIsEqual(head.moveLeft(), head, 'head move left is head');
+  assert.positionIsEqual(tail.moveRight(), tail, 'tail move right is tail');
+});
+
 test('#fromNode when node is marker text node', (assert) => {
   editor = Helpers.mobiledoc.renderInto(editorElement,
     ({post, markupSection, marker}) => {

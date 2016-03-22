@@ -208,4 +208,47 @@ export default function registerAssertions() {
     }
   };
 
+  QUnit.assert.rangeIsEqual = function(range, expected,
+                                          message=`range is equal`) {
+    let { head, tail, isCollapsed, direction } = range;
+    let {
+      head: expectedHead,
+      tail: expectedTail,
+      isCollapsed: expectedIsCollapsed,
+      direction: expectedDirection
+    } = expected;
+
+    let failed = false;
+
+    if (!head.isEqual(expectedHead)) {
+      failed = true;
+      this.push(false,
+                `${head.section.type}:${head.section.tagName}`,
+                `${expectedHead.section.type}:${expectedHead.section.tagName}`,
+                'incorrect head position');
+    }
+
+    if (!tail.isEqual(expectedTail)) {
+      failed = true;
+      this.push(false,
+                `${tail.section.type}:${tail.section.tagName}`,
+                `${expectedTail.section.type}:${expectedTail.section.tagName}`,
+                'incorrect tail position');
+    }
+
+    if (isCollapsed !== expectedIsCollapsed) {
+      failed = true;
+      this.push(false, isCollapsed, expectedIsCollapsed, 'wrong value for isCollapsed');
+    }
+
+    if (direction !== expectedDirection) {
+      failed = true;
+      this.push(false, direction, expectedDirection, 'wrong value for direction');
+    }
+
+    if (!failed) {
+      this.push(true, range, expected, message);
+    }
+  };
+
 }
