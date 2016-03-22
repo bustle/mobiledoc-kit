@@ -7,7 +7,6 @@ import Range from 'mobiledoc-kit/utils/cursor/range';
 import { filter, forEach, contains } from 'mobiledoc-kit/utils/array-utils';
 import Key from 'mobiledoc-kit/utils/key';
 import { TAB } from 'mobiledoc-kit/utils/characters';
-import { DIRECTION } from 'mobiledoc-kit/utils/key';
 
 const ELEMENT_EVENT_TYPES = ['keydown', 'keyup', 'cut', 'copy', 'paste', 'keypress'];
 const DOCUMENT_EVENT_TYPES = ['mouseup'];
@@ -107,27 +106,19 @@ export default class EventManager {
     }
 
     let key = Key.fromEvent(event);
-    let range, nextPosition;
+    let range = editor.range;
 
     switch(true) {
       case key.isHorizontalArrow():
-        range = editor.cursor.offsets;
-        let position = range.tail;
-        if (range.direction === DIRECTION.BACKWARD) {
-          position = range.head;
-        }
         let newRange;
-        nextPosition = position.move(key.direction);
-        if (nextPosition) {
-          if (key.isShift()) {
-            newRange = range.moveFocusedPosition(key.direction);
-          } else {
-            newRange = new Range(nextPosition);
-          }
-
-          editor.selectRange(newRange);
-          event.preventDefault();
+        if (key.isShift()) {
+          newRange = range.extend(key.direction);
+        } else {
+          newRange = range.move(key.direction);
         }
+
+        editor.selectRange(newRange);
+        event.preventDefault();
         break;
       case key.isDelete():
         editor.handleDeletion(event);

@@ -139,12 +139,14 @@ const Position = class Position {
   }
 
   /**
-   * @return {Position|null}
+   * The position to the left of this position.
+   * If this position is the post's headPosition it returns itself.
+   * @return {Position}
    */
   moveLeft() {
     if (this.isHead()) {
       let prev = this.section.previousLeafSection();
-      return prev && prev.tailPosition();
+      return prev ? prev.tailPosition() : this;
     } else {
       let offset = this.offset - 1;
       if (this.isMarkerable && this.marker) {
@@ -158,12 +160,14 @@ const Position = class Position {
   }
 
   /**
-   * @return {Position|null}
+   * The position to the right of this position.
+   * If this position is the post's tailPosition it returns itself.
+   * @return {Position}
    */
   moveRight() {
     if (this.isTail()) {
       let next = this.section.nextLeafSection();
-      return next && next.headPosition();
+      return next ? next.headPosition() : this;
     } else {
       let offset = this.offset + 1;
       if (this.isMarkerable && this.marker) {
