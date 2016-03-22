@@ -1,3 +1,10 @@
+<a name="0.9.0"></a>
+# 0.9.0 (2016-03-22)
+
+* Ensure using arrow keys when text is selected moves cursor correctly ([58dec72](https://github.com/bustlelabs/mobiledoc-kit/commit/58dec72))
+
+
+
 <a name="0.9.0-beta.1"></a>
 # 0.9.0-beta.1 (2016-03-17)
 
@@ -15,6 +22,7 @@
 * Update README.md ([60b0b4f](https://github.com/bustlelabs/mobiledoc-kit/commit/60b0b4f))
 * Update README.md ([89a17ad](https://github.com/bustlelabs/mobiledoc-kit/commit/89a17ad))
 * Use keypress event to enter text ([2701e71](https://github.com/bustlelabs/mobiledoc-kit/commit/2701e71))
+* v0.9.0-beta.1 ([5768110](https://github.com/bustlelabs/mobiledoc-kit/commit/5768110))
 * chore(package): update dependencies ([b9bb08d](https://github.com/bustlelabs/mobiledoc-kit/commit/b9bb08d))
 * chore(package): update jquery to version 2.2.2 ([ce0a2c6](https://github.com/bustlelabs/mobiledoc-kit/commit/ce0a2c6))
 * chore(package): update testem to version 1.5.0 ([7a8eff8](https://github.com/bustlelabs/mobiledoc-kit/commit/7a8eff8))
