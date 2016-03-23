@@ -48,7 +48,7 @@
     "conventional-changelog-cli": "^1.1.1",
     "jquery": "^2.2.2",
     "saucie": "^1.4.0",
-    "testem": "^1.5.0"
+    "testem": "^1.6.0"
   },
   "main": "dist/commonjs/mobiledoc-kit/index.js"
 }
