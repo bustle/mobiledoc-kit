@@ -5,7 +5,7 @@ import { supportsStandardClipboardAPI } from '../helpers/browsers';
 import {
   MIME_TEXT_PLAIN,
   MIME_TEXT_HTML
-} from 'mobiledoc-kit/utils/paste-utils';
+} from 'mobiledoc-kit/utils/parse-utils';
 
 const { module, skipInIE11 } = Helpers;
 

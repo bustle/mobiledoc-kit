@@ -6,6 +6,11 @@ import { isTextNode } from 'mobiledoc-kit/utils/dom-utils';
 import { merge } from 'mobiledoc-kit/utils/merge';
 import { supportsStandardClipboardAPI } from './browsers';
 import { Editor } from 'mobiledoc-kit';
+import {
+  MIME_TEXT_PLAIN,
+  MIME_TEXT_HTML,
+  NONSTANDARD_IE_TEXT_TYPE
+} from 'mobiledoc-kit/utils/parse-utils';
 
 // walks DOWN the dom from node to childNodes, returning the element
 // for which `conditionFn(element)` is true
@@ -90,6 +95,10 @@ function triggerEvent(node, eventType) {
   return node.dispatchEvent(clickEvent);
 }
 
+function _triggerEditorEvent(editor, event) {
+  editor.triggerEvent(editor.element, event.type, event);
+}
+
 function _buildDOM(tagName, attributes={}, children=[]) {
   const el = document.createElement(tagName);
   Object.keys(attributes).forEach(k => el.setAttribute(k, attributes[k]));
@@ -153,7 +162,7 @@ function triggerDelete(editor, direction=DIRECTION.BACKWARD) {
   let event = createMockEvent('keydown', editor.element, {
     keyCode
   });
-  editor.triggerEvent(editor.element, 'keydown', event);
+  _triggerEditorEvent(editor, event);
 }
 
 function triggerForwardDelete(editor) {
@@ -163,7 +172,7 @@ function triggerForwardDelete(editor) {
 function triggerEnter(editor) {
   if (!editor) { throw new Error('Must pass `editor` to `triggerEnter`'); }
   let event = createMockEvent('keydown', editor.element, { keyCode: KEY_CODES.ENTER});
-  editor.triggerEvent(editor.element, 'keydown', event);
+  _triggerEditorEvent(editor, event);
 }
 
 // keyCodes and charCodes are similar but not the same.
@@ -205,15 +214,15 @@ function insertText(editor, string) {
       preventDefault
     });
 
-    editor.triggerEvent(editor.element, 'keydown', keydown);
+    _triggerEditorEvent(editor, keydown);
     if (stop) {
       return;
     }
-    editor.triggerEvent(editor.element, 'keypress', keypress);
+    _triggerEditorEvent(editor, keypress);
     if (stop) {
       return;
     }
-    editor.triggerEvent(editor.element, 'keyup', keyup);
+    _triggerEditorEvent(editor, keyup);
   });
 }
 
@@ -232,7 +241,7 @@ function triggerKeyCommand(editor, string, modifiers=[]) {
     metaKey: contains(modifiers, MODIFIERS.META),
     ctrlKey: contains(modifiers, MODIFIERS.CTRL)
   });
-  editor.triggerEvent(editor.element, 'keydown', keyEvent);
+  _triggerEditorEvent(editor, keyEvent);
 }
 
 function triggerRightArrowKey(editor, modifier) {
@@ -247,8 +256,8 @@ function triggerRightArrowKey(editor, modifier) {
     keyCode: KEY_CODES.RIGHT,
     shiftKey: modifier === MODIFIERS.SHIFT
   });
-  editor.triggerEvent(editor.element, 'keydown', keydown);
-  editor.triggerEvent(editor.element, 'keyup', keyup);
+  _triggerEditorEvent(editor, keydown);
+  _triggerEditorEvent(editor, keyup);
 }
 
 function triggerLeftArrowKey(editor, modifier) {
@@ -261,8 +270,8 @@ function triggerLeftArrowKey(editor, modifier) {
     keyCode: KEY_CODES.LEFT,
     shiftKey: modifier === MODIFIERS.SHIFT
   });
-  editor.triggerEvent(editor.element, 'keydown', keydown);
-  editor.triggerEvent(editor.element, 'keyup', keyup);
+  _triggerEditorEvent(editor, keydown);
+  _triggerEditorEvent(editor, keyup);
 }
 
 // Allows our fake copy and paste events to communicate with each other.
@@ -279,16 +288,16 @@ function triggerCopyEvent(editor) {
   }
 
   let event = createMockEvent('copy', editor.element, eventData);
-  editor.triggerEvent(editor.element, 'copy', event);
+  _triggerEditorEvent(editor, event);
 }
 
 function triggerCutEvent(editor) {
-  let event = createMockEvent('copy', editor.element, {
+  let event = createMockEvent('cut', editor.element, {
     clipboardData: {
       setData(type, value) { lastCopyData[type] = value; }
     }
   });
-  editor.triggerEvent(editor.element, 'cut', event);
+  _triggerEditorEvent(editor, event);
 }
 
 function triggerPasteEvent(editor) {
@@ -302,15 +311,37 @@ function triggerPasteEvent(editor) {
     };
   }
 
-  let event = createMockEvent('copy', editor.element, eventData);
-  editor.triggerEvent(editor.element, 'paste', event);
+  let event = createMockEvent('paste', editor.element, eventData);
+  _triggerEditorEvent(editor, event);
+}
+
+function triggerDropEvent(editor, {html, text, clientX, clientY}) {
+  if (!clientX || !clientY) { throw new Error('Must pass clientX, clientY'); }
+  let event = createMockEvent('drop', editor.element, {
+    clientX,
+    clientY,
+    dataTransfer: {
+      getData(mimeType) {
+        switch(mimeType) {
+          case MIME_TEXT_HTML:
+            return html;
+          case MIME_TEXT_PLAIN:
+            return text;
+          default:
+            throw new Error('invalid mime type ' + mimeType);
+        }
+      }
+    }
+  });
+
+  _triggerEditorEvent(editor, event);
 }
 
 function getCopyData(type) {
   if (supportsStandardClipboardAPI()) {
     return lastCopyData[type];
   } else {
-    return window.clipboardData.getData('Text');
+    return window.clipboardData.getData(NONSTANDARD_IE_TEXT_TYPE);
   }
 }
 
@@ -318,7 +349,7 @@ function setCopyData(type, value) {
   if (supportsStandardClipboardAPI()) {
     lastCopyData[type] = value;
   } else {
-    window.clipboardData.setData('Text', value);
+    window.clipboardData.setData(NONSTANDARD_IE_TEXT_TYPE, value);
   }
 }
 
@@ -367,6 +398,7 @@ const DOMHelper = {
   triggerCopyEvent,
   triggerCutEvent,
   triggerPasteEvent,
+  triggerDropEvent,
   getCopyData,
   setCopyData,
   clearCopyData,

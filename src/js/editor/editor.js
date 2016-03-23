@@ -20,6 +20,7 @@ import { setData } from '../utils/element-utils';
 import mixin from '../utils/mixin';
 import Cursor from '../utils/cursor';
 import Range from '../utils/cursor/range';
+import Position from '../utils/cursor/position';
 import PostNodeBuilder from '../models/post-node-builder';
 import {
   DEFAULT_TEXT_EXPANSIONS, findExpansion, validateExpansion
@@ -42,7 +43,8 @@ let log = Logger.for('editor'); /* jshint ignore:line */
 Logger.enableTypes([
   'mutation-handler',
   'event-manager',
-  'editor'
+  'editor',
+  'parse-utils'
 ]);
 Logger.disable();
 
@@ -729,6 +731,15 @@ class Editor {
 
       postEditor.insertTextWithMarkup(position, text, activeMarkups);
     });
+  }
+
+  /**
+   * @param {integer} x x-position in viewport
+   * @param {integer} y y-position in viewport
+   * @return {Position|null}
+   */
+  positionAtPoint(x, y) {
+    return Position.atPoint(x, y, this);
   }
 
   // @private

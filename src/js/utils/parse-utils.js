@@ -4,10 +4,14 @@ import HTMLParser from '../parsers/html';
 import TextParser from '../parsers/text';
 import HTMLRenderer from 'mobiledoc-html-renderer';
 import TextRenderer from 'mobiledoc-text-renderer';
+import Logger from 'mobiledoc-kit/utils/logger';
 
-const MOBILEDOC_REGEX = new RegExp(/data\-mobiledoc='(.*?)'>/);
 export const MIME_TEXT_PLAIN = 'text/plain';
 export const MIME_TEXT_HTML = 'text/html';
+export const NONSTANDARD_IE_TEXT_TYPE = 'Text';
+
+const log = Logger.for('parse-utils');
+const MOBILEDOC_REGEX = new RegExp(/data\-mobiledoc='(.*?)'>/);
 
 function parsePostFromHTML(html, builder, plugins) {
   let post;
@@ -38,7 +42,7 @@ function setClipboardData(clipboardData, html, plain) {
     // The Internet Explorers (including Edge) have a non-standard way of interacting with the
     // Clipboard API (see http://caniuse.com/#feat=clipboard). In short, they expose a global window.clipboardData
     // object instead of the per-event event.clipboardData object on the other browsers.
-    window.clipboardData.setData('Text', html);
+    window.clipboardData.setData(NONSTANDARD_IE_TEXT_TYPE, html);
   }
 }
 
@@ -57,7 +61,7 @@ function getClipboardData(clipboardData) {
     // The Internet Explorers (including Edge) have a non-standard way of interacting with the
     // Clipboard API (see http://caniuse.com/#feat=clipboard). In short, they expose a global window.clipboardData
     // object instead of the per-event event.clipboardData object on the other browsers.
-    html = window.clipboardData.getData('Text');
+    html = window.clipboardData.getData(NONSTANDARD_IE_TEXT_TYPE);
   }
 
   return { html, text };
@@ -92,10 +96,34 @@ export function setClipboardCopyData(copyEvent, editor) {
  * @param {Array} plugins parser plugins
  * @return {Post}
  */
-export function parsePostFromPaste(pasteEvent, builder, plugins=[]) {
+export function parsePostFromPaste(pasteEvent, {builder, _parserPlugins: plugins}) {
   let post;
 
   const { html, text } = getClipboardData(pasteEvent.clipboardData);
+  if (html && html.length > 0) {
+    post = parsePostFromHTML(html, builder, plugins);
+  } else if (text && text.length > 0) {
+    post = parsePostFromText(text, builder, plugins);
+  }
+
+  return post;
+}
+
+export function parsePostFromDrop(dropEvent, {builder, _parserPlugins: plugins}) {
+  let post;
+
+  let html, text;
+  try {
+    html = dropEvent.dataTransfer.getData('text/html');
+    text = dropEvent.dataTransfer.getData('text/plain');
+  } catch (e) {
+    // FIXME IE11 does not include any data in the 'text/html' or 'text/plain'
+    // mimetypes. It throws an error 'Invalid argument' when attempting to read
+    // these properties.
+    log('Error getting drop data: ', e);
+    return;
+  }
+
   if (html && html.length > 0) {
     post = parsePostFromHTML(html, builder, plugins);
   } else if (text && text.length > 0) {
