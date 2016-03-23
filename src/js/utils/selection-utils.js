@@ -1,8 +1,83 @@
 import { DIRECTION } from '../utils/key';
+import { isTextNode, isElementNode } from 'mobiledoc-kit/utils/dom-utils';
 
 function clearSelection() {
-  // FIXME-IE ensure this works on IE 9. It works on IE10.
   window.getSelection().removeAllRanges();
+}
+
+function textNodeRects(node) {
+  let range = document.createRange();
+  range.setEnd(node, node.nodeValue.length);
+  range.setStart(node, 0);
+  return range.getClientRects();
+}
+
+function findOffsetInTextNode(node, coords) {
+  let len = node.nodeValue.length;
+  let range = document.createRange();
+  for (let i = 0; i < len; i++) {
+    range.setEnd(node, i + 1);
+    range.setStart(node, i);
+    let rect = range.getBoundingClientRect();
+    if (rect.top === rect.bottom) {
+      continue;
+    }
+    if (rect.left <= coords.left && rect.right >= coords.left &&
+        rect.top <= coords.top && rect.bottom >= coords.top) {
+      return {node, offset: i + (coords.left >= (rect.left + rect.right) / 2 ? 1 : 0)};
+    }
+  }
+  return {node, offset: 0};
+}
+
+/*
+ * @param {Object} coords with `top` and `left`
+ * @see https://github.com/ProseMirror/prosemirror/blob/4c22e3fe97d87a355a0534e25d65aaf0c0d83e57/src/edit/dompos.js
+ * @return {Object} {node, offset}
+ */
+function findOffsetInNode(node, coords) {
+  let closest, dyClosest = 1e8, coordsClosest, offset = 0;
+  for (let child = node.firstChild; child; child = child.nextSibling) {
+    let rects;
+    if (isElementNode(child)) {
+      rects = child.getClientRects();
+    } else if (isTextNode(child)) {
+      rects = textNodeRects(child);
+    } else {
+      continue;
+    }
+
+    for (let i = 0; i < rects.length; i++) {
+      let rect = rects[i];
+      if (rect.left <= coords.left && rect.right >= coords.left) {
+        let dy = rect.top > coords.top ? rect.top - coords.top
+            : rect.bottom < coords.top ? coords.top - rect.bottom : 0;
+        if (dy < dyClosest) {
+          closest = child;
+          dyClosest = dy;
+          coordsClosest = dy ? {left: coords.left, top: rect.top} : coords;
+          if (isElementNode(child) && !child.firstChild) {
+            offset = i + (coords.left >= (rect.left + rect.right) / 2 ? 1 : 0);
+          }
+          continue;
+        }
+      }
+      if (!closest &&
+          (coords.top >= rect.bottom || coords.top >= rect.top && coords.left >= rect.right)) {
+        offset = i + 1;
+      }
+    }
+  }
+  if (!closest) {
+    return {node, offset};
+  }
+  if (isTextNode(closest)) {
+    return findOffsetInTextNode(closest, coordsClosest);
+  }
+  if (closest.firstChild) {
+    return findOffsetInNode(closest, coordsClosest);
+  }
+  return {node, offset};
 }
 
 function comparePosition(selection) {
@@ -69,5 +144,6 @@ function comparePosition(selection) {
 
 export {
   clearSelection,
-  comparePosition
+  comparePosition,
+  findOffsetInNode
 };

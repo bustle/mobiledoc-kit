@@ -1,14 +1,19 @@
 import assert from 'mobiledoc-kit/utils/assert';
 import {
   parsePostFromPaste,
-  setClipboardCopyData
-} from '../utils/paste-utils';
+  setClipboardCopyData,
+  parsePostFromDrop
+} from 'mobiledoc-kit/utils/parse-utils';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import { filter, forEach, contains } from 'mobiledoc-kit/utils/array-utils';
 import Key from 'mobiledoc-kit/utils/key';
 import { TAB } from 'mobiledoc-kit/utils/characters';
+import Logger from 'mobiledoc-kit/utils/logger';
+let log = Logger.for('event-manager'); /* jshint ignore:line */
 
-const ELEMENT_EVENT_TYPES = ['keydown', 'keyup', 'cut', 'copy', 'paste', 'keypress'];
+const ELEMENT_EVENT_TYPES = [
+  'keydown', 'keyup', 'cut', 'copy', 'paste', 'keypress', 'drop'
+];
 const DOCUMENT_EVENT_TYPES = ['mouseup'];
 
 export default class EventManager {
@@ -154,6 +159,7 @@ export default class EventManager {
     let { editor } = this;
     let range = editor.range;
 
+    // FIXME this can go, it will be handled by insertPost
     if (range.head.section.isCardSection) {
       return;
     }
@@ -161,7 +167,7 @@ export default class EventManager {
       editor.handleDeletion();
     }
     let position = editor.range.head;
-    let pastedPost = parsePostFromPaste(event, editor.builder, editor._parserPlugins);
+    let pastedPost = parsePostFromPaste(event, editor);
 
     editor.run(postEditor => {
       let nextPosition = postEditor.insertPost(position, pastedPost);
@@ -172,5 +178,29 @@ export default class EventManager {
   mouseup(/* event */) {
     // mouseup does not correctly report a selection until the next tick
     setTimeout(() => this.editor._resetRange(), 0);
+  }
+
+  drop(event) {
+    event.preventDefault();
+
+    let { clientX: x, clientY: y } = event;
+    let { editor } = this;
+
+    let position = editor.positionAtPoint(x, y);
+    if (!position) {
+      log('Could not find drop position');
+      return;
+    }
+
+    let post = parsePostFromDrop(event, editor);
+    if (!post) {
+      log('Could not determine post from drop event');
+      return;
+    }
+
+    editor.run(postEditor => {
+      let nextPosition = postEditor.insertPost(position, post);
+      postEditor.setRange(new Range(nextPosition));
+    });
   }
 }

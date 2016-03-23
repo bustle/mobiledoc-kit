@@ -1,12 +1,12 @@
-import {
-  isTextNode
-} from 'mobiledoc-kit/utils/dom-utils';
+import { isTextNode } from 'mobiledoc-kit/utils/dom-utils';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import assert from 'mobiledoc-kit/utils/assert';
 import {
   HIGH_SURROGATE_RANGE,
   LOW_SURROGATE_RANGE
 } from 'mobiledoc-kit/models/marker';
+import { containsNode } from 'mobiledoc-kit/utils/dom-utils';
+import { findOffsetInNode } from 'mobiledoc-kit/utils/selection-utils';
 
 function findParentSectionFromNode(renderTree, node) {
   let renderNode =  renderTree.findRenderNodeFromElement(
@@ -65,6 +65,23 @@ const Position = class Position {
     this.section = section;
     this.offset = offset;
     this.isBlank = false;
+  }
+
+  /**
+   * @param {integer} x x-position in current viewport
+   * @param {integer} y y-position in current viewport
+   * @param {Editor} editor
+   * @return {Position|null}
+   */
+  static atPoint(x, y, editor) {
+    let { _renderTree, element: rootElement } = editor;
+    let elementFromPoint = document.elementFromPoint(x, y);
+    if (!containsNode(rootElement, elementFromPoint)) {
+      return;
+    }
+
+    let { node, offset } = findOffsetInNode(elementFromPoint, {left: x, top: y});
+    return Position.fromNode(_renderTree, node, offset);
   }
 
   static blankPosition() {
