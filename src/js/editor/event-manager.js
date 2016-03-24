@@ -20,6 +20,7 @@ export default class EventManager {
   constructor(editor) {
     this.editor = editor;
     this._listeners = [];
+    this.isShift = false;
   }
 
   init() {
@@ -102,6 +103,11 @@ export default class EventManager {
     if (!editor.isEditable) {
       return;
     }
+    let key = Key.fromEvent(event);
+    if (key.isShiftKey()) {
+      this.isShift = true;
+    }
+
     if (editor.handleKeyCommand(event)) {
       return;
     }
@@ -110,7 +116,6 @@ export default class EventManager {
       editor._insertEmptyMarkupSectionAtCursor();
     }
 
-    let key = Key.fromEvent(event);
     let range = editor.range;
 
     switch(true) {
@@ -139,7 +144,12 @@ export default class EventManager {
     }
   }
 
-  keyup(/* event */) {
+  keyup(event) {
+    let key = Key.fromEvent(event);
+    if (key.isShiftKey()) {
+      this.isShift = false;
+    }
+
     setTimeout(() => this.editor._resetRange(), 0);
   }
 
@@ -175,7 +185,8 @@ export default class EventManager {
       editor.handleDeletion();
     }
     let position = editor.range.head;
-    let pastedPost = parsePostFromPaste(event, editor);
+    let targetFormat = this.isShift ? 'text' : 'html';
+    let pastedPost = parsePostFromPaste(event, editor, {targetFormat});
 
     editor.run(postEditor => {
       let nextPosition = postEditor.insertPost(position, pastedPost);

@@ -131,8 +131,26 @@ const Key = class Key {
     return this.keyCode === Keycodes.ENTER;
   }
 
+  /**
+   * If the shift key is depressed.
+   * For example, while holding down meta+shift, pressing the "v"
+   * key would result in an event whose `Key` had `isShift()` with a truthy value,
+   * because the shift key is down when pressing the "v".
+   * @see {isShiftKey} which checks if the key is actually the shift key itself.
+   * @return {bool}
+   */
   isShift() {
     return this.shiftKey;
+  }
+
+  /*
+   * If the key is the actual shift key. This is false when the shift key
+   * is held down and the source `event` is not the shift key.
+   * @see {isShift}
+   * @return {bool}
+   */
+  isShiftKey() {
+    return this.keyCode === Keycodes.SHIFT;
   }
 
   hasModifier(modifier) {
