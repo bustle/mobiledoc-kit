@@ -159,10 +159,6 @@ const Key = class Key {
     return MODIFIERS.ALT & this.modifierMask;
   }
 
-  isChar(string) {
-    return this.keyCode === string.toUpperCase().charCodeAt(0);
-  }
-
   /**
    * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
    *   and http://stackoverflow.com/a/12467610/137784
@@ -172,13 +168,16 @@ const Key = class Key {
       return false;
     }
 
-    if (this.toString().length) {
-      return true;
-    }
-
     const {keyCode:code} = this;
 
+    // Firefox calls keypress events for arrow keys, but they should not be
+    // considered printable
+    if (this.isArrow()) {
+      return false;
+    }
+
     return (
+      this.toString().length > 0 ||
       (code >= Keycodes['0'] && code <= Keycodes['9']) ||         // number keys
       this.isSpace() ||
       this.isTab()   ||
