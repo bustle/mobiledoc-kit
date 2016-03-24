@@ -1,7 +1,22 @@
+<a name="0.9.1"></a>
+## 0.9.1 (2016-03-24)
+
+* [BUGFIX] Do not handle key events when the editor has no cursor ([251675e](https://github.com/bustlelabs/mobiledoc-kit/commit/251675e)), closes [#344](https://github.com/bustlelabs/mobiledoc-kit/issues/344)
+* [BUGFIX] up/down arrows in Firefox should not update mobiledoc ([81e1cb0](https://github.com/bustlelabs/mobiledoc-kit/commit/81e1cb0))
+* [CLEANUP] DRY copy/paste and drop event handling. Add editor#serializeTo ([8a1ae77](https://github.com/bustlelabs/mobiledoc-kit/commit/8a1ae77))
+* [FEATURE] holding shift while pasting pastes plain text ([a006366](https://github.com/bustlelabs/mobiledoc-kit/commit/a006366)), closes [#334](https://github.com/bustlelabs/mobiledoc-kit/issues/334)
+* Add card with drag/drop listeners to demo app ([f374958](https://github.com/bustlelabs/mobiledoc-kit/commit/f374958))
+* Handle drop events semantically ([b2a49c9](https://github.com/bustlelabs/mobiledoc-kit/commit/b2a49c9))
+* Update README.md ([dad9dc3](https://github.com/bustlelabs/mobiledoc-kit/commit/dad9dc3))
+* chore(package): update testem to version 1.6.0 ([7117017](https://github.com/bustlelabs/mobiledoc-kit/commit/7117017))
+
+
+
 <a name="0.9.0"></a>
 # 0.9.0 (2016-03-22)
 
 * Ensure using arrow keys when text is selected moves cursor correctly ([58dec72](https://github.com/bustlelabs/mobiledoc-kit/commit/58dec72))
+* v0.9.0 ([67a8292](https://github.com/bustlelabs/mobiledoc-kit/commit/67a8292))
 
 
 
