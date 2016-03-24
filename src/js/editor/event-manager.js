@@ -83,14 +83,16 @@ export default class EventManager {
   }
 
   keypress(event) {
+    let { editor } = this;
+    if (!editor.hasCursor()) { return; }
+
     let key = Key.fromEvent(event);
     if (!key.isPrintable()) {
       return;
+    } else {
+      event.preventDefault();
     }
 
-    event.preventDefault();
-
-    let { editor } = this;
     if (editor.handleExpansion(event)) {
       return;
     } else {
@@ -100,17 +102,15 @@ export default class EventManager {
 
   keydown(event) {
     let { editor } = this;
-    if (!editor.isEditable) {
-      return;
-    }
+    if (!editor.hasCursor()) { return; }
+    if (!editor.isEditable) { return; }
+
     let key = Key.fromEvent(event);
     if (key.isShiftKey()) {
       this.isShift = true;
     }
 
-    if (editor.handleKeyCommand(event)) {
-      return;
-    }
+    if (editor.handleKeyCommand(event)) { return; }
 
     if (editor.post.isBlank) {
       editor._insertEmptyMarkupSectionAtCursor();
@@ -145,6 +145,8 @@ export default class EventManager {
   }
 
   keyup(event) {
+    let { editor } = this;
+    if (!editor.hasCursor()) { return; }
     let key = Key.fromEvent(event);
     if (key.isShiftKey()) {
       this.isShift = false;

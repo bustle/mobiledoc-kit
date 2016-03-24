@@ -247,6 +247,11 @@ function triggerKeyCommand(editor, string, modifiers=[]) {
   _triggerEditorEvent(editor, keyEvent);
 }
 
+function triggerKeyEvent(editor, type, options) {
+  let event = createMockEvent(type, editor.element, options);
+  _triggerEditorEvent(editor, event);
+}
+
 function triggerRightArrowKey(editor, modifier) {
   if (!(editor instanceof Editor)) {
     throw new Error('Must pass editor to triggerRightArrowKey');

@@ -265,3 +265,22 @@ test('adding/removing bold text between two bold markers works', (assert) => {
   assert.hasElement('#editor b:contains(def)', 'removes B from middle, leaves def');
   assert.hasNoElement('#editor b:contains(123)', 'removes B from middle');
 });
+
+test('keypress events when the editor does not have selection are ignored', (assert) => {
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    expected = post([markupSection('p', [marker('abc')])]);
+    return post([
+      markupSection('p', [marker('abc')])
+    ]);
+  });
+
+  Helpers.dom.clearSelection();
+
+  assert.ok(document.activeElement === editorElement, 'precond - editor is focused');
+  assert.equal(window.getSelection().rangeCount, 0, 'nothing selected');
+
+  Helpers.dom.insertText(editor, 'v');
+
+  assert.postIsSimilar(editor.post, expected, 'post is not changed');
+});
