@@ -258,7 +258,7 @@ class Editor {
   }
 
   handleNewline(event) {
-    if (!this.cursor.hasCursor()) { return; }
+    if (!this.hasCursor()) { return; }
 
     event.preventDefault();
 
@@ -503,9 +503,20 @@ class Editor {
     this._views = [];
   }
 
+  /**
+   * Whether the editor has a cursor (or a selected range).
+   * It is possible for the editor to be focused but not have a selection.
+   * In this case, key events will fire but the editor will not be able to
+   * determine a cursor position.
+   * @return {bool}
+   */
+  hasCursor() {
+    return this.cursor.hasCursor();
+  }
+
   destroy() {
     this._isDestroyed = true;
-    if (this.cursor.hasCursor()) {
+    if (this.hasCursor()) {
       this.cursor.clearSelection();
       this.element.blur(); // FIXME This doesn't blur the element on IE11
     }
