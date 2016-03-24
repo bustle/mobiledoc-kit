@@ -5,6 +5,7 @@ import Set from 'mobiledoc-kit/utils/set';
 import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
+import deprecate from 'mobiledoc-kit/utils/deprecate';
 
 export default class Post {
   constructor() {
@@ -223,10 +224,18 @@ export default class Post {
   }
 
   /**
-   * @param {Range} range
-   * @return {Mobiledoc} A mobiledoc representation of the range (JSON)
+   * @deprecated
    */
   cloneRange(range) {
+    deprecate('post#cloneRange is deprecated. See post#trimTo(range) and editor#serializePost');
+    return mobiledocRenderers.render(this.trimTo(range));
+  }
+
+  /**
+   * @param {Range} range
+   * @return {Post} A new post, constrained to {range}
+   */
+  trimTo(range) {
     const post = this.builder.createPost();
     const { builder } = this;
 
@@ -263,6 +272,6 @@ export default class Post {
         sectionParent.sections.append(newSection);
       }
     });
-    return mobiledocRenderers.render(post);
+    return post;
   }
 }
