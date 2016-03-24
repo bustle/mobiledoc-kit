@@ -224,6 +224,11 @@ function insertText(editor, string) {
   });
 }
 
+function triggerKeyEvent(editor, eventName, options={}) {
+  let event = createMockEvent(eventName, editor.element, options);
+  _triggerEditorEvent(editor, event);
+}
+
 // triggers a key sequence like cmd-B on the editor, to test out
 // registered keyCommands
 function triggerKeyCommand(editor, string, modifiers=[]) {
@@ -376,6 +381,7 @@ const DOMHelper = {
   triggerForwardDelete,
   triggerEnter,
   insertText,
+  triggerKeyEvent,
   triggerKeyCommand,
   triggerRightArrowKey,
   triggerLeftArrowKey,

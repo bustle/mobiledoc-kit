@@ -5,6 +5,7 @@ import {
   MIME_TEXT_PLAIN,
   MIME_TEXT_HTML
 } from 'mobiledoc-kit/utils/parse-utils';
+import Keycodes  from 'mobiledoc-kit/utils/keycodes';
 
 const { module, test } = Helpers;
 
@@ -372,4 +373,29 @@ test('pasting when replacing a list item works', (assert) => {
 
   assert.hasElement('#editor li:contains(X)', 'replaces Y with X in li');
   assert.hasNoElement('#editor li:contains(Y)', 'li with Y is gone');
+});
+
+test('paste with shift key pastes plain text', (assert) => {
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, markup}) => {
+    expected = post([
+      markupSection('p', [
+        marker('a'), marker('b', [markup('b')]), marker('cabc')
+      ])
+    ]);
+    return post([
+      markupSection('p', [
+        marker('a'), marker('b', [markup('b')]), marker('c')
+      ])
+    ]);
+  });
+
+  editor.selectRange(new Range(editor.post.headPosition(), editor.post.tailPosition()));
+  Helpers.dom.triggerCopyEvent(editor);
+  editor.selectRange(new Range(editor.post.tailPosition()));
+
+  Helpers.dom.triggerKeyEvent(editor, 'keydown', { keyCode: Keycodes.SHIFT });
+  Helpers.dom.triggerPasteEvent(editor);
+
+  assert.postIsSimilar(editor.post, expected);
 });

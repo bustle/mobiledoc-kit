@@ -106,10 +106,10 @@ export function setClipboardData(event, {mobiledoc, html, text}, window) {
  * @param {{builder: Builder, _parserPlugins: Array}} options
  * @return {Post}
  */
-export function parsePostFromPaste(pasteEvent, {builder, _parserPlugins: plugins}) {
+export function parsePostFromPaste(pasteEvent, {builder, _parserPlugins: plugins}, {targetFormat}={targetFormat:'html'}) {
   let { html, text } = getContentFromPasteEvent(pasteEvent, window);
 
-  if (html && html.length) {
+  if (targetFormat === 'html' && html && html.length) {
     return parsePostFromHTML(html, builder, plugins);
   } else if (text && text.length) {
     return parsePostFromText(text, builder, plugins);
