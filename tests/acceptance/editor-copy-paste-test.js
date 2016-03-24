@@ -1,13 +1,12 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
-import { supportsStandardClipboardAPI } from '../helpers/browsers';
 import {
   MIME_TEXT_PLAIN,
   MIME_TEXT_HTML
 } from 'mobiledoc-kit/utils/parse-utils';
 
-const { module, skipInIE11 } = Helpers;
+const { module, test } = Helpers;
 
 const cards = [{
   name: 'my-card',
@@ -31,9 +30,9 @@ module('Acceptance: editor: copy-paste', {
   }
 });
 
-// These tests do not work in Sauce Labs on IE11 because access to the clipboard must be manually allowed.
-// TODO: Configure IE11 to automatically allow access to the clipboard.
-skipInIE11('simple copy-paste at end of section works', (assert) => {
+// TODO: Modify these tests to use IE's nonstandard clipboard access pattern
+// See: https://remysharp.com/2015/10/14/the-art-of-debugging
+test('simple copy-paste at end of section works', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
@@ -53,7 +52,7 @@ skipInIE11('simple copy-paste at end of section works', (assert) => {
   assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
 });
 
-skipInIE11('paste plain text', (assert) => {
+test('paste plain text', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
@@ -71,7 +70,7 @@ skipInIE11('paste plain text', (assert) => {
   assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
 });
 
-skipInIE11('paste plain text with line breaks', (assert) => {
+test('paste plain text with line breaks', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
@@ -86,17 +85,12 @@ skipInIE11('paste plain text with line breaks', (assert) => {
   Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['abc', 'def'].join('\n'));
   Helpers.dom.triggerPasteEvent(editor);
 
-  if (supportsStandardClipboardAPI()) {
-    assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
-    assert.hasElement('#editor p:contains(def)', 'second section is pasted');
-    assert.equal($('#editor p').length, 2, 'adds a second section');
-  } else {
-    assert.hasElement('#editor p:contains(abcabc\ndef)', 'pastes the text');
-    assert.equal($('#editor p').length, 1, 'adds a second section');
-  }
+  assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+  assert.hasElement('#editor p:contains(def)', 'second section is pasted');
+  assert.equal($('#editor p').length, 2, 'adds a second section');
 });
 
-skipInIE11('paste plain text with list items', (assert) => {
+test('paste plain text with list items', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
@@ -111,15 +105,11 @@ skipInIE11('paste plain text with list items', (assert) => {
   Helpers.dom.setCopyData(MIME_TEXT_PLAIN, ['* abc', '* def'].join('\n'));
   Helpers.dom.triggerPasteEvent(editor);
 
-  if (supportsStandardClipboardAPI()) {
-    assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
-    assert.hasElement('#editor ul li:contains(def)', 'list item is pasted');
-  } else {
-    assert.hasElement('#editor p:contains(abc* abc\n* def)', 'pastes the text');
-  }
+  assert.hasElement('#editor p:contains(abcabc)', 'pastes the text');
+  assert.hasElement('#editor ul li:contains(def)', 'list item is pasted');
 });
 
-skipInIE11('can cut and then paste content', (assert) => {
+test('can cut and then paste content', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
@@ -143,7 +133,7 @@ skipInIE11('can cut and then paste content', (assert) => {
   assert.hasElement('#editor p:contains(abc)', 'pastes the text');
 });
 
-skipInIE11('paste when text is selected replaces that text', (assert) => {
+test('paste when text is selected replaces that text', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
@@ -164,7 +154,7 @@ skipInIE11('paste when text is selected replaces that text', (assert) => {
                     'pastes, replacing the selection');
 });
 
-skipInIE11('simple copy-paste with markup at end of section works', (assert) => {
+test('simple copy-paste with markup at end of section works', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker, markup}) => {
     return post([markupSection('p', [
@@ -188,7 +178,7 @@ skipInIE11('simple copy-paste with markup at end of section works', (assert) => 
   assert.equal($('#editor p strong:contains(a)').length, 2, 'two bold As');
 });
 
-skipInIE11('simple copy-paste in middle of section works', (assert) => {
+test('simple copy-paste in middle of section works', (assert) => {
    const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abcd')])]);
   });
@@ -209,7 +199,7 @@ skipInIE11('simple copy-paste in middle of section works', (assert) => {
   assert.hasElement('#editor p:contains(acXbcd)', 'inserts text in right spot');
 });
 
-skipInIE11('simple copy-paste at start of section works', (assert) => {
+test('simple copy-paste at start of section works', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abcd')])]);
   });
@@ -230,7 +220,7 @@ skipInIE11('simple copy-paste at start of section works', (assert) => {
   assert.hasElement('#editor p:contains(cXabcd)', 'inserts text in right spot');
 });
 
-skipInIE11('copy-paste can copy cards', (assert) => {
+test('copy-paste can copy cards', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker, cardSection}) => {
     return post([
@@ -267,7 +257,7 @@ skipInIE11('copy-paste can copy cards', (assert) => {
   assert.equal($('#editor .bar').length, 2, 'renders a second card');
 });
 
-skipInIE11('copy-paste can copy list sections', (assert) => {
+test('copy-paste can copy list sections', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker, listSection, listItem}) => {
     return post([
@@ -295,7 +285,7 @@ skipInIE11('copy-paste can copy list sections', (assert) => {
   assert.hasElement($('#editor ul:eq(0) li:contains(list)'));
 });
 
-skipInIE11('copy sets html & text for pasting externally', (assert) => {
+test('copy sets html & text for pasting externally', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
       return post([
@@ -313,56 +303,52 @@ skipInIE11('copy sets html & text for pasting externally', (assert) => {
   Helpers.dom.triggerCopyEvent(editor);
 
   let html = Helpers.dom.getCopyData(MIME_TEXT_HTML);
-  if (supportsStandardClipboardAPI()) {
-    let text = Helpers.dom.getCopyData(MIME_TEXT_PLAIN);
-    assert.equal(text, ["heading", "h2 subheader", "The text" ].join('\n'),
-                 'gets plain text');
-  }
+  let text = Helpers.dom.getCopyData(MIME_TEXT_PLAIN);
+  assert.equal(text, ["heading", "h2 subheader", "The text" ].join('\n'),
+               'gets plain text');
 
   assert.ok(html.indexOf("<h1>heading") !== -1, 'html has h1');
   assert.ok(html.indexOf("<h2>h2 subheader") !== -1, 'html has h2');
   assert.ok(html.indexOf("<p>The text") !== -1, 'html has p');
 });
 
-skipInIE11('pasting when on the end of a card is blocked', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, cardSection, markupSection, marker}) => {
-    return post([
-      cardSection('my-card'),
-      markupSection('p', [marker('abc')])
+test('pasting when cursor is on left/right side of card adds content before/after card', (assert) => {
+  let expected1, expected2;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, cardSection, marker}) => {
+    expected1 = post([
+      markupSection('p', [marker('abc')]),
+      cardSection('my-card')
     ]);
-  });
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
 
-  Helpers.dom.selectText(editor, 'abc', editorElement);
-  Helpers.dom.triggerCopyEvent(editor);
+    expected2 = post([
+      markupSection('p', [marker('abc')]),
+      cardSection('my-card'),
+      markupSection('p', [marker('123')])
+    ]);
 
-  editor.selectRange(new Range(editor.post.sections.head.headPosition()));
+    return post([
+      cardSection('my-card')
+    ]);
+  }, {cards});
+
+  let card = editor.post.sections.objectAt(0);
+  assert.ok(card.isCardSection, 'precond - get card');
+
+  Helpers.dom.setCopyData(MIME_TEXT_PLAIN, 'abc');
+  editor.selectRange(new Range(card.headPosition()));
   Helpers.dom.triggerPasteEvent(editor);
 
-  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, marker}) => {
-      return post([
-        cardSection('my-card'),
-        markupSection('p', [marker('abc')])
-      ]);
-    }), 'no paste has occurred');
+  assert.postIsSimilar(editor.post, expected1, 'content pasted before card');
 
-  editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
+  Helpers.dom.setCopyData(MIME_TEXT_PLAIN, '123');
+  editor.selectRange(new Range(card.tailPosition()));
   Helpers.dom.triggerPasteEvent(editor);
 
-  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, marker}) => {
-      return post([
-        cardSection('my-card'),
-        markupSection('p', [marker('abc')])
-      ]);
-    }), 'no paste has occurred');
+  assert.postIsSimilar(editor.post, expected2, 'content pasted after card');
 });
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/249
-skipInIE11('pasting when replacing a list item works', (assert) => {
+test('pasting when replacing a list item works', (assert) => {
   let mobiledoc = Helpers.mobiledoc.build(
     ({post, listSection, listItem, markupSection, marker}) => {
     return post([

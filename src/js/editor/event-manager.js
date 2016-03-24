@@ -1,7 +1,7 @@
 import assert from 'mobiledoc-kit/utils/assert';
 import {
   parsePostFromPaste,
-  setClipboardCopyData,
+  setClipboardData,
   parsePostFromDrop
 } from 'mobiledoc-kit/utils/parse-utils';
 import Range from 'mobiledoc-kit/utils/cursor/range';
@@ -144,13 +144,25 @@ export default class EventManager {
   }
 
   cut(event) {
+    event.preventDefault();
+
     this.copy(event);
     this.editor.handleDeletion();
   }
 
   copy(event) {
     event.preventDefault();
-    setClipboardCopyData(event, this.editor);
+
+    let { editor, editor: { range, post } } = this;
+    post = post.trimTo(range);
+
+    let data = {
+      html: editor.serializePost(post, 'html'),
+      text: editor.serializePost(post, 'text'),
+      mobiledoc: editor.serializePost(post, 'mobiledoc')
+    };
+
+    setClipboardData(event, data, window);
   }
 
   paste(event) {
@@ -159,10 +171,6 @@ export default class EventManager {
     let { editor } = this;
     let range = editor.range;
 
-    // FIXME this can go, it will be handled by insertPost
-    if (range.head.section.isCardSection) {
-      return;
-    }
     if (!range.isCollapsed) {
       editor.handleDeletion();
     }

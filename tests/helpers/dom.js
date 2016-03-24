@@ -4,12 +4,10 @@ import KEY_CODES from 'mobiledoc-kit/utils/keycodes';
 import { DIRECTION, MODIFIERS }  from 'mobiledoc-kit/utils/key';
 import { isTextNode } from 'mobiledoc-kit/utils/dom-utils';
 import { merge } from 'mobiledoc-kit/utils/merge';
-import { supportsStandardClipboardAPI } from './browsers';
 import { Editor } from 'mobiledoc-kit';
 import {
   MIME_TEXT_PLAIN,
-  MIME_TEXT_HTML,
-  NONSTANDARD_IE_TEXT_TYPE
+  MIME_TEXT_HTML
 } from 'mobiledoc-kit/utils/parse-utils';
 
 // walks DOWN the dom from node to childNodes, returning the element
@@ -277,15 +275,13 @@ function triggerLeftArrowKey(editor, modifier) {
 // Allows our fake copy and paste events to communicate with each other.
 const lastCopyData = {};
 function triggerCopyEvent(editor) {
-  let eventData = {};
-
-  if (supportsStandardClipboardAPI()) {
-    eventData = {
-      clipboardData: {
-        setData(type, value) { lastCopyData[type] = value; }
+  let eventData = {
+    clipboardData: {
+      setData(type, value) {
+        lastCopyData[type] = value;
       }
-    };
-  }
+    }
+  };
 
   let event = createMockEvent('copy', editor.element, eventData);
   _triggerEditorEvent(editor, event);
@@ -301,15 +297,11 @@ function triggerCutEvent(editor) {
 }
 
 function triggerPasteEvent(editor) {
-  let eventData = {};
-
-  if (supportsStandardClipboardAPI()) {
-    eventData = {
-      clipboardData: {
-        getData(type) { return lastCopyData[type]; }
-      }
-    };
-  }
+  let eventData = {
+    clipboardData: {
+      getData(type) { return lastCopyData[type]; }
+    }
+  };
 
   let event = createMockEvent('paste', editor.element, eventData);
   _triggerEditorEvent(editor, event);
@@ -338,19 +330,11 @@ function triggerDropEvent(editor, {html, text, clientX, clientY}) {
 }
 
 function getCopyData(type) {
-  if (supportsStandardClipboardAPI()) {
-    return lastCopyData[type];
-  } else {
-    return window.clipboardData.getData(NONSTANDARD_IE_TEXT_TYPE);
-  }
+  return lastCopyData[type];
 }
 
 function setCopyData(type, value) {
-  if (supportsStandardClipboardAPI()) {
-    lastCopyData[type] = value;
-  } else {
-    window.clipboardData.setData(NONSTANDARD_IE_TEXT_TYPE, value);
-  }
+  lastCopyData[type] = value;
 }
 
 function clearCopyData() {

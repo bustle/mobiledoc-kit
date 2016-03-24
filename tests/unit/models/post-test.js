@@ -447,29 +447,28 @@ test('#sectionsContainedBy when range starts/ends in list item', (assert) => {
   assert.ok(containedSections.indexOf(s1) !== -1, 'contains section');
 });
 
-test('#cloneRange creates a mobiledoc from the given range', (assert) => {
-  const post = Helpers.postAbstract.build(
+test('#trimTo creates a post from the given range', (assert) => {
+  let post = Helpers.postAbstract.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
   });
   const section = post.sections.head;
   const range = Range.create(section,1,section,2); // "b"
 
-  const mobiledoc = post.cloneRange(range);
-  const expectedMobiledoc = Helpers.mobiledoc.build(({post, marker, markupSection}) => {
+  post = post.trimTo(range);
+  let expected = Helpers.postAbstract.build(({post, marker, markupSection}) => {
     return post([markupSection('p',[marker('b')])]);
   });
 
-  assert.deepEqual(mobiledoc, expectedMobiledoc);
+  assert.postIsSimilar(post, expected);
 });
 
-test('#cloneRange copies card sections', (assert) => {
+test('#trimTo copies card sections', (assert) => {
   let cardPayload = {foo: 'bar'};
 
-  let buildPost = Helpers.postAbstract.build,
-      buildMobiledoc = Helpers.mobiledoc.build;
+  let buildPost = Helpers.postAbstract.build;
 
-  const post = buildPost(
+  let post = buildPost(
     ({post, markupSection, marker, cardSection}) => {
     return post([
       markupSection('p', [marker('abc')]),
@@ -481,8 +480,8 @@ test('#cloneRange copies card sections', (assert) => {
   const range = Range.create(post.sections.head, 1,  // 'b'
                              post.sections.tail, 1); // '2'
 
-  const mobiledoc = post.cloneRange(range);
-  const expectedMobiledoc = buildMobiledoc(
+  post = post.trimTo(range);
+  let expected = buildPost(
     ({post, marker, markupSection, cardSection}) => {
     return post([
       markupSection('p',[marker('bc')]),
@@ -491,12 +490,11 @@ test('#cloneRange copies card sections', (assert) => {
     ]);
   });
 
-  assert.deepEqual(mobiledoc, expectedMobiledoc);
+  assert.postIsSimilar(post, expected);
 });
 
-test('#cloneRange when range starts and ends in a list item', (assert) => {
-  let buildPost = Helpers.postAbstract.build,
-      buildMobiledoc = Helpers.mobiledoc.build;
+test('#trimTo when range starts and ends in a list item', (assert) => {
+  let buildPost = Helpers.postAbstract.build;
 
   let post = buildPost(
     ({post, listSection, listItem, marker}) => {
@@ -506,18 +504,17 @@ test('#cloneRange when range starts and ends in a list item', (assert) => {
   let range = Range.create(post.sections.head.items.head, 0,
                            post.sections.head.items.head, 'ab'.length);
 
-  let mobiledoc = post.cloneRange(range);
-  let expected = buildMobiledoc(
+  post = post.trimTo(range);
+  let expected = buildPost(
     ({post, listSection, listItem, marker}) => {
     return post([listSection('ul', [listItem([marker('ab')])])]);
   });
 
-  assert.deepEqual(mobiledoc, expected);
+  assert.postIsSimilar(post, expected);
 });
 
-test('#cloneRange when range contains multiple list items', (assert) => {
-  let buildPost = Helpers.postAbstract.build,
-      buildMobiledoc = Helpers.mobiledoc.build;
+test('#trimTo when range contains multiple list items', (assert) => {
+  let buildPost = Helpers.postAbstract.build;
 
   let post = buildPost(
     ({post, listSection, listItem, marker}) => {
@@ -531,8 +528,8 @@ test('#cloneRange when range contains multiple list items', (assert) => {
   let range = Range.create(post.sections.head.items.head, 'ab'.length,
                            post.sections.head.items.tail, 'gh'.length);
 
-  let mobiledoc = post.cloneRange(range);
-  let expected = buildMobiledoc(
+  post = post.trimTo(range);
+  let expected = buildPost(
     ({post, listSection, listItem, marker}) => {
     return post([listSection('ul', [
       listItem([marker('c')]),
@@ -541,12 +538,11 @@ test('#cloneRange when range contains multiple list items', (assert) => {
     ])]);
   });
 
-  assert.deepEqual(mobiledoc, expected);
+  assert.postIsSimilar(post, expected);
 });
 
-test('#cloneRange when range contains multiple list items and more sections', (assert) => {
-  let buildPost = Helpers.postAbstract.build,
-      buildMobiledoc = Helpers.mobiledoc.build;
+test('#trimTo when range contains multiple list items and more sections', (assert) => {
+  let buildPost = Helpers.postAbstract.build;
 
   let post = buildPost(
     ({post, listSection, listItem, markupSection, marker}) => {
@@ -562,8 +558,8 @@ test('#cloneRange when range contains multiple list items and more sections', (a
   let range = Range.create(post.sections.head.items.head, 'ab'.length,
                            post.sections.tail, '12'.length);
 
-  let mobiledoc = post.cloneRange(range);
-  let expected = buildMobiledoc(
+  post = post.trimTo(range);
+  let expected = buildPost(
     ({post, listSection, listItem, markupSection, marker}) => {
     return post([listSection('ul', [
       listItem([marker('c')]),
@@ -574,7 +570,7 @@ test('#cloneRange when range contains multiple list items and more sections', (a
     ])]);
   });
 
-  assert.deepEqual(mobiledoc, expected);
+  assert.postIsSimilar(post, expected);
 });
 
 test('#headPosition and #tailPosition returns head and tail', (assert) => {

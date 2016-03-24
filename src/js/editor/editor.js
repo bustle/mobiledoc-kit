@@ -37,6 +37,8 @@ import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 import EditHistory from 'mobiledoc-kit/editor/edit-history';
 import EventManager from 'mobiledoc-kit/editor/event-manager';
 import EditState from 'mobiledoc-kit/editor/edit-state';
+import HTMLRenderer from 'mobiledoc-html-renderer';
+import TextRenderer from 'mobiledoc-text-renderer';
 import Logger from 'mobiledoc-kit/utils/logger';
 let log = Logger.for('editor'); /* jshint ignore:line */
 
@@ -441,8 +443,59 @@ class Editor {
     return this.activeMarkups;
   }
 
+  /**
+   * @public
+   * @param {string} version The mobiledoc version to serialize to.
+   * @return {Object} Serialized mobiledoc
+   */
   serialize(version=MOBILEDOC_VERSION) {
-    return mobiledocRenderers.render(this.post, version);
+    return this.serializePost(this.post, 'mobiledoc', {version});
+  }
+
+  /**
+   * @public
+   * Note that only mobiledoc format is lossless. If cards or atoms are present
+   * in the post, the html and text formats will omit them in output because
+   * the editor does not have access to the html and text versions of the
+   * cards/atoms.
+   * @param {string} format The format to serialize ('mobiledoc', 'text', 'html')
+   * @return {Object|String} The editor's post, serialized to {format}
+   */
+  serializeTo(format) {
+    let post = this.post;
+    return this.serializePost(post, format);
+  }
+
+  /**
+   * @param {Post}
+   * @param {String} format Same as {serializeTo}
+   * @param {[Object]} version to serialize to (default: MOBILEDOC_VERSION}
+   * @return {Object|String}
+   */
+  serializePost(post, format, options={}) {
+    const validFormats = ['mobiledoc', 'html', 'text'];
+    assert(`Unrecognized serialiation format ${format}`,
+           contains(validFormats, format));
+
+    if (format === 'mobiledoc') {
+      let version = options.version || MOBILEDOC_VERSION;
+      return mobiledocRenderers.render(post, version);
+    } else {
+      let rendered;
+      let mobiledoc = this.serializePost(post, 'mobiledoc');
+      let unknownCardHandler = () => {};
+      let unknownAtomHandler = () => {};
+      let rendererOptions = { unknownCardHandler, unknownAtomHandler };
+
+      switch (format) {
+        case 'html':
+          rendered = new HTMLRenderer(rendererOptions).render(mobiledoc);
+          return rendered.result;
+        case 'text':
+          rendered = new TextRenderer(rendererOptions).render(mobiledoc);
+          return rendered.result;
+      }
+    }
   }
 
   removeAllViews() {
