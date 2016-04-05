@@ -6,9 +6,10 @@ let options = {
 
 /**
  * A Logger to add debugging-style logging
- * that can be turned on/off by type of log
+ * that can be turned on/off by type of log.
  *
  * Usage:
+ * ```
  * Logger.enable();
  * Logger.enableTypes(['my-events']);
  * let log = Logger.for('my-events');
@@ -17,6 +18,8 @@ let options = {
  * log = Logger.for('other-events');
  * log('another message'); // => wil not be logged, because 'other-events'
  *                         //    is not enabled
+ * ```
+ * @private
  */
 const Logger = class Logger {
   constructor(type) {

@@ -44,12 +44,11 @@ const SKIPPABLE_ELEMENT_TAG_NAMES = [
   'style', 'head', 'title', 'meta'
 ].map(normalizeTagName);
 
-/**
- * parses an element into a section, ignoring any non-markup
- * elements contained within
- * @return {Array} sections
- */
 export default class SectionParser {
+  /**
+   * parses an element into a section, ignoring any non-markup
+   * elements contained within
+   */
   constructor(builder, options={}) {
     this.builder = builder;
     this.plugins = options.plugins || [];

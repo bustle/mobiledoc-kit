@@ -119,6 +119,7 @@ function renderCard() {
 /**
  * Wrap the element in all of the opened markups
  * @return {DOMElement} the wrapped element
+ * @private
  */
 function wrapElement(element, openedMarkups) {
   let wrappedElement = element;
@@ -188,9 +189,11 @@ function getNextMarkerElement(renderNode) {
  * @param {DOMNode} element the element to attach the rendered marker to
  * @param {RenderNode} [previousRenderNode] The render node before this one, which
  *        affects the determination of where to insert this rendered marker.
- * @return {element, markupElement} The element (textNode) that has the text for
+ * @return {Object} With properties `element` and `markupElement`.
+ *         The element (textNode) that has the text for
  *         this marker, and the outermost rendered element. If the marker has no
  *         markups, element and markupElement will be the same textNode
+ * @private
  */
 function renderMarker(marker, parentElement, previousRenderNode) {
   let text = renderHTMLText(marker);

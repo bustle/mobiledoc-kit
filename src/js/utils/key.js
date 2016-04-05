@@ -1,4 +1,10 @@
 import Keycodes from './keycodes';
+/**
+ * @typedef Direction
+ * @enum {number}
+ * @property {number} FORWARD
+ * @property {number} BACKWARD
+ */
 export const DIRECTION = {
   FORWARD: 1,
   BACKWARD: -1

@@ -10,7 +10,8 @@
     "build": "rm -rf dist && broccoli build dist",
     "build-website": "./bin/build-website.sh",
     "deploy-website": "./bin/deploy-website.sh",
-    "update-changelog": "./node_modules/conventional-changelog-cli/cli.js -i CHANGELOG.md -r 0 -s && git add CHANGELOG.md && git commit -m 'Update changelog'"
+    "update-changelog": "conventional-changelog -i CHANGELOG.md -r 0 -s && git add CHANGELOG.md && git commit -m 'Update changelog'",
+    "docs": "jsdoc -c ./.jsdoc"
   },
   "keywords": [
     "html",
@@ -49,6 +50,7 @@
     "conventional-changelog": "^1.1.0",
     "conventional-changelog-cli": "^1.1.1",
     "jquery": "^2.2.2",
+    "jsdoc": "^3.4.0",
     "saucie": "^1.4.0",
     "testem": "^1.6.0",
     "tiny-lr": "^0.2.1"

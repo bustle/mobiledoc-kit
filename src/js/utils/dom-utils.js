@@ -52,6 +52,7 @@ function clearChildNodes(element) {
  * (e.g., inclusive containment)  the parent node
  *  see https://github.com/webmodules/node-contains/blob/master/index.js
  *  Mimics the behavior of `Node.contains`, which is broken in IE 10
+ *  @private
  */
 function containsNode(parentNode, childNode) {
   if (parentNode === childNode) {
@@ -66,6 +67,7 @@ function containsNode(parentNode, childNode) {
  * an object with key-value pairs
  * @param {DOMNode} element
  * @return {Object} key-value pairs
+ * @private
  */
 function getAttributes(element) {
   const result = {};

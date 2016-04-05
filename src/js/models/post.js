@@ -7,6 +7,15 @@ import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
 import deprecate from 'mobiledoc-kit/utils/deprecate';
 
+/**
+ * The Post is an in-memory representation of an editor's document.
+ * An editor always has a single post. The post is organized into a list of
+ * sections. Each section may be markerable (contains "markers", aka editable
+ * text) or non-markerable (e.g., a card).
+ * When persisting a post, it must first be serialized (loss-lessly) into
+ * mobiledoc using {@link Editor#serialize}.
+ * @class Post
+ */
 export default class Post {
   constructor() {
     this.type = POST_TYPE;

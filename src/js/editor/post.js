@@ -19,6 +19,21 @@ const CALLBACK_QUEUES = {
 };
 
 class PostEditor {
+  /**
+   * The PostEditor is used to modify a post. It should not be instantiated directly.
+   * Instead, a new instance of a PostEditor is created by the editor and passed
+   * as the argument to the callback in {@link Editor#run}.
+   *
+   * Usage:
+   * ```
+   * editor.run((postEditor) => {
+   *   // postEditor is an instance of PostEditor that can operate on the
+   *   // editor's post
+   * });
+   * ```
+   * @param {Editor} editor
+   * @class PostEditor
+   */
   constructor(editor) {
     this.editor = editor;
     this.builder = this.editor.builder;
@@ -43,16 +58,15 @@ class PostEditor {
   }
 
   /**
-   * Remove a range from the post
+   * Delete a range from the post
    *
    * Usage:
-   *
+   * ```
    *     let { range } = editor;
    *     editor.run((postEditor) => {
    *       postEditor.deleteRange(range);
    *     });
-   *
-   * @method deleteRange
+   * ```
    * @param {Range} range Cursor Range object with head and tail Positions
    * @return {Position} The position where the cursor would go after deletion
    * @public
@@ -132,6 +146,7 @@ class PostEditor {
 
   /**
    * @return {Position}
+   * @private
    */
   cutSection(section, headSectionOffset, tailSectionOffset) {
     if (section.isBlank || headSectionOffset === tailSectionOffset) {
@@ -343,7 +358,6 @@ class PostEditor {
    * or direction is `FORWARD` and the offset is equal to the length of the
    * marker.
    *
-   * @method deleteFrom
    * @param {Position} position object with {section, offset} the marker and offset to delete from
    * @param {Number} direction The direction to delete in (default is BACKWARD)
    * @return {Position} for positioning the cursor
@@ -393,7 +407,6 @@ class PostEditor {
 
   /**
    * delete 1 character in the FORWARD direction from the given position
-   * @method _deleteForwardFrom
    * @param {Position} position
    * @private
    */
@@ -448,8 +461,9 @@ class PostEditor {
   /**
    * delete 1 character forward from the markerPosition
    *
-   * @method _deleteForwardFromMarkerPosition
-   * @param {Object} markerPosition {marker, offset}
+   * @param {Object} markerPosition
+   * @param {Marker} markerPosition.marker
+   * @param {number} markerPosition.offset
    * @return {Position} The position the cursor should be put after this deletion
    * @private
    */
@@ -487,7 +501,6 @@ class PostEditor {
 
   /**
    * delete 1 character in the BACKWARD direction from the given position
-   * @method _deleteBackwardFrom
    * @param {Position} position
    * @return {Position} The position the cursor should be put after this deletion
    * @private
@@ -534,16 +547,15 @@ class PostEditor {
    * (e.g. `editor.range`) as an argument.
    *
    * Usage:
-   *
+   * ```
    *     let markerRange = this.cursor.offsets;
    *     editor.run((postEditor) => {
    *       postEditor.splitMarkers(markerRange);
    *     });
-   *
+   * ```
    * The return value will be marker object completely inside the offsets
    * provided. Markers on the outside of the split may also have been modified.
    *
-   * @method splitMarkers
    * @param {Range} markerRange
    * @return {Array} of markers that are inside the split
    * @private
@@ -590,19 +602,18 @@ class PostEditor {
    * Split the section at the position.
    *
    * Usage:
-   *
+   * ```
    *     let position = editor.cursor.offsets.head;
    *     editor.run((postEditor) => {
    *       postEditor.splitSection(position);
    *     });
    *     // Will result in the creation of two new sections
    *     // replacing the old one at the cursor position
-   *
+   * ```
    * The return value will be the two new sections. One or both of these
    * sections can be blank (contain only a blank marker), for example if the
    * headMarkerOffset is 0.
    *
-   * @method splitSection
    * @param {Position} position
    * @return {Array} new sections, one for the first half and one for the second
    * @public
@@ -637,10 +648,9 @@ class PostEditor {
   }
 
   /**
-   * @method _splitCardSection
    * @param {Section} cardSection
    * @param {Position} position to split at
-   * @return {Array} pre and post-split sections
+   * @return {Section[]} 2-item array of pre and post-split sections
    * @private
    */
   _splitCardSection(cardSection, position) {
@@ -667,7 +677,6 @@ class PostEditor {
   }
 
   /**
-   * @method replaceSection
    * @param {Section} section
    * @param {Section} newSection
    * @return null
@@ -691,7 +700,6 @@ class PostEditor {
   }
 
   /**
-   * @method moveSectionUp
    * @param {Section} section A section that is already in DOM
    * @public
    */
@@ -707,7 +715,6 @@ class PostEditor {
   }
 
   /**
-   * @method moveSectionDown
    * @param {Section} section A section that is already in DOM
    * @public
    */
@@ -798,7 +805,6 @@ class PostEditor {
    * The return value will be all markers between the split, the same return
    * value as `splitMarkers`.
    *
-   * @method addMarkupToRange
    * @param {Range} range
    * @param {Markup} markup A markup post abstract node
    * @public
@@ -818,7 +824,7 @@ class PostEditor {
    * markup from all contained markers.
    *
    * Usage:
-   *
+   * ```
    *     let { range } = editor;
    *     let markup = markerRange.headMarker.markups[0];
    *     editor.run(postEditor => {
@@ -826,8 +832,7 @@ class PostEditor {
    *     });
    *     // Will result in some markers possibly being split, and the markup
    *     // being removed from all markers between the split.
-   *
-   * @method removeMarkupFromRange
+   * ```
    * @param {Range} range Object with offsets
    * @param {Markup|Function} markupOrCallback A markup post abstract node or
    * a function that returns true when passed a markup that should be removed
@@ -849,7 +854,7 @@ class PostEditor {
    * has the markup, the markup will be added to everything in the selection.
    *
    * Usage:
-   *
+   * ```
    * // Remove any 'strong' markup if it exists in the selection, otherwise
    * // make it all 'strong'
    * editor.run(postEditor => postEditor.toggleMarkup('strong'));
@@ -859,8 +864,7 @@ class PostEditor {
    *   const linkMarkup = postEditor.builder.createMarkup('a', {href: 'http://bustle.com'});
    *   postEditor.toggleMarkup(linkMarkup);
    * });
-   *
-   * @method toggleMarkup
+   * ```
    * @param {Markup|String} markupOrString Either a markup object created using
    * the builder (useful when adding a markup with attributes, like an 'a' markup),
    * or, if a string, the tag name of the markup (e.g. 'strong', 'em') to toggle.
@@ -886,15 +890,13 @@ class PostEditor {
   }
 
   /**
-   * @method toggleSection
-   *
-   * Toggles the active section or sections.
+   * Toggles the tagName of the active section or sections.
    * If every section has the tag name, they will all be reset to default sections.
    * Otherwise, every section will be changed to the requested type
    *
    * @param {String} sectionTagName A valid markup section or list section tag name (e.g. 'blockquote', 'h2', 'ul')
    * @param {Range} range The range over which to toggle. Defaults to the current editor's offsets
-   * a list section
+   *        a list section
    * @public
    */
   toggleSection(sectionTagName, range=this._range) {
@@ -952,6 +954,7 @@ class PostEditor {
    * If thse position is at the start or end of the item, the pre- or post-item
    * will contain a single empty ("") marker.
    * @return {Array} the pre-item and post-item on either side of the split
+   * @private
    */
   _splitListItem(item, position) {
     let { section, offset } = position;
@@ -981,6 +984,8 @@ class PostEditor {
    *
    * Note: Contiguous list sections will be joined in the before_complete queue
    * of the postEditor.
+   *
+   * @private
    */
   _splitListAtPosition(list, position) {
     assert('Cannot split list at position not in list',
@@ -1029,6 +1034,7 @@ class PostEditor {
    *         be a 1-item list containing `item`. `prev` and `next` will be
    *         removed in the before_complete queue if they are blank
    *         (and still attached).
+   *
    * @private
    */
   _splitListAtItem(list, item) {
@@ -1113,7 +1119,7 @@ class PostEditor {
    * and the rendered UI.
    *
    * Usage:
-   *
+   * ```
    *     let markerRange = editor.range;
    *     let sectionWithCursor = markerRange.headMarker.section;
    *     let section = editor.builder.createCardSection('my-image');
@@ -1121,12 +1127,11 @@ class PostEditor {
    *     editor.run((postEditor) => {
    *       postEditor.insertSectionBefore(collection, section, sectionWithCursor);
    *     });
-   *
-   * @method insertSectionBefore
+   * ```
    * @param {LinkedList} collection The list of sections to insert into
    * @param {Object} section The new section
    * @param {Object} beforeSection Optional The section "before" is relative to,
-   * if falsy the new section will be appended to the collection
+   *        if falsy the new section will be appended to the collection
    * @public
    */
   insertSectionBefore(collection, section, beforeSection) {
@@ -1137,7 +1142,6 @@ class PostEditor {
   /**
    * Insert the given section after the current active section, or, if no
    * section is active, at the end of the document.
-   * @method insertSection
    * @param {Section} section
    * @public
    */
@@ -1151,7 +1155,6 @@ class PostEditor {
 
   /**
    * Insert the given section at the end of the document.
-   * @method insertSectionAtEnd
    * @param {Section} section
    * @public
    */
@@ -1160,7 +1163,7 @@ class PostEditor {
   }
 
   /**
-   * @method insertPost
+   * Insert the `post` at the given position in the editor's post.
    * @param {Position} position
    * @param {Post} post
    * @private
@@ -1176,14 +1179,13 @@ class PostEditor {
    * Remove a given section from the post abstract and the rendered UI.
    *
    * Usage:
-   *
+   * ```
    *     let { range } = editor;
    *     let sectionWithCursor = range.head.section;
    *     editor.run((postEditor) => {
    *       postEditor.removeSection(sectionWithCursor);
    *     });
-   *
-   * @method removeSection
+   * ```
    * @param {Object} section The section to remove
    * @public
    */
@@ -1224,7 +1226,6 @@ class PostEditor {
   /**
    * A method for adding work the deferred queue
    *
-   * @method schedule
    * @param {Function} callback to run during completion
    * @public
    */
@@ -1237,7 +1238,6 @@ class PostEditor {
   /**
    * Add a rerender job to the queue
    *
-   * @method scheduleRerender
    * @public
    */
   scheduleRerender() {
@@ -1250,7 +1250,6 @@ class PostEditor {
   /**
    * Add a didUpdate job to the queue
    *
-   * @method scheduleDidUpdate
    * @public
    */
   scheduleDidUpdate() {
@@ -1268,7 +1267,6 @@ class PostEditor {
    * Flush any work on the queue. `editor.run` already does this. Calling this
    * method directly should not be needed outside `editor.run`.
    *
-   * @method complete
    * @private
    */
   complete() {

@@ -111,7 +111,6 @@ const postOpcodeCompiler = {
  */
 export default {
   /**
-   * @method render
    * @param {Post}
    * @return {Mobiledoc}
    */

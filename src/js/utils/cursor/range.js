@@ -2,12 +2,38 @@ import Position from './position';
 import { DIRECTION } from '../key';
 
 export default class Range {
+  /**
+   * A logical range of a {@link Post}.
+   * Usually an instance of Range will be read from the {@link Editor#range} property,
+   * but it may be useful to instantiate a range directly in cases
+   * when programmatically modifying a Post.
+   * @constructor
+   * @param {Position} head
+   * @param {Position} [tail=head]
+   * @param {Direction} [direction=null]
+   * @return {Range}
+   */
   constructor(head, tail=head, direction=null) {
+    /** @property {Position} head */
     this.head = head;
+
+    /** @property {Position} tail */
     this.tail = tail;
+
+    /** @property {Direction} direction */
     this.direction = direction;
   }
 
+  /**
+   * Shorthand to create a new range from a section(s) and offset(s).
+   * When given only a head section and offset, creates a collapsed range.
+   * @param {Section} headSection
+   * @param {number} headOffset
+   * @param {Section} [tailSection=headSection]
+   * @param {number} [tailOffset=headOffset]
+   * @param {Direction} [direction=null]
+   * @return {Range}
+   */
   static create(headSection, headOffset, tailSection=headSection, tailOffset=headOffset, direction=null) {
     return new Range(
       new Position(headSection, headOffset),
@@ -32,6 +58,7 @@ export default class Range {
    * wholly contained. It's possible to call `trimTo` with a selection that is
    * outside of the range, though, which would invalidate that assumption.
    * There's no efficient way to determine if a section is within a range, yet.
+   * @private
    */
   trimTo(section) {
     const length = section.length;
@@ -45,39 +72,39 @@ export default class Range {
   }
 
   /**
-   * Expands the range in the given direction
-   * @param {Direction} newDirection
-   * @return {Range} Always returns an expanded, non-collapsed range
+   * Expands the range 1 unit in the given direction
+   * @param {Direction} direction
+   * @return {Range} If the range is expandable in the given direction, always returns a
+   *         non-collapsed range.
    * @public
    */
-  extend(newDirection) {
-    let { head, tail, direction } = this;
-    switch (direction) {
+  extend(direction) {
+    let { head, tail, direction: currentDirection } = this;
+    switch (currentDirection) {
       case DIRECTION.FORWARD:
-        return new Range(head, tail.move(newDirection), direction);
+        return new Range(head, tail.move(direction), currentDirection);
       case DIRECTION.BACKWARD:
-        return new Range(head.move(newDirection), tail, direction);
+        return new Range(head.move(direction), tail, currentDirection);
       default:
-        return new Range(head, tail, newDirection).extend(newDirection);
+        return new Range(head, tail, direction).extend(direction);
     }
   }
 
   /**
-   * Moves this range in {newDirection}.
-   * If the range is collapsed, returns a collapsed range shifted 1 unit in
-   * {newDirection}, otherwise collapses this range to the position at the
-   * {newDirection} end of the range.
-   * @param {Direction} newDirection
+   * Moves this range 1 unit in the given direction.
+   * If the range is collapsed, returns a collapsed range shifted by 1 unit,
+   * otherwise collapses this range to the position at the `direction` end of the range.
+   * @param {Direction} direction
    * @return {Range} Always returns a collapsed range
    * @public
    */
-  move(newDirection) {
+  move(direction) {
     let { focusedPosition, isCollapsed } = this;
 
     if (isCollapsed) {
-      return new Range(focusedPosition.move(newDirection));
+      return new Range(focusedPosition.move(direction));
     } else {
-      return this._collapse(newDirection);
+      return this._collapse(direction);
     }
   }
 

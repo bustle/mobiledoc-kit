@@ -40,6 +40,7 @@ function toArray(arrayLike) {
 /**
  * Useful for array-like things that aren't
  * actually arrays, like NodeList
+ * @private
  */
 function forEach(enumerable, callback) {
   if (enumerable.forEach) {
@@ -61,6 +62,7 @@ function filter(enumerable, conditionFn) {
 
 /**
  * @return {Integer} the number of items that are the same, starting from the 0th index, in a and b
+ * @private
  */
 function commonItemLength(listA, listB) {
   let offset = 0;
@@ -89,6 +91,7 @@ function reduce(enumerable, callback, initialValue) {
 /**
  * @param {Array} array of key1,value1,key2,value2,...
  * @return {Object} {key1:value1, key2:value2, ...}
+ * @private
  */
 function kvArrayToObject(array) {
   const obj = {};
