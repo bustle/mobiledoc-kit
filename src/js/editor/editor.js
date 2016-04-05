@@ -78,13 +78,42 @@ const CALLBACK_QUEUES = {
   DID_REPARSE: 'didReparse'
 };
 
-/**
- * @class Editor
- * An individual Editor
- * @param element `Element` node
- * @param options hash of options
- */
 class Editor {
+  /**
+   * The Editor is a core component of mobiledoc-kit. After instantiating 
+   * an editor, use {@link Editor#render} to display the editor on the web page.
+   *
+   * An editor uses a {@link Post} internally to represent the displayed document.
+   * The post can be serialized as mobiledoc using {@link Editor#serialize}. Mobiledoc
+   * is the transportable "over-the-wire" format (JSON) that is suited for persisting
+   * and sharing between editors and renderers (for display, e.g.), whereas the Post
+   * model is better suited for programmatic editing.
+   *
+   * The editor will call registered callbacks for certain state changes. These are:
+   *   * cursorDidChange
+   *   * didUpdate
+   *
+   * @param {Object} [options]
+   * @param {Object} [options.mobiledoc] The mobiledoc to load into the editor.
+   *        Supersedes `options.html`.
+   * @param {String|DOM} [options.html] The html (as a string or DOM fragment)
+   *        to parse and load into the editor.
+   *        Will be ignored if `options.mobiledoc` is also passed.
+   * @param {Array} [options.parserPlugins=[]]
+   * @param {Array} [options.cards=[]] The cards that the editor may render.
+   * @param {Array} [options.atoms=[]] The atoms that the editor may render.
+   * @param {Function} [options.unknownCardHandler] Invoked by the editor's renderer
+   *        whenever it encounters an unknown card.
+   * @param {Function} [options.unknownAtomHandler] Invoked by the editor's renderer
+   *        whenever it encounters an unknown atom.
+   * @param {String} [options.placeholder] Default text to show before user starts typing.
+   * @param {Boolean} [options.spellcheck=true] Whether to enable spellcheck
+   * @param {Boolean} [options.autofocus=true] Whether to focus the editor when it is first rendered.
+   * @param {number} [options.undoDepth=5] How many undo levels will be available.
+   *        Set to 0 to disable undo/redo functionality.
+   * @return {Editor}
+   * @public
+   */
   constructor(options={}) {
     assert('editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation',
           (options && !options.nodeType));
@@ -94,14 +123,14 @@ class Editor {
 
     // FIXME: This should merge onto this.options
     mergeWithOptions(this, defaults, options);
-
     this.cards.push(ImageCard);
 
     DEFAULT_TEXT_EXPANSIONS.forEach(e => this.registerExpansion(e));
     DEFAULT_KEY_COMMANDS.forEach(kc => this.registerKeyCommand(kc));
 
     this._parser   = new DOMParser(this.builder);
-    this._renderer = new Renderer(this, this.cards, this.atoms, this.unknownCardHandler, this.unknownAtomHandler, this.cardOptions);
+    let {cards, atoms, unknownCardHandler, unknownAtomHandler, cardOptions} = this;
+    this._renderer = new Renderer(this, cards, atoms, unknownCardHandler, unknownAtomHandler, cardOptions);
 
     this.post = this.loadPost();
     this._renderTree = new RenderTree(this.post);
@@ -123,14 +152,15 @@ class Editor {
   }
 
   loadPost() {
-    if (this.mobiledoc) {
-      return mobiledocParsers.parse(this.builder, this.mobiledoc);
-    } else if (this.html) {
-      if (typeof this.html === 'string') {
+    let {mobiledoc, html} = this;
+    if (mobiledoc) {
+      return mobiledocParsers.parse(this.builder, mobiledoc);
+    } else if (html) {
+      if (typeof html === 'string') {
         let options = {plugins: this._parserPlugins};
         return new HTMLParser(this.builder, options).parse(this.html);
       } else {
-        let dom = this.html;
+        let dom = html;
         return this._parser.parse(dom);
       }
     } else {
@@ -156,6 +186,11 @@ class Editor {
     this.runCallbacks(CALLBACK_QUEUES.DID_RENDER);
   }
 
+  /**
+   * @param {Element} element The DOM element to render into.
+   *        Its contents will be replaced by the editor's rendered post.
+   * @public
+   */
   render(element) {
     assert('Cannot render an editor twice. Use `rerender` to update the ' +
            'rendering of an existing editor instance.',
@@ -209,7 +244,6 @@ class Editor {
   }
 
   /**
-   * @method registerExpansion
    * @param {Object} expansion The text expansion to register. It must specify a
    * trigger character (e.g. the `<space>` character) and a text string that precedes
    * the trigger (e.g. "*"), and a `run` method that will be passed the
@@ -222,7 +256,6 @@ class Editor {
   }
 
   /**
-   * @method registerKeyCommand
    * @param {Object} keyCommand The key command to register. It must specify a
    * modifier key (meta, ctrl, etc), a string representing the ascii key, and
    * a `run` method that will be passed the editor instance when the key command
@@ -236,7 +269,7 @@ class Editor {
   }
 
   /**
-   * @param {KeyEvent} event optional
+   * @param {KeyEvent} [event]
    * @private
    */
   handleDeletion(event=null) {
@@ -303,9 +336,9 @@ class Editor {
   }
 
   /**
-   * @private
    * If the range is different from the previous range, this method will
    * fire 'rangeDidChange'-related callbacks
+   * @private
    */
   renderRange(range) {
     let prevRange = this._range;
@@ -329,6 +362,7 @@ class Editor {
    * Return the current range for the editor (may be cached).
    * The #_resetRange method forces a re-read of
    * the range from DOM.
+   * @return {Range}
    */
   get range() {
     if (this._range) {
@@ -345,9 +379,10 @@ class Editor {
     this._range = newRange;
   }
 
-  /*
+  /**
    * force re-reading range from dom
    * Fires `rangeDidChange`-related callbacks if the range is different
+   * @private
    */
   _resetRange() {
     let prevRange = this._range;
@@ -410,7 +445,7 @@ class Editor {
     );
   }
 
-  /*
+  /**
    * @return {array} The sections from the cursor's selection start to the selection end
    */
   get activeSections() {
@@ -445,21 +480,23 @@ class Editor {
 
   /**
    * @public
+   *
    * @param {string} version The mobiledoc version to serialize to.
-   * @return {Object} Serialized mobiledoc
+   * @return {Mobiledoc} Serialized mobiledoc
    */
   serialize(version=MOBILEDOC_VERSION) {
     return this.serializePost(this.post, 'mobiledoc', {version});
   }
 
   /**
-   * @public
+   * Serialize the editor's post to the requested format.
    * Note that only mobiledoc format is lossless. If cards or atoms are present
    * in the post, the html and text formats will omit them in output because
    * the editor does not have access to the html and text versions of the
    * cards/atoms.
    * @param {string} format The format to serialize ('mobiledoc', 'text', 'html')
    * @return {Object|String} The editor's post, serialized to {format}
+   * @public
    */
   serializeTo(format) {
     let post = this.post;
@@ -469,8 +506,10 @@ class Editor {
   /**
    * @param {Post}
    * @param {String} format Same as {serializeTo}
-   * @param {[Object]} version to serialize to (default: MOBILEDOC_VERSION}
+   * @param {Object} [options]
+   * @param {String} [options.version=MOBILEDOC_VERSION] version to serialize to
    * @return {Object|String}
+   * @private
    */
   serializePost(post, format, options={}) {
     const validFormats = ['mobiledoc', 'html', 'text'];
@@ -507,13 +546,18 @@ class Editor {
    * Whether the editor has a cursor (or a selected range).
    * It is possible for the editor to be focused but not have a selection.
    * In this case, key events will fire but the editor will not be able to
-   * determine a cursor position.
-   * @return {bool}
+   * determine a cursor position, so they will be ignored.
+   * @return {boolean}
+   * @public
    */
   hasCursor() {
     return this.cursor.hasCursor();
   }
 
+  /**
+   * Tears down the editor's attached event listeners and views.
+   * @public
+   */
   destroy() {
     this._isDestroyed = true;
     if (this.hasCursor()) {
@@ -527,10 +571,9 @@ class Editor {
   }
 
   /**
-   * Keep the user from directly editing the post. Modification via the
-   * programmatic API is still permitted.
-   *
-   * @method disableEditing
+   * Keep the user from directly editing the post using the keyboard and mouse.
+   * Modification via the programmatic API is still permitted.
+   * @see Editor#enableEditing
    * @public
    */
   disableEditing() {
@@ -542,10 +585,10 @@ class Editor {
   }
 
   /**
-   * Allow the user to directly interact with editing a post via a cursor.
-   *
-   * @method enableEditing
-   * @return undefined
+   * Allow the user to directly interact with editing a post via keyboard and mouse input.
+   * Editor instances are editable by default. Use this method to re-enable
+   * editing after disabling it.
+   * @see Editor#disableEditing
    * @public
    */
   enableEditing() {
@@ -561,7 +604,6 @@ class Editor {
    * If called before the card has been rendered, it will be marked so that
    * it is rendered in edit mode when it gets rendered.
    * @param {CardSection} cardSection
-   * @return undefined
    * @public
    */
   editCard(cardSection) {
@@ -581,29 +623,28 @@ class Editor {
   }
 
   /**
-   * Run a new post editing session. Yields a block with a new `postEditor`
-   * instance. This instance can be used to interact with the post abstract,
-   * and defers rendering until the end of all changes.
+   * Run a new post editing session. Yields a block with a new {@link PostEditor}
+   * instance. This instance can be used to interact with the post abstract.
+   * Rendering will be deferred until after the callback is completed.
    *
    * Usage:
-   *
-   *     let markerRange = this.range;
-   *     editor.run((postEditor) => {
-   *       postEditor.deleteRange(markerRange);
-   *       // editing surface not updated yet
-   *       postEditor.schedule(() => {
-   *         console.log('logs during rerender flush');
-   *       });
-   *       // logging not yet flushed
+   * ```
+   *   let markerRange = this.range;
+   *   editor.run((postEditor) => {
+   *     postEditor.deleteRange(markerRange);
+   *     // editing surface not updated yet
+   *     postEditor.schedule(() => {
+   *       console.log('logs during rerender flush');
    *     });
-   *     // editing surface now updated.
-   *     // logging now flushed
+   *     // logging not yet flushed
+   *   });
+   *   // editing surface now updated.
+   *   // logging now flushed
+   * ```
    *
-   * The return value of `run` is whatever was returned from the callback.
-   *
-   * @method run
-   * @param {Function} callback Function to handle post editing with, provided the `postEditor` as an argument.
-   * @return {} Whatever the return value of `callback` is.
+   * @param {Function} callback Called with an instance of
+   *        {@link PostEditor} as its argument.
+   * @return {Mixed} The return value of `callback`.
    * @public
    */
   run(callback) {
@@ -636,17 +677,15 @@ class Editor {
   }
 
   /**
-   * @method didUpdatePost
-   * @param {Function} callback This callback will be called with `postEditor`
-   *         argument when the post is updated
    * @public
+   *
+   * @param {Function} callback Called with `postEditor` as its argument.
    */
   didUpdatePost(callback) {
     this.addCallback(CALLBACK_QUEUES.DID_UPDATE, callback);
   }
 
   /**
-   * @method willRender
    * @param {Function} callback This callback will be called before the editor
    *        is rendered.
    * @public
@@ -656,7 +695,6 @@ class Editor {
   }
 
   /**
-   * @method didRender
    * @param {Function} callback This callback will be called after the editor
    *        is rendered.
    * @public
@@ -666,7 +704,6 @@ class Editor {
   }
 
   /**
-   * @method cursorDidChange
    * @param {Function} callback This callback will be called after the cursor
    *        position (or selection) changes.
    * @public
@@ -703,6 +740,7 @@ class Editor {
    * Clear the cached active markups and force a re-read of the markups
    * from the current range.
    * If markups have changed, fires an event
+   * @private
    */
   _resetActiveMarkups() {
     let activeMarkupsDidChange = this._editState.resetActiveMarkups();
@@ -768,7 +806,6 @@ class Editor {
    * If a command returns `false` then the next matching command
    * is run instead.
    *
-   * @method handleKeyCommand
    * @param {Event} event The keyboard event triggered by the user
    * @return {Boolean} true when a command was successfully run
    * @private
@@ -806,7 +843,9 @@ class Editor {
     return Position.atPoint(x, y, this);
   }
 
-  // @private
+  /**
+   * @private
+   */
   _setCardMode(cardSection, mode) {
     const renderNode = cardSection.renderNode;
     if (renderNode && renderNode.isRendered) {

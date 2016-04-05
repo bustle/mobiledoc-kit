@@ -56,14 +56,23 @@ function findOffsetInSection(section, node, offset) {
 }
 
 const Position = class Position {
+  /**
+   * A position is a logical location (zero-width, or "collapsed") in a post,
+   * typically between two characters in a section.
+   * Two positions (a head and a tail) make up a {@link Range}.
+   * @constructor
+   */
   constructor(section, offset=0) {
     assert('Position must have a section that is addressable by the cursor',
            (section && section.isLeafSection));
     assert('Position must have numeric offset',
            (offset !== null && offset !== undefined));
 
+    /** @property {Section} section */
     this.section = section;
+    /** @property {number} offset */
     this.offset = offset;
+
     this.isBlank = false;
   }
 
@@ -137,12 +146,11 @@ const Position = class Position {
   }
 
   /**
-   * This method returns a new Position instance, it does not modify
-   * this instance.
+   * Move the position 1 unit in `direction`.
    *
    * @param {Direction} direction to move
-   * @return {Position|null} Return the position one unit in the given
-   * direction, or null if it is not possible to move that direction
+   * @return {Position|null} Return a new position one unit in the given
+   * direction or null if it is not possible to move that direction
    */
   move(direction) {
     switch (direction) {
@@ -288,7 +296,6 @@ const Position = class Position {
     assert('cannot get markerPosition of a non-markerable', !!this.section.isMarkerable);
     return this.section.markerPositionAtOffset(this.offset);
   }
-
 };
 
 export default Position;

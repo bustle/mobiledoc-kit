@@ -12,6 +12,7 @@ function mergeWithOptions(original, updates, options) {
 
 /**
  * Merges properties of one object into another
+ * @private
  */
 function merge(original, updates) {
   return mergeWithOptions(original, updates);

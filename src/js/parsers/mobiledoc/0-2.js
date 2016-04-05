@@ -16,7 +16,6 @@ export default class MobiledocParser {
   }
 
   /**
-   * @method parse
    * @param {Mobiledoc}
    * @return {Post}
    */

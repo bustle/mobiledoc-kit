@@ -13,6 +13,7 @@ const MOBILEDOC_REGEX = new RegExp(/data\-mobiledoc='(.*?)'>/);
 
 /**
  * @return {Post}
+ * @private
  */
 function parsePostFromHTML(html, builder, plugins) {
   let post;
@@ -30,6 +31,7 @@ function parsePostFromHTML(html, builder, plugins) {
 
 /**
  * @return {Post}
+ * @private
  */
 function parsePostFromText(text, builder, plugins) {
   let parser = new TextParser(builder, {plugins});
@@ -39,6 +41,7 @@ function parsePostFromText(text, builder, plugins) {
 
 /**
  * @return {{html: String, text: String}}
+ * @private
  */
 export function getContentFromPasteEvent(event, window) {
   let html = '', text = '';
@@ -60,6 +63,7 @@ export function getContentFromPasteEvent(event, window) {
 
 /**
  * @return {{html: String, text: String}}
+ * @private
  */
 function getContentFromDropEvent(event) {
   let html = '', text = '';
@@ -81,6 +85,7 @@ function getContentFromDropEvent(event) {
  * @param {CopyEvent|CutEvent}
  * @param {Editor}
  * @param {Window}
+ * @private
  */
 export function setClipboardData(event, {mobiledoc, html, text}, window) {
   if (mobiledoc && html) {
@@ -105,6 +110,7 @@ export function setClipboardData(event, {mobiledoc, html, text}, window) {
  * @param {PasteEvent}
  * @param {{builder: Builder, _parserPlugins: Array}} options
  * @return {Post}
+ * @private
  */
 export function parsePostFromPaste(pasteEvent, {builder, _parserPlugins: plugins}, {targetFormat}={targetFormat:'html'}) {
   let { html, text } = getContentFromPasteEvent(pasteEvent, window);
@@ -120,6 +126,7 @@ export function parsePostFromPaste(pasteEvent, {builder, _parserPlugins: plugins
  * @param {DropEvent}
  * @param {{builder: Builder, _parserPlugins: Array}} options
  * @return {Post}
+ * @private
  */
 export function parsePostFromDrop(dropEvent, {builder, _parserPlugins: plugins}) {
   let { html, text } = getContentFromDropEvent(dropEvent);
