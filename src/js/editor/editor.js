@@ -1,23 +1,17 @@
 import Tooltip from '../views/tooltip';
 import PostEditor from './post';
-
 import ImageCard from '../cards/image';
-
 import Key from '../utils/key';
-import EventEmitter from '../utils/event-emitter';
-
 import mobiledocParsers from '../parsers/mobiledoc';
 import HTMLParser from '../parsers/html';
 import DOMParser from '../parsers/dom';
 import Renderer  from 'mobiledoc-kit/renderers/editor-dom';
 import RenderTree from 'mobiledoc-kit/models/render-tree';
 import mobiledocRenderers from '../renderers/mobiledoc';
-
 import { mergeWithOptions } from '../utils/merge';
 import { clearChildNodes, addClassName } from '../utils/dom-utils';
-import { forEach, filter, contains, isArrayEqual } from '../utils/array-utils';
+import { forEach, filter, contains, values } from '../utils/array-utils';
 import { setData } from '../utils/element-utils';
-import mixin from '../utils/mixin';
 import Cursor from '../utils/cursor';
 import Range from '../utils/cursor/range';
 import Position from '../utils/cursor/position';
@@ -28,10 +22,10 @@ import {
 import {
   DEFAULT_KEY_COMMANDS, buildKeyCommand, findKeyCommands, validateKeyCommand
 } from './key-commands';
-import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
 import { CARD_MODES } from '../models/card';
 import { detect } from '../utils/array-utils';
 import assert from '../utils/assert';
+import deprecate from '../utils/deprecate';
 import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 import EditHistory from 'mobiledoc-kit/editor/edit-history';
@@ -39,6 +33,7 @@ import EventManager from 'mobiledoc-kit/editor/event-manager';
 import EditState from 'mobiledoc-kit/editor/edit-state';
 import HTMLRenderer from 'mobiledoc-html-renderer';
 import TextRenderer from 'mobiledoc-text-renderer';
+import LifecycleCallbacks from 'mobiledoc-kit/models/lifecycle-callbacks';
 import Logger from 'mobiledoc-kit/utils/logger';
 let log = Logger.for('editor'); /* jshint ignore:line */
 
@@ -75,7 +70,9 @@ const CALLBACK_QUEUES = {
   WILL_RENDER: 'willRender',
   DID_RENDER: 'didRender',
   CURSOR_DID_CHANGE: 'cursorDidChange',
-  DID_REPARSE: 'didReparse'
+  DID_REPARSE: 'didReparse',
+  POST_DID_CHANGE: 'postDidChange',
+  INPUT_MODE_DID_CHANGE: 'inputModeDidChange'
 };
 
 /**
@@ -89,8 +86,14 @@ const CALLBACK_QUEUES = {
  * model is better suited for programmatic editing.
  *
  * The editor will call registered callbacks for certain state changes. These are:
- *   * cursorDidChange
- *   * didUpdate
+ *   * {@link Editor#cursorDidChange} -- The cursor position or selection changed.
+ *   * {@link Editor#postDidChange} -- The contents of the post changed due to user input or
+ *     programmatic editing. This hook can be used with {@link Editor#serialize}
+ *     to auto-save a post as it is being edited.
+ *   * {@link Editor#inputModeDidChange} -- The active section(s) or markup(s) at the current cursor
+ *     position or selection have changed. This hook can be used with
+ *     {@link Editor#activeMarkups} and {@link Editor#activeSections} to implement
+ *     a custom toolbar.
  */
 class Editor {
   /**
@@ -140,6 +143,7 @@ class Editor {
     this._eventManager = new EventManager(this);
     this._mutationHandler = new MutationHandler(this);
     this._editState = new EditState(this);
+    this._callbacks = new LifecycleCallbacks(values(CALLBACK_QUEUES));
     this.hasRendered = false;
   }
 
@@ -316,8 +320,13 @@ class Editor {
     callback(window.prompt(message, defaultValue));
   }
 
-  didUpdate() {
-    this.trigger('update');
+  /**
+   * Notify the editor that the post did change, and run associated
+   * callbacks.
+   * @private
+   */
+  _postDidChange() {
+    this.runCallbacks(CALLBACK_QUEUES.POST_DID_CHANGE);
   }
 
   selectSections(sections=[]) {
@@ -332,27 +341,22 @@ class Editor {
     this._reportSelectionState();
   }
 
+  /**
+   * Selects the given range. If range is collapsed, this positions the cursor
+   * at the range's position, otherwise a selection is created in the editor
+   * surface.
+   * @param {Range}
+   */
   selectRange(range) {
     this.renderRange(range);
   }
 
   /**
-   * If the range is different from the previous range, this method will
-   * fire 'rangeDidChange'-related callbacks
    * @private
    */
   renderRange(range) {
-    let prevRange = this._range;
-    if (range.isBlank) {
-      this.cursor.clearSelection();
-    } else {
-      this.cursor.selectRange(range);
-    }
-    this.range = range;
-
-    if (prevRange && !prevRange.isEqual(range)) {
-      this._rangeDidChange();
-    }
+    this.cursor.selectRange(range);
+    this._notifyRangeChange();
   }
 
   get cursor() {
@@ -370,28 +374,33 @@ class Editor {
       return this._range;
     }
     let range = this.cursor.offsets;
-    if (!range.isBlank) {
+    if (!range.isBlank) { // do not cache blank ranges
       this._range = range;
     }
     return range;
   }
 
-  set range(newRange) {
-    this._range = newRange;
-  }
-
   /**
-   * force re-reading range from dom
-   * Fires `rangeDidChange`-related callbacks if the range is different
+   * Used to notify the editor that the range (or state) may
+   * have changed (e.g. in response to a mouseup or keyup) and
+   * that the editor should re-read values from DOM and fire the
+   * necessary callbacks
    * @private
    */
-  _resetRange() {
-    let prevRange = this._range;
-    delete this._range;
-    let range = this.range;
-    if (!range.isEqual(prevRange)) {
+  _notifyRangeChange() {
+    this._resetRange();
+    this._editState.reset();
+
+    if (this._editState.rangeDidChange()) {
       this._rangeDidChange();
     }
+    if (this._editState.inputModeDidChange()) {
+      this._inputModeDidChange();
+    }
+  }
+
+  _resetRange() {
+    delete this._range;
   }
 
   setPlaceholder(placeholder) {
@@ -407,7 +416,7 @@ class Editor {
     });
 
     this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
-    this.didUpdate();
+    this._postDidChange();
   }
 
   _reparseSections(sections=[]) {
@@ -434,7 +443,7 @@ class Editor {
     }
 
     this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
-    this.didUpdate();
+    this._postDidChange();
   }
 
   // FIXME this should be able to be removed now -- if any sections are detached,
@@ -517,7 +526,7 @@ class Editor {
    */
   serializePost(post, format, options={}) {
     const validFormats = ['mobiledoc', 'html', 'text'];
-    assert(`Unrecognized serialiation format ${format}`,
+    assert(`Unrecognized serialization format ${format}`,
            contains(validFormats, format));
 
     if (format === 'mobiledoc') {
@@ -656,14 +665,6 @@ class Editor {
    * @public
    */
   run(callback) {
-    // FIXME we must keep track of the activeSectionTagNames before and after
-    // changing the post so that we can fire the cursorDidChange callback if the
-    // active sections changed.
-    // This is necessary for the ember-mobiledoc-editor's toolbar to update
-    // when toggling a section on/off (it only listens to the cursorDidChange
-    // action)
-    let activeSectionTagNames = this.activeSections.map(s => s.tagName);
-
     const postEditor = new PostEditor(this);
     postEditor.begin();
     this._editHistory.snapshot();
@@ -674,23 +675,34 @@ class Editor {
       this._editHistory._pendingSnapshot = null;
     }
     this._editHistory.storeSnapshot();
-
-    // FIXME This should be handled within the EditState object
-    let newActiveSectionTagNames = this.activeSections.map(s => s.tagName);
-    if (!isArrayEqual(activeSectionTagNames, newActiveSectionTagNames)) {
-      this._activeSectionsDidChange();
-    }
+    this._notifyRangeChange();
 
     return result;
   }
 
   /**
-   * @public
-   *
    * @param {Function} callback Called with `postEditor` as its argument.
+   * @public
    */
   didUpdatePost(callback) {
     this.addCallback(CALLBACK_QUEUES.DID_UPDATE, callback);
+  }
+
+  /**
+   * @param {Function} callback Called when the post has changed, either via
+   *        user input or programmatically. Use with {@link Editor#serialize} to
+   *        retrieve the post in portable mobiledoc format.
+   */
+  postDidChange(callback) {
+    this.addCallback(CALLBACK_QUEUES.POST_DID_CHANGE, callback);
+  }
+
+  /**
+   * @param {Function} callback Called when the editor's state (active markups or
+   * active sections) has changed, either via user input or programmatically
+   */
+  inputModeDidChange(callback) {
+    this.addCallback(CALLBACK_QUEUES.INPUT_MODE_DID_CHANGE, callback);
   }
 
   /**
@@ -735,7 +747,6 @@ class Editor {
 
   _rangeDidChange() {
     this._cursorDidChange();
-    this._resetActiveMarkups();
   }
 
   _cursorDidChange() {
@@ -744,32 +755,8 @@ class Editor {
     }
   }
 
-  /**
-   * Clear the cached active markups and force a re-read of the markups
-   * from the current range.
-   * If markups have changed, fires an event
-   * @private
-   */
-  _resetActiveMarkups() {
-    let activeMarkupsDidChange = this._editState.resetActiveMarkups();
-
-    if (activeMarkupsDidChange) {
-      this._activeMarkupsDidChange();
-    }
-  }
-
-  _activeMarkupsDidChange() {
-    // FIXME use a different callback queue for _activeMarkupsDidChange
-    // Using the cursorDidChange callback is necessary for the ember-mobiledoc-editor to notice
-    // when markups change but the cursor doesn't (i.e., type cmd-B)
-    this._cursorDidChange();
-  }
-
-  _activeSectionsDidChange() {
-    // FIXME use a different callback queue for _activeSectionsDidChange
-    // Using the cursorDidChange callback is necessary for the ember-mobiledoc-editor to notice
-    // when markups change but the cursor doesn't (i.e., type cmd-B)
-    this._cursorDidChange();
+  _inputModeDidChange() {
+    this.runCallbacks(CALLBACK_QUEUES.INPUT_MODE_DID_CHANGE);
   }
 
   _insertEmptyMarkupSectionAtCursor() {
@@ -792,12 +779,25 @@ class Editor {
    */
   toggleMarkup(markup) {
     markup = this.post.builder.createMarkup(markup);
-    if (this.range.isCollapsed) {
+    let { range } = this;
+    if (range.isCollapsed) {
       this._editState.toggleMarkupState(markup);
-      this._activeMarkupsDidChange();
+      this._inputModeDidChange();
     } else {
-      this.run(postEditor => postEditor.toggleMarkup(markup));
+      this.run(postEditor => postEditor.toggleMarkup(markup, range));
     }
+  }
+
+  /**
+   * Toggles the tagName for the current active section(s). This will skip
+   * non-markerable sections. E.g. if the editor's range includes a "P" MarkupSection
+   * and a CardSection, only the MarkupSection will be toggled.
+   * @param {String} tagName The new tagname to change to.
+   * @public
+   * @see PostEditor#toggleSection
+   */
+  toggleSection(tagName) {
+    this.run(postEditor => postEditor.toggleSection(tagName, this.range));
   }
 
   /**
@@ -894,14 +894,20 @@ class Editor {
 
   runCallbacks(...args) {
     if (this._isDestroyed) {
-      // warn -- should not run after destroyed
+      // TODO warn that callback attempted after editor was destroyed
       return;
     }
     this._callbacks.runCallbacks(...args);
   }
-}
 
-mixin(Editor, EventEmitter);
-mixin(Editor, LifecycleCallbacksMixin);
+  /**
+   * @deprecated since 0.9.1
+   */
+  on(eventName, callback) {
+    deprecate('`on` is deprecated. Use `postDidChange(callback)` instead to handle post changes');
+    assert('Cannot add listener for event other than "update"', eventName === 'update');
+    this.postDidChange(callback);
+  }
+}
 
 export default Editor;

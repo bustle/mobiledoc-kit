@@ -59,7 +59,7 @@ test('changing to display state triggers update on editor', (assert) => {
 
   let updateCount = 0,
       triggeredUpdate = () => updateCount++;
-  editor.on('update', triggeredUpdate);
+  editor.postDidChange(triggeredUpdate);
 
   let displayButton = document.getElementById('display-button');
   assert.ok(!!displayButton, 'precond - display button is there');

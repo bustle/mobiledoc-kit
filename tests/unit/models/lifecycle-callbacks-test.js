@@ -1,16 +1,12 @@
 import Helpers from '../../test-helpers';
-import LifecycleCallbacksMixin from 'mobiledoc-kit/utils/lifecycle-callbacks';
-import mixin from 'mobiledoc-kit/utils/mixin';
-
-class TestCallbacks {}
-mixin(TestCallbacks, LifecycleCallbacksMixin);
+import LifecycleCallbacks from 'mobiledoc-kit/models/lifecycle-callbacks';
 
 const {module, test} = Helpers;
 
-module('Unit: Utils: LifecycleCallbacksMixin');
+module('Unit: Models: LifecycleCallbacksMixin');
 
 test('#addCallback permanently adds the callback', (assert) => {
-  let item = new TestCallbacks();
+  let item = new LifecycleCallbacks(['test']);
   let queueName = 'test';
   let called = 0;
   let callback = () => called++;
@@ -24,7 +20,7 @@ test('#addCallback permanently adds the callback', (assert) => {
 });
 
 test('#addCallback callback only runs in its queue', (assert) => {
-  let item = new TestCallbacks();
+  let item = new LifecycleCallbacks(['test', 'other']);
   let queueName = 'test';
   let called = 0;
   let callback = () => called++;
@@ -37,7 +33,7 @@ test('#addCallback callback only runs in its queue', (assert) => {
 });
 
 test('callbacks run with arguments', (assert) => {
-  let item = new TestCallbacks();
+  let item = new LifecycleCallbacks(['test']);
   let queueName = 'test';
   let arg1, arg2;
   let foo = {}, bar = {};
@@ -53,7 +49,7 @@ test('callbacks run with arguments', (assert) => {
 });
 
 test('#addCallbackOnce only runs the callback one time', (assert) => {
-  let item = new TestCallbacks();
+  let item = new LifecycleCallbacks(['test']);
   let queueName = 'test';
   let called = 0;
   let callback = () => called++;
@@ -67,7 +63,7 @@ test('#addCallbackOnce only runs the callback one time', (assert) => {
 });
 
 test('#addCallback and #addCallbackOnce work correctly together', (assert) => {
-  let item = new TestCallbacks();
+  let item = new LifecycleCallbacks(['test']);
   let queueName = 'test';
   let calledOnce = 0;
   let callbackOnce = () => calledOnce++;

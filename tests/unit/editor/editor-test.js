@@ -124,20 +124,6 @@ test('editor fires lifecycle hooks for noop edit', (assert) => {
   editor.run(() => {});
 });
 
-test('editor fires update event', (assert) => {
-  assert.expect(2);
-  let done = assert.async();
-
-  editor = new Editor();
-  editor.render(editorElement);
-  editor.on('update', function(data) {
-    assert.equal(this, editor);
-    assert.equal(data.index, 99);
-    done();
-  });
-  editor.trigger('update', { index: 99 });
-});
-
 test('editor parses and renders mobiledoc format', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('hello world')])]);
@@ -260,18 +246,21 @@ test('useful error message when given bad version of mobiledoc', (assert) => {
 });
 
 test('activeSections of a rendered blank mobiledoc is an empty array', (assert) => {
-  let mobiledoc = {
-    version: MOBILEDOC_VERSION,
-    sections: [
-      [],
-      []
-    ]
-  };
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post}) => {
+    return post();
+  });
 
-  assert.equal(0, editor.activeSections.length,
-               'empty activeSections');
+  assert.ok(editor.hasRendered, 'editor has rendered');
+  assert.equal(editor.activeSections.length, 0, 'empty activeSections');
+});
+
+test('activeSections is empty when the editor has no cursor', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  }, {autofocus: false});
+
+  assert.ok(!editor.hasCursor(), 'precond - no cursor');
+  assert.equal(editor.activeSections.length, 0, 'empty activeSections');
 });
 
 test('editor.cursor.hasCursor() is false before rendering', (assert) => {
@@ -296,8 +285,7 @@ test('#destroy clears selection if it has one', (assert) => {
 
   editor.destroy();
 
-  assert.equal(window.getSelection().rangeCount, 0,
-               'selection is cleared');
+  assert.equal(window.getSelection().rangeCount, 0, 'selection is cleared');
 });
 
 test('#destroy does not clear selection if it is outside the editor element', (assert) => {

@@ -22,8 +22,11 @@ export default class CardNode {
     this.mode = mode;
 
     let method = mode === 'display' ? 'render' : 'edit';
+    method = this.card[method];
 
-    let rendered = this.card[method]({
+    assert(`Card is missing "${method}" (tried to render mode: "${mode}")`,
+           !!method);
+    let rendered = method({
       env: this.env,
       options: this.options,
       payload: this.section.payload
@@ -52,7 +55,7 @@ export default class CardNode {
       save: (payload, transition=true) => {
         this.section.payload = payload;
 
-        this.editor.didUpdate();
+        this.editor._postDidChange();
         if (transition) {
           this.display();
         }
