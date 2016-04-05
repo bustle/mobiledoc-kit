@@ -38,17 +38,20 @@
     "mobiledoc-text-renderer": "^0.3.0"
   },
   "devDependencies": {
-    "broccoli": "^0.16.3",
+    "broccoli": "^0.16.9",
     "broccoli-funnel": "^1.0.1",
+    "broccoli-inject-livereload": "^0.2.0",
     "broccoli-less-single": "^0.6.0",
     "broccoli-merge-trees": "^1.0.0",
     "broccoli-multi-builder": "^0.2.8",
+    "broccoli-sane-watcher": "^1.1.4",
     "broccoli-test-builder": "^0.2.0",
     "conventional-changelog": "^1.1.0",
     "conventional-changelog-cli": "^1.1.1",
     "jquery": "^2.2.2",
     "saucie": "^1.4.0",
-    "testem": "^1.6.0"
+    "testem": "^1.6.0",
+    "tiny-lr": "^0.2.1"
   },
   "main": "dist/commonjs/mobiledoc-kit/index.js"
 }
