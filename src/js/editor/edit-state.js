@@ -1,33 +1,69 @@
 import { contains, isArrayEqual } from 'mobiledoc-kit/utils/array-utils';
 
-export default class EditState {
+/**
+ * Used by {@link Editor} to manage its current state (cursor, active markups
+ * and active sections).
+ * @private
+ */
+class EditState {
   constructor(editor) {
     this.editor = editor;
-    this._activeMarkups = [];
-    this._activeSections = [];
+    this.prevState = this.state = this._readState();
   }
 
+  /**
+   * Cache the last state, force a reread of current state
+   */
+  reset() {
+    this.prevState = this.state;
+    this.state = this._readState();
+  }
+
+  /**
+   * @return {Boolean} Whether the state (active markups or active section tag names)
+   * has changed.
+   */
+  stateDidChange() {
+    let { state, prevState } = this;
+    return (!isArrayEqual(state.activeMarkups, prevState.activeMarkups) ||
+            !isArrayEqual(state.activeSectionTagNames, prevState.activeSectionTagNames));
+  }
+
+  /**
+   * @return {Boolean} Whether the range has changed.
+   */
+  rangeDidChange() {
+    let { state, prevState } = this;
+    return !state.range.isEqual(prevState.range);
+  }
+
+  /**
+   * @return {Range}
+   */
+  get range() {
+    return this.state.range;
+  }
+
+  /**
+   * @return {Section[]}
+   */
   get activeSections() {
-    let { editor: { range, post } } = this;
-    if (range.isBlank) {
-      return [];
-    } else {
-      return post.sections.readRange(range.head.section, range.tail.section);
-    }
+    return this.state.activeSections;
   }
 
+  /**
+   * @return {Markup[]}
+   */
   get activeMarkups() {
-    let { editor: { cursor, post, range } } = this;
-
-    if (!cursor.hasCursor()) {
-      return [];
-    } else if (!this._activeMarkups) {
-      this._activeMarkups = post.markupsInRange(range);
-    }
-
-    return this._activeMarkups;
+    return this.state.activeMarkups;
   }
 
+  /**
+   * Update the editor's markup state. This is used when, e.g.,
+   * a user types meta+B when the editor has a cursor but no selected text;
+   * in this case the editor needs to track that it has an active "b" markup
+   * and apply it to the next text the user types.
+   */
   toggleMarkupState(markup) {
     if (contains(this.activeMarkups, markup)) {
       this._removeActiveMarkup(markup);
@@ -36,24 +72,44 @@ export default class EditState {
     }
   }
 
-  /**
-   * @return {Boolean} Whether the markups after reset have changed
-   */
-  resetActiveMarkups() {
-    let prevMarkups = this._activeMarkups || [];
-    delete this._activeMarkups;
-    let markups = this.activeMarkups || [];
+  _readState() {
+    let range = this._readRange();
+    let state = {
+      range:          range,
+      activeMarkups:  this._readActiveMarkups(range),
+      activeSections: this._readActiveSections(range)
+    };
+    state.activeSectionTagNames = state.activeSections.map(s => s.tagName);
+    return state;
+  }
 
-    let didChange = !isArrayEqual(prevMarkups, markups);
-    return didChange;
+  _readRange() {
+    return this.editor.range;
+  }
+
+  _readActiveSections(range) {
+    let { head, tail } = range;
+    let { editor: { post } } = this;
+    if (range.isBlank) {
+      return [];
+    } else {
+      return post.sections.readRange(head.section, tail.section);
+    }
+  }
+
+  _readActiveMarkups(range) {
+    let { editor: { post } } = this;
+    return post.markupsInRange(range);
   }
 
   _removeActiveMarkup(markup) {
-    let index = this._activeMarkups.indexOf(markup);
-    this._activeMarkups.splice(index, 1);
+    let index = this.state.activeMarkups.indexOf(markup);
+    this.state.activeMarkups.splice(index, 1);
   }
 
   _addActiveMarkup(markup) {
-    this._activeMarkups.push(markup);
+    this.state.activeMarkups.push(markup);
   }
 }
+
+export default EditState;

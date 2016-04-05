@@ -107,6 +107,11 @@ const Cursor = class Cursor {
   }
 
   selectRange(range) {
+    if (range.isBlank) {
+      this.clearSelection();
+      return;
+    }
+
     const { head, tail, direction } = range;
     const { node:headNode, offset:headOffset } = this._findNodeForPosition(head),
           { node:tailNode, offset:tailOffset } = this._findNodeForPosition(tail);

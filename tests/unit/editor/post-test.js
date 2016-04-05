@@ -188,11 +188,11 @@ class MockEditor {
     return result;
   }
   rerender() {}
-  didUpdate() {}
+  _postDidChange() {}
   renderRange(range) {
     renderedRange = range;
   }
-  _resetRange() {}
+  _notifyRangeChange() {}
 }
 
 
@@ -1076,7 +1076,7 @@ test('#toggleSection changes single section to and from tag name', (assert) => {
   assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
 });
 
-test('#toggleSection changes multiples sections to and from tag name', (assert) => {
+test('#toggleSection changes multiple sections to and from tag name', (assert) => {
   let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
     return post([
       markupSection('p', [marker('abc')]),
@@ -1151,16 +1151,12 @@ test('#toggleSection when cursor is in non-markerable section changes nothing', 
 
 test('#toggleSection when editor has no cursor does nothing', (assert) => {
   editor = buildEditorWithMobiledoc(
-    ({post, markupSection, marker, cardSection}) => {
-    return post([
-      cardSection('my-card')
-    ]);
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
   });
   let expected = Helpers.postAbstract.build(
-    ({post, markupSection, marker, cardSection}) => {
-    return post([
-      cardSection('my-card')
-    ]);
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
   });
 
   Helpers.dom.blur();
@@ -1168,14 +1164,12 @@ test('#toggleSection when editor has no cursor does nothing', (assert) => {
 
   assert.equal(window.getSelection().rangeCount, 0, 'precond - nothing selected');
   assert.ok(document.activeElement !== editorElement, 'precond - no activeElement');
+  assert.ok(!editor.hasCursor(), 'editor has no cursor');
 
-  editor.run(postEditor => {
-    postEditor.toggleSection('blockquote');
-  });
+  editor.run(postEditor => postEditor.toggleSection('blockquote'));
 
   assert.postIsSimilar(editor.post, expected);
-  assert.ok(document.activeElement !== editorElement,
-            'editor element is not active');
+  assert.ok(document.activeElement !== editorElement, 'editor element is not active');
   assert.ok(renderedRange.isBlank, 'rendered range is blank');
   assert.equal(window.getSelection().rangeCount, 0, 'nothing selected');
 });

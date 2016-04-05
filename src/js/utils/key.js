@@ -94,6 +94,10 @@ const Key = class Key {
     return this.keyCode === Keycodes.DELETE;
   }
 
+  isMovement() {
+    return this.isArrow();
+  }
+
   isArrow() {
     return this.isHorizontalArrow() || this.isVerticalArrow();
   }
