@@ -89,10 +89,11 @@ function walkMarkerableNodes(parent, callback) {
   }
 }
 
-export default class DOMParser {
-  /**
-   * Parses DOM element -> Post
-   */
+/**
+ * Parses DOM element -> Post
+ * @private
+ */
+class DOMParser {
   constructor(builder, options={}) {
     this.builder = builder;
     this.sectionParser = new SectionParser(this.builder, options);
@@ -299,3 +300,5 @@ export default class DOMParser {
     }
   }
 }
+
+export default DOMParser;

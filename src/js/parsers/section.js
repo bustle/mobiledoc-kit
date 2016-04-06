@@ -44,11 +44,12 @@ const SKIPPABLE_ELEMENT_TAG_NAMES = [
   'style', 'head', 'title', 'meta'
 ].map(normalizeTagName);
 
-export default class SectionParser {
-  /**
-   * parses an element into a section, ignoring any non-markup
-   * elements contained within
-   */
+/**
+ * parses an element into a section, ignoring any non-markup
+ * elements contained within
+ * @private
+ */
+class SectionParser {
   constructor(builder, options={}) {
     this.builder = builder;
     this.plugins = options.plugins || [];
@@ -302,3 +303,5 @@ export default class SectionParser {
                     normalizeTagName(element.tagName)));
   }
 }
+
+export default SectionParser;

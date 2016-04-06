@@ -18,21 +18,22 @@ const CALLBACK_QUEUES = {
   AFTER_COMPLETE: 'afterComplete'
 };
 
+/**
+ * The PostEditor is used to modify a post. It should not be instantiated directly.
+ * Instead, a new instance of a PostEditor is created by the editor and passed
+ * as the argument to the callback in {@link Editor#run}.
+ *
+ * Usage:
+ * ```
+ * editor.run((postEditor) => {
+ *   // postEditor is an instance of PostEditor that can operate on the
+ *   // editor's post
+ * });
+ * ```
+ */
 class PostEditor {
   /**
-   * The PostEditor is used to modify a post. It should not be instantiated directly.
-   * Instead, a new instance of a PostEditor is created by the editor and passed
-   * as the argument to the callback in {@link Editor#run}.
-   *
-   * Usage:
-   * ```
-   * editor.run((postEditor) => {
-   *   // postEditor is an instance of PostEditor that can operate on the
-   *   // editor's post
-   * });
-   * ```
-   * @param {Editor} editor
-   * @class PostEditor
+   * @private
    */
   constructor(editor) {
     this.editor = editor;

@@ -1,17 +1,19 @@
 import Position from './position';
 import { DIRECTION } from '../key';
 
-export default class Range {
+/**
+ * A logical range of a {@link Post}.
+ * Usually an instance of Range will be read from the {@link Editor#range} property,
+ * but it may be useful to instantiate a range directly in cases
+ * when programmatically modifying a Post.
+ */
+class Range {
   /**
-   * A logical range of a {@link Post}.
-   * Usually an instance of Range will be read from the {@link Editor#range} property,
-   * but it may be useful to instantiate a range directly in cases
-   * when programmatically modifying a Post.
-   * @constructor
    * @param {Position} head
    * @param {Position} [tail=head]
    * @param {Direction} [direction=null]
    * @return {Range}
+   * @private
    */
   constructor(head, tail=head, direction=null) {
     /** @property {Position} head */
@@ -73,9 +75,10 @@ export default class Range {
 
   /**
    * Expands the range 1 unit in the given direction
+   * If the range is expandable in the given direction, always returns a
+   * non-collapsed range.
    * @param {Direction} direction
-   * @return {Range} If the range is expandable in the given direction, always returns a
-   *         non-collapsed range.
+   * @return {Range}
    * @public
    */
   extend(direction) {
@@ -94,8 +97,9 @@ export default class Range {
    * Moves this range 1 unit in the given direction.
    * If the range is collapsed, returns a collapsed range shifted by 1 unit,
    * otherwise collapses this range to the position at the `direction` end of the range.
+   * Always returns a collapsed range.
    * @param {Direction} direction
-   * @return {Range} Always returns a collapsed range
+   * @return {Range}
    * @public
    */
   move(direction) {
@@ -155,3 +159,5 @@ export default class Range {
     return this.tail.offsetInMarker;
   }
 }
+
+export default Range;

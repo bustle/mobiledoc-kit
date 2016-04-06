@@ -14,9 +14,11 @@ import deprecate from 'mobiledoc-kit/utils/deprecate';
  * text) or non-markerable (e.g., a card).
  * When persisting a post, it must first be serialized (loss-lessly) into
  * mobiledoc using {@link Editor#serialize}.
- * @class Post
  */
-export default class Post {
+class Post {
+  /**
+   * @private
+   */
   constructor() {
     this.type = POST_TYPE;
     this.sections = new LinkedList({
@@ -284,3 +286,5 @@ export default class Post {
     return post;
   }
 }
+
+export default Post;

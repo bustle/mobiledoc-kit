@@ -34,11 +34,25 @@ function findMarkupInCache(cache, tagName, attributes) {
   return cache[key];
 }
 
-export default class PostNodeBuilder {
+/**
+ * The PostNodeBuilder is used to create new {@link Post} primitives, such
+ * as a MarkupSection, a CardSection, a Markup, etc. Every instance of an
+ * {@link Editor} has its own builder instance. The builder can be used
+ * inside an {@link Editor#run} callback to programmatically create new
+ * Post primitives to insert into the document.
+ * A PostNodeBuilder should be read from the Editor, *not* instantiated on its own.
+ */
+class PostNodeBuilder {
+  /**
+   * @private
+   */
   constructor() {
     this.markupCache = {};
   }
 
+  /**
+   * @return {Post} A new, blank post
+   */
   createPost(sections=[]) {
     const post = new Post();
     post.builder = this;
@@ -59,6 +73,11 @@ export default class PostNodeBuilder {
     }
   }
 
+  /**
+   * @param {tagName} [tagName='P']
+   * @param {Marker[]} [markers=[]]
+   * @return {MarkupSection}
+   */
   createMarkupSection(tagName=DEFAULT_MARKUP_SECTION_TAG_NAME, markers=[], isGenerated=false) {
     tagName = normalizeTagName(tagName);
     const section = new MarkupSection(tagName, markers);
@@ -91,18 +110,35 @@ export default class PostNodeBuilder {
     return section;
   }
 
+  /**
+   * @param {String} name
+   * @param {Object} [payload={}]
+   * @return {CardSection}
+   */
   createCardSection(name, payload={}) {
     const card = new Card(name, payload);
     card.builder = this;
     return card;
   }
 
+  /**
+   * @param {String} value
+   * @param {Markup[]} [markups=[]]
+   * @return {Marker}
+   */
   createMarker(value, markups=[]) {
     const marker = new Marker(value, markups);
     marker.builder = this;
     return marker;
   }
 
+  /**
+   * @param {String} name
+   * @param {String} [text='']
+   * @param {Object} [payload={}]
+   * @param {Markup[]} [markups=[]]
+   * @return {Atom}
+   */
   createAtom(name, text='', payload={}, markups=[]) {
     const atom = new Atom(name, text, payload, markups);
     atom.builder = this;
@@ -110,7 +146,9 @@ export default class PostNodeBuilder {
   }
 
   /**
-   * @param {Object} attributes {key:value}
+   * @param {String} tagName
+   * @param {Object} attributes Key-value pairs of attributes for the markup
+   * @return {Markup}
    */
   createMarkup(tagName, attributes={}) {
     tagName = normalizeTagName(tagName);
@@ -128,9 +166,12 @@ export default class PostNodeBuilder {
   /**
    * @param {Markup|String} markupOrString
    * @return {Markup}
+   * @private
    */
   _coerceMarkup(markupOrString, attributes={}) {
     let tagName = typeof markupOrString === 'string' ? markupOrString : markupOrString.tagName;
     return this.createMarkup(tagName, attributes);
   }
 }
+
+export default PostNodeBuilder;

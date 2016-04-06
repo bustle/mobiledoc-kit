@@ -78,21 +78,22 @@ const CALLBACK_QUEUES = {
   DID_REPARSE: 'didReparse'
 };
 
+/**
+ * The Editor is a core component of mobiledoc-kit. After instantiating 
+ * an editor, use {@link Editor#render} to display the editor on the web page.
+ *
+ * An editor uses a {@link Post} internally to represent the displayed document.
+ * The post can be serialized as mobiledoc using {@link Editor#serialize}. Mobiledoc
+ * is the transportable "over-the-wire" format (JSON) that is suited for persisting
+ * and sharing between editors and renderers (for display, e.g.), whereas the Post
+ * model is better suited for programmatic editing.
+ *
+ * The editor will call registered callbacks for certain state changes. These are:
+ *   * cursorDidChange
+ *   * didUpdate
+ */
 class Editor {
   /**
-   * The Editor is a core component of mobiledoc-kit. After instantiating 
-   * an editor, use {@link Editor#render} to display the editor on the web page.
-   *
-   * An editor uses a {@link Post} internally to represent the displayed document.
-   * The post can be serialized as mobiledoc using {@link Editor#serialize}. Mobiledoc
-   * is the transportable "over-the-wire" format (JSON) that is suited for persisting
-   * and sharing between editors and renderers (for display, e.g.), whereas the Post
-   * model is better suited for programmatic editing.
-   *
-   * The editor will call registered callbacks for certain state changes. These are:
-   *   * cursorDidChange
-   *   * didUpdate
-   *
    * @param {Object} [options]
    * @param {Object} [options.mobiledoc] The mobiledoc to load into the editor.
    *        Supersedes `options.html`.
@@ -142,10 +143,10 @@ class Editor {
     this.hasRendered = false;
   }
 
-  addView(view) {
-    this._views.push(view);
-  }
-
+  /**
+   * The editor's instance of a post node builder.
+   * @type {PostNodeBuilder}
+   */
   get builder() {
     if (!this._builder) { this._builder = new PostNodeBuilder(); }
     return this._builder;
@@ -446,7 +447,7 @@ class Editor {
   }
 
   /**
-   * @return {array} The sections from the cursor's selection start to the selection end
+   * @return {Section[]} The sections from the cursor's selection start to the selection end
    */
   get activeSections() {
     return this._editState.activeSections;
@@ -468,6 +469,10 @@ class Editor {
     return this._editState.activeMarkups;
   }
 
+  /**
+   * @param {Markup|String} markup A markup instance, or a string (e.g. "b")
+   * @return {boolean}
+   */
   hasActiveMarkup(markup) {
     markup = this.builder._coerceMarkup(markup);
     return contains(this.activeMarkups, markup);
@@ -479,10 +484,9 @@ class Editor {
   }
 
   /**
-   * @public
-   *
-   * @param {string} version The mobiledoc version to serialize to.
+   * @param {String} version The mobiledoc version to serialize to.
    * @return {Mobiledoc} Serialized mobiledoc
+   * @public
    */
   serialize(version=MOBILEDOC_VERSION) {
     return this.serializePost(this.post, 'mobiledoc', {version});
@@ -535,6 +539,10 @@ class Editor {
           return rendered.result;
       }
     }
+  }
+
+  addView(view) {
+    this._views.push(view);
   }
 
   removeAllViews() {
@@ -704,7 +712,7 @@ class Editor {
   }
 
   /**
-   * @param {Function} callback This callback will be called after the cursor
+   * @param {Function} callback This callback will be called every time the cursor
    *        position (or selection) changes.
    * @public
    */
@@ -772,6 +780,16 @@ class Editor {
     });
   }
 
+  /**
+   * Toggles the given markup at the editor's current {@link Range}.
+   * If the range is collapsed this changes the editor's state so that the
+   * next characters typed will be affected. If there is text selected
+   * (aka a non-collapsed range), the selections' markup will be toggled.
+   * If the editor is not focused and has no active range, nothing happens.
+   * @param {String} markup E.g. "b", "em", "a"
+   * @public
+   * @see PostEditor#toggleMarkup
+   */
   toggleMarkup(markup) {
     markup = this.post.builder.createMarkup(markup);
     if (this.range.isCollapsed) {
@@ -822,6 +840,12 @@ class Editor {
     return false;
   }
 
+  /**
+   * Inserts the text at the current cursor position. If the editor has
+   * no current cursor position, nothing will be inserted.
+   * @param {String} text
+   * @public
+   */
   insertText(text) {
     let { activeMarkups, range, range: { head: position } } = this;
 
@@ -858,6 +882,22 @@ class Editor {
 
   triggerEvent(context, eventName, event) {
     this._eventManager._trigger(context, eventName, event);
+  }
+
+  addCallback(...args) {
+    this._callbacks.addCallback(...args);
+  }
+
+  addCallbackOnce(...args) {
+    this._callbacks.addCallbackOnce(...args);
+  }
+
+  runCallbacks(...args) {
+    if (this._isDestroyed) {
+      // warn -- should not run after destroyed
+      return;
+    }
+    this._callbacks.runCallbacks(...args);
   }
 }
 

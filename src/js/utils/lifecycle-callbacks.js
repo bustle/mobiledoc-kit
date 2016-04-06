@@ -12,8 +12,9 @@ export default class LifecycleCallbacksMixin {
 
     let toRemove = this._removalQueues[queueName] || [];
     toRemove.forEach(cb => {
-      if (queue.indexOf(cb) !== -1) {
-        queue.splice(queue.indexOf(cb), 1);
+      let index = queue.indexOf(cb);
+      if (index !== -1) {
+        queue.splice(index, 1);
       }
     });
 
