@@ -1,5 +1,6 @@
 import { Editor } from 'mobiledoc-kit';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
+import Keycodes from 'mobiledoc-kit/utils/keycodes';
 import Helpers from '../test-helpers';
 
 const { module, test } = Helpers;
@@ -18,8 +19,13 @@ module('Acceptance: Editor: Key Commands', {
   }
 });
 
-function testStatefulCommand({modifier, key, command, markupName}) {
+function testStatefulCommand({modifierName, key, command, markupName}) {
   test(`${command} applies markup ${markupName} to highlighted text`, (assert) => {
+    assert.expect(2);
+    let done = assert.async();
+
+    let modifier = MODIFIERS[modifierName];
+    let modifierKeyCode = Keycodes[modifierName];
     let initialText = 'something';
     const mobiledoc = Helpers.mobiledoc.build(
       ({post, markupSection, marker}) => post([
@@ -32,12 +38,21 @@ function testStatefulCommand({modifier, key, command, markupName}) {
     assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
     Helpers.dom.selectText(editor ,initialText, editorElement);
     Helpers.dom.triggerKeyCommand(editor, key, modifier);
+    Helpers.dom.triggerKeyEvent(editor, 'keyup', {charCode: 0, keyCode: modifierKeyCode});
 
-    assert.hasElement(`#editor ${markupName}:contains(${initialText})`,
-                      `text wrapped in ${markupName}`);
+    setTimeout(() => {
+      assert.hasElement(`#editor ${markupName}:contains(${initialText})`,
+                        `text wrapped in ${markupName}`);
+      done();
+    });
   });
 
   test(`${command} toggles ${markupName} for next entered text`, (assert) => {
+    let done = assert.async();
+    assert.expect(7);
+
+    let modifier = MODIFIERS[modifierName];
+    let modifierKeyCode = Keycodes[modifierName];
     let initialText = 'something';
     const mobiledoc = Helpers.mobiledoc.build(
       ({post, markupSection, marker}) => post([
@@ -52,63 +67,74 @@ function testStatefulCommand({modifier, key, command, markupName}) {
       editor.post.sections.head.markers.head.renderNode.element,
       initialText.length);
     Helpers.dom.triggerKeyCommand(editor, key, modifier);
-    Helpers.dom.insertText(editor, 'z');
+    // simulate meta/ctrl keyup
+    Helpers.dom.triggerKeyEvent(editor, 'keyup', { charCode: 0, keyCode:  modifierKeyCode});
 
-    let expected1 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
-      return post([
-        markupSection('p', [
-          marker(initialText),
-          marker('z', [markup(markupName)])
-        ])
-      ]);
+    setTimeout(() => {
+      Helpers.dom.insertText(editor, 'z');
+
+      let expected1 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+        return post([
+          markupSection('p', [
+            marker(initialText),
+            marker('z', [markup(markupName)])
+          ])
+        ]);
+      });
+      let expected2 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+        return post([
+          markupSection('p', [
+            marker(initialText),
+            marker('z', [markup(markupName)]),
+            marker('x')
+          ])
+        ]);
+      });
+
+      assert.postIsSimilar(editor.post, expected1);
+      assert.renderTreeIsEqual(editor._renderTree, expected1);
+      assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
+
+      // un-toggles markup
+      Helpers.dom.triggerKeyCommand(editor, key, modifier);
+      Helpers.dom.triggerKeyEvent(editor, 'keyup', {charCode: 0, keyCode: modifierKeyCode});
+
+      setTimeout(() => {
+        Helpers.dom.insertText(editor, 'x');
+
+        assert.postIsSimilar(editor.post, expected2);
+        assert.renderTreeIsEqual(editor._renderTree, expected2);
+        assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
+
+        done();
+      });
     });
-    let expected2 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
-      return post([
-        markupSection('p', [
-          marker(initialText),
-          marker('z', [markup(markupName)]),
-          marker('x')
-        ])
-      ]);
-    });
-
-    assert.postIsSimilar(editor.post, expected1);
-    assert.renderTreeIsEqual(editor._renderTree, expected1);
-    assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
-
-    // un-toggles markup
-    Helpers.dom.triggerKeyCommand(editor, key, modifier);
-    Helpers.dom.insertText(editor, 'x');
-
-    assert.postIsSimilar(editor.post, expected2);
-    assert.renderTreeIsEqual(editor._renderTree, expected2);
-    assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
   });
 }
 
 testStatefulCommand({
-  modifier: MODIFIERS.META,
+  modifierName: 'META',
   key: 'B',
   command: 'command-B',
   markupName: 'strong'
 });
 
 testStatefulCommand({
-  modifier: MODIFIERS.CTRL,
+  modifierName: 'CTRL',
   key: 'B',
   command: 'ctrl-B',
   markupName: 'strong'
 });
 
 testStatefulCommand({
-  modifier: MODIFIERS.META,
+  modifierName: 'META',
   key: 'I',
   command: 'command-I',
   markupName: 'em'
 });
 
 testStatefulCommand({
-  modifier: MODIFIERS.CTRL,
+  modifierName: 'CTRL',
   key: 'I',
   command: 'ctrl-I',
   markupName: 'em'

@@ -152,7 +152,10 @@ export default class EventManager {
       this.isShift = false;
     }
 
-    setTimeout(() => this.editor._resetRange(), 0);
+    // Only movement-related keys require re-checking the active range
+    if (key.isMovement()) {
+      setTimeout(() => this.editor._notifyRangeChange());
+    }
   }
 
   cut(event) {
@@ -198,7 +201,7 @@ export default class EventManager {
 
   mouseup(/* event */) {
     // mouseup does not correctly report a selection until the next tick
-    setTimeout(() => this.editor._resetRange(), 0);
+    setTimeout(() => this.editor._notifyRangeChange());
   }
 
   drop(event) {

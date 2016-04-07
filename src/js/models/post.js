@@ -98,6 +98,7 @@ class Post {
   /**
    * Invoke `callbackFn` for all markers between the headMarker and tailMarker (inclusive),
    * across sections
+   * @private
    */
   markersFrom(headMarker, tailMarker, callbackFn) {
     let currentMarker = headMarker;
@@ -172,8 +173,13 @@ class Post {
     });
   }
 
-  // return an array of all top-level sections (direct children of `post`)
-  // that are wholly contained by the range.
+  /**
+   * @param {Range} range
+   * @return {Section[]} All top-level sections (direct children of `post`) wholly
+   *         contained by {range}. Sections that are partially contained by the range
+   *         are not returned.
+   * @private
+   */
   sectionsContainedBy(range) {
     const {head, tail} = range;
     let containedSections = [];
@@ -235,7 +241,7 @@ class Post {
   }
 
   /**
-   * @deprecated
+   * @deprecated since 0.9.1
    */
   cloneRange(range) {
     deprecate('post#cloneRange is deprecated. See post#trimTo(range) and editor#serializePost');

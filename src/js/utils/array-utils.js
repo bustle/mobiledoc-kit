@@ -137,6 +137,10 @@ function contains(array, item) {
   return array.indexOf(item) !== -1;
 }
 
+function values(object) {
+  return Object.keys(object).map(key => object[key]);
+}
+
 export {
   detect,
   forEach,
@@ -151,5 +155,6 @@ export {
   isArrayEqual,
   toArray,
   filterObject,
-  contains
+  contains,
+  values
 };

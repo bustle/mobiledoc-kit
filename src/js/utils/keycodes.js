@@ -34,5 +34,7 @@ export default {
   UP:          38,
   RIGHT:       39,
   DOWN:        40,
-  INS:         45
+  INS:         45,
+  META:        91,
+  CTRL:        17
 };

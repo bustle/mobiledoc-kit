@@ -1,8 +1,7 @@
 import Position from '../utils/cursor/position';
-import { forEach, filter } from '../utils/array-utils';
+import { forEach, filter, values } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
-import LifecycleCallbacksMixin from '../utils/lifecycle-callbacks';
-import mixin from '../utils/mixin';
+import LifecycleCallbacks from '../models/lifecycle-callbacks';
 import assert from '../utils/assert';
 import { normalizeTagName } from '../utils/dom-utils';
 import Range from '../utils/cursor/range';
@@ -38,12 +37,25 @@ class PostEditor {
   constructor(editor) {
     this.editor = editor;
     this.builder = this.editor.builder;
+    this._callbacks = new LifecycleCallbacks(values(CALLBACK_QUEUES));
 
-    this._didScheduleRerender = false;
-    this._didScheduleUpdate = false;
     this._didComplete = false;
 
     this._renderRange = () => this.editor.renderRange(this._range);
+    this._postDidChange = () => this.editor._postDidChange();
+    this._rerender = () => this.editor.rerender();
+  }
+
+  addCallback(...args) {
+    this._callbacks.addCallback(...args);
+  }
+
+  addCallbackOnce(...args) {
+    this._callbacks.addCallbackOnce(...args);
+  }
+
+  runCallbacks(...args) {
+    this._callbacks.runCallbacks(...args);
   }
 
   begin() {
@@ -55,7 +67,7 @@ class PostEditor {
     // TODO validate that the range is valid
     // (does not contain marked-for-removal head or tail sections?)
     this._range = range;
-    this.addCallbackOnce(CALLBACK_QUEUES.AFTER_COMPLETE, this._renderRange);
+    this.scheduleAfterRender(this._renderRange, true);
   }
 
   /**
@@ -730,6 +742,15 @@ class PostEditor {
     return this.moveSectionBefore(collection, renderedSection, beforeSection);
   }
 
+  /**
+   * Insert an array of markers at the given position. If the position is in
+   * a non-markerable section (like a card section), this method throws an error.
+   *
+   * @param {Position} position
+   * @param {Marker[]} markers
+   * @return {Position} The position that represents the end of the inserted markers.
+   * @public
+   */
   insertMarkers(position, markers) {
     let { section, offset } = position;
     assert('Cannot insert markers at non-markerable position',
@@ -753,6 +774,15 @@ class PostEditor {
     return nextPosition;
   }
 
+  /**
+   * Inserts text with the given markups, ignoring the existing markups at
+   * the position, if any.
+   *
+   * @param {Position} position
+   * @param {String} text
+   * @param {Markup[]} markups
+   * @return {Position} position at the end of the inserted text
+   */
   insertTextWithMarkup(position, text, markups=[]) {
     let { section } = position;
     if (!section.isMarkerable) { return; }
@@ -762,7 +792,11 @@ class PostEditor {
 
   /**
    * Insert the text at the given position
-   * Inherits the markups already at that position, if any
+   * Inherits the markups already at that position, if any.
+   *
+   * @param {Position} position
+   * @param {String} text
+   * @return {Position} position at the end of the inserted text.
    */
   insertText(position, text) {
     let { section } = position;
@@ -895,9 +929,10 @@ class PostEditor {
    * If every section has the tag name, they will all be reset to default sections.
    * Otherwise, every section will be changed to the requested type
    *
-   * @param {String} sectionTagName A valid markup section or list section tag name (e.g. 'blockquote', 'h2', 'ul')
-   * @param {Range} range The range over which to toggle. Defaults to the current editor's offsets
-   *        a list section
+   * @param {String} sectionTagName A valid markup section or
+   *        list section tag name (e.g. 'blockquote', 'h2', 'ul')
+   * @param {Range} range The range over which to toggle.
+   *        Defaults to the current editor's offsets
    * @public
    */
   toggleSection(sectionTagName, range=this._range) {
@@ -1228,12 +1263,29 @@ class PostEditor {
    * A method for adding work the deferred queue
    *
    * @param {Function} callback to run during completion
+   * @param {Boolean} [once=false] Whether to only schedule the callback once.
    * @public
    */
-  schedule(callback) {
+  schedule(callback, once=false) {
     assert('Work can only be scheduled before a post edit has completed',
            !this._didComplete);
-    this.addCallback(CALLBACK_QUEUES.COMPLETE, callback);
+    if (once) {
+      this.addCallbackOnce(CALLBACK_QUEUES.COMPLETE, callback);
+    } else {
+      this.addCallback(CALLBACK_QUEUES.COMPLETE, callback);
+    }
+  }
+
+  /**
+   * A method for adding work the deferred queue. The callback will only
+   * be added to the queue once, even if `scheduleOnce` is called multiple times.
+   * The function cannot be an anonymous function.
+   *
+   * @param {Function} callback to run during completion
+   * @public
+   */
+  scheduleOnce(callback) {
+    this.schedule(callback, true);
   }
 
   /**
@@ -1242,31 +1294,31 @@ class PostEditor {
    * @public
    */
   scheduleRerender() {
-    if (this._didScheduleRerender) { return; }
-
-    this.schedule(() => this.editor.rerender());
-    this._didScheduleRerender = true;
+    this.scheduleOnce(this._rerender);
   }
 
   /**
-   * Add a didUpdate job to the queue
+   * Schedule a notification that the post has been changed.
+   * The notification will result in the editor firing its `postDidChange`
+   * hook after the postEditor completes its work (at the end of {@link Editor#run}).
    *
    * @public
    */
   scheduleDidUpdate() {
-    if (this._didScheduleUpdate) { return; }
-
-    this.schedule(() => this.editor.didUpdate());
-    this._didScheduleUpdate = true;
+    this.scheduleOnce(this._postDidChange);
   }
 
-  scheduleAfterRender(callback) {
-    this.addCallback(CALLBACK_QUEUES.AFTER_COMPLETE, callback);
+  scheduleAfterRender(callback, once=false) {
+    if (once) {
+      this.addCallbackOnce(CALLBACK_QUEUES.AFTER_COMPLETE, callback);
+    } else {
+      this.addCallback(CALLBACK_QUEUES.AFTER_COMPLETE, callback);
+    }
   }
 
   /**
-   * Flush any work on the queue. `editor.run` already does this. Calling this
-   * method directly should not be needed outside `editor.run`.
+   * Flush any work on the queue. {@link Editor#run} calls this method; it
+   * should not be called directly.
    *
    * @private
    */
@@ -1278,7 +1330,7 @@ class PostEditor {
     this.runCallbacks(CALLBACK_QUEUES.COMPLETE);
     this.runCallbacks(CALLBACK_QUEUES.AFTER_COMPLETE);
 
-    this.editor._resetRange();
+    this.editor._notifyRangeChange();
   }
 
   undoLastChange() {
@@ -1293,7 +1345,5 @@ class PostEditor {
     this._shouldCancelSnapshot = true;
   }
 }
-
-mixin(PostEditor, LifecycleCallbacksMixin);
 
 export default PostEditor;
