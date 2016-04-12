@@ -69,7 +69,7 @@ function selectText(editor,
   const startOffset = startTextNode.textContent.indexOf(startText),
         endOffset   = endTextNode.textContent.indexOf(endText) + endText.length;
   selectRange(startTextNode, startOffset, endTextNode, endOffset);
-  editor._resetRange();
+  editor._notifyRangeChange();
 }
 
 function moveCursorWithoutNotifyingEditorTo(editor, node, offset=0, endNode=node, endOffset=offset) {
@@ -82,7 +82,7 @@ function moveCursorTo(editor, node, offset=0, endNode=node, endOffset=offset) {
   }
   if (!node) { throw new Error('Cannot moveCursorTo node without node'); }
   moveCursorWithoutNotifyingEditorTo(editor, node, offset, endNode, endOffset);
-  editor._resetRange();
+  editor._notifyRangeChange();
 }
 
 function triggerEvent(node, eventType) {
