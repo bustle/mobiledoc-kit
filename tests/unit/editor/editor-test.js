@@ -338,3 +338,28 @@ test('#activeMarkups returns the markups at cursor when range is collapsed', (as
   editor.selectRange(Range.create(head, 'abcdefg'.length));
   assert.equal(editor.activeMarkups.length, 0, 'no active markups after end of bold text');
 });
+
+test('#hasActiveMarkup returns true for complex markups', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [
+      marker('abc'),
+      marker('def', [markup('a', {href: 'http://bustle.com'})]),
+      marker('ghi')
+    ])]);
+  });
+
+  let head = editor.post.sections.head;
+  editor.selectRange(Range.create(head, 'abc'.length));
+  assert.equal(editor.activeMarkups.length, 0, 'no active markups at left of bold text');
+
+  editor.selectRange(Range.create(head, 'abcd'.length));
+  assert.equal(editor.activeMarkups.length, 1, 'active markups in linked text');
+  assert.ok(editor.hasActiveMarkup('a'), 'has A active markup');
+
+  editor.selectRange(Range.create(head, 'abcdef'.length));
+  assert.equal(editor.activeMarkups.length, 1, 'active markups at end of linked text');
+  assert.ok(editor.hasActiveMarkup('a'), 'has A active markup');
+
+  editor.selectRange(Range.create(head, 'abcdefg'.length));
+  assert.equal(editor.activeMarkups.length, 0, 'no active markups after end of linked text');
+});
