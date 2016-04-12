@@ -487,8 +487,15 @@ class Editor {
    * @return {boolean}
    */
   hasActiveMarkup(markup) {
-    markup = this.builder._coerceMarkup(markup);
-    return contains(this.activeMarkups, markup);
+    let matchesFn;
+    if (typeof markup === 'string') {
+      markup = markup.toLowerCase();
+      matchesFn = (_markup) => _markup.tagName === markup;
+    } else {
+      matchesFn = (_markup) => _markup === markup;
+    }
+
+    return !!detect(this.activeMarkups, matchesFn);
   }
 
   get markupsInSelection() {

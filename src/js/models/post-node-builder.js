@@ -162,16 +162,6 @@ class PostNodeBuilder {
 
     return markup;
   }
-
-  /**
-   * @param {Markup|String} markupOrString
-   * @return {Markup}
-   * @private
-   */
-  _coerceMarkup(markupOrString, attributes={}) {
-    let tagName = typeof markupOrString === 'string' ? markupOrString : markupOrString.tagName;
-    return this.createMarkup(tagName, attributes);
-  }
 }
 
 export default PostNodeBuilder;
