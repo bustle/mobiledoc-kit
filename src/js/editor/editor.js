@@ -456,7 +456,8 @@ class Editor {
   }
 
   /**
-   * @return {Section[]} The sections from the cursor's selection start to the selection end
+   * The sections from the cursor's selection start to the selection end
+   * @type {Section[]}
    */
   get activeSections() {
     return this._editState.activeSections;
@@ -474,6 +475,9 @@ class Editor {
     });
   }
 
+  /**
+   * @type {Markup[]}
+   */
   get activeMarkups() {
     return this._editState.activeMarkups;
   }
