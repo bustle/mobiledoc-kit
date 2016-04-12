@@ -4,8 +4,7 @@ import { DIRECTION } from '../key';
 /**
  * A logical range of a {@link Post}.
  * Usually an instance of Range will be read from the {@link Editor#range} property,
- * but it may be useful to instantiate a range directly in cases
- * when programmatically modifying a Post.
+ * but it may be useful to instantiate a range directly when programmatically modifying a Post.
  */
 class Range {
   /**
