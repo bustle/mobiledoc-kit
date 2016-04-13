@@ -81,7 +81,11 @@ class EditState {
     };
     // Section objects are 'live', so to check that they changed, we
     // need to map their tagNames now (and compare to mapped tagNames later).
-    state.activeSectionTagNames = state.activeSections.map(s => s.tagName);
+    // In addition, to catch changes from ul -> ol, we keep track of the
+    // un-nested tag names (otherwise we'd only see li -> li change)
+    state.activeSectionTagNames = state.activeSections.map(s => {
+      return s.isNested ? s.parent.tagName : s.tagName;
+    });
     return state;
   }
 

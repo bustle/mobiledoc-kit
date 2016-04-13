@@ -332,3 +332,22 @@ test('inputModeDidChange callback not fired when moving cursor into same section
     done();
   });
 });
+
+test('inputModeDidChange called when changing from ul to ol', (assert) => {
+  assert.expect(4);
+
+  editor.selectRange(new Range(editor.post.headPosition(), editor.post.tailPosition()));
+
+  let inputChanged = 0;
+  editor.inputModeDidChange(() => inputChanged++);
+
+  editor.toggleSection('ul');
+
+  assert.hasElement('#editor ul li', 'created ul');
+  assert.equal(inputChanged, 1, 'precond - changed to ul');
+
+  editor.toggleSection('ol');
+
+  assert.hasElement('#editor ol li', 'created ol');
+  assert.equal(inputChanged, 2, 'inputModeDidChange fired after ul->ol');
+});
