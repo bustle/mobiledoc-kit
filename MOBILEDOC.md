@@ -59,15 +59,15 @@ The wrapper signature:
 
 **Markup definition signature**
 
-Markups have a tagName, and optionally an array of `attributeName, attributeValue]` pairs
+Markups have a tagName and an optional array of attributes. Not all markups can have attributes, but for those that do the attributes array is a *single* array of all the attribute names and values, one after another. E.g., `["a", ["href", "http://bustle.com", "target", "_blank"]`.
 
 ```
 {
   version: "0.3.0",
   markups: [
-    [tagName, optionalAttributes],        ──── Markup
-    ['em'],                               ──── Example simple markup with no attributes
-    ['a', ['href', 'http://google.com']], ──── Example markup with attributes
+    [tagName, optionalAttributesArray],   ──── Markup
+    ["em"],                               ──── Example simple markup with no attributes
+    ["a", ["href", "http://google.com", "target", "_blank"]], ──── Example markup with 2 attributes ("href" and "target")
   ]
 }
 ```
