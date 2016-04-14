@@ -1,3 +1,10 @@
+<a name="0.9.3"></a>
+## 0.9.3 (2016-04-14)
+
+* Turn off mutation-parser logging ([4ba228d](https://github.com/bustlelabs/mobiledoc-kit/commit/4ba228d))
+
+
+
 <a name="0.9.2"></a>
 ## 0.9.2 (2016-04-14)
 
@@ -9,16 +16,50 @@
 * [DOC] minor change for `activeSections` and `activeMarkups` ([1b255c1](https://github.com/bustlelabs/mobiledoc-kit/commit/1b255c1))
 * [FEATURE] [BUGFIX] Refactor editor hooks ([de52092](https://github.com/bustlelabs/mobiledoc-kit/commit/de52092)), closes [#319](https://github.com/bustlelabs/mobiledoc-kit/issues/319)
 * built website from 36a7d5eb46db8b41887103974f59bc197adfd890 ([3fe5b35](https://github.com/bustlelabs/mobiledoc-kit/commit/3fe5b35))
+* v0.9.2 ([cb51433](https://github.com/bustlelabs/mobiledoc-kit/commit/cb51433))
 * minor: change Range docs ([d5aefae](https://github.com/bustlelabs/mobiledoc-kit/commit/d5aefae))
 
 
 ### BREAKING CHANGE
 
-* The behavior of the `cursorDidChange` hook has changed. This is a potentially
-  breaking change for consumers (such as
-  `ember-mobiledoc-editor`) that used the `cursorDidChange` hook to
-  maintain toolbar state. The `inputModeDidChange` hook should be used to
-  detect changes to editor input state instead. See #357
+* **: This is a potentially breaking change for consumers (such as
+`ember-mobiledoc-editor`) that used the `cursorDidChange` hook to
+maintain toolbar state.
+
+Most of the time the editor's input mode (active
+markups and active section tagNames) changes it is due to changing
+cursor position/selection, so listening to the `cursorDidChange` is
+often appropriate, but it is possible to change the editor's input mode
+without changing cursor position (e.g., hitting "cmd-B" to bold text).
+Previously, the `cursorDidChange` hook fired over-eagerly, resulting in
+it firing in some cases (but not all) when the cursor did not change
+(but editor input mode did). So it served fairly effectively for keeping the
+toolbar's buttons in appropriate active/inactive state. This PR fixes
+`cursorDidChange` so that it is only called when the cursor position
+actually changes, making it even less effective as a hook to use to
+infer the editor's active markups and sections (now *no* input mode change
+that doesn't change the cursor will fire `cursorDidChange`).
+
+This PR introduces a new `inputModeDidChange` hook that only fires on
+input mode changes. This cleanly separates the ability to listen for cursor changes
+from listening for input mode changes. It is also more efficient for a consumer to use as a
+hook (because most cursor changes do not change input mode at all, so
+listening to that hook as a proxy for detecting input mode changes creates unnecessary work).
+
+Also:
+
+  * Test that removing a card or saving a new payload for it triggers
+    `postDidChange` hook. Transitioning to `edit` or calling
+    `env.cancel` do not trigger the hook.
+  * Deprecates `on('update')` hook
+  * Add private `Editor#_notifyRangeChange` to use to alert the editor
+    of possible cursor- or state-changing activity (e.g., keyup or mousedown,
+    because they might have moved the cursor).
+  * Test that `cursorDidChange` is not fired after the editor is
+    destroyed
+  * Refactor internals of `EditState` to better track changes to
+    state/cursor.
+
 
 <a name="0.9.1"></a>
 ## 0.9.1 (2016-03-24)
