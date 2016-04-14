@@ -123,6 +123,7 @@ const Cursor = class Cursor {
   }
 
   selectedText() {
+    // FIXME remove this
     return this.selection.toString();
   }
 

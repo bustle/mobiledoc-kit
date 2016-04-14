@@ -87,9 +87,6 @@ test('clicking outside the editor does not raise an error', (assert) => {
 
   Helpers.dom.triggerEvent(editorElement, 'click');
 
-  // Embed intent uses setTimeout, so this assertion must
-  // setTimeout after it to catch the exception during failure
-  // cases.
   setTimeout(() => {
     assert.ok(true, 'can click external item without error');
     secondEditor.destroy();

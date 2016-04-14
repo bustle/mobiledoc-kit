@@ -697,8 +697,7 @@ class PostEditor {
    */
   replaceSection(section, newSection) {
     if (!section) {
-      // The section may be undefined if the user used the embed intent
-      // ("+" icon) to insert a new "ul" section in a blank post
+      // FIXME should a falsy section be a valid argument?
       this.insertSectionBefore(this.editor.post.sections, newSection, null);
     } else {
       this._replaceSection(section, [newSection]);
