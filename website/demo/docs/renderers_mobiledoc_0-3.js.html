@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: renderers/mobiledoc/0-3.js</title>
+
+    <script src="scripts/prettify/prettify-ace3c28e32526c485728e7f71d736533.js"> </script>
+    <script src="scripts/prettify/lang-css-837b4b4cfe01f4c48b5e9a53aae93677.js" integrity="sha256-WV/862lO0EUBZTVS+CdIMEaFghp/DIhmH1CKoWooYJU= sha512-1vkvFC9wsglZoYvQEBJbmY2yig3JPZMYNtq6Z5aizA/mb9a3Ds/ps7iWo0twAqaP1NUZE8+v/sEA5hoRsopXLw==" > </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow-3559834dc32d2cad6adeb2d2fed40e18.css" integrity="sha256-zInEqaMwHPE1XRPTqnMP2uZOEEYFQ2zjcasAv2R1nXg= sha512-DNQDuSSkAzc46N+QWE3KS1L9bV0TmwsRxFLYlC6kX3SP8nJmMl/33DgpGRmNKkm+TppbqCWXPhhin5iHk2K+WQ==" >
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default-ae260dbf3da9b55f508cf5f0e0692c75.css" integrity="sha256-Lt+BUW2LloVa18IoHxlqx0pFWuFeX5uiMj/ZgL1XtZs= sha512-Ck58In4yxY9dQKwfz4hzsWRvZ5vJelyCE4fHt+Sdx4zSss8NZPCeYlfY4+vioLHuVLB3YAtTKApR6L1jV7+HJQ==" >
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: renderers/mobiledoc/0-3.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {visit, visitArray, compile} from '../../utils/compiler';
+import { objectToSortedKVArray } from '../../utils/array-utils';
+import {
+  POST_TYPE,
+  MARKUP_SECTION_TYPE,
+  LIST_SECTION_TYPE,
+  LIST_ITEM_TYPE,
+  MARKER_TYPE,
+  MARKUP_TYPE,
+  IMAGE_SECTION_TYPE,
+  CARD_TYPE,
+  ATOM_TYPE
+} from '../../models/types';
+
+export const MOBILEDOC_VERSION = '0.3.0';
+export const MOBILEDOC_MARKUP_SECTION_TYPE = 1;
+export const MOBILEDOC_IMAGE_SECTION_TYPE = 2;
+export const MOBILEDOC_LIST_SECTION_TYPE = 3;
+export const MOBILEDOC_CARD_SECTION_TYPE = 10;
+
+export const MOBILEDOC_MARKUP_MARKER_TYPE = 0;
+export const MOBILEDOC_ATOM_MARKER_TYPE = 1;
+
+const visitor = {
+  [POST_TYPE](node, opcodes) {
+    opcodes.push(['openPost']);
+    visitArray(visitor, node.sections, opcodes);
+  },
+  [MARKUP_SECTION_TYPE](node, opcodes) {
+    opcodes.push(['openMarkupSection', node.tagName]);
+    visitArray(visitor, node.markers, opcodes);
+  },
+  [LIST_SECTION_TYPE](node, opcodes) {
+    opcodes.push(['openListSection', node.tagName]);
+    visitArray(visitor, node.items, opcodes);
+  },
+  [LIST_ITEM_TYPE](node, opcodes) {
+    opcodes.push(['openListItem']);
+    visitArray(visitor, node.markers, opcodes);
+  },
+  [IMAGE_SECTION_TYPE](node, opcodes) {
+    opcodes.push(['openImageSection', node.src]);
+  },
+  [CARD_TYPE](node, opcodes) {
+    opcodes.push(['openCardSection', node.name, node.payload]);
+  },
+  [MARKER_TYPE](node, opcodes) {
+    opcodes.push(['openMarker', node.closedMarkups.length, node.value]);
+    visitArray(visitor, node.openedMarkups, opcodes);
+  },
+  [MARKUP_TYPE](node, opcodes) {
+    opcodes.push(['openMarkup', node.tagName, objectToSortedKVArray(node.attributes)]);
+  },
+  [ATOM_TYPE](node, opcodes) {
+    opcodes.push(['openAtom', node.closedMarkups.length, node.name, node.value, node.payload]);
+    visitArray(visitor, node.openedMarkups, opcodes);
+  }
+};
+
+const postOpcodeCompiler = {
+  openMarker(closeCount, value) {
+    this.markupMarkerIds = [];
+    this.markers.push([
+      MOBILEDOC_MARKUP_MARKER_TYPE,
+      this.markupMarkerIds,
+      closeCount,
+      value || ''
+    ]);
+  },
+  openMarkupSection(tagName) {
+    this.markers = [];
+    this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers]);
+  },
+  openListSection(tagName) {
+    this.items = [];
+    this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items]);
+  },
+  openListItem() {
+    this.markers = [];
+    this.items.push(this.markers);
+  },
+  openImageSection(url) {
+    this.sections.push([MOBILEDOC_IMAGE_SECTION_TYPE, url]);
+  },
+  openCardSection(name, payload) {
+    const index = this._addCardTypeIndex(name, payload);
+    this.sections.push([MOBILEDOC_CARD_SECTION_TYPE, index]);
+  },
+  openAtom(closeCount, name, value, payload) {
+    const index = this._addAtomTypeIndex(name, value, payload);
+    this.markupMarkerIds = [];
+    this.markers.push([
+      MOBILEDOC_ATOM_MARKER_TYPE,
+      this.markupMarkerIds,
+      closeCount,
+      index
+    ]);
+  },
+  openPost() {
+    this.atomTypes = [];
+    this.cardTypes = [];
+    this.markerTypes = [];
+    this.sections = [];
+    this.result = {
+      version: MOBILEDOC_VERSION,
+      atoms: this.atomTypes,
+      cards: this.cardTypes,
+      markups: this.markerTypes,
+      sections: this.sections
+    };
+  },
+  openMarkup(tagName, attributes) {
+    const index = this._findOrAddMarkerTypeIndex(tagName, attributes);
+    this.markupMarkerIds.push(index);
+  },
+  _addCardTypeIndex(cardName, payload) {
+    let cardType = [cardName, payload];
+    this.cardTypes.push(cardType);
+    return this.cardTypes.length - 1;
+  },
+  _addAtomTypeIndex(atomName, atomValue, payload) {
+    let atomType = [atomName, atomValue, payload];
+    this.atomTypes.push(atomType);
+    return this.atomTypes.length - 1;
+  },
+  _findOrAddMarkerTypeIndex(tagName, attributesArray) {
+    if (!this._markerTypeCache) { this._markerTypeCache = {}; }
+    const key = `${tagName}-${attributesArray.join('-')}`;
+
+    let index = this._markerTypeCache[key];
+    if (index === undefined) {
+      let markerType = [tagName];
+      if (attributesArray.length) { markerType.push(attributesArray); }
+      this.markerTypes.push(markerType);
+
+      index =  this.markerTypes.length - 1;
+      this._markerTypeCache[key] = index;
+    }
+
+    return index;
+  }
+};
+
+/**
+ * Render from post -> mobiledoc
+ */
+export default {
+  /**
+   * @param {Post}
+   * @return {Mobiledoc}
+   */
+  render(post) {
+    let opcodes = [];
+    visit(visitor, post, opcodes);
+    let compiler = Object.create(postOpcodeCompiler);
+    compile(compiler, opcodes);
+    return compiler.result;
+  }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Direction">Direction</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Apr 14 2016 18:00:34 GMT-0400 (EDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber-9ec4215c940f27af7102f47e0a810aa9.js" integrity="sha256-T7g/tzto0TDktvJQDZBwwLFg2HWB20HJioSIBn7qr4k= sha512-au7Nhtosw9zCREI8LSTPQtz9PxVd0XcPbrwKfzdjNofNuCoGPD/xBIDg4v/brj5hTsxFVcBQkt85fuFtz/0b6w==" > </script>
+</body>
+</html>
