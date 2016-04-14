@@ -43,7 +43,7 @@ Logger.enableTypes([
   'editor',
   'parse-utils'
 ]);
-Logger.disable();
+Logger.enable();
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 

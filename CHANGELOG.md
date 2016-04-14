@@ -1,3 +1,25 @@
+<a name="0.9.2"></a>
+## 0.9.2 (2016-04-14)
+
+* [BUGFIX] Ensure Editor#hasActiveMarkup detects complex markups ([36be12a](https://github.com/bustlelabs/mobiledoc-kit/commit/36be12a))
+* [BUGFIX] Ensure inputModeDidChange fires when changing from ol -> ul ([c4680aa](https://github.com/bustlelabs/mobiledoc-kit/commit/c4680aa))
+* [CLEANUP] Enable live-reload for tests ([a5f4c3d](https://github.com/bustlelabs/mobiledoc-kit/commit/a5f4c3d))
+* [CLEANUP] Fix jsdoc formatting, add `docs` npm script. ([2b28d95](https://github.com/bustlelabs/mobiledoc-kit/commit/2b28d95))
+* [CLEANUP] Improve documentation for Editor, Post, PostNodeBuilder, Range ([97140e9](https://github.com/bustlelabs/mobiledoc-kit/commit/97140e9))
+* [DOC] minor change for `activeSections` and `activeMarkups` ([1b255c1](https://github.com/bustlelabs/mobiledoc-kit/commit/1b255c1))
+* [FEATURE] [BUGFIX] Refactor editor hooks ([de52092](https://github.com/bustlelabs/mobiledoc-kit/commit/de52092)), closes [#319](https://github.com/bustlelabs/mobiledoc-kit/issues/319)
+* built website from 36a7d5eb46db8b41887103974f59bc197adfd890 ([3fe5b35](https://github.com/bustlelabs/mobiledoc-kit/commit/3fe5b35))
+* minor: change Range docs ([d5aefae](https://github.com/bustlelabs/mobiledoc-kit/commit/d5aefae))
+
+
+### BREAKING CHANGE
+
+* The behavior of the `cursorDidChange` hook has changed. This is a potentially
+  breaking change for consumers (such as
+  `ember-mobiledoc-editor`) that used the `cursorDidChange` hook to
+  maintain toolbar state. The `inputModeDidChange` hook should be used to
+  detect changes to editor input state instead. See #357
+
 <a name="0.9.1"></a>
 ## 0.9.1 (2016-03-24)
 
@@ -8,6 +30,7 @@
 * Add card with drag/drop listeners to demo app ([f374958](https://github.com/bustlelabs/mobiledoc-kit/commit/f374958))
 * Handle drop events semantically ([b2a49c9](https://github.com/bustlelabs/mobiledoc-kit/commit/b2a49c9))
 * Update README.md ([dad9dc3](https://github.com/bustlelabs/mobiledoc-kit/commit/dad9dc3))
+* v0.9.1 ([36a7d5e](https://github.com/bustlelabs/mobiledoc-kit/commit/36a7d5e))
 * chore(package): update testem to version 1.6.0 ([7117017](https://github.com/bustlelabs/mobiledoc-kit/commit/7117017))
 
 
