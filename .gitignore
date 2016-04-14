@@ -50,6 +50,6 @@ keys.txt
 export.sh
 dist/
 tmp/
-docs/
+/docs/
 
 server.sh

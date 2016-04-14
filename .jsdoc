@@ -5,7 +5,7 @@
   "opts": {
     "readme": "./README.md",
     "recurse": true,
-    "destination": "./docs"
+    "destination": "./demo/public/docs"
   },
   "plugins": [
     "plugins/markdown"
