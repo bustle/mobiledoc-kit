@@ -12,7 +12,15 @@
 Mobiledoc Kit (warning: beta) is a library for building WYSIWYG editors
 supporting rich content via cards.
 
-**Try a demo at [bustlelabs.github.io/mobiledoc-kit/demo](https://bustlelabs.github.io/mobiledoc-kit/demo/)**.
+## Demo
+
+Try a demo at [bustlelabs.github.io/mobiledoc-kit/demo](https://bustlelabs.github.io/mobiledoc-kit/demo/).
+
+## API Documentation
+
+API Documentation is [available online](http://bustlelabs.github.io/mobiledoc-kit/demo/docs/).
+
+## Intro to Mobiledoc Kit
 
 * Posts are serialized to a JSON format called **Mobiledoc** instead of to
   HTML. Mobiledoc can be rendered for the web, mobile web, or in theory on any
@@ -296,7 +304,7 @@ in `demo/`. To run the demo:
 
 #### Releasing
 
-* update version constant in `src/js/version.js`
+* update version in `src/js/version.js`
 * Update version in `package.json`
 * `npm run update-changelog`
 * commit with message `v<version>` (e.g. "v0.9.0")
