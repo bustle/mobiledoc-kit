@@ -12,9 +12,7 @@ module('Unit: Editor: Atom Lifecycle', {
   },
   afterEach() {
     if (editor) {
-      try {
-        editor.destroy();
-      } catch(e) {}
+      editor.destroy();
       editor = null;
     }
   }
@@ -206,8 +204,6 @@ test('rendering unknown atom without unknownAtomHandler throws', (assert) => {
     editor.render(editorElement);
   }, new RegExp(`Unknown atom "${atomName}".*no unknownAtomHandler`));
 });
-
-
 
 test('onTeardown hook is called when editor is destroyed', (assert) => {
   const atomName = 'test-atom';

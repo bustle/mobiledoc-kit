@@ -473,6 +473,11 @@ let destroyHooks = {
     // FIXME before we render marker, should delete previous renderNode's element
     // and up until the next marker element
 
+    // If an atom throws during render we may end up later destroying a renderNode
+    // that has not rendered yet, so exit early here if so.
+    if (!renderNode.isRendered) {
+      return;
+    }
     let { markupElement } = renderNode;
 
     if (marker.section) {
