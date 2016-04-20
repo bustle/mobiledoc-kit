@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <title>JSDoc: Source: editor/editor.js</title>
 
-    <script src="scripts/prettify/prettify-ace3c28e32526c485728e7f71d736533.js"> </script>
-    <script src="scripts/prettify/lang-css-837b4b4cfe01f4c48b5e9a53aae93677.js" integrity="sha256-WV/862lO0EUBZTVS+CdIMEaFghp/DIhmH1CKoWooYJU= sha512-1vkvFC9wsglZoYvQEBJbmY2yig3JPZMYNtq6Z5aizA/mb9a3Ds/ps7iWo0twAqaP1NUZE8+v/sEA5hoRsopXLw==" > </script>
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow-3559834dc32d2cad6adeb2d2fed40e18.css" integrity="sha256-zInEqaMwHPE1XRPTqnMP2uZOEEYFQ2zjcasAv2R1nXg= sha512-DNQDuSSkAzc46N+QWE3KS1L9bV0TmwsRxFLYlC6kX3SP8nJmMl/33DgpGRmNKkm+TppbqCWXPhhin5iHk2K+WQ==" >
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default-ae260dbf3da9b55f508cf5f0e0692c75.css" integrity="sha256-Lt+BUW2LloVa18IoHxlqx0pFWuFeX5uiMj/ZgL1XtZs= sha512-Ck58In4yxY9dQKwfz4hzsWRvZ5vJelyCE4fHt+Sdx4zSss8NZPCeYlfY4+vioLHuVLB3YAtTKApR6L1jV7+HJQ==" >
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
 </head>
 
 <body>
@@ -881,11 +881,17 @@ class Editor {
 
   /**
    * Inserts the text at the current cursor position. If the editor has
-   * no current cursor position, nothing will be inserted.
+   * no current cursor position, nothing will be inserted. If the editor's
+   * range is not collapsed, it will be deleted before insertion.
+   *
    * @param {String} text
    * @public
    */
   insertText(text) {
+    if (!this.hasCursor()) { return; }
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor();
+    }
     let { activeMarkups, range, range: { head: position } } = this;
 
     this.run(postEditor => {
@@ -894,6 +900,84 @@ class Editor {
       }
 
       postEditor.insertTextWithMarkup(position, text, activeMarkups);
+    });
+  }
+
+  /**
+   * Inserts an atom at the current cursor position. If the editor has
+   * no current cursor position, nothing will be inserted. If the editor's
+   * range is not collapsed, it will be deleted before insertion.
+   * @param {String} atomName
+   * @param {String} [atomText='']
+   * @param {Object} [atomPayload={}]
+   * @public
+   */
+  insertAtom(atomName, atomText='', atomPayload={}) {
+    if (!this.hasCursor()) { return; }
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor();
+    }
+    let { range } = this;
+    this.run(postEditor => {
+      let position = range.head;
+
+      let atom = postEditor.builder.createAtom(atomName, atomText, atomPayload);
+      if (!range.isCollapsed) {
+        position = postEditor.deleteRange(range);
+      }
+
+      postEditor.insertMarkers(position, [atom]);
+    });
+  }
+
+  /**
+   * Inserts a card at the section after the current cursor position. If the editor has
+   * no current cursor position, nothing will be inserted. If the editor's
+   * range is not collapsed, it will be deleted before insertion. If the cursor is in
+   * a blank section, it will be replaced with a card section.
+   * The editor's cursor will be placed at the end of the inserted card.
+   * @param {String} cardName
+   * @param {Object} [cardPayload={}]
+   * @param {Boolean} [inEditMode=false] Whether the card should be inserted in edit mode.
+   * @public
+   */
+  insertCard(cardName, cardPayload={}, inEditMode=false) {
+    if (!this.hasCursor()) { return; }
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor();
+    }
+
+    let { range } = this;
+    this.run(postEditor => {
+      let position = range.tail;
+      let card = postEditor.builder.createCardSection(cardName, cardPayload);
+      if (inEditMode) {
+        this.editCard(card);
+      }
+
+      if (!range.isCollapsed) {
+        position = postEditor.deleteRange(range);
+      }
+
+      let section = position.section;
+      if (section.isNested) { section = section.parent; }
+
+      if (section.isBlank) {
+        postEditor.replaceSection(section, card);
+      } else {
+        let collection = this.post.sections;
+        postEditor.insertSectionBefore(collection, card, section.next);
+      }
+
+      // It is important to explicitly set the range to the end of the card.
+      // Otherwise it is possible to create an inconsistent state in the
+      // browser. For instance, if the user clicked a button that
+      // called `editor.insertCard`, the editor surface may retain
+      // the selection but lose focus, and the next keystroke by the user
+      // will cause an unexpected DOM mutation (which can wipe out the
+      // card).
+      // See: https://github.com/bustlelabs/mobiledoc-kit/issues/286
+      postEditor.setRange(new Range(card.tailPosition()));
     });
   }
 
@@ -966,10 +1050,10 @@ export default Editor;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Apr 14 2016 18:00:34 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Apr 20 2016 17:10:16 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>
-<script src="scripts/linenumber-9ec4215c940f27af7102f47e0a810aa9.js" integrity="sha256-T7g/tzto0TDktvJQDZBwwLFg2HWB20HJioSIBn7qr4k= sha512-au7Nhtosw9zCREI8LSTPQtz9PxVd0XcPbrwKfzdjNofNuCoGPD/xBIDg4v/brj5hTsxFVcBQkt85fuFtz/0b6w==" > </script>
+<script src="scripts/linenumber.js"> </script>
 </body>
 </html>

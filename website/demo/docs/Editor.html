@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <title>JSDoc: Class: Editor</title>
 
-    <script src="scripts/prettify/prettify-ace3c28e32526c485728e7f71d736533.js"> </script>
-    <script src="scripts/prettify/lang-css-837b4b4cfe01f4c48b5e9a53aae93677.js" integrity="sha256-WV/862lO0EUBZTVS+CdIMEaFghp/DIhmH1CKoWooYJU= sha512-1vkvFC9wsglZoYvQEBJbmY2yig3JPZMYNtq6Z5aizA/mb9a3Ds/ps7iWo0twAqaP1NUZE8+v/sEA5hoRsopXLw==" > </script>
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow-3559834dc32d2cad6adeb2d2fed40e18.css" integrity="sha256-zInEqaMwHPE1XRPTqnMP2uZOEEYFQ2zjcasAv2R1nXg= sha512-DNQDuSSkAzc46N+QWE3KS1L9bV0TmwsRxFLYlC6kX3SP8nJmMl/33DgpGRmNKkm+TppbqCWXPhhin5iHk2K+WQ==" >
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default-ae260dbf3da9b55f508cf5f0e0692c75.css" integrity="sha256-Lt+BUW2LloVa18IoHxlqx0pFWuFeX5uiMj/ZgL1XtZs= sha512-Ck58In4yxY9dQKwfz4hzsWRvZ5vJelyCE4fHt+Sdx4zSss8NZPCeYlfY4+vioLHuVLB3YAtTKApR6L1jV7+HJQ==" >
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
 </head>
 
 <body>
@@ -2257,6 +2257,462 @@ active sections) has changed, either via user input or programmatically</p></td>
 
     
 
+    <h4 class="name" id="insertAtom"><span class="type-signature"></span>insertAtom<span class="signature">(atomName, atomText<span class="signature-attributes">opt</span>, atomPayload<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Inserts an atom at the current cursor position. If the editor has
+no current cursor position, nothing will be inserted. If the editor's
+range is not collapsed, it will be deleted before insertion.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>atomName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>atomText</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    ''
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>atomPayload</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line887">line 887</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="insertCard"><span class="type-signature"></span>insertCard<span class="signature">(cardName, cardPayload<span class="signature-attributes">opt</span>, inEditMode<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Inserts a card at the section after the current cursor position. If the editor has
+no current cursor position, nothing will be inserted. If the editor's
+range is not collapsed, it will be deleted before insertion. If the cursor is in
+a blank section, it will be replaced with a card section.
+The editor's cursor will be placed at the end of the inserted card.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>cardName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cardPayload</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>inEditMode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>Whether the card should be inserted in edit mode.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line916">line 916</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
     <h4 class="name" id="insertText"><span class="type-signature"></span>insertText<span class="signature">(text)</span><span class="type-signature"></span></h4>
 
     
@@ -2265,7 +2721,8 @@ active sections) has changed, either via user input or programmatically</p></td>
 
 <div class="description">
     <p>Inserts the text at the current cursor position. If the editor has
-no current cursor position, nothing will be inserted.</p>
+no current cursor position, nothing will be inserted. If the editor's
+range is not collapsed, it will be deleted before insertion.</p>
 </div>
 
 
@@ -2358,7 +2815,7 @@ no current cursor position, nothing will be inserted.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line860">line 860</a>
+        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line862">line 862</a>
     </li></ul></dd>
     
 
@@ -2438,7 +2895,7 @@ no current cursor position, nothing will be inserted.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line917">line 917</a>
+        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line1001">line 1001</a>
     </li></ul></dd>
     
 
@@ -2588,7 +3045,7 @@ no current cursor position, nothing will be inserted.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line877">line 877</a>
+        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line961">line 961</a>
     </li></ul></dd>
     
 
@@ -4194,10 +4651,10 @@ and a CardSection, only the MarkupSection will be toggled.</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Apr 14 2016 18:00:34 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Apr 20 2016 17:10:16 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>
-<script src="scripts/linenumber-9ec4215c940f27af7102f47e0a810aa9.js" integrity="sha256-T7g/tzto0TDktvJQDZBwwLFg2HWB20HJioSIBn7qr4k= sha512-au7Nhtosw9zCREI8LSTPQtz9PxVd0XcPbrwKfzdjNofNuCoGPD/xBIDg4v/brj5hTsxFVcBQkt85fuFtz/0b6w==" > </script>
+<script src="scripts/linenumber.js"> </script>
 </body>
 </html>
