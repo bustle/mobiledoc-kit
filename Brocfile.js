@@ -9,6 +9,7 @@ var styles = require('./broccoli/styles');
 var jquery = require('./broccoli/jquery');
 var injectLiveReload = require('broccoli-inject-livereload');
 var LiveReload = require('tiny-lr');
+var replace = require('broccoli-string-replace');
 
 var vendoredModules = [
   {name: 'mobiledoc-html-renderer'},
@@ -41,10 +42,21 @@ watcher.on('change', function() {
   }
 });
 
+function replaceVersion(tree) {
+  var version = require('./package.json').version;
+  return replace(tree, {
+    files: ['**/*.js'],
+    pattern: {
+      match: /##VERSION##/g,
+      replacement: version
+    }
+  });
+}
+
 module.exports = mergeTrees([
-  builder.build('amd', buildOptions),
-  builder.build('global', buildOptions),
-  builder.build('commonjs', buildOptions),
+  replaceVersion(builder.build('amd', buildOptions)),
+  replaceVersion(builder.build('global', buildOptions)),
+  replaceVersion(builder.build('commonjs', buildOptions)),
   styles(),
   injectLiveReload(testTree)
 ]);

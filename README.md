@@ -304,7 +304,6 @@ in `demo/`. To run the demo:
 
 #### Releasing
 
-* update version in `src/js/version.js`
 * Update version in `package.json`
 * `npm run update-changelog`
 * commit with message `v<version>` (e.g. "v0.9.0")
