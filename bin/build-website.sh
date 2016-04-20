@@ -15,6 +15,10 @@ mkdir -p website/demo
 echo "Copying $(pwd)/demo/dist/* to $(pwd)/website/demo"
 cp -R demo/dist/* website/demo/
 
+echo "Copying $(pwd)/docs to $(pwd)/website/demo"
+mkdir -p website/demo/docs
+cp -R docs/* website/demo/docs/
+
 CURRENT_SHA="$(git rev-parse HEAD)"
 git add website/
 git commit -m "built website from $CURRENT_SHA"
