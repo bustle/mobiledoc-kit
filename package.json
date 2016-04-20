@@ -46,6 +46,7 @@
     "broccoli-merge-trees": "^1.0.0",
     "broccoli-multi-builder": "^0.2.8",
     "broccoli-sane-watcher": "^1.1.4",
+    "broccoli-string-replace": "^0.1.1",
     "broccoli-test-builder": "^0.2.0",
     "conventional-changelog": "^1.1.0",
     "conventional-changelog-cli": "^1.1.1",
