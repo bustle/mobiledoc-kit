@@ -1,7 +1,26 @@
+<a name="0.9.4"></a>
+## 0.9.4 (2016-04-20)
+
+* Add #insertAtom and #insertCard to Editor, fix #insertText ([b14d7be](https://github.com/bustlelabs/mobiledoc-kit/commit/b14d7be))
+* Allow destroying an editor when it failed to render properly ([e16e0d6](https://github.com/bustlelabs/mobiledoc-kit/commit/e16e0d6))
+* Better description of markup attributes in MOBILEDOC.md ([f04d2e6](https://github.com/bustlelabs/mobiledoc-kit/commit/f04d2e6))
+* build docs into demo ([d2af3ac](https://github.com/bustlelabs/mobiledoc-kit/commit/d2af3ac))
+* built website from a3221dd3557ebd0215422264f6c2f7fa8cce7e59 ([ed24ba5](https://github.com/bustlelabs/mobiledoc-kit/commit/ed24ba5))
+* built website from d2af3ac0dd1fed55537b376946d38cf44da813ed ([1ce6592](https://github.com/bustlelabs/mobiledoc-kit/commit/1ce6592))
+* bump demo deps ([a3221dd](https://github.com/bustlelabs/mobiledoc-kit/commit/a3221dd))
+* change doc output to demo/public/docs ([3ca5353](https://github.com/bustlelabs/mobiledoc-kit/commit/3ca5353))
+* Ignore mutation events from within atoms ([8aac800](https://github.com/bustlelabs/mobiledoc-kit/commit/8aac800))
+* Minor changes: Remove references to embed intent, add FIXME ([46e50be](https://github.com/bustlelabs/mobiledoc-kit/commit/46e50be))
+* Update broccoli build to copy version from package.json to src/js/version.js ([ae06afc](https://github.com/bustlelabs/mobiledoc-kit/commit/ae06afc))
+* Update the README to add links to docs ([e346abd](https://github.com/bustlelabs/mobiledoc-kit/commit/e346abd))
+
+
+
 <a name="0.9.3"></a>
 ## 0.9.3 (2016-04-14)
 
 * Turn off mutation-parser logging ([4ba228d](https://github.com/bustlelabs/mobiledoc-kit/commit/4ba228d))
+* v0.9.3 ([f1faa73](https://github.com/bustlelabs/mobiledoc-kit/commit/f1faa73))
 
 
 
