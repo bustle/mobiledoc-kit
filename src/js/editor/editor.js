@@ -853,11 +853,17 @@ class Editor {
 
   /**
    * Inserts the text at the current cursor position. If the editor has
-   * no current cursor position, nothing will be inserted.
+   * no current cursor position, nothing will be inserted. If the editor's
+   * range is not collapsed, it will be deleted before insertion.
+   *
    * @param {String} text
    * @public
    */
   insertText(text) {
+    if (!this.hasCursor()) { return; }
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor();
+    }
     let { activeMarkups, range, range: { head: position } } = this;
 
     this.run(postEditor => {
@@ -866,6 +872,84 @@ class Editor {
       }
 
       postEditor.insertTextWithMarkup(position, text, activeMarkups);
+    });
+  }
+
+  /**
+   * Inserts an atom at the current cursor position. If the editor has
+   * no current cursor position, nothing will be inserted. If the editor's
+   * range is not collapsed, it will be deleted before insertion.
+   * @param {String} atomName
+   * @param {String} [atomText='']
+   * @param {Object} [atomPayload={}]
+   * @public
+   */
+  insertAtom(atomName, atomText='', atomPayload={}) {
+    if (!this.hasCursor()) { return; }
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor();
+    }
+    let { range } = this;
+    this.run(postEditor => {
+      let position = range.head;
+
+      let atom = postEditor.builder.createAtom(atomName, atomText, atomPayload);
+      if (!range.isCollapsed) {
+        position = postEditor.deleteRange(range);
+      }
+
+      postEditor.insertMarkers(position, [atom]);
+    });
+  }
+
+  /**
+   * Inserts a card at the section after the current cursor position. If the editor has
+   * no current cursor position, nothing will be inserted. If the editor's
+   * range is not collapsed, it will be deleted before insertion. If the cursor is in
+   * a blank section, it will be replaced with a card section.
+   * The editor's cursor will be placed at the end of the inserted card.
+   * @param {String} cardName
+   * @param {Object} [cardPayload={}]
+   * @param {Boolean} [inEditMode=false] Whether the card should be inserted in edit mode.
+   * @public
+   */
+  insertCard(cardName, cardPayload={}, inEditMode=false) {
+    if (!this.hasCursor()) { return; }
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor();
+    }
+
+    let { range } = this;
+    this.run(postEditor => {
+      let position = range.tail;
+      let card = postEditor.builder.createCardSection(cardName, cardPayload);
+      if (inEditMode) {
+        this.editCard(card);
+      }
+
+      if (!range.isCollapsed) {
+        position = postEditor.deleteRange(range);
+      }
+
+      let section = position.section;
+      if (section.isNested) { section = section.parent; }
+
+      if (section.isBlank) {
+        postEditor.replaceSection(section, card);
+      } else {
+        let collection = this.post.sections;
+        postEditor.insertSectionBefore(collection, card, section.next);
+      }
+
+      // It is important to explicitly set the range to the end of the card.
+      // Otherwise it is possible to create an inconsistent state in the
+      // browser. For instance, if the user clicked a button that
+      // called `editor.insertCard`, the editor surface may retain
+      // the selection but lose focus, and the next keystroke by the user
+      // will cause an unexpected DOM mutation (which can wipe out the
+      // card).
+      // See: https://github.com/bustlelabs/mobiledoc-kit/issues/286
+      postEditor.setRange(new Range(card.tailPosition()));
     });
   }
 

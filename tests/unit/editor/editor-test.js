@@ -363,3 +363,245 @@ test('#hasActiveMarkup returns true for complex markups', (assert) => {
   editor.selectRange(Range.create(head, 'abcdefg'.length));
   assert.equal(editor.activeMarkups.length, 0, 'no active markups after end of linked text');
 });
+
+test('#insertText inserts text at cursor position, replacing existing range if non-collapsed', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    return post([markupSection('p', [ marker('b') ])]);
+  });
+
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  editor.insertText('Z');
+  assert.equal(editor.post.sections.head.text, 'bZ');
+
+  editor.selectRange(new Range(editor.post.headPosition()));
+  editor.insertText('A');
+  assert.equal(editor.post.sections.head.text, 'AbZ');
+
+  editor.selectRange(Range.create(editor.post.sections.head, 'A'.length));
+  editor.insertText('B');
+  assert.equal(editor.post.sections.head.text, 'ABbZ');
+
+  editor.selectRange(new Range(editor.post.headPosition(), editor.post.tailPosition()));
+  editor.insertText('new stuff');
+  assert.equal(editor.post.sections.head.text, 'new stuff');
+});
+
+test('#insertText inserts text at cursor position, inheriting active markups', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [
+      marker('a'),
+      marker('b', [markup('b')])
+    ])]);
+  });
+
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  assert.equal(editor.activeMarkups.length, 1, 'precond - 1 active markup');
+  editor.insertText('Z');
+  assert.hasElement('#editor b:contains(bZ)');
+
+  editor.selectRange(new Range(editor.post.headPosition()));
+  assert.equal(editor.activeMarkups.length, 0, 'precond - 0 active markups at start');
+  editor.toggleMarkup('b');
+  editor.insertText('A');
+
+  assert.hasElement('#editor b:contains(A)');
+});
+
+test('#insertText is no-op when editor does not have cursor', (assert) => {
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    expected = post([markupSection('p', [marker('abc')])]);
+    return post([markupSection('p', [marker('abc')])]);
+  }, {autofocus: false});
+
+  assert.ok(!editor.hasCursor(), 'precond - editor has no cursor');
+  editor.insertText('blah blah blah');
+
+  assert.postIsSimilar(editor.post, expected, 'post is not changed');
+});
+
+test('#insertText when post is blank', (assert) => {
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    expected = post([markupSection('p', [marker('blah blah')])]);
+    return post();
+  });
+
+  assert.ok(editor.hasCursor(), 'precond - editor has no cursor');
+  assert.ok(editor.post.isBlank, 'precond - editor has blank post');
+  editor.insertText('blah blah');
+
+  assert.postIsSimilar(editor.post, expected, 'text is added to post');
+});
+
+test('#insertAtom inserts atom at cursor position, replacing range if non-collapsed', (assert) => {
+  let atom = {
+    name: 'the-atom',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    return post([markupSection('p', [ marker('b') ])]);
+  }, {atoms: [atom]});
+
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  editor.insertAtom('the-atom', 'END');
+
+  assert.equal(editor.post.sections.head.text, 'bEND');
+
+  editor.selectRange(new Range(editor.post.headPosition()));
+  editor.insertAtom('the-atom', 'START');
+  assert.equal(editor.post.sections.head.text, 'STARTbEND');
+
+  editor.selectRange(new Range(editor.post.headPosition(), editor.post.tailPosition()));
+  editor.insertAtom('the-atom', 'REPLACE-ALL');
+  assert.equal(editor.post.sections.head.text, 'REPLACE-ALL');
+});
+
+test('#insertAtom is no-op when editor does not have cursor', (assert) => {
+  let atom = {
+    name: 'the-atom',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    expected = post([markupSection('p', [marker('abc')])]);
+    return post([markupSection('p', [marker('abc')])]);
+  }, {atoms: [atom], autofocus: false});
+
+  assert.ok(!editor.hasCursor(), 'precond - editor has no cursor');
+  editor.insertAtom('the-atom');
+
+  assert.postIsSimilar(editor.post, expected, 'post is not changed');
+});
+
+test('#insertAtom when post is blank', (assert) => {
+  let atom = {
+    name: 'the-atom',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, atom, markupSection}) => {
+    expected = post([markupSection('p', [atom('the-atom', 'THEATOMTEXT')])]);
+    return post();
+  }, {atoms: [atom]});
+
+  assert.ok(editor.hasCursor(), 'precond - editor has cursor');
+  assert.ok(editor.post.isBlank, 'precond - post is blank');
+  editor.insertAtom('the-atom', 'THEATOMTEXT');
+
+  assert.postIsSimilar(editor.post, expected);
+});
+
+test('#insertCard inserts card at section after cursor position, replacing range if non-collapsed', (assert) => {
+  let card = {
+    name: 'the-card',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    return post([markupSection('p', [ marker('b') ])]);
+  }, {cards: [card]});
+
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  editor.insertCard('the-card');
+
+  assert.equal(editor.post.sections.length, 2, 'adds a section at end');
+  assert.ok(editor.post.sections.tail.isCardSection, 'added section is card section');
+
+  editor.run(postEditor => {
+    let blankSection = postEditor.builder.createMarkupSection();
+
+    let firstSection = editor.post.sections.head;
+    let collection = editor.post.sections;
+    postEditor.insertSectionBefore(collection, blankSection, firstSection);
+  });
+
+  assert.equal(editor.post.sections.length, 3, 'precond - adds blank section at start');
+  assert.ok(!editor.post.sections.head.isCardSection, 'precond - initial section is not card section');
+
+  editor.selectRange(new Range(editor.post.headPosition()));
+  editor.insertCard('the-card');
+
+  assert.equal(editor.post.sections.length, 3, 'replaced initial blank section with card');
+  assert.ok(editor.post.sections.head.isCardSection, 'initial section is card section');
+
+  editor.selectRange(new Range(editor.post.headPosition(), editor.post.tailPosition()));
+  editor.insertCard('the-card');
+  assert.equal(editor.post.sections.length, 1, 'replaces range with card section');
+  assert.ok(editor.post.sections.head.isCardSection, 'initial section is card section');
+});
+
+test('#insertCard when cursor is in list item', (assert) => {
+  let card = {
+    name: 'the-card',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, listItem, listSection}) => {
+    return post([listSection('ul', [
+      listItem([marker('abc')]),
+      listItem([marker('def')])
+    ])]);
+  }, {cards: [card]});
+
+  editor.selectRange(Range.create(editor.post.sections.head.items.head, 'ab'.length));
+  editor.insertCard('the-card');
+
+  assert.equal(editor.post.sections.length, 2, 'adds a second section');
+  assert.ok(editor.post.sections.tail.isCardSection, 'tail section is card section');
+});
+
+test('#insertCard is no-op when editor does not have cursor', (assert) => {
+  let card = {
+    name: 'the-card',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    expected = post([markupSection('p', [marker('abc')])]);
+    return post([markupSection('p', [marker('abc')])]);
+  }, {cards: [card], autofocus: false});
+
+  assert.ok(!editor.hasCursor(), 'precond - editor has no cursor');
+  editor.insertCard('the-card');
+
+  assert.postIsSimilar(editor.post, expected, 'post is not changed');
+});
+
+test('#insertCard when post is blank', (assert) => {
+  let card = {
+    name: 'the-card',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, cardSection}) => {
+    expected = post([cardSection('the-card')]);
+    return post();
+  }, {cards: [card]});
+
+  assert.ok(editor.hasCursor(), 'precond - editor has cursor');
+  assert.ok(editor.post.isBlank, 'precond - post is blank');
+
+  editor.insertCard('the-card');
+
+  assert.postIsSimilar(editor.post, expected, 'adds card section');
+});
