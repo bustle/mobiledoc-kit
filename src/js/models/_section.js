@@ -61,6 +61,10 @@ export default class Section extends LinkedItem {
     unimplementedMethod('join', this);
   }
 
+  textUntil(/* position */) {
+    return '';
+  }
+
   /**
    * Markerable sections should override this method
    */

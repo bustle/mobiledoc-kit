@@ -11,6 +11,7 @@ class Atom extends LinkedItem {
     super();
     this.name = name;
     this.value = value;
+    this.text = ''; // An atom never has text, but it does have a value
     assert('Atom must have value', value !== undefined && value !== null);
     this.payload = payload;
     this.type = ATOM_TYPE;
@@ -38,6 +39,10 @@ class Atom extends LinkedItem {
 
   canJoin(/* other */) {
     return false;
+  }
+
+  textUntil(/* offset */) {
+    return '';
   }
 
   split(offset=0, endOffset=offset) {

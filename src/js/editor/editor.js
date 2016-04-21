@@ -16,9 +16,8 @@ import Cursor from '../utils/cursor';
 import Range from '../utils/cursor/range';
 import Position from '../utils/cursor/position';
 import PostNodeBuilder from '../models/post-node-builder';
-import {
-  DEFAULT_TEXT_EXPANSIONS, findExpansion, validateExpansion
-} from './text-expansions';
+import { DEFAULT_TEXT_INPUT_HANDLERS } from './text-input-handlers';
+import { convertExpansiontoHandler } from './text-expansion-handler';
 import {
   DEFAULT_KEY_COMMANDS, buildKeyCommand, findKeyCommands, validateKeyCommand
 } from './key-commands';
@@ -129,7 +128,6 @@ class Editor {
     mergeWithOptions(this, defaults, options);
     this.cards.push(ImageCard);
 
-    DEFAULT_TEXT_EXPANSIONS.forEach(e => this.registerExpansion(e));
     DEFAULT_KEY_COMMANDS.forEach(kc => this.registerKeyCommand(kc));
 
     this._parser   = new DOMParser(this.builder);
@@ -144,6 +142,9 @@ class Editor {
     this._mutationHandler = new MutationHandler(this);
     this._editState = new EditState(this);
     this._callbacks = new LifecycleCallbacks(values(CALLBACK_QUEUES));
+
+    DEFAULT_TEXT_INPUT_HANDLERS.forEach(handler => this.onTextInput(handler));
+
     this.hasRendered = false;
   }
 
@@ -238,26 +239,24 @@ class Editor {
     }));
   }
 
-  get expansions() {
-    if (!this._expansions) { this._expansions = []; }
-    return this._expansions;
-  }
-
   get keyCommands() {
     if (!this._keyCommands) { this._keyCommands = []; }
     return this._keyCommands;
   }
 
   /**
-   * @param {Object} expansion The text expansion to register. It must specify a
-   * trigger character (e.g. the `<space>` character) and a text string that precedes
-   * the trigger (e.g. "*"), and a `run` method that will be passed the
-   * editor instance when the text expansion is invoked
+   * Prefer {@link Editor#onTextInput} to `registerExpansion`.
+   * @param {Object} expansion
+   * @param {String} expansion.text
+   * @param {Function} expansion.run This callback will be invoked with an `editor` argument
+   * @param {Number} [expansion.trigger] The keycode (e.g. 32 for `<space>`) that will trigger the expansion after the text is entered
+   * @deprecated since v0.9.3
    * @public
    */
   registerExpansion(expansion) {
-    assert('Expansion is not valid', validateExpansion(expansion));
-    this.expansions.push(expansion);
+    deprecate('Use `Editor#onTextInput` instead of `registerExpansion`');
+    let handler = convertExpansiontoHandler(expansion);
+    this.onTextInput(handler);
   }
 
   /**
@@ -709,6 +708,24 @@ class Editor {
   }
 
   /**
+   * Register a handler that will be invoked by the editor after the user enters
+   * matching text.
+   * @param {Object} inputHandler
+   * @param {String} [inputHandler.text] Required if `match` is not provided
+   * @param {RegExp} [inputHandler.match] Required if `text` is not provided
+   * @param {Function} inputHandler.run This callback is invoked with the {@link Editor}
+   *                   instance and an array of matches. If `text` was provided,
+   *                   the matches array will equal [`text`], and if a `match`
+   *                   regex was provided the matches array will be the result of
+   *                   `match.exec` on the matching text. The callback is called
+   *                   after the matching text has been inserted.
+   * @public
+   */
+  onTextInput(inputHandler) {
+    this._eventManager.registerInputHandler(inputHandler);
+  }
+
+  /**
    * @param {Function} callback Called when the editor's state (active markups or
    * active sections) has changed, either via user input or programmatically
    */
@@ -809,21 +826,6 @@ class Editor {
    */
   toggleSection(tagName) {
     this.run(postEditor => postEditor.toggleSection(tagName, this.range));
-  }
-
-  /**
-   * Finds and runs first matching text expansion for this event
-   * @param {Event} event keyboard event
-   * @return {Boolean} True when an expansion was found and run
-   * @private
-   */
-  handleExpansion(keyEvent) {
-    let expansion = findExpansion(this.expansions, keyEvent, this);
-    if (expansion) {
-      expansion.run(this);
-      return true;
-    }
-    return false;
   }
 
   /**
