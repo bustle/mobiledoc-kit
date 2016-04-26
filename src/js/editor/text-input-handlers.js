@@ -32,6 +32,7 @@ function replaceWithHeaderSection(editor, headingTagName) {
     let { builder } = postEditor;
     let newSection = builder.createMarkupSection(headingTagName);
     postEditor.replaceSection(section, newSection);
+    postEditor.setRange(new Range(newSection.headPosition()));
   });
 }
 

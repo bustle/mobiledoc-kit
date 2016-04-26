@@ -308,9 +308,18 @@ test('selecting all text across sections and hitting enter deletes and moves cur
   assert.equal($('#editor p').length, 1, 'single section');
   assert.equal($('#editor p:eq(0)').text(), '', 'blank text');
 
-  assert.deepEqual(Helpers.dom.getCursorPosition(),
-                  {node: $('#editor p')[0], offset: 0},
-                  'cursor is at start of second section');
+  // Firefox reports that the cursor is on the "<br>", but Safari and Chrome do not.
+  // Grab the selection here, then set it to the expected value, and compare again
+  // the window's selection
+  let selection = window.getSelection();
+  let cursorElement = $('#editor p br')[0];
+  assert.ok(cursorElement, 'has cursor element');
+  Helpers.dom.selectRange(cursorElement, 0, cursorElement, 0);
+  let newSelection = window.getSelection();
+  assert.equal(selection.anchorNode, newSelection.anchorNode, 'correct anchorNode');
+  assert.equal(selection.focusNode, newSelection.focusNode, 'correct focusNode');
+  assert.equal(selection.anchorOffset, newSelection.anchorOffset, 'correct anchorOffset');
+  assert.equal(selection.focusOffset, newSelection.focusOffset, 'correct focusOffset');
 });
 
 test('selecting text across markup and list sections', (assert) => {

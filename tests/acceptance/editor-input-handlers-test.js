@@ -45,6 +45,23 @@ headerTests.forEach(({text, toInsert, headerTagName}) => {
     assert.hasNoElement('#editor p', 'p is gone');
     assert.hasElement(`#editor ${headerTagName}`, `p -> ${headerTagName}`);
 
+    // Different browsers report different selections, so we grab the selection
+    // here and then set it to what we expect it to be, and compare what
+    // window.getSelection() reports.
+    // E.g., in Firefox getSelection() reports that the anchorNode is the "br",
+    // but Safari and Chrome report that the anchorNode is the header element
+    let selection = window.getSelection();
+
+    let cursorElement = $(`#editor ${headerTagName} br`)[0];
+    assert.ok(cursorElement, 'has cursorElement');
+    Helpers.dom.selectRange(cursorElement, 0, cursorElement, 0);
+
+    let newSelection = window.getSelection();
+    assert.equal(selection.anchorNode, newSelection.anchorNode, 'correct anchorNode');
+    assert.equal(selection.focusNode, newSelection.focusNode, 'correct focusNode');
+    assert.equal(selection.anchorOffset, newSelection.anchorOffset, 'correct anchorOffset');
+    assert.equal(selection.focusOffset, newSelection.focusOffset, 'correct focusOffset');
+
     Helpers.dom.insertText(editor, 'X');
     assert.hasElement(`#editor ${headerTagName}:contains(X)`, 'text is inserted correctly');
   });
@@ -70,12 +87,17 @@ test('typing "* " converts to ul > li', (assert) => {
   assert.hasNoElement('#editor p', 'p is gone');
   assert.hasElement('#editor ul > li', 'p -> "ul > li"');
 
-  let li = $('#editor ul > li')[0];
-  assert.ok(li, 'has li for cursor position');
-
+  // Store the selection so we can compare later
   let selection = window.getSelection();
-  assert.equal(selection.anchorNode, li, 'selection anchorNode is li');
-  assert.equal(selection.focusNode, li, 'selection focusNode is li');
+  let cursorElement = $('#editor ul > li > br')[0];
+  assert.ok(cursorElement, 'has cursorElement for cursor position');
+  Helpers.dom.selectRange(cursorElement, 0, cursorElement, 0);
+
+  let newSelection = window.getSelection();
+  assert.equal(selection.anchorNode, newSelection.anchorNode, 'correct anchorNode');
+  assert.equal(selection.focusNode, newSelection.focusNode, 'correct focusNode');
+  assert.equal(selection.anchorOffset, newSelection.anchorOffset, 'correct anchorOffset');
+  assert.equal(selection.focusOffset, newSelection.focusOffset, 'correct focusOffset');
 
   Helpers.dom.insertText(editor, 'X');
   assert.hasElement('#editor ul > li:contains(X)', 'text is inserted correctly');
@@ -118,6 +140,19 @@ test('typing "1 " converts to ol > li', (assert) => {
   Helpers.dom.insertText(editor, ' ');
   assert.hasNoElement('#editor p', 'p is gone');
   assert.hasElement('#editor ol > li', 'p -> "ol > li"');
+
+  // Store the selection so we can compare later
+  let selection = window.getSelection();
+  let cursorElement = $('#editor ol > li > br')[0];
+  assert.ok(cursorElement, 'has cursorElement for cursor position');
+  Helpers.dom.selectRange(cursorElement, 0, cursorElement, 0);
+
+  let newSelection = window.getSelection();
+  assert.equal(selection.anchorNode, newSelection.anchorNode, 'correct anchorNode');
+  assert.equal(selection.focusNode, newSelection.focusNode, 'correct focusNode');
+  assert.equal(selection.anchorOffset, newSelection.anchorOffset, 'correct anchorOffset');
+  assert.equal(selection.focusOffset, newSelection.focusOffset, 'correct focusOffset');
+
   Helpers.dom.insertText(editor, 'X');
 
   assert.hasElement('#editor li:contains(X)', 'text is inserted correctly');
