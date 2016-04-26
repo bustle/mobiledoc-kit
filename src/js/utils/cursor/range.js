@@ -1,5 +1,6 @@
 import Position from './position';
 import { DIRECTION } from '../key';
+import assert from 'mobiledoc-kit/utils/assert';
 
 /**
  * A logical range of a {@link Post}.
@@ -76,19 +77,25 @@ class Range {
    * Expands the range 1 unit in the given direction
    * If the range is expandable in the given direction, always returns a
    * non-collapsed range.
-   * @param {Direction} direction
+   * @param {Number} units If units is > 0, the range is extended to the right,
+   *                 otherwise range is extended to the left.
    * @return {Range}
    * @public
    */
-  extend(direction) {
+  extend(units) {
+    assert(`Must pass integer to Range#extend`, typeof units === 'number');
+
+    if (units === 0) { return this; }
+
     let { head, tail, direction: currentDirection } = this;
     switch (currentDirection) {
       case DIRECTION.FORWARD:
-        return new Range(head, tail.move(direction), currentDirection);
+        return new Range(head, tail.move(units), currentDirection);
       case DIRECTION.BACKWARD:
-        return new Range(head.move(direction), tail, currentDirection);
+        return new Range(head.move(units), tail, currentDirection);
       default:
-        return new Range(head, tail, direction).extend(direction);
+        let newDirection = units > 0 ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
+        return new Range(head, tail, newDirection).extend(units);
     }
   }
 
@@ -102,6 +109,9 @@ class Range {
    * @public
    */
   move(direction) {
+    assert(`Must pass DIRECTION.FORWARD (${DIRECTION.FORWARD}) or DIRECTION.BACKWARD (${DIRECTION.BACKWARD}) to Range#move`,
+           direction === DIRECTION.FORWARD || direction === DIRECTION.BACKWARD);
+
     let { focusedPosition, isCollapsed } = this;
 
     if (isCollapsed) {

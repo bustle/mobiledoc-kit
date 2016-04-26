@@ -25,8 +25,8 @@ test('#move moves forward and backward in markup section', (assert) => {
   let rightPosition = new Position(post.sections.head, 'abc'.length);
   let leftPosition = new Position(post.sections.head, 'a'.length);
 
-  assert.positionIsEqual(position.moveRight(), rightPosition, 'right position');
-  assert.positionIsEqual(position.moveLeft(), leftPosition, 'left position');
+  assert.positionIsEqual(position.move(1), rightPosition, 'right position');
+  assert.positionIsEqual(position.move(-1), leftPosition, 'left position');
 });
 
 test('#move is emoji-aware', (assert) => {
@@ -38,20 +38,20 @@ test('#move is emoji-aware', (assert) => {
   assert.equal(marker.length, 'a'.length + 2 + 'z'.length); // precond
   let position = post.sections.head.headPosition();
 
-  position = position.moveRight();
+  position = position.move(1);
   assert.equal(position.offset, 1);
-  position = position.moveRight();
+  position = position.move(1);
   assert.equal(position.offset, 3); // l-to-r across emoji
-  position = position.moveRight();
+  position = position.move(1);
   assert.equal(position.offset, 4);
 
-  position = position.moveLeft();
+  position = position.move(-1);
   assert.equal(position.offset, 3);
 
-  position = position.moveLeft(); // r-to-l across emoji
+  position = position.move(-1); // r-to-l across emoji
   assert.equal(position.offset, 1);
 
-  position = position.moveLeft();
+  position = position.move(-1);
   assert.equal(position.offset, 0);
 });
 
@@ -69,8 +69,8 @@ test('#move moves forward and backward between markup sections', (assert) => {
   let aTail   = post.sections.head.tailPosition();
   let cHead   = post.sections.tail.headPosition();
 
-  assert.positionIsEqual(midHead.moveLeft(), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.moveRight(), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
 });
 
 test('#move from one nested section to another', (assert) => {
@@ -88,8 +88,8 @@ test('#move from one nested section to another', (assert) => {
   let aTail   = post.sections.head.items.head.tailPosition();
   let cHead   = post.sections.tail.items.tail.headPosition();
 
-  assert.positionIsEqual(midHead.moveLeft(), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.moveRight(), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
 });
 
 test('#move from last nested section to next un-nested section', (assert) => {
@@ -107,8 +107,8 @@ test('#move from last nested section to next un-nested section', (assert) => {
   let aTail   = post.sections.head.tailPosition();
   let cHead   = post.sections.tail.headPosition();
 
-  assert.positionIsEqual(midHead.moveLeft(), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.moveRight(), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
 });
 
 test('#move across and beyond card section', (assert) => {
@@ -126,10 +126,10 @@ test('#move across and beyond card section', (assert) => {
   let aTail   = post.sections.head.tailPosition();
   let cHead   = post.sections.tail.headPosition();
 
-  assert.positionIsEqual(midHead.moveLeft(), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.moveRight(), cHead, 'right to next section');
-  assert.positionIsEqual(midHead.moveRight(), midTail, 'move l-to-r across card');
-  assert.positionIsEqual(midTail.moveLeft(), midHead, 'move r-to-l across card');
+  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(1), midTail, 'move l-to-r across card');
+  assert.positionIsEqual(midTail.move(-1), midHead, 'move r-to-l across card');
 });
 
 test('#move across and beyond card section into list section', (assert) => {
@@ -153,8 +153,8 @@ test('#move across and beyond card section into list section', (assert) => {
   let aTail   = post.sections.head.items.tail.tailPosition();
   let cHead   = post.sections.tail.items.head.headPosition();
 
-  assert.positionIsEqual(midHead.moveLeft(), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.moveRight(), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
 });
 
 test('#move left at headPosition or right at tailPosition returns self', (assert) => {
@@ -167,8 +167,25 @@ test('#move left at headPosition or right at tailPosition returns self', (assert
 
   let head = post.headPosition(),
       tail = post.tailPosition();
-  assert.positionIsEqual(head.moveLeft(), head, 'head move left is head');
-  assert.positionIsEqual(tail.moveRight(), tail, 'tail move right is tail');
+  assert.positionIsEqual(head.move(-1), head, 'head move left is head');
+  assert.positionIsEqual(tail.move(1), tail, 'tail move right is tail');
+});
+
+test('#move can move multiple units', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('def')])
+    ]);
+  });
+
+  let head = post.headPosition(),
+      tail = post.tailPosition();
+
+  assert.positionIsEqual(head.move('abc'.length + 1 + 'def'.length), tail, 'head can move to tail');
+  assert.positionIsEqual(tail.move(-1 * ('abc'.length + 1 + 'def'.length)), head, 'tail can move to head');
+
+  assert.positionIsEqual(head.move(0), head, 'move(0) is no-op');
 });
 
 test('#fromNode when node is marker text node', (assert) => {

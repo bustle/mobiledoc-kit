@@ -122,7 +122,7 @@ export default class EventManager {
       case key.isHorizontalArrow():
         let newRange;
         if (key.isShift()) {
-          newRange = range.extend(key.direction);
+          newRange = range.extend(key.direction * 1);
         } else {
           newRange = range.move(key.direction);
         }
