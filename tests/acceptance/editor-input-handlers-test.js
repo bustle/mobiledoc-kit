@@ -70,6 +70,13 @@ test('typing "* " converts to ul > li', (assert) => {
   assert.hasNoElement('#editor p', 'p is gone');
   assert.hasElement('#editor ul > li', 'p -> "ul > li"');
 
+  let li = $('#editor ul > li')[0];
+  assert.ok(li, 'has li for cursor position');
+
+  let selection = window.getSelection();
+  assert.equal(selection.anchorNode, li, 'selection anchorNode is li');
+  assert.equal(selection.focusNode, li, 'selection focusNode is li');
+
   Helpers.dom.insertText(editor, 'X');
   assert.hasElement('#editor ul > li:contains(X)', 'text is inserted correctly');
 });
