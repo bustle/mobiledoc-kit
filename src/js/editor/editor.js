@@ -33,16 +33,7 @@ import EditState from 'mobiledoc-kit/editor/edit-state';
 import HTMLRenderer from 'mobiledoc-html-renderer';
 import TextRenderer from 'mobiledoc-text-renderer';
 import LifecycleCallbacks from 'mobiledoc-kit/models/lifecycle-callbacks';
-import Logger from 'mobiledoc-kit/utils/logger';
-let log = Logger.for('editor'); /* jshint ignore:line */
-
-Logger.enableTypes([
-  'mutation-handler',
-  'event-manager',
-  'editor',
-  'parse-utils'
-]);
-Logger.disable();
+import LogManager from 'mobiledoc-kit/utils/log-manager';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
@@ -130,6 +121,7 @@ class Editor {
 
     DEFAULT_KEY_COMMANDS.forEach(kc => this.registerKeyCommand(kc));
 
+    this._logManager = new LogManager();
     this._parser   = new DOMParser(this.builder);
     let {cards, atoms, unknownCardHandler, unknownAtomHandler, cardOptions} = this;
     this._renderer = new Renderer(this, cards, atoms, unknownCardHandler, unknownAtomHandler, cardOptions);
@@ -146,6 +138,34 @@ class Editor {
     DEFAULT_TEXT_INPUT_HANDLERS.forEach(handler => this.onTextInput(handler));
 
     this.hasRendered = false;
+  }
+
+  /**
+   * Turns on verbose logging for the editor.
+   * @param {Array} [logTypes=[]] If present, only the given log types will be logged.
+   * @public
+   */
+  enableLogging(logTypes=[]) {
+    if (logTypes.length === 0) {
+      this._logManager.enableAll();
+    } else {
+      this._logManager.enableTypes(logTypes);
+    }
+  }
+
+  /**
+   * Disable all logging
+   * @public
+   */
+  disableLogging() {
+    this._logManager.disable();
+  }
+
+  /**
+   * @private
+   */
+  loggerFor(type) {
+    return this._logManager.for(type);
   }
 
   /**

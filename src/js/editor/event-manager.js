@@ -9,8 +9,6 @@ import { filter, forEach, contains } from 'mobiledoc-kit/utils/array-utils';
 import Key from 'mobiledoc-kit/utils/key';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 import TextInputHandler from 'mobiledoc-kit/editor/text-input-handler';
-import Logger from 'mobiledoc-kit/utils/logger';
-let log = Logger.for('event-manager'); /* jshint ignore:line */
 
 const ELEMENT_EVENT_TYPES = [
   'keydown', 'keyup', 'cut', 'copy', 'paste', 'keypress', 'drop'
@@ -20,6 +18,7 @@ const DOCUMENT_EVENT_TYPES = ['mouseup'];
 export default class EventManager {
   constructor(editor) {
     this.editor = editor;
+    this.logger = editor.loggerFor('event-manager');
     this._textInputHandler = new TextInputHandler(editor);
     this._listeners = [];
     this.isShift = false;
@@ -215,13 +214,13 @@ export default class EventManager {
 
     let position = editor.positionAtPoint(x, y);
     if (!position) {
-      log('Could not find drop position');
+      this.logger.log('Could not find drop position');
       return;
     }
 
-    let post = parsePostFromDrop(event, editor);
+    let post = parsePostFromDrop(event, editor, {logger: this.logger});
     if (!post) {
-      log('Could not determine post from drop event');
+      this.logger.log('Could not determine post from drop event');
       return;
     }
 

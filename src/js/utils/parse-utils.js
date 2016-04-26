@@ -2,13 +2,11 @@
 import mobiledocParsers from '../parsers/mobiledoc';
 import HTMLParser from '../parsers/html';
 import TextParser from '../parsers/text';
-import Logger from 'mobiledoc-kit/utils/logger';
 
 export const MIME_TEXT_PLAIN = 'text/plain';
 export const MIME_TEXT_HTML = 'text/html';
 export const NONSTANDARD_IE_TEXT_TYPE = 'Text';
 
-const log = Logger.for('parse-utils');
 const MOBILEDOC_REGEX = new RegExp(/data\-mobiledoc='(.*?)'>/);
 
 /**
@@ -65,7 +63,7 @@ export function getContentFromPasteEvent(event, window) {
  * @return {{html: String, text: String}}
  * @private
  */
-function getContentFromDropEvent(event) {
+function getContentFromDropEvent(event, logger) {
   let html = '', text = '';
 
   try {
@@ -75,7 +73,9 @@ function getContentFromDropEvent(event) {
     // FIXME IE11 does not include any data in the 'text/html' or 'text/plain'
     // mimetypes. It throws an error 'Invalid argument' when attempting to read
     // these properties.
-    log('Error getting drop data: ', e);
+    if (logger) {
+      logger.log('Error getting drop data: ', e);
+    }
   }
 
   return { html, text };
@@ -124,12 +124,14 @@ export function parsePostFromPaste(pasteEvent, {builder, _parserPlugins: plugins
 
 /**
  * @param {DropEvent}
- * @param {{builder: Builder, _parserPlugins: Array}} options
+ * @param {Editor} editor
+ * @param {Object} [options={}] Can pass a logger
  * @return {Post}
  * @private
  */
-export function parsePostFromDrop(dropEvent, {builder, _parserPlugins: plugins}) {
-  let { html, text } = getContentFromDropEvent(dropEvent);
+export function parsePostFromDrop(dropEvent, editor, {logger}={}) {
+  let { builder, _parserPlugins: plugins } = editor;
+  let { html, text } = getContentFromDropEvent(dropEvent, logger);
 
   if (html && html.length) {
     return parsePostFromHTML(html, builder, plugins);
