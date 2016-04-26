@@ -109,18 +109,81 @@ test('#extend expands range in direction', (assert) => {
   let nonCollapsedRangeBackward = Range.create(section, 0, section, 2, BACKWARD);
 
   assert.ok(collapsedRange.isCollapsed, 'precond - collapsedRange.isCollapsed');
-  assert.rangeIsEqual(collapsedRange.extend(FORWARD),
-                      collapsedRangeForward,
+  assert.rangeIsEqual(collapsedRange.extend(FORWARD), collapsedRangeForward,
                       'collapsedRange extend forward');
-  assert.rangeIsEqual(collapsedRange.extend(BACKWARD),
-                      collapsedRangeBackward,
+  assert.rangeIsEqual(collapsedRange.extend(BACKWARD), collapsedRangeBackward,
                       'collapsedRange extend backward');
 
   assert.ok(!nonCollapsedRange.isCollapsed, 'precond -nonCollapsedRange.isCollapsed');
-  assert.rangeIsEqual(nonCollapsedRange.extend(FORWARD),
-                      nonCollapsedRangeForward,
+  assert.rangeIsEqual(nonCollapsedRange.extend(FORWARD), nonCollapsedRangeForward,
                       'nonCollapsedRange extend forward');
-  assert.rangeIsEqual(nonCollapsedRange.extend(BACKWARD),
-                      nonCollapsedRangeBackward,
+  assert.rangeIsEqual(nonCollapsedRange.extend(BACKWARD), nonCollapsedRangeBackward,
                       'nonCollapsedRange extend backward');
+});
+
+test('#extend expands range in multiple units in direction', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abcd')]),
+      markupSection('p', [marker('1234')])
+    ]);
+  });
+
+  let headSection = post.sections.head;
+  let tailSection = post.sections.tail;
+
+  // FORWARD
+  let collapsedRange = Range.create(headSection, 0);
+  let nonCollapsedRange = Range.create(headSection, 0, headSection, 1);
+  assert.rangeIsEqual(collapsedRange.extend(FORWARD*2),
+                      Range.create(headSection, 0, headSection, 2, FORWARD),
+                      'extend forward 2');
+
+  assert.rangeIsEqual(collapsedRange.extend(FORWARD*(('abcd' + '12').length+1)),
+                      Range.create(headSection, 0, tailSection, 2, FORWARD),
+                      'extend forward across sections');
+
+  assert.rangeIsEqual(nonCollapsedRange.extend(FORWARD*2),
+                      Range.create(headSection, 0, headSection, 3, FORWARD),
+                      'extend non-collapsed forward 2');
+
+  assert.rangeIsEqual(nonCollapsedRange.extend(FORWARD*(('bcd' + '12').length+1)),
+                      Range.create(headSection, 0, tailSection, 2, FORWARD),
+                      'extend non-collapsed across sections');
+
+  // BACKWARD
+  collapsedRange = Range.create(tailSection, '1234'.length);
+  nonCollapsedRange = Range.create(tailSection, '12'.length, tailSection, '1234'.length);
+  assert.rangeIsEqual(collapsedRange.extend(BACKWARD*'12'.length),
+                      Range.create(tailSection, '12'.length, tailSection, '1234'.length, BACKWARD),
+                      'extend backward 2');
+
+  assert.rangeIsEqual(collapsedRange.extend(BACKWARD*(('1234' + 'cd').length+1)),
+                      Range.create(headSection, 'ab'.length, tailSection, '1234'.length, BACKWARD),
+                      'extend backward across sections');
+
+  assert.rangeIsEqual(nonCollapsedRange.extend(BACKWARD*2),
+                      Range.create(tailSection, 0, tailSection, '1234'.length, BACKWARD),
+                      'extend non-collapsed backward 2');
+
+  assert.rangeIsEqual(nonCollapsedRange.extend(BACKWARD*(('bcd' + '12').length+1)),
+                      Range.create(headSection, 'a'.length, tailSection, '1234'.length, BACKWARD),
+                      'extend non-collapsed backward across sections');
+});
+
+test('#extend(0) returns same range', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abcd')]),
+      markupSection('p', [marker('1234')])
+    ]);
+  });
+
+  let headSection = post.sections.head;
+
+  let collapsedRange = Range.create(headSection, 0);
+  let nonCollapsedRange = Range.create(headSection, 0, headSection, 1);
+
+  assert.rangeIsEqual(collapsedRange.extend(0), collapsedRange, 'extending collapsed range 0 is no-op');
+  assert.rangeIsEqual(nonCollapsedRange.extend(0), nonCollapsedRange, 'extending non-collapsed range 0 is no-op');
 });

@@ -1,5 +1,4 @@
 import { isTextNode } from 'mobiledoc-kit/utils/dom-utils';
-import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import assert from 'mobiledoc-kit/utils/assert';
 import {
   HIGH_SURROGATE_RANGE,
@@ -148,18 +147,21 @@ const Position = class Position {
   /**
    * Move the position 1 unit in `direction`.
    *
-   * @param {Direction} direction to move
-   * @return {Position|null} Return a new position one unit in the given
-   * direction or null if it is not possible to move that direction
+   * @param {Number} units to move. > 0 moves right, < 0 moves left
+   * @return {Position} Return a new position one unit in the given
+   * direction. If the position is moving left and at the beginning of the post,
+   * the same position will be returned. Same if the position is moving right and
+   * at the end of the post.
    */
-  move(direction) {
-    switch (direction) {
-      case DIRECTION.BACKWARD:
-        return this.moveLeft();
-      case DIRECTION.FORWARD:
-        return this.moveRight();
-      default:
-        assert('Must pass a valid direction to Position.move', false);
+  move(units) {
+    assert('Must pass integer to Position#move', typeof units === 'number');
+
+    if (units < 0) {
+      return this.moveLeft().move(++units);
+    } else if (units > 0) {
+      return this.moveRight().move(--units);
+    } else {
+      return this;
     }
   }
 
@@ -167,6 +169,7 @@ const Position = class Position {
    * The position to the left of this position.
    * If this position is the post's headPosition it returns itself.
    * @return {Position}
+   * @private
    */
   moveLeft() {
     if (this.isHead()) {
@@ -188,6 +191,7 @@ const Position = class Position {
    * The position to the right of this position.
    * If this position is the post's tailPosition it returns itself.
    * @return {Position}
+   * @private
    */
   moveRight() {
     if (this.isTail()) {
