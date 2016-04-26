@@ -40,6 +40,14 @@ const Marker = class Marker extends LinkedItem {
     return this.length === 0;
   }
 
+  /**
+   * A marker's text is equal to its value.
+   * Compare with an Atom which distinguishes between text and value
+   */
+  get text() {
+    return this.value;
+  }
+
   get length() {
     return this.value.length;
   }
@@ -70,6 +78,10 @@ const Marker = class Marker extends LinkedItem {
 
   canJoin(other) {
     return other && other.isMarker && isArrayEqual(this.markups, other.markups);
+  }
+
+  textUntil(offset) {
+    return this.value.slice(0, offset);
   }
 
   split(offset=0, endOffset=this.length) {

@@ -208,24 +208,33 @@ editor.registerKeyCommand(enterKeyCommand);
 
 To fall-back to the default behavior, return `false` from `run`.
 
-### Configuring text expansions
+### Responding to text input
 
-Text expansions can also be registered with the editor. These are functions that
-are run when a text string is entered and then a trigger character is entered.
-For example, the text `"*"` followed by a space character triggers a function that
-turns the current section into a list item. To register a text expansion call
-`editor.registerExpansion` with an object that has `text`, `trigger` and `run`
-properties, e.g.:
+The editor exposes a hook `onTextInput` that can be used to programmatically react
+to text that the user enters. Specify a handler object with `text` or `match`
+properties and a `run` callback function, and the editor will invoke the callback
+when the text before the cursor ends with `text` or matches `match`.
+The callback is called after the matching text has been inserted. It is passed
+the `editor` instance and an array of matches (either the result of `match.exec`
+on the matching user-entered text, or an array containing only the `text`).
 
 ```javascript
-const expansion = {
-  trigger: ' ',
+editor.onTextInput({
   text: 'X',
   run(editor) {
-    // use the editor to programmatically change the post
+    // This callback is called after user types 'X'
   }
-};
+});
+
+editor.onTextInput({
+  match: /\d\dX$/,  // Note the "$" end anchor
+  run(editor) {
+    // This callback is called after user types number-number-X
+  }
+});
 ```
+The editor has several default text input handlers that are defined in
+`src/js/editor/text-input-handlers.js`.
 
 ### DOM Parsing hooks
 

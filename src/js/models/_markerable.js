@@ -41,6 +41,23 @@ export default class Markerable extends Section {
     return this.markers.every(m => m.isBlank);
   }
 
+  textUntil(position) {
+    assert(`Cannot get textUntil for a position not in this section`, position.section === this);
+    let {marker, offsetInMarker} = position;
+    let text = '';
+    let currentMarker = this.markers.head;
+    while (currentMarker) {
+      if (currentMarker === marker) {
+        text += currentMarker.textUntil(offsetInMarker);
+        break;
+      } else {
+        text += currentMarker.text;
+        currentMarker = currentMarker.next;
+      }
+    }
+    return text;
+  }
+
   /**
    * @param {Marker}
    * @param {Number} markerOffset The offset relative to the start of the marker
@@ -183,10 +200,6 @@ export default class Markerable extends Section {
     });
 
     return {marker:currentMarker, offset:currentOffset};
-  }
-
-  textUntil(offset) {
-    return this.text.slice(0, offset);
   }
 
   get text() {

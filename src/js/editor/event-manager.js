@@ -8,6 +8,7 @@ import Range from 'mobiledoc-kit/utils/cursor/range';
 import { filter, forEach, contains } from 'mobiledoc-kit/utils/array-utils';
 import Key from 'mobiledoc-kit/utils/key';
 import { TAB } from 'mobiledoc-kit/utils/characters';
+import TextInputHandler from 'mobiledoc-kit/editor/text-input-handler';
 import Logger from 'mobiledoc-kit/utils/logger';
 let log = Logger.for('event-manager'); /* jshint ignore:line */
 
@@ -19,6 +20,7 @@ const DOCUMENT_EVENT_TYPES = ['mouseup'];
 export default class EventManager {
   constructor(editor) {
     this.editor = editor;
+    this._textInputHandler = new TextInputHandler(editor);
     this._listeners = [];
     this.isShift = false;
   }
@@ -34,6 +36,10 @@ export default class EventManager {
     DOCUMENT_EVENT_TYPES.forEach(type => {
       this._addListener(document, type);
     });
+  }
+
+  registerInputHandler(inputHandler) {
+    this._textInputHandler.register(inputHandler);
   }
 
   _addListener(context, type) {
@@ -64,6 +70,7 @@ export default class EventManager {
   }
 
   destroy() {
+    this._textInputHandler.destroy();
     this._removeListeners();
     this._listeners = [];
   }
@@ -83,7 +90,7 @@ export default class EventManager {
   }
 
   keypress(event) {
-    let { editor } = this;
+    let { editor, _textInputHandler } = this;
     if (!editor.hasCursor()) { return; }
 
     let key = Key.fromEvent(event);
@@ -93,11 +100,7 @@ export default class EventManager {
       event.preventDefault();
     }
 
-    if (editor.handleExpansion(event)) {
-      return;
-    } else {
-      editor.insertText(key.toString());
-    }
+    _textInputHandler.handle(key.toString());
   }
 
   keydown(event) {

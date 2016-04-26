@@ -1,5 +1,6 @@
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Helpers from '../../test-helpers';
+import Position from 'mobiledoc-kit/utils/cursor/position';
 
 const {module, test} = Helpers;
 
@@ -296,5 +297,68 @@ test('#length is correct', (assert) => {
   assert.expect(expectations.length);
   expectations.forEach(({name, length, section}) => {
     assert.equal(section.length, length, `${name} has correct length`);
+  });
+});
+
+test('#textUntil is correct', (assert) => {
+  let expectations;
+
+  Helpers.postAbstract.build(({markupSection, marker, atom}) => {
+    expectations = [{
+      name: 'blank section',
+      text: '',
+      section: markupSection(),
+      offset: 0
+    }, {
+      name: 'section with empty marker',
+      text: '',
+      section: markupSection('p', [marker('')]),
+      offset: 0
+    }, {
+      name: 'section with single marker end',
+      text: 'abc',
+      section: markupSection('p', [marker('abc')]),
+      offset: 'abc'.length
+    }, {
+      name: 'section with single marker middle',
+      text: 'ab',
+      section: markupSection('p', [marker('abc')]),
+      offset: 'ab'.length
+    }, {
+      name: 'section with single marker start',
+      text: '',
+      section: markupSection('p', [marker('abc')]),
+      offset: 0
+    }, {
+      name: 'section with multiple markers end',
+      text: 'abcdefg',
+      section: markupSection('p', [marker('abc'),marker('defg')]),
+      offset: 'abc'.length + 'defg'.length
+    }, {
+      name: 'section with multiple markers middle',
+      text: 'abcde',
+      section: markupSection('p', [marker('abc'),marker('defg')]),
+      offset: 'abc'.length + 'de'.length
+    }, {
+      name: 'section with atom has no text for atom',
+      text: '',
+      section: markupSection('p', [atom('mention', 'bob')]),
+      offset: 1
+    }, {
+      name: 'section with multiple atoms has no text for atoms',
+      text: '',
+      section: markupSection('p', [atom('mention', 'bob'), atom('mention','other')]),
+      offset: 2
+    }, {
+      name: 'section with atom and markers has text for markers only',
+      text: 'abc',
+      section: markupSection('p', [marker('abc'), atom('mention', 'bob')]),
+      offset: 'abc'.length + 1
+    }];
+  });
+
+  assert.expect(expectations.length);
+  expectations.forEach(({name, text, section, offset}) => {
+    assert.equal(text, section.textUntil(new Position(section, offset)), name);
   });
 });
