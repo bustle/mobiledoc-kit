@@ -1,3 +1,19 @@
+<a name="0.9.5"></a>
+## 0.9.5 (2016-04-26)
+
+* [bugfix] Ensure cursor is in li after "* " expands to li ([be898fb](https://github.com/bustlelabs/mobiledoc-kit/commit/be898fb))
+* [bugfix] Ensure cursor positioning on a blank markup section or list item works ([9d20ed1](https://github.com/bustlelabs/mobiledoc-kit/commit/9d20ed1))
+* Add `Editor#onTextInput` to handle text or regex-match input ([a0347b2](https://github.com/bustlelabs/mobiledoc-kit/commit/a0347b2)), closes [#367](https://github.com/bustlelabs/mobiledoc-kit/issues/367)
+* Add Editor#enableLogging and Editor#disableLogging ([0f54784](https://github.com/bustlelabs/mobiledoc-kit/commit/0f54784))
+* Build docs when building website ([5e05d72](https://github.com/bustlelabs/mobiledoc-kit/commit/5e05d72))
+* built website from 98999423290fe13d7276d0b07801ecb8bfb7e213 ([fbb52f4](https://github.com/bustlelabs/mobiledoc-kit/commit/fbb52f4))
+* built website from fbb52f4b0a8437866cd15e96201f1ab1559bea18 ([be85869](https://github.com/bustlelabs/mobiledoc-kit/commit/be85869))
+* Change Range#extend and Position#move to move multiple units ([bff7bc7](https://github.com/bustlelabs/mobiledoc-kit/commit/bff7bc7))
+* enable logging in demo app ([f8582fc](https://github.com/bustlelabs/mobiledoc-kit/commit/f8582fc))
+* Update README.md ([77fba45](https://github.com/bustlelabs/mobiledoc-kit/commit/77fba45))
+
+
+
 <a name="0.9.4"></a>
 ## 0.9.4 (2016-04-20)
 
@@ -13,6 +29,7 @@
 * Minor changes: Remove references to embed intent, add FIXME ([46e50be](https://github.com/bustlelabs/mobiledoc-kit/commit/46e50be))
 * Update broccoli build to copy version from package.json to src/js/version.js ([ae06afc](https://github.com/bustlelabs/mobiledoc-kit/commit/ae06afc))
 * Update the README to add links to docs ([e346abd](https://github.com/bustlelabs/mobiledoc-kit/commit/e346abd))
+* v0.9.4 ([9899942](https://github.com/bustlelabs/mobiledoc-kit/commit/9899942))
 
 
 
