@@ -84,7 +84,7 @@ const Cursor = class Cursor {
         node = section.renderNode.element.lastChild;
       }
     } else if (section.isBlank) {
-      node = section.renderNode.element;
+      node = section.renderNode.cursorElement;
       offset = 0;
     } else {
       let {marker, offsetInMarker} = position;

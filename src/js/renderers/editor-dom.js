@@ -327,10 +327,13 @@ class Visitor {
     // Always rerender the section -- its tag name or attributes may have changed.
     // TODO make this smarter, only rerendering and replacing the element when necessary
     renderNode.element = renderMarkupSection(section);
+    renderNode.cursorElement = null;
     attachRenderNodeElementToDOM(renderNode, originalElement);
 
     if (section.isBlank) {
-      renderNode.element.appendChild(renderCursorPlaceholder());
+      let cursorPlaceholder = renderCursorPlaceholder();
+      renderNode.element.appendChild(cursorPlaceholder);
+      renderNode.cursorElement = cursorPlaceholder;
     } else {
       const visitAll = true;
       visit(renderNode, section.markers, visitAll);
@@ -350,10 +353,13 @@ class Visitor {
   [LIST_ITEM_TYPE](renderNode, item, visit) {
     // FIXME do we need to do anything special for rerenders?
     renderNode.element = renderListItem();
+    renderNode.cursorElement = null;
     attachRenderNodeElementToDOM(renderNode, null);
 
     if (item.isBlank) {
-      renderNode.element.appendChild(renderCursorPlaceholder());
+      let cursorPlaceholder = renderCursorPlaceholder();
+      renderNode.element.appendChild(cursorPlaceholder);
+      renderNode.cursorElement = cursorPlaceholder;
     } else {
       const visitAll = true;
       visit(renderNode, item.markers, visitAll);

@@ -12,6 +12,7 @@ export default class RenderNode extends LinkedItem {
     this.postNode = postNode;
     this._childNodes = null;
     this._element = null;
+    this._cursorElement = null; // blank render nodes need a cursor element
     this.renderTree = renderTree;
 
     // RenderNodes for Markers keep track of their markupElement
@@ -67,6 +68,12 @@ export default class RenderNode extends LinkedItem {
   }
   get element() {
     return this._element;
+  }
+  set cursorElement(cursorElement) {
+    this._cursorElement = cursorElement;
+  }
+  get cursorElement() {
+    return this._cursorElement || this.element;
   }
   destroy() {
     this.element = null;
