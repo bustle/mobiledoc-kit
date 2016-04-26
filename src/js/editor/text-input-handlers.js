@@ -1,3 +1,5 @@
+import Range from 'mobiledoc-kit/utils/cursor/range';
+
 function replaceWithListSection(editor, listTagName) {
   let { range: { head, head: { section } } } = editor;
   // Skip if cursor is not at end of section
@@ -15,6 +17,7 @@ function replaceWithListSection(editor, listTagName) {
     let listSection = builder.createListSection(listTagName, [item]);
 
     postEditor.replaceSection(section, listSection);
+    postEditor.setRange(new Range(listSection.headPosition()));
   });
 }
 
