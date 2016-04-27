@@ -50,3 +50,23 @@ test('firefox arrow keypress is not printable', (assert) => {
   let key = Key.fromEvent(event);
   assert.ok(!key.isPrintable());
 });
+
+test('HOME key is movement', (assert) => {
+  let element = $('#qunit-fixture')[0];
+  let event = Helpers.dom.createMockEvent('keypress', element, {
+    keyCode: Keycodes.HOME,
+    charCode: 0
+  });
+  let key = Key.fromEvent(event);
+  assert.ok(key.isMovement());
+});
+
+test('END key is movement', (assert) => {
+  let element = $('#qunit-fixture')[0];
+  let event = Helpers.dom.createMockEvent('keypress', element, {
+    keyCode: Keycodes.END,
+    charCode: 0
+  });
+  let key = Key.fromEvent(event);
+  assert.ok(key.isMovement());
+});
