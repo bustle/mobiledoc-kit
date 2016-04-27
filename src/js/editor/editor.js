@@ -84,6 +84,8 @@ const CALLBACK_QUEUES = {
  *     position or selection have changed. This hook can be used with
  *     {@link Editor#activeMarkups} and {@link Editor#activeSections} to implement
  *     a custom toolbar.
+ *   * {@link Editor#onTextInput} -- Register callbacks when the user enters text
+ *     that matches a given string or regex.
  */
 class Editor {
   /**
