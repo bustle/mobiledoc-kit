@@ -95,7 +95,7 @@ const Key = class Key {
   }
 
   isMovement() {
-    return this.isArrow();
+    return this.isArrow() || this.isHome() || this.isEnd();
   }
 
   isArrow() {
@@ -118,6 +118,14 @@ const Key = class Key {
 
   isRightArrow() {
     return this.keyCode === Keycodes.RIGHT;
+  }
+
+  isHome() {
+    return this.keyCode === Keycodes.HOME;
+  }
+
+  isEnd() {
+    return this.keyCode === Keycodes.END;
   }
 
   get direction() {
