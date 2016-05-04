@@ -235,7 +235,7 @@ function triggerKeyCommand(editor, string, modifiers=[]) {
   if (typeof modifiers === "number") {
     modifiers = [modifiers]; // convert singular to array
   }
-  let charCode = string.toUpperCase().charCodeAt(0);
+  let charCode = (KEY_CODES[string] || string.toUpperCase().charCodeAt(0));
   let keyCode = charCode;
   let keyEvent = createMockEvent('keydown', editor.element, {
     charCode,

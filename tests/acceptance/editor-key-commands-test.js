@@ -1,6 +1,7 @@
 import { Editor } from 'mobiledoc-kit';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Keycodes from 'mobiledoc-kit/utils/keycodes';
+import Browser from 'mobiledoc-kit/utils/browser';
 import Helpers from '../test-helpers';
 
 const { module, test } = Helpers;
@@ -63,7 +64,7 @@ function testStatefulCommand({modifierName, key, command, markupName}) {
     editor.render(editorElement);
 
     assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
-    Helpers.dom.moveCursorTo(editor, 
+    Helpers.dom.moveCursorTo(editor,
       editor.post.sections.head.markers.head.renderNode.element,
       initialText.length);
     Helpers.dom.triggerKeyCommand(editor, key, modifier);
@@ -138,6 +139,58 @@ testStatefulCommand({
   key: 'I',
   command: 'ctrl-I',
   markupName: 'em'
+});
+
+test(`cmd-left goes to the beginning of a line (MacOS only)`, (assert) => {
+  let initialText = 'something';
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker(initialText)])
+    ]));
+
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  let textElement = editor.post.sections.head.markers.head.renderNode.element;
+
+  Helpers.dom.moveCursorTo(editor, textElement, 4);
+  let originalCursorPosition = Helpers.dom.getCursorPosition();
+  Helpers.dom.triggerKeyCommand(editor, 'LEFT', MODIFIERS.META);
+
+  let changedCursorPosition = Helpers.dom.getCursorPosition();
+  let expectedCursorPosition = 0; // beginning of text
+
+  if (Browser.isMac) {
+    assert.equal(changedCursorPosition.offset, expectedCursorPosition, 'cursor moved to the beginning of the line on MacOS');
+  } else {
+    assert.equal(changedCursorPosition.offset, originalCursorPosition.offset, 'cursor not moved to the end of the line (non-MacOS)');
+  }
+});
+
+test(`cmd-right goes to the end of a line (MacOS only)`, (assert) => {
+  let initialText = 'something';
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => post([
+      markupSection('p', [marker(initialText)])
+    ]));
+
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  let textElement = editor.post.sections.head.markers.head.renderNode.element;
+
+  Helpers.dom.moveCursorTo(editor, textElement, 4);
+  let originalCursorPosition = Helpers.dom.getCursorPosition();
+  Helpers.dom.triggerKeyCommand(editor, 'RIGHT', MODIFIERS.META);
+
+  let changedCursorPosition = Helpers.dom.getCursorPosition();
+  let expectedCursorPosition = initialText.length; // end of text
+
+  if (Browser.isMac) {
+    assert.equal(changedCursorPosition.offset, expectedCursorPosition, 'cursor moved to the end of the line on MacOS');
+  } else {
+    assert.equal(changedCursorPosition.offset, originalCursorPosition.offset, 'cursor not moved to the end of the line (non-MacOS)');
+  }
 });
 
 test(`ctrl-k clears to the end of a line`, (assert) => {

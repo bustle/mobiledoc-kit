@@ -11,6 +11,22 @@ function selectAll(editor) {
   editor.selectRange(allRange);
 }
 
+function gotoStartOfLine(editor) {
+  let {range} = editor;
+  let {tail: {section}} = range;
+  editor.run(postEditor => {
+    postEditor.setRange(new Range(section.headPosition()));
+  });
+}
+
+function gotoEndOfLine(editor) {
+  let {range} = editor;
+  let {tail: {section}} = range;
+  editor.run(postEditor => {
+    postEditor.setRange(new Range(section.tailPosition()));
+  });
+}
+
 export const DEFAULT_KEY_COMMANDS = [{
   str: 'META+B',
   run(editor) {
@@ -47,13 +63,16 @@ export const DEFAULT_KEY_COMMANDS = [{
   str: 'CTRL+A',
   run(editor) {
     if (Browser.isMac) {
-      let {range} = editor;
-      let {head: {section}} = range;
-      editor.run(postEditor => {
-        postEditor.setRange(new Range(section.headPosition()));
-      });
+      gotoStartOfLine(editor);
     } else {
       selectAll(editor);
+    }
+  }
+}, {
+  str: 'META+LEFT',
+  run(editor) {
+    if (Browser.isMac) {
+      gotoStartOfLine(editor);
     }
   }
 }, {
@@ -66,12 +85,16 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'CTRL+E',
   run(editor) {
-    if (!Browser.isMac) { return false; }
-    let {range} = editor;
-    let {tail: {section}} = range;
-    editor.run(postEditor => {
-      postEditor.setRange(new Range(section.tailPosition()));
-    });
+    if (Browser.isMac) {
+      gotoEndOfLine(editor);
+    }
+  }
+}, {
+  str: 'META+RIGHT',
+  run(editor) {
+    if (Browser.isMac) {
+      gotoEndOfLine(editor);
+    }
   }
 }, {
   str: 'META+K',
