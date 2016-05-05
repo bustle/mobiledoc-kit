@@ -133,8 +133,8 @@ Markup sections, in addition to plain text, can include markups and atoms.
     ]],
     [1, "p", [
       [textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, atomIndex],
-      [1, [], 0, 0],                                   ──── mention atom at index 0 (@bob), textTypeIdentifier for atom is always 1
-      [1, [], 0, 1]                                    ──── mention atom at index 1 (@tom) wrapped in b tag
+      [1, [], 0, 0],             ──── mention atom at index 0 (@bob), textTypeIdentifier for atom is always 1
+      [1, [0], 1, 1]             ──── mention atom at index 1 (@tom) wrapped in b tag (markup index 0)
     ]],
   ]
 }
@@ -142,12 +142,12 @@ Markup sections, in addition to plain text, can include markups and atoms.
 
 The index in `openMarkupsIndex` specifies which markups should be opened at
 the start of the `value` text. As these tags are opened, then create a stack
-of opened markups. The `numberOfClosedMarkups` says how many markups should
+of opened markups. The `numberOfClosedMarkups` says how many of those opened markup tags should
 be closed at the end of a `value`.
 
-In addition to markups, markup sections may contain [ATOMS](ATOMS.md).
+In addition to markers, markup sections may contain [ATOMS](ATOMS.md).
 Atoms in a markup section have a `textTypeIdentifier` of 1 and contain an `atomTypeIndex`.
-They also contain the same `openMarkupsIndex` and `numberOfClosedMarkups` values that other markups have, so that markup can flow across them.
+They also contain the same `openMarkupsIndex` and `numberOfClosedMarkups` values that other markers have, so that markup can flow across them.
 
 If an atom is present in Mobiledoc but no atom implementation is registered, the text
 value of the atom will be rendered as plain text as a fallback.
