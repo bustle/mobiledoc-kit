@@ -132,9 +132,9 @@ Markup sections, in addition to plain text, can include markups and atoms.
       [0, [], 1, "Example closing b tag, (no opened markups, 1 closed markup [closes markup #0])"],
     ]],
     [1, "p", [
-      [textTypeIdentifier, atomIndex, openMarkupsIndexes, numberOfClosedMarkups],
-      [1, 0, [], 0],                                    ──── mention atom at index 0 (@bob), textTypeIdentifier for atom is always 1
-      [1, 1, [0], 1]                                    ──── mention atom at index 1 (@tom) wrapped in b tag
+      [textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, atomIndex],
+      [1, [], 0, 0],                                   ──── mention atom at index 0 (@bob), textTypeIdentifier for atom is always 1
+      [1, [], 0, 1]                                    ──── mention atom at index 1 (@tom) wrapped in b tag
     ]],
   ]
 }
@@ -146,14 +146,10 @@ of opened markups. The `numberOfClosedMarkups` says how many markups should
 be closed at the end of a `value`.
 
 In addition to markups, markup sections may contain [ATOMS](ATOMS.md).
-Atoms have a `textTypeIdentifier` of 1 and contain a `atomTypeIndex`, text content
-and an `atomPayload` object which is arbitrary and passed through to the atom's
-implementation.
+Atoms in a markup section have a `textTypeIdentifier` of 1 and contain an `atomTypeIndex`.
+They also contain the same `openMarkupsIndex` and `numberOfClosedMarkups` values that other markups have, so that markup can flow across them.
 
-Atoms also have `openMarkupsIndex` and `numberOfClosedMarkups` so that markup can flow
-across them.
-
-If an atom is present in Mobiledoc, but no atom implementation is registered, then the text
+If an atom is present in Mobiledoc but no atom implementation is registered, the text
 value of the atom will be rendered as plain text as a fallback.
 
 **Card Section**
