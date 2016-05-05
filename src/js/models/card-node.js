@@ -46,11 +46,18 @@ export default class CardNode {
     }
   }
 
+  didRender() {
+    if (this._didRenderCallback) {
+      this._didRenderCallback();
+    }
+  }
+
   get env() {
     return {
       name: this.card.name,
       isInEditor: true,
       onTeardown: (callback) => this._teardownCallback = callback,
+      didRender: (callback) => this._didRenderCallback = callback,
       edit: () => this.edit(),
       save: (payload, transition=true) => {
         this.section.payload = payload;
@@ -90,5 +97,6 @@ export default class CardNode {
     );
     this.element.appendChild(rendered);
     this._rendered = rendered;
+    this.didRender();
   }
 }

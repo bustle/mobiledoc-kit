@@ -30,10 +30,11 @@ function assertRenderArguments(assert, args, expected) {
   assert.deepEqual(options, expected.options, 'correct options');
 
   // basic env
-  let {name, isInEditor, onTeardown} = env;
+  let {name, isInEditor, onTeardown, didRender} = env;
   assert.equal(name, expected.name, 'correct name');
   assert.equal(isInEditor, expected.isInEditor, 'correct isInEditor');
   assert.ok(!!onTeardown, 'has onTeardown');
+  assert.ok(!!didRender, 'has didRender');
 
   // editor env hooks
   let {save, cancel, edit, remove} = env;
@@ -585,4 +586,49 @@ test('onTeardown hook is called when editor is destroyed', (assert) => {
   editor.destroy();
 
   assert.ok(teardown, 'onTeardown hook called');
+});
+
+test('didRender hook is called when moving from display->edit and back', (assert) => {
+  const cardName = 'test-card';
+
+  let editHook;
+  let saveHook;
+  let currentMode;
+  let rendered;
+
+  const card = {
+    name: cardName,
+    type: 'dom',
+    render({env}) {
+      currentMode = 'display';
+      editHook = env.edit;
+      env.didRender(() => rendered = 'display');
+      return makeEl('display-card');
+    },
+    edit({env}) {
+      currentMode = 'edit';
+      saveHook = env.save;
+      env.didRender(() => rendered = 'edit');
+      return makeEl('edit-card');
+    }
+  };
+
+  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) =>
+    post([cardSection(cardName)])
+  );
+  editor = new Editor({mobiledoc, cards: [card]});
+  editor.render(editorElement);
+
+  assert.equal(currentMode, 'display', 'precond - display mode');
+  assert.ok(rendered, 'render called on instantiation');
+
+  editHook();
+
+  assert.equal(currentMode, 'edit', 'edit mode');
+  assert.equal(rendered, 'edit', 'display didRender hook called');
+
+  saveHook();
+
+  assert.equal(currentMode, 'display', 'display mode');
+  assert.equal(rendered, 'display', 'edit didRender hook called');
 });
