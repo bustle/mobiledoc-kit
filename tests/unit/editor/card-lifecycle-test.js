@@ -620,7 +620,7 @@ test('didRender hook is called when moving from display->edit and back', (assert
   editor.render(editorElement);
 
   assert.equal(currentMode, 'display', 'precond - display mode');
-  assert.ok(rendered, 'render called on instantiation');
+  assert.ok(rendered, 'didRender called on instantiation');
 
   editHook();
 
