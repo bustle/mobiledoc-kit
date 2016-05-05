@@ -52,6 +52,7 @@ When being rendered by an editor (i.e., `env.isInEditor` is true), the env will 
   * `cancel` [function] - Called to transition from "edit" to "display" mode without changing the payload. It is a no-op if the card is in display mode already
   * `remove` [function] - Removes this card from the document
   * `postModel` [object] - The instance of this card's section in the editor's internal abstract tree. This can be used along with the mobiledoc-kit `postEditor` API to transform the card in other ways (for example, moving the card to a different section of the document)
+  * `didRender` [function] - The card can pass a callback function: `didRender(callbackFn)`. The callback will be called when the card is rendered (on initial render and also after transitioning between display/edit states). This callback can be used to do additional work that must happen after the card's element has been appended to the DOM.
 
 ## Card examples
 
