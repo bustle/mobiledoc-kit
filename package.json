@@ -42,7 +42,7 @@
     "broccoli": "^0.16.9",
     "broccoli-funnel": "^1.0.1",
     "broccoli-inject-livereload": "^0.2.0",
-    "broccoli-less-single": "^0.6.0",
+    "broccoli-less-single": "^0.6.1",
     "broccoli-merge-trees": "^1.0.0",
     "broccoli-multi-builder": "^0.2.8",
     "broccoli-sane-watcher": "^1.1.4",
