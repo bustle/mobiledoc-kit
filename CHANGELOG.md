@@ -1,3 +1,21 @@
+<a name="0.9.6"></a>
+## 0.9.6 (2016-05-10)
+
+* chore(package): update broccoli-less-single to version 0.6.2 ([874ef2d](https://github.com/bustlelabs/mobiledoc-kit/commit/874ef2d))
+* chore(package): update conventional-changelog-cli to version 1.2.0 ([d0f1da7](https://github.com/bustlelabs/mobiledoc-kit/commit/d0f1da7))
+* [docs] Document card `env.didRender` hook ([3a1edde](https://github.com/bustlelabs/mobiledoc-kit/commit/3a1edde))
+* [docs] Fix markups/markers text in ATOMS.md ([8833ec7](https://github.com/bustlelabs/mobiledoc-kit/commit/8833ec7))
+* [docs] Fix transposition in mobiledoc atom docs ([995d034](https://github.com/bustlelabs/mobiledoc-kit/commit/995d034))
+* Add didRender to card lifecycle hooks ([f9e040e](https://github.com/bustlelabs/mobiledoc-kit/commit/f9e040e))
+* Added support to CMD+Left/Right for Mac navigation ([d1f7eff](https://github.com/bustlelabs/mobiledoc-kit/commit/d1f7eff))
+* built website from 5a4714193d5fb9b443d9629955617a5cee2d3c0a ([5b1dfac](https://github.com/bustlelabs/mobiledoc-kit/commit/5b1dfac))
+* Clarify test ([1896a8b](https://github.com/bustlelabs/mobiledoc-kit/commit/1896a8b))
+* Consider HOME and END keys as movement keys ([c4b2c51](https://github.com/bustlelabs/mobiledoc-kit/commit/c4b2c51)), closes [#377](https://github.com/bustlelabs/mobiledoc-kit/issues/377)
+* Explicitly set range in some tests so they pass in Firefox ([d84c861](https://github.com/bustlelabs/mobiledoc-kit/commit/d84c861)), closes [#388](https://github.com/bustlelabs/mobiledoc-kit/issues/388)
+* minor - update docs for onTextInput ([651bc57](https://github.com/bustlelabs/mobiledoc-kit/commit/651bc57))
+
+
+
 <a name="0.9.5"></a>
 ## 0.9.5 (2016-04-26)
 
@@ -11,6 +29,7 @@
 * Change Range#extend and Position#move to move multiple units ([bff7bc7](https://github.com/bustlelabs/mobiledoc-kit/commit/bff7bc7))
 * enable logging in demo app ([f8582fc](https://github.com/bustlelabs/mobiledoc-kit/commit/f8582fc))
 * Update README.md ([77fba45](https://github.com/bustlelabs/mobiledoc-kit/commit/77fba45))
+* v0.9.5 ([5a47141](https://github.com/bustlelabs/mobiledoc-kit/commit/5a47141))
 
 
 
