@@ -1,12 +1,22 @@
-import { Editor } from 'mobiledoc-kit';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Keycodes from 'mobiledoc-kit/utils/keycodes';
 import Browser from 'mobiledoc-kit/utils/browser';
 import Helpers from '../test-helpers';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const { module, test } = Helpers;
 
 let editor, editorElement;
+
+// In Firefox, if the window isn't active (which can happen when running tests
+// at SauceLabs), the editor element won't have the selection. This helper method
+// ensures that it has a cursor selection.
+// See https://github.com/bustlelabs/mobiledoc-kit/issues/388
+function renderIntoAndFocusTail(treeFn, options={}) {
+  let editor = Helpers.mobiledoc.renderInto(editorElement, treeFn, options);
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  return editor;
+}
 
 module('Acceptance: Editor: Key Commands', {
   beforeEach() {
@@ -22,19 +32,17 @@ module('Acceptance: Editor: Key Commands', {
 
 function testStatefulCommand({modifierName, key, command, markupName}) {
   test(`${command} applies markup ${markupName} to highlighted text`, (assert) => {
-    assert.expect(2);
+    assert.expect(3);
     let done = assert.async();
 
     let modifier = MODIFIERS[modifierName];
     let modifierKeyCode = Keycodes[modifierName];
     let initialText = 'something';
-    const mobiledoc = Helpers.mobiledoc.build(
-      ({post, markupSection, marker}) => post([
-        markupSection('p', [marker(initialText)])
-      ]));
+    editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+      markupSection('p', [marker(initialText)])
+    ]));
 
-    editor = new Editor({mobiledoc});
-    editor.render(editorElement);
+    assert.ok(editor.hasCursor(), 'precond - editor should have cursor');
 
     assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
     Helpers.dom.selectText(editor ,initialText, editorElement);
@@ -50,18 +58,17 @@ function testStatefulCommand({modifierName, key, command, markupName}) {
 
   test(`${command} toggles ${markupName} for next entered text`, (assert) => {
     let done = assert.async();
-    assert.expect(7);
+    assert.expect(8);
 
     let modifier = MODIFIERS[modifierName];
     let modifierKeyCode = Keycodes[modifierName];
     let initialText = 'something';
-    const mobiledoc = Helpers.mobiledoc.build(
-      ({post, markupSection, marker}) => post([
-        markupSection('p', [marker(initialText)])
-      ]));
 
-    editor = new Editor({mobiledoc});
-    editor.render(editorElement);
+    editor =renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+      markupSection('p', [marker(initialText)])
+    ]));
+
+    assert.ok(editor.hasCursor(), 'has cursor');
 
     assert.hasNoElement(`#editor ${markupName}`, `precond - no ${markupName} text`);
     Helpers.dom.moveCursorTo(editor,
@@ -143,13 +150,11 @@ testStatefulCommand({
 
 test(`cmd-left goes to the beginning of a line (MacOS only)`, (assert) => {
   let initialText = 'something';
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker(initialText)])
-    ]));
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker(initialText)])
+  ]));
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let textElement = editor.post.sections.head.markers.head.renderNode.element;
 
@@ -169,13 +174,11 @@ test(`cmd-left goes to the beginning of a line (MacOS only)`, (assert) => {
 
 test(`cmd-right goes to the end of a line (MacOS only)`, (assert) => {
   let initialText = 'something';
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker(initialText)])
-    ]));
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker(initialText)])
+  ]));
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let textElement = editor.post.sections.head.markers.head.renderNode.element;
 
@@ -195,13 +198,11 @@ test(`cmd-right goes to the end of a line (MacOS only)`, (assert) => {
 
 test(`ctrl-k clears to the end of a line`, (assert) => {
   let initialText = 'something';
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker(initialText)])
-    ]));
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker(initialText)])
+  ]));
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let textElement = editor.post.sections.head.markers.head.renderNode.element;
   Helpers.dom.moveCursorTo(editor, textElement, 4);
@@ -222,13 +223,11 @@ test(`ctrl-k clears to the end of a line`, (assert) => {
 
 test(`ctrl-k clears selected text`, (assert) => {
   let initialText = 'something';
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker(initialText)])
-    ]));
+  editor = renderIntoAndFocusTail( ({post, markupSection, marker}) => post([
+    markupSection('p', [marker(initialText)])
+  ]));
 
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let textElement = editor.post.sections.head.markers.head.renderNode.element;
   Helpers.dom.moveCursorTo(editor, textElement, 4, textElement, 8);
@@ -248,15 +247,15 @@ test(`ctrl-k clears selected text`, (assert) => {
 });
 
 test('cmd-k links selected text', (assert) => {
-  assert.expect(2);
+  assert.expect(3);
 
   let url = 'http://bustle.com';
-  let mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker('something')])
-    ]));
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker('something')])
+  ]));
+
+  assert.ok(editor.hasCursor(), 'has cursor');
+
   editor.showPrompt = (prompt, defaultUrl, callback) => {
     assert.ok(true, 'calls showPrompt');
     callback(url);
@@ -269,18 +268,18 @@ test('cmd-k links selected text', (assert) => {
 });
 
 test('cmd-k unlinks selected text if it was already linked', (assert) => {
-  assert.expect(3);
+  assert.expect(4);
 
   let url = 'http://bustle.com';
-  let mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker, markup}) => post([
-      markupSection('p', [marker('something', [markup('a', {href:url})])])
-    ]));
-  editor = new Editor({mobiledoc});
+  editor = renderIntoAndFocusTail(({post, markupSection, marker, markup}) => post([
+    markupSection('p', [marker('something', [markup('a', {href:url})])])
+  ]));
+
+  assert.ok(editor.hasCursor(), 'has cursor');
+
   editor.showPrompt = () => {
     assert.ok(false, 'should not call showPrompt');
   };
-  editor.render(editorElement);
   assert.hasElement(`#editor a[href="${url}"]:contains(something)`,
                     'precond -- has link');
 
@@ -293,18 +292,17 @@ test('cmd-k unlinks selected text if it was already linked', (assert) => {
 });
 
 test('new key commands can be registered', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker('something')])
-    ]));
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker('something')])
+  ]));
+
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let passedEditor;
-  editor = new Editor({mobiledoc});
   editor.registerKeyCommand({
     str: 'ctrl+x',
     run(editor) { passedEditor = editor; }
   });
-  editor.render(editorElement);
 
   Helpers.dom.triggerKeyCommand(editor, 'Y', MODIFIERS.CTRL);
 
@@ -316,18 +314,17 @@ test('new key commands can be registered', (assert) => {
 });
 
 test('new key commands can be registered without modifiers', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker('something')])
-    ]));
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker('something')])
+  ]));
+
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let passedEditor;
-  editor = new Editor({mobiledoc});
   editor.registerKeyCommand({
     str: 'X',
     run(editor) { passedEditor = editor; }
   });
-  editor.render(editorElement);
 
   Helpers.dom.triggerKeyCommand(editor, 'Y', MODIFIERS.CTRL);
 
@@ -343,13 +340,14 @@ test('new key commands can be registered without modifiers', (assert) => {
 });
 
 test('duplicate key commands can be registered with the last registered winning', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker('something')])
-    ]));
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker('something')])
+  ]));
+
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let firstCommandRan, secondCommandRan;
-  editor = new Editor({mobiledoc});
+
   editor.registerKeyCommand({
     str: 'ctrl+x',
     run() { firstCommandRan = true; }
@@ -358,7 +356,6 @@ test('duplicate key commands can be registered with the last registered winning'
     str: 'ctrl+x',
     run() { secondCommandRan = true; }
   });
-  editor.render(editorElement);
 
   Helpers.dom.triggerKeyCommand(editor, 'X', MODIFIERS.CTRL);
 
@@ -367,13 +364,14 @@ test('duplicate key commands can be registered with the last registered winning'
 });
 
 test('returning false from key command causes next match to run', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker('something')])
-    ]));
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker('something')])
+  ]));
+
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let firstCommandRan, secondCommandRan;
-  editor = new Editor({mobiledoc});
+
   editor.registerKeyCommand({
     str: 'ctrl+x',
     run() { firstCommandRan = true; }
@@ -385,7 +383,6 @@ test('returning false from key command causes next match to run', (assert) => {
       return false;
     }
   });
-  editor.render(editorElement);
 
   Helpers.dom.triggerKeyCommand(editor, 'X', MODIFIERS.CTRL);
 
@@ -394,12 +391,11 @@ test('returning false from key command causes next match to run', (assert) => {
 });
 
 test('key commands can override built-in functionality', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker('something')])
-    ]));
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker('something')])
+  ]));
 
-  editor = new Editor({mobiledoc});
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let passedEditor;
   editor.registerKeyCommand({
@@ -407,7 +403,6 @@ test('key commands can override built-in functionality', (assert) => {
     run(editor) { passedEditor = editor; }
   });
 
-  editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
   Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 5);
@@ -419,12 +414,11 @@ test('key commands can override built-in functionality', (assert) => {
 });
 
 test('returning false from key command still runs built-in functionality', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => post([
-      markupSection('p', [marker('something')])
-    ]));
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker('something')])
+  ]));
 
-  editor = new Editor({mobiledoc});
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   let passedEditor;
   editor.registerKeyCommand({
@@ -435,7 +429,6 @@ test('returning false from key command still runs built-in functionality', (asse
     }
   });
 
-  editor.render(editorElement);
   assert.equal($('#editor p').length, 1, 'has 1 paragraph to start');
 
   Helpers.dom.moveCursorTo(editor, editorElement.childNodes[0].childNodes[0], 5);

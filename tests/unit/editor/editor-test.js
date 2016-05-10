@@ -427,7 +427,10 @@ test('#insertText when post is blank', (assert) => {
     return post();
   });
 
-  assert.ok(editor.hasCursor(), 'precond - editor has no cursor');
+  // Necessary to ensure tests pass on FF when the window is not active
+  Helpers.dom.selectRange(editorElement, 0, editorElement, 0);
+
+  assert.ok(editor.hasCursor(), 'precond - editor has cursor');
   assert.ok(editor.post.isBlank, 'precond - editor has blank post');
   editor.insertText('blah blah');
 
@@ -493,6 +496,8 @@ test('#insertAtom when post is blank', (assert) => {
     expected = post([markupSection('p', [atom('the-atom', 'THEATOMTEXT')])]);
     return post();
   }, {atoms: [atom]});
+
+  Helpers.dom.selectRange(editorElement, 0, editorElement, 0);
 
   assert.ok(editor.hasCursor(), 'precond - editor has cursor');
   assert.ok(editor.post.isBlank, 'precond - post is blank');
@@ -597,6 +602,8 @@ test('#insertCard when post is blank', (assert) => {
     expected = post([cardSection('the-card')]);
     return post();
   }, {cards: [card]});
+
+  Helpers.dom.selectRange(editorElement, 0, editorElement, 0);
 
   assert.ok(editor.hasCursor(), 'precond - editor has cursor');
   assert.ok(editor.post.isBlank, 'precond - post is blank');

@@ -2,6 +2,7 @@ import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const { test, module } = Helpers;
 
@@ -550,6 +551,12 @@ test('inserting multiple spaces renders them with nbsps', (assert) => {
   });
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
+
+  // Tests on FF fail if the editor doesn't have a cursor, we must
+  // render it explicitly
+  editor.selectRange(new Range(editor.post.tailPosition()));
+
+  assert.ok(editor.hasCursor(), 'precond - has cursor');
 
   let sp = ' ', nbsp = NO_BREAK_SPACE;
   Helpers.dom.insertText(editor, sp + sp + sp);

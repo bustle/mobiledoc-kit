@@ -16,6 +16,10 @@ module('Unit: Editor: events and lifecycle callbacks', {
     editorElement = $('#editor')[0];
     editor = new Editor({mobiledoc});
     editor.render(editorElement);
+
+    // Tests in FF can fail if the window is not front-most and
+    // we don't explicitly render the range
+    editor.selectRange(new Range(editor.post.tailPosition()));
   },
 
   afterEach() {
@@ -75,6 +79,11 @@ test('cursorDidChange callback not fired after mouseup when selection is unchang
 test('cursorDidChange callback fired after mouseup when editor loses focus', (assert) => {
   assert.expect(2);
   let done = assert.async();
+
+  // Tests in FF can fail if the window is not front-most and
+  // we don't explicitly render the range
+  let node = Helpers.dom.findTextNode(editor.element, 'this is the editor');
+  Helpers.dom.moveCursorWithoutNotifyingEditorTo(editor, node);
 
   let cursorChanged = 0;
   editor.cursorDidChange(() => cursorChanged++);
