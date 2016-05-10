@@ -1,6 +1,7 @@
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Helpers from '../test-helpers';
 import Position from 'mobiledoc-kit/utils/cursor/position';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const { module, test } = Helpers;
 
@@ -12,6 +13,16 @@ function undo(editor) {
 
 function redo(editor) {
   Helpers.dom.triggerKeyCommand(editor, 'Z', [MODIFIERS.META, MODIFIERS.SHIFT]);
+}
+
+// In Firefox, if the window isn't active (which can happen when running tests
+// at SauceLabs), the editor element won't have the selection. This helper method
+// ensures that it has a cursor selection.
+// See https://github.com/bustlelabs/mobiledoc-kit/issues/388
+function renderIntoAndFocusTail(treeFn, options={}) {
+  let editor = Helpers.mobiledoc.renderInto(editorElement, treeFn, options);
+  editor.selectRange(new Range(editor.post.tailPosition()));
+  return editor;
 }
 
 module('Acceptance: Editor: Undo/Redo', {
@@ -29,7 +40,7 @@ module('Acceptance: Editor: Undo/Redo', {
 test('undo/redo the insertion of a character', (assert) => {
   let done = assert.async();
   let expectedBeforeUndo, expectedAfterUndo;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => {
     expectedBeforeUndo = post([markupSection('p', [marker('abcD')])]);
     expectedAfterUndo = post([markupSection('p', [marker('abc')])]);
     return expectedAfterUndo;
@@ -66,7 +77,7 @@ test('undo/redo the insertion of a character', (assert) => {
 test('undo/redo the insertion of multiple characters', (assert) => {
   let done = assert.async();
   let beforeUndo, afterUndo1, afterUndo2;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => {
     beforeUndo = post([markupSection('p', [marker('abcDE')])]);
     afterUndo1 = post([markupSection('p', [marker('abcD')])]);
     afterUndo2 = post([markupSection('p', [marker('abc')])]);
@@ -102,7 +113,7 @@ test('undo/redo the insertion of multiple characters', (assert) => {
 
 test('undo the deletion of a character', (assert) => {
   let expectedBeforeUndo, expectedAfterUndo;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => {
     expectedBeforeUndo = post([markupSection('p', [marker('abc')])]);
     expectedAfterUndo = post([markupSection('p', [marker('abcD')])]);
     return expectedAfterUndo;
@@ -130,7 +141,7 @@ test('undo the deletion of a character', (assert) => {
 
 test('undo the deletion of a range', (assert) => {
   let expectedBeforeUndo, expectedAfterUndo;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => {
     expectedBeforeUndo = post([markupSection('p', [marker('ad')])]);
     expectedAfterUndo = post([markupSection('p', [marker('abcd')])]);
     return expectedAfterUndo;
@@ -162,7 +173,7 @@ test('undo the deletion of a range', (assert) => {
 test('undo insertion of character to a list item', (assert) => {
   let done = assert.async();
   let expectedBeforeUndo, expectedAfterUndo;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, listSection, listItem, marker}) => {
+  editor = renderIntoAndFocusTail(({post, listSection, listItem, marker}) => {
     expectedBeforeUndo = post([
       listSection('ul', [listItem([marker('abcD')])])
     ]);
@@ -205,7 +216,7 @@ test('undo stack length can be configured (depth 1)', (assert) => {
   let editorOptions = { undoDepth: 1 };
 
   let beforeUndo, afterUndo;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => {
     beforeUndo = post([markupSection('p', [marker('abcDE')])]);
     afterUndo = post([markupSection('p', [marker('abcD')])]);
     return post([markupSection('p', [marker('abc')])]);
@@ -241,7 +252,7 @@ test('undo stack length can be configured (depth 0)', (assert) => {
   let editorOptions = { undoDepth: 0 };
 
   let beforeUndo;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => {
     beforeUndo = post([markupSection('p', [marker('abcDE')])]);
     return post([markupSection('p', [marker('abc')])]);
   }, editorOptions);
@@ -288,7 +299,7 @@ test('take and undo a snapshot based on drag/dropping of text', (assert) => {
   let done = assert.async();
   let text = 'abc';
   let beforeUndo, afterUndo;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => {
      beforeUndo = post([markupSection('p', [marker(text)])]);
      afterUndo = post([markupSection('p', [marker('a')])]);
      return afterUndo;
@@ -317,7 +328,7 @@ test('take and undo a snapshot when adding a card', (assert) => {
   };
 
   let beforeUndo, afterUndo;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, cardSection}) => {
+  editor = renderIntoAndFocusTail(({post, markupSection, marker, cardSection}) => {
      beforeUndo = post([
        markupSection('p', [marker(text)]),
        cardSection('my-card', {})
@@ -349,7 +360,7 @@ test('take and undo a snapshot when removing an atom', (assert) => {
   };
 
   let beforeUndo, afterUndo;
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, atom}) => {
+  editor = renderIntoAndFocusTail(({post, markupSection, marker, atom}) => {
      beforeUndo = post([markupSection('p', [marker(text)])]);
      afterUndo = post([
        markupSection('p', [marker(text), atom('my-atom', 'content', {})]),
