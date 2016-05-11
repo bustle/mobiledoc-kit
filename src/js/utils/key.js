@@ -51,11 +51,7 @@ export const SPECIAL_KEYS = {
 
 // heuristic for determining if `event` is a key event
 function isKeyEvent(event) {
-  return !!event.charCode ||
-    !!event.keyCode ||
-    !!event.metaKey ||
-    !!event.shiftKey ||
-    !!event.ctrlKey;
+  return /^key/.test(event.type);
 }
 
 /**

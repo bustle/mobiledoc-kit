@@ -8,7 +8,8 @@ const {module, test} = Helpers;
 module('Unit: Utils: Key');
 
 test('#hasModifier with no modifier', (assert) => {
-  const key = Key.fromEvent({ keyCode: 42 });
+  const event = Helpers.dom.createMockEvent('keydown', null, { keyCode: 42 });
+  const key = Key.fromEvent(event);
 
   assert.ok(!key.hasModifier(MODIFIERS.META), "META not pressed");
   assert.ok(!key.hasModifier(MODIFIERS.CTRL), "CTRL not pressed");
@@ -16,7 +17,8 @@ test('#hasModifier with no modifier', (assert) => {
 });
 
 test('#hasModifier with META', (assert) => {
-  const key = Key.fromEvent({ metaKey: true });
+  const event = Helpers.dom.createMockEvent('keyup', null, { metaKey: true });
+  const key = Key.fromEvent(event);
 
   assert.ok(key.hasModifier(MODIFIERS.META), "META pressed");
   assert.ok(!key.hasModifier(MODIFIERS.CTRL), "CTRL not pressed");
@@ -24,7 +26,8 @@ test('#hasModifier with META', (assert) => {
 });
 
 test('#hasModifier with CTRL', (assert) => {
-  const key = Key.fromEvent({ ctrlKey: true });
+  const event = Helpers.dom.createMockEvent('keypress', null, { ctrlKey: true });
+  const key = Key.fromEvent(event);
 
   assert.ok(!key.hasModifier(MODIFIERS.META), "META not pressed");
   assert.ok(key.hasModifier(MODIFIERS.CTRL), "CTRL pressed");
@@ -32,7 +35,8 @@ test('#hasModifier with CTRL', (assert) => {
 });
 
 test('#hasModifier with SHIFT', (assert) => {
-  const key = Key.fromEvent({ shiftKey: true });
+  const event = Helpers.dom.createMockEvent('keydown', null, { shiftKey: true });
+  const key = Key.fromEvent(event);
 
   assert.ok(!key.hasModifier(MODIFIERS.META), "META not pressed");
   assert.ok(!key.hasModifier(MODIFIERS.CTRL), "CTRL not pressed");
