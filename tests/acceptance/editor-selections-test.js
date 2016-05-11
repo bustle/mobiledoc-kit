@@ -71,8 +71,10 @@ test('when editing is disabled, the selection detection code is disabled', (asse
                          'outside', outsideSection);
 
   Helpers.dom.triggerEvent(document, 'mouseup');
+
   assert.equal(editor.activeSections.length, 0, 'no selection inside the editor');
-  assert.equal(Helpers.dom.getSelectedText(), "trick pony\n\noutside");
+  // Edge and IE11 do not introduce newlines
+  assert.equal(Helpers.dom.getSelectedText().replace('\n', ''), "trick ponyoutside");
 });
 
 test('selecting an entire section and deleting removes it', (assert) => {
