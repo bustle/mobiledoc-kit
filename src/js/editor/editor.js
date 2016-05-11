@@ -66,7 +66,7 @@ const CALLBACK_QUEUES = {
 };
 
 /**
- * The Editor is a core component of mobiledoc-kit. After instantiating 
+ * The Editor is a core component of mobiledoc-kit. After instantiating
  * an editor, use {@link Editor#render} to display the editor on the web page.
  *
  * An editor uses a {@link Post} internally to represent the displayed document.
@@ -409,14 +409,16 @@ class Editor {
    * @private
    */
   _notifyRangeChange() {
-    this._resetRange();
-    this._editState.reset();
+    if (this.isEditable) {
+      this._resetRange();
+      this._editState.reset();
 
-    if (this._editState.rangeDidChange()) {
-      this._rangeDidChange();
-    }
-    if (this._editState.inputModeDidChange()) {
-      this._inputModeDidChange();
+      if (this._editState.rangeDidChange()) {
+        this._rangeDidChange();
+      }
+      if (this._editState.inputModeDidChange()) {
+        this._inputModeDidChange();
+      }
     }
   }
 
