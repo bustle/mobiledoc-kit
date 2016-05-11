@@ -64,8 +64,8 @@ test('when editing is disabled, the selection detection code is disabled', (asse
   editor.render(editorElement);
   editor.disableEditing();
 
-  let firstSection = $('p:contains(one trick pony)')[0];
-  let outsideSection = $('p:contains(outside section)')[0];
+  const firstSection = $('p:contains(one trick pony)')[0];
+  const outsideSection = $('p:contains(outside section)')[0];
 
   Helpers.dom.selectText(editor ,'trick', firstSection,
                          'outside', outsideSection);
@@ -73,8 +73,8 @@ test('when editing is disabled, the selection detection code is disabled', (asse
   Helpers.dom.triggerEvent(document, 'mouseup');
 
   assert.equal(editor.activeSections.length, 0, 'no selection inside the editor');
-  // Edge and IE11 do not introduce newlines
-  assert.equal(Helpers.dom.getSelectedText().replace(/\n/g, ''), "trick ponyoutside");
+  const selectedText = Helpers.dom.getSelectedText();
+  assert.ok(selectedText.indexOf('trick pony') !== -1 && selectedText.indexOf('outside') !== -1, 'selects the text');
 });
 
 test('selecting an entire section and deleting removes it', (assert) => {
