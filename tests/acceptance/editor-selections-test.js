@@ -57,6 +57,23 @@ test('selecting across sections is possible', (assert) => {
   assert.equal(editor.activeSections.length, 2, 'selects 2 sections');
 });
 
+test('selecting outside of the editor is possible when editing is disabled', (assert) => {
+  $('#qunit-fixture').append('<p>outside section</p>');
+
+  editor = new Editor({mobiledoc: mobileDocWithSection});
+  editor.render(editorElement);
+  editor.disableEditing();
+
+  let firstSection = $('p:contains(one trick pony)')[0];
+  let outsideSection = $('p:contains(outside section)')[0];
+
+  Helpers.dom.selectText(editor ,'one', firstSection,
+                         'outside', outsideSection);
+
+  Helpers.dom.triggerEvent(document, 'mouseup');
+  assert.equal(editor.activeSections.length, 1, 'selects 1 section');
+});
+
 test('selecting an entire section and deleting removes it', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWith2Sections});
   editor.render(editorElement);
