@@ -99,9 +99,21 @@ function comparePosition(selection) {
   // made.
   //
   if (position & Node.DOCUMENT_POSITION_CONTAINS) {
+    if (focusOffset < focusNode.childNodes.length) {
+      focusNode = focusNode.childNodes[focusOffset];
+      focusOffset = 0;
+    } else {
+      // This situation happens on IE when triple-clicking to select.
+      // Set the focus to the very last character inside the node.
+      while (focusNode.lastChild) {
+        focusNode = focusNode.lastChild;
+      }
+      focusOffset = focusNode.textContent.length;
+    }
+
     return comparePosition({
-      focusNode: focusNode.childNodes[focusOffset],
-      focusOffset: 0,
+      focusNode,
+      focusOffset,
       anchorNode, anchorOffset
     });
   } else if (position & Node.DOCUMENT_POSITION_CONTAINED_BY) {
