@@ -130,6 +130,7 @@ The available lifecycle hooks are:
   edited post.
 * `editor.cursorDidChange()` - When the cursor (or selection) changes as a result of arrow-key
   movement or clicking in the document.
+* `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))
 
 ### Programmatic Post Editing
 
