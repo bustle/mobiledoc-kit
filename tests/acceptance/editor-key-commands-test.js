@@ -196,6 +196,57 @@ test(`cmd-right goes to the end of a line (MacOS only)`, (assert) => {
   }
 });
 
+test(`cmd-shif-left select text to the beginning of a line (MacOS only)`, (assert) => {
+  let initialText = 'something';
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker(initialText)])
+  ]));
+
+  assert.ok(editor.hasCursor(), 'has cursor');
+
+  let textElement = editor.post.sections.head.markers.head.renderNode.element;
+
+  Helpers.dom.moveCursorTo(editor, textElement, 4);
+  let originalCursorPosition = Helpers.dom.getCursorPosition();
+
+  Helpers.dom.triggerKeyCommand(editor, 'LEFT', [MODIFIERS.META, MODIFIERS.SHIFT]);
+
+  let changedCursorPosition = Helpers.dom.getCursorPosition();
+
+  if (Browser.isMac) {
+    assert.positionIsEqual(editor.range.head, editor.post.headPosition());
+    assert.equal(editor.range.tail.offset, originalCursorPosition.offset);
+
+  } else {
+    assert.equal(changedCursorPosition.offset, originalCursorPosition.offset, 'cursor not moved to the end of the line (non-MacOS)');
+  }
+});
+
+test(`cmd-shif-right select text to the end of a line (MacOS only)`, (assert) => {
+  let initialText = 'something';
+  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    markupSection('p', [marker(initialText)])
+  ]));
+
+  assert.ok(editor.hasCursor(), 'has cursor');
+
+  let textElement = editor.post.sections.head.markers.head.renderNode.element;
+
+  Helpers.dom.moveCursorTo(editor, textElement, 4);
+  let originalCursorPosition = Helpers.dom.getCursorPosition();
+
+  Helpers.dom.triggerKeyCommand(editor, 'RIGHT', [MODIFIERS.META, MODIFIERS.SHIFT]);
+
+  let changedCursorPosition = Helpers.dom.getCursorPosition();
+
+  if (Browser.isMac) {
+    assert.positionIsEqual(editor.range.head.offset, originalCursorPosition.offset);
+    assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
+
+  } else {
+    assert.equal(changedCursorPosition.offset, initialText.length, 'cursor not moved to the end of the line (non-MacOS)');
+  }
+});
 test(`ctrl-k clears to the end of a line`, (assert) => {
   let initialText = 'something';
   editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
