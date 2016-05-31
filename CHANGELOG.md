@@ -1,8 +1,25 @@
+<a name="0.9.7"></a>
+## 0.9.7 (2016-05-31)
+
+* Add failing test. ([a6f3944](https://github.com/bustlelabs/mobiledoc-kit/commit/a6f3944))
+* add onTextInput to Editor Lifecycle Hook section ([101e639](https://github.com/bustlelabs/mobiledoc-kit/commit/101e639)), closes [#398](https://github.com/bustlelabs/mobiledoc-kit/issues/398)
+* built website from 6e3437d74688f91838b1203dad61d1961dc7eba4 ([c74223a](https://github.com/bustlelabs/mobiledoc-kit/commit/c74223a))
+* Comment of @bantic. ([b033f02](https://github.com/bustlelabs/mobiledoc-kit/commit/b033f02))
+* fastboot-friendly browser test ([0db96d0](https://github.com/bustlelabs/mobiledoc-kit/commit/0db96d0))
+* Fix bug #395 ([7b0b97d](https://github.com/bustlelabs/mobiledoc-kit/commit/7b0b97d)), closes [#395](https://github.com/bustlelabs/mobiledoc-kit/issues/395)
+* Fix emoji's on iPad. ([8f205b3](https://github.com/bustlelabs/mobiledoc-kit/commit/8f205b3))
+* Fix failing test on the other browsers. ([de1d869](https://github.com/bustlelabs/mobiledoc-kit/commit/de1d869))
+* Fix tests for IE11 and Edge. ([0e4803f](https://github.com/bustlelabs/mobiledoc-kit/commit/0e4803f))
+* Prevent 'Invalid argument' error when triple-clicking to select on IE ([6c41499](https://github.com/bustlelabs/mobiledoc-kit/commit/6c41499))
+* update testem to 1.7.4 ([e09e1af](https://github.com/bustlelabs/mobiledoc-kit/commit/e09e1af))
+* Use trusty dist and phantomjs-prebuilt at travis ([06853f4](https://github.com/bustlelabs/mobiledoc-kit/commit/06853f4))
+* chore(package): update testem to version 1.7.0 ([947b436](https://github.com/bustlelabs/mobiledoc-kit/commit/947b436))
+
+
+
 <a name="0.9.6"></a>
 ## 0.9.6 (2016-05-10)
 
-* chore(package): update broccoli-less-single to version 0.6.2 ([874ef2d](https://github.com/bustlelabs/mobiledoc-kit/commit/874ef2d))
-* chore(package): update conventional-changelog-cli to version 1.2.0 ([d0f1da7](https://github.com/bustlelabs/mobiledoc-kit/commit/d0f1da7))
 * [docs] Document card `env.didRender` hook ([3a1edde](https://github.com/bustlelabs/mobiledoc-kit/commit/3a1edde))
 * [docs] Fix markups/markers text in ATOMS.md ([8833ec7](https://github.com/bustlelabs/mobiledoc-kit/commit/8833ec7))
 * [docs] Fix transposition in mobiledoc atom docs ([995d034](https://github.com/bustlelabs/mobiledoc-kit/commit/995d034))
@@ -13,6 +30,9 @@
 * Consider HOME and END keys as movement keys ([c4b2c51](https://github.com/bustlelabs/mobiledoc-kit/commit/c4b2c51)), closes [#377](https://github.com/bustlelabs/mobiledoc-kit/issues/377)
 * Explicitly set range in some tests so they pass in Firefox ([d84c861](https://github.com/bustlelabs/mobiledoc-kit/commit/d84c861)), closes [#388](https://github.com/bustlelabs/mobiledoc-kit/issues/388)
 * minor - update docs for onTextInput ([651bc57](https://github.com/bustlelabs/mobiledoc-kit/commit/651bc57))
+* v0.9.6 ([6e3437d](https://github.com/bustlelabs/mobiledoc-kit/commit/6e3437d))
+* chore(package): update broccoli-less-single to version 0.6.2 ([874ef2d](https://github.com/bustlelabs/mobiledoc-kit/commit/874ef2d))
+* chore(package): update conventional-changelog-cli to version 1.2.0 ([d0f1da7](https://github.com/bustlelabs/mobiledoc-kit/commit/d0f1da7))
 
 
 
@@ -74,46 +94,6 @@
 * v0.9.2 ([cb51433](https://github.com/bustlelabs/mobiledoc-kit/commit/cb51433))
 * minor: change Range docs ([d5aefae](https://github.com/bustlelabs/mobiledoc-kit/commit/d5aefae))
 
-
-### BREAKING CHANGE
-
-* **: This is a potentially breaking change for consumers (such as
-`ember-mobiledoc-editor`) that used the `cursorDidChange` hook to
-maintain toolbar state.
-
-Most of the time the editor's input mode (active
-markups and active section tagNames) changes it is due to changing
-cursor position/selection, so listening to the `cursorDidChange` is
-often appropriate, but it is possible to change the editor's input mode
-without changing cursor position (e.g., hitting "cmd-B" to bold text).
-Previously, the `cursorDidChange` hook fired over-eagerly, resulting in
-it firing in some cases (but not all) when the cursor did not change
-(but editor input mode did). So it served fairly effectively for keeping the
-toolbar's buttons in appropriate active/inactive state. This PR fixes
-`cursorDidChange` so that it is only called when the cursor position
-actually changes, making it even less effective as a hook to use to
-infer the editor's active markups and sections (now *no* input mode change
-that doesn't change the cursor will fire `cursorDidChange`).
-
-This PR introduces a new `inputModeDidChange` hook that only fires on
-input mode changes. This cleanly separates the ability to listen for cursor changes
-from listening for input mode changes. It is also more efficient for a consumer to use as a
-hook (because most cursor changes do not change input mode at all, so
-listening to that hook as a proxy for detecting input mode changes creates unnecessary work).
-
-Also:
-
-  * Test that removing a card or saving a new payload for it triggers
-    `postDidChange` hook. Transitioning to `edit` or calling
-    `env.cancel` do not trigger the hook.
-  * Deprecates `on('update')` hook
-  * Add private `Editor#_notifyRangeChange` to use to alert the editor
-    of possible cursor- or state-changing activity (e.g., keyup or mousedown,
-    because they might have moved the cursor).
-  * Test that `cursorDidChange` is not fired after the editor is
-    destroyed
-  * Refactor internals of `EditState` to better track changes to
-    state/cursor.
 
 
 <a name="0.9.1"></a>
