@@ -18,6 +18,7 @@ before_install:
 install:
   - npm install -g broccoli-cli
   - npm install
+  - "phantomjs --version"
 
 script:
   - npm run test:ci
