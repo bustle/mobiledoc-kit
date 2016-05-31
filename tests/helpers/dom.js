@@ -10,6 +10,12 @@ import {
   MIME_TEXT_HTML
 } from 'mobiledoc-kit/utils/parse-utils';
 
+function assertEditor(editor) {
+  if (!(editor instanceof Editor)) {
+    throw new Error('Must pass editor as first argument');
+  }
+}
+
 // walks DOWN the dom from node to childNodes, returning the element
 // for which `conditionFn(element)` is true
 function walkDOMUntil(topNode, conditionFn=() => {}) {
@@ -53,9 +59,7 @@ function selectText(editor,
                     endText=startText,
                     endContainingElement=startContainingElement) {
 
-  if (!(editor instanceof Editor)) {
-    throw new Error('Must pass editor as first argument to `selectText`');
-  }
+  assertEditor(editor);
   let startTextNode = findTextNode(startContainingElement, startText);
   let endTextNode = findTextNode(endContainingElement, endText);
 
@@ -77,9 +81,7 @@ function moveCursorWithoutNotifyingEditorTo(editor, node, offset=0, endNode=node
 }
 
 function moveCursorTo(editor, node, offset=0, endNode=node, endOffset=offset) {
-  if (!(editor instanceof Editor)) {
-    throw new Error('Must pass editor as first argument to `moveCursorTo`');
-  }
+  assertEditor(editor);
   if (!node) { throw new Error('Cannot moveCursorTo node without node'); }
   moveCursorWithoutNotifyingEditorTo(editor, node, offset, endNode, endOffset);
   editor._notifyRangeChange();
@@ -154,7 +156,7 @@ function createMockEvent(eventName, element, options={}) {
 }
 
 function triggerDelete(editor, direction=DIRECTION.BACKWARD) {
-  if (!editor) { throw new Error('Must pass `editor` to `triggerDelete`'); }
+  assertEditor(editor);
   const keyCode = direction === DIRECTION.BACKWARD ? KEY_CODES.BACKSPACE :
                                                      KEY_CODES.DELETE;
   let event = createMockEvent('keydown', editor.element, {
@@ -168,7 +170,7 @@ function triggerForwardDelete(editor) {
 }
 
 function triggerEnter(editor) {
-  if (!editor) { throw new Error('Must pass `editor` to `triggerEnter`'); }
+  assertEditor(editor);
   let event = createMockEvent('keydown', editor.element, { keyCode: KEY_CODES.ENTER});
   _triggerEditorEvent(editor, event);
 }
@@ -269,7 +271,7 @@ function triggerRightArrowKey(editor, modifier) {
 }
 
 function triggerLeftArrowKey(editor, modifier) {
-  if (!editor) { throw new Error('Must pass editor to triggerLeftArrowKey'); }
+  assertEditor(editor);
   let keydown = createMockEvent('keydown', editor.element, {
     keyCode: KEY_CODES.LEFT,
     shiftKey: modifier === MODIFIERS.SHIFT
