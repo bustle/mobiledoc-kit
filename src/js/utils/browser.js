@@ -1,3 +1,3 @@
 export default {
-  isMac: /Mac/.test(navigator.platform)
+  isMac: window.navigator && /Mac/.test(window.navigator.platform)
 };
