@@ -71,7 +71,7 @@ test('renders a post with markers with markers with complex attributes', (assert
   let link1,link2;
  const post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
     link1 = markup('a', {href:'bustle.com'});
-    link2 = markup('a', {href:'other.com'});
+    link2 = markup('a', {href:'other.com', target: "_blank"});
     return post([
       markupSection('p', [
         marker('Hi', [link1]),
@@ -87,7 +87,7 @@ test('renders a post with markers with markers with complex attributes', (assert
     cards: [],
     markups: [
       ['a', ['href', 'bustle.com']],
-      ['a', ['href', 'other.com']]
+      ['a', ['href', 'other.com', 'target', '_blank']]
     ],
     sections: [
       [1, normalizeTagName('P'), [

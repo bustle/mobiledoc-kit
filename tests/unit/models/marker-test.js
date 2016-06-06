@@ -29,11 +29,12 @@ test('a marker can have the same markup tagName applied twice', (assert) => {
 
 test('a marker can have a complex markup applied to it', (assert) => {
   const m1 = builder.createMarker('hi there!');
-  const markup = builder.createMarkup('a', {href:'blah'});
+  const markup = builder.createMarkup('a', {href:'blah', target: '_blank'});
   m1.addMarkup(markup);
 
   assert.ok(m1.hasMarkup('a'));
   assert.equal(m1.getMarkup('a').attributes.href, 'blah');
+  assert.equal(m1.getMarkup('a').attributes.target, '_blank');
 });
 
 test('a marker can have the same complex markup tagName applied twice, even with different attributes', (assert) => {
