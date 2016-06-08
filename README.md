@@ -71,6 +71,7 @@ editor.render(element);
 
 `options` is an object which may include the following properties:
 
+* `modiledoc` - [object] A mobiledoc object to load and edit.
 * `placeholder` - [string] default text to show before a user starts typing.
 * `spellcheck` - [boolean] whether to enable spellcheck. Defaults to true.
 * `autofocus` - [boolean] When true, focuses on the editor when it is rendered.
