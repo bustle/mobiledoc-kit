@@ -84,6 +84,7 @@ editor.render(element);
   whenever it encounters an unknown card
 * `unknownAtomHandler` - [function] This will be invoked by the editor-renderer
   whenever it encounters an unknown atom
+* `parserPlugins` - [array] See [DOM Parsing Hooks](https://github.com/bustlelabs/mobiledoc-kit#dom-parsing-hooks)
 
 ### Editor API
 
@@ -267,7 +268,7 @@ var element = document.querySelector('#editor');
 editor.render(element);
 ```
 
-Parser hooks are called with two arguments:
+Parser hooks are called with three arguments:
 
 * `node` - The node of DOM being parsed. This may be a text node or an element.
 * `builder` - The abstract model builder.
