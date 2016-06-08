@@ -316,7 +316,7 @@ in `demo/`. To run the demo:
 
 #### Getting Help
 
-If you notice an bug or have a feature request please [open an issue on github](https://github.com/bustlelabs/mobiledoc-kit/issues).
+If you notice a bug or have a feature request please [open an issue on github](https://github.com/bustlelabs/mobiledoc-kit/issues).
 If you have a question about usage you can post in the [gitter channel](https://gitter.im/bustlelabs/mobiledoc-kit) or on StackOverflow using the [`mobiledoc-kit` tag](http://stackoverflow.com/questions/tagged/mobiledoc-kit).
 
 #### Releasing
