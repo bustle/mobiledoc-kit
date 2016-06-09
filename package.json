@@ -50,7 +50,7 @@
     "broccoli-test-builder": "^0.2.0",
     "conventional-changelog": "^1.1.0",
     "conventional-changelog-cli": "^1.2.0",
-    "jquery": "^2.2.2",
+    "jquery": "^3.0.0",
     "jsdoc": "^3.4.0",
     "saucie": "^1.4.0",
     "testem": "^1.7.4",
