@@ -937,6 +937,107 @@ test('#addMarkupToRange silently does nothing when invoked with an empty range',
   assert.ok(!section.markers.head.hasMarkup(markup), 'marker has no markup');
 });
 
+test("#addMarkupToRange around a markup pushes the new markup below existing ones", (assert) => {
+  let em;
+  const editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
+    em = markup('em');
+    return post([
+        markupSection('p', [
+          marker('one '),
+          marker('BOLD', [markup('b')]),
+          marker(' two')
+      ])
+    ]);
+  });
+
+  let section = editor.post.sections.head;
+
+  let range = Range.create(section, 0, section, 'one BOLD two'.length);
+  editor.run(function(postEditor) {
+    postEditor.addMarkupToRange(range, em);
+  });
+
+  let markers = section.markers.toArray();
+  assert.equal(markers[0].closedMarkups.length, 0,
+      'Existing markup is not closed');
+
+  assert.equal(editor.element.innerHTML,
+      '<p><em>one <b>BOLD</b> two</em></p>');
+});
+
+
+test("#addMarkupToRange within a markup puts the new markup on top of the stack", (assert) => {
+  let b;
+  const editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
+    b = markup('b');
+    return post([
+        markupSection('p', [
+          marker('one BOLD two', [markup('em')]),
+      ])
+    ]);
+  });
+
+  let section = editor.post.sections.head;
+
+  let range = Range.create(section, 'one '.length, section, 'one BOLD'.length);
+  editor.run(function(postEditor) {
+    postEditor.addMarkupToRange(range, b);
+  });
+
+  let markers = section.markers.toArray();
+  assert.equal(markers[0].closedMarkups.length, 0,
+      'Existing markup is not closed');
+
+  assert.equal(editor.element.innerHTML,
+      '<p><em>one <b>BOLD</b> two</em></p>');
+});
+
+test("#addMarkupToRange straddling the open tag of an existing markup, closes and reopens the existing markup", (assert) => {
+  let em;
+  const editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
+    em = markup('em');
+    return post([
+        markupSection('p', [
+          marker('_one '),
+          marker('TWO_ THREE', [markup('b')])
+      ])
+    ]);
+  });
+
+  let section = editor.post.sections.head;
+  let range = Range.create(section, 0, section, '_one TWO_'.length);
+
+  editor.run(function(postEditor) {
+    postEditor.addMarkupToRange(range, em);
+  });
+
+  assert.equal(editor.element.innerHTML,
+      '<p><em>_one <b>TWO_</b></em><b> THREE</b></p>');
+});
+
+test("#addMarkupToRange straddling the closing tag of an existing markup, closes and reopens the existing markup", (assert) => {
+  let em;
+  const editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
+    em = markup('em');
+    return post([
+        markupSection('p', [
+          marker('ONE _TWO', [markup('b')]),
+          marker(' three_')
+      ])
+    ]);
+  });
+
+  let section = editor.post.sections.head;
+  let range = Range.create(section, 'ONE '.length, section, 'ONE _TWO three_'.length);
+
+  editor.run(function(postEditor) {
+    postEditor.addMarkupToRange(range, em);
+  });
+
+  assert.equal(editor.element.innerHTML,
+      '<p><b>ONE </b><em><b>_TWO</b> three_</em></p>');
+});
+
 test('markers with identical markups get coalesced after deletion', (assert) => {
   let strong, section;
   const post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {

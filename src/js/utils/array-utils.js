@@ -75,6 +75,21 @@ function commonItemLength(listA, listB) {
   return offset;
 }
 
+/**
+ * @return {Array} the items that are the same, starting from the 0th index, in a and b
+ * @private
+ */
+function commonItems(listA, listB) {
+  let offset = 0;
+  while (offset < listA.length && offset < listB.length) {
+    if (listA[offset] !== listB[offset]) {
+      break;
+    }
+    offset++;
+  }
+  return listA.slice(0, offset);
+}
+
 // return new array without falsy items like ruby's `compact`
 function compact(enumerable) {
   return filter(enumerable, i => !!i);
@@ -148,6 +163,7 @@ export {
   every,
   filter,
   commonItemLength,
+  commonItems,
   compact,
   reduce,
   objectToSortedKVArray,

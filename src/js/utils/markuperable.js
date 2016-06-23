@@ -11,6 +11,10 @@ export default class Markerupable {
     this.markups.push(markup);
   }
 
+  addMarkupAtIndex(markup, index) {
+    this.markups.splice(index, 0, markup);
+  }
+
   removeMarkup(markupOrMarkupCallback) {
     let callback;
     if (typeof markupOrMarkupCallback === 'function') {

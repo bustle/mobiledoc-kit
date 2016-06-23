@@ -1,5 +1,5 @@
 import Position from '../utils/cursor/position';
-import { forEach, filter, values } from '../utils/array-utils';
+import { forEach, reduce, filter, values, commonItems } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 import LifecycleCallbacks from '../models/lifecycle-callbacks';
 import assert from '../utils/assert';
@@ -844,10 +844,29 @@ class PostEditor {
     if (range.isCollapsed) {
       return;
     }
-    this.splitMarkers(range).forEach(marker => {
-      marker.addMarkup(markup);
-      this._markDirty(marker);
-    });
+
+    let markers = this.splitMarkers(range);
+    if (markers.length) {
+      // We insert the new markup at a consistent index across the range.
+      // If we just push on the end of the list, it can end up in different positions
+      // of the markup stack. This results in unnecessary closing and re-opening of
+      // the markup each time it changes position.
+      // If we just push it at the beginning of the list, this causes unnecessary closing
+      // and re-opening of surrounding tags.
+      // So, we look for any tags open across the whole range, and push into the stack
+      // at the end of those.
+      // Prompted by https://github.com/bustlelabs/mobiledoc-kit/issues/360
+
+      let markupsOpenAcrossRange = reduce(markers, function (soFar, marker) {
+        return commonItems(soFar, marker.markups);
+      }, markers[0].markups);
+      let indexToInsert = markupsOpenAcrossRange.length;
+
+      markers.forEach(marker => {
+        marker.addMarkupAtIndex(markup, indexToInsert);
+        this._markDirty(marker);
+      });
+    }
   }
 
   /**
