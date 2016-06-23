@@ -836,9 +836,6 @@ class PostEditor {
    *     // Will result some markers possibly being split, and the markup
    *     // being applied to all markers between the split.
    *
-   * The return value will be all markers between the split, the same return
-   * value as `splitMarkers`.
-   *
    * @param {Range} range
    * @param {Markup} markup A markup post abstract node
    * @public
