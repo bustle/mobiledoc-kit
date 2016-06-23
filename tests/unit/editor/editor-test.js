@@ -308,7 +308,7 @@ test('editor parses HTML post using parser plugins', (assert) => {
     seenTagNames.push(element.tagName);
   };
   let html = '<p><textarea></textarea><img></p>';
-  let editor = new Editor({html, parserPlugins: [parserPlugin]});
+  editor = new Editor({html, parserPlugins: [parserPlugin]});
   assert.ok(!!editor.post, 'editor loads post');
 
   assert.deepEqual(seenTagNames, ['TEXTAREA', 'IMG']);

@@ -184,7 +184,7 @@ test('postDidChange callback fired when card payload changes', (assert) => {
       return $('<div id="my-simple-card">simple-card (edit)</div>')[0];
     }
   }];
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, cardSection}) => {
+  let editor = Helpers.mobiledoc.renderInto(editorElement, ({post, cardSection}) => {
     return post([cardSection('simple-card')]);
   }, { cards });
 
@@ -205,6 +205,8 @@ test('postDidChange callback fired when card payload changes', (assert) => {
   postDidChange = 0;
   env.remove();
   assert.equal(postDidChange, 1, 'postDidChange called after remove');
+
+  editor.destroy();
 });
 
 test('inputModeDidChange callback fired when markup is toggled and there is a selection', (assert) => {
