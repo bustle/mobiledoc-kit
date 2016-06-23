@@ -12,7 +12,6 @@ import { clearSelection } from 'mobiledoc-kit/utils/selection-utils';
 const { FORWARD } = DIRECTION;
 
 const { module, test } = Helpers;
-const { skip } = QUnit;
 
 let editor, editorElement;
 
@@ -938,7 +937,7 @@ test('#addMarkupToRange silently does nothing when invoked with an empty range',
   assert.ok(!section.markers.head.hasMarkup(markup), 'marker has no markup');
 });
 
-skip("#addMarkupToRange around a markup pushes the new markup below existing ones", (assert) => {
+test("#addMarkupToRange around a markup pushes the new markup below existing ones", (assert) => {
   let em;
   const editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
     em = markup('em');
@@ -993,7 +992,7 @@ test("#addMarkupToRange within a markup puts the new markup on top of the stack"
       '<p><em>one <b>BOLD</b> two</em></p>');
 });
 
-skip("#addMarkupToRange straddling the open tag of an existing markup, closes and reopens the existing markup", (assert) => {
+test("#addMarkupToRange straddling the open tag of an existing markup, closes and reopens the existing markup", (assert) => {
   let em;
   const editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
     em = markup('em');
@@ -1016,7 +1015,7 @@ skip("#addMarkupToRange straddling the open tag of an existing markup, closes an
       '<p><em>_one <b>TWO_</b></em><b> THREE</b></p>');
 });
 
-skip("#addMarkupToRange straddling the closing tag of an existing markup, closes and reopens the existing markup", (assert) => {
+test("#addMarkupToRange straddling the closing tag of an existing markup, closes and reopens the existing markup", (assert) => {
   let em;
   const editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
     em = markup('em');
