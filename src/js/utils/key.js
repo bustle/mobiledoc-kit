@@ -90,17 +90,18 @@ const Key = class Key {
     return this.keyCode === Keycodes.DELETE;
   }
 
-  isMovement() {
-    return this.isArrow() || this.isHome() || this.isEnd();
-  }
-
   isArrow() {
     return this.isHorizontalArrow() || this.isVerticalArrow();
   }
 
   isHorizontalArrow() {
     return this.keyCode === Keycodes.LEFT ||
-      this.keyCode === Keycodes.RIGHT;
+           this.keyCode === Keycodes.RIGHT;
+  }
+
+  isHorizontalArrowWithoutModifiersOtherThanShift() {
+    return this.isHorizontalArrow() &&
+      !(this.ctrlKey || this.metaKey || this.altKey);
   }
 
   isVerticalArrow() {
@@ -209,6 +210,7 @@ const Key = class Key {
     }
 
     return (
+      code !== 0 ||
       this.toString().length > 0 ||
       (code >= Keycodes['0'] && code <= Keycodes['9']) ||         // number keys
       this.isSpace() ||

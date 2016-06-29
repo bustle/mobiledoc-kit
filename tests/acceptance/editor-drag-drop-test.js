@@ -20,6 +20,16 @@ function findCenterPointOfTextNode(node) {
 module('Acceptance: editor: drag-drop', {
   beforeEach() {
     editorElement = $('#editor')[0];
+
+    /**
+     * `document.elementFromPoint` return `null` if the element is outside the
+     * viewpor, so force the editor element to in the viewport for this test suite
+     */
+    $(editorElement).css({
+      position: 'fixed',
+      top: '100px',
+      left: '100px'
+    });
   },
   afterEach() {
     if (editor) {

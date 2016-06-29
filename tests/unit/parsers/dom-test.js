@@ -101,7 +101,7 @@ test('editor#parse fixes text in atom headTextNode when atom is at start of sect
   assert.ok(!!headTextNode, 'precond - headTextNode');
   headTextNode.textContent = ZWNJ + 'X';
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
 
@@ -142,7 +142,7 @@ test('editor#parse fixes text in atom headTextNode when atom has marker before i
   assert.ok(!!headTextNode, 'precond - headTextNode');
   headTextNode.textContent = ZWNJ + 'X';
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
     done();
@@ -163,7 +163,7 @@ test('editor#parse fixes text in atom tailTextNode when atom is at end of sectio
   assert.ok(!!tailTextNode, 'precond - tailTextNode');
   tailTextNode.textContent = ZWNJ + 'X';
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
     done();
@@ -184,7 +184,7 @@ test('editor#parse fixes text in atom tailTextNode when atom has atom after it',
   assert.ok(!!tailTextNode, 'precond - tailTextNode');
   tailTextNode.textContent = ZWNJ + 'X';
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
     done();
@@ -206,7 +206,7 @@ test('editor#parse fixes text in atom tailTextNode when atom has marker after it
   assert.ok(!!tailTextNode, 'precond - tailTextNode');
   tailTextNode.textContent = ZWNJ + 'X';
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
     done();

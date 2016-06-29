@@ -87,7 +87,7 @@ test('clicking outside the editor does not raise an error', (assert) => {
 
   Helpers.dom.triggerEvent(editorElement, 'click');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.ok(true, 'can click external item without error');
     secondEditor.destroy();
     document.body.removeChild(secondEditorElement);
@@ -161,7 +161,7 @@ test('typing tab enters a tab character', (assert) => {
   Helpers.dom.moveCursorTo(editor, $('#editor')[0]);
   Helpers.dom.insertText(editor, TAB);
   Helpers.dom.insertText(editor, 'Y');
-  window.setTimeout(() => {
+  Helpers.wait(() => {
     let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
       return post([
         markupSection('p', [
@@ -191,13 +191,17 @@ test('select-all and type text works ok', (assert) => {
 
   assert.selectedText('abc', 'precond - abc is selected');
   assert.hasElement('#editor p:contains(abc)', 'precond - renders p');
+  
+  Helpers.wait(() => {
+    Helpers.dom.insertText(editor, 'X');
 
-  Helpers.dom.insertText(editor, 'X');
-  setTimeout(function() {
-    assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
-    assert.hasElement('#editor p:contains(X)', 'inserts text');
-    done();
-  }, 0);
+    Helpers.wait(function() {
+      assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
+      assert.hasElement('#editor p:contains(X)', 'inserts text');
+      done();
+    });
+  });
+
 });
 
 test('typing enter splits lines, sets cursor', (assert) => {
@@ -214,7 +218,7 @@ test('typing enter splits lines, sets cursor', (assert) => {
 
   Helpers.dom.moveCursorTo(editor, $('#editor p')[0].firstChild, 2);
   Helpers.dom.insertText(editor, ENTER);
-  window.setTimeout(() => {
+  Helpers.wait(() => {
     let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
       return post([
         markupSection('p', [
@@ -229,7 +233,7 @@ test('typing enter splits lines, sets cursor', (assert) => {
     let expectedRange = new Range(new Position(editor.post.sections.tail, 0));
     assert.ok(expectedRange.isEqual(editor.range), 'range is at start of new section');
     done();
-  }, 0);
+  });
 });
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/306
@@ -264,6 +268,7 @@ test('adding/removing bold text between two bold markers works', (assert) => {
 });
 
 test('keypress events when the editor does not have selection are ignored', (assert) => {
+  let done = assert.async();
   let expected;
   editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     expected = post([markupSection('p', [marker('abc')])]);
@@ -274,10 +279,11 @@ test('keypress events when the editor does not have selection are ignored', (ass
 
   Helpers.dom.clearSelection();
 
-  assert.ok(document.activeElement === editorElement, 'precond - editor is focused');
-  assert.equal(window.getSelection().rangeCount, 0, 'nothing selected');
+  Helpers.wait(() => {
+    assert.ok(!editor.hasCursor(), 'precond - editor does not have cursor');
+    Helpers.dom.insertText(editor, 'v');
 
-  Helpers.dom.insertText(editor, 'v');
-
-  assert.postIsSimilar(editor.post, expected, 'post is not changed');
+    assert.postIsSimilar(editor.post, expected, 'post is not changed');
+    done();
+  });
 });

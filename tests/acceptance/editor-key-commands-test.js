@@ -1,6 +1,5 @@
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Keycodes from 'mobiledoc-kit/utils/keycodes';
-import Browser from 'mobiledoc-kit/utils/browser';
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 
@@ -49,7 +48,7 @@ function testStatefulCommand({modifierName, key, command, markupName}) {
     Helpers.dom.triggerKeyCommand(editor, key, modifier);
     Helpers.dom.triggerKeyEvent(editor, 'keyup', {charCode: 0, keyCode: modifierKeyCode});
 
-    setTimeout(() => {
+    Helpers.wait(() => {
       assert.hasElement(`#editor ${markupName}:contains(${initialText})`,
                         `text wrapped in ${markupName}`);
       done();
@@ -74,47 +73,52 @@ function testStatefulCommand({modifierName, key, command, markupName}) {
     Helpers.dom.moveCursorTo(editor,
       editor.post.sections.head.markers.head.renderNode.element,
       initialText.length);
-    Helpers.dom.triggerKeyCommand(editor, key, modifier);
-    // simulate meta/ctrl keyup
-    Helpers.dom.triggerKeyEvent(editor, 'keyup', { charCode: 0, keyCode:  modifierKeyCode});
 
-    setTimeout(() => {
-      Helpers.dom.insertText(editor, 'z');
-
-      let expected1 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
-        return post([
-          markupSection('p', [
-            marker(initialText),
-            marker('z', [markup(markupName)])
-          ])
-        ]);
-      });
-      let expected2 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
-        return post([
-          markupSection('p', [
-            marker(initialText),
-            marker('z', [markup(markupName)]),
-            marker('x')
-          ])
-        ]);
-      });
-
-      assert.postIsSimilar(editor.post, expected1);
-      assert.renderTreeIsEqual(editor._renderTree, expected1);
-      assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
-
-      // un-toggles markup
+    Helpers.wait(() => {
       Helpers.dom.triggerKeyCommand(editor, key, modifier);
-      Helpers.dom.triggerKeyEvent(editor, 'keyup', {charCode: 0, keyCode: modifierKeyCode});
+      // simulate meta/ctrl keyup
+      Helpers.dom.triggerKeyEvent(editor, 'keyup', { charCode: 0, keyCode:  modifierKeyCode});
 
-      setTimeout(() => {
-        Helpers.dom.insertText(editor, 'x');
+      Helpers.wait(() => {
+        Helpers.dom.insertText(editor, 'z');
 
-        assert.postIsSimilar(editor.post, expected2);
-        assert.renderTreeIsEqual(editor._renderTree, expected2);
+        let expected1 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+          return post([
+            markupSection('p', [
+              marker(initialText),
+              marker('z', [markup(markupName)])
+            ])
+          ]);
+        });
+        let expected2 = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+          return post([
+            markupSection('p', [
+              marker(initialText),
+              marker('z', [markup(markupName)]),
+              marker('x')
+            ])
+          ]);
+        });
+
+        assert.postIsSimilar(editor.post, expected1);
+        assert.renderTreeIsEqual(editor._renderTree, expected1);
         assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
 
-        done();
+        Helpers.wait(() => {
+          // un-toggles markup
+          Helpers.dom.triggerKeyCommand(editor, key, modifier);
+          Helpers.dom.triggerKeyEvent(editor, 'keyup', {charCode: 0, keyCode: modifierKeyCode});
+
+          Helpers.wait(() => {
+            Helpers.dom.insertText(editor, 'x');
+
+            assert.postIsSimilar(editor.post, expected2);
+            assert.renderTreeIsEqual(editor._renderTree, expected2);
+            assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
+
+            done();
+          });
+        });
       });
     });
   });
@@ -146,54 +150,6 @@ testStatefulCommand({
   key: 'I',
   command: 'ctrl-I',
   markupName: 'em'
-});
-
-test(`cmd-left goes to the beginning of a line (MacOS only)`, (assert) => {
-  let initialText = 'something';
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
-    markupSection('p', [marker(initialText)])
-  ]));
-
-  assert.ok(editor.hasCursor(), 'has cursor');
-
-  let textElement = editor.post.sections.head.markers.head.renderNode.element;
-
-  Helpers.dom.moveCursorTo(editor, textElement, 4);
-  let originalCursorPosition = Helpers.dom.getCursorPosition();
-  Helpers.dom.triggerKeyCommand(editor, 'LEFT', MODIFIERS.META);
-
-  let changedCursorPosition = Helpers.dom.getCursorPosition();
-  let expectedCursorPosition = 0; // beginning of text
-
-  if (Browser.isMac) {
-    assert.equal(changedCursorPosition.offset, expectedCursorPosition, 'cursor moved to the beginning of the line on MacOS');
-  } else {
-    assert.equal(changedCursorPosition.offset, originalCursorPosition.offset, 'cursor not moved to the end of the line (non-MacOS)');
-  }
-});
-
-test(`cmd-right goes to the end of a line (MacOS only)`, (assert) => {
-  let initialText = 'something';
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
-    markupSection('p', [marker(initialText)])
-  ]));
-
-  assert.ok(editor.hasCursor(), 'has cursor');
-
-  let textElement = editor.post.sections.head.markers.head.renderNode.element;
-
-  Helpers.dom.moveCursorTo(editor, textElement, 4);
-  let originalCursorPosition = Helpers.dom.getCursorPosition();
-  Helpers.dom.triggerKeyCommand(editor, 'RIGHT', MODIFIERS.META);
-
-  let changedCursorPosition = Helpers.dom.getCursorPosition();
-  let expectedCursorPosition = initialText.length; // end of text
-
-  if (Browser.isMac) {
-    assert.equal(changedCursorPosition.offset, expectedCursorPosition, 'cursor moved to the end of the line on MacOS');
-  } else {
-    assert.equal(changedCursorPosition.offset, originalCursorPosition.offset, 'cursor not moved to the end of the line (non-MacOS)');
-  }
 });
 
 test(`ctrl-k clears to the end of a line`, (assert) => {

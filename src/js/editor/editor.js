@@ -247,11 +247,12 @@ class Editor {
     this.hasRendered = true;
     this.rerender();
 
-    if (this.autofocus) {
-      this.element.focus();
-    }
     this._mutationHandler.init();
     this._eventManager.init();
+
+    if (this.autofocus) {
+      this.selectRange(new Range(this.post.headPosition()));
+    }
   }
 
   _addTooltip() {
@@ -350,18 +351,6 @@ class Editor {
     this.runCallbacks(CALLBACK_QUEUES.POST_DID_CHANGE);
   }
 
-  selectSections(sections=[]) {
-    if (sections.length) {
-      let headSection = sections[0],
-          tailSection = sections[sections.length - 1];
-      this.selectRange(new Range(headSection.headPosition(),
-                                 tailSection.tailPosition()));
-    } else {
-      this.cursor.clearSelection();
-    }
-    this._reportSelectionState();
-  }
-
   /**
    * Selects the given range. If range is collapsed, this positions the cursor
    * at the range's position, otherwise a selection is created in the editor
@@ -369,15 +358,8 @@ class Editor {
    * @param {Range}
    */
   selectRange(range) {
-    this.renderRange(range);
-  }
-
-  /**
-   * @private
-   */
-  renderRange(range) {
     this.cursor.selectRange(range);
-    this._notifyRangeChange();
+    this.range = range;
   }
 
   get cursor() {
@@ -386,44 +368,29 @@ class Editor {
 
   /**
    * Return the current range for the editor (may be cached).
-   * The #_resetRange method forces a re-read of
-   * the range from DOM.
    * @return {Range}
    */
   get range() {
-    if (this._range) {
-      return this._range;
-    }
-    let range = this.cursor.offsets;
-    if (!range.isBlank) { // do not cache blank ranges
-      this._range = range;
-    }
-    return range;
+    return this._editState.range;
   }
 
-  /**
-   * Used to notify the editor that the range (or state) may
-   * have changed (e.g. in response to a mouseup or keyup) and
-   * that the editor should re-read values from DOM and fire the
-   * necessary callbacks
-   * @private
-   */
-  _notifyRangeChange() {
-    if (this.isEditable) {
-      this._resetRange();
-      this._editState.reset();
+  set range(newRange) {
+    this._editState.updateRange(newRange);
 
-      if (this._editState.rangeDidChange()) {
-        this._rangeDidChange();
-      }
-      if (this._editState.inputModeDidChange()) {
-        this._inputModeDidChange();
-      }
+    if (this._editState.rangeDidChange()) {
+      this._rangeDidChange();
+    }
+
+    if (this._editState.inputModeDidChange()) {
+      this._inputModeDidChange();
     }
   }
 
-  _resetRange() {
-    delete this._range;
+  _readRangeFromDOM() {
+    if (!this.isEditable) {
+      return;
+    }
+    this.range = this.cursor.offsets;
   }
 
   setPlaceholder(placeholder) {
@@ -610,7 +577,7 @@ class Editor {
    * @public
    */
   destroy() {
-    this._isDestroyed = true;
+    this.isDestroyed = true;
     if (this.hasCursor()) {
       this.cursor.clearSelection();
       this.element.blur(); // FIXME This doesn't blur the element on IE11
@@ -619,6 +586,7 @@ class Editor {
     this._eventManager.destroy();
     this.removeAllViews();
     this._renderer.destroy();
+    this._editState.destroy();
   }
 
   /**
@@ -628,10 +596,13 @@ class Editor {
    * @public
    */
   disableEditing() {
+    if (this.isEditable === false) { return; }
+
     this.isEditable = false;
-    if (this.element) {
+    if (this.hasRendered) {
       this.element.setAttribute('contentEditable', false);
       this.setPlaceholder('');
+      this.selectRange(Range.blankRange());
     }
   }
 
@@ -705,11 +676,12 @@ class Editor {
     const result = callback(postEditor);
     this.runCallbacks(CALLBACK_QUEUES.DID_UPDATE, [postEditor]);
     postEditor.complete();
+    this._readRangeFromDOM();
+
     if (postEditor._shouldCancelSnapshot) {
       this._editHistory._pendingSnapshot = null;
     }
     this._editHistory.storeSnapshot();
-    this._notifyRangeChange();
 
     return result;
   }
@@ -784,24 +756,7 @@ class Editor {
     this.addCallback(CALLBACK_QUEUES.CURSOR_DID_CHANGE, callback);
   }
 
-  /*
-     The following events/sequences can create a selection and are handled:
-       * mouseup -- can happen anywhere in document, must wait until next tick to read selection
-       * keyup when key is a movement key and shift is pressed -- in editor element
-       * keyup when key combo was cmd-A (alt-A) aka "select all"
-       * keyup when key combo was cmd-Z (browser may restore selection)
-     These cases can create a selection and are not handled:
-       * ctrl-click -> context menu -> click "select all"
-   */
-  _reportSelectionState() {
-    this._cursorDidChange();
-  }
-
   _rangeDidChange() {
-    this._cursorDidChange();
-  }
-
-  _cursorDidChange() {
     if (this.hasRendered) {
       this.runCallbacks(CALLBACK_QUEUES.CURSOR_DID_CHANGE);
     }
@@ -830,7 +785,7 @@ class Editor {
    * @see PostEditor#toggleMarkup
    */
   toggleMarkup(markup) {
-    markup = this.post.builder.createMarkup(markup);
+    markup = this.builder.createMarkup(markup);
     let { range } = this;
     if (range.isCollapsed) {
       this._editState.toggleMarkupState(markup);
@@ -1021,7 +976,7 @@ class Editor {
   }
 
   runCallbacks(...args) {
-    if (this._isDestroyed) {
+    if (this.isDestroyed) {
       // TODO warn that callback attempted after editor was destroyed
       return;
     }

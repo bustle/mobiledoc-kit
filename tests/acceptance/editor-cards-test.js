@@ -87,7 +87,7 @@ test('editor listeners are quieted for card actions', (assert) => {
   Helpers.dom.selectText(editor ,cardText, editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     // FIXME should have a better assertion here
     assert.ok(true, 'made it here with no javascript errors');
     done();
@@ -113,7 +113,7 @@ test('removing last card from mobiledoc allows additional editing', (assert) => 
 
   button.click();
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.hasNoElement('#editor button:contains(Click me)', 'button is removed');
     assert.hasNoElement('#editor p');
     Helpers.dom.moveCursorTo(editor, $('#editor')[0]);
@@ -213,7 +213,9 @@ test('selecting a card and deleting deletes the card', (assert) => {
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.selectSections([editor.post.sections.head]);
+  let range = new Range(editor.post.sections.head.headPosition(),
+                        editor.post.sections.head.tailPosition());
+  editor.selectRange(range);
   Helpers.dom.triggerDelete(editor);
 
   assert.hasNoElement('#my-simple-card', 'has no card after delete');

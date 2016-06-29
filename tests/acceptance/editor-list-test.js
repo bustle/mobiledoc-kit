@@ -149,7 +149,7 @@ test('can hit enter at end of list item to add new item', (assert) => {
   assert.equal(newLi.text(), '', 'new li has no text');
 
   Helpers.dom.insertText(editor, 'X');
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.hasElement('#editor li:contains(X)', 'text goes in right spot');
 
     const liCount = $('#editor li').length;
@@ -410,7 +410,7 @@ test('selecting empty list items does not cause error', (assert) => {
   Helpers.dom.moveCursorTo(editor, $('#editor li:eq(1)')[0], 0,
                            $('#editor li:eq(2)')[0], 0);
   Helpers.dom.triggerEvent(editor.element, 'click');
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.ok(true, 'no error');
 
     Helpers.dom.insertText(editor, 'X');

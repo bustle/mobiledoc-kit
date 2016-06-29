@@ -14,6 +14,7 @@ import { mergeWithOptions } from 'mobiledoc-kit/utils/merge';
  *      ])
  *    })
  *  )
+ *  @return Mobiledoc
  */
 function build(treeFn, version) {
   let post = PostAbstractHelpers.build(treeFn);

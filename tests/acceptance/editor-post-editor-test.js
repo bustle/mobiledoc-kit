@@ -60,17 +60,17 @@ test('#insertSection inserts after the cursor active section', (assert) => {
 
 test('#insertSection inserts at end when no active cursor section', (assert) => {
   let newSection;
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     newSection = markupSection('p', [marker('123')]);
     return post([
       markupSection('p', [marker('abc')]),
       markupSection('p', [marker('def')])
     ]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+  }, {autofocus: false});
 
   //precond
+  assert.ok(!editor.hasCursor(), 'editor has no cursor');
+  assert.ok(editor.range.isBlank, 'editor has no cursor');
   assert.hasElement('#editor p:eq(0):contains(abc)');
   assert.hasElement('#editor p:eq(1):contains(def)');
   assert.hasNoElement('#editor p:contains(123)');

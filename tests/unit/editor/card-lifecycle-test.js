@@ -9,7 +9,7 @@ module('Unit: Editor: Card Lifecycle', {
     editorElement = $('#editor')[0];
   },
   afterEach() {
-    if (editor) {
+    if (editor && !editor.isDestroyed) {
       editor.destroy();
       editor = null;
     }

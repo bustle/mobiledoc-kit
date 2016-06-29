@@ -5,6 +5,7 @@ import DOMHelpers from './helpers/dom';
 import MobiledocHelpers from './helpers/mobiledoc';
 import PostAbstract from './helpers/post-abstract';
 import { detectIE11 } from './helpers/browsers';
+import wait from './helpers/wait';
 
 const { test:qunitTest, module, skip } = QUnit;
 
@@ -43,5 +44,6 @@ export default {
   postAbstract: PostAbstract,
   test,
   module,
-  skipInIE11
+  skipInIE11,
+  wait
 };

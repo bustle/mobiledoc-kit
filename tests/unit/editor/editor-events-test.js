@@ -10,7 +10,6 @@ const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
   return post([markupSection('p', [marker('this is the editor')])]);
 });
 
-
 module('Unit: Editor: events and lifecycle callbacks', {
   beforeEach() {
     editorElement = $('#editor')[0];
@@ -23,125 +22,112 @@ module('Unit: Editor: events and lifecycle callbacks', {
   },
 
   afterEach() {
-    if (editor) {
+    if (editor && !editor.isDestroyed) {
       editor.destroy();
       editor = null;
     }
   }
 });
 
-test('cursorDidChange callback fired after mouseup', (assert) => {
-  assert.expect(2);
-  let done = assert.async();
-
-  let cursorChanged = 0;
-  editor.cursorDidChange(() => cursorChanged++);
-
-  let node = Helpers.dom.findTextNode(editorElement, 'this is the editor');
-  Helpers.dom.moveCursorWithoutNotifyingEditorTo(editor, node, 0);
-
-  assert.equal(cursorChanged, 0, 'precond - no cursor change yet');
-
-  Helpers.dom.triggerEvent(document, 'mouseup');
-
-  setTimeout(() => {
-    assert.equal(cursorChanged, 1, 'cursor did change');
-    cursorChanged = 0;
-
-    done();
-  });
-});
-
-test('cursorDidChange callback not fired after mouseup when selection is unchanged', (assert) => {
-  assert.expect(2);
-  let done = assert.async();
-
-  let cursorChanged = 0;
-  editor.cursorDidChange(() => cursorChanged++);
-
-  let node = Helpers.dom.findTextNode(editorElement, 'this is the editor');
-  Helpers.dom.moveCursorWithoutNotifyingEditorTo(editor, node, 0);
-  Helpers.dom.triggerEvent(document, 'mouseup');
-
-  setTimeout(() => {
-    assert.equal(cursorChanged, 1, 'cursor did change');
-    cursorChanged = 0;
-
-    Helpers.dom.triggerEvent(document, 'mouseup');
-    setTimeout(() => {
-      assert.equal(cursorChanged, 0, 'cursor did not change after mouseup when selection is unchanged');
-
-      done();
-    });
-  });
-});
-
-test('cursorDidChange callback fired after mouseup when editor loses focus', (assert) => {
-  assert.expect(2);
-  let done = assert.async();
-
-  // Tests in FF can fail if the window is not front-most and
-  // we don't explicitly render the range
-  let node = Helpers.dom.findTextNode(editor.element, 'this is the editor');
-  Helpers.dom.moveCursorWithoutNotifyingEditorTo(editor, node);
-
-  let cursorChanged = 0;
-  editor.cursorDidChange(() => cursorChanged++);
-
-  Helpers.dom.triggerEvent(document, 'mouseup');
-  setTimeout(() => {
-    assert.equal(cursorChanged, 1, 'precond - trigger cursor change');
-    cursorChanged = 0;
-
-    Helpers.dom.clearSelection();
-    Helpers.dom.triggerEvent(document, 'mouseup');
-
-    setTimeout(() => {
-      assert.equal(cursorChanged, 1, 'cursor changed when mouseup and no selection');
-
-      done();
-    });
-  });
-});
-
-test('cursorDidChange callback fired after keypress', (assert) => {
-  let done = assert.async();
-  assert.expect(2);
-
-  let cursorChanged = 0;
-  editor.cursorDidChange(() => cursorChanged++);
-
-  let node = Helpers.dom.findTextNode(editorElement, 'this is the editor');
-  Helpers.dom.moveCursorTo(editor, node, 0);
-
-  assert.equal(cursorChanged, 1, 'precond - cursor changed by move');
-  cursorChanged = 0;
-
-  Helpers.dom.moveCursorWithoutNotifyingEditorTo(editor, node, 'this is the editor'.length);
-  Helpers.dom.triggerRightArrowKey(editor);
-
-  setTimeout(() => {
-    assert.equal(cursorChanged, 1, 'cursor changed after key up');
-    done();
-  });
-});
-
-test('cursorDidChange callback not fired if editor is destroyed', (assert) => {
+test('cursorDidChange callback does not fire when selection is set to the same value', (assert) => {
   assert.expect(1);
   let done = assert.async();
 
   let cursorChanged = 0;
   editor.cursorDidChange(() => cursorChanged++);
 
+  let node = Helpers.dom.findTextNode(editorElement, 'this is the editor');
+  Helpers.dom.selectRange(node, 0, node, 0);
+
+  Helpers.wait(() => {
+    cursorChanged = 0;
+
+    Helpers.dom.selectRange(node, 0, node, 0);
+
+    Helpers.wait(() => {
+      assert.equal(cursorChanged, 0, 'cursor did not change when selection is set to same value');
+
+      done();
+    });
+  });
+});
+
+test('cursorDidChange callback fires when editor loses focus', (assert) => {
+  assert.expect(1);
+  let done = assert.async();
+
+  Helpers.wait(() => {
+    // Tests in FF can fail if the window is not front-most and
+    // we don't explicitly render the range
+    let node = Helpers.dom.findTextNode(editor.element, 'this is the editor');
+    Helpers.dom.selectRange(node, 0, node, 0);
+
+    Helpers.wait(() => {
+      let cursorChanged = 0;
+      editor.cursorDidChange(() => cursorChanged++);
+
+      Helpers.dom.clearSelection();
+
+      Helpers.wait(() => {
+        assert.equal(cursorChanged, 1, 'cursor changed after clearing selection');
+
+        done();
+      });
+    });
+  });
+});
+
+test('cursorDidChange callback not fired if editor is destroyed', (assert) => {
+  assert.expect(2);
+  let done = assert.async();
+
+  let cursorChanged = 0;
+  editor.cursorDidChange(() => cursorChanged++);
+
   Helpers.dom.clearSelection();
-  Helpers.dom.triggerEvent(document, 'mouseup');
-  editor.destroy();
-  editor = null;
 
-  setTimeout(() => {
-    assert.equal(cursorChanged, 0, 'callback not fired');
+  Helpers.wait(() => {
+    cursorChanged = 0;
+    let node = Helpers.dom.findTextNode(editor.element, 'this is the editor');
+    Helpers.dom.selectRange(node, 0, node, 0);
 
-    done();
+    Helpers.wait(() => {
+      assert.equal(cursorChanged, 1, 'precond - cursor change fires');
+
+      cursorChanged = 0;
+      editor.destroy();
+      Helpers.dom.clearSelection();
+
+      Helpers.wait(() => {
+        assert.equal(cursorChanged, 0, 'callback not fired');
+
+        done();
+      });
+    });
+  });
+});
+
+test('cursorChanged callback fired after editor.run sets range', (assert) => {
+  assert.expect(2);
+  let done = assert.async();
+
+  let cursorChanged = 0;
+  editor.cursorDidChange(() => cursorChanged++);
+
+  Helpers.wait(() => {
+    assert.equal(cursorChanged, 0, 'precond - no cursor change');
+
+    editor.run(postEditor => {
+      let position = editor.post.headPosition();
+      postEditor.insertText(position, 'blah');
+      postEditor.setRange(new Range(editor.post.tailPosition()));
+    });
+
+    Helpers.wait(() => {
+      assert.equal(cursorChanged, 1, 'cursor changes after editor.run sets position');
+
+      done();
+    });
   });
 });
 
@@ -215,13 +201,16 @@ test('inputModeDidChange callback fired when markup is toggled and there is a se
 
   Helpers.dom.selectText(editor, "this is the editor", editorElement);
 
-  let inputChanged = 0;
-  editor.inputModeDidChange(() => inputChanged++);
+  Helpers.wait(() => {
+    let inputChanged = 0;
+    editor.inputModeDidChange(() => inputChanged++);
 
-  editor.toggleMarkup('b');
-  setTimeout(() => {
-    assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
-    done();
+    editor.toggleMarkup('b');
+
+    Helpers.wait(() => {
+      assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
+      done();
+    });
   });
 });
 
@@ -231,14 +220,16 @@ test('inputModeDidChange callback fired when markup is toggled and there is no s
 
   editor.selectRange(new Range(editor.post.headPosition()));
 
-  let inputChanged = 0;
-  editor.inputModeDidChange(() => inputChanged++);
+  Helpers.wait(() => {
+    let inputChanged = 0;
+    editor.inputModeDidChange(() => inputChanged++);
 
-  editor.toggleMarkup('b');
+    editor.toggleMarkup('b');
 
-  setTimeout(() => {
-    assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
-    done();
+    Helpers.wait(() => {
+      assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
+      done();
+    });
   });
 });
 
@@ -251,14 +242,16 @@ test('inputModeDidChange callback fired when moving cursor into markup', (assert
   editor.toggleMarkup('b');
   editor.selectRange(Range.create(editor.post.sections.head, 'this is'.length));
 
-  let inputChanged = 0;
-  editor.inputModeDidChange(() => inputChanged++);
+  Helpers.wait(() => {
+    let inputChanged = 0;
+    editor.inputModeDidChange(() => inputChanged++);
 
-  Helpers.dom.triggerRightArrowKey(editor);
+    editor.selectRange(editor.range.move(1));
 
-  setTimeout(() => {
-    assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
-    done();
+    Helpers.wait(() => {
+      assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
+      done();
+    });
   });
 });
 
@@ -273,7 +266,7 @@ test('inputModeDidChange callback fired when toggling section', (assert) => {
 
   editor.toggleSection('h2');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
     done();
   });
@@ -290,7 +283,7 @@ test('inputModeDidChange callback not fired when toggle is no-op', (assert) => {
 
   editor.toggleSection('p'); // toggling to same section is no-op
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.equal(inputChanged, 0, 'inputModeDidChange not fired');
     done();
   });
@@ -306,17 +299,23 @@ test('inputModeDidChange callback fired when moving cursor into section', (asser
     postEditor.insertSectionAtEnd(newSection);
   });
 
+  let inputChanged = 0;
+  editor.inputModeDidChange(() => {
+    inputChanged++;
+  });
+
   assert.hasElement('h2:contains(abc)', 'precond - inserted h2');
   editor.selectRange(new Range(editor.post.sections.tail.headPosition()));
 
-  let inputChanged = 0;
-  editor.inputModeDidChange(() => inputChanged++);
+  Helpers.wait(() => {
+    inputChanged = 0;
 
-  Helpers.dom.triggerLeftArrowKey(editor);
+    editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
 
-  setTimeout(() => {
-    assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
-    done();
+    Helpers.wait(() => {
+      assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
+      done();
+    });
   });
 });
 
@@ -338,7 +337,7 @@ test('inputModeDidChange callback not fired when moving cursor into same section
 
   Helpers.dom.triggerLeftArrowKey(editor);
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.equal(inputChanged, 0, 'inputModeDidChange not fired');
     done();
   });

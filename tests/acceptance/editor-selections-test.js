@@ -58,23 +58,29 @@ test('selecting across sections is possible', (assert) => {
 });
 
 test('when editing is disabled, the selection detection code is disabled', (assert) => {
-  $('#qunit-fixture').append('<p>outside section</p>');
+  let done = assert.async();
+  $('#qunit-fixture').append('<p>outside section 1</p>');
+  $('#qunit-fixture').append('<p>outside section 2</p>');
 
   editor = new Editor({mobiledoc: mobileDocWithSection});
   editor.render(editorElement);
   editor.disableEditing();
 
-  const firstSection = $('p:contains(one trick pony)')[0];
-  const outsideSection = $('p:contains(outside section)')[0];
+  const outside1 = $('p:contains(outside section 1)')[0];
+  const outside2 = $('p:contains(outside section 2)')[0];
 
-  Helpers.dom.selectText(editor ,'trick', firstSection,
-                         'outside', outsideSection);
+  Helpers.wait(() => {
+    Helpers.dom.selectText(editor ,'outside', outside1, 'section 2', outside2);
 
-  Helpers.dom.triggerEvent(document, 'mouseup');
+    Helpers.wait(() => {
+      assert.equal(editor.activeSections.length, 0, 'no selection inside the editor');
+      const selectedText = Helpers.dom.getSelectedText();
+      assert.ok(selectedText.indexOf('outside section 1') !== -1 &&
+                selectedText.indexOf('outside section 2') !== -1, 'selects the text');
 
-  assert.equal(editor.activeSections.length, 0, 'no selection inside the editor');
-  const selectedText = Helpers.dom.getSelectedText();
-  assert.ok(selectedText.indexOf('trick pony') !== -1 && selectedText.indexOf('outside') !== -1, 'selects the text');
+      done();
+    });
+  });
 });
 
 test('selecting an entire section and deleting removes it', (assert) => {
@@ -300,17 +306,17 @@ test('selecting text bounded by space and typing replaces it', (assert) => {
 
   Helpers.dom.selectText(editor ,'trick', editorElement);
   Helpers.dom.insertText(editor, 'X');
-  window.setTimeout(() => {
+  Helpers.wait(() => {
     assert.equal(editor.post.sections.head.text, 'one X pony',
                  'new text present');
 
     Helpers.dom.insertText(editor, 'Y');
-    window.setTimeout(() => {
+    Helpers.wait(() => {
       assert.equal(editor.post.sections.head.text, 'one XY pony',
                    'further new text present');
       done();
-    }, 0);
-  }, 0);
+    });
+  });
 });
 
 test('selecting all text across sections and hitting enter deletes and moves cursor to empty section', (assert) => {
@@ -527,24 +533,6 @@ test('selecting text that includes an empty section and applying markup to it', 
   editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
   assert.hasElement('#editor p strong:contains(abc)', 'bold is applied to text');
-});
-
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/155
-test('editor#selectSections works when given an empty array', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  assert.selectedText('', 'precond - no text selected');
-
-  const section = editor.post.sections.head;
-  editor.selectSections([section]);
-
-  assert.selectedText('abc', 'section is selected');
-  editor.selectSections([]);
-  assert.selectedText(null, 'no text selected after selecting no sections');
 });
 
 test('placing cursor inside a strong section should cause markupsInSelection to contain "strong"', (assert) => {

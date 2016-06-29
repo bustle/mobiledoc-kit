@@ -15,8 +15,9 @@ module('Unit: Editor', {
   },
 
   afterEach() {
-    if (editor) {
+    if (editor && !editor.isDestroyed) {
       editor.destroy();
+      editor = null;
     }
   }
 });
@@ -26,6 +27,24 @@ test('can render an editor via dom node reference', (assert) => {
   editor.render(editorElement);
   assert.equal(editor.element, editorElement);
   assert.ok(editor.post);
+});
+
+test('autofocused editor hasCursor and has non-blank range after rendering', (assert) => {
+  let done = assert.async();
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection}) => {
+    return post([markupSection('p')]);
+  });
+  editor = new Editor({autofocus: true, mobiledoc});
+  assert.ok(!editor.hasCursor(), 'precond - editor has no cursor');
+  assert.ok(editor.range.isBlank, 'precond - editor has blank range');
+
+  editor.render(editorElement);
+
+  Helpers.wait(() => {
+    assert.ok(editor.hasCursor(), 'editor has cursor');
+    assert.ok(!editor.range.isBlank, 'editor has non-blank range');
+    done();
+  });
 });
 
 test('creating an editor with DOM node throws', (assert) => {

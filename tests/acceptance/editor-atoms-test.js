@@ -59,7 +59,7 @@ test('keystroke of character before starting atom inserts character', (assert) =
   editor.selectRange(new Range(editor.post.headPosition()));
   Helpers.dom.insertText(editor, 'A');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
     done();
@@ -78,7 +78,7 @@ test('keystroke of character before mid-text atom inserts character', (assert) =
   editor.selectRange(Range.create(editor.post.sections.head, 'AB'.length));
   Helpers.dom.insertText(editor, 'C');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
     done();
@@ -97,7 +97,7 @@ test('keystroke of character after mid-text atom inserts character', (assert) =>
   editor.selectRange(Range.create(editor.post.sections.head, 1));
   Helpers.dom.insertText(editor, 'A');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
     done();
@@ -116,7 +116,7 @@ test('keystroke of character after end-text atom inserts character', (assert) =>
   editor.selectRange(Range.create(editor.post.sections.head, 1));
   Helpers.dom.insertText(editor, 'A');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
     done();
@@ -291,26 +291,34 @@ test('keystroke of enter at list item head before atom creates new section', (as
 });
 
 test('marking atom with markup adds markup', (assert) => {
+  assert.expect(1);
+  let done = assert.async();
+
   editor = new Editor({mobiledoc: mobiledocWithAtom, atoms: [simpleAtom]});
   editor.render(editorElement);
 
   let pNode = $('#editor p')[0];
   Helpers.dom.selectRange(pNode.firstChild, 16, pNode.lastChild, 0);
-  editor.run(postEditor => {
-    let markup = editor.builder.createMarkup('strong');
-    postEditor.addMarkupToRange(editor.range, markup);
-  });
 
-  assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
-    ({post, markupSection, atom, marker, markup}) => {
-      return post([
-        markupSection('p', [
-          marker('text before atom'),
-          atom('simple-atom', 'Bob', {}, [markup('strong')]),
-          marker('text after atom')
-        ])
-      ]);
-    }));
+  Helpers.wait(() => {
+    editor.run(postEditor => {
+      let markup = editor.builder.createMarkup('strong');
+      postEditor.addMarkupToRange(editor.range, markup);
+    });
+
+    assert.postIsSimilar(editor.post, Helpers.postAbstract.build(
+      ({post, markupSection, atom, marker, markup}) => {
+        return post([
+          markupSection('p', [
+            marker('text before atom'),
+            atom('simple-atom', 'Bob', {}, [markup('strong')]),
+            marker('text after atom')
+          ])
+        ]);
+      }));
+
+    done();
+  });
 });
 
 test('typing between two atoms inserts character', (assert) => {
@@ -335,7 +343,7 @@ test('typing between two atoms inserts character', (assert) => {
 
     Helpers.dom.insertText(editor, 'A');
 
-    setTimeout(() => {
+    Helpers.wait(() => {
       assert.postIsSimilar(editor.post, expected);
       assert.renderTreeIsEqual(editor._renderTree, expected);
       done();

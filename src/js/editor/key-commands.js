@@ -69,13 +69,6 @@ export const DEFAULT_KEY_COMMANDS = [{
     }
   }
 }, {
-  str: 'META+LEFT',
-  run(editor) {
-    if (Browser.isMac) {
-      gotoStartOfLine(editor);
-    }
-  }
-}, {
   str: 'META+A',
   run(editor) {
     if (Browser.isMac) {
@@ -84,13 +77,6 @@ export const DEFAULT_KEY_COMMANDS = [{
   }
 }, {
   str: 'CTRL+E',
-  run(editor) {
-    if (Browser.isMac) {
-      gotoEndOfLine(editor);
-    }
-  }
-}, {
-  str: 'META+RIGHT',
   run(editor) {
     if (Browser.isMac) {
       gotoEndOfLine(editor);

@@ -25,7 +25,7 @@ function buildEditorWithMobiledoc(builderFn) {
   let unknownCardHandler = () => {};
   editor = new Editor({mobiledoc, unknownCardHandler});
   editor.render(editorElement);
-  editor.renderRange = function(range) {
+  editor.selectRange = function(range) {
     renderedRange = range;
   };
   return editor;

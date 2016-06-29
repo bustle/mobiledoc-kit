@@ -11,7 +11,7 @@ module('Unit: Editor: Atom Lifecycle', {
     editorElement = $('#editor')[0];
   },
   afterEach() {
-    if (editor) {
+    if (editor && !editor.isDestroyed) {
       editor.destroy();
       editor = null;
     }
@@ -258,8 +258,8 @@ test('mutating the content of an atom does not trigger an update', (assert) => {
   $("#the-atom").html("updated");
 
   // ensure the mutations have had time to trigger
-  setTimeout(function(){
+  Helpers.wait(function(){
     assert.ok(!updateTriggered);
     done();
-  }, 10);
+  });
 });

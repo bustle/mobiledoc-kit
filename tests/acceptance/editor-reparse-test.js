@@ -42,7 +42,7 @@ test('changing text node content causes reparse of section', (assert) => {
 
   node.textContent = 'def';
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.equal(section.text, 'def', 'section reparsed correctly');
     assert.postIsSimilar(editor.post, expected);
     done();
@@ -66,7 +66,7 @@ test('removing text node causes reparse of section', (assert) => {
 
   node.parentNode.removeChild(node);
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.equal(section.text, 'def', 'section reparsed correctly');
     assert.postIsSimilar(editor.post, expected);
     done();
@@ -90,7 +90,7 @@ test('removing section node causes reparse of post', (assert) => {
 
   node.parentNode.removeChild(node);
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     done();
   });
@@ -115,7 +115,7 @@ test('inserting styled span in section causes section reparse', (assert) => {
   span.appendChild(document.createTextNode('def'));
   node.appendChild(span);
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     done();
   });
@@ -137,7 +137,7 @@ test('inserting new top-level node causes reparse of post', (assert) => {
   span.appendChild(document.createTextNode('123'));
   editorElement.appendChild(span);
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     done();
   });
@@ -156,7 +156,7 @@ test('inserting node into blank post causes reparse', (assert) => {
   span.appendChild(document.createTextNode('123'));
   editorElement.appendChild(span);
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     done();
   });
@@ -183,7 +183,7 @@ test('after reparsing post, mutations still handled properly', (assert) => {
   span.appendChild(document.createTextNode('123'));
   editorElement.appendChild(span);
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected1);
 
     let node = editorElement.firstChild.firstChild;
@@ -191,7 +191,7 @@ test('after reparsing post, mutations still handled properly', (assert) => {
 
     node.textContent = 'def';
 
-    setTimeout(() => {
+    Helpers.wait(() => {
       assert.postIsSimilar(editor.post, expected2);
 
       done();
@@ -221,7 +221,7 @@ test('inserting text into text node on left/right of atom is reparsed correctly'
             'precond - correct right cursor node');
 
   rightCursorNode.textContent = 'Z';
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected1);
     assert.renderTreeIsEqual(editor._renderTree, expected1);
 
@@ -230,7 +230,7 @@ test('inserting text into text node on left/right of atom is reparsed correctly'
               'precond - correct left cursor node');
     leftCursorNode.textContent = 'A';
 
-    setTimeout(() => {
+    Helpers.wait(() => {
       assert.postIsSimilar(editor.post, expected2);
       assert.renderTreeIsEqual(editor._renderTree, expected2);
 
@@ -266,8 +266,8 @@ test('mutation inside card element does not cause reparse', (assert) => {
   textNode.textContent = 'adios';
 
   // Allow the mutation observer to fire then...
-  setTimeout(function() {
+  Helpers.wait(function() {
     assert.equal(0, parseCount);
     done();
-  }, 0);
+  });
 });

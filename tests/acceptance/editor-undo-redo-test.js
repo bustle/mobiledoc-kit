@@ -51,7 +51,7 @@ test('undo/redo the insertion of a character', (assert) => {
 
   Helpers.dom.insertText(editor, 'D');
 
-  setTimeout(()  => {
+  Helpers.wait(()  => {
     assert.postIsSimilar(editor.post, expectedBeforeUndo); // precond
     undo(editor);
     assert.postIsSimilar(editor.post, expectedAfterUndo);
@@ -89,10 +89,10 @@ test('undo/redo the insertion of multiple characters', (assert) => {
 
   Helpers.dom.insertText(editor, 'D');
 
-  setTimeout(()  => {
+  Helpers.wait(()  => {
     Helpers.dom.insertText(editor, 'E');
 
-    setTimeout(()  => {
+    Helpers.wait(()  => {
       assert.postIsSimilar(editor.post, beforeUndo); // precond
 
       undo(editor);
@@ -187,7 +187,7 @@ test('undo insertion of character to a list item', (assert) => {
   Helpers.dom.moveCursorTo(editor, textNode, 'abc'.length);
   Helpers.dom.insertText(editor, 'D');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expectedBeforeUndo); // precond
 
     undo(editor);
@@ -226,10 +226,10 @@ test('undo stack length can be configured (depth 1)', (assert) => {
   Helpers.dom.moveCursorTo(editor, textNode, 'abc'.length);
   Helpers.dom.insertText(editor, 'D');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     Helpers.dom.insertText(editor, 'E');
 
-    setTimeout(() => {
+    Helpers.wait(() => {
       assert.postIsSimilar(editor.post, beforeUndo); // precond
 
       undo(editor);
@@ -243,7 +243,7 @@ test('undo stack length can be configured (depth 1)', (assert) => {
       assert.positionIsEqual(editor.range.head, editor.post.sections.head.tailPosition());
 
       done();
-    }, 0);
+    });
   });
 });
 
@@ -261,10 +261,10 @@ test('undo stack length can be configured (depth 0)', (assert) => {
   Helpers.dom.moveCursorTo(editor, textNode, 'abc'.length);
   Helpers.dom.insertText(editor, 'D');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     Helpers.dom.insertText(editor, 'E');
 
-    setTimeout(() => {
+    Helpers.wait(() => {
       assert.postIsSimilar(editor.post, beforeUndo); // precond
 
       undo(editor);
@@ -273,7 +273,7 @@ test('undo stack length can be configured (depth 0)', (assert) => {
       assert.positionIsEqual(editor.range.head, editor.post.sections.head.tailPosition());
 
       done();
-    }, 0);
+    });
   });
 });
 
@@ -309,12 +309,12 @@ test('take and undo a snapshot based on drag/dropping of text', (assert) => {
   textNode.textContent = text;
 
   // Allow the mutation observer to fire, then...
-  setTimeout(function() {
+  Helpers.wait(function() {
     assert.postIsSimilar(editor.post, beforeUndo, 'precond - text is added');
     undo(editor);
     assert.postIsSimilar(editor.post, afterUndo, 'text is removed');
     done();
-  }, 0);
+  });
 });
 
 test('take and undo a snapshot when adding a card', (assert) => {
