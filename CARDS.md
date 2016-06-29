@@ -42,6 +42,7 @@ must be of the correct type (a DOM Node for the dom renderer, a string of html o
   * `isInEditor` [boolean] - true when the card is being rendered by an editor (not being rendered for display)
   * `name` [string] - the name of the card
   * `onTeardown` [function] - The card can pass a callback function: `onTeardown(callbackFn)`. The callback will be called when the rendered content is torn down.
+  * `didRender` [function] - The card can pass a callback function: `didRender(callbackFn)`. The callback will be called when the card is rendered (on initial render and also after transitioning between display/edit states). This callback can be used to do additional work that must happen after the card's element has been appended to the DOM.
 
 When being rendered by an editor (i.e., `env.isInEditor` is true), the env will have the following additional properties:
 
@@ -52,7 +53,6 @@ When being rendered by an editor (i.e., `env.isInEditor` is true), the env will 
   * `cancel` [function] - Called to transition from "edit" to "display" mode without changing the payload. It is a no-op if the card is in display mode already
   * `remove` [function] - Removes this card from the document
   * `postModel` [object] - The instance of this card's section in the editor's internal abstract tree. This can be used along with the mobiledoc-kit `postEditor` API to transform the card in other ways (for example, moving the card to a different section of the document)
-  * `didRender` [function] - The card can pass a callback function: `didRender(callbackFn)`. The callback will be called when the card is rendered (on initial render and also after transitioning between display/edit states). This callback can be used to do additional work that must happen after the card's element has been appended to the DOM.
 
 ## Card examples
 
