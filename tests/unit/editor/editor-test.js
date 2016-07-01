@@ -506,6 +506,23 @@ test('#insertAtom when post is blank', (assert) => {
   assert.postIsSimilar(editor.post, expected);
 });
 
+test('#insertAtom returns the inserted atom', (assert) => {
+  let atom = {
+    name: 'the-atom',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post}) => {
+    return post();
+  }, {atoms: [atom]});
+
+  const insertedAtom = editor.insertAtom('the-atom', 'THEATOMTEXT');
+
+  assert.equal(insertedAtom.value, 'THEATOMTEXT', 'return value is the inserted atom');
+});
+
 test('#insertCard inserts card at section after cursor position, replacing range if non-collapsed', (assert) => {
   let card = {
     name: 'the-card',
@@ -611,4 +628,21 @@ test('#insertCard when post is blank', (assert) => {
   editor.insertCard('the-card');
 
   assert.postIsSimilar(editor.post, expected, 'adds card section');
+});
+
+test('#insertCard returns card object', (assert) => {
+  let card = {
+    name: 'the-card',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post}) => {
+    return post();
+  }, {cards: [card]});
+
+  const insertedCard = editor.insertCard('the-card');
+
+  assert.equal(editor.post.sections.tail, insertedCard, 'returned card is the inserted card');
 });
