@@ -908,6 +908,7 @@ class Editor {
    * @param {String} atomName
    * @param {String} [atomText='']
    * @param {Object} [atomPayload={}]
+   * @return {Atom} The inserted atom.
    * @public
    */
   insertAtom(atomName, atomText='', atomPayload={}) {
@@ -915,17 +916,20 @@ class Editor {
     if (this.post.isBlank) {
       this._insertEmptyMarkupSectionAtCursor();
     }
+
+    let atom;
     let { range } = this;
     this.run(postEditor => {
       let position = range.head;
 
-      let atom = postEditor.builder.createAtom(atomName, atomText, atomPayload);
+      atom = postEditor.builder.createAtom(atomName, atomText, atomPayload);
       if (!range.isCollapsed) {
         position = postEditor.deleteRange(range);
       }
 
       postEditor.insertMarkers(position, [atom]);
     });
+    return atom;
   }
 
   /**
@@ -937,6 +941,7 @@ class Editor {
    * @param {String} cardName
    * @param {Object} [cardPayload={}]
    * @param {Boolean} [inEditMode=false] Whether the card should be inserted in edit mode.
+   * @return {Card} The inserted Card section.
    * @public
    */
   insertCard(cardName, cardPayload={}, inEditMode=false) {
@@ -945,10 +950,11 @@ class Editor {
       this._insertEmptyMarkupSectionAtCursor();
     }
 
+    let card;
     let { range } = this;
     this.run(postEditor => {
       let position = range.tail;
-      let card = postEditor.builder.createCardSection(cardName, cardPayload);
+      card = postEditor.builder.createCardSection(cardName, cardPayload);
       if (inEditMode) {
         this.editCard(card);
       }
@@ -977,6 +983,7 @@ class Editor {
       // See: https://github.com/bustlelabs/mobiledoc-kit/issues/286
       postEditor.setRange(new Range(card.tailPosition()));
     });
+    return card;
   }
 
   /**
