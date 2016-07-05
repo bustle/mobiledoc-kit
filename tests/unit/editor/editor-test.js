@@ -518,6 +518,12 @@ test('#insertAtom returns the inserted atom', (assert) => {
     return post();
   }, {atoms: [atom]});
 
+  // Force the selection -- this is necessary for tests in Firefox at
+  // SauceLabs.
+  Helpers.dom.selectRange(editorElement, 0, editorElement, 0);
+
+  assert.ok(editor.hasCursor(), 'precond - editor has cursor');
+
   const insertedAtom = editor.insertAtom('the-atom', 'THEATOMTEXT');
 
   assert.equal(insertedAtom.value, 'THEATOMTEXT', 'return value is the inserted atom');
