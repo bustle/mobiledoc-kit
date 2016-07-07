@@ -1,3 +1,22 @@
+<a name="0.9.8"></a>
+## 0.9.8 (2016-07-07)
+
+* Add some tests for desired behavior when adding markups ([ae7f0c1](https://github.com/bustlelabs/mobiledoc-kit/commit/ae7f0c1))
+* didRender is defined on the card regardless of editing context ([a0c7b51](https://github.com/bustlelabs/mobiledoc-kit/commit/a0c7b51))
+* Document `Editor({ mobiledoc: ... })` option ([67dee12](https://github.com/bustlelabs/mobiledoc-kit/commit/67dee12))
+* Document Editor({ parserPlugins: ... }) option ([da52ebb](https://github.com/bustlelabs/mobiledoc-kit/commit/da52ebb))
+* Ensure editor instances in tests are properly torn down ([90a1f5e](https://github.com/bustlelabs/mobiledoc-kit/commit/90a1f5e))
+* Fix #addMarkupToRange documentation ([51e4627](https://github.com/bustlelabs/mobiledoc-kit/commit/51e4627))
+* Fix finicky test failure for FF at SauceLabs ([23bce3e](https://github.com/bustlelabs/mobiledoc-kit/commit/23bce3e))
+* Fix typo in README ([6594649](https://github.com/bustlelabs/mobiledoc-kit/commit/6594649))
+* Pull in mobiledoc-pretty-json-renderer for the demo app ([f096b54](https://github.com/bustlelabs/mobiledoc-kit/commit/f096b54))
+* Return card and atom from high-level insert methods ([fd3dcd2](https://github.com/bustlelabs/mobiledoc-kit/commit/fd3dcd2))
+* Tweak postEditor#addMarkupToRange to consider existing markups ([18463b9](https://github.com/bustlelabs/mobiledoc-kit/commit/18463b9)), closes [#360](https://github.com/bustlelabs/mobiledoc-kit/issues/360)
+* Use `assertEditor` helper in Helpers.dom (minor change) ([f6878e2](https://github.com/bustlelabs/mobiledoc-kit/commit/f6878e2))
+* chore(package): update jquery to version 3.0.0 ([402d949](https://github.com/bustlelabs/mobiledoc-kit/commit/402d949))
+
+
+
 <a name="0.9.7"></a>
 ## 0.9.7 (2016-05-31)
 
@@ -13,6 +32,7 @@
 * Prevent 'Invalid argument' error when triple-clicking to select on IE ([6c41499](https://github.com/bustlelabs/mobiledoc-kit/commit/6c41499))
 * update testem to 1.7.4 ([e09e1af](https://github.com/bustlelabs/mobiledoc-kit/commit/e09e1af))
 * Use trusty dist and phantomjs-prebuilt at travis ([06853f4](https://github.com/bustlelabs/mobiledoc-kit/commit/06853f4))
+* v0.9.7 ([d829e09](https://github.com/bustlelabs/mobiledoc-kit/commit/d829e09))
 * chore(package): update testem to version 1.7.0 ([947b436](https://github.com/bustlelabs/mobiledoc-kit/commit/947b436))
 
 
