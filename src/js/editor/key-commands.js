@@ -1,5 +1,5 @@
 import Key from '../utils/key';
-import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
+import { MODIFIERS, SPECIAL_KEYS, DIRECTION } from '../utils/key';
 import { filter, reduce } from '../utils/array-utils';
 import assert from '../utils/assert';
 import Range from '../utils/cursor/range';
@@ -25,6 +25,24 @@ function gotoEndOfLine(editor) {
   editor.run(postEditor => {
     postEditor.setRange(new Range(section.tailPosition()));
   });
+}
+
+function selectLineToLeft(editor) {
+  let {range} = editor;
+  let {tail: {section}} = range;
+  let selectionRange = new Range(section.headPosition(), range.tail);
+
+  selectionRange.direction = DIRECTION.BACKWARD;
+  editor.selectRange(selectionRange);
+}
+
+function selectLineToRight(editor) {
+  let {range} = editor;
+  let {tail: {section}} = range;
+  let selectionRange = new Range(range.head, section.tailPosition());
+
+  selectionRange.direction = DIRECTION.FORWARD;
+  editor.selectRange(selectionRange);
 }
 
 export const DEFAULT_KEY_COMMANDS = [{
@@ -76,6 +94,13 @@ export const DEFAULT_KEY_COMMANDS = [{
     }
   }
 }, {
+  str: 'META+SHIFT+LEFT',
+  run(editor) {
+    if (Browser.isMac) {
+      selectLineToLeft(editor);
+    }
+  }
+},{
   str: 'META+A',
   run(editor) {
     if (Browser.isMac) {
@@ -94,6 +119,13 @@ export const DEFAULT_KEY_COMMANDS = [{
   run(editor) {
     if (Browser.isMac) {
       gotoEndOfLine(editor);
+    }
+  }
+}, {
+  str: 'META+SHIFT+RIGHT',
+  run(editor) {
+    if (Browser.isMac) {
+      selectLineToRight(editor);
     }
   }
 }, {
