@@ -12,7 +12,7 @@
     "deploy-website": "./bin/deploy-website.sh",
     "update-changelog": "conventional-changelog -i CHANGELOG.md -r 0 -s",
     "docs": "jsdoc -c ./.jsdoc",
-    "postversion": "npm run update-changelog",
+    "postversion": "npm run update-changelog && git add CHANGELOG.md && git commit --amend --no-edit",
     "prepublish": "npm run build"
   },
   "keywords": [
