@@ -116,6 +116,9 @@ const Cursor = class Cursor {
     const { node:headNode, offset:headOffset } = this._findNodeForPosition(head),
           { node:tailNode, offset:tailOffset } = this._findNodeForPosition(tail);
     this._moveToNode(headNode, headOffset, tailNode, tailOffset, direction);
+    if (document.activeElement !== this.editor.element) {
+      this.editor.element.focus();
+    }
   }
 
   get selection() {
