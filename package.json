@@ -11,7 +11,9 @@
     "build-website": "npm run docs && ./bin/build-website.sh",
     "deploy-website": "./bin/deploy-website.sh",
     "update-changelog": "conventional-changelog -i CHANGELOG.md -r 0 -s",
-    "docs": "jsdoc -c ./.jsdoc"
+    "docs": "jsdoc -c ./.jsdoc",
+    "postversion": "npm run update-changelog",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "html",
