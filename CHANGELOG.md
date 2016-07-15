@@ -1,9 +1,12 @@
-<a name="0.10.0"></a>
-# 0.10.0 (2016-07-15)
+<a name="0.10.1"></a>
+## 0.10.1 (2016-07-15)
 
-* 0.10.0 ([4966a85](https://github.com/bustlelabs/mobiledoc-kit/commit/4966a85))
+* [demo] fix simple card demo (include "remove" button) ([82a141c](https://github.com/bustlelabs/mobiledoc-kit/commit/82a141c))
+* 0.10.0 ([270123b](https://github.com/bustlelabs/mobiledoc-kit/commit/270123b))
 * 0.10.0-beta.2 ([4d5db27](https://github.com/bustlelabs/mobiledoc-kit/commit/4d5db27))
 * 0.10.0-beta.3 ([dc63306](https://github.com/bustlelabs/mobiledoc-kit/commit/dc63306))
+* 0.10.1 ([a5d16c1](https://github.com/bustlelabs/mobiledoc-kit/commit/a5d16c1))
+* Ensure the activeElement is set after rendering cursor ([2ce581e](https://github.com/bustlelabs/mobiledoc-kit/commit/2ce581e))
 * update postversion npm script ([870d9c8](https://github.com/bustlelabs/mobiledoc-kit/commit/870d9c8))
 
 
