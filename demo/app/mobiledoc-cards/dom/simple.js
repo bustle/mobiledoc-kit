@@ -12,6 +12,7 @@ export default {
     element.appendChild(card);
     var button = $('<button>Remove card</button>');
     button.on('click', env.remove);
+    element.appendChild(button[0]);
     return element;
   }
 };
