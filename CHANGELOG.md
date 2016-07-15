@@ -1,8 +1,9 @@
-<a name="0.10.0-beta.3"></a>
-# 0.10.0-beta.3 (2016-07-15)
+<a name="0.10.0"></a>
+# 0.10.0 (2016-07-15)
 
+* 0.10.0 ([4966a85](https://github.com/bustlelabs/mobiledoc-kit/commit/4966a85))
 * 0.10.0-beta.2 ([4d5db27](https://github.com/bustlelabs/mobiledoc-kit/commit/4d5db27))
-* 0.10.0-beta.3 ([57c5515](https://github.com/bustlelabs/mobiledoc-kit/commit/57c5515))
+* 0.10.0-beta.3 ([dc63306](https://github.com/bustlelabs/mobiledoc-kit/commit/dc63306))
 * update postversion npm script ([870d9c8](https://github.com/bustlelabs/mobiledoc-kit/commit/870d9c8))
 
 
