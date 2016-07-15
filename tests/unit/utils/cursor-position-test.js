@@ -13,6 +13,7 @@ module('Unit: Utils: Position', {
   afterEach() {
     if (editor) {
       editor.destroy();
+      editor = null;
     }
   }
 });
@@ -317,4 +318,3 @@ test('Position cannot be on list section', (assert) => {
   position = new Position(listItem, 0);
   assert.ok(position, 'position with list item is ok');
 });
-

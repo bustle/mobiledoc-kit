@@ -7,7 +7,6 @@ import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
-import { clearSelection } from 'mobiledoc-kit/utils/selection-utils';
 
 const { FORWARD } = DIRECTION;
 
@@ -44,13 +43,15 @@ function renderBuiltAbstract(post) {
 }
 
 let renderedRange;
-function buildEditorWithMobiledoc(builderFn) {
+function buildEditorWithMobiledoc(builderFn, autofocus=true) {
   let mobiledoc = Helpers.mobiledoc.build(builderFn);
   let unknownCardHandler = () => {};
   let unknownAtomHandler = () => {};
-  editor = new Editor({mobiledoc, unknownCardHandler, unknownAtomHandler});
+  editor = new Editor({mobiledoc, unknownCardHandler, unknownAtomHandler, autofocus});
   editor.render(editorElement);
-  editor.renderRange = function(range) {
+  let selectRange = editor.selectRange;
+  editor.selectRange = function(range) {
+    selectRange.call(editor, range);
     renderedRange = range;
   };
   return editor;
@@ -189,10 +190,10 @@ class MockEditor {
   }
   rerender() {}
   _postDidChange() {}
-  renderRange(range) {
+  selectRange(range) {
     renderedRange = range;
   }
-  _notifyRangeChange() {}
+  _readRangeFromDOM() {}
 }
 
 
@@ -1251,28 +1252,33 @@ test('#toggleSection when cursor is in non-markerable section changes nothing', 
 });
 
 test('#toggleSection when editor has no cursor does nothing', (assert) => {
+  assert.expect(6);
+  let done = assert.async();
+
   editor = buildEditorWithMobiledoc(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
-  });
+  }, false);
   let expected = Helpers.postAbstract.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  Helpers.dom.blur();
-  clearSelection();
-
-  assert.equal(window.getSelection().rangeCount, 0, 'precond - nothing selected');
-  assert.ok(document.activeElement !== editorElement, 'precond - no activeElement');
   assert.ok(!editor.hasCursor(), 'editor has no cursor');
+  assert.ok(editor.range.isBlank, 'editor has blank range');
 
+  renderedRange = null;
   editor.run(postEditor => postEditor.toggleSection('blockquote'));
 
-  assert.postIsSimilar(editor.post, expected);
-  assert.ok(document.activeElement !== editorElement, 'editor element is not active');
-  assert.ok(renderedRange.isBlank, 'rendered range is blank');
-  assert.equal(window.getSelection().rangeCount, 0, 'nothing selected');
+  Helpers.wait(() => {
+    assert.postIsSimilar(editor.post, expected);
+    assert.ok(document.activeElement !== editorElement,
+              'editor element is not active');
+    assert.ok(renderedRange && renderedRange.isBlank, 'rendered range is blank');
+    assert.equal(window.getSelection().rangeCount, 0, 'nothing selected');
+
+    done();
+  });
 });
 
 test('#toggleSection toggle single p -> list item', (assert) => {
@@ -1790,28 +1796,30 @@ test('#toggleMarkup when range does not have the markup adds it', (assert) => {
 });
 
 test('#toggleMarkup when the editor has no cursor', (assert) => {
+  let done = assert.async();
+
   editor = buildEditorWithMobiledoc(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
-  });
+  }, false);
   let expected = Helpers.postAbstract.build(
     ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  Helpers.dom.blur();
-  clearSelection();
+  renderedRange = null;
+  editor.run(postEditor => postEditor.toggleMarkup('b'));
 
-  editor.run(postEditor => {
-    postEditor.toggleMarkup('b');
+  Helpers.wait(() => {
+    assert.postIsSimilar(editor.post, expected);
+    assert.equal(window.getSelection().rangeCount, 0,
+                 'nothing is selected');
+    assert.ok(document.activeElement !== editorElement,
+              'active element is not editor element');
+    assert.ok(renderedRange && renderedRange.isBlank, 'rendered range is blank');
+
+    done();
   });
-
-  assert.postIsSimilar(editor.post, expected);
-  assert.equal(window.getSelection().rangeCount, 0,
-               'nothing is selected');
-  assert.ok(document.activeElement !== editorElement,
-            'active element is not editor element');
-  assert.ok(renderedRange.isBlank, 'rendered range is blank');
 });
 
 test('#insertMarkers inserts an atom', (assert) => {

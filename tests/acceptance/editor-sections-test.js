@@ -433,7 +433,7 @@ test('when selection incorrectly contains P end tag, editor reports correct sele
                            secondSectionTextNode, 0);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.ok(true, 'No error should occur');
 
     let {
@@ -471,7 +471,7 @@ test('when selection incorrectly contains P start tag, editor reports correct se
                            secondSectionPNode, 0);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.ok(true, 'No error should occur');
 
     let {
@@ -519,7 +519,7 @@ test('deleting when after deletion there is a trailing space positions cursor at
   let text = 'e';
   Helpers.dom.insertText(editor, text);
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.equal(editor.post.sections.head.text, `first ${text}`, 'character is placed after space');
 
     done();
@@ -539,7 +539,7 @@ test('deleting when after deletion there is a leading space positions cursor at 
   let text = 'e';
   Helpers.dom.insertText(editor, text);
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     assert.equal(editor.post.sections.tail.text, `${text} section`, 'correct text after insertion');
     done();
   });

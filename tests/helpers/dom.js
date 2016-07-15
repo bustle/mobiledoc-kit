@@ -73,7 +73,7 @@ function selectText(editor,
   const startOffset = startTextNode.textContent.indexOf(startText),
         endOffset   = endTextNode.textContent.indexOf(endText) + endText.length;
   selectRange(startTextNode, startOffset, endTextNode, endOffset);
-  editor._notifyRangeChange();
+  editor._readRangeFromDOM();
 }
 
 function moveCursorWithoutNotifyingEditorTo(editor, node, offset=0, endNode=node, endOffset=offset) {
@@ -84,7 +84,7 @@ function moveCursorTo(editor, node, offset=0, endNode=node, endOffset=offset) {
   assertEditor(editor);
   if (!node) { throw new Error('Cannot moveCursorTo node without node'); }
   moveCursorWithoutNotifyingEditorTo(editor, node, offset, endNode, endOffset);
-  editor._notifyRangeChange();
+  editor._readRangeFromDOM();
 }
 
 function triggerEvent(node, eventType) {

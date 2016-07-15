@@ -5,15 +5,15 @@ import {
   parsePostFromDrop
 } from 'mobiledoc-kit/utils/parse-utils';
 import Range from 'mobiledoc-kit/utils/cursor/range';
-import { filter, forEach, contains } from 'mobiledoc-kit/utils/array-utils';
+import { filter, forEach } from 'mobiledoc-kit/utils/array-utils';
 import Key from 'mobiledoc-kit/utils/key';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 import TextInputHandler from 'mobiledoc-kit/editor/text-input-handler';
+import SelectionManager from 'mobiledoc-kit/editor/selection-manager';
 
 const ELEMENT_EVENT_TYPES = [
   'keydown', 'keyup', 'cut', 'copy', 'paste', 'keypress', 'drop'
 ];
-const DOCUMENT_EVENT_TYPES = ['mouseup'];
 
 export default class EventManager {
   constructor(editor) {
@@ -22,6 +22,9 @@ export default class EventManager {
     this._textInputHandler = new TextInputHandler(editor);
     this._listeners = [];
     this.isShift = false;
+
+    this._selectionManager = new SelectionManager(
+      this.editor, this.selectionDidChange.bind(this));
   }
 
   init() {
@@ -32,9 +35,7 @@ export default class EventManager {
       this._addListener(element, type);
     });
 
-    DOCUMENT_EVENT_TYPES.forEach(type => {
-      this._addListener(document, type);
-    });
+    this._selectionManager.start();
   }
 
   registerInputHandler(inputHandler) {
@@ -53,6 +54,7 @@ export default class EventManager {
     this._listeners.forEach(([context, type, listener]) => {
       context.removeEventListener(type, listener);
     });
+    this._listeners = [];
   }
 
   // This is primarily useful for programmatically simulating events on the
@@ -70,22 +72,43 @@ export default class EventManager {
 
   destroy() {
     this._textInputHandler.destroy();
+    this._selectionManager.destroy();
     this._removeListeners();
-    this._listeners = [];
   }
 
   _handleEvent(type, event) {
-    let { editor } = this;
-
-    if (contains(ELEMENT_EVENT_TYPES, type)) {
-      let {target: element} = event;
-      if (!editor.cursor.isAddressable(element)) {
-        // abort handling this event
-        return true;
-      }
+    let {target: element} = event;
+    if (!this.isElementAddressable(element)) {
+      // abort handling this event
+      return true;
     }
 
     this[type](event);
+  }
+
+  isElementAddressable(element) {
+    return this.editor.cursor.isAddressable(element);
+  }
+
+  selectionDidChange(selection /*, prevSelection */) {
+    let shouldNotify = true;
+    let { anchorNode } = selection;
+    if (!this.isElementAddressable(anchorNode)) {
+      if (!this.editor.range.isBlank) {
+        // Selection changed from something addressable to something
+        // not-addressable -- e.g., blur event, user clicked outside editor,
+        // etc
+        shouldNotify = true;
+      } else {
+        // selection changes wholly outside the editor should not trigger
+        // change notifications
+        shouldNotify = false;
+      }
+    }
+
+    if (shouldNotify) {
+      this.editor._readRangeFromDOM();
+    }
   }
 
   keypress(event) {
@@ -121,7 +144,8 @@ export default class EventManager {
     let range = editor.range;
 
     switch(true) {
-      case key.isHorizontalArrow():
+      // FIXME This should be restricted to only card/atom boundaries
+      case key.isHorizontalArrowWithoutModifiersOtherThanShift():
         let newRange;
         if (key.isShift()) {
           newRange = range.extend(key.direction * 1);
@@ -152,11 +176,6 @@ export default class EventManager {
     let key = Key.fromEvent(event);
     if (key.isShiftKey()) {
       this.isShift = false;
-    }
-
-    // Only movement-related keys require re-checking the active range
-    if (key.isMovement()) {
-      setTimeout(() => this.editor._notifyRangeChange());
     }
   }
 
@@ -199,11 +218,6 @@ export default class EventManager {
       let nextPosition = postEditor.insertPost(position, pastedPost);
       postEditor.setRange(new Range(nextPosition));
     });
-  }
-
-  mouseup(/* event */) {
-    // mouseup does not correctly report a selection until the next tick
-    setTimeout(() => this.editor._notifyRangeChange());
   }
 
   drop(event) {

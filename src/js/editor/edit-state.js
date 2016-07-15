@@ -1,4 +1,5 @@
 import { contains, isArrayEqual } from 'mobiledoc-kit/utils/array-utils';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 
 /**
  * Used by {@link Editor} to manage its current state (cursor, active markups
@@ -8,15 +9,34 @@ import { contains, isArrayEqual } from 'mobiledoc-kit/utils/array-utils';
 class EditState {
   constructor(editor) {
     this.editor = editor;
-    this.prevState = this.state = this._readState();
+
+    let defaultState = {
+      range: Range.blankRange(),
+      activeMarkups: [],
+      activeSections: [],
+      activeSectionTagNames: []
+    };
+
+    this.prevState = this.state = defaultState;
+  }
+
+  updateRange(newRange) {
+    this.prevState = this.state;
+    this.state = this._readState(newRange);
+  }
+
+  destroy() {
+    this.editor = null;
+    this.prevState = this.state = null;
   }
 
   /**
-   * Cache the last state, force a reread of current state
+   * @return {Boolean}
    */
-  reset() {
-    this.prevState = this.state;
-    this.state = this._readState();
+  rangeDidChange() {
+    let { state: { range } , prevState: {range: prevRange} } = this;
+
+    return !prevRange.isEqual(range);
   }
 
   /**
@@ -27,14 +47,6 @@ class EditState {
     let { state, prevState } = this;
     return (!isArrayEqual(state.activeMarkups, prevState.activeMarkups) ||
             !isArrayEqual(state.activeSectionTagNames, prevState.activeSectionTagNames));
-  }
-
-  /**
-   * @return {Boolean} Whether the range has changed.
-   */
-  rangeDidChange() {
-    let { state, prevState } = this;
-    return !state.range.isEqual(prevState.range);
   }
 
   /**
@@ -72,10 +84,9 @@ class EditState {
     }
   }
 
-  _readState() {
-    let range = this._readRange();
+  _readState(range) {
     let state = {
-      range:          range,
+      range,
       activeMarkups:  this._readActiveMarkups(range),
       activeSections: this._readActiveSections(range)
     };
@@ -87,10 +98,6 @@ class EditState {
       return s.isNested ? s.parent.tagName : s.tagName;
     });
     return state;
-  }
-
-  _readRange() {
-    return this.editor.range;
   }
 
   _readActiveSections(range) {

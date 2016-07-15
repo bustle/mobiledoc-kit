@@ -1,7 +1,7 @@
 {
   "framework": "qunit",
   "parallel": 6,
-  "test_page": "dist/tests/index.html",
+  "test_page": "dist/tests/index.html?hidepassed",
   "on_start": "./sauce_labs/saucie-connect.js",
   "on_exit": "./sauce_labs/saucie-disconnect.js",
   "port": 8080,

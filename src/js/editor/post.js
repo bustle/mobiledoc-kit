@@ -41,7 +41,7 @@ class PostEditor {
 
     this._didComplete = false;
 
-    this._renderRange = () => this.editor.renderRange(this._range);
+    this._renderRange = () => this.editor.selectRange(this._range);
     this._postDidChange = () => this.editor._postDidChange();
     this._rerender = () => this.editor.rerender();
   }
@@ -1344,8 +1344,6 @@ class PostEditor {
     this._didComplete = true;
     this.runCallbacks(CALLBACK_QUEUES.COMPLETE);
     this.runCallbacks(CALLBACK_QUEUES.AFTER_COMPLETE);
-
-    this.editor._notifyRangeChange();
   }
 
   undoLastChange() {
