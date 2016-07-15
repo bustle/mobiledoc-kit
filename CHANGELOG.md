@@ -1,3 +1,22 @@
+<a name="0.10.0-beta.3"></a>
+# 0.10.0-beta.3 (2016-07-15)
+
+* 0.10.0-beta.2 ([4d5db27](https://github.com/bustlelabs/mobiledoc-kit/commit/4d5db27))
+* 0.10.0-beta.3 ([57c5515](https://github.com/bustlelabs/mobiledoc-kit/commit/57c5515))
+* update postversion npm script ([870d9c8](https://github.com/bustlelabs/mobiledoc-kit/commit/870d9c8))
+
+
+
+<a name="0.10.0-beta.1"></a>
+# 0.10.0-beta.1 (2016-07-15)
+
+* 0.10.0-beta.1 ([4cc772a](https://github.com/bustlelabs/mobiledoc-kit/commit/4cc772a))
+* Add SelectionChangeObserver, use it for editor.range updates ([2ff0590](https://github.com/bustlelabs/mobiledoc-kit/commit/2ff0590))
+* update demo app ember-cli version to 1.13.13 ([ce7f1d9](https://github.com/bustlelabs/mobiledoc-kit/commit/ce7f1d9))
+* Update npm tasks for for `np` ([fdf79c4](https://github.com/bustlelabs/mobiledoc-kit/commit/fdf79c4))
+
+
+
 <a name="0.9.8"></a>
 ## 0.9.8 (2016-07-07)
 
@@ -13,6 +32,7 @@
 * Return card and atom from high-level insert methods ([fd3dcd2](https://github.com/bustlelabs/mobiledoc-kit/commit/fd3dcd2))
 * Tweak postEditor#addMarkupToRange to consider existing markups ([18463b9](https://github.com/bustlelabs/mobiledoc-kit/commit/18463b9)), closes [#360](https://github.com/bustlelabs/mobiledoc-kit/issues/360)
 * Use `assertEditor` helper in Helpers.dom (minor change) ([f6878e2](https://github.com/bustlelabs/mobiledoc-kit/commit/f6878e2))
+* v0.9.8 ([9a470af](https://github.com/bustlelabs/mobiledoc-kit/commit/9a470af))
 * chore(package): update jquery to version 3.0.0 ([402d949](https://github.com/bustlelabs/mobiledoc-kit/commit/402d949))
 
 
