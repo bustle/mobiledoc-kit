@@ -667,7 +667,35 @@ test('#insertCard returns card object', (assert) => {
     return post();
   }, {cards: [card]});
 
+  Helpers.dom.selectRange(editorElement, 0, editorElement, 0);
+
+  assert.ok(editor.hasCursor(), 'precond - editor has cursor');
+  assert.ok(editor.post.isBlank, 'precond - post is blank');
+
   const insertedCard = editor.insertCard('the-card');
 
+  assert.ok(!!insertedCard, 'insertedCard is present');
   assert.equal(editor.post.sections.tail, insertedCard, 'returned card is the inserted card');
+});
+
+test('#insertCard focuses the cursor at the end of the card', (assert) => {
+  let card = {
+    name: 'the-card',
+    type: 'dom',
+    render() {
+    }
+  };
+
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post}) => {
+    return post();
+  }, {cards: [card]});
+
+  Helpers.dom.selectRange(editorElement, 0, editorElement, 0);
+
+  let insertedCard = editor.insertCard('the-card');
+
+  let range = editor.range;
+  assert.positionIsEqual(range.head, insertedCard.tailPosition(), 'range head on card tail');
+  assert.positionIsEqual(range.tail, insertedCard.tailPosition(), 'range tail on card tail');
+  assert.ok(document.activeElement === editorElement, 'editor element retains focus');
 });
