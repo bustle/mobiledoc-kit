@@ -578,8 +578,10 @@ class Editor {
    */
   destroy() {
     this.isDestroyed = true;
-    if (this.hasCursor()) {
+    if (this._hasSelection()) {
       this.cursor.clearSelection();
+    }
+    if (this._hasFocus()) {
       this.element.blur(); // FIXME This doesn't blur the element on IE11
     }
     this._mutationHandler.destroy();
@@ -790,9 +792,41 @@ class Editor {
     if (range.isCollapsed) {
       this._editState.toggleMarkupState(markup);
       this._inputModeDidChange();
+
+      // when clicking a button to toggle markup, the button can end up being focused,
+      // so ensure the editor is focused
+      this._ensureFocus();
     } else {
       this.run(postEditor => postEditor.toggleMarkup(markup, range));
     }
+  }
+
+  // If the editor has a selection but is not focused, focus it
+  _ensureFocus() {
+    if (this._hasSelection() && !this._hasFocus()) {
+      this.element.focus();
+    }
+  }
+
+  /**
+   * Whether there is a selection inside the editor's element.
+   * It's possible to have a selection but not have focus.
+   * @see #_hasFocus
+   * @return {Boolean}
+   */
+  _hasSelection() {
+    let { cursor } = this;
+    return this.hasRendered && (cursor._hasCollapsedSelection() || cursor._hasSelection());
+  }
+
+  /**
+   * Whether the editor's element is focused
+   * It's possible to be focused but have no selection
+   * @see #_hasSelection
+   * @return {Boolean}
+   */
+  _hasFocus() {
+    return document.activeElement === this.element;
   }
 
   /**
