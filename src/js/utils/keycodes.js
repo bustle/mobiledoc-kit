@@ -36,5 +36,6 @@ export default {
   DOWN:        40,
   INS:         45,
   META:        91,
+  ALT:         18,
   CTRL:        17
 };

@@ -62,7 +62,7 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'CTRL+A',
   run(editor) {
-    if (Browser.isMac) {
+    if (Browser.isMac()) {
       gotoStartOfLine(editor);
     } else {
       selectAll(editor);
@@ -71,14 +71,14 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'META+A',
   run(editor) {
-    if (Browser.isMac) {
+    if (Browser.isMac()) {
       selectAll(editor);
     }
   }
 }, {
   str: 'CTRL+E',
   run(editor) {
-    if (Browser.isMac) {
+    if (Browser.isMac()) {
       gotoEndOfLine(editor);
     }
   }
@@ -126,13 +126,13 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'CTRL+Z',
   run(editor) {
-    if (Browser.isMac) { return false; }
+    if (Browser.isMac()) { return false; }
     editor.run(postEditor => postEditor.undoLastChange());
   }
 }, {
   str: 'CTRL+SHIFT+Z',
   run(editor) {
-    if (Browser.isMac) { return false; }
+    if (Browser.isMac()) { return false; }
     editor.run(postEditor => postEditor.redoLastChange());
   }
 }];

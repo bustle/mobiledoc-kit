@@ -10,6 +10,7 @@ import Key from 'mobiledoc-kit/utils/key';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 import TextInputHandler from 'mobiledoc-kit/editor/text-input-handler';
 import SelectionManager from 'mobiledoc-kit/editor/selection-manager';
+import Browser from 'mobiledoc-kit/utils/browser';
 
 const ELEMENT_EVENT_TYPES = [
   'keydown', 'keyup', 'cut', 'copy', 'paste', 'keypress', 'drop'
@@ -21,7 +22,11 @@ export default class EventManager {
     this.logger = editor.loggerFor('event-manager');
     this._textInputHandler = new TextInputHandler(editor);
     this._listeners = [];
-    this.isShift = false;
+    this.modifierKeys = {
+      shift: false,
+      alt:   false,
+      ctrl:  false
+    };
 
     this._selectionManager = new SelectionManager(
       this.editor, this.selectionDidChange.bind(this));
@@ -131,9 +136,7 @@ export default class EventManager {
     if (!editor.isEditable) { return; }
 
     let key = Key.fromEvent(event);
-    if (key.isShiftKey()) {
-      this.isShift = true;
-    }
+    this._updateModifiersFromKey(key, {isDown:true});
 
     if (editor.handleKeyCommand(event)) { return; }
 
@@ -157,7 +160,14 @@ export default class EventManager {
         event.preventDefault();
         break;
       case key.isDelete():
-        editor.handleDeletion(event);
+        let { direction } = key;
+        let unit = 'char';
+        if (this.modifierKeys.alt && Browser.isMac()) {
+          unit = 'word';
+        } else if (this.modifierKeys.ctrl && Browser.isWin()) {
+          unit = 'word';
+        }
+        editor.performDelete({direction, unit});
         event.preventDefault();
         break;
       case key.isEnter():
@@ -174,16 +184,14 @@ export default class EventManager {
     let { editor } = this;
     if (!editor.hasCursor()) { return; }
     let key = Key.fromEvent(event);
-    if (key.isShiftKey()) {
-      this.isShift = false;
-    }
+    this._updateModifiersFromKey(key, {isDown:false});
   }
 
   cut(event) {
     event.preventDefault();
 
     this.copy(event);
-    this.editor.handleDeletion();
+    this.editor.performDelete();
   }
 
   copy(event) {
@@ -208,10 +216,10 @@ export default class EventManager {
     let range = editor.range;
 
     if (!range.isCollapsed) {
-      editor.handleDeletion();
+      editor.performDelete();
     }
     let position = editor.range.head;
-    let targetFormat = this.isShift ? 'text' : 'html';
+    let targetFormat = this.modifierKeys.shift ? 'text' : 'html';
     let pastedPost = parsePostFromPaste(event, editor, {targetFormat});
 
     editor.run(postEditor => {
@@ -243,4 +251,15 @@ export default class EventManager {
       postEditor.setRange(new Range(nextPosition));
     });
   }
+
+  _updateModifiersFromKey(key, {isDown}) {
+    if (key.isShiftKey()) {
+      this.modifierKeys.shift = isDown;
+    } else if (key.isAltKey()) {
+      this.modifierKeys.alt = isDown;
+    } else if (key.isCtrlKey()) {
+      this.modifierKeys.ctrl = isDown;
+    }
+  }
+
 }

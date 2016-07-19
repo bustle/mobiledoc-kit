@@ -1,6 +1,9 @@
 import Helpers from '../../test-helpers';
 import Position from 'mobiledoc-kit/utils/cursor/position';
 import { CARD_ELEMENT_CLASS_NAME, ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
+import { DIRECTION } from 'mobiledoc-kit/utils/key';
+
+const { FORWARD, BACKWARD } = DIRECTION;
 
 const {module, test} = Helpers;
 
@@ -26,8 +29,8 @@ test('#move moves forward and backward in markup section', (assert) => {
   let rightPosition = new Position(post.sections.head, 'abc'.length);
   let leftPosition = new Position(post.sections.head, 'a'.length);
 
-  assert.positionIsEqual(position.move(1), rightPosition, 'right position');
-  assert.positionIsEqual(position.move(-1), leftPosition, 'left position');
+  assert.positionIsEqual(position.move(FORWARD), rightPosition, 'right position');
+  assert.positionIsEqual(position.move(BACKWARD), leftPosition, 'left position');
 });
 
 test('#move is emoji-aware', (assert) => {
@@ -39,20 +42,20 @@ test('#move is emoji-aware', (assert) => {
   assert.equal(marker.length, 'a'.length + 2 + 'z'.length); // precond
   let position = post.sections.head.headPosition();
 
-  position = position.move(1);
+  position = position.move(FORWARD);
   assert.equal(position.offset, 1);
-  position = position.move(1);
+  position = position.move(FORWARD);
   assert.equal(position.offset, 3); // l-to-r across emoji
-  position = position.move(1);
+  position = position.move(FORWARD);
   assert.equal(position.offset, 4);
 
-  position = position.move(-1);
+  position = position.move(BACKWARD);
   assert.equal(position.offset, 3);
 
-  position = position.move(-1); // r-to-l across emoji
+  position = position.move(BACKWARD); // r-to-l across emoji
   assert.equal(position.offset, 1);
 
-  position = position.move(-1);
+  position = position.move(BACKWARD);
   assert.equal(position.offset, 0);
 });
 
@@ -70,8 +73,8 @@ test('#move moves forward and backward between markup sections', (assert) => {
   let aTail   = post.sections.head.tailPosition();
   let cHead   = post.sections.tail.headPosition();
 
-  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(BACKWARD), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(FORWARD), cHead, 'right to next section');
 });
 
 test('#move from one nested section to another', (assert) => {
@@ -89,8 +92,8 @@ test('#move from one nested section to another', (assert) => {
   let aTail   = post.sections.head.items.head.tailPosition();
   let cHead   = post.sections.tail.items.tail.headPosition();
 
-  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(BACKWARD), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(FORWARD), cHead, 'right to next section');
 });
 
 test('#move from last nested section to next un-nested section', (assert) => {
@@ -108,8 +111,8 @@ test('#move from last nested section to next un-nested section', (assert) => {
   let aTail   = post.sections.head.tailPosition();
   let cHead   = post.sections.tail.headPosition();
 
-  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(BACKWARD), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(FORWARD), cHead, 'right to next section');
 });
 
 test('#move across and beyond card section', (assert) => {
@@ -127,10 +130,10 @@ test('#move across and beyond card section', (assert) => {
   let aTail   = post.sections.head.tailPosition();
   let cHead   = post.sections.tail.headPosition();
 
-  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
-  assert.positionIsEqual(midHead.move(1), midTail, 'move l-to-r across card');
-  assert.positionIsEqual(midTail.move(-1), midHead, 'move r-to-l across card');
+  assert.positionIsEqual(midHead.move(BACKWARD), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(FORWARD), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(FORWARD), midTail, 'move l-to-r across card');
+  assert.positionIsEqual(midTail.move(BACKWARD), midHead, 'move r-to-l across card');
 });
 
 test('#move across and beyond card section into list section', (assert) => {
@@ -154,8 +157,8 @@ test('#move across and beyond card section into list section', (assert) => {
   let aTail   = post.sections.head.items.tail.tailPosition();
   let cHead   = post.sections.tail.items.head.headPosition();
 
-  assert.positionIsEqual(midHead.move(-1), aTail, 'left to prev section');
-  assert.positionIsEqual(midTail.move(1), cHead, 'right to next section');
+  assert.positionIsEqual(midHead.move(BACKWARD), aTail, 'left to prev section');
+  assert.positionIsEqual(midTail.move(FORWARD), cHead, 'right to next section');
 });
 
 test('#move left at headPosition or right at tailPosition returns self', (assert) => {
@@ -168,8 +171,8 @@ test('#move left at headPosition or right at tailPosition returns self', (assert
 
   let head = post.headPosition(),
       tail = post.tailPosition();
-  assert.positionIsEqual(head.move(-1), head, 'head move left is head');
-  assert.positionIsEqual(tail.move(1), tail, 'tail move right is tail');
+  assert.positionIsEqual(head.move(BACKWARD), head, 'head move left is head');
+  assert.positionIsEqual(tail.move(FORWARD), tail, 'tail move right is tail');
 });
 
 test('#move can move multiple units', (assert) => {
@@ -183,10 +186,204 @@ test('#move can move multiple units', (assert) => {
   let head = post.headPosition(),
       tail = post.tailPosition();
 
-  assert.positionIsEqual(head.move('abc'.length + 1 + 'def'.length), tail, 'head can move to tail');
-  assert.positionIsEqual(tail.move(-1 * ('abc'.length + 1 + 'def'.length)), head, 'tail can move to head');
+  assert.positionIsEqual(head.move(FORWARD * ('abc'.length + 1 + 'def'.length)), tail, 'head can move to tail');
+  assert.positionIsEqual(tail.move(BACKWARD * ('abc'.length + 1 + 'def'.length)), head, 'tail can move to head');
 
   assert.positionIsEqual(head.move(0), head, 'move(0) is no-op');
+});
+
+test('#moveWord in text (backward)', (assert) => {
+  let expectations = [
+    ['abc def|', 'abc |def'],
+    ['abc d|ef', 'abc |def'],
+    ['abc |def', '|abc def'],
+    ['abc| def', '|abc def'],
+    ['|abc def', '|abc def'],
+    ['abc-|', '|abc-'],
+    ['abc|', '|abc'],
+    ['ab|c', '|abc'],
+    ['|abc', '|abc'],
+    ['abc  |', '|abc']
+  ];
+
+  expectations.forEach(([before, after]) => {
+    let text = before.replace('|', '');
+    let beforeIndex = before.indexOf('|');
+    let afterIndex = after.indexOf('|');
+
+    let post = Helpers.postAbstract.buildWithText(text);
+    let section = post.sections.head;
+    let pos = new Position(section, beforeIndex);
+    let nextPos = new Position(section, afterIndex);
+    assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos,
+                           `move word "${before}"->"${after}"`);
+  });
+});
+
+test('#moveWord stops on word-separators', (assert) => {
+  let separators = ['-', '+', '=', '|'];
+  separators.forEach(sep => {
+    let text = `abc${sep}def`;
+    let post = Helpers.postAbstract.buildWithText(text);
+    let pos = post.tailPosition();
+    let nextPos = new Position(post.sections.head, 'abc '.length);
+
+    assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos, `move word <- "${text}|"`);
+  });
+});
+
+test('#moveWord does not stop on non-word-separators', (assert) => {
+  let nonSeparators = ['_', ':'];
+  nonSeparators.forEach(sep => {
+    let text = `abc${sep}def`;
+    let post = Helpers.postAbstract.buildWithText(text);
+    let pos = post.tailPosition();
+    let nextPos = post.headPosition();
+
+    assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos, `move word <- "${text}|"`);
+  });
+});
+
+test('#moveWord across markerable sections', (assert) => {
+  let post = Helpers.postAbstract.buildWithText(['abc def', '123 456']);
+
+  let [first, second] = post.sections.toArray();
+  let pos = (section, text) => new Position(section, text.length);
+  let firstTail = first.tailPosition();
+  let secondHead = second.headPosition();
+
+  assert.positionIsEqual(secondHead.moveWord(BACKWARD), pos(first, 'abc '),
+                         'secondHead <- "abc "');
+  assert.positionIsEqual(firstTail.moveWord(FORWARD), pos(second, '123'),
+                         'firstTail <- "123"');
+});
+
+test('#moveWord across markerable/non-markerable section boundaries', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, cardSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      cardSection('some-card'),
+      markupSection('p', [marker('def')])
+    ]);
+  });
+
+  let [before, card, after] = post.sections.toArray();
+  let cardHead = card.headPosition();
+  let cardTail = card.tailPosition();
+  let beforeTail = before.tailPosition();
+  let afterHead = after.headPosition();
+
+  assert.positionIsEqual(cardHead.moveWord(BACKWARD), beforeTail,
+                         'cardHead <- beforeTail');
+  assert.positionIsEqual(cardHead.moveWord(FORWARD), cardTail,
+                         'cardHead -> cardTail');
+  assert.positionIsEqual(cardTail.moveWord(BACKWARD), cardHead,
+                         'cardTail <- cardHead');
+  assert.positionIsEqual(afterHead.moveWord(BACKWARD), cardHead,
+                         'afterHead <- cardHead');
+  assert.positionIsEqual(beforeTail.moveWord(FORWARD), cardTail,
+                         'beforeTail -> cardTail');
+});
+
+function buildPostWithTextAndAtom(textWithAtoms) {
+  return Helpers.postAbstract.build(({post, markupSection, marker, atom}) => {
+    let {markers} = textWithAtoms.split("").reduce(({markerText, markers}, ch, index) => {
+      let isLast = index === textWithAtoms.length - 1;
+
+      if (ch === 'A') { // "A" is for "atom"
+        if (markerText.length) {
+          markers.push(marker(markerText));
+          markerText = '';
+        }
+        markers.push(atom('the-atom'));
+      } else {
+        markerText += ch;
+      }
+
+      if (isLast && markerText.length) {
+        markers.push(marker(markerText));
+      }
+      return {markerText, markers};
+    }, {markerText: '', markers: []});
+
+    return post([markupSection('p', markers)]);
+  });
+}
+
+test('#moveWord with atoms (backward)', (assert) => {
+  let expectations = [
+    ['abc A|', 'abc |A'],
+    ['abc |A', '|abc A'],
+    ['A|', '|A'],
+    ['A  |', 'A|  '],
+    ['AA|', 'A|A'],
+    ['|A', '|A']
+  ];
+
+  expectations.forEach(([before, after]) => {
+    let textWithAtoms = before.replace('|', '');
+    let beforeIndex = before.indexOf('|');
+    let afterIndex = after.indexOf('|');
+
+    let post = buildPostWithTextAndAtom(textWithAtoms);
+    let section = post.sections.head;
+    let pos = new Position(section, beforeIndex);
+    let nextPos = new Position(section, afterIndex);
+
+    assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos,
+                           `move word with atoms "${before}" -> "${after}"`);
+  });
+});
+
+test('#moveWord in text (forward)', (assert) => {
+  let expectations = [
+    ['|abc def', 'abc| def'],
+    ['a|bc def', 'abc| def'],
+    ['abc| def', 'abc def|'],
+    ['abc |def', 'abc def|'],
+    ['abc def|', 'abc def|'],
+    ['abc|', 'abc|'],
+    ['ab|c', 'abc|'],
+    ['|abc', 'abc|'],
+    ['|  abc', '  abc|']
+  ];
+
+  expectations.forEach(([before, after]) => {
+    let text = before.replace('|', '');
+    let beforeIndex = before.indexOf('|');
+    let afterIndex = after.indexOf('|');
+
+    let post = Helpers.postAbstract.buildWithText(text);
+    let section = post.sections.head;
+    let pos = new Position(section, beforeIndex);
+    let nextPos = new Position(section, afterIndex);
+    assert.positionIsEqual(pos.moveWord(FORWARD), nextPos,
+                           `move word "${before}"->"${after}"`);
+  });
+});
+
+test('#moveWord with atoms (forward)', (assert) => {
+  let expectations = [
+    ['|A', 'A|'],
+    ['A|', 'A|'],
+    ['|  A', '  A|'],
+    ['abc| A', 'abc A|'],
+    ['A|A', 'AA|']
+  ];
+
+  expectations.forEach(([before, after]) => {
+    let textWithAtoms = before.replace('|', '');
+    let beforeIndex = before.indexOf('|');
+    let afterIndex = after.indexOf('|');
+
+    let post = buildPostWithTextAndAtom(textWithAtoms);
+    let section = post.sections.head;
+    let pos = new Position(section, beforeIndex);
+    let nextPos = new Position(section, afterIndex);
+
+    assert.positionIsEqual(pos.moveWord(FORWARD), nextPos,
+                           `move word with atoms "${before}" -> "${after}"`);
+  });
 });
 
 test('#fromNode when node is marker text node', (assert) => {

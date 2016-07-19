@@ -10,6 +10,8 @@ import { DIRECTION } from 'mobiledoc-kit/utils/key';
 
 const { FORWARD, BACKWARD } = DIRECTION;
 
+const WORD_CHAR_REGEX = /\w|_|:/;
+
 function findParentSectionFromNode(renderTree, node) {
   let renderNode =  renderTree.findRenderNodeFromElement(
     node,
@@ -168,10 +170,30 @@ const Position = class Position {
            this.offset  === position.offset;
   }
 
+  /**
+   * @return {Boolean} If this position is at the head of the post
+   */
+  isHeadOfPost() {
+    return this.move(BACKWARD).isEqual(this);
+  }
+
+  /**
+   * @return {Boolean} If this position is at the tail of the post
+   */
+  isTailOfPost() {
+    return this.move(FORWARD).isEqual(this);
+  }
+
+  /**
+   * @return {Boolean} If this position is at the head of its section
+   */
   isHead() {
     return this.isEqual(this.section.headPosition());
   }
 
+  /**
+   * @return {Boolean} If this position is at the head of its section
+   */
   isTail() {
     return this.isEqual(this.section.tailPosition());
   }
@@ -195,6 +217,79 @@ const Position = class Position {
     } else {
       return this;
     }
+  }
+
+  /**
+   * @param {Number} direction (FORWARD or BACKWARD)
+   * @return {Position} The result of moving 1 "word" unit in `direction`
+   */
+  moveWord(direction) {
+    let isPostBoundary = direction === BACKWARD ? this.isHeadOfPost() : this.isTailOfPost();
+    if (isPostBoundary) {
+      return this;
+    }
+
+    if (!this.isMarkerable) {
+      return this.move(direction);
+    }
+
+    let pos = this;
+
+    // Helper fn to check if the pos is at the `dir` boundary of its section
+    let isBoundary = (pos, dir) => {
+      return dir === BACKWARD ? pos.isHead() : pos.isTail();
+    };
+    // Get the char at this position (looking forward/right)
+    let getChar = (pos) => {
+      let { marker, offsetInMarker } = pos;
+      return marker.charAt(offsetInMarker);
+    };
+    // Get the char in `dir` at this position
+    let peekChar = (pos, dir) => {
+      return dir === BACKWARD ? getChar(pos.move(BACKWARD)) : getChar(pos);
+    };
+    // Whether there is an atom in `dir` from this position
+    let isAtom = (pos, dir) => {
+      // Special case when position is at end, the marker associated with it is
+      // the marker to its left. Normally `pos#marker` is the marker to the right of the pos's offset.
+      if (dir === BACKWARD && pos.isTail() && pos.marker.isAtom) {
+        return true;
+      }
+      return dir === BACKWARD ? pos.move(BACKWARD).marker.isAtom : pos.marker.isAtom;
+    };
+
+    if (isBoundary(pos, direction)) {
+      // extend movement into prev/next section
+      return pos.move(direction).moveWord(direction);
+    }
+
+    let seekWord = (pos) => {
+      return !isBoundary(pos, direction) &&
+        !isAtom(pos, direction) &&
+        !WORD_CHAR_REGEX.test(peekChar(pos, direction));
+    };
+
+    // move(dir) while we are seeking the first word char
+    while (seekWord(pos)) {
+      pos = pos.move(direction);
+    }
+
+    if (isAtom(pos, direction)) {
+      return pos.move(direction);
+    }
+
+    let seekBoundary = (pos) => {
+      return !isBoundary(pos, direction) &&
+        !isAtom(pos, direction) &&
+        WORD_CHAR_REGEX.test(peekChar(pos, direction));
+    };
+
+    // move(dir) while we are seeking the first boundary position
+    while (seekBoundary(pos)) {
+      pos = pos.move(direction);
+    }
+
+    return pos;
   }
 
   /**

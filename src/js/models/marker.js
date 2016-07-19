@@ -40,6 +40,10 @@ const Marker = class Marker extends LinkedItem {
     return this.length === 0;
   }
 
+  charAt(offset) {
+    return this.value.slice(offset, offset+1);
+  }
+
   /**
    * A marker's text is equal to its value.
    * Compare with an Atom which distinguishes between text and value
