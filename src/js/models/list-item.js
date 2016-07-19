@@ -36,12 +36,6 @@ export default class ListItem extends Markerable {
       beforeSection, afterSection, marker, offset);
   }
 
-  clone() {
-    const item = this.builder.createListItem();
-    this.markers.forEach(m => item.markers.append(m.clone()));
-    return item;
-  }
-
   get post() {
     return this.section.post;
   }

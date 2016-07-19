@@ -65,7 +65,7 @@ class PostNodeBuilder {
   createMarkerableSection(type, tagName, markers=[]) {
     switch (type) {
       case LIST_ITEM_TYPE:
-        return this.createListItem(tagName, markers);
+        return this.createListItem(markers);
       case MARKUP_SECTION_TYPE:
         return this.createMarkupSection(tagName, markers);
       default:
