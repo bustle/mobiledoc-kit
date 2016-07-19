@@ -214,11 +214,13 @@ test('inputModeDidChange callback fired when markup is toggled and there is a se
   });
 });
 
-test('inputModeDidChange callback fired when markup is toggled and there is no selection', (assert) => {
+test('inputModeDidChange callback fired when markup is toggled and selection is collapsed', (assert) => {
   let done = assert.async();
-  assert.expect(1);
+  assert.expect(2);
 
   editor.selectRange(new Range(editor.post.headPosition()));
+
+  assert.ok(editor.range.isCollapsed, 'precond - range is collapsed');
 
   Helpers.wait(() => {
     let inputChanged = 0;
@@ -250,6 +252,35 @@ test('inputModeDidChange callback fired when moving cursor into markup', (assert
 
     Helpers.wait(() => {
       assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
+      done();
+    });
+  });
+});
+
+test('after #toggleMarkup, editor refocuses if it had selection', (assert) => {
+  let done = assert.async();
+  assert.expect(3);
+
+  let button = $('<button>BOLD</button>').appendTo('#qunit-fixture').click(() => {
+    Helpers.dom.selectText(editor, 'this', editorElement); // necessary for Safari to detect a selection in the editor
+    button.focus();
+
+    assert.ok(document.activeElement !== editor.element, 'precond - editor element is not focused');
+    editor.toggleMarkup('b');
+  });
+
+  editor.selectRange(new Range(editor.post.headPosition()));
+
+  Helpers.wait(() => {
+    let inputChanged = 0;
+    editor.inputModeDidChange(() => inputChanged++);
+
+    button.click();
+
+    Helpers.wait(() => {
+      assert.equal(inputChanged, 1, 'inputModeDidChange fired once');
+      assert.ok(document.activeElement === editor.element, 'editor element is focused');
+
       done();
     });
   });

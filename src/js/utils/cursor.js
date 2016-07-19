@@ -116,9 +116,9 @@ const Cursor = class Cursor {
     const { node:headNode, offset:headOffset } = this._findNodeForPosition(head),
           { node:tailNode, offset:tailOffset } = this._findNodeForPosition(tail);
     this._moveToNode(headNode, headOffset, tailNode, tailOffset, direction);
-    if (document.activeElement !== this.editor.element) {
-      this.editor.element.focus();
-    }
+
+    // Firefox sometimes doesn't keep focus in the editor after adding a card
+    this.editor._ensureFocus();
   }
 
   get selection() {
