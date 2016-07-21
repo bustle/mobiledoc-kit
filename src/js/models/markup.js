@@ -37,6 +37,14 @@ class Markup {
            VALID_MARKUP_TAGNAMES.indexOf(this.tagName) !== -1);
   }
 
+  isForwardInclusive() {
+    return this.tagName === normalizeTagName("a") ? false : true;
+  }
+
+  isBackwardInclusive() {
+    return false;
+  }
+
   hasTag(tagName) {
     return this.tagName === normalizeTagName(tagName);
   }

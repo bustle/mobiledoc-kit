@@ -475,8 +475,11 @@ class Editor {
   /**
    * @param {Markup|String} markup A markup instance, or a string (e.g. "b")
    * @return {boolean}
+   * @deprecated after v0.10.1
    */
   hasActiveMarkup(markup) {
+    deprecate(`editor#hasActiveMarkup is deprecated. Use editor#activeMarkups instead`);
+
     let matchesFn;
     if (typeof markup === 'string') {
       markup = markup.toLowerCase();

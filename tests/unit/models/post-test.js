@@ -220,6 +220,33 @@ test('#markupsInRange returns all markups when range is not collapsed', (assert)
   assert.inArray(a2, found, 'finds a2');
 });
 
+test('#markupsInRange obeys left- and right-inclusive rules for "A" markups', (assert) => {
+  let a;
+  let post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    a = markup('a', {href: 'example.com'});
+    return post([markupSection('p', [
+      marker('123', [a]),
+      marker(' abc '),
+      marker('def', [a]),
+      marker( ' ghi '),
+      marker( 'jkl', [a])
+    ])]);
+  });
+
+  let section = post.sections.head;
+  let start = Range.create(section, 0);
+  let left = Range.create(section, '123 abc '.length);
+  let inside = Range.create(section, '123 abc d'.length);
+  let right = Range.create(section, '123 abc def'.length);
+  let end = Range.create(section, '123 abc def ghi jkl'.length);
+
+  assert.deepEqual(post.markupsInRange(start), [], 'no markups at start');
+  assert.deepEqual(post.markupsInRange(left), [], 'no markups at left');
+  assert.deepEqual(post.markupsInRange(right), [], 'no markups at right');
+  assert.deepEqual(post.markupsInRange(inside), [a], '"A" markup inside range');
+  assert.deepEqual(post.markupsInRange(end), [], 'no markups at end');
+});
+
 test('#markersContainedByRange when range is single marker', (assert) => {
   let found;
   const post = Helpers.postAbstract.build(({post, marker, markupSection}) => {

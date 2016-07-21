@@ -1,4 +1,5 @@
-const {module, test} = QUnit;
+import Helpers from 'mobiledoc-kit/test-helpers';
+const {module, test} = Helpers;
 
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 

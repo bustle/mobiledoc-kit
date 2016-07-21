@@ -6,6 +6,9 @@ import {
 } from 'mobiledoc-kit/models/marker';
 import { containsNode } from 'mobiledoc-kit/utils/dom-utils';
 import { findOffsetInNode } from 'mobiledoc-kit/utils/selection-utils';
+import { DIRECTION } from 'mobiledoc-kit/utils/key';
+
+const { FORWARD, BACKWARD } = DIRECTION;
 
 function findParentSectionFromNode(renderTree, node) {
   let renderNode =  renderTree.findRenderNodeFromElement(
@@ -65,7 +68,7 @@ const Position = class Position {
     assert('Position must have a section that is addressable by the cursor',
            (section && section.isLeafSection));
     assert('Position must have numeric offset',
-           (offset !== null && offset !== undefined));
+           (typeof offset === 'number'));
 
     /** @property {Section} section */
     this.section = section;
@@ -123,8 +126,37 @@ const Position = class Position {
     return this.section && this.section.isMarkerable;
   }
 
+  /**
+   * Returns the marker at this position, in the backward direction
+   * (i.e., the marker to the left of the cursor if the cursor is on a marker boundary and text is left-to-right)
+   * @return {Marker|undefined}
+   */
   get marker() {
     return this.isMarkerable && this.markerPosition.marker;
+  }
+
+  /**
+   * Returns the marker in `direction` from this position.
+   * If the position is in the middle of a marker, the direction is irrelevant.
+   * Otherwise, if the position is at a boundary between two markers, returns the
+   * marker to the left if `direction` === BACKWARD and the marker to the right
+   * if `direction` === FORWARD (assuming left-to-right text direction).
+   * @param {Direction}
+   * @return {Marker|undefined}
+   */
+  markerIn(direction) {
+    if (!this.isMarkerable) { return; }
+
+    let { marker, offsetInMarker } = this;
+    if (!marker) { return; }
+
+    if (offsetInMarker > 0 && offsetInMarker < marker.length) {
+      return marker;
+    } else if (offsetInMarker === 0) {
+      return direction === BACKWARD ? marker : marker.prev;
+    } else if (offsetInMarker === marker.length) {
+      return direction === FORWARD ? marker.next : marker;
+    }
   }
 
   get offsetInMarker() {
