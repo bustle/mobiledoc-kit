@@ -3,7 +3,7 @@ import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 
 const DATA_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";
-import Helpers from 'mobiledoc-kit/tests/helpers';
+import Helpers from '../../../test-helpers';
 const { module, test } = Helpers;
 
 let parser, builder, post;

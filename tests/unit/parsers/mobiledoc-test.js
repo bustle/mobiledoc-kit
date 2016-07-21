@@ -1,7 +1,7 @@
 import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
-import Helpers from 'mobiledoc-kit/tests/helpers';
+import Helpers from '../../test-helpers';
 
 const { module, test } = Helpers;
 
