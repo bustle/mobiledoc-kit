@@ -3,6 +3,8 @@ import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 import Range from 'mobiledoc-kit/utils/cursor/range';
+import Keycodes from 'mobiledoc-kit/utils/keycodes';
+import Browser from 'mobiledoc-kit/utils/browser';
 
 const { test, module } = Helpers;
 
@@ -579,4 +581,62 @@ test('deleting when the previous section is also blank', (assert) => {
   assert.equal($('#editor p').length, 1, 'has 1 paragraphs after typing delete');
 });
 
-// test: deleting at start of section when previous section is a non-markup section
+test('deleting from head of section when previous section is non-markerable', (assert) => {
+  let card = {
+    name: 'some-card',
+    type: 'dom',
+    render() {}
+  };
+
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, cardSection}) => {
+    expected = post([
+      cardSection('some-card'),
+      markupSection('p', [marker('abc')])
+    ]);
+    return post([
+      cardSection('some-card'),
+      markupSection('p', [marker('abc')])
+    ]);
+  }, {cards:[card]});
+
+  let node = Helpers.dom.findTextNode(editorElement, 'abc');
+  Helpers.dom.moveCursorTo(editor, node, 0);
+  Helpers.dom.triggerDelete(editor);
+
+  assert.positionIsEqual(editor.range.head, editor.post.sections.head.tailPosition(),
+                         'moves cursor to end of card section');
+  assert.postIsSimilar(editor.post, expected, 'post is not changed');
+});
+
+test('delete with option (Mac) or control (Win)  key deletes full word', (assert) => {
+  assert.expect(1);
+  if (!Browser.isMac() && !Browser.isWin()) {
+    assert.ok(true, 'SKIP on non-mac non-win');
+    return;
+  }
+
+  let done = assert.async();
+
+  let post = Helpers.postAbstract.buildWithText("abc def");
+  let expected = Helpers.postAbstract.buildWithText("abc ");
+  editor = Helpers.mobiledoc.renderPostInto(editorElement, post);
+
+  editor.selectRange(new Range(editor.post.tailPosition()));
+
+  let keyCode = Browser.isMac() ? Keycodes.ALT : Keycodes.CTRL;
+
+  Helpers.dom.triggerKeyEvent(editor, 'keydown', {keyCode});
+  Helpers.wait(() => {
+    Helpers.dom.triggerDelete(editor);
+
+    Helpers.wait(() => {
+      Helpers.dom.triggerKeyEvent(editor, 'keyup', {keyCode});
+
+      Helpers.wait(() => {
+        assert.postIsSimilar(editor.post, expected);
+        done();
+      });
+    });
+  });
+});

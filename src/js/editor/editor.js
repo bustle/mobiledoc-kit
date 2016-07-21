@@ -1,7 +1,7 @@
 import Tooltip from '../views/tooltip';
 import PostEditor from './post';
 import ImageCard from '../cards/image';
-import Key from '../utils/key';
+import { DIRECTION } from '../utils/key';
 import mobiledocParsers from '../parsers/mobiledoc';
 import HTMLParser from '../parsers/html';
 import DOMParser from '../parsers/dom';
@@ -295,25 +295,47 @@ class Editor {
     this.keyCommands.unshift(keyCommand);
   }
 
-  /**
-   * @param {KeyEvent} [event]
-   * @private
-   */
-  handleDeletion(event=null) {
+  deleteInDirection(direction, {unit}) {
     let { range } = this;
 
-    if (!range.isCollapsed) {
+    if (unit === 'word') {
+      return this.deleteWordInDirection(direction);
+    } else {
       this.run(postEditor => {
-        let nextPosition = postEditor.deleteRange(range);
+        let nextPosition = postEditor.deleteFrom(range.head, direction);
         postEditor.setRange(new Range(nextPosition));
       });
-    } else if (event) {
-      let key = Key.fromEvent(event);
-      this.run(postEditor => {
-        let nextPosition = postEditor.deleteFrom(range.head, key.direction);
-        let newRange = new Range(nextPosition);
-        postEditor.setRange(newRange);
-      });
+    }
+  }
+
+  deleteWordInDirection(direction) {
+    let { range: { head: curPos } } = this;
+
+    let nextPos = curPos.moveWord(direction);
+
+    let head = direction === DIRECTION.FORWARD ? curPos : nextPos;
+    let tail = direction === DIRECTION.FORWARD ? nextPos : curPos;
+
+    return this.deleteRange(new Range(head, tail, direction));
+  }
+
+  deleteRange(range) {
+    this.run(postEditor => {
+      let nextPosition = postEditor.deleteRange(range);
+      postEditor.setRange(new Range(nextPosition));
+    });
+  }
+
+  /**
+   * @private
+   */
+  performDelete({direction, unit}={direction: DIRECTION.BACKWARD, unit: 'char'}) {
+    let { range } = this;
+
+    if (range.isCollapsed) {
+      this.deleteInDirection(direction, {unit});
+    } else {
+      this.deleteRange(range);
     }
   }
 

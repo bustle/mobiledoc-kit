@@ -23,7 +23,7 @@ module('Acceptance: editor: drag-drop', {
 
     /**
      * `document.elementFromPoint` return `null` if the element is outside the
-     * viewpor, so force the editor element to in the viewport for this test suite
+     * viewport, so force the editor element to be in the viewport for this test suite
      */
     $(editorElement).css({
       position: 'fixed',

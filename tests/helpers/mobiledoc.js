@@ -31,6 +31,14 @@ function build(treeFn, version) {
   }
 }
 
+function renderPostInto(element, post, editorOptions={}) {
+  let mobiledoc = mobiledocRenderers.render(post);
+  mergeWithOptions(editorOptions, {mobiledoc});
+  let editor = new Editor(editorOptions);
+  editor.render(element);
+  return editor;
+}
+
 function renderInto(element, treeFn, editorOptions={}) {
   let mobiledoc = build(treeFn);
   mergeWithOptions(editorOptions, {mobiledoc});
@@ -41,5 +49,6 @@ function renderInto(element, treeFn, editorOptions={}) {
 
 export default {
   build,
-  renderInto
+  renderInto,
+  renderPostInto
 };
