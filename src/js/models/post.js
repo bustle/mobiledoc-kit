@@ -121,9 +121,23 @@ class Post {
     const markups = new Set();
 
     if (range.isCollapsed) {
-      let marker = range.head.marker;
-      if (marker) {
-        marker.markups.forEach(m => markups.add(m));
+      let pos = range.head;
+      if (pos.isMarkerable) {
+        let [back, forward] = [pos.markerIn(-1), pos.markerIn(1)];
+        if (back && forward && back === forward) {
+          back.markups.forEach(m => markups.add(m));
+        } else {
+          (back && back.markups || []).forEach(m => {
+            if (m.isForwardInclusive()) {
+              markups.add(m);
+            }
+          });
+          (forward && forward.markups || []).forEach(m => {
+            if (m.isBackwardInclusive()) {
+              markups.add(m);
+            }
+          });
+        }
       }
     } else {
       this.walkMarkerableSections(range, (section) => {

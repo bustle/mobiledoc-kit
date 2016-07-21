@@ -1,4 +1,5 @@
-const {module, test} = QUnit;
+import Helpers from '../../test-helpers';
+const {module, test} = Helpers;
 
 import LinkedList from 'mobiledoc-kit/utils/linked-list';
 import LinkedItem from 'mobiledoc-kit/utils/linked-item';
