@@ -482,7 +482,7 @@ test('selecting text that touches bold text should not be considered bold', (ass
   Helpers.dom.triggerEvent(document, 'mouseup');
 
   let bold = editor.builder.createMarkup('strong');
-  assert.ok(editor.markupsInSelection.indexOf(bold) === -1, 'strong is not in selection');
+  assert.ok(editor.activeMarkups.indexOf(bold) === -1, 'strong is not in selection');
 });
 
 // https://github.com/bustlelabs/mobiledoc-kit/issues/121
@@ -503,7 +503,7 @@ test('selecting text that includes a 1-character marker and unbolding it', (asse
   Helpers.dom.selectText(editor ,'b', editorElement, 'c', editorElement);
 
   let bold = editor.builder.createMarkup('strong');
-  assert.ok(editor.markupsInSelection.indexOf(bold) !== -1, 'strong is in selection');
+  assert.ok(editor.activeMarkups.indexOf(bold) !== -1, 'strong is in selection');
 
   editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
@@ -535,7 +535,7 @@ test('selecting text that includes an empty section and applying markup to it', 
   assert.hasElement('#editor p strong:contains(abc)', 'bold is applied to text');
 });
 
-test('placing cursor inside a strong section should cause markupsInSelection to contain "strong"', (assert) => {
+test('placing cursor inside a strong section should cause activeMarkups to contain "strong"', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, markup}) => {
     const b = markup('strong');
     return post([markupSection('p', [
@@ -550,10 +550,10 @@ test('placing cursor inside a strong section should cause markupsInSelection to 
   Helpers.dom.moveCursorTo(editor, $('#editor strong')[0].firstChild, 1);
 
   let bold = editor.builder.createMarkup('strong');
-  assert.ok(editor.markupsInSelection.indexOf(bold) !== -1, 'strong is in selection');
+  assert.ok(editor.activeMarkups.indexOf(bold) !== -1, 'strong is in selection');
 
   Helpers.dom.moveCursorTo(editor, $('#editor')[0].childNodes[0], 1);
   delete editor._activeMarkups;
 
-  assert.ok(editor.markupsInSelection.indexOf(bold) === -1, 'strong is not in selection');
+  assert.ok(editor.activeMarkups.indexOf(bold) === -1, 'strong is not in selection');
 });
