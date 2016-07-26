@@ -2,10 +2,8 @@ import { POST_TYPE } from './types';
 import LinkedList from 'mobiledoc-kit/utils/linked-list';
 import { forEach, compact } from 'mobiledoc-kit/utils/array-utils';
 import Set from 'mobiledoc-kit/utils/set';
-import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
-import deprecate from 'mobiledoc-kit/utils/deprecate';
 
 /**
  * The Post is an in-memory representation of an editor's document.
@@ -252,14 +250,6 @@ class Post {
       // section after its parent
       return this._nextLeafSection(section.parent);
     }
-  }
-
-  /**
-   * @deprecated since 0.9.1
-   */
-  cloneRange(range) {
-    deprecate('post#cloneRange is deprecated. See post#trimTo(range) and editor#serializePost');
-    return mobiledocRenderers.render(this.trimTo(range));
   }
 
   /**

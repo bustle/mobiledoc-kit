@@ -8,6 +8,7 @@ import DOMParser from '../parsers/dom';
 import Renderer  from 'mobiledoc-kit/renderers/editor-dom';
 import RenderTree from 'mobiledoc-kit/models/render-tree';
 import mobiledocRenderers from '../renderers/mobiledoc';
+import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 import { mergeWithOptions } from '../utils/merge';
 import { clearChildNodes, addClassName } from '../utils/dom-utils';
 import { forEach, filter, contains, values } from '../utils/array-utils';
@@ -17,7 +18,6 @@ import Range from '../utils/cursor/range';
 import Position from '../utils/cursor/position';
 import PostNodeBuilder from '../models/post-node-builder';
 import { DEFAULT_TEXT_INPUT_HANDLERS } from './text-input-handlers';
-import { convertExpansiontoHandler } from './text-expansion-handler';
 import {
   DEFAULT_KEY_COMMANDS, buildKeyCommand, findKeyCommands, validateKeyCommand
 } from './key-commands';
@@ -26,7 +26,6 @@ import { detect } from '../utils/array-utils';
 import assert from '../utils/assert';
 import deprecate from '../utils/deprecate';
 import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
-import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 import EditHistory from 'mobiledoc-kit/editor/edit-history';
 import EventManager from 'mobiledoc-kit/editor/event-manager';
 import EditState from 'mobiledoc-kit/editor/edit-state';
@@ -265,21 +264,6 @@ class Editor {
   get keyCommands() {
     if (!this._keyCommands) { this._keyCommands = []; }
     return this._keyCommands;
-  }
-
-  /**
-   * Prefer {@link Editor#onTextInput} to `registerExpansion`.
-   * @param {Object} expansion
-   * @param {String} expansion.text
-   * @param {Function} expansion.run This callback will be invoked with an `editor` argument
-   * @param {Number} [expansion.trigger] The keycode (e.g. 32 for `<space>`) that will trigger the expansion after the text is entered
-   * @deprecated since v0.9.3
-   * @public
-   */
-  registerExpansion(expansion) {
-    deprecate('Use `Editor#onTextInput` instead of `registerExpansion`');
-    let handler = convertExpansiontoHandler(expansion);
-    this.onTextInput(handler);
   }
 
   /**
@@ -1040,15 +1024,6 @@ class Editor {
       return;
     }
     this._callbacks.runCallbacks(...args);
-  }
-
-  /**
-   * @deprecated since 0.9.1
-   */
-  on(eventName, callback) {
-    deprecate('`on` is deprecated. Use `postDidChange(callback)` instead to handle post changes');
-    assert('Cannot add listener for event other than "update"', eventName === 'update');
-    this.postDidChange(callback);
   }
 }
 
