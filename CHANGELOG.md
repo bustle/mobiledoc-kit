@@ -1,13 +1,22 @@
-<a name="0.10.1"></a>
-## 0.10.1 (2016-07-15)
+<a name="0.10.2"></a>
+## 0.10.2 (2016-07-26)
 
 * [demo] fix simple card demo (include "remove" button) ([82a141c](https://github.com/bustlelabs/mobiledoc-kit/commit/82a141c))
 * 0.10.0 ([270123b](https://github.com/bustlelabs/mobiledoc-kit/commit/270123b))
 * 0.10.0-beta.2 ([4d5db27](https://github.com/bustlelabs/mobiledoc-kit/commit/4d5db27))
 * 0.10.0-beta.3 ([dc63306](https://github.com/bustlelabs/mobiledoc-kit/commit/dc63306))
-* 0.10.1 ([a5d16c1](https://github.com/bustlelabs/mobiledoc-kit/commit/a5d16c1))
+* 0.10.1 ([63c1912](https://github.com/bustlelabs/mobiledoc-kit/commit/63c1912))
+* 0.10.2 ([1cd22ef](https://github.com/bustlelabs/mobiledoc-kit/commit/1cd22ef))
+* Add forward/backward inclusivity rules for markups fix #402 fix #392 ([300019f](https://github.com/bustlelabs/mobiledoc-kit/commit/300019f)), closes [#402](https://github.com/bustlelabs/mobiledoc-kit/issues/402) [#392](https://github.com/bustlelabs/mobiledoc-kit/issues/392) [#392](https://github.com/bustlelabs/mobiledoc-kit/issues/392) [#402](https://github.com/bustlelabs/mobiledoc-kit/issues/402)
+* Add support for word deletion on Mac (opt+del) and PC (ctrl+del) Fix #169 ([f919490](https://github.com/bustlelabs/mobiledoc-kit/commit/f919490)), closes [#169](https://github.com/bustlelabs/mobiledoc-kit/issues/169)
 * Ensure the activeElement is set after rendering cursor ([2ce581e](https://github.com/bustlelabs/mobiledoc-kit/commit/2ce581e))
+* Fix incorrect test helper imports ([95b1797](https://github.com/bustlelabs/mobiledoc-kit/commit/95b1797))
+* Fix method signature for `createListItem` in ListItem#clone ([d131f17](https://github.com/bustlelabs/mobiledoc-kit/commit/d131f17))
+* Refocus editor after toggling markup when no selection. fixes #369 (#436) ([01b2e5e](https://github.com/bustlelabs/mobiledoc-kit/commit/01b2e5e)), closes [#369](https://github.com/bustlelabs/mobiledoc-kit/issues/369) [#436](https://github.com/bustlelabs/mobiledoc-kit/issues/436)
+* Remove deprecated Post#cloneRange Editor#registerExpansion, Editor#on ([272a2c7](https://github.com/bustlelabs/mobiledoc-kit/commit/272a2c7))
+* Update ember-mobiledoc-editor for demo/ ([4fbd912](https://github.com/bustlelabs/mobiledoc-kit/commit/4fbd912))
 * update postversion npm script ([870d9c8](https://github.com/bustlelabs/mobiledoc-kit/commit/870d9c8))
+* update relase instructions in readme ([89f1b58](https://github.com/bustlelabs/mobiledoc-kit/commit/89f1b58))
 
 
 
