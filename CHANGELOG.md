@@ -1,12 +1,13 @@
-<a name="0.10.2"></a>
-## 0.10.2 (2016-07-26)
+<a name="0.10.3"></a>
+## 0.10.3 (2016-07-26)
 
 * [demo] fix simple card demo (include "remove" button) ([82a141c](https://github.com/bustlelabs/mobiledoc-kit/commit/82a141c))
 * 0.10.0 ([270123b](https://github.com/bustlelabs/mobiledoc-kit/commit/270123b))
 * 0.10.0-beta.2 ([4d5db27](https://github.com/bustlelabs/mobiledoc-kit/commit/4d5db27))
 * 0.10.0-beta.3 ([dc63306](https://github.com/bustlelabs/mobiledoc-kit/commit/dc63306))
 * 0.10.1 ([63c1912](https://github.com/bustlelabs/mobiledoc-kit/commit/63c1912))
-* 0.10.2 ([1cd22ef](https://github.com/bustlelabs/mobiledoc-kit/commit/1cd22ef))
+* 0.10.2 ([3f7eb68](https://github.com/bustlelabs/mobiledoc-kit/commit/3f7eb68))
+* 0.10.3 ([fbf7a37](https://github.com/bustlelabs/mobiledoc-kit/commit/fbf7a37))
 * Add forward/backward inclusivity rules for markups fix #402 fix #392 ([300019f](https://github.com/bustlelabs/mobiledoc-kit/commit/300019f)), closes [#402](https://github.com/bustlelabs/mobiledoc-kit/issues/402) [#392](https://github.com/bustlelabs/mobiledoc-kit/issues/392) [#392](https://github.com/bustlelabs/mobiledoc-kit/issues/392) [#402](https://github.com/bustlelabs/mobiledoc-kit/issues/402)
 * Add support for word deletion on Mac (opt+del) and PC (ctrl+del) Fix #169 ([f919490](https://github.com/bustlelabs/mobiledoc-kit/commit/f919490)), closes [#169](https://github.com/bustlelabs/mobiledoc-kit/issues/169)
 * Ensure the activeElement is set after rendering cursor ([2ce581e](https://github.com/bustlelabs/mobiledoc-kit/commit/2ce581e))
@@ -14,6 +15,7 @@
 * Fix method signature for `createListItem` in ListItem#clone ([d131f17](https://github.com/bustlelabs/mobiledoc-kit/commit/d131f17))
 * Refocus editor after toggling markup when no selection. fixes #369 (#436) ([01b2e5e](https://github.com/bustlelabs/mobiledoc-kit/commit/01b2e5e)), closes [#369](https://github.com/bustlelabs/mobiledoc-kit/issues/369) [#436](https://github.com/bustlelabs/mobiledoc-kit/issues/436)
 * Remove deprecated Post#cloneRange Editor#registerExpansion, Editor#on ([272a2c7](https://github.com/bustlelabs/mobiledoc-kit/commit/272a2c7))
+* Un-deprecate editor#hasActiveMarkups, remove editor#markupsInSelection ([de9d7c5](https://github.com/bustlelabs/mobiledoc-kit/commit/de9d7c5))
 * Update ember-mobiledoc-editor for demo/ ([4fbd912](https://github.com/bustlelabs/mobiledoc-kit/commit/4fbd912))
 * update postversion npm script ([870d9c8](https://github.com/bustlelabs/mobiledoc-kit/commit/870d9c8))
 * update relase instructions in readme ([89f1b58](https://github.com/bustlelabs/mobiledoc-kit/commit/89f1b58))
