@@ -10,7 +10,7 @@ import RenderTree from 'mobiledoc-kit/models/render-tree';
 import mobiledocRenderers from '../renderers/mobiledoc';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 import { mergeWithOptions } from '../utils/merge';
-import { clearChildNodes, addClassName } from '../utils/dom-utils';
+import { normalizeTagName, clearChildNodes, addClassName } from '../utils/dom-utils';
 import { forEach, filter, contains, values } from '../utils/array-utils';
 import { setData } from '../utils/element-utils';
 import Cursor from '../utils/cursor';
@@ -24,7 +24,6 @@ import {
 import { CARD_MODES } from '../models/card';
 import { detect } from '../utils/array-utils';
 import assert from '../utils/assert';
-import deprecate from '../utils/deprecate';
 import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
 import EditHistory from 'mobiledoc-kit/editor/edit-history';
 import EventManager from 'mobiledoc-kit/editor/event-manager';
@@ -473,6 +472,7 @@ class Editor {
 
   /**
    * @type {Markup[]}
+   * @public
    */
   get activeMarkups() {
     return this._editState.activeMarkups;
@@ -481,25 +481,17 @@ class Editor {
   /**
    * @param {Markup|String} markup A markup instance, or a string (e.g. "b")
    * @return {boolean}
-   * @deprecated after v0.10.1
    */
   hasActiveMarkup(markup) {
-    deprecate(`editor#hasActiveMarkup is deprecated. Use editor#activeMarkups instead`);
-
     let matchesFn;
     if (typeof markup === 'string') {
-      markup = markup.toLowerCase();
-      matchesFn = (_markup) => _markup.tagName === markup;
+      let tagName = normalizeTagName(markup);
+      matchesFn = (m) => m.tagName === tagName;
     } else {
-      matchesFn = (_markup) => _markup === markup;
+      matchesFn = (m) => m === markup;
     }
 
     return !!detect(this.activeMarkups, matchesFn);
-  }
-
-  get markupsInSelection() {
-    // FIXME deprecate this
-    return this.activeMarkups;
   }
 
   /**
