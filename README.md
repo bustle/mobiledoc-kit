@@ -322,13 +322,9 @@ If you have a question about usage you can post in the [gitter channel](https://
 
 #### Releasing
 
-* Update version in `package.json`
-* `npm run update-changelog`
-* commit with message `v<version>` (e.g. "v0.9.0")
-* `npm run build`
-* `git tag v<version>`
-* `git push <origin> --follow-tags`
-* `npm publish`
+* Use `np` (`npm install -g np`)
+* `np <version>` (e.g. `np 0.12.0`)
+* `git push <origin> --tags`
 
 #### Deploy the demo
 
