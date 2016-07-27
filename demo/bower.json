@@ -1,16 +1,10 @@
 {
   "name": "mobiledoc-kit-demo",
   "dependencies": {
-    "ember": "^2.2.0",
-    "ember-cli-shims": "0.0.6",
-    "ember-cli-test-loader": "0.2.1",
-    "ember-load-initializers": "0.1.7",
-    "ember-qunit": "0.4.16",
+    "ember": "~2.6.0",
+    "ember-cli-shims": "0.1.1",
+    "ember-cli-test-loader": "0.2.2",
     "ember-qunit-notifications": "0.1.0",
-    "ember-resolver": "~0.1.20",
-    "jquery": "~2.1.1",
-    "loader.js": "ember-cli/loader.js#3.4.0",
-    "qunit": "~1.20.0",
     "codemirror": "~5.8.0"
   }
 }
