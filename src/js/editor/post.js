@@ -308,19 +308,22 @@ class PostEditor {
     forEach(groups, group => {
       let list = group[0];
       forEach(group, listSection => {
-        if (listSection !== list) {
-          let currentHead = range.head;
-          let prevPosition;
-          // FIXME is there a currentHead if there is no range?
-          // is the current head a list item in the section
-          if (currentHead.section.isListItem &&
-              currentHead.section.parent === listSection) {
-            prevPosition = list.tailPosition();
-          }
-          this._joinListSections(list, listSection);
-          if (prevPosition) {
-            updatedHead = prevPosition.moveRight();
-          }
+        if (listSection === list) {
+          return;
+        }
+
+        let currentHead = range.head;
+        let prevPosition;
+
+        // FIXME is there a currentHead if there is no range?
+        // is the current head a list item in the section
+        if (!range.isBlank && currentHead.section.isListItem &&
+            currentHead.section.parent === listSection) {
+          prevPosition = list.tailPosition();
+        }
+        this._joinListSections(list, listSection);
+        if (prevPosition) {
+          updatedHead = prevPosition.moveRight();
         }
       });
     });
@@ -382,6 +385,34 @@ class PostEditor {
     } else {
       return this._deleteForwardFrom(position);
     }
+  }
+
+  /**
+   * @return {Position}
+   */
+  deleteAtPosition(position, direction=DIRECTION.BACKWARD, {unit}={unit: 'char'}) {
+    if (direction === DIRECTION.BACKWARD) {
+      return this._deleteAtPositionBackward(position, unit);
+    } else {
+      return this._deleteAtPositionForward(position, unit);
+    }
+  }
+
+  _deleteAtPositionBackward(position, unit) {
+    if (position.isHead() && position.section.isListItem) {
+      this.toggleSection('p', new Range(position));
+      return this._range.head;
+    } else {
+      let prevPosition = unit === 'word' ? position.moveWord(-1) : position.move(-1);
+      let range = new Range(prevPosition, position);
+      return this.deleteRange(range);
+    }
+  }
+
+  _deleteAtPositionForward(position, unit) {
+    let nextPosition = unit === 'word' ? position.moveWord(1) : position.move(1);
+    let range = new Range(position, nextPosition);
+    return this.deleteRange(range);
   }
 
   _joinPositionToPreviousSection(position) {
