@@ -90,7 +90,7 @@ function parseTextIntoMarkers(text, builder) {
 
     let startIndex = text.indexOf('*');
     let endIndex = text.indexOf('*', startIndex+1);
-    if (endIndex === -1) { throw new Error('Malformed textWithoutCursor'); }
+    if (endIndex === -1) { throw new Error('Malformed text: asterisks do not match'); }
 
     let pieces = [text.slice(0, startIndex),
                   text.slice(startIndex+1, endIndex),

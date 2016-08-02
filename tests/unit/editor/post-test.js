@@ -3,33 +3,15 @@ import RenderTree from 'mobiledoc-kit/models/render-tree';
 import PostEditor from 'mobiledoc-kit/editor/post';
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../../test-helpers';
-import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
-
-const { FORWARD } = DIRECTION;
 
 const { module, test } = Helpers;
 
 let editor, editorElement;
 
 let builder, postEditor, mockEditor;
-
-function getSection(sectionIndex) {
-  return editor.post.sections.objectAt(sectionIndex);
-}
-
-function getMarker(sectionIndex, markerIndex) {
-  return getSection(sectionIndex).markers.objectAt(markerIndex);
-}
-
-function postEditorWithMobiledoc(treeFn) {
-  const mobiledoc = Helpers.mobiledoc.build(treeFn);
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-  return new PostEditor(editor);
-}
 
 function renderBuiltAbstract(post) {
   mockEditor.post = post;
@@ -56,125 +38,6 @@ function buildEditorWithMobiledoc(builderFn, autofocus=true) {
   };
   return editor;
 }
-
-module('Unit: PostEditor with mobiledoc', {
-  beforeEach() {
-    renderedRange = null;
-    editorElement = $('#editor')[0];
-  },
-
-  afterEach() {
-    renderedRange = null;
-    if (editor) {
-      editor.destroy();
-      editor = null;
-    }
-  }
-});
-
-test('#deleteFrom in middle of marker deletes char before offset', (assert) => {
-  const postEditor = postEditorWithMobiledoc(({post, markupSection, marker}) =>
-    post([
-      markupSection('P', [marker('abc def')])
-    ])
-  );
-
-  const position = new Position(getSection(0), 4);
-  const nextPosition = postEditor.deleteFrom(position);
-  postEditor.complete();
-
-  assert.equal(getMarker(0, 0).value, 'abcdef');
-  assert.ok(nextPosition.section === getSection(0), 'correct position section');
-  assert.equal(nextPosition.offset, 3, 'correct position offset');
-});
-
-test('#deleteFrom (forward) in middle of marker deletes char after offset', (assert) => {
-  const postEditor = postEditorWithMobiledoc(({post, markupSection, marker}) =>
-    post([
-      markupSection('p', [marker('abc def')])
-    ])
-  );
-
-  const position = new Position(getSection(0), 3);
-  const nextPosition = postEditor.deleteFrom(position, FORWARD);
-  postEditor.complete();
-
-  assert.equal(getMarker(0, 0).value, 'abcdef');
-  assert.ok(nextPosition.section === getSection(0), 'correct position section');
-  assert.equal(nextPosition.offset, 3, 'correct position offset');
-});
-
-test('#deleteFrom offset 0 joins section with previous if first marker', (assert) => {
-  const postEditor = postEditorWithMobiledoc(({post, markupSection, marker}) =>
-    post([
-      markupSection('P', [marker('abc')]),
-      markupSection('P', [marker('def')])
-    ])
-  );
-
-  const position = new Position(getSection(1), 0);
-  const nextPosition = postEditor.deleteFrom(position);
-  postEditor.complete();
-
-  assert.equal(editor.post.sections.length, 1, 'sections joined');
-  assert.equal(getSection(0).markers.length, 1, 'joined section has 1 marker');
-  assert.equal(getSection(0).text, 'abcdef', 'text is joined');
-  assert.ok(nextPosition.section === getSection(0), 'correct position section');
-  assert.equal(nextPosition.offset, 'abc'.length, 'correct position offset');
-});
-
-test('#deleteFrom (FORWARD) end of marker joins section with next if last marker', (assert) => {
-  const postEditor = postEditorWithMobiledoc(({post, markupSection, marker}) =>
-    post([
-      markupSection('P', [marker('abc')]),
-      markupSection('P', [marker('def')])
-    ])
-  );
-
-  let section = getSection(0);
-  const position = new Position(section, 3);
-  const nextPosition = postEditor.deleteFrom(position, FORWARD);
-  postEditor.complete();
-
-  assert.equal(editor.post.sections.length, 1, 'sections joined');
-  assert.equal(getSection(0).markers.length, 1, 'joined section has 1 marker');
-  assert.equal(getSection(0).text, 'abcdef', 'text is joined');
-  assert.ok(nextPosition.section === getSection(0), 'correct position section');
-  assert.equal(nextPosition.offset, 'abc'.length, 'correct position offset');
-});
-
-test('#deleteFrom offset 0 deletes last character of previous marker when there is one', (assert) => {
-  const postEditor = postEditorWithMobiledoc(({post, markupSection, marker}) =>
-    post([
-      markupSection('P', [marker('abc'), marker('def')])
-    ])
-  );
-
-  const position = new Position(getSection(0), 3);
-  const nextPosition = postEditor.deleteFrom(position);
-  postEditor.complete();
-
-  assert.equal(getSection(0).text, 'abdef', 'text is deleted');
-  assert.ok(nextPosition.section === getSection(0), 'correct position section');
-  assert.equal(nextPosition.offset, 'ab'.length, 'correct position offset');
-});
-
-test('#deleteFrom (FORWARD) end of marker deletes first character of next marker when there is one', (assert) => {
-  const postEditor = postEditorWithMobiledoc(({post, markupSection, marker}) =>
-    post([
-      markupSection('P', [marker('abc'), marker('def')])
-    ])
-  );
-
-  let section = getSection(0);
-  const position = new Position(section, 3);
-  const nextPosition = postEditor.deleteFrom(position, FORWARD);
-  postEditor.complete();
-
-  assert.equal(getSection(0).text, 'abcef', 'text is correct');
-  assert.ok(nextPosition.section === getSection(0), 'correct position section');
-  assert.equal(nextPosition.offset, 'abc'.length, 'correct position offset');
-});
 
 class MockEditor {
   constructor(builder) {
@@ -576,7 +439,7 @@ test('neighboring atoms do not get coalesced', (assert) => {
   assert.ok(!section.markers.tail.hasMarkup(strong));
 });
 
-test('#removeMarkupFromRange silently does nothing when invoked with a collapsed range', (assert) => {
+test('#removeMarkupFromRange silently does nothing when invoked with an empty range', (assert) => {
   let section, markup;
   const post = Helpers.postAbstract.build(({
     post, markupSection, marker, markup: buildMarkup
@@ -657,7 +520,7 @@ test('#removeMarkupFromRange handles atoms correctly', (assert) => {
   assert.ok(!tail.hasMarkup(bold), 'tail has no bold');
 });
 
-test('#addMarkupToRange silently does nothing when invoked with a collapsed range', (assert) => {
+test('#addMarkupToRange silently does nothing when invoked with an empty range', (assert) => {
   let section, markup;
   const post = Helpers.postAbstract.build(({
     post, markupSection, marker, markup: buildMarkup

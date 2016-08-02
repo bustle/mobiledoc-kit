@@ -278,30 +278,23 @@ class Editor {
     this.keyCommands.unshift(keyCommand);
   }
 
-  deleteInDirection(direction, {unit}) {
-    let { range } = this;
-
-    if (unit === 'word') {
-      return this.deleteWordInDirection(direction);
-    } else {
-      this.run(postEditor => {
-        let nextPosition = postEditor.deleteFrom(range.head, direction);
-        postEditor.setRange(new Range(nextPosition));
-      });
-    }
+  /**
+   * Convenience for {@link PostEditor#deleteAtPosition}. Deletes and puts the
+   * cursor in the new position.
+   * @public
+   */
+  deleteAtPosition(position, direction, {unit}) {
+    this.run(postEditor => {
+      let nextPosition = postEditor.deleteAtPosition(position, direction, {unit});
+      postEditor.setRange(new Range(nextPosition));
+    });
   }
 
-  deleteWordInDirection(direction) {
-    let { range: { head: curPos } } = this;
-
-    let nextPos = curPos.moveWord(direction);
-
-    let head = direction === DIRECTION.FORWARD ? curPos : nextPos;
-    let tail = direction === DIRECTION.FORWARD ? nextPos : curPos;
-
-    return this.deleteRange(new Range(head, tail, direction));
-  }
-
+  /**
+   * Convenience for {@link PostEditor#deleteRange}. Deletes and puts the
+   * cursor in the new position.
+   * @public
+   */
   deleteRange(range) {
     this.run(postEditor => {
       let nextPosition = postEditor.deleteRange(range);
@@ -316,7 +309,7 @@ class Editor {
     let { range } = this;
 
     if (range.isCollapsed) {
-      this.deleteInDirection(direction, {unit});
+      this.deleteAtPosition(range.head, direction, {unit});
     } else {
       this.deleteRange(range);
     }

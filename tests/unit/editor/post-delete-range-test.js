@@ -71,6 +71,19 @@ module('Unit: PostEditor: #deleteRange', {
   }
 });
 
+test('#deleteRange with collapsed range is no-op', (assert) => {
+  let { post, range } = Helpers.postAbstract.buildFromText('abc|def');
+  let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText('abc|def');
+
+  let position = run(post, postEditor => postEditor.deleteRange(range));
+  let renderedRange = new Range(position);
+
+  expectedRange = Range.create(post.sections.head, expectedRange.head.offset);
+
+  assert.postIsSimilar(post, expectedPost);
+  assert.rangeIsEqual(renderedRange, expectedRange);
+});
+
 test('#deleteRange within a section (single section)', (assert) => {
   let examples = [
     ['ab<c>', 'ab|', 'at tail'],
@@ -121,7 +134,8 @@ test('#deleteRange entire post', (assert) => {
     [['<[some-card]>'], 'single card'],
     [['<abc','def','ghi>'], 'multiple sections'],
     [['<>'], 'single blank section'],
-    [['<','','>'], 'multiple blank sections']
+    [['<','','>'], 'multiple blank sections'],
+    [['<[some-card]', 'abc', '[some-card]>'], 'cards at head/tail, containing markup section']
   ];
 
   examples.forEach(([text, msg]) => {
@@ -201,18 +215,20 @@ test('#deleteRange across markup section boundaries including markups', (assert)
 test('#deleteRange across markup/non-markup section boundaries', (assert) => {
   let examples = [
     [['[some-card]<','>abc'], ['[some-card]|', 'abc'], 'card->markup'], 
+    [['[some-card]<','>'], ['[some-card]|'], 'card->blank-markup'], 
+
     [['abc<','>[some-card]'], ['abc|', '[some-card]'], 'markup->card'], 
 
     [['abc<', '[some-card]', '>def'], ['abc|def'], 'containing card, boundaries in outer sections'],
 
     [['abc', '<[some-card]>', 'def'], ['abc', '|', 'def'], 'containing card, boundaries in card section'],
 
-    // Ideally this would delete the blank section altogether and position cursor at the start of the card
-    [['<', '>[some-card]'], ['|', '[some-card]'], 'blank section into card']
+    [['<', '>[some-card]'], ['|[some-card]'], 'blank section into card']
   ];
 
   examples.forEach(([before, after, msg]) => {
     let { post, range } = Helpers.postAbstract.buildFromText(before);
+
     let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
