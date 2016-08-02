@@ -131,7 +131,8 @@ test('across section boundary (backward)', (assert) => {
     [['abc','|def'], 'abc|def', 'markup sections'],
     [['*abc*','|def'], '*abc*|def', 'markup sections with markup'],
     [['[abc]','|def'], ['[abc]|','def'], 'prev section is card'],
-    [['abc','|[def]'], ['abc|','[def]'], 'cur section is card']
+    [['abc','|[def]'], ['abc|','[def]'], 'cur section is card'],
+    [['', '|abc'], ['|abc'], 'prev section is blank']
   ];
 
   examples.forEach(([before, after, msg]) => {
@@ -152,7 +153,8 @@ test('across section boundary (forward)', (assert) => {
     [['abc|','def'], 'abc|def', 'markup sections'],
     [['*abc*|','def'], '*abc*|def', 'markup sections with markup'],
     [['[abc]|','def'], ['[abc]|','def'], 'cur section is card'],
-    [['abc|','[def]'], ['abc|','[def]'], 'next section is card']
+    [['abc|','[def]'], ['abc|','[def]'], 'next section is card'],
+    [['abc|', ''], ['abc|'], 'next section is blank']
   ];
 
   examples.forEach(([before, after, msg]) => {
@@ -172,6 +174,7 @@ test('across list item boundary (backward)', (assert) => {
   let examples = [
     [['* abc','* |def'], ['* abc', '|def'], 'start of list item'],
     [['* abc','|def'], ['* abc|def'], 'into list item'],
+    [['', '* |abc'], ['', '|abc'], 'prev blank section'],
   ];
 
   examples.forEach(([before, after, msg]) => {

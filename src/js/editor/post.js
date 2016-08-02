@@ -110,7 +110,7 @@ class PostEditor {
     if (headSection === tailSection) {
       nextPosition = this.cutSection(headSection, headSectionOffset, tailSectionOffset);
     } else {
-      let removedSections = post.sectionsContainedBy(range);
+      let removedSections = [];
       let appendSection = headSection;
 
       post.walkLeafSections(range, section => {
@@ -143,9 +143,7 @@ class PostEditor {
             }
             break;
           default:
-            if (removedSections.indexOf(section) === -1) {
-              removedSections.push(section);
-            }
+            removedSections.push(section);
           }
       });
       if (headSection !== appendSection) {

@@ -115,24 +115,23 @@ test('#deleteRange within a section with markup (single section)', (assert) => {
   });
 });
 
-test('#deleteRange entire section (single section)', (assert) => {
-  let text = '<abc>';
-  let { post, range } = Helpers.postAbstract.buildFromText(text);
-  let position = run(post, postEditor => postEditor.deleteRange(range));
+test('#deleteRange entire post', (assert) => {
+  let examples = [
+    [['<abc>'], 'single section'],
+    [['<[some-card]>'], 'single card'],
+    [['<abc','def','ghi>'], 'multiple sections'],
+    [['<>'], 'single blank section'],
+    [['<','','>'], 'multiple blank sections']
+  ];
 
-  assert.ok(post.sections.length === 1 && post.sections.head.isBlank, 'post has single blank section after deleteRange');
-  assert.ok(position.section === post.sections.head, 'position#section is correct');
-  assert.equal(position.offset, 0, 'position#offset is correct');
-});
+  examples.forEach(([text, msg]) => {
+    let { post, range } = Helpers.postAbstract.buildFromText(text);
+    let position = run(post, postEditor => postEditor.deleteRange(range));
 
-test('#deleteRange entire section (multiple sections)', (assert) => {
-  let text = ['<abc','def','ghi>'];
-  let { post, range } = Helpers.postAbstract.buildFromText(text);
-  let position = run(post, postEditor => postEditor.deleteRange(range));
-
-  assert.ok(post.sections.length === 1 && post.sections.head.isBlank, 'post has single blank section after deleteRange');
-  assert.ok(position.section === post.sections.head, 'position#section is correct');
-  assert.equal(position.offset, 0, 'position#offset is correct');
+    assert.ok(post.sections.length === 1 && post.sections.head.isBlank, `post has single blank section after deleteRange (${msg})`);
+    assert.ok(position.section === post.sections.head, `position#section is correct (${msg})`);
+    assert.equal(position.offset, 0, `position#offset is correct (${msg})`);
+  });
 });
 
 test('#deleteRange across markup section boundaries', (assert) => {
@@ -204,7 +203,12 @@ test('#deleteRange across markup/non-markup section boundaries', (assert) => {
     [['[some-card]<','>abc'], ['[some-card]|', 'abc'], 'card->markup'], 
     [['abc<','>[some-card]'], ['abc|', '[some-card]'], 'markup->card'], 
 
-    [['abc<', '[some-card]', '>def'], ['abc|def'], 'containing card, boundaries in outer sections']
+    [['abc<', '[some-card]', '>def'], ['abc|def'], 'containing card, boundaries in outer sections'],
+
+    [['abc', '<[some-card]>', 'def'], ['abc', '|', 'def'], 'containing card, boundaries in card section'],
+
+    // Ideally this would delete the blank section altogether and position cursor at the start of the card
+    [['<', '>[some-card]'], ['|', '[some-card]'], 'blank section into card']
   ];
 
   examples.forEach(([before, after, msg]) => {
@@ -225,25 +229,6 @@ test('#deleteRange across markup/non-markup section boundaries', (assert) => {
     assert.postIsSimilar(post, expectedPost, `post ${msg}`);
     assert.rangeIsEqual(renderedRange, expectedRange, `range ${msg}`);
   }); 
-});
-
-test('#deleteRange surrounding card section', (assert) => {
-  let { post, range } = Helpers.postAbstract.buildFromText(['abc', '<[some-card]>', 'def']);
-  let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
-    return post([
-      markupSection('p', [marker('abc')]),
-      markupSection('p'),
-      markupSection('p', [marker('def')])
-    ]);
-  });
-
-  let position = run(post, postEditor => postEditor.deleteRange(range));
-  renderedRange = new Range(position);
-
-  let expectedRange = Range.create(post.sections.objectAt(1), 0);
-
-  assert.postIsSimilar(post, expectedPost);
-  assert.rangeIsEqual(renderedRange, expectedRange);
 });
 
 test('#deleteRange across list items', (assert) => {

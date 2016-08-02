@@ -82,7 +82,9 @@ function parseTextIntoMarkers(text, builder) {
       }
     });
   } else if (text.indexOf('*') === -1) {
-    markers.push(builder.marker(text));
+    if (text.length) {
+      markers.push(builder.marker(text));
+    }
   } else {
     let markup = builder.markup('b');
 
