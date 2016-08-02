@@ -582,8 +582,7 @@ test('#insertCard inserts card at section after cursor position, replacing range
   assert.equal(editor.post.sections.length, 3, 'replaced initial blank section with card');
   assert.ok(editor.post.sections.head.isCardSection, 'initial section is card section');
 
-  let range = new Range(editor.post.headPosition(), editor.post.tailPosition());
-  editor.selectRange(range);
+  editor.selectRange(new Range(editor.post.headPosition(), editor.post.tailPosition()));
   editor.insertCard('the-card');
   assert.equal(editor.post.sections.length, 1, 'replaces range with card section');
   assert.ok(editor.post.sections.head.isCardSection, 'initial section is card section');

@@ -1,9 +1,4 @@
-import EditorDomRenderer from 'mobiledoc-kit/renderers/editor-dom';
-import RenderTree from 'mobiledoc-kit/models/render-tree';
-import PostEditor from 'mobiledoc-kit/editor/post';
 import Helpers from '../../test-helpers';
-import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
 
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
@@ -11,68 +6,9 @@ const { FORWARD, BACKWARD } = DIRECTION;
 
 const { module, test } = Helpers;
 
-let editor, editorElement;
+let { postEditor: { run } } = Helpers;
 
-function renderBuiltAbstract(post, editor) {
-  editor.post = post;
-  let unknownCardHandler = () => {};
-  let unknownAtomHandler = () => {};
-  let renderer = new EditorDomRenderer(
-    editor, [], [], unknownCardHandler, unknownAtomHandler);
-  let renderTree = new RenderTree(post);
-  renderer.render(renderTree);
-  return editor;
-}
-
-let renderedRange;
-
-class MockEditor {
-  constructor(builder) {
-    this.builder = builder;
-    this.range = Range.blankRange();
-  }
-  run(callback) {
-    let postEditor = new PostEditor(this);
-    postEditor.begin();
-    let result = callback(postEditor);
-    postEditor.end();
-    return result;
-  }
-  rerender() {}
-  _postDidChange() {}
-  selectRange(range) {
-    renderedRange = range;
-  }
-  _readRangeFromDOM() {}
-}
-
-let run = (post, callback) => {
-  let builder = new PostNodeBuilder();
-  let editor = new MockEditor(builder);
-
-  renderBuiltAbstract(post, editor);
-
-  let postEditor = new PostEditor(editor);
-  postEditor.begin();
-  let result = callback(postEditor);
-  postEditor.complete();
-  return result;
-};
-
-module('Unit: PostEditor: #deleteAtPosition', {
-  beforeEach() {
-    renderedRange = null;
-    editorElement = $('#editor')[0];
-  },
-
-  afterEach() {
-    renderedRange = null;
-    if (editor) {
-      editor.destroy();
-      editor = null;
-    }
-  }
-});
+module('Unit: PostEditor: #deleteAtPosition');
 
 test('single markup section (backward)', (assert) => {
   let examples = [

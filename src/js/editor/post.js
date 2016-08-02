@@ -145,7 +145,7 @@ class PostEditor {
               // Grab the next leaf section before removing blank head
               let nextHeadSection = section.nextLeafSection();
 
-              // Remove a blank head section
+              // Remove the blank head section now
               this.removeSection(section);
 
               // Advance the range and recursively delete it
@@ -157,15 +157,20 @@ class PostEditor {
           case tailSection:
             if (section.isCardSection) {
               if (tail.isTail()) {
+                // If the range extends to the end of the tail section, remove it
                 removedSections.push(section);
               }
             } else {
+
+              // join the tail section's markers (afer `tailSectionOffset`) to
+              // the appendSection
               section.markersFor(tailSectionOffset, section.text.length).forEach(marker => {
                 appendSection.markers.append(marker);
               });
 
+              // If we've modified headSection, ensure it is marked dirty so that it is re-rendered.
+              // If appendSection !== headSection, it's a new section that will be rendered regardless.
               if (appendSection === headSection) {
-                // If we've modified headSection, ensure it is marked dirty
                 this._markDirty(headSection);
               }
 
@@ -179,6 +184,7 @@ class PostEditor {
       });
 
       if (recursiveRangeToDelete) {
+        // If we are recursing, return early here
         return this.deleteRange(recursiveRangeToDelete);
       }
 

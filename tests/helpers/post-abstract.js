@@ -142,9 +142,24 @@ function parseSingleText(text, builder) {
 }
 
 /**
- * usage:
- * Helpers.postAbstract.buildFromText(text) -> { post } with 1 markupSection ("p") with text `text`
- * Helpers.postAbstract.buildFromText([text1, text2]) -> { post } with 2 markupSections ("p") with texts `text1`, `text2`
+ * Shorthand to create a mobiledoc simply.
+ * Pass a string or an array of strings.
+ * 
+ * Returns { post, range }, a post built from the mobiledoc and a range.
+ *
+ * Use "|" to indicate the cursor position or "<" and ">" to indicate a range.
+ * Use "[card-name]" to indicate a card
+ * Use asterisks to indicate bold text: "abc *bold* def"
+ * Use "@" to indicate an atom
+ * Use "* " at the start of the string to indicate a list item ("ul")
+ *
+ * Examples:
+ * buildFromText("abc") -> { post } with 1 markup section ("p") with text "abc"
+ * buildFromText(["abc","def"]) -> { post } with 2 markups sections ("p") with texts "abc" and "def"
+ * buildFromText("abc|def") -> { post, range } where range is collapsed at offset 3 (after the "c")
+ * buildFromText(["abcdef","[some-card]","def"]) -> { post } with [MarkupSection, Card, MarkupSection] sections
+ * buildFromText(["* item 1", "* item 2"]) -> { post } with a ListSection with 2 ListItems
+ * buildFromText(["<abc", "def", "ghi>"]) -> { post, range } where range is the entire post (before the "a" to after the "i")
  */
 function buildFromText(texts) {
   if (!Array.isArray(texts)) { texts = [texts]; }

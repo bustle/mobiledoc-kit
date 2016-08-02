@@ -1,5 +1,3 @@
-import EditorDomRenderer from 'mobiledoc-kit/renderers/editor-dom';
-import RenderTree from 'mobiledoc-kit/models/render-tree';
 import PostEditor from 'mobiledoc-kit/editor/post';
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../../test-helpers';
@@ -13,18 +11,8 @@ let editor, editorElement;
 
 let builder, postEditor, mockEditor;
 
-function renderBuiltAbstract(post) {
-  mockEditor.post = post;
-  let unknownCardHandler = () => {};
-  let unknownAtomHandler = () => {};
-  let renderer = new EditorDomRenderer(
-    mockEditor, [], [], unknownCardHandler, unknownAtomHandler);
-  let renderTree = new RenderTree(post);
-  renderer.render(renderTree);
-  return mockEditor;
-}
+let { postEditor: { MockEditor, renderBuiltAbstract } } = Helpers;
 
-let renderedRange;
 function buildEditorWithMobiledoc(builderFn, autofocus=true) {
   let mobiledoc = Helpers.mobiledoc.build(builderFn);
   let unknownCardHandler = () => {};
@@ -34,35 +22,14 @@ function buildEditorWithMobiledoc(builderFn, autofocus=true) {
   let selectRange = editor.selectRange;
   editor.selectRange = function(range) {
     selectRange.call(editor, range);
-    renderedRange = range;
+    // Store the rendered range so the test can make assertions with it
+    editor._renderedRange = range;
   };
   return editor;
 }
 
-class MockEditor {
-  constructor(builder) {
-    this.builder = builder;
-    this.range = Range.blankRange();
-  }
-  run(callback) {
-    let postEditor = new PostEditor(this);
-    postEditor.begin();
-    let result = callback(postEditor);
-    postEditor.end();
-    return result;
-  }
-  rerender() {}
-  _postDidChange() {}
-  selectRange(range) {
-    renderedRange = range;
-  }
-  _readRangeFromDOM() {}
-}
-
-
 module('Unit: PostEditor', {
   beforeEach() {
-    renderedRange = null;
     editorElement = $('#editor')[0];
     builder = new PostNodeBuilder();
     mockEditor = new MockEditor(builder);
@@ -70,7 +37,6 @@ module('Unit: PostEditor', {
   },
 
   afterEach() {
-    renderedRange = null;
     if (editor) {
       editor.destroy();
       editor = null;
@@ -85,7 +51,7 @@ test('#cutSection with one marker', (assert) => {
     post = buildPost([ section ]);
   });
 
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
   postEditor.cutSection(section, 1, 2);
   postEditor.complete();
 
@@ -102,7 +68,7 @@ test('#cutSection at boundaries across markers', (assert) => {
     post = buildPost([section]);
   });
 
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
   assert.equal(post.sections.head.text, 'abcd'); //precond
   assert.equal(post.sections.head.markers.length, 4); //precond
   postEditor.cutSection(section, 1, 3);
@@ -120,7 +86,7 @@ test('#cutSection in head marker', (assert) => {
     post = buildPost([ section ]);
   });
 
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
   assert.equal(section.text, 'abc'); //precond
   assert.equal(section.markers.length, 2); //precond
   postEditor.cutSection(section, 2, 3);
@@ -141,7 +107,7 @@ test('#cutSection in tail marker', (assert) => {
     post = buildPost([ section ]);
   });
 
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   postEditor.cutSection(section, 0, 2);
 
@@ -161,7 +127,7 @@ test('#splitMarkers when headMarker = tailMarker', (assert) => {
     post = buildPost([ section ]);
   });
 
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
 
   const postEditor = new PostEditor(mockEditor);
   const range = Range.create(section, 1, section, 3);
@@ -179,7 +145,7 @@ test('#splitMarkers when head section = tail section, but different markers', (a
     ])
   );
 
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
 
   const section = post.sections.head;
   const range = Range.create(section, 2, section, 5);
@@ -204,7 +170,7 @@ test('#splitMarkers when single-character marker at start', (assert) => {
     post = buildPost([ section ]);
   });
 
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   const range = Range.create(section, 1, section, 3);
   const markers = postEditor.splitMarkers(range);
@@ -222,7 +188,7 @@ test('#replaceSection one markup section with another', (assert) => {
     _section2 = markupSection('p', [marker('123')]);
     return post([_section1]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   assert.equal(post.sections.head.text, 'abc', 'precond - section text');
   assert.equal(post.sections.length, 1, 'precond - only 1 section');
@@ -241,7 +207,7 @@ test('#replaceSection markup section with list section', (assert) => {
     _section2 = listSection('ul', [listItem([marker('123')])]);
     return post([_section1]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   assert.equal(post.sections.head.text, 'abc', 'precond - section text');
   assert.equal(post.sections.length, 1, 'precond - only 1 section');
@@ -260,7 +226,7 @@ test('#replaceSection solo list item with markup section removes list section', 
     _section2 = markupSection('p', [marker('123')]);
     return post([listSection('ul', [_section1])]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   assert.equal(post.sections.head.items.head.text, 'abc', 'precond - list item text');
   assert.equal(post.sections.length, 1, 'precond - only 1 section');
@@ -287,7 +253,7 @@ test('#replaceSection middle list item with markup section cuts list into two', 
       listItem([marker('li 3')])
     ])]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   assert.equal(post.sections.head.items.length, 3, 'precond - 3 lis');
   assert.equal(post.sections.head.items.objectAt(1).text, 'li 2', 'precond - list item text');
@@ -314,7 +280,7 @@ test('#replaceSection last list item with markup section when multiple list item
       _section1
     ])]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   assert.equal(post.sections.head.items.length, 2, 'precond - 2 lis');
   assert.equal(post.sections.head.items.tail.text, 'abc', 'precond - list item text');
@@ -335,7 +301,7 @@ test('#replaceSection when section is null appends new section', (assert) => {
     newEmptySection = markupSection('p');
     return post();
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   assert.equal(post.sections.length, 0, 'precond - no sections');
   postEditor.replaceSection(null, newEmptySection);
@@ -351,7 +317,7 @@ test('#insertSectionAtEnd inserts the section at the end of the mobiledoc', (ass
     newSection = markupSection('p', [marker('123')]);
     return post([markupSection('p', [marker('abc')])]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   postEditor.insertSectionAtEnd(newSection);
   postEditor.complete();
@@ -367,7 +333,7 @@ test('markers with identical non-attribute markups get coalesced after applying 
     section = markupSection('p', [marker('a'), marker('b',[strong]), marker('c')]);
     return post([section]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   // removing the strong from the "b"
   let range = Range.create(section, 1, section, 2);
@@ -399,7 +365,7 @@ test('markers do not get coalesced with atoms', (assert) => {
     section = markupSection('p', [atom('the-atom', 'A'), marker('b',[strong])]);
     return post([section]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   // removing the strong from the "b"
   let range = Range.create(section, 0, section, 2);
@@ -427,7 +393,7 @@ test('neighboring atoms do not get coalesced', (assert) => {
     ]);
     return post([section]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   let range = Range.create(section, 0, section, 2);
   postEditor = new PostEditor(mockEditor);
@@ -450,7 +416,7 @@ test('#removeMarkupFromRange silently does nothing when invoked with an empty ra
     ]);
     return post([section]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   let range = Range.create(section, 1, section, 1);
   postEditor.removeMarkupFromRange(range, markup);
@@ -473,7 +439,7 @@ test('#removeMarkupFromRange splits markers when necessary', (assert) => {
     return post([section]);
   });
 
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   let range = Range.create(section, 'a'.length,
                            section, 'abcd'.length);
@@ -503,7 +469,7 @@ test('#removeMarkupFromRange handles atoms correctly', (assert) => {
     return post([section]);
   });
 
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   let range = Range.create(section, 0, section, 2);
 
@@ -531,7 +497,7 @@ test('#addMarkupToRange silently does nothing when invoked with an empty range',
     ]);
     return post([section]);
   });
-  renderBuiltAbstract(post);
+  renderBuiltAbstract(post, mockEditor);
 
   let range = Range.create(section, 1, section, 1);
   postEditor.addMarkupToRange(range, markup);
@@ -650,7 +616,7 @@ test('markers with identical markups get coalesced after deletion', (assert) => 
     section = markupSection('p', [marker('a'), marker('b',[strong]), marker('c')]);
     return post([section]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
 
   let range = Range.create(section, 1, section, 2);
   postEditor = new PostEditor(mockEditor);
@@ -668,7 +634,7 @@ test('#moveSectionBefore moves the section as expected', (assert) => {
       markupSection('p', [marker('123')])
     ]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
 
   const [headSection, tailSection] = post.sections.toArray();
   const collection = post.sections;
@@ -690,7 +656,7 @@ test('#moveSectionBefore moves card sections', (assert) => {
       cardSection('other-card', otherPayload)
     ]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
 
   const collection = post.sections;
   let [headSection, tailSection] = post.sections.toArray();
@@ -712,7 +678,7 @@ test('#moveSectionUp moves it up', (assert) => {
       cardSection('other-card')
     ]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
 
   let [headSection, tailSection] = post.sections.toArray();
   postEditor = new PostEditor(mockEditor);
@@ -739,7 +705,7 @@ test('moveSectionDown moves it down', (assert) => {
       cardSection('other-card')
     ]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
 
   let [headSection, tailSection] = post.sections.toArray();
   postEditor = new PostEditor(mockEditor);
@@ -765,7 +731,7 @@ test('#toggleSection changes single section to and from tag name', (assert) => {
     return post([markupSection('p')]);
   });
 
-  const mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   const range = Range.create(post.sections.head, 0);
 
   postEditor = new PostEditor(mockEditor);
@@ -779,7 +745,7 @@ test('#toggleSection changes single section to and from tag name', (assert) => {
   postEditor.complete();
 
   assert.equal(post.sections.head.tagName, 'p');
-  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection changes multiple sections to and from tag name', (assert) => {
@@ -790,7 +756,7 @@ test('#toggleSection changes multiple sections to and from tag name', (assert) =
     ]);
   });
 
-  const mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   const range = Range.create(post.sections.head, 2,
                              post.sections.tail, 2);
 
@@ -808,7 +774,7 @@ test('#toggleSection changes multiple sections to and from tag name', (assert) =
   assert.equal(post.sections.head.tagName, 'p');
   assert.equal(post.sections.tail.tagName, 'p');
 
-  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection skips over non-markerable sections', (assert) => {
@@ -821,7 +787,7 @@ test('#toggleSection skips over non-markerable sections', (assert) => {
     ]);
   });
 
-  const mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   const range = Range.create(post.sections.head, 0,
                              post.sections.tail, 2);
 
@@ -833,7 +799,7 @@ test('#toggleSection skips over non-markerable sections', (assert) => {
   assert.ok(post.sections.objectAt(1).isCardSection);
   assert.equal(post.sections.tail.tagName, 'blockquote');
 
-  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection when cursor is in non-markerable section changes nothing', (assert) => {
@@ -844,7 +810,7 @@ test('#toggleSection when cursor is in non-markerable section changes nothing', 
     ]);
   });
 
-  const mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   const range = new Range(post.sections.head.headPosition());
 
   postEditor = new PostEditor(mockEditor);
@@ -852,7 +818,7 @@ test('#toggleSection when cursor is in non-markerable section changes nothing', 
   postEditor.complete();
 
   assert.ok(post.sections.head.isCardSection, 'card section not changed');
-  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection when editor has no cursor does nothing', (assert) => {
@@ -871,14 +837,13 @@ test('#toggleSection when editor has no cursor does nothing', (assert) => {
   assert.ok(!editor.hasCursor(), 'editor has no cursor');
   assert.ok(editor.range.isBlank, 'editor has blank range');
 
-  renderedRange = null;
   editor.run(postEditor => postEditor.toggleSection('blockquote'));
 
   Helpers.wait(() => {
     assert.postIsSimilar(editor.post, expected);
     assert.ok(document.activeElement !== editorElement,
               'editor element is not active');
-    assert.ok(renderedRange && renderedRange.isBlank, 'rendered range is blank');
+    assert.ok(editor.range.isBlank, 'rendered range is blank');
     assert.equal(window.getSelection().rangeCount, 0, 'nothing selected');
 
     done();
@@ -893,7 +858,7 @@ test('#toggleSection toggle single p -> list item', (assert) => {
     ]);
   });
 
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   let range = Range.create(post.sections.head, 0);
 
   postEditor = new PostEditor(mockEditor);
@@ -922,7 +887,7 @@ test('#toggleSection toggle single list item -> p', (assert) => {
     ])]);
   });
 
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   let range = Range.create(post.sections.head.items.head, 0);
 
   postEditor = new PostEditor(mockEditor);
@@ -938,7 +903,7 @@ test('#toggleSection toggle single list item -> p', (assert) => {
   assert.ok(post.sections.head.markers.objectAt(1).hasMarkup('b'), 'b has b markup');
   assert.equal(post.sections.head.markers.objectAt(2).value, 'c');
 
-  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection toggle multiple ps -> list and list -> multiple ps', (assert) => {
@@ -992,7 +957,7 @@ test('#toggleSection untoggle first list item changes it to markup section, reta
       listItem([marker('ghi')])
     ])]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   let range = Range.create(post.sections.head.items.head, 0);
 
   postEditor = new PostEditor(mockEditor);
@@ -1012,7 +977,7 @@ test('#toggleSection untoggle first list item changes it to markup section, reta
   assert.equal(post.sections.tail.items.head.text, 'def');
   assert.equal(post.sections.tail.items.tail.text, 'ghi');
 
-  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection untoggle middle list item changes it to markup section, retaining markup', (assert) => {
@@ -1024,7 +989,7 @@ test('#toggleSection untoggle middle list item changes it to markup section, ret
       listItem([marker('ghi')])
     ])]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   let range = Range.create(post.sections.head.items.objectAt(1), 0);
 
   postEditor = new PostEditor(mockEditor);
@@ -1040,7 +1005,7 @@ test('#toggleSection untoggle middle list item changes it to markup section, ret
   assert.equal(section.markers.objectAt(1).value, 'e');
   assert.ok(section.markers.objectAt(1).hasMarkup('b'), 'e has b markup');
   assert.equal(section.markers.objectAt(2).value, 'f');
-  assert.positionIsEqual(renderedRange.head, section.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, section.headPosition());
 
   assert.ok(post.sections.head.isListSection, 'head section is list');
   assert.ok(post.sections.tail.isListSection, 'tail section is list');
@@ -1088,7 +1053,7 @@ test('#toggleSection untoggle multiple items at end of list changes them to mark
       listItem([marker('ghi')])
     ])]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   let range = Range.create(post.sections.head.items.objectAt(1), 0,
                            post.sections.head.items.tail, 0);
 
@@ -1106,7 +1071,7 @@ test('#toggleSection untoggle multiple items at end of list changes them to mark
   assert.equal(post.sections.tail.tagName, 'p', 'tail is p');
   assert.equal(post.sections.tail.text, 'ghi');
 
-  assert.positionIsEqual(renderedRange.head, post.sections.objectAt(1).headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.objectAt(1).headPosition());
 });
 
 test('#toggleSection untoggle multiple items at start of list changes them to markup sections', (assert) => {
@@ -1118,7 +1083,7 @@ test('#toggleSection untoggle multiple items at start of list changes them to ma
       listItem([marker('ghi')])
     ])]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   let range = Range.create(post.sections.head.items.head, 0,
                            post.sections.head.items.objectAt(1), 0);
 
@@ -1137,7 +1102,7 @@ test('#toggleSection untoggle multiple items at start of list changes them to ma
   assert.equal(post.sections.objectAt(2).items.length, 1, 'list has 1 item');
   assert.equal(post.sections.objectAt(2).items.head.text, 'ghi');
 
-  assert.positionIsEqual(renderedRange.head, post.sections.head.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.headPosition());
 });
 
 test('#toggleSection untoggle items and overflowing markup sections changes the overflow to items', (assert) => {
@@ -1182,7 +1147,7 @@ test('#toggleSection untoggle last list item changes it to markup section', (ass
       listItem([marker('ghi')])
     ])]);
   });
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   let range = Range.create(post.sections.head.items.tail, 0);
 
   postEditor = new PostEditor(mockEditor);
@@ -1198,7 +1163,7 @@ test('#toggleSection untoggle last list item changes it to markup section', (ass
   assert.equal(post.sections.head.items.head.text, 'abc');
   assert.equal(post.sections.head.items.tail.text, 'def');
 
-  assert.positionIsEqual(renderedRange.head, post.sections.tail.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.tail.headPosition());
 });
 
 test('#toggleSection toggle list item to different type of list item', (assert) => {
@@ -1209,7 +1174,7 @@ test('#toggleSection toggle list item to different type of list item', (assert) 
 
   let range = Range.create(post.sections.head.items.head, 0);
 
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   postEditor = new PostEditor(mockEditor);
   postEditor.toggleSection('ol', range);
   postEditor.complete();
@@ -1220,7 +1185,7 @@ test('#toggleSection toggle list item to different type of list item', (assert) 
   assert.equal(post.sections.head.items.length, 1, '1 item');
   assert.equal(post.sections.head.items.head.text, 'abc');
 
-  assert.positionIsEqual(renderedRange.head, post.sections.head.items.head.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.items.head.headPosition());
 });
 
 test('#toggleSection toggle list item to different type of list item when other sections precede it', (assert) => {
@@ -1234,7 +1199,7 @@ test('#toggleSection toggle list item to different type of list item when other 
 
   let range = Range.create(post.sections.tail.items.head, 0);
 
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   postEditor = new PostEditor(mockEditor);
   postEditor.toggleSection('ol', range);
   postEditor.complete();
@@ -1247,7 +1212,7 @@ test('#toggleSection toggle list item to different type of list item when other 
   assert.equal(post.sections.tail.items.length, 1, '1 item');
   assert.equal(post.sections.tail.items.head.text, 'abc');
 
-  assert.positionIsEqual(renderedRange.head, post.sections.tail.items.head.headPosition());
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.tail.items.head.headPosition());
 });
 
 test('#toggleSection toggle when cursor on card section is no-op', (assert) => {
@@ -1258,7 +1223,7 @@ test('#toggleSection toggle when cursor on card section is no-op', (assert) => {
 
   let range = Range.create(post.sections.head, 0);
 
-  let mockEditor = renderBuiltAbstract(post);
+  mockEditor = renderBuiltAbstract(post, mockEditor);
   postEditor = new PostEditor(mockEditor);
   postEditor.toggleSection('ol', range);
   postEditor.complete();
@@ -1266,8 +1231,8 @@ test('#toggleSection toggle when cursor on card section is no-op', (assert) => {
   assert.equal(post.sections.length, 1, '1 section');
   assert.ok(post.sections.head.isCardSection, 'still card section');
 
-  assert.positionIsEqual(renderedRange.head, range.head, 'range head is set to same');
-  assert.positionIsEqual(renderedRange.tail, range.tail, 'range tail is set to same');
+  assert.positionIsEqual(mockEditor._renderedRange.head, range.head, 'range head is set to same');
+  assert.positionIsEqual(mockEditor._renderedRange.tail, range.tail, 'range tail is set to same');
 });
 
 test('#toggleSection joins contiguous list items', (assert) => {
@@ -1309,7 +1274,7 @@ test('#toggleMarkup when cursor is in non-markerable does nothing', (assert) => 
   postEditor.complete();
 
   assert.ok(editor.post.sections.head.isCardSection);
-  assert.positionIsEqual(renderedRange.head,
+  assert.positionIsEqual(editor._renderedRange.head,
                          editor.post.sections.head.headPosition());
 });
 
@@ -1327,7 +1292,7 @@ test('#toggleMarkup when cursor surrounds non-markerable does nothing', (assert)
   postEditor.complete();
 
   assert.ok(editor.post.sections.head.isCardSection);
-  assert.positionIsEqual(renderedRange.head,
+  assert.positionIsEqual(editor._renderedRange.head,
                          editor.post.sections.head.headPosition());
 });
 
@@ -1346,8 +1311,8 @@ test('#toggleMarkup when range has the markup removes it', (assert) => {
   postEditor.toggleMarkup('b', range);
   postEditor.complete();
 
-  assert.positionIsEqual(renderedRange.head, editor.post.headPosition());
-  assert.positionIsEqual(renderedRange.tail, editor.post.tailPosition());
+  assert.positionIsEqual(editor._renderedRange.head, editor.post.headPosition());
+  assert.positionIsEqual(editor._renderedRange.tail, editor.post.tailPosition());
   assert.postIsSimilar(editor.post, expected);
 });
 
@@ -1370,9 +1335,9 @@ test('#toggleMarkup when only some of the range has it removes it', (assert) => 
   postEditor.toggleMarkup('b', range);
   postEditor.complete();
 
-  assert.positionIsEqual(renderedRange.head,
+  assert.positionIsEqual(editor._renderedRange.head,
                          editor.post.sections.head.headPosition());
-  assert.positionIsEqual(renderedRange.tail,
+  assert.positionIsEqual(editor._renderedRange.tail,
                          editor.post.sections.head.tailPosition());
   assert.postIsSimilar(editor.post, expected);
 });
@@ -1392,9 +1357,9 @@ test('#toggleMarkup when range does not have the markup adds it', (assert) => {
   postEditor.toggleMarkup('b', range);
   postEditor.complete();
 
-  assert.positionIsEqual(renderedRange.head,
+  assert.positionIsEqual(editor._renderedRange.head,
                          editor.post.sections.head.headPosition());
-  assert.positionIsEqual(renderedRange.tail,
+  assert.positionIsEqual(editor._renderedRange.tail,
                          editor.post.sections.head.tailPosition());
   assert.postIsSimilar(editor.post, expected);
 });
@@ -1411,7 +1376,7 @@ test('#toggleMarkup when the editor has no cursor', (assert) => {
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  renderedRange = null;
+  editor._renderedRange = null;
   editor.run(postEditor => postEditor.toggleMarkup('b'));
 
   Helpers.wait(() => {
@@ -1420,7 +1385,7 @@ test('#toggleMarkup when the editor has no cursor', (assert) => {
                  'nothing is selected');
     assert.ok(document.activeElement !== editorElement,
               'active element is not editor element');
-    assert.ok(renderedRange && renderedRange.isBlank, 'rendered range is blank');
+    assert.ok(editor._renderedRange && editor._renderedRange.isBlank, 'rendered range is blank');
 
     done();
   });
@@ -1451,7 +1416,7 @@ test('#insertMarkers inserts an atom', (assert) => {
   assert.postIsSimilar(editor.post, expected);
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
-    renderedRange.head,
+    editor._renderedRange.head,
     new Position(editor.post.sections.head, 4)
   );
 });
@@ -1481,7 +1446,7 @@ test('#insertMarkers inserts the markers in middle, merging markups', (assert) =
   assert.postIsSimilar(editor.post, expected);
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
-    renderedRange.head,
+    editor._renderedRange.head,
     new Position(editor.post.sections.head, 'abc123456'.length)
   );
 });
@@ -1510,7 +1475,7 @@ test('#insertMarkers inserts the markers when the markerable has no markers', (a
   assert.postIsSimilar(editor.post, expected);
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
-    renderedRange.head,
+    editor._renderedRange.head,
     new Position(editor.post.sections.head, '123456'.length)
   );
 });
@@ -1539,7 +1504,7 @@ test('#insertMarkers inserts the markers at start', (assert) => {
   assert.postIsSimilar(editor.post, expected);
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
-    renderedRange.head,
+    editor._renderedRange.head,
     new Position(editor.post.sections.head, '123456'.length)
   );
 });
@@ -1569,7 +1534,7 @@ test('#insertMarkers inserts the markers at end', (assert) => {
   assert.postIsSimilar(editor.post, expected);
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
-    renderedRange.head,
+    editor._renderedRange.head,
     editor.post.sections.head.tailPosition()
   );
 });
@@ -1606,7 +1571,7 @@ test('#insertText is no-op if the position section is not markerable', (assert) 
 
   assert.postIsSimilar(editor.post, expected);
   assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.ok(!renderedRange, 'no range is rendered since nothing happened');
+  assert.ok(!editor._renderedRange, 'no range is rendered since nothing happened');
 });
 
 test('#insertText inserts the text at start', (assert) => {
@@ -1630,7 +1595,7 @@ test('#insertText inserts the text at start', (assert) => {
   assert.postIsSimilar(editor.post, expected);
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
-    renderedRange.head,
+    editor._renderedRange.head,
     new Position(editor.post.sections.head, '123'.length)
   );
 });
@@ -1656,7 +1621,7 @@ test('#insertText inserts text in the middle', (assert) => {
   assert.postIsSimilar(editor.post, expected);
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
-    renderedRange.head,
+    editor._renderedRange.head,
     new Position(editor.post.sections.head, 'ab123'.length)
   );
 });
@@ -1682,7 +1647,7 @@ test('#insertText inserts text at the end', (assert) => {
   assert.postIsSimilar(editor.post, expected);
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
-    renderedRange.head,
+    editor._renderedRange.head,
     editor.post.sections.head.tailPosition()
   );
 });

@@ -1,75 +1,12 @@
-import EditorDomRenderer from 'mobiledoc-kit/renderers/editor-dom';
-import RenderTree from 'mobiledoc-kit/models/render-tree';
-import PostEditor from 'mobiledoc-kit/editor/post';
 import Helpers from '../../test-helpers';
-import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import { forEach } from 'mobiledoc-kit/utils/array-utils';
 
 const { module, test } = Helpers;
 
-let editor, editorElement;
+let { postEditor: { run } } = Helpers;
 
-function renderBuiltAbstract(post, editor) {
-  editor.post = post;
-  let unknownCardHandler = () => {};
-  let unknownAtomHandler = () => {};
-  let renderer = new EditorDomRenderer(
-    editor, [], [], unknownCardHandler, unknownAtomHandler);
-  let renderTree = new RenderTree(post);
-  renderer.render(renderTree);
-  return editor;
-}
-
-let renderedRange;
-
-class MockEditor {
-  constructor(builder) {
-    this.builder = builder;
-    this.range = Range.blankRange();
-  }
-  run(callback) {
-    let postEditor = new PostEditor(this);
-    postEditor.begin();
-    let result = callback(postEditor);
-    postEditor.end();
-    return result;
-  }
-  rerender() {}
-  _postDidChange() {}
-  selectRange(range) {
-    renderedRange = range;
-  }
-  _readRangeFromDOM() {}
-}
-
-let run = (post, callback) => {
-  let builder = new PostNodeBuilder();
-  let editor = new MockEditor(builder);
-
-  renderBuiltAbstract(post, editor);
-
-  let postEditor = new PostEditor(editor);
-  postEditor.begin();
-  let result = callback(postEditor);
-  postEditor.complete();
-  return result;
-};
-
-module('Unit: PostEditor: #deleteRange', {
-  beforeEach() {
-    renderedRange = null;
-    editorElement = $('#editor')[0];
-  },
-
-  afterEach() {
-    renderedRange = null;
-    if (editor) {
-      editor.destroy();
-      editor = null;
-    }
-  }
-});
+module('Unit: PostEditor: #deleteRange');
 
 test('#deleteRange with collapsed range is no-op', (assert) => {
   let { post, range } = Helpers.postAbstract.buildFromText('abc|def');
@@ -166,7 +103,7 @@ test('#deleteRange across markup section boundaries', (assert) => {
     let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
-    renderedRange = new Range(position);
+    let renderedRange = new Range(position);
 
     expectedRange = Range.create(post.sections.head, expectedRange.head.offset);
 
@@ -203,7 +140,7 @@ test('#deleteRange across markup section boundaries including markups', (assert)
     let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
-    renderedRange = new Range(position);
+    let renderedRange = new Range(position);
 
     expectedRange = Range.create(post.sections.head, expectedRange.head.offset);
 
@@ -232,7 +169,7 @@ test('#deleteRange across markup/non-markup section boundaries', (assert) => {
     let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
-    renderedRange = new Range(position);
+    let renderedRange = new Range(position);
 
     // FIXME need to figure out how to say which section to expect the range to include
     let sectionIndex;
@@ -273,7 +210,7 @@ test('#deleteRange across list items', (assert) => {
     let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
-    renderedRange = new Range(position);
+    let renderedRange = new Range(position);
 
     // FIXME need to figure out how to say which section to expect the range to include
     let sectionIndex;
@@ -311,7 +248,7 @@ test('#deleteRange with atoms', (assert) => {
     let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
-    renderedRange = new Range(position);
+    let renderedRange = new Range(position);
 
     expectedRange = Range.create(post.sections.head, expectedRange.head.offset);
 
