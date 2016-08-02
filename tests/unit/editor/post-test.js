@@ -44,80 +44,6 @@ module('Unit: PostEditor', {
   }
 });
 
-test('#cutSection with one marker', (assert) => {
-  let post, section;
-  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
-    section = markupSection('p', [ marker('abc') ]);
-    post = buildPost([ section ]);
-  });
-
-  renderBuiltAbstract(post, mockEditor);
-  postEditor.cutSection(section, 1, 2);
-  postEditor.complete();
-
-  assert.equal(post.sections.head.text, 'ac');
-  assert.equal(post.sections.length, 1, 'only 1 section remains');
-  assert.equal(post.sections.head.markers.length, 1, 'markers are joined');
-});
-
-test('#cutSection at boundaries across markers', (assert) => {
-  let post, section;
-  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
-    const markers = "abcd".split('').map(l => marker(l));
-    section = markupSection('p', markers);
-    post = buildPost([section]);
-  });
-
-  renderBuiltAbstract(post, mockEditor);
-  assert.equal(post.sections.head.text, 'abcd'); //precond
-  assert.equal(post.sections.head.markers.length, 4); //precond
-  postEditor.cutSection(section, 1, 3);
-  postEditor.complete();
-
-  assert.equal(post.sections.head.text, 'ad');
-  assert.equal(post.sections.length, 1, 'only 1 section remains');
-  assert.equal(post.sections.head.markers.length, 1, 'markers are joined');
-});
-
-test('#cutSection in head marker', (assert) => {
-  let post, section;
-  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
-    section = markupSection('p', [marker('a'), marker('bc')]);
-    post = buildPost([ section ]);
-  });
-
-  renderBuiltAbstract(post, mockEditor);
-  assert.equal(section.text, 'abc'); //precond
-  assert.equal(section.markers.length, 2); //precond
-  postEditor.cutSection(section, 2, 3);
-  postEditor.complete();
-
-  assert.equal(post.sections.head.text, 'ab');
-  assert.equal(post.sections.length, 1, 'only 1 section remains');
-  assert.equal(post.sections.head.markers.length, 1, 'markers are joined');
-});
-
-test('#cutSection in tail marker', (assert) => {
-  let post, section;
-  Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
-    section = markupSection('p', [
-      marker('a'),
-      marker('bc')
-    ]);
-    post = buildPost([ section ]);
-  });
-
-  renderBuiltAbstract(post, mockEditor);
-
-  postEditor.cutSection(section, 0, 2);
-
-  postEditor.complete();
-
-  assert.equal(post.sections.head.text, 'c');
-  assert.equal(post.sections.length, 1, 'only 1 section remains');
-  assert.equal(post.sections.head.markers.length, 1, 'two markers remain');
-});
-
 test('#splitMarkers when headMarker = tailMarker', (assert) => {
   let post, section;
   Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {
@@ -405,7 +331,7 @@ test('neighboring atoms do not get coalesced', (assert) => {
   assert.ok(!section.markers.tail.hasMarkup(strong));
 });
 
-test('#removeMarkupFromRange silently does nothing when invoked with an empty range', (assert) => {
+test('#removeMarkupFromRange is no-op with collapsed range', (assert) => {
   let section, markup;
   const post = Helpers.postAbstract.build(({
     post, markupSection, marker, markup: buildMarkup
@@ -486,7 +412,7 @@ test('#removeMarkupFromRange handles atoms correctly', (assert) => {
   assert.ok(!tail.hasMarkup(bold), 'tail has no bold');
 });
 
-test('#addMarkupToRange silently does nothing when invoked with an empty range', (assert) => {
+test('#addMarkupToRange is no-op with collapsed range', (assert) => {
   let section, markup;
   const post = Helpers.postAbstract.build(({
     post, markupSection, marker, markup: buildMarkup

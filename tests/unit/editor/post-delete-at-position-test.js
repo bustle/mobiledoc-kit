@@ -7,6 +7,7 @@ const { FORWARD, BACKWARD } = DIRECTION;
 const { module, test } = Helpers;
 
 let { postEditor: { run } } = Helpers;
+let { postAbstract: { buildFromText } } = Helpers;
 
 module('Unit: PostEditor: #deleteAtPosition');
 
@@ -24,8 +25,8 @@ test('single markup section (backward)', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range: { head: position } } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: { head: expectedPosition } } = Helpers.postAbstract.buildFromText(after);
+    let { post, range: { head: position } } = buildFromText(before);
+    let { post: expectedPost, range: { head: expectedPosition } } = buildFromText(after);
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, BACKWARD));
 
@@ -50,8 +51,8 @@ test('single markup section (forward)', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range: { head: position } } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: { head: expectedPosition } } = Helpers.postAbstract.buildFromText(after);
+    let { post, range: { head: position } } = buildFromText(before);
+    let { post: expectedPost, range: { head: expectedPosition } } = buildFromText(after);
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, FORWARD));
 
@@ -72,8 +73,8 @@ test('across section boundary (backward)', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range: { head: position } } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: { head: expectedPosition } } = Helpers.postAbstract.buildFromText(after);
+    let { post, range: { head: position } } = buildFromText(before);
+    let { post: expectedPost, range: { head: expectedPosition } } = buildFromText(after);
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, BACKWARD));
 
@@ -94,8 +95,8 @@ test('across section boundary (forward)', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range: { head: position } } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: { head: expectedPosition } } = Helpers.postAbstract.buildFromText(after);
+    let { post, range: { head: position } } = buildFromText(before);
+    let { post: expectedPost, range: { head: expectedPosition } } = buildFromText(after);
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, FORWARD));
 
@@ -114,8 +115,8 @@ test('across list item boundary (backward)', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range: { head: position } } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: { head: expectedPosition } } = Helpers.postAbstract.buildFromText(after);
+    let { post, range: { head: position } } = buildFromText(before);
+    let { post: expectedPost, range: { head: expectedPosition } } = buildFromText(after);
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, BACKWARD));
 
@@ -148,8 +149,8 @@ test('across list item boundary (forward)', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range: { head: position } } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: { head: expectedPosition } } = Helpers.postAbstract.buildFromText(after);
+    let { post, range: { head: position } } = buildFromText(before);
+    let { post: expectedPost, range: { head: expectedPosition } } = buildFromText(after);
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, FORWARD));
 
