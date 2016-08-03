@@ -1,5 +1,14 @@
 import Range from 'mobiledoc-kit/utils/cursor/range';
 
+/**
+ * Convert section at the editor's cursor position into a list.
+ * Does nothing if the cursor position is not at the start of the section,
+ * or if the section is already a list item.
+ *
+ * @param {Editor} editor
+ * @param {String} listTagName ("ul" or "ol")
+ * @public
+ */
 export function replaceWithListSection(editor, listTagName) {
   let { range: { head, head: { section } } } = editor;
   // Skip if cursor is not at end of section
@@ -21,6 +30,14 @@ export function replaceWithListSection(editor, listTagName) {
   });
 }
 
+/**
+ * Convert section at the editor's cursor position into a header section.
+ * Does nothing if the cursor position is not at the start of the section.
+ *
+ * @param {Editor} editor
+ * @param {String} headingTagName ("h1","h2","h3")
+ * @public
+ */
 export function replaceWithHeaderSection(editor, headingTagName) {
   let { range: { head, head: { section } } } = editor;
   // Skip if cursor is not at end of section
