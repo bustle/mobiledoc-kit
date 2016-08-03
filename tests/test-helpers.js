@@ -6,6 +6,9 @@ import MobiledocHelpers from './helpers/mobiledoc';
 import PostAbstract from './helpers/post-abstract';
 import { detectIE11 } from './helpers/browsers';
 import wait from './helpers/wait';
+import MockEditor from './helpers/mock-editor';
+import renderBuiltAbstract from './helpers/render-built-abstract';
+import run from './helpers/post-editor-run';
 
 const { test:qunitTest, module, skip } = QUnit;
 
@@ -45,5 +48,6 @@ export default {
   test,
   module,
   skipInIE11,
-  wait
+  wait,
+  postEditor: { run, renderBuiltAbstract, MockEditor }
 };

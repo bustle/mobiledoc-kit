@@ -6,6 +6,7 @@ import assert from '../utils/assert';
 import { normalizeTagName } from '../utils/dom-utils';
 import Range from '../utils/cursor/range';
 import PostInserter from './post/post-inserter';
+import deprecate from 'mobiledoc-kit/utils/deprecate';
 
 function isListSectionTagName(tagName) {
   return tagName === 'ul' || tagName === 'ol';
@@ -99,9 +100,13 @@ class PostEditor {
     //     -- mark the end section for removal
     //     -- cursor goes at end of marker before the selection start
 
+    if (range.isCollapsed) {
+      return range.head;
+    }
+
     let {
-      head: {section: headSection, offset: headSectionOffset},
-      tail: {section: tailSection, offset: tailSectionOffset}
+      head, head: {section: headSection, offset: headSectionOffset},
+      tail, tail: {section: tailSection, offset: tailSectionOffset}
     } = range;
     const { post } = this.editor;
 
@@ -110,60 +115,108 @@ class PostEditor {
     if (headSection === tailSection) {
       nextPosition = this.cutSection(headSection, headSectionOffset, tailSectionOffset);
     } else {
-      let removedSections = post.sectionsContainedBy(range);
+      let removedSections = [];
       let appendSection = headSection;
 
+      let recursiveRangeToDelete = null;
+
       post.walkLeafSections(range, section => {
+        if (recursiveRangeToDelete) {
+          // avoid walking the entire post if we will recurse
+          return;
+        }
+
         switch (section) {
           case headSection:
             if (section.isCardSection) {
+              // Create a section to join tailSection with if necessary
               appendSection = this.builder.createMarkupSection();
 
-              if (headSectionOffset === 0) {
+              if (head.isHead()) {
+                // Remove he entire card because we are deleting from its head
+                // position into section(s) after it
                 removedSections.push(section);
                 nextPosition = appendSection.headPosition();
               } else {
+                // Set the position to be the card's tail
                 nextPosition = section.tailPosition();
               }
+            } else if (section.isBlank) {
+              // Grab the next leaf section before removing blank head
+              let nextHeadSection = section.nextLeafSection();
+
+              // Remove the blank head section now
+              this.removeSection(section);
+
+              // Advance the range and recursively delete it
+              recursiveRangeToDelete = new Range(nextHeadSection.headPosition(), range.tail);
             } else {
               nextPosition = this.cutSection(section, headSectionOffset, section.length);
             }
             break;
           case tailSection:
             if (section.isCardSection) {
-              if (tailSectionOffset === 1) {
+              if (tail.isTail()) {
+                // If the range extends to the end of the tail section, remove it
                 removedSections.push(section);
               }
             } else {
-              section.markersFor(tailSectionOffset, section.text.length).forEach(m => {
-                appendSection.markers.append(m);
+
+              // join the tail section's markers (afer `tailSectionOffset`) to
+              // the appendSection
+              section.markersFor(tailSectionOffset, section.text.length).forEach(marker => {
+                appendSection.markers.append(marker);
               });
-              this._markDirty(headSection); // May have added nodes
+
+              // If we've modified headSection, ensure it is marked dirty so that it is re-rendered.
+              // If appendSection !== headSection, it's a new section that will be rendered regardless.
+              if (appendSection === headSection) {
+                this._markDirty(headSection);
+              }
+
               removedSections.push(section);
             }
             break;
           default:
-            if (removedSections.indexOf(section) === -1) {
-              removedSections.push(section);
-            }
+            // Default is to remove sections in between head and tail sections
+            removedSections.push(section);
           }
       });
-      if (headSection !== appendSection) {
-        this.insertSectionBefore(post.sections, appendSection, headSection.next);
+
+      if (recursiveRangeToDelete) {
+        // If we are recursing, return early here
+        return this.deleteRange(recursiveRangeToDelete);
       }
+
       removedSections.forEach(section => this.removeSection(section) );
+
+      if (headSection !== appendSection) {
+        if (!appendSection.isBlank) {
+          // if the appendSection is not blank, make sure to add it
+          this.insertSectionBefore(post.sections, appendSection, headSection.next);
+        } else if (post.isBlank) {
+          // if we've removed all the sections from the post, add the blank append section
+          this.insertSectionBefore(post.sections, appendSection, headSection.next);
+        }
+      }
     }
 
     return nextPosition;
   }
 
   /**
+   * "Cut" out the part of the section inside `headOffset` and `tailOffset`.
+   * If the section is markerable this removes markers that are wholly inside the offsets,
+   * and splits markers that straddle the head or tail.
+   * @param {Section} section
+   * @param {Number} headOffset
+   * @param {Number} tailOffset
    * @return {Position}
    * @private
    */
-  cutSection(section, headSectionOffset, tailSectionOffset) {
-    if (section.isBlank || headSectionOffset === tailSectionOffset) {
-      return new Position(section, headSectionOffset);
+  cutSection(section, headOffset, tailOffset) {
+    if (section.isBlank || headOffset === tailOffset) {
+      return new Position(section, headOffset);
     }
     if (section.isCardSection) {
       let newSection = this.builder.createMarkupSection();
@@ -175,11 +228,11 @@ class PostEditor {
         marker = section.markers.head,
         adjustedTail = marker.length;
 
-    // Walk to the first node inside the headSectionOffset, splitting
+    // Walk to the first node inside the headOffset, splitting
     // a marker if needed. Leave marker as the first node inside.
     while (marker) {
-      if (adjustedTail >= headSectionOffset) {
-        let splitOffset = headSectionOffset - adjustedHead;
+      if (adjustedTail >= headOffset) {
+        let splitOffset = headOffset - adjustedHead;
         let { afterMarker } = this.splitMarker(marker, splitOffset);
         adjustedHead = adjustedHead + splitOffset;
         // FIXME: That these two loops cannot agree on adjustedTail being
@@ -196,11 +249,11 @@ class PostEditor {
     }
 
     // Walk each marker inside, removing it if needed. when the last is
-    // reached split it and remove the part inside the tailSectionOffset
+    // reached split it and remove the part inside the tailOffset
     while (marker) {
       adjustedTail += marker.length;
-      if (adjustedTail >= tailSectionOffset) {
-        let splitOffset = marker.length - (adjustedTail - tailSectionOffset);
+      if (adjustedTail >= tailOffset) {
+        let splitOffset = marker.length - (adjustedTail - tailOffset);
         let {
           beforeMarker
         } = this.splitMarker(marker, splitOffset);
@@ -215,7 +268,7 @@ class PostEditor {
       marker = nextMarker;
     }
 
-    return new Position(section, headSectionOffset);
+    return new Position(section, headOffset);
   }
 
   _coalesceMarkers(section) {
@@ -308,19 +361,22 @@ class PostEditor {
     forEach(groups, group => {
       let list = group[0];
       forEach(group, listSection => {
-        if (listSection !== list) {
-          let currentHead = range.head;
-          let prevPosition;
-          // FIXME is there a currentHead if there is no range?
-          // is the current head a list item in the section
-          if (currentHead.section.isListItem &&
-              currentHead.section.parent === listSection) {
-            prevPosition = list.tailPosition();
-          }
-          this._joinListSections(list, listSection);
-          if (prevPosition) {
-            updatedHead = prevPosition.moveRight();
-          }
+        if (listSection === list) {
+          return;
+        }
+
+        let currentHead = range.head;
+        let prevPosition;
+
+        // FIXME is there a currentHead if there is no range?
+        // is the current head a list item in the section
+        if (!range.isBlank && currentHead.section.isListItem &&
+            currentHead.section.parent === listSection) {
+          prevPosition = list.tailPosition();
+        }
+        this._joinListSections(list, listSection);
+        if (prevPosition) {
+          updatedHead = prevPosition.moveRight();
         }
       });
     });
@@ -353,205 +409,62 @@ class PostEditor {
   }
 
   /**
-   * Remove a character from a {marker, offset} position, in either
-   * forward or backward (default) direction.
-   *
-   * Usage:
-   *
-   *     let marker = editor.post.sections.head.markers.head;
-   *     // marker has text of "Howdy!"
-   *     editor.run((postEditor) => {
-   *       postEditor.deleteFrom({section, offset: 3});
-   *     });
-   *     // marker has text of "Hody!"
-   *
-   * `deleteFrom` may remove a character from a different marker or join the
-   * marker's section with the previous/next section (depending on the
-   * deletion direction) if direction is `BACKWARD` and the offset is 0,
-   * or direction is `FORWARD` and the offset is equal to the length of the
-   * marker.
-   *
    * @param {Position} position object with {section, offset} the marker and offset to delete from
    * @param {Number} direction The direction to delete in (default is BACKWARD)
    * @return {Position} for positioning the cursor
    * @public
+   * @deprecated after v0.10.3
    */
   deleteFrom(position, direction=DIRECTION.BACKWARD) {
-    if (direction === DIRECTION.BACKWARD) {
-      return this._deleteBackwardFrom(position);
-    } else {
-      return this._deleteForwardFrom(position);
-    }
-  }
-
-  _joinPositionToPreviousSection(position) {
-    const {section } = position;
-    let nextPosition = position.clone();
-
-    assert('Cannot join non-markerable section to previous section',
-           section.isMarkerable);
-
-    if (section.isListItem) {
-      let markupSection = this._changeSectionFromListItem(section, 'p');
-      nextPosition = markupSection.headPosition();
-    } else {
-      const prevSection = section.previousLeafSection();
-
-      if (prevSection) {
-        if (prevSection.isCardSection) {
-          if (section.isBlank) {
-            this.removeSection(section);
-          }
-          nextPosition = prevSection.tailPosition();
-        } else {
-          const { beforeMarker } = prevSection.join(section);
-          this._markDirty(prevSection);
-          this.removeSection(section);
-
-          nextPosition.section = prevSection;
-          nextPosition.offset = beforeMarker ?
-            prevSection.offsetOfMarker(beforeMarker, beforeMarker.length) : 0;
-        }
-      }
-    }
-
-    return nextPosition;
+    deprecate("`postEditor#deleteFrom is deprecated. Use `deleteAtPosition(position, direction=BACKWARD, {unit}={unit: 'char'})` instead");
+    return this.deleteAtPosition(position, direction, {unit: 'char'});
   }
 
   /**
-   * delete 1 character in the FORWARD direction from the given position
-   * @param {Position} position
-   * @private
-   */
-  _deleteForwardFrom(position) {
-    const { section } = position;
-
-    if (section.isBlank) {
-      // remove this section, focus on start of next markerable section
-      const next = section.immediatelyNextMarkerableSection();
-      if (next) {
-        this.removeSection(section);
-        position = next.headPosition();
-      }
-      return position;
-    } else if (position.isTail()) {
-      if (section.isCardSection)  {
-        if (section.next && section.next.isBlank) {
-          this.removeSection(section.next);
-        }
-        return position;
-      } else {
-        // join next markerable section to this one
-        return this._joinPositionToNextSection(position);
-      }
-    } else {
-      if (section.isCardSection && position.isHead()) {
-        let newSection = this.builder.createMarkupSection();
-        this.replaceSection(section, newSection);
-        return newSection.headPosition();
-      } else {
-        return this._deleteForwardFromMarkerPosition(position.markerPosition);
-      }
-    }
-  }
-
-  _joinPositionToNextSection(position) {
-    const { section } = position;
-
-    assert('Cannot join non-markerable section to next section',
-           section.isMarkerable);
-
-    const next = section.immediatelyNextMarkerableSection();
-    if (next) {
-      section.join(next);
-      this._markDirty(section);
-      this.removeSection(next);
-    }
-
-    return position;
-  }
-
-  /**
-   * delete 1 character forward from the markerPosition
+   * Delete 1 `unit` (can be 'char' or 'word') in the given `direction` at the given
+   * `position`. In almost all cases this will be equivalent to deleting the range formed
+   * by expanding the position 1 unit in the given direction. The exception is when deleting
+   * backward from the beginning of a list item, which reverts the list item into a markup section
+   * instead of joining it with its previous list item (if any).
    *
-   * @param {Object} markerPosition
-   * @param {Marker} markerPosition.marker
-   * @param {number} markerPosition.offset
-   * @return {Position} The position the cursor should be put after this deletion
-   * @private
+   * Usage:
+   *
+   *     let position = section.tailPosition();
+   *     // Section has text of "Howdy!"
+   *     editor.run((postEditor) => {
+   *       postEditor.deleteAtPosition(position);
+   *     });
+   *     // section has text of "Howdy"
+   *
+   * @param {Position} position The position to delete at
+   * @param {direction=DIRECTION.BACKWARD} direction The direction to delete in
+   * @param {Object} [options]
+   * @param {String} [options.unit="char"] The unit of deletion ("word" or "char")
+   * @return {Position}
    */
-  _deleteForwardFromMarkerPosition(markerPosition) {
-    const {marker, offset} = markerPosition;
-    const {section} = marker;
-    let nextPosition = new Position(section, section.offsetOfMarker(marker, offset));
-
-    if (offset === marker.length) {
-      const nextMarker = marker.next;
-
-      if (nextMarker) {
-        const nextMarkerPosition = {marker: nextMarker, offset: 0};
-        return this._deleteForwardFromMarkerPosition(nextMarkerPosition);
-      } else {
-        const nextSection = marker.section.next;
-        if (nextSection && nextSection.isMarkupSection) {
-          const currentSection = marker.section;
-
-          currentSection.join(nextSection);
-          this._markDirty(currentSection);
-
-          this.removeSection(nextSection);
-        }
-      }
-    } else if (marker.isAtom) { // atoms are deleted "atomically"
-      this.removeMarker(marker);
+  deleteAtPosition(position, direction=DIRECTION.BACKWARD, {unit}={unit: 'char'}) {
+    if (direction === DIRECTION.BACKWARD) {
+      return this._deleteAtPositionBackward(position, unit);
     } else {
-      marker.deleteValueAtOffset(offset);
-      this._markDirty(marker);
+      return this._deleteAtPositionForward(position, unit);
     }
-
-    return nextPosition;
   }
 
-  /**
-   * delete 1 character in the BACKWARD direction from the given position
-   * @param {Position} position
-   * @return {Position} The position the cursor should be put after this deletion
-   * @private
-   */
-  _deleteBackwardFrom(position) {
-    const { section } = position;
-
-    if (position.isHead()) {
-      if (section.isCardSection) {
-        if (section.prev && section.prev.isBlank) {
-          this.removeSection(section.prev);
-        }
-        return position;
-      } else {
-        return this._joinPositionToPreviousSection(position);
-      }
-    }
-
-    // if position is end of a card, replace the card with a blank markup section
-    if (section.isCardSection) {
-      let newSection = this.builder.createMarkupSection();
-      this.replaceSection(section, newSection);
-      return newSection.headPosition();
-    }
-
-    let nextPosition = position.moveLeft();
-
-    const { marker, offset:markerOffset } = position.markerPosition;
-    const offsetToDeleteAt = markerOffset - 1;
-
-    if (marker.isAtom) {
-      this.removeMarker(marker);
+  _deleteAtPositionBackward(position, unit) {
+    if (position.isHead() && position.section.isListItem) {
+      this.toggleSection('p', new Range(position));
+      return this._range.head;
     } else {
-      marker.deleteValueAtOffset(offsetToDeleteAt);
-      this._markDirty(marker);
+      let prevPosition = unit === 'word' ? position.moveWord(-1) : position.move(-1);
+      let range = new Range(prevPosition, position);
+      return this.deleteRange(range);
     }
+  }
 
-    return nextPosition;
+  _deleteAtPositionForward(position, unit) {
+    let nextPosition = unit === 'word' ? position.moveWord(1) : position.move(1);
+    let range = new Range(position, nextPosition);
+    return this.deleteRange(range);
   }
 
   /**
@@ -841,9 +754,7 @@ class PostEditor {
    * @public
    */
   addMarkupToRange(range, markup) {
-    if (range.isCollapsed) {
-      return;
-    }
+    if (range.isCollapsed) { return; }
 
     let markers = this.splitMarkers(range);
     if (markers.length) {
@@ -889,9 +800,8 @@ class PostEditor {
    * @private
    */
   removeMarkupFromRange(range, markupOrMarkupCallback) {
-    if (range.isCollapsed) {
-      return;
-    }
+    if (range.isCollapsed) { return; }
+
     this.splitMarkers(range).forEach(marker => {
       marker.removeMarkup(markupOrMarkupCallback);
       this._markDirty(marker);
@@ -1002,8 +912,10 @@ class PostEditor {
 
   /**
    * Splits the item at the position given.
-   * If thse position is at the start or end of the item, the pre- or post-item
+   * If the position is at the start or end of the item, the pre- or post-item
    * will contain a single empty ("") marker.
+   * @param {ListItem} item
+   * @param {Position} position
    * @return {Array} the pre-item and post-item on either side of the split
    * @private
    */

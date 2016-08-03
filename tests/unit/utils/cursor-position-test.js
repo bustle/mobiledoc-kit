@@ -207,15 +207,11 @@ test('#moveWord in text (backward)', (assert) => {
   ];
 
   expectations.forEach(([before, after]) => {
-    let text = before.replace('|', '');
-    let beforeIndex = before.indexOf('|');
-    let afterIndex = after.indexOf('|');
+    let { post, range: { head: pos } } = Helpers.postAbstract.buildFromText(before);
+    let { range: { head: afterPos } } = Helpers.postAbstract.buildFromText(after);
 
-    let post = Helpers.postAbstract.buildWithText(text);
-    let section = post.sections.head;
-    let pos = new Position(section, beforeIndex);
-    let nextPos = new Position(section, afterIndex);
-    assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos,
+    let expectedPos = new Position(post.sections.head, afterPos.offset);
+    assert.positionIsEqual(pos.moveWord(BACKWARD), expectedPos,
                            `move word "${before}"->"${after}"`);
   });
 });
@@ -224,11 +220,13 @@ test('#moveWord stops on word-separators', (assert) => {
   let separators = ['-', '+', '=', '|'];
   separators.forEach(sep => {
     let text = `abc${sep}def`;
-    let post = Helpers.postAbstract.buildWithText(text);
+    let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker(text)])]);
+    });
     let pos = post.tailPosition();
-    let nextPos = new Position(post.sections.head, 'abc '.length);
+    let expectedPos = new Position(post.sections.head, 'abc '.length);
 
-    assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos, `move word <- "${text}|"`);
+    assert.positionIsEqual(pos.moveWord(BACKWARD), expectedPos, `move word <- "${text}|"`);
   });
 });
 
@@ -236,7 +234,7 @@ test('#moveWord does not stop on non-word-separators', (assert) => {
   let nonSeparators = ['_', ':'];
   nonSeparators.forEach(sep => {
     let text = `abc${sep}def`;
-    let post = Helpers.postAbstract.buildWithText(text);
+    let { post } = Helpers.postAbstract.buildFromText(text);
     let pos = post.tailPosition();
     let nextPos = post.headPosition();
 
@@ -245,7 +243,7 @@ test('#moveWord does not stop on non-word-separators', (assert) => {
 });
 
 test('#moveWord across markerable sections', (assert) => {
-  let post = Helpers.postAbstract.buildWithText(['abc def', '123 456']);
+  let { post } = Helpers.postAbstract.buildFromText(['abc def', '123 456']);
 
   let [first, second] = post.sections.toArray();
   let pos = (section, text) => new Position(section, text.length);
@@ -349,14 +347,11 @@ test('#moveWord in text (forward)', (assert) => {
   ];
 
   expectations.forEach(([before, after]) => {
-    let text = before.replace('|', '');
-    let beforeIndex = before.indexOf('|');
-    let afterIndex = after.indexOf('|');
-
-    let post = Helpers.postAbstract.buildWithText(text);
+    let { post, range: { head: pos } } = Helpers.postAbstract.buildFromText(before);
+    let { range: { head: nextPos } } = Helpers.postAbstract.buildFromText(after);
     let section = post.sections.head;
-    let pos = new Position(section, beforeIndex);
-    let nextPos = new Position(section, afterIndex);
+    nextPos = new Position(section, nextPos.offset); // fix section
+
     assert.positionIsEqual(pos.moveWord(FORWARD), nextPos,
                            `move word "${before}"->"${after}"`);
   });

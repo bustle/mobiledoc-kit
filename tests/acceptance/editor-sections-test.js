@@ -618,8 +618,8 @@ test('delete with option (Mac) or control (Win)  key deletes full word', (assert
 
   let done = assert.async();
 
-  let post = Helpers.postAbstract.buildWithText("abc def");
-  let expected = Helpers.postAbstract.buildWithText("abc ");
+  let { post } = Helpers.postAbstract.buildFromText("abc def");
+  let { post: expected } = Helpers.postAbstract.buildFromText("abc ");
   editor = Helpers.mobiledoc.renderPostInto(editorElement, post);
 
   editor.selectRange(new Range(editor.post.tailPosition()));

@@ -185,40 +185,6 @@ class Post {
     });
   }
 
-  /**
-   * @param {Range} range
-   * @return {Section[]} All top-level sections (direct children of `post`) wholly
-   *         contained by {range}. Sections that are partially contained by the range
-   *         are not returned.
-   * @private
-   */
-  sectionsContainedBy(range) {
-    const {head, tail} = range;
-    let containedSections = [];
-
-    const findParent = (child, conditionFn) => {
-      while (child) {
-        if (conditionFn(child)) { return child; }
-        child = child.parent;
-      }
-    };
-
-    const headTopLevelSection = findParent(head.section, s => s.parent === s.post);
-    const tailTopLevelSection = findParent(tail.section, s => s.parent === s.post);
-
-    if (headTopLevelSection === tailTopLevelSection) {
-      return containedSections;
-    }
-
-    let currentSection = headTopLevelSection.next;
-    while (currentSection && currentSection !== tailTopLevelSection) {
-      containedSections.push(currentSection);
-      currentSection = currentSection.next;
-    }
-
-    return containedSections;
-  }
-
   _nextMarkerableSection(section) {
     let nextSection = this._nextLeafSection(section);
 
