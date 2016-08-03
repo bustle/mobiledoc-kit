@@ -5,12 +5,13 @@ import { forEach } from 'mobiledoc-kit/utils/array-utils';
 const { module, test } = Helpers;
 
 let { postEditor: { run } } = Helpers;
+let { postAbstract: { buildFromText } } = Helpers;
 
 module('Unit: PostEditor: #deleteRange');
 
 test('#deleteRange with collapsed range is no-op', (assert) => {
-  let { post, range } = Helpers.postAbstract.buildFromText('abc|def');
-  let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText('abc|def');
+  let { post, range } = buildFromText('abc|def');
+  let { post: expectedPost, range: expectedRange } = buildFromText('abc|def');
 
   let position = run(post, postEditor => postEditor.deleteRange(range));
   let renderedRange = new Range(position);
@@ -29,8 +30,8 @@ test('#deleteRange within a section (single section)', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
+    let { post, range } = buildFromText(before);
+    let { post: expectedPost, range: expectedRange } = buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
     let renderedRange = new Range(position);
@@ -52,8 +53,8 @@ test('#deleteRange within a section with markup (single section)', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
+    let { post, range } = buildFromText(before);
+    let { post: expectedPost, range: expectedRange } = buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
     let renderedRange = new Range(position);
@@ -72,11 +73,14 @@ test('#deleteRange entire post', (assert) => {
     [['<abc','def','ghi>'], 'multiple sections'],
     [['<>'], 'single blank section'],
     [['<','','>'], 'multiple blank sections'],
-    [['<[some-card]', 'abc', '[some-card]>'], 'cards at head/tail, containing markup section']
+    [['<[some-card]', 'abc', '[some-card]>'], 'cards at head/tail, containing markup section'],
+    [['<abc', '[some-card]', 'def>'], 'markup sections containing card'],
+    [['<[some-card]', 'abc>'], 'card->markup'],
+    [['<abc', '[some-card]>'], 'markup->card'],
   ];
 
   examples.forEach(([text, msg]) => {
-    let { post, range } = Helpers.postAbstract.buildFromText(text);
+    let { post, range } = buildFromText(text);
     let position = run(post, postEditor => postEditor.deleteRange(range));
 
     assert.ok(post.sections.length === 1 && post.sections.head.isBlank, `post has single blank section after deleteRange (${msg})`);
@@ -99,8 +103,8 @@ test('#deleteRange across markup section boundaries', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
+    let { post, range } = buildFromText(before);
+    let { post: expectedPost, range: expectedRange } = buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
     let renderedRange = new Range(position);
@@ -136,8 +140,8 @@ test('#deleteRange across markup section boundaries including markups', (assert)
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
+    let { post, range } = buildFromText(before);
+    let { post: expectedPost, range: expectedRange } = buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
     let renderedRange = new Range(position);
@@ -151,8 +155,9 @@ test('#deleteRange across markup section boundaries including markups', (assert)
 
 test('#deleteRange across markup/non-markup section boundaries', (assert) => {
   let examples = [
-    [['[some-card]<','>abc'], ['[some-card]|', 'abc'], 'card->markup'], 
+    [['[some-card]<','>abc'], ['[some-card]|', 'abc'], 'card->markup start'], 
     [['[some-card]<','>'], ['[some-card]|'], 'card->blank-markup'], 
+    [['<[some-card]','a>bc'], ['|bc'], 'card->markup inner'], 
 
     [['abc<','>[some-card]'], ['abc|', '[some-card]'], 'markup->card'], 
 
@@ -164,9 +169,9 @@ test('#deleteRange across markup/non-markup section boundaries', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range } = Helpers.postAbstract.buildFromText(before);
+    let { post, range } = buildFromText(before);
 
-    let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
+    let { post: expectedPost, range: expectedRange } = buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
     let renderedRange = new Range(position);
@@ -202,12 +207,18 @@ test('#deleteRange across list items', (assert) => {
     [['* item 1', '<middle', '* i>tem 2'], ['* item 1', '|tem 2'], 'across markup into next'],
 
     [['* item 1<', '>middle'], ['* item 1|middle'], 'item tail to markup head'],
-    [['start<', '* >middle'], ['start|middle'], 'markup tail to item head']
+    [['start<', '* >middle'], ['start|middle'], 'markup tail to item head'],
+
+    [['* <','>abc'], ['* |abc'], 'empty li into markup start'],
+    [['* <','a>bc'], ['* |bc'], 'empty li into markup middle'],
+    [['* <','abc>'], ['* |'], 'empty li into markup end'],
+    [['* abc<','>'], ['* abc|'], 'li into empty markup'],
+    [['* <','>'], ['* |'], 'empty li into empty markup'],
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
+    let { post, range } = buildFromText(before);
+    let { post: expectedPost, range: expectedRange } = buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
     let renderedRange = new Range(position);
@@ -244,8 +255,8 @@ test('#deleteRange with atoms', (assert) => {
   ];
 
   examples.forEach(([before, after, msg]) => {
-    let { post, range } = Helpers.postAbstract.buildFromText(before);
-    let { post: expectedPost, range: expectedRange } = Helpers.postAbstract.buildFromText(after);
+    let { post, range } = buildFromText(before);
+    let { post: expectedPost, range: expectedRange } = buildFromText(after);
 
     let position = run(post, postEditor => postEditor.deleteRange(range));
     let renderedRange = new Range(position);

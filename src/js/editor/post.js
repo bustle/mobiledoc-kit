@@ -78,7 +78,8 @@ class PostEditor {
    * ```
    *     let { range } = editor;
    *     editor.run((postEditor) => {
-   *       postEditor.deleteRange(range);
+   *       let nextPosition = postEditor.deleteRange(range);
+   *       postEditor.setRange(new Range(nextPosition));
    *     });
    * ```
    * @param {Range} range Cursor Range object with head and tail Positions
@@ -86,189 +87,97 @@ class PostEditor {
    * @public
    */
   deleteRange(range) {
-    // types of selection deletion:
-    //   * a selection starts at the beginning of a section
-    //     -- cursor should end up at the beginning of that section
-    //     -- if the section not longer has markers, add a blank one for the cursor to focus on
-    //   * a selection is entirely within a section
-    //     -- split the markers with the selection, remove those new markers from their section
-    //     -- cursor goes at end of the marker before the selection start, or if the
-    //     -- selection was at the start of the section, cursor goes at section start
-    //   * a selection crosses multiple sections
-    //     -- remove all the sections that are between (exclusive) selection start and end
-    //     -- join the start and end sections
-    //     -- mark the end section for removal
-    //     -- cursor goes at end of marker before the selection start
-
-    if (range.isCollapsed) {
-      return range.head;
-    }
-
     let {
-      head, head: {section: headSection, offset: headSectionOffset},
-      tail, tail: {section: tailSection, offset: tailSectionOffset}
+      head, head: {section: headSection},
+      tail, tail: {section: tailSection}
     } = range;
-    const { post } = this.editor;
 
-    let nextPosition;
+    let { editor: { post } } = this;
 
     if (headSection === tailSection) {
-      nextPosition = this.cutSection(headSection, headSectionOffset, tailSectionOffset);
+      return this.cutSection(headSection, head, tail);
+    }
+
+    let nextSection = headSection.nextLeafSection();
+
+    let nextPos = this.cutSection(headSection, head, headSection.tailPosition());
+    // cutSection can replace the section, so re-read headSection here
+    headSection = nextPos.section;
+
+    // Remove sections in the middle of the range
+    while (nextSection !== tailSection) {
+      let tmp = nextSection;
+      nextSection = nextSection.nextLeafSection();
+      this.removeSection(tmp);
+    }
+
+    let tailPos = this.cutSection(tailSection, tailSection.headPosition(), tail);
+    // cutSection can replace the section, so re-read tailSection here
+    tailSection = tailPos.section;
+
+    if (tailSection.isBlank) {
+      this.removeSection(tailSection);
     } else {
-      let removedSections = [];
-      let appendSection = headSection;
-
-      let recursiveRangeToDelete = null;
-
-      post.walkLeafSections(range, section => {
-        if (recursiveRangeToDelete) {
-          // avoid walking the entire post if we will recurse
-          return;
-        }
-
-        switch (section) {
-          case headSection:
-            if (section.isCardSection) {
-              // Create a section to join tailSection with if necessary
-              appendSection = this.builder.createMarkupSection();
-
-              if (head.isHead()) {
-                // Remove he entire card because we are deleting from its head
-                // position into section(s) after it
-                removedSections.push(section);
-                nextPosition = appendSection.headPosition();
-              } else {
-                // Set the position to be the card's tail
-                nextPosition = section.tailPosition();
-              }
-            } else if (section.isBlank) {
-              // Grab the next leaf section before removing blank head
-              let nextHeadSection = section.nextLeafSection();
-
-              // Remove the blank head section now
-              this.removeSection(section);
-
-              // Advance the range and recursively delete it
-              recursiveRangeToDelete = new Range(nextHeadSection.headPosition(), range.tail);
-            } else {
-              nextPosition = this.cutSection(section, headSectionOffset, section.length);
-            }
-            break;
-          case tailSection:
-            if (section.isCardSection) {
-              if (tail.isTail()) {
-                // If the range extends to the end of the tail section, remove it
-                removedSections.push(section);
-              }
-            } else {
-
-              // join the tail section's markers (afer `tailSectionOffset`) to
-              // the appendSection
-              section.markersFor(tailSectionOffset, section.text.length).forEach(marker => {
-                appendSection.markers.append(marker);
-              });
-
-              // If we've modified headSection, ensure it is marked dirty so that it is re-rendered.
-              // If appendSection !== headSection, it's a new section that will be rendered regardless.
-              if (appendSection === headSection) {
-                this._markDirty(headSection);
-              }
-
-              removedSections.push(section);
-            }
-            break;
-          default:
-            // Default is to remove sections in between head and tail sections
-            removedSections.push(section);
-          }
-      });
-
-      if (recursiveRangeToDelete) {
-        // If we are recursing, return early here
-        return this.deleteRange(recursiveRangeToDelete);
-      }
-
-      removedSections.forEach(section => this.removeSection(section) );
-
-      if (headSection !== appendSection) {
-        if (!appendSection.isBlank) {
-          // if the appendSection is not blank, make sure to add it
-          this.insertSectionBefore(post.sections, appendSection, headSection.next);
-        } else if (post.isBlank) {
-          // if we've removed all the sections from the post, add the blank append section
-          this.insertSectionBefore(post.sections, appendSection, headSection.next);
-        }
+      // If head and tail sections are markerable, join them
+      // Note: They may not be the same section type. E.g. this may join
+      // a tail section that was a list item onto a markup section, or vice versa.
+      // (This is the desired behavior.)
+      if (headSection.isMarkerable && tailSection.isMarkerable) {
+        headSection.join(tailSection);
+        this._markDirty(headSection);
+        this.removeSection(tailSection);
+      } else if (headSection.isBlank) {
+        this.removeSection(headSection);
+        nextPos = tailPos;
       }
     }
 
-    return nextPosition;
+    if (post.isBlank) {
+      post.sections.append(this.builder.createMarkupSection('p'));
+      nextPos = post.headPosition();
+    }
+
+    return nextPos;
   }
 
   /**
+   * Note: This method may replace `section` with a different section.
+   *
    * "Cut" out the part of the section inside `headOffset` and `tailOffset`.
-   * If the section is markerable this removes markers that are wholly inside the offsets,
-   * and splits markers that straddle the head or tail.
+   * If section is markerable this splits markers that straddle the head or tail (if necessary),
+   * and removes markers that are wholly inside the offsets.
+   * If section is a card, this may replace it with a blank markup section if the
+   * positions contain the entire card.
+   *
    * @param {Section} section
-   * @param {Number} headOffset
-   * @param {Number} tailOffset
+   * @param {Position} head
+   * @param {Position} tail
    * @return {Position}
    * @private
    */
-  cutSection(section, headOffset, tailOffset) {
-    if (section.isBlank || headOffset === tailOffset) {
-      return new Position(section, headOffset);
+  cutSection(section, head, tail) {
+    assert('Must pass head position and tail position to `cutSection`',
+           head instanceof Position && tail instanceof Position);
+    assert('Must pass positions within same section to `cutSection`',
+           head.section === tail.section);
+
+    if (section.isBlank || head.isEqual(tail)) {
+      return head;
     }
     if (section.isCardSection) {
-      let newSection = this.builder.createMarkupSection();
-      this.replaceSection(section, newSection);
-      return newSection.headPosition();
-    }
-
-    let adjustedHead = 0,
-        marker = section.markers.head,
-        adjustedTail = marker.length;
-
-    // Walk to the first node inside the headOffset, splitting
-    // a marker if needed. Leave marker as the first node inside.
-    while (marker) {
-      if (adjustedTail >= headOffset) {
-        let splitOffset = headOffset - adjustedHead;
-        let { afterMarker } = this.splitMarker(marker, splitOffset);
-        adjustedHead = adjustedHead + splitOffset;
-        // FIXME: That these two loops cannot agree on adjustedTail being
-        // incremented at the start or end seems prime for refactoring.
-        adjustedTail = adjustedHead;
-        marker = afterMarker;
-        break;
-      }
-      adjustedHead += marker.length;
-      marker = marker.next;
-      if (marker) {
-        adjustedTail += marker.length;
+      if (head.isHead() && tail.isTail()) {
+        let newSection = this.builder.createMarkupSection();
+        this.replaceSection(section, newSection);
+        return newSection.headPosition();
+      } else {
+        return tail;
       }
     }
 
-    // Walk each marker inside, removing it if needed. when the last is
-    // reached split it and remove the part inside the tailOffset
-    while (marker) {
-      adjustedTail += marker.length;
-      if (adjustedTail >= tailOffset) {
-        let splitOffset = marker.length - (adjustedTail - tailOffset);
-        let {
-          beforeMarker
-        } = this.splitMarker(marker, splitOffset);
-        if (beforeMarker) {
-          this.removeMarker(beforeMarker);
-        }
-        break;
-      }
-      adjustedHead += marker.length;
-      let nextMarker = marker.next;
-      this.removeMarker(marker);
-      marker = nextMarker;
-    }
+    let range = new Range(head, tail);
+    this.splitMarkers(range).forEach(m => this.removeMarker(m));
 
-    return new Position(section, headOffset);
+    return head;
   }
 
   _coalesceMarkers(section) {
@@ -469,18 +378,17 @@ class PostEditor {
 
   /**
    * Split markers at two positions, once at the head, and if necessary once
-   * at the tail. This method is designed to accept a range
-   * (e.g. `editor.range`) as an argument.
+   * at the tail.
    *
    * Usage:
    * ```
-   *     let markerRange = this.cursor.offsets;
+   *     let range = editor.range;
    *     editor.run((postEditor) => {
-   *       postEditor.splitMarkers(markerRange);
+   *       postEditor.splitMarkers(range);
    *     });
    * ```
    * The return value will be marker object completely inside the offsets
-   * provided. Markers on the outside of the split may also have been modified.
+   * provided. Markers outside of the split may also have been modified.
    *
    * @param {Range} markerRange
    * @return {Array} of markers that are inside the split
@@ -501,29 +409,6 @@ class PostEditor {
     edit.removed.forEach(m => this.removeMarker(m));
   }
 
-  splitMarker(marker, offset) {
-    let beforeMarker, afterMarker;
-
-    if (offset === 0) {
-      beforeMarker = marker.prev;
-      afterMarker = marker;
-    } else if (offset === marker.length) {
-      beforeMarker = marker;
-      afterMarker = marker.next;
-    } else {
-      let { builder } = this.editor,
-          { section } = marker;
-      beforeMarker = builder.createMarker(marker.value.substring(0, offset), marker.markups);
-      afterMarker = builder.createMarker(marker.value.substring(offset, marker.length), marker.markups);
-      section.markers.splice(marker, 1, [beforeMarker, afterMarker]);
-
-      this.removeMarker(marker);
-      this._markDirty(section);
-    }
-
-    return { beforeMarker, afterMarker };
-  }
-
   /**
    * Split the section at the position.
    *
@@ -541,7 +426,7 @@ class PostEditor {
    * headMarkerOffset is 0.
    *
    * @param {Position} position
-   * @return {Array} new sections, one for the first half and one for the second
+   * @return {Array} new sections, one for the first half and one for the second (either one can be null)
    * @public
    */
   splitSection(position) {

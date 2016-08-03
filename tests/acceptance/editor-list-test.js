@@ -304,7 +304,7 @@ test('forward-delete in empty li with li after it joins with li', (assert) => {
   assert.hasElement('#editor li:contains(Xabc)', 'inserts text at right spot');
 });
 
-test('forward-delete in empty li with markup section after it deletes li', (assert) => {
+test('forward-delete in empty li with markup section after it joins markup section', (assert) => {
    const mobiledoc = Helpers.mobiledoc.build(builder => {
     const {post, listSection, listItem, markupSection, marker} = builder;
     return post([
@@ -319,13 +319,12 @@ test('forward-delete in empty li with markup section after it deletes li', (asse
   Helpers.dom.moveCursorTo(editor, node, 0);
   Helpers.dom.triggerForwardDelete(editor);
 
-  assert.hasNoElement('#editor li', 'li is removed');
-  assert.hasElement('#editor p:contains(abc)', 'p remains');
+  assert.hasElement('#editor li:contains(abc)', 'joins markup section');
+  assert.hasNoElement('#editor p', 'p is removed');
 
   Helpers.dom.insertText(editor, 'X');
 
-  assert.hasElement('#editor p:contains(Xabc)', 'inserts text at right spot');
- 
+  assert.hasElement('#editor li:contains(Xabc)', 'inserts text at right spot');
 });
 
 test('forward-delete end of li with nothing after', (assert) => {
