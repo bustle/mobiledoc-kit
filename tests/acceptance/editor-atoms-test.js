@@ -56,7 +56,7 @@ test('keystroke of character before starting atom inserts character', (assert) =
     return post([markupSection('p', [atom('simple-atom', 'first')])]);
   }, editorOptions);
 
-  editor.selectRange(new Range(editor.post.headPosition()));
+  editor.selectRange(editor.post.headPosition());
   Helpers.dom.insertText(editor, 'A');
 
   Helpers.wait(() => {
@@ -251,7 +251,7 @@ test('keystroke of enter at markup section head before atom creates new section'
   }, editorOptions);
 
   editor.run(postEditor => {
-    postEditor.setRange(new Range(editor.post.headPosition()));
+    postEditor.setRange(editor.post.headPosition());
   });
   Helpers.dom.triggerEnter(editor);
 
@@ -276,7 +276,7 @@ test('keystroke of enter at list item head before atom creates new section', (as
   }, editorOptions);
 
   editor.run(postEditor => {
-    postEditor.setRange(new Range(editor.post.headPosition()));
+    postEditor.setRange(editor.post.headPosition());
   });
   Helpers.dom.triggerEnter(editor);
 

@@ -213,9 +213,7 @@ test('selecting a card and deleting deletes the card', (assert) => {
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  let range = new Range(editor.post.sections.head.headPosition(),
-                        editor.post.sections.head.tailPosition());
-  editor.selectRange(range);
+  editor.selectRange(editor.post.sections.head.toRange());
   Helpers.dom.triggerDelete(editor);
 
   assert.hasNoElement('#my-simple-card', 'has no card after delete');

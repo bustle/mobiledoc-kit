@@ -2,7 +2,6 @@ import { POST_TYPE } from './types';
 import LinkedList from 'mobiledoc-kit/utils/linked-list';
 import { forEach, compact } from 'mobiledoc-kit/utils/array-utils';
 import Set from 'mobiledoc-kit/utils/set';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 import Position from 'mobiledoc-kit/utils/cursor/position';
 
 /**
@@ -25,6 +24,11 @@ class Post {
     });
   }
 
+  /**
+   * @return {Position} The position at the start of the post (will be a {@link BlankPosition}
+   * if the post is blank)
+   * @public
+   */
   headPosition() {
     if (this.isBlank) {
       return Position.blankPosition();
@@ -33,12 +37,25 @@ class Post {
     }
   }
 
+  /**
+   * @return {Position} The position at the end of the post (will be a {@link BlankPosition}
+   * if the post is blank)
+   * @public
+   */
   tailPosition() {
     if (this.isBlank) {
       return Position.blankPosition();
     } else {
       return this.sections.tail.tailPosition();
     }
+  }
+
+  /**
+   * @return {Range} A range encompassing the entire post
+   * @public
+   */
+  toRange() {
+    return this.headPosition().toRange(this.tailPosition());
   }
 
   get isBlank() {
@@ -150,8 +167,7 @@ class Post {
   }
 
   walkAllLeafSections(callback) {
-    let range = new Range(this.sections.head.headPosition(),
-                          this.sections.tail.tailPosition());
+    let range = this.headPosition().toRange(this.tailPosition());
     return this.walkLeafSections(range, callback);
   }
 

@@ -7,7 +7,6 @@ import {
   IMAGE_SECTION_TYPE,
   LIST_ITEM_TYPE,
 } from 'mobiledoc-kit/models/types';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const MARKERABLE = 'markerable',
       NESTED_MARKERABLE = 'nested_markerable',
@@ -30,7 +29,7 @@ class Visitor {
 
   set cursorPosition(position) {
     this._cursorPosition = position;
-    this.postEditor.setRange(new Range(position));
+    this.postEditor.setRange(position);
   }
 
   visit(node) {

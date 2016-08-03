@@ -32,6 +32,8 @@ import HTMLRenderer from 'mobiledoc-html-renderer';
 import TextRenderer from 'mobiledoc-text-renderer';
 import LifecycleCallbacks from 'mobiledoc-kit/models/lifecycle-callbacks';
 import LogManager from 'mobiledoc-kit/utils/log-manager';
+import toRange from 'mobiledoc-kit/utils/to-range';
+import MobiledocError from 'mobiledoc-kit/utils/mobiledoc-error';
 
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
@@ -44,10 +46,10 @@ const defaults = {
   atoms: [],
   cardOptions: {},
   unknownCardHandler: ({env}) => {
-    throw new Error(`Unknown card encountered: ${env.name}`);
+    throw new MobiledocError(`Unknown card encountered: ${env.name}`);
   },
   unknownAtomHandler: ({env}) => {
-    throw new Error(`Unknown atom encountered: ${env.name}`);
+    throw new MobiledocError(`Unknown atom encountered: ${env.name}`);
   },
   mobiledoc: null,
   html: null
@@ -249,7 +251,7 @@ class Editor {
     this._eventManager.init();
 
     if (this.autofocus) {
-      this.selectRange(new Range(this.post.headPosition()));
+      this.selectRange(this.post.headPosition());
     }
   }
 
@@ -286,19 +288,20 @@ class Editor {
   deleteAtPosition(position, direction, {unit}) {
     this.run(postEditor => {
       let nextPosition = postEditor.deleteAtPosition(position, direction, {unit});
-      postEditor.setRange(new Range(nextPosition));
+      postEditor.setRange(nextPosition);
     });
   }
 
   /**
    * Convenience for {@link PostEditor#deleteRange}. Deletes and puts the
    * cursor in the new position.
+   * @param {Range} range
    * @public
    */
   deleteRange(range) {
     this.run(postEditor => {
       let nextPosition = postEditor.deleteRange(range);
-      postEditor.setRange(new Range(nextPosition));
+      postEditor.setRange(nextPosition);
     });
   }
 
@@ -327,12 +330,12 @@ class Editor {
         let nextPosition  = postEditor.deleteRange(range);
         cursorSection = nextPosition.section;
         if (cursorSection && cursorSection.isBlank) {
-          postEditor.setRange(new Range(cursorSection.headPosition()));
+          postEditor.setRange(cursorSection.headPosition());
           return;
         }
       }
       cursorSection = postEditor.splitSection(range.head)[1];
-      postEditor.setRange(new Range(cursorSection.headPosition()));
+      postEditor.setRange(cursorSection.headPosition());
     });
   }
 
@@ -350,12 +353,14 @@ class Editor {
   }
 
   /**
-   * Selects the given range. If range is collapsed, this positions the cursor
-   * at the range's position, otherwise a selection is created in the editor
-   * surface.
-   * @param {Range}
+   * Selects the given range or position. If given a collapsed range or a position, this positions the cursor
+   * at the range's position. Otherwise a selection is created in the editor
+   * surface encompassing the range.
+   * @param {Range|Position} range
    */
   selectRange(range) {
+    range = toRange(range);
+
     this.cursor.selectRange(range);
     this.range = range;
   }
@@ -766,7 +771,7 @@ class Editor {
     this.run(postEditor => {
       const section = postEditor.builder.createMarkupSection('p');
       postEditor.insertSectionBefore(this.post.sections, section);
-      postEditor.setRange(Range.fromSection(section));
+      postEditor.setRange(section.toRange());
     });
   }
 
@@ -964,7 +969,7 @@ class Editor {
       // will cause an unexpected DOM mutation (which can wipe out the
       // card).
       // See: https://github.com/bustlelabs/mobiledoc-kit/issues/286
-      postEditor.setRange(new Range(card.tailPosition()));
+      postEditor.setRange(card.tailPosition());
     });
     return card;
   }

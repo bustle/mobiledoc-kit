@@ -1,6 +1,5 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 import {
   MIME_TEXT_PLAIN,
   MIME_TEXT_HTML
@@ -336,13 +335,13 @@ test('pasting when cursor is on left/right side of card adds content before/afte
   assert.ok(card.isCardSection, 'precond - get card');
 
   Helpers.dom.setCopyData(MIME_TEXT_PLAIN, 'abc');
-  editor.selectRange(new Range(card.headPosition()));
+  editor.selectRange(card.headPosition());
   Helpers.dom.triggerPasteEvent(editor);
 
   assert.postIsSimilar(editor.post, expected1, 'content pasted before card');
 
   Helpers.dom.setCopyData(MIME_TEXT_PLAIN, '123');
-  editor.selectRange(new Range(card.tailPosition()));
+  editor.selectRange(card.tailPosition());
   Helpers.dom.triggerPasteEvent(editor);
 
   assert.postIsSimilar(editor.post, expected2, 'content pasted after card');
@@ -390,9 +389,9 @@ test('paste with shift key pastes plain text', (assert) => {
     ]);
   });
 
-  editor.selectRange(new Range(editor.post.headPosition(), editor.post.tailPosition()));
+  editor.selectRange(editor.post.toRange());
   Helpers.dom.triggerCopyEvent(editor);
-  editor.selectRange(new Range(editor.post.tailPosition()));
+  editor.selectRange(editor.post.tailPosition());
 
   Helpers.dom.triggerKeyEvent(editor, 'keydown', { keyCode: Keycodes.SHIFT });
   Helpers.dom.triggerPasteEvent(editor);

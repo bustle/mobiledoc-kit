@@ -1,5 +1,4 @@
 import Helpers from '../../test-helpers';
-import Position from 'mobiledoc-kit/utils/cursor/position';
 
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 const { FORWARD, BACKWARD } = DIRECTION;
@@ -30,7 +29,7 @@ test('single markup section (backward)', (assert) => {
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, BACKWARD));
 
-    expectedPosition = new Position(post.sections.head, expectedPosition.offset);
+    expectedPosition = post.sections.head.toPosition(expectedPosition.offset);
 
     assert.postIsSimilar(post, expectedPost, `post ${msg}`);
     assert.positionIsEqual(position, expectedPosition, `position ${msg}`);
@@ -56,7 +55,7 @@ test('single markup section (forward)', (assert) => {
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, FORWARD));
 
-    expectedPosition = new Position(post.sections.head, expectedPosition.offset);
+    expectedPosition = post.sections.head.toPosition(expectedPosition.offset);
 
     assert.postIsSimilar(post, expectedPost, `post ${msg}`);
     assert.positionIsEqual(position, expectedPosition, `position ${msg}`);
@@ -78,7 +77,7 @@ test('across section boundary (backward)', (assert) => {
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, BACKWARD));
 
-    expectedPosition = new Position(post.sections.head, expectedPosition.offset);
+    expectedPosition = post.sections.head.toPosition(expectedPosition.offset);
 
     assert.postIsSimilar(post, expectedPost, `post ${msg}`);
     assert.positionIsEqual(position, expectedPosition, `position ${msg}`);
@@ -100,7 +99,7 @@ test('across section boundary (forward)', (assert) => {
 
     position = run(post, postEditor => postEditor.deleteAtPosition(position, FORWARD));
 
-    expectedPosition = new Position(post.sections.head, expectedPosition.offset);
+    expectedPosition = post.sections.head.toPosition(expectedPosition.offset);
 
     assert.postIsSimilar(post, expectedPost, `post ${msg}`);
     assert.positionIsEqual(position, expectedPosition, `position ${msg}`);
@@ -134,7 +133,7 @@ test('across list item boundary (backward)', (assert) => {
       if (index === sectionIndex) { section = _section; }
       index++;
     });
-    expectedPosition = new Position(section, expectedPosition.offset);
+    expectedPosition = section.toPosition(expectedPosition.offset);
 
     assert.postIsSimilar(post, expectedPost, `post ${msg}`);
     assert.positionIsEqual(position, expectedPosition, `position ${msg}`);
@@ -168,7 +167,7 @@ test('across list item boundary (forward)', (assert) => {
       if (index === sectionIndex) { section = _section; }
       index++;
     });
-    expectedPosition = new Position(section, expectedPosition.offset);
+    expectedPosition = section.toPosition(expectedPosition.offset);
 
     assert.postIsSimilar(post, expectedPost, `post ${msg}`);
     assert.positionIsEqual(position, expectedPosition, `position ${msg}`);

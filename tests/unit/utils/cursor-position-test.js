@@ -25,9 +25,9 @@ test('#move moves forward and backward in markup section', (assert) => {
   let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abcd')])]);
   });
-  let position = new Position(post.sections.head, 'ab'.length);
-  let rightPosition = new Position(post.sections.head, 'abc'.length);
-  let leftPosition = new Position(post.sections.head, 'a'.length);
+  let position = post.sections.head.toPosition('ab'.length);
+  let rightPosition = post.sections.head.toPosition('abc'.length);
+  let leftPosition = post.sections.head.toPosition('a'.length);
 
   assert.positionIsEqual(position.move(FORWARD), rightPosition, 'right position');
   assert.positionIsEqual(position.move(BACKWARD), leftPosition, 'left position');
@@ -210,7 +210,7 @@ test('#moveWord in text (backward)', (assert) => {
     let { post, range: { head: pos } } = Helpers.postAbstract.buildFromText(before);
     let { range: { head: afterPos } } = Helpers.postAbstract.buildFromText(after);
 
-    let expectedPos = new Position(post.sections.head, afterPos.offset);
+    let expectedPos = post.sections.head.toPosition(afterPos.offset);
     assert.positionIsEqual(pos.moveWord(BACKWARD), expectedPos,
                            `move word "${before}"->"${after}"`);
   });
@@ -224,7 +224,7 @@ test('#moveWord stops on word-separators', (assert) => {
       return post([markupSection('p', [marker(text)])]);
     });
     let pos = post.tailPosition();
-    let expectedPos = new Position(post.sections.head, 'abc '.length);
+    let expectedPos = post.sections.head.toPosition('abc '.length);
 
     assert.positionIsEqual(pos.moveWord(BACKWARD), expectedPos, `move word <- "${text}|"`);
   });
@@ -246,7 +246,7 @@ test('#moveWord across markerable sections', (assert) => {
   let { post } = Helpers.postAbstract.buildFromText(['abc def', '123 456']);
 
   let [first, second] = post.sections.toArray();
-  let pos = (section, text) => new Position(section, text.length);
+  let pos = (section, text) => section.toPosition(text.length);
   let firstTail = first.tailPosition();
   let secondHead = second.headPosition();
 
@@ -325,8 +325,8 @@ test('#moveWord with atoms (backward)', (assert) => {
 
     let post = buildPostWithTextAndAtom(textWithAtoms);
     let section = post.sections.head;
-    let pos = new Position(section, beforeIndex);
-    let nextPos = new Position(section, afterIndex);
+    let pos = section.toPosition(beforeIndex);
+    let nextPos = section.toPosition(afterIndex);
 
     assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos,
                            `move word with atoms "${before}" -> "${after}"`);
@@ -350,7 +350,7 @@ test('#moveWord in text (forward)', (assert) => {
     let { post, range: { head: pos } } = Helpers.postAbstract.buildFromText(before);
     let { range: { head: nextPos } } = Helpers.postAbstract.buildFromText(after);
     let section = post.sections.head;
-    nextPos = new Position(section, nextPos.offset); // fix section
+    nextPos = section.toPosition(nextPos.offset); // fix section
 
     assert.positionIsEqual(pos.moveWord(FORWARD), nextPos,
                            `move word "${before}"->"${after}"`);
@@ -373,8 +373,8 @@ test('#moveWord with atoms (forward)', (assert) => {
 
     let post = buildPostWithTextAndAtom(textWithAtoms);
     let section = post.sections.head;
-    let pos = new Position(section, beforeIndex);
-    let nextPos = new Position(section, afterIndex);
+    let pos = section.toPosition(beforeIndex);
+    let nextPos = section.toPosition(afterIndex);
 
     assert.positionIsEqual(pos.moveWord(FORWARD), nextPos,
                            `move word with atoms "${before}" -> "${after}"`);
@@ -396,7 +396,7 @@ test('#fromNode when node is marker text node', (assert) => {
   let position = Position.fromNode(renderTree, textNode, 2);
 
   let section = editor.post.sections.head;
-  assert.positionIsEqual(position, new Position(section, 'abc'.length + 2));
+  assert.positionIsEqual(position, section.toPosition('abc'.length + 2));
 });
 
 test('#fromNode when node is section node with offset', (assert) => {
@@ -504,9 +504,9 @@ test('Position cannot be on list section', (assert) => {
 
   let position;
   assert.throws(() => {
-    position = new Position(listSection, 0);
+    position = listSection.toPosition(0);
   }, /addressable by the cursor/);
 
-  position = new Position(listItem, 0);
+  position = listItem.toPosition(0);
   assert.ok(position, 'position with list item is ok');
 });

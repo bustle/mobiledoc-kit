@@ -2,20 +2,18 @@ import Key from '../utils/key';
 import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
 import { filter, reduce } from '../utils/array-utils';
 import assert from '../utils/assert';
-import Range from '../utils/cursor/range';
 import Browser from '../utils/browser';
 
 function selectAll(editor) {
   let { post } = editor;
-  let allRange = new Range(post.headPosition(), post.tailPosition());
-  editor.selectRange(allRange);
+  editor.selectRange(post.toRange());
 }
 
 function gotoStartOfLine(editor) {
   let {range} = editor;
   let {tail: {section}} = range;
   editor.run(postEditor => {
-    postEditor.setRange(new Range(section.headPosition()));
+    postEditor.setRange(section.headPosition());
   });
 }
 
@@ -23,7 +21,7 @@ function gotoEndOfLine(editor) {
   let {range} = editor;
   let {tail: {section}} = range;
   editor.run(postEditor => {
-    postEditor.setRange(new Range(section.tailPosition()));
+    postEditor.setRange(section.tailPosition());
   });
 }
 
@@ -52,11 +50,12 @@ export const DEFAULT_KEY_COMMANDS = [{
   run(editor) {
     let { range } = editor;
     if (range.isCollapsed) {
-      range = new Range(range.head, range.head.section.tailPosition());
+      let { head, head: { section } } = range;
+      range = head.toRange(section.tailPosition());
     }
     editor.run(postEditor => {
       let nextPosition = postEditor.deleteRange(range);
-      postEditor.setRange(new Range(nextPosition));
+      postEditor.setRange(nextPosition);
     });
   }
 }, {
