@@ -1,6 +1,4 @@
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
-import Range from 'mobiledoc-kit/utils/cursor/range';
-import Position from 'mobiledoc-kit/utils/cursor/position';
 
 /*
  * usage:
@@ -134,7 +132,7 @@ function parseSingleText(text, builder) {
 
   ['start','end','solo'].forEach(type => {
     if (offsets[type] !== undefined) {
-      positions[type] = new Position(section, offsets[type]);
+      positions[type] = section.toPosition(offsets[type]);
     }
   });
 
@@ -201,9 +199,9 @@ function buildFromText(texts) {
   let range;
   if (positions.start) {
     if (!positions.end) { throw new Error(`startPos but no endPos ${texts.join('\n')}`); }
-    range = new Range(positions.start, positions.end);
+    range = positions.start.toRange(positions.end);
   } else if (positions.solo) {
-    range = new Range(positions.solo);
+    range = positions.solo.toRange();
   }
 
   return { post, range };

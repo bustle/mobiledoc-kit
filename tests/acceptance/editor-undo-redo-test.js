@@ -1,7 +1,5 @@
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Helpers from '../test-helpers';
-import Position from 'mobiledoc-kit/utils/cursor/position';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const { module, test } = Helpers;
 
@@ -21,7 +19,7 @@ function redo(editor) {
 // See https://github.com/bustlelabs/mobiledoc-kit/issues/388
 function renderIntoAndFocusTail(treeFn, options={}) {
   let editor = Helpers.mobiledoc.renderInto(editorElement, treeFn, options);
-  editor.selectRange(new Range(editor.post.tailPosition()));
+  editor.selectRange(editor.post.tailPosition());
   return editor;
 }
 
@@ -157,8 +155,8 @@ test('undo the deletion of a range', (assert) => {
   assert.renderTreeIsEqual(editor._renderTree, expectedAfterUndo);
   let { head, tail } = editor.range;
   let section = editor.post.sections.head;
-  assert.positionIsEqual(head, new Position(section, 'a'.length));
-  assert.positionIsEqual(tail, new Position(section, 'abc'.length));
+  assert.positionIsEqual(head, section.toPosition('a'.length));
+  assert.positionIsEqual(tail, section.toPosition('abc'.length));
 
   redo(editor);
   assert.postIsSimilar(editor.post, expectedBeforeUndo);
@@ -166,8 +164,8 @@ test('undo the deletion of a range', (assert) => {
   head = editor.range.head;
   tail = editor.range.tail;
   section = editor.post.sections.head;
-  assert.positionIsEqual(head, new Position(section, 'a'.length));
-  assert.positionIsEqual(tail, new Position(section, 'a'.length));
+  assert.positionIsEqual(head, section.toPosition('a'.length));
+  assert.positionIsEqual(tail, section.toPosition('a'.length));
 });
 
 test('undo insertion of character to a list item', (assert) => {
@@ -195,8 +193,8 @@ test('undo insertion of character to a list item', (assert) => {
     assert.renderTreeIsEqual(editor._renderTree, expectedAfterUndo);
     let { head, tail } = editor.range;
     let section = editor.post.sections.head.items.head;
-    assert.positionIsEqual(head, new Position(section, 'abc'.length));
-    assert.positionIsEqual(tail, new Position(section, 'abc'.length));
+    assert.positionIsEqual(head, section.toPosition('abc'.length));
+    assert.positionIsEqual(tail, section.toPosition('abc'.length));
 
     redo(editor);
     assert.postIsSimilar(editor.post, expectedBeforeUndo);
@@ -204,8 +202,8 @@ test('undo insertion of character to a list item', (assert) => {
     head = editor.range.head;
     tail = editor.range.tail;
     section = editor.post.sections.head.items.head;
-    assert.positionIsEqual(head, new Position(section, 'abcD'.length));
-    assert.positionIsEqual(tail, new Position(section, 'abcD'.length));
+    assert.positionIsEqual(head, section.toPosition('abcD'.length));
+    assert.positionIsEqual(tail, section.toPosition('abcD'.length));
 
     done();
   });

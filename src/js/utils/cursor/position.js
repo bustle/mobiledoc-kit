@@ -7,6 +7,7 @@ import {
 import { containsNode } from 'mobiledoc-kit/utils/dom-utils';
 import { findOffsetInNode } from 'mobiledoc-kit/utils/selection-utils';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
+import Range from './range';
 
 const { FORWARD, BACKWARD } = DIRECTION;
 
@@ -59,25 +60,26 @@ function findOffsetInSection(section, node, offset) {
   }
 }
 
-const Position = class Position {
+let Position, BlankPosition;
+
+Position = class Position {
   /**
    * A position is a logical location (zero-width, or "collapsed") in a post,
    * typically between two characters in a section.
    * Two positions (a head and a tail) make up a {@link Range}.
    * @constructor
    */
-  constructor(section, offset=0) {
-    assert('Position must have a section that is addressable by the cursor',
-           (section && section.isLeafSection));
-    assert('Position must have numeric offset',
-           (typeof offset === 'number'));
+  constructor(section, offset=0, isBlank=false) {
+    if (!isBlank) {
+      assert('Position must have a section that is addressable by the cursor',
+             (section && section.isLeafSection));
+      assert('Position must have numeric offset',
+             (typeof offset === 'number'));
+    }
 
-    /** @property {Section} section */
     this.section = section;
-    /** @property {number} offset */
     this.offset = offset;
-
-    this.isBlank = false;
+    this.isBlank = isBlank;
   }
 
   /**
@@ -98,19 +100,18 @@ const Position = class Position {
   }
 
   static blankPosition() {
-    return {
-      section: null,
-      offset: 0,
-      marker: null,
-      offsetInTextNode: 0,
-      isBlank: true,
-      isEqual(other) { return other.isBlank; },
-      markerPosition: {}
-    };
+    return new BlankPosition();
   }
 
-  clone() {
-    return new Position(this.section, this.offset);
+  /**
+   * Returns a range from this position to the given tail. If no explicit
+   * tail is given this returns a collapsed range focused on this position.
+   * @param {Position=this} tail The ending position
+   * @return {Range}
+   * @public
+   */
+  toRange(tail=this) {
+    return new Range(this, tail);
   }
 
   get leafSectionIndex() {
@@ -427,6 +428,30 @@ const Position = class Position {
     assert('cannot get markerPosition of a non-markerable', !!this.section.isMarkerable);
     return this.section.markerPositionAtOffset(this.offset);
   }
+};
+
+BlankPosition = class BlankPosition extends Position {
+  constructor() {
+    super(null, 0, true);
+  }
+
+  isEqual(other) {
+    return other && other.isBlank;
+  }
+
+  toRange() { return Range.blankRange(); }
+  get leafSectionIndex() { assert('must implement get leafSectionIndex', false); }
+
+  get isMarkerable() { return false; }
+  get marker() { return false; }
+  isHeadOfPost() { return false; }
+  isTailOfPost() { return false; }
+  isHead() { return false; }
+  isTail() { return false; }
+  move() { return this; }
+  moveWord() { return this; }
+
+  get markerPosition() { return {}; }
 };
 
 export default Position;

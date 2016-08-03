@@ -1,5 +1,3 @@
-import Range from 'mobiledoc-kit/utils/cursor/range';
-
 /**
  * Convert section at the editor's cursor position into a list.
  * Does nothing if the cursor position is not at the start of the section,
@@ -26,7 +24,7 @@ export function replaceWithListSection(editor, listTagName) {
     let listSection = builder.createListSection(listTagName, [item]);
 
     postEditor.replaceSection(section, listSection);
-    postEditor.setRange(new Range(listSection.headPosition()));
+    postEditor.setRange(listSection.headPosition());
   });
 }
 
@@ -49,7 +47,7 @@ export function replaceWithHeaderSection(editor, headingTagName) {
     let { builder } = postEditor;
     let newSection = builder.createMarkupSection(headingTagName);
     postEditor.replaceSection(section, newSection);
-    postEditor.setRange(new Range(newSection.headPosition()));
+    postEditor.setRange(newSection.headPosition());
   });
 }
 

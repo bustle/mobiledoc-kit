@@ -35,6 +35,10 @@ export default class Section extends LinkedItem {
     unimplementedMethod('isValidTagName', this);
   }
 
+  get length() {
+    return 0;
+  }
+
   get isBlank() {
     unimplementedMethod('isBlank', this);
   }
@@ -47,14 +51,40 @@ export default class Section extends LinkedItem {
     unimplementedMethod('canJoin', this);
   }
 
+  /**
+   * @return {Position} The position at the start of this section
+   * @public
+   */
   headPosition() {
-    return new Position(this, 0);
+    return this.toPosition(0);
   }
 
+  /**
+   * @return {Position} The position at the end of this section
+   * @public
+   */
   tailPosition() {
-    assert('Cannot determine tailPosition without length',
-           this.length !== undefined && this.length !== null);
-    return new Position(this, this.length);
+    return this.toPosition(this.length);
+  }
+
+  /**
+   * @param {Number} offset
+   * @return {Position} The position in this section at the given offset
+   * @public
+   */
+  toPosition(offset) {
+    assert("Must pass number to `toPosition`", typeof offset === 'number');
+    assert("Cannot call `toPosition` with offset > length", offset <= this.length);
+
+    return new Position(this, offset);
+  }
+
+  /**
+   * @return {Range} A range from this section's head to tail positions
+   * @public
+   */
+  toRange() {
+    return this.headPosition().toRange(this.tailPosition());
   }
 
   join() {

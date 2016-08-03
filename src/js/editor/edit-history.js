@@ -1,6 +1,4 @@
 import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
-import Range from 'mobiledoc-kit/utils/cursor/range';
-import Position from 'mobiledoc-kit/utils/cursor/position';
 import FixedQueue from 'mobiledoc-kit/utils/fixed-queue';
 
 function findLeafSectionAtIndex(post, index) {
@@ -40,8 +38,10 @@ export class Snapshot {
       let headSection = findLeafSectionAtIndex(post, headLeafSectionIndex);
       let tailSection = findLeafSectionAtIndex(post, tailLeafSectionIndex);
 
-      return new Range(new Position(headSection, headOffset),
-                       new Position(tailSection, tailOffset));
+      head = headSection.toPosition(headOffset);
+      tail = tailSection.toPosition(tailOffset);
+
+      return head.toRange(tail);
     }
   }
 }

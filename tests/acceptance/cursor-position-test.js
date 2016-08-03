@@ -1,6 +1,5 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
-import Position from 'mobiledoc-kit/utils/cursor/position';
 
 const { test, module } = Helpers;
 
@@ -72,8 +71,7 @@ test('cursor moved left from section after card is reported as on the card with 
   Helpers.dom.moveCursorTo(editor, editorElement.firstChild.lastChild, 1);
   let { range } = editor;
 
-  assert.positionIsEqual(range.head,
-                         new Position(editor.post.sections.head, 1));
+  assert.positionIsEqual(range.head, editor.post.sections.head.toPosition(1));
 });
 
 test('cursor moved up from end of section after card is reported as on the card with offset 1', (assert) => {
@@ -198,7 +196,7 @@ test('when at the head of an atom', assert => {
   Helpers.dom.moveCursorTo(editor, atomWrapper.firstChild, 0);
   let range = editor.range;
 
-  let positionBeforeAtom = new Position(editor.post.sections.head, 'aa'.length);
+  let positionBeforeAtom = editor.post.sections.head.toPosition('aa'.length);
 
   assert.positionIsEqual(range.head, positionBeforeAtom);
 
@@ -235,7 +233,7 @@ test('when at the tail of an atom', assert => {
   editor.render(editorElement);
 
   let atomWrapper = editor.post.sections.head.markers.objectAt(1).renderNode.element;
-  let positionAfterAtom = new Position(editor.post.sections.head, 'aa'.length + 1);
+  let positionAfterAtom = editor.post.sections.head.toPosition('aa'.length + 1);
 
   // Before zwnj
   //

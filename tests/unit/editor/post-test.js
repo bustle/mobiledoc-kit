@@ -3,7 +3,6 @@ import { Editor } from 'mobiledoc-kit';
 import Helpers from '../../test-helpers';
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Range from 'mobiledoc-kit/utils/cursor/range';
-import Position from 'mobiledoc-kit/utils/cursor/position';
 
 const { module, test } = Helpers;
 
@@ -737,7 +736,7 @@ test('#toggleSection when cursor is in non-markerable section changes nothing', 
   });
 
   mockEditor = renderBuiltAbstract(post, mockEditor);
-  const range = new Range(post.sections.head.headPosition());
+  const range = post.sections.head.headPosition().toRange();
 
   postEditor = new PostEditor(mockEditor);
   postEditor.toggleSection('blockquote', range);
@@ -1194,7 +1193,7 @@ test('#toggleMarkup when cursor is in non-markerable does nothing', (assert) => 
     ]);
   });
 
-  const range = new Range(editor.post.sections.head.headPosition());
+  const range = editor.post.sections.head.headPosition().toRange();
   postEditor = new PostEditor(editor);
   postEditor.toggleMarkup('b', range);
   postEditor.complete();
@@ -1212,7 +1211,7 @@ test('#toggleMarkup when cursor surrounds non-markerable does nothing', (assert)
     ]);
   });
 
-  const range = Range.fromSection(editor.post.sections.head);
+  const range = editor.post.sections.head.toRange();
   postEditor = new PostEditor(editor);
   postEditor.toggleMarkup('b', range);
   postEditor.complete();
@@ -1232,7 +1231,7 @@ test('#toggleMarkup when range has the markup removes it', (assert) => {
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  const range = Range.fromSection(editor.post.sections.head);
+  const range = editor.post.sections.head.toRange();
   postEditor = new PostEditor(editor);
   postEditor.toggleMarkup('b', range);
   postEditor.complete();
@@ -1256,7 +1255,7 @@ test('#toggleMarkup when only some of the range has it removes it', (assert) => 
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  const range = Range.fromSection(editor.post.sections.head);
+  const range = editor.post.sections.head.toRange();
   postEditor = new PostEditor(editor);
   postEditor.toggleMarkup('b', range);
   postEditor.complete();
@@ -1278,7 +1277,7 @@ test('#toggleMarkup when range does not have the markup adds it', (assert) => {
     return post([markupSection('p', [marker('abc', [markup('b')])])]);
   });
 
-  const range = Range.fromSection(editor.post.sections.head);
+  const range = editor.post.sections.head.toRange();
   postEditor = new PostEditor(editor);
   postEditor.toggleMarkup('b', range);
   postEditor.complete();
@@ -1334,7 +1333,7 @@ test('#insertMarkers inserts an atom', (assert) => {
   editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abcdef')])]);
   });
-  let position = new Position(editor.post.sections.head, 'abc'.length);
+  let position = editor.post.sections.head.toPosition('abc'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertMarkers(position, toInsert);
   postEditor.complete();
@@ -1343,7 +1342,7 @@ test('#insertMarkers inserts an atom', (assert) => {
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
     editor._renderedRange.head,
-    new Position(editor.post.sections.head, 4)
+    editor.post.sections.head.toPosition(4)
   );
 });
 
@@ -1364,7 +1363,7 @@ test('#insertMarkers inserts the markers in middle, merging markups', (assert) =
   editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abcdef')])]);
   });
-  let position = new Position(editor.post.sections.head, 'abc'.length);
+  let position = editor.post.sections.head.toPosition('abc'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertMarkers(position, toInsert);
   postEditor.complete();
@@ -1373,7 +1372,7 @@ test('#insertMarkers inserts the markers in middle, merging markups', (assert) =
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
     editor._renderedRange.head,
-    new Position(editor.post.sections.head, 'abc123456'.length)
+    editor.post.sections.head.toPosition('abc123456'.length)
   );
 });
 
@@ -1402,7 +1401,7 @@ test('#insertMarkers inserts the markers when the markerable has no markers', (a
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
     editor._renderedRange.head,
-    new Position(editor.post.sections.head, '123456'.length)
+    editor.post.sections.head.toPosition('123456'.length)
   );
 });
 
@@ -1431,7 +1430,7 @@ test('#insertMarkers inserts the markers at start', (assert) => {
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
     editor._renderedRange.head,
-    new Position(editor.post.sections.head, '123456'.length)
+    editor.post.sections.head.toPosition('123456'.length)
   );
 });
 
@@ -1522,7 +1521,7 @@ test('#insertText inserts the text at start', (assert) => {
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
     editor._renderedRange.head,
-    new Position(editor.post.sections.head, '123'.length)
+    editor.post.sections.head.toPosition('123'.length)
   );
 });
 
@@ -1539,7 +1538,7 @@ test('#insertText inserts text in the middle', (assert) => {
   editor = buildEditorWithMobiledoc(({post, markupSection, marker, markup}) => {
     return post([markupSection('p', [marker('abc', [markup('b')])])]);
   });
-  let position = new Position(editor.post.sections.head, 'ab'.length);
+  let position = editor.post.sections.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertText(position, toInsert);
   postEditor.complete();
@@ -1548,7 +1547,7 @@ test('#insertText inserts text in the middle', (assert) => {
   assert.renderTreeIsEqual(editor._renderTree, expected);
   assert.positionIsEqual(
     editor._renderedRange.head,
-    new Position(editor.post.sections.head, 'ab123'.length)
+    editor.post.sections.head.toPosition('ab123'.length)
   );
 });
 
@@ -1594,7 +1593,7 @@ test('#_splitListItem creates two list items', (assert) => {
   });
 
   let item = editor.post.sections.head.items.head;
-  let position = new Position(item, 'abcbo'.length);
+  let position = item.toPosition('abcbo'.length);
   postEditor = new PostEditor(editor);
   postEditor._splitListItem(item, position);
   postEditor.complete();

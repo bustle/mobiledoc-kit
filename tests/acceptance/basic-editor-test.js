@@ -1,7 +1,5 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
-import Range from 'mobiledoc-kit/utils/cursor/range';
-import Position from 'mobiledoc-kit/utils/cursor/position';
 import { TAB, ENTER } from 'mobiledoc-kit/utils/characters';
 
 const { test, module } = Helpers;
@@ -187,7 +185,7 @@ test('select-all and type text works ok', (assert) => {
 
   Helpers.dom.moveCursorTo(editor, editorElement.firstChild, 0);
   let post = editor.post;
-  editor.selectRange(new Range(post.headPosition(), post.tailPosition()));
+  editor.selectRange(post.toRange());
 
   assert.selectedText('abc', 'precond - abc is selected');
   assert.hasElement('#editor p:contains(abc)', 'precond - renders p');
@@ -230,7 +228,7 @@ test('typing enter splits lines, sets cursor', (assert) => {
       ]);
     });
     assert.postIsSimilar(editor.post, expectedPost, 'correctly encoded');
-    let expectedRange = new Range(new Position(editor.post.sections.tail, 0));
+    let expectedRange = editor.post.sections.tail.headPosition().toRange();
     assert.ok(expectedRange.isEqual(editor.range), 'range is at start of new section');
     done();
   });

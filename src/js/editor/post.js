@@ -1,12 +1,15 @@
 import Position from '../utils/cursor/position';
+import Range from 'mobiledoc-kit/utils/cursor/range';
 import { forEach, reduce, filter, values, commonItems } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 import LifecycleCallbacks from '../models/lifecycle-callbacks';
 import assert from '../utils/assert';
 import { normalizeTagName } from '../utils/dom-utils';
-import Range from '../utils/cursor/range';
 import PostInserter from './post/post-inserter';
 import deprecate from 'mobiledoc-kit/utils/deprecate';
+import toRange from 'mobiledoc-kit/utils/to-range';
+
+const { FORWARD, BACKWARD } = DIRECTION;
 
 function isListSectionTagName(tagName) {
   return tagName === 'ul' || tagName === 'ol';
@@ -64,7 +67,27 @@ class PostEditor {
     this._range = this.editor.range;
   }
 
+  /**
+   * Schedules to select the given range on the editor after the postEditor
+   * has completed its work. This also updates the postEditor's active range
+   * (so that multiple calls to range-changing methods on the postEditor will
+   * update the correct range).
+   *
+   * Usage:
+   *   let range = editor.range;
+   *   editor.run(postEditor => {
+   *     let nextPosition = postEditor.deleteRange(range);
+   *
+   *     // Will position the editor's cursor at `nextPosition` after
+   *     // the postEditor finishes work and the editor rerenders.
+   *     postEditor.setRange(nextPosition);
+   *   });
+   * @param {Range|Position} range
+   * @public
+   */
   setRange(range) {
+    range = toRange(range);
+
     // TODO validate that the range is valid
     // (does not contain marked-for-removal head or tail sections?)
     this._range = range;
@@ -79,7 +102,7 @@ class PostEditor {
    *     let { range } = editor;
    *     editor.run((postEditor) => {
    *       let nextPosition = postEditor.deleteRange(range);
-   *       postEditor.setRange(new Range(nextPosition));
+   *       postEditor.setRange(nextPosition);
    *     });
    * ```
    * @param {Range} range Cursor Range object with head and tail Positions
@@ -87,6 +110,8 @@ class PostEditor {
    * @public
    */
   deleteRange(range) {
+    assert("Must pass MobiledocKit Range to `deleteRange`", range instanceof Range);
+
     let {
       head, head: {section: headSection},
       tail, tail: {section: tailSection}
@@ -174,7 +199,7 @@ class PostEditor {
       }
     }
 
-    let range = new Range(head, tail);
+    let range = head.toRange(tail);
     this.splitMarkers(range).forEach(m => this.removeMarker(m));
 
     return head;
@@ -285,13 +310,13 @@ class PostEditor {
         }
         this._joinListSections(list, listSection);
         if (prevPosition) {
-          updatedHead = prevPosition.moveRight();
+          updatedHead = prevPosition.move(FORWARD);
         }
       });
     });
 
     if (updatedHead) {
-      this.setRange(new Range(updatedHead, updatedHead, range.direction));
+      this.setRange(updatedHead);
     }
   }
 
@@ -361,18 +386,18 @@ class PostEditor {
 
   _deleteAtPositionBackward(position, unit) {
     if (position.isHead() && position.section.isListItem) {
-      this.toggleSection('p', new Range(position));
+      this.toggleSection('p', position);
       return this._range.head;
     } else {
-      let prevPosition = unit === 'word' ? position.moveWord(-1) : position.move(-1);
-      let range = new Range(prevPosition, position);
+      let prevPosition = unit === 'word' ? position.moveWord(BACKWARD) : position.move(BACKWARD);
+      let range = prevPosition.toRange(position);
       return this.deleteRange(range);
     }
   }
 
   _deleteAtPositionForward(position, unit) {
-    let nextPosition = unit === 'word' ? position.moveWord(1) : position.move(1);
-    let range = new Range(position, nextPosition);
+    let nextPosition = unit === 'word' ? position.moveWord(FORWARD) : position.move(FORWARD);
+    let range = position.toRange(nextPosition);
     return this.deleteRange(range);
   }
 
@@ -566,8 +591,8 @@ class PostEditor {
     this._coalesceMarkers(section);
     this._markDirty(section);
 
-    let nextPosition = new Position(position.section, offset);
-    this.setRange(new Range(nextPosition));
+    let nextPosition = section.toPosition(offset);
+    this.setRange(nextPosition);
     return nextPosition;
   }
 
@@ -694,9 +719,9 @@ class PostEditor {
   }
 
   /**
-   * Toggle the given markup on the current selection. If anything in the current
-   * selection has the markup, the markup will be removed from it. If nothing in the selection
-   * has the markup, the markup will be added to everything in the selection.
+   * Toggle the given markup in the given range (or at the position given). If the range/position
+   * has the markup, the markup will be removed. If nothing in the range/position
+   * has the markup, the markup will be added to everything in the range/position.
    *
    * Usage:
    * ```
@@ -713,10 +738,11 @@ class PostEditor {
    * @param {Markup|String} markupOrString Either a markup object created using
    * the builder (useful when adding a markup with attributes, like an 'a' markup),
    * or, if a string, the tag name of the markup (e.g. 'strong', 'em') to toggle.
-   * @param {Range} range in which to toggle, defaults to current editor range
+   * @param {Range|Position} range in which to toggle. Defaults to current editor range.
    * @public
    */
   toggleMarkup(markupOrMarkupString, range=this._range) {
+    range = toRange(range);
     const markup = typeof markupOrMarkupString === 'string' ?
                      this.builder.createMarkup(markupOrMarkupString) :
                      markupOrMarkupString;
@@ -735,17 +761,19 @@ class PostEditor {
   }
 
   /**
-   * Toggles the tagName of the active section or sections.
+   * Toggles the tagName of the active section or sections in the given range/position.
    * If every section has the tag name, they will all be reset to default sections.
    * Otherwise, every section will be changed to the requested type
    *
    * @param {String} sectionTagName A valid markup section or
    *        list section tag name (e.g. 'blockquote', 'h2', 'ul')
-   * @param {Range} range The range over which to toggle.
-   *        Defaults to the current editor's offsets
+   * @param {Range|Position} range The range over which to toggle.
+   *        Defaults to the current editor range.
    * @public
    */
   toggleSection(sectionTagName, range=this._range) {
+    range = toRange(range);
+
     sectionTagName = normalizeTagName(sectionTagName);
     let { post } = this.editor;
     let nextRange = range;
@@ -765,7 +793,7 @@ class PostEditor {
     });
 
     if (firstChanged) {
-      nextRange = new Range(firstChanged.headPosition());
+      nextRange = firstChanged.headPosition().toRange();
     }
     this.setRange(nextRange);
   }

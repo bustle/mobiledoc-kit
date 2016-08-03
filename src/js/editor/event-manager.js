@@ -4,7 +4,6 @@ import {
   setClipboardData,
   parsePostFromDrop
 } from 'mobiledoc-kit/utils/parse-utils';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 import { filter, forEach } from 'mobiledoc-kit/utils/array-utils';
 import Key from 'mobiledoc-kit/utils/key';
 import { TAB } from 'mobiledoc-kit/utils/characters';
@@ -224,7 +223,7 @@ export default class EventManager {
 
     editor.run(postEditor => {
       let nextPosition = postEditor.insertPost(position, pastedPost);
-      postEditor.setRange(new Range(nextPosition));
+      postEditor.setRange(nextPosition);
     });
   }
 
@@ -248,7 +247,7 @@ export default class EventManager {
 
     editor.run(postEditor => {
       let nextPosition = postEditor.insertPost(position, post);
-      postEditor.setRange(new Range(nextPosition));
+      postEditor.setRange(nextPosition);
     });
   }
 

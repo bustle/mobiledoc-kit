@@ -44,10 +44,6 @@ class Range {
     );
   }
 
-  static fromSection(section) {
-    return new Range(section.headPosition(), section.tailPosition());
-  }
-
   static blankRange() {
     return new Range(Position.blankPosition(), Position.blankPosition());
   }

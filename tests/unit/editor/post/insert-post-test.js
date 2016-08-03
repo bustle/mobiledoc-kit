@@ -1,7 +1,6 @@
 import PostEditor from 'mobiledoc-kit/editor/post';
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../../../test-helpers';
-import Position from 'mobiledoc-kit/utils/cursor/position';
 
 const { module, test } = Helpers;
 
@@ -177,7 +176,7 @@ test('in non-nested markerable at middle and paste is single non-markerable', (a
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let position = new Position(editor.post.sections.head, 'ab'.length);
+  let position = editor.post.sections.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
@@ -240,7 +239,7 @@ test('in non-nested markerable at middle and paste starts with non-markerable an
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let position = new Position(editor.post.sections.head, 'ab'.length);
+  let position = editor.post.sections.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
@@ -249,7 +248,7 @@ test('in non-nested markerable at middle and paste starts with non-markerable an
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.objectAt(2);
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, 'def'.length),
+                         expectedSection.toPosition('def'.length),
                          'cursor at end of pasted');
 });
 
@@ -280,7 +279,7 @@ test('in non-nested markerable at end and paste starts with non-markerable and e
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.tail;
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, 'def'.length),
+                         expectedSection.toPosition('def'.length),
                          'cursor at end of pasted');
 });
 
@@ -304,7 +303,7 @@ test('in non-nested markerable at start and paste is single non-nested markerabl
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.head;
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, '123'.length),
+                         expectedSection.toPosition('123'.length),
                          'cursor at end of pasted');
 });
 
@@ -319,7 +318,7 @@ test('in non-nested markerable at middle and paste is single non-nested markerab
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let position = new Position(editor.post.sections.head, 'ab'.length);
+  let position = editor.post.sections.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
@@ -328,7 +327,7 @@ test('in non-nested markerable at middle and paste is single non-nested markerab
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.head;
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, 'ab123'.length),
+                         expectedSection.toPosition('ab123'.length),
                          'cursor at end of pasted');
 });
 
@@ -377,7 +376,7 @@ test('in non-nested markerable at start and paste is list with 1 item and no mor
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.head;
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, '123'.length),
+                         expectedSection.toPosition('123'.length),
                          'cursor at end of pasted');
 });
 
@@ -393,7 +392,7 @@ test('in non-nested markerable at middle and paste is list with 1 item and no mo
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let position = new Position(editor.post.sections.head, 'ab'.length);
+  let position = editor.post.sections.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
@@ -402,7 +401,7 @@ test('in non-nested markerable at middle and paste is list with 1 item and no mo
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.head;
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, 'ab123'.length),
+                         expectedSection.toPosition('ab123'.length),
                          'cursor at end of pasted');
 });
 
@@ -486,7 +485,7 @@ test('in non-nested markerable at middle and paste is list with 1 item and has m
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let position = new Position(editor.post.sections.head, 'ab'.length);
+  let position = editor.post.sections.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
@@ -620,7 +619,7 @@ test('in non-nested markerable at middle and paste is only list with > 1 item', 
     return post([markupSection('p', [marker('abc')])]);
   });
 
-  let position = new Position(editor.post.sections.head, 'ab'.length);
+  let position = editor.post.sections.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
@@ -656,7 +655,7 @@ test('in nested markerable at start and paste is single non-nested markerable', 
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.head.items.head;
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, '123'.length),
+                         expectedSection.toPosition('123'.length),
                          'cursor at end of pasted content');
 });
 
@@ -701,7 +700,7 @@ test('in nested markerable at middle and paste is single non-nested markerable',
     return post([listSection('ul', [listItem([marker('abc')])])]);
   });
 
-  let position = new Position(editor.post.sections.head.items.head, 'ab'.length);
+  let position = editor.post.sections.head.items.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
@@ -710,7 +709,7 @@ test('in nested markerable at middle and paste is single non-nested markerable',
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.head.items.head;
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, 'ab123'.length),
+                         expectedSection.toPosition('ab123'.length),
                          'cursor at end of pasted content');
 });
 
@@ -735,7 +734,7 @@ test('in nested markerable at start and paste is list with 1 item', (assert) => 
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.head.items.head;
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, '123'.length),
+                         expectedSection.toPosition('123'.length),
                          'cursor at end of pasted content');
 });
 
@@ -776,7 +775,7 @@ test('in nested markerable at middle and paste is list with 1 item', (assert) =>
     return post([listSection('ul', [listItem([marker('abc')])])]);
   });
 
-  let position = new Position(editor.post.sections.head.items.head, 'ab'.length);
+  let position = editor.post.sections.head.items.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
@@ -785,7 +784,7 @@ test('in nested markerable at middle and paste is list with 1 item', (assert) =>
   assert.postIsSimilar(editor.post, expected);
   let expectedSection = editor.post.sections.head.items.head;
   assert.positionIsEqual(renderedRange.head,
-                         new Position(expectedSection, 'ab123'.length),
+                         expectedSection.toPosition('ab123'.length),
                          'cursor at end of pasted content');
 });
 
@@ -856,7 +855,7 @@ test('in nested markerable at middle and paste is list with > 1 item', (assert) 
     return post([listSection('ul', [listItem([marker('abc')])])]);
   });
 
-  let position = new Position(editor.post.sections.head.items.head, 'ab'.length);
+  let position = editor.post.sections.head.items.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();
@@ -980,8 +979,7 @@ test('in nested markerable at middle with multiple items and paste is non-marker
     return post([listSection('ul', [listItem([marker('abc')]), listItem([marker('def')])])]);
   });
 
-  let position = new Position(editor.post.sections.head.items.head,
-                              'ab'.length);
+  let position = editor.post.sections.head.items.head.toPosition('ab'.length);
   postEditor = new PostEditor(editor);
   postEditor.insertPost(position, toInsert);
   postEditor.complete();

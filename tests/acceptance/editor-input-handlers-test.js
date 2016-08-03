@@ -8,7 +8,7 @@ let editor, editorElement;
 
 function renderEditor(...args) {
   editor = Helpers.mobiledoc.renderInto(editorElement, ...args);
-  editor.selectRange(new Range(editor.post.tailPosition()));
+  editor.selectRange(editor.post.tailPosition());
   return editor;
 }
 
@@ -111,7 +111,7 @@ test('typing "* " at start of markup section does not remove it', (assert) => {
 
   let position = editor.post.sections.head.headPosition();
   position.offset = 1;
-  editor.selectRange(new Range(position));
+  editor.selectRange(position);
 
   Helpers.dom.insertText(editor, ' ');
   assert.hasElement('#editor p:contains(* abc)', 'p is still there');
@@ -122,7 +122,7 @@ test('typing "* " inside of a list section does not create a new list section', 
     return post([listSection('ul', [listItem([marker('*')])])]);
   });
   let position = editor.post.sections.head.items.head.tailPosition();
-  editor.selectRange(new Range(position));
+  editor.selectRange(position);
 
   assert.hasElement('#editor ul > li:contains(*)', 'precond - has li');
 
@@ -192,7 +192,7 @@ test('an input handler will trigger anywhere in the text', (assert) => {
   });
 
   // at start
-  editor.selectRange(new Range(editor.post.headPosition()));
+  editor.selectRange(editor.post.headPosition());
   Helpers.dom.insertText(editor, '@');
   assert.equal(expandCount, 1, 'expansion was run at start');
   assert.deepEqual(lastMatches, ['@'], 'correct match at start');
@@ -204,7 +204,7 @@ test('an input handler will trigger anywhere in the text', (assert) => {
   assert.deepEqual(lastMatches, ['@'], 'correct match at middle');
 
   // end
-  editor.selectRange(new Range(editor.post.tailPosition()));
+  editor.selectRange(editor.post.tailPosition());
   Helpers.dom.insertText(editor, '@');
   assert.equal(expandCount, 3, 'expansion was run at end');
   assert.deepEqual(lastMatches, ['@'], 'correct match at end');

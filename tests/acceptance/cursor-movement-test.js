@@ -2,7 +2,6 @@ import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import { supportsSelectionExtend } from '../helpers/browsers';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 
 const { test, module } = Helpers;
 
@@ -339,12 +338,12 @@ test('left/right arrows moves cursor l-to-r and r-to-l across atom', (assert) =>
     return post([markupSection('p', [atom('my-atom', 'first')])]);
   }, editorOptions);
 
-  editor.selectRange(new Range(editor.post.tailPosition()));
+  editor.selectRange(editor.post.tailPosition());
   Helpers.dom.triggerLeftArrowKey(editor);
   assert.positionIsEqual(editor.range.head, editor.post.headPosition());
   assert.positionIsEqual(editor.range.tail, editor.post.headPosition());
 
-  editor.selectRange(new Range(editor.post.headPosition()));
+  editor.selectRange(editor.post.headPosition());
   Helpers.dom.triggerRightArrowKey(editor);
   assert.positionIsEqual(editor.range.head, editor.post.tailPosition());
   assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
@@ -358,7 +357,7 @@ test('left arrow at start atom moves to end of prev section', (assert) => {
     ]);
   }, editorOptions);
 
-  editor.selectRange(new Range(editor.post.sections.tail.headPosition()));
+  editor.selectRange(editor.post.sections.tail.headPosition());
   Helpers.dom.triggerLeftArrowKey(editor);
   assert.positionIsEqual(editor.range.head, editor.post.sections.head.tailPosition());
 });
@@ -371,7 +370,7 @@ test('right arrow at end of end atom moves to start of next section', (assert) =
     ]);
   }, editorOptions);
 
-  editor.selectRange(new Range(editor.post.sections.head.tailPosition()));
+  editor.selectRange(editor.post.sections.head.tailPosition());
   Helpers.dom.triggerRightArrowKey(editor);
   assert.positionIsEqual(editor.range.head, editor.post.sections.tail.headPosition());
 });
@@ -585,12 +584,12 @@ if (supportsSelectionExtend()) {
       return post([markupSection('p', [atom('my-atom', 'first')])]);
     }, editorOptions);
 
-    editor.selectRange(new Range(editor.post.tailPosition()));
+    editor.selectRange(editor.post.tailPosition());
     Helpers.dom.triggerLeftArrowKey(editor, MODIFIERS.SHIFT);
     assert.positionIsEqual(editor.range.head, editor.post.headPosition());
     assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
 
-    editor.selectRange(new Range(editor.post.headPosition()));
+    editor.selectRange(editor.post.headPosition());
     Helpers.dom.triggerRightArrowKey(editor, MODIFIERS.SHIFT);
     assert.positionIsEqual(editor.range.head, editor.post.headPosition());
     assert.positionIsEqual(editor.range.tail, editor.post.tailPosition());
