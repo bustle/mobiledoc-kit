@@ -1,3 +1,21 @@
+<a name="0.10.4-beta.1"></a>
+## 0.10.4-beta.1 (2016-08-04)
+
+* Add `buildWithText` test helper, `postEditor#deleteRange` ([3327408](https://github.com/bustlelabs/mobiledoc-kit/commit/3327408))
+* Add `postEditor#deleteAtPosition`, deprecate `deleteFrom` ([92c3eb6](https://github.com/bustlelabs/mobiledoc-kit/commit/92c3eb6))
+* Add `toRange` and `toPosition` methods to Position, Section, Post ([c7ec6eb](https://github.com/bustlelabs/mobiledoc-kit/commit/c7ec6eb)), closes [#258](https://github.com/bustlelabs/mobiledoc-kit/issues/258)
+* Refactor `deleteRange` ([54f56cc](https://github.com/bustlelabs/mobiledoc-kit/commit/54f56cc))
+* remove post#sectionsContainedBy(range) ([27ba974](https://github.com/bustlelabs/mobiledoc-kit/commit/27ba974))
+* update changelog ([844239a](https://github.com/bustlelabs/mobiledoc-kit/commit/844239a))
+* Update demo to ember-cli@2.6.0 ([e8f9ac8](https://github.com/bustlelabs/mobiledoc-kit/commit/e8f9ac8))
+* update demo to ember-mobiledoc-editor 0.5.3 ([05ca4d3](https://github.com/bustlelabs/mobiledoc-kit/commit/05ca4d3))
+* update mobiledoc-pretty-json-renderer to ^2.0.1 ([9ff9f13](https://github.com/bustlelabs/mobiledoc-kit/commit/9ff9f13))
+* Use "version" script instead of postversion with --amend --no-edit ([13abc9d](https://github.com/bustlelabs/mobiledoc-kit/commit/13abc9d))
+* docs: `replaceWithListSection` and `replaceWithHeaderSection` ([2b65ad5](https://github.com/bustlelabs/mobiledoc-kit/commit/2b65ad5))
+* Tests: Extract `MockEditor`, `run`, `renderBuiltAbstract`, docs for `buildFromText` ([b473a27](https://github.com/bustlelabs/mobiledoc-kit/commit/b473a27))
+
+
+
 <a name="0.10.3"></a>
 ## 0.10.3 (2016-07-26)
 
