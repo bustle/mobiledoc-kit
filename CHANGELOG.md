@@ -1,12 +1,7 @@
 <a name="0.10.4"></a>
 ## 0.10.4 (2016-08-04)
 
-
-
-
-<a name="0.10.4-beta.1"></a>
-## 0.10.4-beta.1 (2016-08-04)
-
+* 0.10.4 ([8674702](https://github.com/bustlelabs/mobiledoc-kit/commit/8674702))
 * 0.10.4-beta.1 ([77eb772](https://github.com/bustlelabs/mobiledoc-kit/commit/77eb772))
 * Add `buildWithText` test helper, `postEditor#deleteRange` ([3327408](https://github.com/bustlelabs/mobiledoc-kit/commit/3327408))
 * Add `postEditor#deleteAtPosition`, deprecate `deleteFrom` ([92c3eb6](https://github.com/bustlelabs/mobiledoc-kit/commit/92c3eb6))
