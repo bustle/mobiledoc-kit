@@ -42,6 +42,6 @@
   },
   "dependencies": {
     "ember-browserify": "^1.1.9",
-    "mobiledoc-pretty-json-renderer": "bantic/mobiledoc-pretty-json-renderer#make-ie-11-compatible"
+    "mobiledoc-pretty-json-renderer": "^2.0.1"
   }
 }
