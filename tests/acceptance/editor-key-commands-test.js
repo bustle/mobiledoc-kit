@@ -2,8 +2,9 @@ import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Keycodes from 'mobiledoc-kit/utils/keycodes';
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
+import Browser from 'mobiledoc-kit/utils/browser';
 
-const { module, test } = Helpers;
+const { module, test, skip } = Helpers;
 
 let editor, editorElement;
 
@@ -152,57 +153,59 @@ testStatefulCommand({
   markupName: 'em'
 });
 
-test(`ctrl-k clears to the end of a line`, (assert) => {
-  let initialText = 'something';
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
-    markupSection('p', [marker(initialText)])
-  ]));
+if (Browser.isMac()) {
+  test(`[Mac] ctrl-k clears to the end of a line`, (assert) => {
+    let initialText = 'something';
+    editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+      markupSection('p', [marker(initialText)])
+    ]));
 
-  assert.ok(editor.hasCursor(), 'has cursor');
+    assert.ok(editor.hasCursor(), 'has cursor');
 
-  let textElement = editor.post.sections.head.markers.head.renderNode.element;
-  Helpers.dom.moveCursorTo(editor, textElement, 4);
-  Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.CTRL);
+    let textElement = editor.post.sections.head.markers.head.renderNode.element;
+    Helpers.dom.moveCursorTo(editor, textElement, 4);
+    Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.CTRL);
 
-  let changedMobiledoc = editor.serialize();
-  let expectedMobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => {
-      return post([
-        markupSection('p', [
-          marker('some')
-        ])
-      ]);
+    let changedMobiledoc = editor.serialize();
+    let expectedMobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => {
+        return post([
+          markupSection('p', [
+            marker('some')
+          ])
+        ]);
+    });
+    assert.deepEqual(changedMobiledoc, expectedMobiledoc,
+                     'mobiledoc updated appropriately');
   });
-  assert.deepEqual(changedMobiledoc, expectedMobiledoc,
-                   'mobiledoc updated appropriately');
-});
 
-test(`ctrl-k clears selected text`, (assert) => {
-  let initialText = 'something';
-  editor = renderIntoAndFocusTail( ({post, markupSection, marker}) => post([
-    markupSection('p', [marker(initialText)])
-  ]));
+  test(`[Mac] ctrl-k clears selected text`, (assert) => {
+    let initialText = 'something';
+    editor = renderIntoAndFocusTail( ({post, markupSection, marker}) => post([
+      markupSection('p', [marker(initialText)])
+    ]));
 
-  assert.ok(editor.hasCursor(), 'has cursor');
+    assert.ok(editor.hasCursor(), 'has cursor');
 
-  let textElement = editor.post.sections.head.markers.head.renderNode.element;
-  Helpers.dom.moveCursorTo(editor, textElement, 4, textElement, 8);
-  Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.CTRL);
+    let textElement = editor.post.sections.head.markers.head.renderNode.element;
+    Helpers.dom.moveCursorTo(editor, textElement, 4, textElement, 8);
+    Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.CTRL);
 
-  let changedMobiledoc = editor.serialize();
-  let expectedMobiledoc = Helpers.mobiledoc.build(
-    ({post, markupSection, marker}) => {
-      return post([
-        markupSection('p', [
-          marker('someg')
-        ])
-      ]);
+    let changedMobiledoc = editor.serialize();
+    let expectedMobiledoc = Helpers.mobiledoc.build(
+      ({post, markupSection, marker}) => {
+        return post([
+          markupSection('p', [
+            marker('someg')
+          ])
+        ]);
+    });
+    assert.deepEqual(changedMobiledoc, expectedMobiledoc,
+                     'mobiledoc updated appropriately');
   });
-  assert.deepEqual(changedMobiledoc, expectedMobiledoc,
-                   'mobiledoc updated appropriately');
-});
+}
 
-test('cmd-k links selected text', (assert) => {
+let toggleLinkTest = (assert, modifier) => {
   assert.expect(3);
 
   let url = 'http://bustle.com';
@@ -218,12 +221,12 @@ test('cmd-k links selected text', (assert) => {
   };
 
   Helpers.dom.selectText(editor ,'something', editorElement);
-  Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.META);
+  Helpers.dom.triggerKeyCommand(editor, 'K', modifier);
 
   assert.hasElement(`#editor a[href="${url}"]:contains(something)`);
-});
+};
 
-test('cmd-k unlinks selected text if it was already linked', (assert) => {
+let toggleLinkUnlinkTest = (assert, modifier) => {
   assert.expect(4);
 
   let url = 'http://bustle.com';
@@ -240,11 +243,48 @@ test('cmd-k unlinks selected text if it was already linked', (assert) => {
                     'precond -- has link');
 
   Helpers.dom.selectText(editor ,'something', editorElement);
-  Helpers.dom.triggerKeyCommand(editor, 'K', MODIFIERS.META);
+  Helpers.dom.triggerKeyCommand(editor, 'K', modifier);
 
   assert.hasNoElement(`#editor a[href="${url}"]:contains(something)`,
                      'removes linked text');
   assert.hasElement(`#editor p:contains(something)`, 'unlinked text remains');
+};
+
+let toggleTests = [
+  {
+    precondition: () => Browser.isMac(),
+    msg: '[Mac] cmd-k links selected text',
+    testFn: toggleLinkTest,
+    modifier: MODIFIERS.META
+  },
+  {
+    precondition: () => Browser.isMac(),
+    msg: '[Mac] cmd-k unlinks selected text if it was already linked',
+    testFn: toggleLinkUnlinkTest,
+    modifier: MODIFIERS.META
+  },
+  {
+    precondition: () => Browser.isWin(),
+    msg: '[Windows] ctrl-k links selected text',
+    testFn: toggleLinkTest,
+    modifier: MODIFIERS.CTRL
+  },
+  {
+    precondition: () => Browser.isWin(),
+    msg: '[Windows] ctrl-k unlinks selected text if it was already linked',
+    testFn: toggleLinkUnlinkTest,
+    modifier: MODIFIERS.CTRL
+  },
+];
+
+toggleTests.forEach(({precondition, msg, testFn, modifier}) => {
+  if (!precondition()) {
+    skip(msg);
+  } else {
+    test(msg, (assert) => {
+      testFn(assert, modifier);
+    });
+  }
 });
 
 test('new key commands can be registered', (assert) => {

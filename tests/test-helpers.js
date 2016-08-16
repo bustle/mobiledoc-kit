@@ -48,6 +48,7 @@ export default {
   test,
   module,
   skipInIE11,
+  skip,
   wait,
   postEditor: { run, renderBuiltAbstract, MockEditor }
 };
