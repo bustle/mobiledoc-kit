@@ -25,6 +25,44 @@ function gotoEndOfLine(editor) {
   });
 }
 
+function deleteToEndOfSection(editor) {
+  let { range } = editor;
+  if (range.isCollapsed) {
+    let { head, head: { section } } = range;
+    range = head.toRange(section.tailPosition());
+  }
+  editor.run(postEditor => {
+    let nextPosition = postEditor.deleteRange(range);
+    postEditor.setRange(nextPosition);
+  });
+}
+
+function toggleLink(editor) {
+  if (editor.range.isCollapsed) {
+    return;
+  }
+
+  let selectedText = editor.cursor.selectedText();
+  let defaultUrl = '';
+  if (selectedText.indexOf('http') !== -1) { defaultUrl = selectedText; }
+
+  let {range} = editor;
+  let hasLink = editor.detectMarkupInRange(range, 'a');
+
+  if (hasLink) {
+    editor.run(postEditor => postEditor.toggleMarkup('a'));
+  } else {
+    editor.showPrompt('Enter a URL', defaultUrl, url => {
+      if (!url) { return; }
+
+      editor.run(postEditor => {
+        let markup = postEditor.builder.createMarkup('a', {href: url});
+        postEditor.toggleMarkup(markup);
+      });
+    });
+  }
+}
+
 export const DEFAULT_KEY_COMMANDS = [{
   str: 'META+B',
   run(editor) {
@@ -48,15 +86,11 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'CTRL+K',
   run(editor) {
-    let { range } = editor;
-    if (range.isCollapsed) {
-      let { head, head: { section } } = range;
-      range = head.toRange(section.tailPosition());
+    if (Browser.isMac()) {
+      return deleteToEndOfSection(editor);
+    } else if (Browser.isWin()) {
+      return toggleLink(editor);
     }
-    editor.run(postEditor => {
-      let nextPosition = postEditor.deleteRange(range);
-      postEditor.setRange(nextPosition);
-    });
   }
 }, {
   str: 'CTRL+A',
@@ -84,30 +118,9 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
   str: 'META+K',
   run(editor) {
-    if (editor.range.isCollapsed) {
-      return;
-    }
+    return toggleLink(editor);
+  },
 
-    let selectedText = editor.cursor.selectedText();
-    let defaultUrl = '';
-    if (selectedText.indexOf('http') !== -1) { defaultUrl = selectedText; }
-
-    let {range} = editor;
-    let hasLink = editor.detectMarkupInRange(range, 'a');
-
-    if (hasLink) {
-      editor.run(postEditor => postEditor.toggleMarkup('a'));
-    } else {
-      editor.showPrompt('Enter a URL', defaultUrl, url => {
-        if (!url) { return; }
-
-        editor.run(postEditor => {
-          let markup = postEditor.builder.createMarkup('a', {href: url});
-          postEditor.toggleMarkup(markup);
-        });
-      });
-    }
-  }
 }, {
   str: 'META+Z',
   run(editor) {
