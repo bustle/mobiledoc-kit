@@ -1,7 +1,22 @@
+<a name="0.10.5"></a>
+## 0.10.5 (2016-08-16)
+
+* fix(links): Ensure that CTRL+K on Windows toggles link. Fixes #452 (#453) ([3220534](https://github.com/bustlelabs/mobiledoc-kit/commit/3220534)), closes [#452](https://github.com/bustlelabs/mobiledoc-kit/issues/452) [#453](https://github.com/bustlelabs/mobiledoc-kit/issues/453)
+* style(links): Add nobreak to links in the editor so toolips are always accessible (#449) ([b75bb7d](https://github.com/bustlelabs/mobiledoc-kit/commit/b75bb7d))
+* docs(changelog): Update changelog manually ([2ceb39d](https://github.com/bustlelabs/mobiledoc-kit/commit/2ceb39d))
+
+
+
 <a name="0.10.4"></a>
 ## 0.10.4 (2016-08-04)
 
 * 0.10.4 ([8674702](https://github.com/bustlelabs/mobiledoc-kit/commit/8674702))
+
+
+
+<a name="0.10.4-beta.1"></a>
+## 0.10.4-beta.1 (2016-08-04)
+
 * 0.10.4-beta.1 ([77eb772](https://github.com/bustlelabs/mobiledoc-kit/commit/77eb772))
 * Add `buildWithText` test helper, `postEditor#deleteRange` ([3327408](https://github.com/bustlelabs/mobiledoc-kit/commit/3327408))
 * Add `postEditor#deleteAtPosition`, deprecate `deleteFrom` ([92c3eb6](https://github.com/bustlelabs/mobiledoc-kit/commit/92c3eb6))
