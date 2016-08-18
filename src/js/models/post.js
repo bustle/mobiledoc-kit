@@ -63,6 +63,21 @@ class Post {
   }
 
   /**
+   * If the post has no sections, or only has one, blank section, then it does
+   * not have content and this method returns false. Otherwise it is true.
+   * @return {Boolean}
+   * @public
+   */
+  get hasContent() {
+    if ((this.sections.length > 1) ||
+        (this.sections.length === 1 && !this.sections.head.isBlank)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
    * @param {Range} range
    * @return {Array} markers that are completely contained by the range
    */

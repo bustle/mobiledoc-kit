@@ -10,7 +10,7 @@ import RenderTree from 'mobiledoc-kit/models/render-tree';
 import mobiledocRenderers from '../renderers/mobiledoc';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 import { mergeWithOptions } from '../utils/merge';
-import { normalizeTagName, clearChildNodes, addClassName } from '../utils/dom-utils';
+import { normalizeTagName, clearChildNodes } from '../utils/dom-utils';
 import { forEach, filter, contains, values } from '../utils/array-utils';
 import { setData } from '../utils/element-utils';
 import Cursor from '../utils/cursor';
@@ -35,7 +35,9 @@ import LogManager from 'mobiledoc-kit/utils/log-manager';
 import toRange from 'mobiledoc-kit/utils/to-range';
 import MobiledocError from 'mobiledoc-kit/utils/mobiledoc-error';
 
-export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
+// This export may later be deprecated, but re-export it from the renderer here
+// for consumers that may depend on it.
+export { EDITOR_ELEMENT_CLASS_NAME } from 'mobiledoc-kit/renderers/editor-dom';
 
 const defaults = {
   placeholder: 'Write here...',
@@ -226,7 +228,6 @@ class Editor {
            'rendering of an existing editor instance.',
            !this.hasRendered);
 
-    addClassName(element, EDITOR_ELEMENT_CLASS_NAME);
     element.spellcheck = this.spellcheck;
 
     clearChildNodes(element);
@@ -823,8 +824,12 @@ class Editor {
   // If the editor has a selection but is not focused, focus it
   _ensureFocus() {
     if (this._hasSelection() && !this._hasFocus()) {
-      this.element.focus();
+      this.focus();
     }
+  }
+
+  focus() {
+    this.element.focus();
   }
 
   /**

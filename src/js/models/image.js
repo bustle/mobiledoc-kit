@@ -11,6 +11,10 @@ export default class Image extends Section {
     return false;
   }
 
+  get isBlank() {
+    return false;
+  }
+
   get length() {
     return 1;
   }

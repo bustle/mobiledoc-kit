@@ -29,6 +29,7 @@ module('Unit: Renderer: Editor-Dom', {
     }
     if (editor) {
       editor.destroy();
+      editor = null;
     }
   }
 });
@@ -58,7 +59,7 @@ test("renders a dirty post with un-rendered sections", (assert) => {
   const renderTree = new RenderTree(post);
   render(renderTree);
 
-  assert.equal(renderTree.rootElement.outerHTML, '<div><p><br></p><p><br></p></div>',
+  assert.equal(renderTree.rootElement.innerHTML, '<p><br></p><p><br></p>',
                'correct HTML is rendered');
 
   assert.ok(renderTree.rootNode.childNodes.head,

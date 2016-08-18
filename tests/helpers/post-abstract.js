@@ -21,6 +21,7 @@ function build(treeFn) {
     listSection   : (...args) => builder.createListSection(...args),
     listItem      : (...args) => builder.createListItem(...args),
     cardSection   : (...args) => builder.createCardSection(...args),
+    imageSection  : (...args) => builder.createImageSection(...args),
     atom          : (...args) => builder.createAtom(...args)
   };
 

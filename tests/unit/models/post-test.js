@@ -509,3 +509,37 @@ test('#headPosition and #tailPosition when post is blank return blank', (assert)
   assert.positionIsEqual(head, Position.blankPosition(), 'head pos');
   assert.positionIsEqual(tail, Position.blankPosition(), 'tail pos');
 });
+
+test('#hasContent gives correct value', (assert) => {
+  let expectations = Helpers.postAbstract.build(({post, markupSection, imageSection, marker}) => {
+    return {
+      hasNoContent: [{
+        message: 'no sections',
+        post: post()
+      }, {
+        message: '1 blank section',
+        post: post([markupSection('p')])
+      }, {
+        message: '1 section with blank marker',
+        post: post([markupSection('p', [marker('')])])
+      }],
+      hasContent: [{
+        message: '1 section with non-blank marker',
+        post: post([markupSection('p', [marker('text')])])
+      }, {
+        message: '2 sections',
+        post: post([markupSection('p'), markupSection('p')])
+      }, {
+        message: 'image section',
+        post: post([imageSection()])
+      }]
+    };
+  });
+
+  expectations.hasNoContent.forEach(({message, post}) => {
+    assert.ok(!post.hasContent, message + ' !hasContent');
+  });
+  expectations.hasContent.forEach(({message, post}) => {
+    assert.ok(post.hasContent, message + ' hasContent');
+  });
+});
