@@ -249,6 +249,40 @@ test('deleting across 1 section removes it, joins the 2 boundary sections', (ass
                     'remaining paragraph has correct text');
 });
 
+test('failing to delete will not trigger deleting hooks', (assert) => {
+  assert.expect(0);
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.willDelete(() => {
+    assert.ok(false, 'willDelete should not be triggered');
+  });
+  editor.didDelete(() => {
+    assert.ok(false, 'didDelete should not be triggered');
+  });
+
+  editor.render(editorElement);
+  editor.disableEditing();
+  Helpers.dom.triggerDelete(editor);
+});
+
+test('deleting chracter triggers deleting hooks', (assert) => {
+  assert.expect(3);
+  let lifeCycles = [];
+
+  editor = new Editor({mobiledoc: mobileDocWith2Sections});
+  editor.willDelete(() => {
+    assert.ok(true, 'willDelete is triggered');
+    lifeCycles.push('willDelete');
+  });
+  editor.didDelete(() => {
+    assert.ok(true, 'didDelete is triggered');
+    lifeCycles.push('didDelete');
+  });
+  editor.render(editorElement);
+
+  Helpers.dom.triggerDelete(editor);
+  assert.deepEqual(lifeCycles, ['willDelete', 'didDelete'], 'hooks are triggered in order');
+});
+
 test('keystroke of delete removes that character', (assert) => {
   editor = new Editor({mobiledoc: mobileDocWith3Sections});
   editor.render(editorElement);
