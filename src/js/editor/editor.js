@@ -59,6 +59,8 @@ const CALLBACK_QUEUES = {
   DID_UPDATE: 'didUpdate',
   WILL_RENDER: 'willRender',
   DID_RENDER: 'didRender',
+  WILL_DELETE: 'willDelete',
+  DID_DELETE: 'didDelete',
   CURSOR_DID_CHANGE: 'cursorDidChange',
   DID_REPARSE: 'didReparse',
   POST_DID_CHANGE: 'postDidChange',
@@ -311,11 +313,13 @@ class Editor {
   performDelete({direction, unit}={direction: DIRECTION.BACKWARD, unit: 'char'}) {
     let { range } = this;
 
+    this.runCallbacks(CALLBACK_QUEUES.WILL_DELETE);
     if (range.isCollapsed) {
       this.deleteAtPosition(range.head, direction, {unit});
     } else {
       this.deleteRange(range);
     }
+    this.runCallbacks(CALLBACK_QUEUES.DID_DELETE);
   }
 
   handleNewline(event) {
@@ -746,6 +750,22 @@ class Editor {
    */
   didRender(callback) {
     this.addCallback(CALLBACK_QUEUES.DID_RENDER, callback);
+  }
+
+  /**
+   * @param {Function} callback This callback will be called before deleting.
+   * @public
+   */
+  willDelete(callback) {
+    this.addCallback(CALLBACK_QUEUES.WILL_DELETE, callback);
+  }
+
+  /**
+   * @param {Function} callback This callback will be called after deleting.
+   * @public
+   */
+  didDelete(callback) {
+    this.addCallback(CALLBACK_QUEUES.DID_DELETE, callback);
   }
 
   /**
