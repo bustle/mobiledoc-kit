@@ -130,6 +130,8 @@ The available lifecycle hooks are:
    the DOM is updated.
 * `editor.didRender()` - After the DOM has been updated to match the
   edited post.
+* `editor.willDelete((range, direction, unit))` - Provides `range`, `direction` and `unit` to identify the coming deletion.
+* `editor.didDelete((range, direction, unit))` - Provides `range`, `direction` and `unit` to identify the completed deletion.
 * `editor.cursorDidChange()` - When the cursor (or selection) changes as a result of arrow-key
   movement or clicking in the document.
 * `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))

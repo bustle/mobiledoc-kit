@@ -313,13 +313,13 @@ class Editor {
   performDelete({direction, unit}={direction: DIRECTION.BACKWARD, unit: 'char'}) {
     let { range } = this;
 
-    this.runCallbacks(CALLBACK_QUEUES.WILL_DELETE);
+    this.runCallbacks(CALLBACK_QUEUES.WILL_DELETE, [range, direction, unit]);
     if (range.isCollapsed) {
       this.deleteAtPosition(range.head, direction, {unit});
     } else {
       this.deleteRange(range);
     }
-    this.runCallbacks(CALLBACK_QUEUES.DID_DELETE);
+    this.runCallbacks(CALLBACK_QUEUES.DID_DELETE, [range, direction, unit]);
   }
 
   handleNewline(event) {

@@ -265,15 +265,21 @@ test('failing to delete will not trigger deleting hooks', (assert) => {
 });
 
 test('deleting chracter triggers deleting hooks', (assert) => {
-  assert.expect(3);
+  assert.expect(9);
   let lifeCycles = [];
 
   editor = new Editor({mobiledoc: mobileDocWith2Sections});
-  editor.willDelete(() => {
+  editor.willDelete((range, direction, unit) => {
+    assert.ok(range, 'range is not empty');
+    assert.equal(direction, -1, 'direction defaults to -1');
+    assert.equal(unit, 'char', 'unit defaults to char');
     assert.ok(true, 'willDelete is triggered');
     lifeCycles.push('willDelete');
   });
-  editor.didDelete(() => {
+  editor.didDelete((range, direction, unit) => {
+    assert.ok(range, 'range is not empty');
+    assert.equal(direction, -1, 'direction defaults to -1');
+    assert.equal(unit, 'char', 'unit defaults to char');
     assert.ok(true, 'didDelete is triggered');
     lifeCycles.push('didDelete');
   });
