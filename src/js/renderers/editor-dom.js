@@ -12,7 +12,7 @@ import {
   ATOM_TYPE
 } from '../models/types';
 import { startsWith, endsWith } from '../utils/string-utils';
-import { addClassName } from '../utils/dom-utils';
+import { addClassName, removeClassName } from '../utils/dom-utils';
 import { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section';
 import assert from '../utils/assert';
 import { TAB } from 'mobiledoc-kit/utils/characters';
@@ -23,6 +23,8 @@ export const TAB_CHARACTER = '\u2003';
 export const SPACE = ' ';
 export const ZWNJ = '\u200c';
 export const ATOM_CLASS_NAME = '-mobiledoc-kit__atom';
+export const EDITOR_HAS_NO_CONTENT_CLASS_NAME = '__has-no-content';
+export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
 
 function createElementFromMarkup(doc, markup) {
   let element = doc.createElement(markup.tagName);
@@ -317,6 +319,12 @@ class Visitor {
   [POST_TYPE](renderNode, post, visit) {
     if (!renderNode.element) {
       renderNode.element = document.createElement('div');
+    }
+    addClassName(renderNode.element, EDITOR_ELEMENT_CLASS_NAME);
+    if (post.hasContent) {
+      removeClassName(renderNode.element, EDITOR_HAS_NO_CONTENT_CLASS_NAME);
+    } else {
+      addClassName(renderNode.element, EDITOR_HAS_NO_CONTENT_CLASS_NAME);
     }
     visit(renderNode, post.sections);
   }

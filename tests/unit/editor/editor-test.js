@@ -1,5 +1,5 @@
 import Editor from 'mobiledoc-kit/editor/editor';
-import { EDITOR_ELEMENT_CLASS_NAME } from 'mobiledoc-kit/editor/editor';
+import { EDITOR_ELEMENT_CLASS_NAME, EDITOR_HAS_NO_CONTENT_CLASS_NAME } from 'mobiledoc-kit/renderers/editor-dom';
 import { normalizeTagName } from 'mobiledoc-kit/utils/dom-utils';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 import Range from 'mobiledoc-kit/utils/cursor/range';
@@ -58,7 +58,7 @@ test('rendering an editor without a class name adds appropriate class', (assert)
 
   editor = new Editor();
   editor.render(editorElement);
-  assert.equal(editor.element.className, EDITOR_ELEMENT_CLASS_NAME);
+  assert.hasClass(editor.element, EDITOR_ELEMENT_CLASS_NAME);
 });
 
 test('rendering an editor adds EDITOR_ELEMENT_CLASS_NAME if not there', (assert) => {
@@ -66,9 +66,29 @@ test('rendering an editor adds EDITOR_ELEMENT_CLASS_NAME if not there', (assert)
 
   editor = new Editor();
   editor.render(editorElement);
-  const hasClass = (className) => editor.element.classList.contains(className);
-  assert.ok(hasClass(EDITOR_ELEMENT_CLASS_NAME), 'has editor el class name');
-  assert.ok(hasClass('abc') && hasClass('def'), 'preserves existing class names');
+
+  assert.hasClass(editor.element, EDITOR_ELEMENT_CLASS_NAME, `adds ${EDITOR_ELEMENT_CLASS_NAME}`);
+  assert.hasClass(editor.element, 'abc', 'preserves existing classnames');
+  assert.hasClass(editor.element, 'def', 'preserves existing classnames');
+});
+
+test('rendering an editor adds EDITOR_HAS_NO_CONTENT_CLASS_NAME if post has no content', (assert) => {
+  editor = new Editor();
+  assert.ok(!editor.post.hasContent, 'precond - post has no content');
+  editor.render(editorElement);
+
+  assert.hasClass(editorElement, EDITOR_HAS_NO_CONTENT_CLASS_NAME);
+
+  // Firefox requires that the cursor be placed explicitly for this test to pass,
+  // `editor.focus()` won't work when running this test on CI in Firefox
+  Helpers.dom.moveCursorTo(editor, editor.element, 0);
+
+  editor.insertText('abc');
+  assert.ok(editor.post.hasContent, 'editor has content');
+  assert.notHasClass(editorElement, EDITOR_HAS_NO_CONTENT_CLASS_NAME, `removes "${EDITOR_HAS_NO_CONTENT_CLASS_NAME}" when editor has content`);
+
+  editor.deleteRange(editor.post.toRange());
+  assert.hasClass(editorElement, EDITOR_HAS_NO_CONTENT_CLASS_NAME, `adds "${EDITOR_HAS_NO_CONTENT_CLASS_NAME}" after editor content is all deleted`);
 });
 
 test('editor fires lifecycle hooks', (assert) => {

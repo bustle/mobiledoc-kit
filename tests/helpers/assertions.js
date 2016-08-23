@@ -135,6 +135,26 @@ export default function registerAssertions() {
     return found;
   };
 
+  QUnit.assert.hasClass = function(element, className,
+                               message=`element has class "${className}"`) {
+    this.pushResult({
+      result: element.classList.contains(className),
+      actual: element.classList,
+      expected: className,
+      message
+    });
+  };
+
+  QUnit.assert.notHasClass = function(element, className,
+                               message=`element has class "${className}"`) {
+    this.pushResult({
+      result: !element.classList.contains(className),
+      actual: element.classList,
+      expected: className,
+      message
+    });
+  };
+
   QUnit.assert.selectedText = function(text, message=`selectedText "${text}"`) {
     const selected = DOMHelper.getSelectedText();
     this.push(selected === text,

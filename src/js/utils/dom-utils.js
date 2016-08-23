@@ -84,6 +84,10 @@ function addClassName(element, className) {
   element.classList.add(className);
 }
 
+function removeClassName(element, className) {
+  element.classList.remove(className);
+}
+
 function normalizeTagName(tagName) {
   return tagName.toLowerCase();
 }
@@ -101,6 +105,7 @@ export {
   walkDOM,
   walkTextNodes,
   addClassName,
+  removeClassName,
   normalizeTagName,
   isTextNode,
   isCommentNode,
