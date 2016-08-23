@@ -991,3 +991,39 @@ test('in nested markerable at middle with multiple items and paste is non-marker
                          expectedSection.tailPosition(),
                          'cursor at end of pasted');
 });
+
+// See https://github.com/bustlelabs/mobiledoc-kit/issues/456
+test('insert 2 markup sections onto list', (assert) => {
+  let {post: toInsert} = Helpers.postAbstract.buildFromText(['ghi','jkl']);
+  let {post: expected} = Helpers.postAbstract.buildFromText(['* abc','* defghi','* jkl']);
+
+  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [listItem([marker('abc')]), listItem([marker('def')])])]);
+  });
+
+  let position = editor.post.tailPosition();
+  postEditor = new PostEditor(editor);
+  postEditor.insertPost(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
+
+// See https://github.com/bustlelabs/mobiledoc-kit/issues/456
+test('insert 2 markup sections + non-markup onto list', (assert) => {
+  let {post: toInsert} = Helpers.postAbstract.buildFromText(['ghi','jkl', '[some-card]']);
+  let {post: expected} = Helpers.postAbstract.buildFromText(['* abc','* defghi','* jkl', '[some-card]']);
+
+  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
+    return post([listSection('ul', [listItem([marker('abc')]), listItem([marker('def')])])]);
+  });
+
+  let position = editor.post.tailPosition();
+  postEditor = new PostEditor(editor);
+  postEditor.insertPost(position, toInsert);
+  postEditor.complete();
+
+  assert.postIsSimilar(editor.post, expected);
+  assert.renderTreeIsEqual(editor._renderTree, expected);
+});
