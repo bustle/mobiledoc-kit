@@ -66,8 +66,11 @@ class Visitor {
     if (this.cursorSection.isBlank && !this._isNested) {
       // replace blank section with entire post
       let newSections = node.sections.map(s => s.clone());
-      this._replaceSection(this.cursorSection, newSections);
-      this.cursorPosition = newSections[newSections.length - 1].tailPosition();
+      newSections.forEach(section => {
+        this._replaceSection(this.cursorSection, section);
+      });
+      let lastNewSection = newSections[newSections.length - 1];
+      this.cursorPosition = lastNewSection.tailPosition();
     } else {
       node.sections.forEach(section => this.visit(section));
     }
@@ -110,6 +113,17 @@ class Visitor {
 
   [MARKERABLE](section) {
     if (this._canMergeSection(section)) {
+      this._mergeSection(section);
+    } else if (this._isNested && this._isMarkerable) {
+      // If we are attaching a markerable section to a list item,
+      // insert a linebreak then merge the section onto the resulting blank list item
+      this._breakAtCursor();
+
+      // Advance the cursor to the head of the blank list item
+      let nextPosition = this.cursorSection.next.headPosition();
+      this.cursorPosition = nextPosition;
+
+      // Merge this section onto the list item
       this._mergeSection(section);
     } else {
       this._breakAtCursor();
@@ -215,17 +229,14 @@ class Visitor {
     this.cursorPosition = pre.tailPosition();
   }
 
-  _replaceSection(section, newSections) {
+  _replaceSection(section, newSection) {
     assert('Cannot replace section that does not have parent.sections',
            section.parent && section.parent.sections);
-    assert('Must pass enumerable to _replaceSection', !!newSections.forEach);
 
     let collection = section.parent.sections,
         reference = section.next;
     this.postEditor.removeSection(section);
-    newSections.forEach(_newSection => {
-      this.postEditor.insertSectionBefore(collection, _newSection, reference);
-    });
+    this.postEditor.insertSectionBefore(collection, newSection, reference);
   }
 
   _insertLeafSection(section) {
@@ -238,9 +249,9 @@ class Visitor {
     if (this.cursorSection.isBlank) {
       assert('Cannot insert leaf non-markerable section when cursor is nested',
              !(section.isMarkerable && this._isNested));
-      this._replaceSection(this.cursorSection, [section]);
+      this._replaceSection(this.cursorSection, section);
     } else if (this.cursorSection.next && this.cursorSection.next.isBlank) {
-      this._replaceSection(this.cursorSection.next, [section]);
+      this._replaceSection(this.cursorSection.next, section);
     } else {
       let reference = this.cursorSection.next;
       let collection = this.cursorSection.parent.sections;
