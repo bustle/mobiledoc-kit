@@ -1,6 +1,16 @@
+<a name="0.10.6"></a>
+## 0.10.6 (2016-08-23)
+
+* feat(delete): add delete hooks in lifecycle (#454) ([f7c72cd](https://github.com/bustlelabs/mobiledoc-kit/commit/f7c72cd))
+* feat(delete): add range, direction and unit to delete hook (#455) ([2884ebf](https://github.com/bustlelabs/mobiledoc-kit/commit/2884ebf))
+* fix(paste): Allow inserting multiple markup sections onto a list item (#459) ([1898cf5](https://github.com/bustlelabs/mobiledoc-kit/commit/1898cf5)), closes [#456](https://github.com/bustlelabs/mobiledoc-kit/issues/456)
+
+
+
 <a name="0.10.5"></a>
 ## 0.10.5 (2016-08-16)
 
+* 0.10.5 ([9c14bb3](https://github.com/bustlelabs/mobiledoc-kit/commit/9c14bb3))
 * fix(links): Ensure that CTRL+K on Windows toggles link. Fixes #452 (#453) ([3220534](https://github.com/bustlelabs/mobiledoc-kit/commit/3220534)), closes [#452](https://github.com/bustlelabs/mobiledoc-kit/issues/452) [#453](https://github.com/bustlelabs/mobiledoc-kit/issues/453)
 * style(links): Add nobreak to links in the editor so toolips are always accessible (#449) ([b75bb7d](https://github.com/bustlelabs/mobiledoc-kit/commit/b75bb7d))
 * docs(changelog): Update changelog manually ([2ceb39d](https://github.com/bustlelabs/mobiledoc-kit/commit/2ceb39d))
