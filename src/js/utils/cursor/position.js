@@ -106,7 +106,7 @@ Position = class Position {
   /**
    * Returns a range from this position to the given tail. If no explicit
    * tail is given this returns a collapsed range focused on this position.
-   * @param {Position=this} tail The ending position
+   * @param {Position} [tail=this] The ending position
    * @return {Range}
    * @public
    */
