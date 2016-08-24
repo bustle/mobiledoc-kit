@@ -66,11 +66,7 @@ class Visitor {
     if (this.cursorSection.isBlank && !this._isNested) {
       // replace blank section with entire post
       let newSections = node.sections.map(s => s.clone());
-      newSections.forEach(section => {
-        this._replaceSection(this.cursorSection, section);
-      });
-      let lastNewSection = newSections[newSections.length - 1];
-      this.cursorPosition = lastNewSection.tailPosition();
+      this._replaceSection(this.cursorSection, newSections);
     } else {
       node.sections.forEach(section => this.visit(section));
     }
@@ -144,19 +140,17 @@ class Visitor {
 
   // break out of a nested cursor position
   _breakNestedAtCursor() {
-    assert('Cannot call _breakNestedAtCursor if not nested',
-           this._isNested);
+    assert('Cannot call _breakNestedAtCursor if not nested', this._isNested);
 
-    let parent = this.cursorSection.parent,
-        cursorAtEndOfList = this.cursorPosition.isEqual(parent.tailPosition());
+    let parent = this.cursorSection.parent;
+    let cursorAtEndOfList = this.cursorPosition.isEqual(parent.tailPosition());
 
     if (cursorAtEndOfList) {
       let blank = this.builder.createMarkupSection();
       this._insertSectionAfter(blank, parent);
-      this.cursorPosition = blank.headPosition();
     } else {
       let [pre, blank, post] = this._breakListAtCursor(); // jshint ignore:line
-      this.cursorPosition = blank.headPosition();
+      this.cursorPosition = blank.tailPosition();
     }
   }
 
@@ -173,13 +167,6 @@ class Visitor {
         reference  = post;
     this.postEditor.insertSectionBefore(collection, blank, reference);
     return [pre, blank, post];
-  }
-
-  _insertSectionAfter(section, parent) {
-    assert('Cannot _insertSectionAfter nested section', !parent.isNested);
-    let reference = parent.next;
-    let collection = this._post.sections;
-    this.postEditor.insertSectionBefore(collection, section, reference);
   }
 
   _wrapNestedSection(section) {
@@ -226,17 +213,41 @@ class Visitor {
   _breakMarkerableAtCursor() {
     let [pre, post] = // jshint ignore:line
       this.postEditor.splitSection(this.cursorPosition);
+
     this.cursorPosition = pre.tailPosition();
   }
 
-  _replaceSection(section, newSection) {
+  _replaceSection(section, newSections) {
     assert('Cannot replace section that does not have parent.sections',
            section.parent && section.parent.sections);
+    assert('Must pass enumerable to _replaceSection', !!newSections.forEach);
 
-    let collection = section.parent.sections,
-        reference = section.next;
+    let collection = section.parent.sections;
+    let reference = section.next;
     this.postEditor.removeSection(section);
-    this.postEditor.insertSectionBefore(collection, newSection, reference);
+    newSections.forEach(section => {
+      this.postEditor.insertSectionBefore(collection, section, reference);
+    });
+    let lastSection = newSections[newSections.length - 1];
+
+    this.cursorPosition = lastSection.tailPosition();
+  }
+
+  _insertSectionBefore(section, reference) {
+    let collection = this.cursorSection.parent.sections;
+    this.postEditor.insertSectionBefore(collection, section, reference);
+
+    this.cursorPosition = section.tailPosition();
+  }
+
+  // Insert a section after the parent section.
+  // E.g., add a markup section after a list section
+  _insertSectionAfter(section, parent) {
+    assert('Cannot _insertSectionAfter nested section', !parent.isNested);
+    let reference = parent.next;
+    let collection = this._post.sections;
+    this.postEditor.insertSectionBefore(collection, section, reference);
+    this.cursorPosition = section.tailPosition();
   }
 
   _insertLeafSection(section) {
@@ -249,16 +260,13 @@ class Visitor {
     if (this.cursorSection.isBlank) {
       assert('Cannot insert leaf non-markerable section when cursor is nested',
              !(section.isMarkerable && this._isNested));
-      this._replaceSection(this.cursorSection, section);
+      this._replaceSection(this.cursorSection, [section]);
     } else if (this.cursorSection.next && this.cursorSection.next.isBlank) {
-      this._replaceSection(this.cursorSection.next, section);
+      this._replaceSection(this.cursorSection.next, [section]);
     } else {
       let reference = this.cursorSection.next;
-      let collection = this.cursorSection.parent.sections;
-      this.postEditor.insertSectionBefore(collection, section, reference);
+      this._insertSectionBefore(section, reference);
     }
-
-    this.cursorPosition = section.tailPosition();
   }
 }
 
