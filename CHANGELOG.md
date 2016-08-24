@@ -1,6 +1,18 @@
+<a name="0.10.7"></a>
+## 0.10.7 (2016-08-24)
+
+* fix(paste): Fix insertion into blank section (#466) ([a3d274d](https://github.com/bustlelabs/mobiledoc-kit/commit/a3d274d)), closes [#466](https://github.com/bustlelabs/mobiledoc-kit/issues/466) [#462](https://github.com/bustlelabs/mobiledoc-kit/issues/462)
+* fix(paste): Handle paste card at start of middle list item (#468) ([939a541](https://github.com/bustlelabs/mobiledoc-kit/commit/939a541)), closes [#467](https://github.com/bustlelabs/mobiledoc-kit/issues/467)
+* doc(jsdoc): Fix JSDocs violations and typo (#463) ([843f381](https://github.com/bustlelabs/mobiledoc-kit/commit/843f381)), closes [#463](https://github.com/bustlelabs/mobiledoc-kit/issues/463)
+* doc(jsdoc): Make building docs part of testing, to avoid jsdocs errors (#464) ([039fd04](https://github.com/bustlelabs/mobiledoc-kit/commit/039fd04))
+* feat(post): Refactor rendering of editor element (#460) ([c9d4067](https://github.com/bustlelabs/mobiledoc-kit/commit/c9d4067)), closes [#335](https://github.com/bustlelabs/mobiledoc-kit/issues/335)
+
+
+
 <a name="0.10.6"></a>
 ## 0.10.6 (2016-08-23)
 
+* 0.10.6 ([c3aed98](https://github.com/bustlelabs/mobiledoc-kit/commit/c3aed98))
 * feat(delete): add delete hooks in lifecycle (#454) ([f7c72cd](https://github.com/bustlelabs/mobiledoc-kit/commit/f7c72cd))
 * feat(delete): add range, direction and unit to delete hook (#455) ([2884ebf](https://github.com/bustlelabs/mobiledoc-kit/commit/2884ebf))
 * fix(paste): Allow inserting multiple markup sections onto a list item (#459) ([1898cf5](https://github.com/bustlelabs/mobiledoc-kit/commit/1898cf5)), closes [#456](https://github.com/bustlelabs/mobiledoc-kit/issues/456)
