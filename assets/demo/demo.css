@@ -1,0 +1,134 @@
+* , *:before, *:after {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body {
+  background-color: #F3F3F3;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  margin: 1.5em 0 0 0;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+h2 {
+  color: #3f3f3f;
+}
+
+h3 {
+  color: #5c5c5c;
+}
+
+p {
+  max-width: 45em;
+  color: #5e5d5d;
+  text-align: left;
+}
+
+p.strong {
+  color: #1f1f1f;
+  font-size: 1.25rem;
+}
+
+header {
+  padding-left: 2rem;
+  text-align: center;
+}
+
+section {
+  padding: 1rem 2rem;
+}
+
+section.libraries, section.examples, section.cards {
+  border-top: 2px solid #ccc;
+  background-color: #FFF;
+}
+
+section[role="main"] {
+  text-align: center;
+}
+
+section[role="main"] p {
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 6px 13px;
+}
+
+table th {
+  font-weight: bold;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+.editor-wrapper {
+  margin: 1em;
+  padding-left: 0.5em;
+  width: 80%;
+  min-height: 150px;
+  border: 2px solid #ccc;
+}
+
+.editor {
+}
+
+.two-column {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  -webkit-align-items: flex-start;
+  align-items: flex-start;
+  -webkit-justify-content: center;
+  justify-content: center;
+}
+
+.two-column .column {
+  flex: 1;
+  max-width: 40%;
+  margin: 1em;
+  overflow: scroll;
+}
+
+#editor-output, #editor-wrapper {
+  height: 350px;
+  overflow: scroll;
+  text-align: left;
+}
+
+.mobiledoc-output {
+  white-space: pre-wrap;
+  font-family: monospace;
+  padding: 1rem;
+  font-size: 12px;
+  background-color: #FFFFFF;
+  border: 2px solid #CCCCCC;
+}
+
+.toolbar {
+  text-align: center;
+}
+
+#editor-wrapper {
+  padding: 1rem;
+  background-color: #FFFFFF;
+  border: 2px solid #CCCCCC;
+}

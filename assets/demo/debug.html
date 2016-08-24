@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mobiledoc Kit Debug</title>
+</head>
+<body>
+  <script src="../tests/jquery/jquery.js"></script>
+  <script src="../global/mobiledoc-kit.js"></script>
+  <script src="./debug.js"></script>
+  <link rel="stylesheet" href="../css/mobiledoc-kit.css">
+  <link rel="stylesheet" href="./debug.css">
+</body>
+
+<div id='toolbar'>
+  <button class='toggle' data-action='toggleSection' data-toggle='h1'>h1</button>
+  <button class='toggle' data-action='toggleSection' data-toggle='h2'>h2</button>
+  <button class='toggle' data-action='toggleMarkup' data-toggle='strong'>strong</button>
+  <button class='toggle' data-action='toggleMarkup' data-toggle='em'>em</button>
+  <button class='insert-atom' data-name='mention'>@mention</button>
+  <button class='insert-atom' data-name='click'>@click</button>
+  <button class='insert-card' data-name='movable'>movable card</button>
+</div>
+
+<div id="editor" style='outline: 1px solid black; width: 200px; min-height: 300px;'></div>
+
+<div>
+  <h3>Cursor</h3>
+  <div id='cursor'>
+  </div>
+</div>
+
+<div>
+  <h3>Post</h3>
+  <div id='post'>
+  </div>
+</div>
+
+<div>
+  <h3>Input Mode</h3>
+  <div id='input-mode'>
+  </div>
+</div>
+
+</html>

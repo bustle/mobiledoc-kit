@@ -338,13 +338,12 @@ Tests in CI are run at Travis via Saucelabs (see the `test:ci` npm script).
 
 ### Demo
 
-There is a demo app that uses the Mobiledoc kit via the [ember-mobiledoc-editor](https://github.com/bustlelabs/ember-mobiledoc-editor)
-in `demo/`. To run the demo:
+To run the demo site locally:
 
- * `cd demo/ && npm install && bower install`
- * `ember serve` (shut down your broccoli server if it is already running on port 4200)
- * visit http://localhost:4200/
+ * `npm start`
+ * `open http://localhost:4200/demo`
 
+The assets for the demo are in `assets/demo`.
 
 ### Getting Help
 
@@ -361,8 +360,8 @@ If you have a question about usage you can post in the [gitter channel](https://
 
 The demo website is hosted at github pages. To publish a new version:
 
-  * `npm run build-website` - This builds the website into `website/` and commits it
-  * `npm run deploy-website` - Pushes the `website/` subtree to the `gh-pages`
+  * `npm run build:website` - This builds the website into `website/` and commits it
+  * `npm run deploy:website` - Pushes the `website/` subtree to the `gh-pages`
      branch of your `origin` at github
 
 Visit [bustlelabs.github.io/mobiledoc-kit/demo](https://bustlelabs.github.io/mobiledoc-kit/demo).
