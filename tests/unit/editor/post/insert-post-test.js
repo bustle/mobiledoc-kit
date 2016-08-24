@@ -170,6 +170,8 @@ let expectationGroups = [{
     [['* abc|','* def'], ['[my-card]'], ['* abc','[my-card]|','* def']],
     [['* ab|c','* def'], ['[my-card]'], ['* ab','[my-card]|','* c','* def']],
     [['* abc|','* def'], ['[my-card]'], ['* abc','[my-card]|','* def']],
+    // See https://github.com/bustlelabs/mobiledoc-kit/issues/467
+    [['* abc','* |def'], ['[my-card]'], ['* abc','[my-card]|','* def']],
 
     // insert markup section between list items
     [['* abc|','* def'], ['123'], ['* abc123|','* def']],

@@ -875,33 +875,26 @@ class PostEditor {
       position = pre.tailPosition();
     }
 
-    let positionIsStart = position.isEqual(list.headPosition()),
-        positionIsEnd   = position.isEqual(list.tailPosition());
+    let preList  = this.builder.createListSection(list.tagName);
+    let postList = this.builder.createListSection(list.tagName);
 
-    if (positionIsStart || positionIsEnd) {
-      let blank = this.builder.createListSection(list.tagName);
-      let reference = position.isEqual(list.headPosition()) ? list :
-                                                              list.next;
-      let collection = this.editor.post.sections;
-      this.insertSectionBefore(collection, blank, reference);
+    let preItem = position.section;
+    let currentList = preList;
+    list.items.forEach(item => {
+      // If this item matches the start item and the position is at its start,
+      // it should be appended to the postList instead of the preList
+      if (item === preItem && position.isEqual(item.headPosition())) {
+        currentList = postList;
+      }
+      currentList.items.append(item.clone());
+      // If we just appended the preItem, append the remaining items to the postList
+      if (item === preItem) {
+        currentList = postList;
+      }
+    });
 
-      let lists = positionIsStart ? [blank, list] : [list, blank];
-      return lists;
-    } else {
-      let preList  = this.builder.createListSection(list.tagName),
-          postList = this.builder.createListSection(list.tagName);
-      let preItem = position.section;
-      let currentList = preList;
-      list.items.forEach(item => {
-        currentList.items.append(item.clone());
-        if (item === preItem) {
-          currentList = postList;
-        }
-      });
-
-      this._replaceSection(list, [preList, postList]);
-      return [preList, postList];
-    }
+    this._replaceSection(list, [preList, postList]);
+    return [preList, postList];
   }
 
   /**
