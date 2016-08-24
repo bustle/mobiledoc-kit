@@ -16,7 +16,7 @@ const CR_LF_REGEX = new RegExp(CR+LF, 'g');
 
 export const SECTION_BREAK = LF;
 
-function normalizeLindEndings(text) {
+function normalizeLineEndings(text) {
   return text.replace(CR_LF_REGEX, LF)
              .replace(CR_REGEX, LF);
 }
@@ -35,7 +35,7 @@ export default class TextParser {
    * @return {Post} a post abstract
    */
   parse(text) {
-    text = normalizeLindEndings(text);
+    text = normalizeLineEndings(text);
     text.split(SECTION_BREAK).forEach(text => {
       let section = this._parseSection(text);
       this._appendSection(section);
