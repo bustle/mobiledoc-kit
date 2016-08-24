@@ -1,10 +1,9 @@
-import PostEditor from 'mobiledoc-kit/editor/post';
-import { Editor } from 'mobiledoc-kit';
 import Helpers from '../../../test-helpers';
 
 const { module, test } = Helpers;
+const { editor: { retargetRange } } = Helpers;
 
-let editor, editorElement, postEditor, renderedRange;
+let editor, editorElement;
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/259
 module('Unit: PostEditor: #insertPost', {
   beforeEach() {
@@ -19,1011 +18,185 @@ module('Unit: PostEditor: #insertPost', {
   }
 });
 
-function buildEditorWithMobiledoc(builderFn) {
-  let mobiledoc = Helpers.mobiledoc.build(builderFn);
-  let unknownCardHandler = () => {};
-  editor = new Editor({mobiledoc, unknownCardHandler});
-  editor.render(editorElement);
-  editor.selectRange = function(range) {
-    renderedRange = range;
-  };
-  return editor;
-}
+let blankSectionExpecations = [
+  ['* abc'], // single list item
+  ['* abc','* def'], // multiple list items
+  ['abc'], // single section
+  ['abc','def'], // multiple sections, see https://github.com/bustlelabs/mobiledoc-kit/issues/462
+  ['*abc*'], // section with markup
+  ['[my-card]'], // single card
+  ['[my-card]', '[my-other-card]'], // multiple cards
+  ['abc','* 123','* 456','[my-card]'], // mixed
+];
+blankSectionExpecations.forEach(dsl => {
+  test(`inserting "${dsl}" in blank section replaces it`, (assert) => {
+    let {post: toInsert} = Helpers.postAbstract.buildFromText(dsl);
+    let expected = toInsert;
+    editor = Helpers.editor.buildFromText(['|'], {unknownCardHandler: () => {}, element: editorElement});
 
-test('in blank section replaces it', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('abc')])])]);
-    expected = post([listSection('ul', [listItem([marker('abc')])])]);
+    editor.run(postEditor => postEditor.insertPost(editor.range.head, toInsert));
+
+    assert.renderTreeIsEqual(editor._renderTree, expected);
+    assert.postIsSimilar(editor.post, expected);
+
+    let expectedRange = editor.post.tailPosition().toRange();
+    assert.rangeIsEqual(editor.range, expectedRange);
   });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection}) => {
-    return post([markupSection()]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  assert.positionIsEqual(renderedRange.head,
-                         editor.post.sections.head.items.tail.tailPosition(),
-                        'cursor at end of pasted content');
 });
 
-test('in non-markerable at start inserts before', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([markupSection('p', [marker('abc')])]);
-    expected = post([
-      markupSection('p', [marker('abc')]),
-      cardSection('my-card', {foo:'bar'})
-    ]);
+let expectationGroups = [{
+  groupName: 'insert around card',
+  expectations: [
+    // insert 1 section
+    [['|[my-card]'], ['abc'], ['abc|','[my-card]']],
+    [['[my-card]|'], ['abc'], ['[my-card]','abc|']],
+
+    // insert multiple sections
+    [['|[my-card]'], ['abc','def'], ['abc','def|','[my-card]']],
+    [['[my-card]|'], ['abc','def'], ['[my-card]','abc','def|']],
+
+    // insert list with 1 item
+    [['|[my-card]'], ['* abc'], ['* abc|','[my-card]']],
+    [['[my-card]|'], ['* abc'], ['[my-card]','* abc|']],
+
+    // insert list with multiple items
+    [['|[my-card]'], ['* abc','* def'], ['* abc','* def|', '[my-card]']],
+    [['[my-card]|'], ['* abc','* def'], ['[my-card]','* abc','* def|']]
+  ],
+}, {
+  groupName: 'insert card around markerable',
+  expectations: [
+    // insert card only
+    [['|abc'], ['[my-card]'], ['[my-card]|','abc']],
+    [['ab|c'], ['[my-card]'], ['ab','[my-card]|','c']],
+    [['abc|'], ['[my-card]'], ['abc', '[my-card]|']],
+
+    // insert card+section
+    [['|abc'], ['[my-card]','def'], ['[my-card]','def|','abc']],
+    [['ab|c'], ['[my-card]','def'], ['ab','[my-card]','def|','c']],
+    [['abc|'], ['[my-card]','def'], ['abc','[my-card]','def|']],
+
+    // insert section+card
+    [['|abc'], ['def','[my-card]'], ['def', '[my-card]|','abc']],
+    [['ab|c'], ['def','[my-card]'], ['abdef','[my-card]|','c']],
+    [['abc|'], ['def','[my-card]'], ['abcdef','[my-card]|']]
+  ]
+}, {
+  groupName: 'insert (non-list-item) markerable(s) around markerable',
+  expectations: [
+    // insert 1 section
+    [['|abc'], ['123'], ['123|abc']],
+    [['ab|c'], ['123'], ['ab123|c']],
+    [['abc|'], ['123'], ['abc123|']],
+
+    // insert multiple sections
+    [['|abc'], ['123','456'], ['123','456|', 'abc']],
+    [['ab|c'], ['123','456'], ['ab123','456|','c']],
+    [['abc|'], ['123','456'], ['abc123','456|']]
+  ]
+}, {
+  groupName: 'insert list item(s) around markerable',
+  expectations: [
+    // insert 1 item
+    [['|abc'], ['* 123'], ['123|abc']],
+    [['ab|c'], ['* 123'], ['ab123|c']],
+    [['abc|'], ['* 123'], ['abc123|']],
+
+    // insert multiple items
+    [['|abc'], ['* 123','* 456'], ['123','* 456|', 'abc']],
+    [['ab|c'], ['* 123','* 456'], ['ab123','* 456|', 'c']],
+    [['abc|'], ['* 123','* 456'], ['abc123','* 456|']]
+  ]
+}, {
+  groupName: 'insert list+markup-section around markerable',
+  expectations: [
+    // list + markup section
+    [['|abc'], ['* 123','def'], ['123','def|','abc']],
+    [['ab|c'], ['* 123','def'], ['ab123','def|','c']],
+    [['abc|'], ['* 123','def'], ['abc123','def|']],
+
+    // markup section + 1-item list
+    [['|abc'], ['def', '* 123'], ['def', '* 123|','abc']],
+    [['ab|c'], ['def', '* 123'], ['abdef','* 123|','c']],
+    [['abc|'], ['def', '* 123'], ['abcdef','* 123|']],
+
+    // markup section + multi-item list
+    [['|abc'], ['def', '* 123','* 456'], ['def', '* 123','* 456|', 'abc']],
+    [['ab|c'], ['def', '* 123','* 456'], ['abdef', '* 123','* 456|', 'c']],
+    [['abc|'], ['def', '* 123','* 456'], ['abcdef', '* 123','* 456|']],
+  ]
+}, {
+  groupName: 'insert into list',
+  expectations: [
+    // insert 1 markup section
+    [['* |abc'], ['def'], ['* def|abc']],
+    [['* ab|c'], ['def'], ['* abdef|c']],
+    [['* abc|'], ['def'], ['* abcdef|']],
+
+    // insert multiple markup sections
+    [['* abc|'], ['def', 'ghi'], ['* abcdef', '* ghi|']],
+    // See https://github.com/bustlelabs/mobiledoc-kit/issues/456
+    [['* abc','* def|'], ['ghi', 'jkl'], ['* abc', '* defghi', '* jkl|']],
+
+    // insert markup sections + card
+    [['* abc','* def|'], ['ghi', 'jkl', '[my-card]'], ['* abc', '* defghi', '* jkl', '[my-card]|']],
+
+    // insert list item
+    [['* |abc'], ['* def'], ['* def|abc']],
+    [['* ab|c'], ['* def'], ['* abdef|c']],
+    [['* abc|'], ['* def'], ['* abcdef|']],
+
+    // insert multiple list items
+    [['* |abc'], ['* def', '* ghi'], ['* def','* ghi|', '* abc']],
+    [['* ab|c'], ['* def', '* ghi'], ['* abdef','* ghi|', '* c']],
+    [['* abc|'], ['* def', '* ghi'], ['* abcdef','* ghi|']],
+
+    // insert list + markup
+    [['* |abc'], ['* def', '123'], ['* def','123|', '* abc']],
+    [['* ab|c'], ['* def', '123'], ['* abdef','123|', '* c']],
+    [['* abc|'], ['* def', '123'], ['* abcdef','123|']],
+
+    // insert into empty list
+    [['* |'], ['[my-card]'], ['* ', '[my-card]|']],
+    [['* |'], ['abc'], ['* abc|']],
+    [['* |'], ['abc', 'def'], ['* abc', '* def|']],
+    [['* |'], ['* abc'], ['* abc|']],
+    [['* |'], ['* abc', '* def'], ['* abc', '* def|']],
+
+
+    /// insert between list items ///
+
+    // insert card between list items
+    [['* abc|','* def'], ['[my-card]'], ['* abc','[my-card]|','* def']],
+    [['* ab|c','* def'], ['[my-card]'], ['* ab','[my-card]|','* c','* def']],
+    [['* abc|','* def'], ['[my-card]'], ['* abc','[my-card]|','* def']],
+
+    // insert markup section between list items
+    [['* abc|','* def'], ['123'], ['* abc123|','* def']],
+    [['* abc','* |def'], ['123'], ['* abc','* 123|def']],
+
+    // insert 1 list item between list items
+    [['* abc|','* def'], ['* 123'], ['* abc123|','* def']],
+    [['* abc','* |def'], ['* 123'], ['* abc','* 123|def']],
+
+    // insert multiple list items between list items
+    [['* abc|','* def'], ['* 123', '* 456'], ['* abc123','* 456|','* def']],
+    [['* abc','* |def'], ['* 123', '* 456'], ['* abc','* 123', '* 456|','* def']]
+  ]
+}];
+
+expectationGroups.forEach(({groupName, expectations}) => {
+  expectations.forEach(([editorDSL, toInsertDSL, expectedDSL]) => {
+    test(`${groupName}: inserting "${toInsertDSL}" in "${editorDSL}" -> "${expectedDSL}"`, (assert) => {
+      editor = Helpers.editor.buildFromText(editorDSL, {unknownCardHandler: () => {}, element: editorElement});
+      let {post: toInsert} = Helpers.postAbstract.buildFromText(toInsertDSL);
+      let {post: expectedPost, range: expectedRange} = Helpers.postAbstract.buildFromText(expectedDSL);
+
+      editor.run(postEditor => postEditor.insertPost(editor.range.head, toInsert));
+
+      assert.renderTreeIsEqual(editor._renderTree, expectedPost);
+      assert.postIsSimilar(editor.post, expectedPost);
+      assert.rangeIsEqual(editor.range, retargetRange(expectedRange, editor.post));
+    });
   });
-
-  editor = buildEditorWithMobiledoc(({post, cardSection}) => {
-    return post([cardSection('my-card', {foo:'bar'})]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                        'cursor at end of pasted');
-});
-
-test('in non-markerable at end inserts after', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([markupSection('p', [marker('abc')])]);
-    expected = post([
-      cardSection('my-card', {foo:'bar'}),
-      markupSection('p', [marker('abc')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, cardSection}) => {
-    return post([cardSection('my-card', {foo:'bar'})]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.tail;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                        'cursor at end of pasted');
-});
-
-test('in non-nested markerable at start and paste is single non-markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([cardSection('my-card', {foo:'bar'})]);
-    expected = post([
-      cardSection('my-card', {foo:'bar'}),
-      markupSection('p', [marker('abc')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at end and paste is single non-markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([cardSection('my-card', {foo:'bar'})]);
-    expected = post([
-      markupSection('p', [marker('abc')]),
-      cardSection('my-card', {foo:'bar'})
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.tail; // card
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at middle and paste is single non-markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([cardSection('my-card', {foo:'bar'})]);
-    expected = post([
-      markupSection('p', [marker('ab')]),
-      cardSection('my-card', {foo:'bar'}),
-      markupSection('p', [marker('c')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.objectAt(1);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at start and paste starts with non-markerable and ends with markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([
-      cardSection('my-card', {foo:'bar'}),
-      markupSection('p', [marker('def')])
-    ]);
-    expected = post([
-      cardSection('my-card', {foo:'bar'}),
-      markupSection('p', [marker('def')]),
-      markupSection('p', [marker('abc')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.objectAt(1);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at middle and paste starts with non-markerable and ends with markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([
-      cardSection('my-card', {foo:'bar'}),
-      markupSection('p', [marker('def')])
-    ]);
-    expected = post([
-      markupSection('p', [marker('ab')]),
-      cardSection('my-card', {foo:'bar'}),
-      markupSection('p', [marker('def')]),
-      markupSection('p', [marker('c')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.objectAt(2);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('def'.length),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at end and paste starts with non-markerable and ends with markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([
-      cardSection('my-card', {foo:'bar'}),
-      markupSection('p', [marker('def')])
-    ]);
-    expected = post([
-      markupSection('p', [marker('abc')]),
-      cardSection('my-card', {foo:'bar'}),
-      markupSection('p', [marker('def')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.tail;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('def'.length),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at start and paste is single non-nested markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([markupSection('p', [marker('123')])]);
-    expected = post([markupSection('p', [marker('123abc')])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('123'.length),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at middle and paste is single non-nested markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([markupSection('p', [marker('123')])]);
-    expected = post([markupSection('p', [marker('ab123c')])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('ab123'.length),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at end and paste is single non-nested markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(({post, cardSection, markupSection, marker}) => {
-    toInsert = post([markupSection('p', [marker('123')])]);
-    expected = post([markupSection('p', [marker('abc123')])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at start and paste is list with 1 item and no more sections', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('123')])])]);
-    expected = post([markupSection('p', [marker('123abc')])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('123'.length),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at middle and paste is list with 1 item and no more sections', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('123')])])]);
-    expected = post([markupSection('p', [marker('ab123c')])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('ab123'.length),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at end and paste is list with 1 item and no more sections', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('123')])])]);
-    expected = post([markupSection('p', [marker('abc123')])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at start and paste is list with 1 item and has more sections', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([
-      listSection('ul', [listItem([marker('123')])]),
-      markupSection('p', [marker('def')]),
-      markupSection('p', [marker('ghi')])
-    ]);
-    expected = post([
-      markupSection('p', [marker('123')]),
-      markupSection('p', [marker('def')]),
-      markupSection('p', [marker('ghi')]),
-      markupSection('p', [marker('abc')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.objectAt(2);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at middle and paste is list with 1 item and has more sections', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([
-      listSection('ul', [listItem([marker('123')])]),
-      markupSection('p', [marker('def')]),
-      markupSection('p', [marker('ghi')])
-    ]);
-    expected = post([
-      markupSection('p', [marker('ab123')]),
-      markupSection('p', [marker('def')]),
-      markupSection('p', [marker('ghi')]),
-      markupSection('p', [marker('c')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.objectAt(2);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at end and paste is list with 1 item and has more sections', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([
-      listSection('ul', [listItem([marker('123')])]),
-      markupSection('p', [marker('def')]),
-      markupSection('p', [marker('ghi')])
-    ]);
-    expected = post([
-      markupSection('p', [marker('abc123')]),
-      markupSection('p', [marker('def')]),
-      markupSection('p', [marker('ghi')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.tail;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at start and paste is only list with > 1 item', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([
-      listSection('ul', [
-        listItem([marker('123')]),
-        listItem([marker('456')])
-      ])
-    ]);
-    expected = post([
-      markupSection('p', [marker('123')]),
-      listSection('ul', [listItem([marker('456')])]),
-      markupSection('p', [marker('abc')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.objectAt(1);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at end and paste is only list with > 1 item', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([
-      listSection('ul', [
-        listItem([marker('123')]),
-        listItem([marker('456')])
-      ])
-    ]);
-    expected = post([
-      markupSection('p', [marker('abc123')]),
-      listSection('ul', [listItem([marker('456')])])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.tail;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in non-nested markerable at middle and paste is only list with > 1 item', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([
-      listSection('ul', [
-        listItem([marker('123')]),
-        listItem([marker('456')])
-      ])
-    ]);
-    expected = post([
-      markupSection('p', [marker('ab123')]),
-      listSection('ul', [listItem([marker('456')])]),
-      markupSection('p', [marker('c')])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('abc')])]);
-  });
-
-  let position = editor.post.sections.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.objectAt(1);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in nested markerable at start and paste is single non-nested markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([markupSection('p', [marker('123')])]);
-    expected = post([
-      listSection('ul', [listItem([marker('123abc')])])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head.items.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('123'.length),
-                         'cursor at end of pasted content');
-});
-
-test('in nested markerable at end and paste is single non-nested markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([markupSection('p', [marker('123')])]);
-    expected = post([
-      listSection('ul', [listItem([marker('abc123')])])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head.items.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted content');
-});
-
-test('in nested markerable at middle and paste is single non-nested markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([markupSection('p', [marker('123')])]);
-    expected = post([
-      listSection('ul', [listItem([marker('ab123c')])])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.items.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head.items.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('ab123'.length),
-                         'cursor at end of pasted content');
-});
-
-test('in nested markerable at start and paste is list with 1 item', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('123')])])]);
-    expected = post([listSection('ul', [listItem([marker('123abc')])])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head.items.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('123'.length),
-                         'cursor at end of pasted content');
-});
-
-test('in nested markerable at end and paste is list with 1 item', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('123')])])]);
-    expected = post([listSection('ul', [listItem([marker('abc123')])])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head.items.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted content');
-});
-
-test('in nested markerable at middle and paste is list with 1 item', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('123')])])]);
-    expected = post([listSection('ul', [listItem([marker('ab123c')])])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.items.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head.items.head;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.toPosition('ab123'.length),
-                         'cursor at end of pasted content');
-});
-
-test('in nested markerable at start and paste is list with > 1 item', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('123')]), listItem([marker('456')])])]);
-    expected = post([listSection('ul', [
-      listItem([marker('123')]), listItem([marker('456')]), listItem([marker('abc')])])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head.items.objectAt(1);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in nested markerable at end and paste is list with > 1 item', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('123')]), listItem([marker('456')])])]);
-    expected = post([listSection('ul', [listItem([marker('abc123')]), listItem([marker('456')])])]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  // FIXME is this the correct expected position?
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head.items.tail;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in nested markerable at middle and paste is list with > 1 item', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([listSection('ul', [listItem([marker('123')]), listItem([marker('456')])])]);
-    expected = post([listSection('ul', [
-      listItem([marker('ab123')]), listItem([marker('456')]), listItem([marker('c')])])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.items.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.head.items.objectAt(1);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in nested markerable at start and paste is list with 1 item and more sections', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, markupSection, listSection, listItem, marker}) => {
-    toInsert = post([
-      listSection('ul', [listItem([marker('123')])]),
-      markupSection('p', [marker('456')])
-    ]);
-    expected = post([
-      listSection('ul', [listItem([marker('123')])]),
-      markupSection('p', [marker('456')]),
-      listSection('ul', [listItem([marker('abc')])])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.objectAt(1);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in blank nested markerable (1 item in list) and paste is non-markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, listSection, listItem}) => {
-    toInsert = post([
-      cardSection('the-card', {foo: 'bar'})
-    ]);
-    expected = post([
-      listSection('ul', [listItem()]),
-      cardSection('the-card', {foo: 'bar'})
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem}) => {
-    return post([listSection('ul', [listItem()])]);
-  });
-
-  let position = editor.post.sections.head.headPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  assert.postIsSimilar(editor.post, expected);
-  let expectedSection = editor.post.sections.tail;
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in nested markerable at end with multiple items and paste is non-markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, listSection, listItem, marker}) => {
-    toInsert = post([
-      cardSection('the-card', {foo: 'bar'})
-    ]);
-    expected = post([
-      listSection('ul', [listItem([marker('123')])]),
-      cardSection('the-card', {foo: 'bar'}),
-      listSection('ul', [listItem([marker('abc')])])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('123')]), listItem([marker('abc')])])]);
-  });
-
-  let position = editor.post.sections.head.items.head.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.postIsSimilar(editor.post, expected);
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  let expectedSection = editor.post.sections.objectAt(1);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-test('in nested markerable at middle with multiple items and paste is non-markerable', (assert) => {
-  let toInsert, expected;
-  Helpers.postAbstract.build(
-    ({post, cardSection, listSection, listItem, marker}) => {
-    toInsert = post([
-      cardSection('the-card', {foo: 'bar'})
-    ]);
-    expected = post([
-      listSection('ul', [listItem([marker('ab')])]),
-      cardSection('the-card', {foo: 'bar'}),
-      listSection('ul', [listItem([marker('c')]), listItem([marker('def')])])
-    ]);
-  });
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')]), listItem([marker('def')])])]);
-  });
-
-  let position = editor.post.sections.head.items.head.toPosition('ab'.length);
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.postIsSimilar(editor.post, expected);
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-  let expectedSection = editor.post.sections.objectAt(1);
-  assert.positionIsEqual(renderedRange.head,
-                         expectedSection.tailPosition(),
-                         'cursor at end of pasted');
-});
-
-// See https://github.com/bustlelabs/mobiledoc-kit/issues/456
-test('insert 2 markup sections onto list', (assert) => {
-  let {post: toInsert} = Helpers.postAbstract.buildFromText(['ghi','jkl']);
-  let {post: expected} = Helpers.postAbstract.buildFromText(['* abc','* defghi','* jkl']);
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')]), listItem([marker('def')])])]);
-  });
-
-  let position = editor.post.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.postIsSimilar(editor.post, expected);
-  assert.renderTreeIsEqual(editor._renderTree, expected);
-});
-
-// See https://github.com/bustlelabs/mobiledoc-kit/issues/456
-test('insert 2 markup sections + non-markup onto list', (assert) => {
-  let {post: toInsert} = Helpers.postAbstract.buildFromText(['ghi','jkl', '[some-card]']);
-  let {post: expected} = Helpers.postAbstract.buildFromText(['* abc','* defghi','* jkl', '[some-card]']);
-
-  editor = buildEditorWithMobiledoc(({post, listSection, listItem, marker}) => {
-    return post([listSection('ul', [listItem([marker('abc')]), listItem([marker('def')])])]);
-  });
-
-  let position = editor.post.tailPosition();
-  postEditor = new PostEditor(editor);
-  postEditor.insertPost(position, toInsert);
-  postEditor.complete();
-
-  assert.postIsSimilar(editor.post, expected);
-  assert.renderTreeIsEqual(editor._renderTree, expected);
 });
