@@ -371,7 +371,7 @@ class PostEditor {
    *     // section has text of "Howdy"
    *
    * @param {Position} position The position to delete at
-   * @param {direction=DIRECTION.BACKWARD} direction The direction to delete in
+   * @param {Direction} [direction=DIRECTION.BACKWARD] direction The direction to delete in
    * @param {Object} [options]
    * @param {String} [options.unit="char"] The unit of deletion ("word" or "char")
    * @return {Position}
