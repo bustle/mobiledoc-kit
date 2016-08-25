@@ -13,16 +13,13 @@ export default class AtomNode {
   }
 
   render() {
-    this.teardown();
+    if (!this._rendered) {
+      let {atomOptions: options, env, model: { value, payload } } = this;
+      // cache initial render
+      this._rendered = this.atom.render({options, env, value, payload});
+    }
 
-    let rendered = this.atom.render({
-      options: this.atomOptions,
-      env: this.env,
-      value: this.model.value,
-      payload: this.model.payload
-    });
-
-    this._validateAndAppendRenderResult(rendered);
+    this._validateAndAppendRenderResult(this._rendered);
   }
 
   get env() {
@@ -54,7 +51,5 @@ export default class AtomNode {
       !!rendered.nodeType
     );
     this.element.appendChild(rendered);
-    this._rendered = rendered;
   }
-
 }

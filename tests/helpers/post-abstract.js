@@ -65,13 +65,15 @@ function parsePositionOffsets(text) {
   return offsets;
 }
 
+const DEFAULT_ATOM_NAME = 'some-atom';
+
 function parseTextIntoMarkers(text, builder) {
   text = text.replace(cursorRegex,'');
   let markers = [];
 
   if (text.indexOf('@') !== -1) {
     let atomIndex = text.indexOf('@');
-    let atom = builder.atom('some-atom');
+    let atom = builder.atom(DEFAULT_ATOM_NAME);
     let pieces = [text.slice(0, atomIndex), atom, text.slice(atomIndex+1)];
     pieces.forEach(piece => {
       if (piece === atom) {
@@ -211,5 +213,6 @@ function buildFromText(texts) {
 
 export default {
   build,
-  buildFromText
+  buildFromText,
+  DEFAULT_ATOM_NAME
 };
