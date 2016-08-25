@@ -449,9 +449,14 @@ class Visitor {
     } = renderAtom(atomModel, parentElement, renderNode.prev);
     const atom = this._findAtom(atomModel.name);
 
-    const atomNode = new AtomNode(
-      editor, atom, atomModel, atomElement, options
-    );
+    let atomNode = renderNode.atomNode;
+    if (!atomNode) {
+      // create new AtomNode
+      atomNode = new AtomNode(editor, atom, atomModel, atomElement, options);
+    } else {
+      // retarget atomNode to new atom element
+      atomNode.element = atomElement;
+    }
 
     atomNode.render();
 

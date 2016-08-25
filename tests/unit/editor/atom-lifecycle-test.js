@@ -5,6 +5,7 @@ let editorElement, editor;
 import { MOBILEDOC_VERSION as MOBILEDOC_VERSION_0_3 } from 'mobiledoc-kit/renderers/mobiledoc/0-3';
 
 const { module, test } = Helpers;
+const { postAbstract: { DEFAULT_ATOM_NAME } } = Helpers;
 
 module('Unit: Editor: Atom Lifecycle', {
   beforeEach() {
@@ -18,10 +19,11 @@ module('Unit: Editor: Atom Lifecycle', {
   }
 });
 
-
-function makeEl(id) {
+function makeEl(id, text='@atom') {
   let el = document.createElement('span');
   el.id = id;
+  text = document.createTextNode(text);
+  el.appendChild(text);
   return el;
 }
 
@@ -231,15 +233,63 @@ test('onTeardown hook is called when editor is destroyed', (assert) => {
   assert.ok(teardown, 'onTeardown hook called');
 });
 
+test('onTeardown hook is called when atom is destroyed', (assert) => {
+  let teardown;
+
+  let atom = {
+    name: DEFAULT_ATOM_NAME,
+    type: 'dom',
+    render({env}) {
+      env.onTeardown(() => teardown = true);
+      return makeEl('atom-id','atom-text');
+    }
+  };
+  editor = Helpers.editor.buildFromText('abc@d|ef', {autofocus: true, atoms:[atom], element: editorElement});
+  assert.hasElement('#editor #atom-id:contains(atom-text)', 'precond - shows atom');
+  assert.ok(!teardown, 'precond - no teardown yet');
+  Helpers.dom.triggerDelete(editor);
+
+  assert.hasElement('#editor #atom-id:contains(atom-text)', 'precond - still shows atom');
+  assert.ok(!teardown, 'precond - no teardown yet');
+  Helpers.dom.triggerDelete(editor);
+
+  assert.hasNoElement('*:contains(atom-text)', 'atom destroyed');
+  assert.ok(teardown, 'calls teardown');
+});
+
+// See https://github.com/bustlelabs/mobiledoc-kit/issues/421
+test('render is not called again when modifying other parts of the section', (assert) => {
+  let renderCount = 0;
+  let atom = {
+    name: DEFAULT_ATOM_NAME,
+    type: 'dom',
+    render() {
+      renderCount++;
+      return makeEl('the-atom');
+    }
+  };
+  editor = Helpers.editor.buildFromText('abc|@def', {autofocus: true, atoms:[atom], element: editorElement});
+  assert.equal(renderCount, 1, 'renders the atom initially');
+  editor.insertText('123');
+  assert.hasElement('#editor *:contains(abc123)', 'precond - inserts text');
+  assert.equal(renderCount, 1, 'does not rerender the atom');
+});
+
 test('mutating the content of an atom does not trigger an update', (assert) => {
+  assert.expect(5);
   const done = assert.async();
 
   const atomName = 'test-atom';
 
+  let renderCount = 0;
+  let teardown;
+
   const atom = {
     name: atomName,
     type: 'dom',
-    render() {
+    render({env}) {
+      renderCount++;
+      env.onTeardown(() => teardown = true);
       return makeEl('the-atom');
     }
   };
@@ -254,12 +304,15 @@ test('mutating the content of an atom does not trigger an update', (assert) => {
 
   assert.hasNoElement('#editor #the-atom', 'precond - atom not rendered');
   editor.render(editorElement);
+  assert.equal(renderCount, 1, 'renders atom');
 
   $("#the-atom").html("updated");
 
   // ensure the mutations have had time to trigger
   Helpers.wait(function(){
     assert.ok(!updateTriggered);
+    assert.equal(renderCount, 1, 'does not rerender atom');
+    assert.ok(!teardown, 'does not teardown atom');
     done();
   });
 });
