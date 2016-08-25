@@ -395,9 +395,6 @@ class Editor {
   }
 
   _readRangeFromDOM() {
-    if (!this.isEditable) {
-      return;
-    }
     this.range = this.cursor.offsets;
   }
 
