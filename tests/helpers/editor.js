@@ -2,7 +2,8 @@ import PostAbstractHelpers from './post-abstract';
 import Editor from 'mobiledoc-kit/editor/editor';
 import MobiledocRenderer from 'mobiledoc-kit/renderers/mobiledoc/0-3';
 
-function retargetPosition(position, fromPost, toPost) {
+function retargetPosition(position, toPost) {
+  let fromPost = position.section.post;
   let sectionIndex;
   let retargetedPosition;
   fromPost.walkAllLeafSections((section,index) => {
@@ -25,9 +26,8 @@ function retargetPosition(position, fromPost, toPost) {
 }
 
 function retargetRange(range, toPost) {
-  let fromPost = range.head.section.post;
-  let newHead = retargetPosition(range.head, fromPost, toPost);
-  let newTail = retargetPosition(range.tail, fromPost, toPost);
+  let newHead = retargetPosition(range.head, toPost);
+  let newTail = retargetPosition(range.tail, toPost);
 
   return newHead.toRange(newTail);
 }
@@ -50,5 +50,6 @@ function buildFromText(texts, editorOptions={}) {
 
 export {
   buildFromText,
-  retargetRange
+  retargetRange,
+  retargetPosition
 };
