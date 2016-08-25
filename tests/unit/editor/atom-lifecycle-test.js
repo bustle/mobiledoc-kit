@@ -316,3 +316,47 @@ test('mutating the content of an atom does not trigger an update', (assert) => {
     done();
   });
 });
+
+test('atom env has "save" method, rerenders atom', (assert) => {
+  let atomArgs = {};
+  let render = 0;
+  let teardown = 0;
+  let postDidChange = 0;
+  let save;
+
+  const atom = {
+    name: DEFAULT_ATOM_NAME,
+    type: 'dom',
+    render({env, value, payload}) {
+      render++;
+      atomArgs.value = value;
+      atomArgs.payload = payload;
+      save = env.save;
+
+      env.onTeardown(() => teardown++);
+
+      return makeEl('the-atom', value);
+    }
+  };
+
+  editor = Helpers.editor.buildFromText('abc|@("value": "initial-value", "payload": {"foo": "bar"})def', {autofocus: true, atoms:[atom], element: editorElement});
+  editor.postDidChange(() => postDidChange++);
+
+  assert.equal(render, 1, 'precond - renders atom');
+  assert.equal(teardown, 0, 'precond - did not teardown');
+  assert.ok(!!save, 'precond - save hook');
+  assert.deepEqual(atomArgs, {value:'initial-value', payload:{foo: "bar"}}, 'args initially empty');
+  assert.hasElement(`#the-atom`, 'precond - displays atom');
+
+  let value = 'new-value';
+  let payload = {foo: 'baz'};
+  postDidChange = 0;
+
+  save(value, payload);
+
+  assert.equal(render, 2, 'rerenders atom');
+  assert.equal(teardown, 1, 'tears down atom');
+  assert.deepEqual(atomArgs, {value, payload}, 'updates atom values');
+  assert.ok(postDidChange, 'post changed when saving atom');
+  assert.hasElement(`#the-atom:contains(${value})`);
+});

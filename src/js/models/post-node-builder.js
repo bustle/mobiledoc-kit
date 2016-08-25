@@ -134,13 +134,13 @@ class PostNodeBuilder {
 
   /**
    * @param {String} name
-   * @param {String} [text='']
+   * @param {String} [value='']
    * @param {Object} [payload={}]
    * @param {Markup[]} [markups=[]]
    * @return {Atom}
    */
-  createAtom(name, text='', payload={}, markups=[]) {
-    const atom = new Atom(name, text, payload, markups);
+  createAtom(name, value='', payload={}, markups=[]) {
+    const atom = new Atom(name, value, payload, markups);
     atom.builder = this;
     return atom;
   }

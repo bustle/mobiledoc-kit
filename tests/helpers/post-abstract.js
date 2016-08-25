@@ -66,6 +66,7 @@ function parsePositionOffsets(text) {
 }
 
 const DEFAULT_ATOM_NAME = 'some-atom';
+const DEFAULT_ATOM_VALUE = '@atom';
 
 function parseTextIntoMarkers(text, builder) {
   text = text.replace(cursorRegex,'');
@@ -73,8 +74,38 @@ function parseTextIntoMarkers(text, builder) {
 
   if (text.indexOf('@') !== -1) {
     let atomIndex = text.indexOf('@');
-    let atom = builder.atom(DEFAULT_ATOM_NAME);
-    let pieces = [text.slice(0, atomIndex), atom, text.slice(atomIndex+1)];
+    let afterAtomIndex = atomIndex + 1;
+    let atomName = DEFAULT_ATOM_NAME,
+        atomValue = DEFAULT_ATOM_VALUE,
+        atomPayload = {};
+
+    // If "@" is followed by "( ... json ... )", parse the json data
+    if (text[atomIndex+1] === "(") {
+      let jsonStartIndex = atomIndex+1;
+      let jsonEndIndex = text.indexOf(")",jsonStartIndex);
+      afterAtomIndex = jsonEndIndex + 1;
+      if (jsonEndIndex === -1) {
+        throw new Error('Atom JSON data had unmatched "(": ' + text);
+      }
+      let jsonString = text.slice(jsonStartIndex+1, jsonEndIndex);
+      jsonString = "{" + jsonString + "}";
+      try {
+        let json = JSON.parse(jsonString);
+        if (json.name) { atomName = json.name; }
+        if (json.value) { atomValue = json.value; }
+        if (json.payload) { atomPayload = json.payload; }
+      } catch(e) {
+        throw new Error('Failed to parse atom JSON data string: ' + jsonString + ', ' + e);
+      }
+    }
+
+    // create the atom
+    let atom = builder.atom(atomName, atomValue, atomPayload);
+
+    // recursively parse the remaining text pieces
+    let pieces = [text.slice(0, atomIndex), atom, text.slice(afterAtomIndex)];
+
+    // join the markers together
     pieces.forEach(piece => {
       if (piece === atom) {
         markers.push(piece);
@@ -151,7 +182,9 @@ function parseSingleText(text, builder) {
  * Use "|" to indicate the cursor position or "<" and ">" to indicate a range.
  * Use "[card-name]" to indicate a card
  * Use asterisks to indicate bold text: "abc *bold* def"
- * Use "@" to indicate an atom
+ * Use "@" to indicate an atom, default values for name,value,payload are DEFAULT_ATOM_NAME,DEFAULT_ATOM_VALUE,{}
+ * Use "@(name, value, payload)" to specify name,value and/or payload for an atom. The string from `(` to `)` is parsed as
+ *   JSON, e.g.: '@("name": "my-atom", "value": "abc", "payload": {"foo": "bar"})' -> atom named "my-atom" with value 'abc', payload {foo: 'bar'}
  * Use "* " at the start of the string to indicate a list item ("ul")
  *
  * Examples:
