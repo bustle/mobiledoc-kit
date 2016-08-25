@@ -1,6 +1,15 @@
+<a name="0.10.8"></a>
+## 0.10.8 (2016-08-25)
+
+* feat(atom): Implement Atom `save` hook (#472) ([3ef3bc3](https://github.com/bustlelabs/mobiledoc-kit/commit/3ef3bc3)), closes [#399](https://github.com/bustlelabs/mobiledoc-kit/issues/399)
+* fix(atoms): Avoid rerendering atoms when section content changes. (#471) ([a59ae74](https://github.com/bustlelabs/mobiledoc-kit/commit/a59ae74)), closes [#421](https://github.com/bustlelabs/mobiledoc-kit/issues/421)
+
+
+
 <a name="0.10.8-beta.1"></a>
 ## 0.10.8-beta.1 (2016-08-25)
 
+* 0.10.8-beta.1 ([e3efb98](https://github.com/bustlelabs/mobiledoc-kit/commit/e3efb98))
 * fix(placeholder): Use '__has-no-content' class name to display placeholder text (#461) ([11452fe](https://github.com/bustlelabs/mobiledoc-kit/commit/11452fe)), closes [#407](https://github.com/bustlelabs/mobiledoc-kit/issues/407) [#171](https://github.com/bustlelabs/mobiledoc-kit/issues/171)
 * refactor(tests): Refactor deletion tests to be terser (#469) ([eeb9e19](https://github.com/bustlelabs/mobiledoc-kit/commit/eeb9e19))
 
