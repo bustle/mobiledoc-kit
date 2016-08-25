@@ -1,6 +1,15 @@
+<a name="0.10.8-beta.1"></a>
+## 0.10.8-beta.1 (2016-08-25)
+
+* fix(placeholder): Use '__has-no-content' class name to display placeholder text (#461) ([11452fe](https://github.com/bustlelabs/mobiledoc-kit/commit/11452fe)), closes [#407](https://github.com/bustlelabs/mobiledoc-kit/issues/407) [#171](https://github.com/bustlelabs/mobiledoc-kit/issues/171)
+* refactor(tests): Refactor deletion tests to be terser (#469) ([eeb9e19](https://github.com/bustlelabs/mobiledoc-kit/commit/eeb9e19))
+
+
+
 <a name="0.10.7"></a>
 ## 0.10.7 (2016-08-24)
 
+* 0.10.7 ([919600c](https://github.com/bustlelabs/mobiledoc-kit/commit/919600c))
 * fix(paste): Fix insertion into blank section (#466) ([a3d274d](https://github.com/bustlelabs/mobiledoc-kit/commit/a3d274d)), closes [#466](https://github.com/bustlelabs/mobiledoc-kit/issues/466) [#462](https://github.com/bustlelabs/mobiledoc-kit/issues/462)
 * fix(paste): Handle paste card at start of middle list item (#468) ([939a541](https://github.com/bustlelabs/mobiledoc-kit/commit/939a541)), closes [#467](https://github.com/bustlelabs/mobiledoc-kit/issues/467)
 * doc(jsdoc): Fix JSDocs violations and typo (#463) ([843f381](https://github.com/bustlelabs/mobiledoc-kit/commit/843f381)), closes [#463](https://github.com/bustlelabs/mobiledoc-kit/issues/463)
