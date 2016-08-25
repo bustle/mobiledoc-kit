@@ -25,7 +25,15 @@ export default class AtomNode {
   get env() {
     return {
       name: this.atom.name,
-      onTeardown: (callback) => this._teardownCallback = callback
+      onTeardown: (callback) => this._teardownCallback = callback,
+      save: (value, payload={}) => {
+        this.model.value = value;
+        this.model.payload = payload;
+
+        this.editor._postDidChange();
+        this.teardown();
+        this.render();
+      }
     };
   }
 

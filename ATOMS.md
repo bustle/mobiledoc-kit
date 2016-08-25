@@ -29,6 +29,7 @@ must be of the correct type (a DOM Node for the dom renderer, a string of html o
 
   * `name` [string] - the name of the atom
   * `onTeardown` [function] - The atom can pass a callback function: `onTeardown(callbackFn)`. The callback will be called when the rendered content is torn down.
+  * `save` [function] - Call this function with the arguments `(newValue, newPayload)` to update the atom's value and payload and rerender it.
 
 ## Atom Examples
 
@@ -53,6 +54,26 @@ let atom = {
    env.onTeardown(() => {
     console.log('tearing down atom named: ' + env.name);
    });
+ }
+};
+```
+
+Example dom atom that uses the `save` hook:
+```js
+let atom = {
+ name: 'click-counter',
+ type: 'dom',
+ render({env, value, payload}) {
+   let clicks = payload.clicks || 0;
+   let button = document.createElement('button');
+   button.appendChild(document.createTextNode('Clicks: ' + clicks));
+
+   button.onclick = () => {
+     payload.clicks = clicks + 1;
+     env.save(value, payload); // updates payload.clicks, rerenders button
+   };
+
+   return button;
  }
 };
 ```
