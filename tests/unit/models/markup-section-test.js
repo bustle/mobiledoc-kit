@@ -22,51 +22,6 @@ test('a section can append a marker', (assert) => {
   assert.equal(s1.markers.length, 1);
 });
 
-test('#splitMarker splits the marker at the offset', (assert) => {
-  const m1 = builder.createMarker('hi ');
-  const m2 = builder.createMarker('there!');
-  const s = builder.createMarkupSection('h2', [m1,m2]);
-
-  s.splitMarker(m2, 3);
-  assert.equal(s.markers.length, 3, 'adds a 3rd marker');
-  assert.equal(s.markers.objectAt(0).value, 'hi ', 'original marker unchanged');
-  assert.equal(s.markers.objectAt(1).value, 'the', 'first half of split');
-  assert.equal(s.markers.objectAt(2).value, 're!', 'second half of split');
-});
-
-test('#splitMarker splits the marker at the end offset if provided', (assert) => {
-  const m1 = builder.createMarker('hi ');
-  const m2 = builder.createMarker('there!');
-  const s = builder.createMarkupSection('h2', [m1,m2]);
-
-  s.splitMarker(m2, 1, 3);
-  assert.equal(s.markers.length, 4, 'adds a marker for the split and has one on each side');
-  assert.equal(s.markers.head.value, 'hi ', 'original marker unchanged');
-  assert.equal(s.markers.objectAt(1).value, 't');
-  assert.equal(s.markers.objectAt(2).value, 'he');
-  assert.equal(s.markers.tail.value, 're!');
-});
-
-test('#splitMarker does not create an empty marker if offset=0', (assert) => {
-  const m1 = builder.createMarker('hi ');
-  const m2 = builder.createMarker('there!');
-  const s = builder.createMarkupSection('h2', [m1,m2]);
-
-  s.splitMarker(m2, 0);
-  assert.equal(s.markers.length, 2, 'still 2 markers');
-  assert.equal(s.markers.head.value, 'hi ', 'original 1st marker unchanged');
-  assert.equal(s.markers.tail.value, 'there!', 'original 2nd marker unchanged');
-});
-
-test('#splitMarker does not remove an existing marker when the offset and endOffset are 0', (assert) => {
-  const m1 = builder.createMarker('X');
-  const s = builder.createMarkupSection('p', [m1]);
-  s.splitMarker(m1, 0, 0);
-
-  assert.equal(s.markers.length, 1, 'still 1 marker');
-  assert.equal(s.markers.head.value, 'X', 'still correct marker value');
-});
-
 test('#isBlank returns true if the text length is zero for two markers', (assert) => {
   const m1 = builder.createMarker('');
   const m2 = builder.createMarker('');

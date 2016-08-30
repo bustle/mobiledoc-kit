@@ -80,7 +80,6 @@ function getAttributes(element) {
 }
 
 function addClassName(element, className) {
-  // FIXME-IE IE10+
   element.classList.add(className);
 }
 
