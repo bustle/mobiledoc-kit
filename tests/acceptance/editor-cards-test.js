@@ -1,20 +1,16 @@
-import { Editor } from 'mobiledoc-kit';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 import Helpers from '../test-helpers';
 import { CARD_MODES } from 'mobiledoc-kit/models/card';
 
 const { test, module } = Helpers;
+const { editor: { buildFromText } } = Helpers;
 
 let editor, editorElement;
+let editorOpts;
 const cardText = 'card text';
 
-const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-  return post([cardSection('simple-card')]);
-});
-
-const simpleCard = {
-  name: 'simple-card',
+const cards = [{
+  name: 'simple',
   type: 'dom',
   render({env}) {
     let element = document.createElement('div');
@@ -33,19 +29,24 @@ const simpleCard = {
     button.onclick = env.save;
     return button;
   }
-};
-
-const positionCard = {
-  name: 'simple-card',
+}, {
+  name: 'input',
+  type: 'dom',
+  render() {
+    return $('<input id="simple-card-input">')[0];
+  }
+}, {
+  name: 'position',
   type: 'dom',
   render() {
     return $('<div id="my-simple-card"></div>')[0];
   }
-};
+}];
 
 module('Acceptance: editor: cards', {
   beforeEach() {
     editorElement = $('#editor')[0];
+    editorOpts = {element: editorElement, cards};
   },
   afterEach() {
     if (editor) { editor.destroy(); }
@@ -53,9 +54,7 @@ module('Acceptance: editor: cards', {
 });
 
 test('changing to display state triggers update on editor', (assert) => {
-  const cards = [simpleCard];
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
+  editor = buildFromText(['[simple]'], editorOpts);
 
   let updateCount = 0,
       triggeredUpdate = () => updateCount++;
@@ -80,11 +79,9 @@ test('changing to display state triggers update on editor', (assert) => {
 test('editor listeners are quieted for card actions', (assert) => {
   const done = assert.async();
 
-  const cards = [simpleCard];
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
+  editor = buildFromText(['[simple]'], editorOpts);
 
-  Helpers.dom.selectText(editor ,cardText, editorElement);
+  Helpers.dom.selectText(editor, cardText, editorElement);
   Helpers.dom.triggerEvent(document, 'mouseup');
 
   Helpers.wait(() => {
@@ -98,16 +95,15 @@ test('removing last card from mobiledoc allows additional editing', (assert) => 
   const done = assert.async();
   let button;
   const cards = [{
-    name: 'simple-card',
+    name: 'removable',
     type: 'dom',
     render({env}) {
-      button = $('<button>Click me</button>');
+      button = $('<button id="removable-button">Click me</button>');
       button.on('click', env.remove);
       return button[0];
     }
   }];
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
+  editor = buildFromText(['[removable]'], {element: editorElement, cards});
 
   assert.hasElement('#editor button:contains(Click me)', 'precond - button');
 
@@ -125,17 +121,11 @@ test('removing last card from mobiledoc allows additional editing', (assert) => 
 });
 
 test('delete when cursor is positioned at end of a card deletes card, replace with empty markup section', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-    return post([cardSection(positionCard.name)]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [positionCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['[position]|'], editorOpts);
 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.selectRange(Range.create(editor.post.sections.head, 1));
   Helpers.dom.triggerDelete(editor);
 
   assert.hasNoElement('#my-simple-card', 'removes card after delete');
@@ -143,20 +133,11 @@ test('delete when cursor is positioned at end of a card deletes card, replace wi
 });
 
 test('delete when cursor is at start of a card and prev section is blank deletes prev section', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection, markupSection}) => {
-    return post([
-      markupSection('p'),
-      cardSection(positionCard.name)
-    ]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [positionCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['','|[position]'], editorOpts);
 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasElement('#editor p', 'precond - has blank markup section');
 
-  editor.selectRange(Range.create(editor.post.sections.tail, 0));
   Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('#my-simple-card', 'card still exists after delete');
@@ -164,17 +145,11 @@ test('delete when cursor is at start of a card and prev section is blank deletes
 });
 
 test('forward-delete when cursor is positioned at start of a card deletes card, replace with empty markup section', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-    return post([cardSection(positionCard.name)]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [positionCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['|[position]'], editorOpts);
 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.selectRange(Range.create(editor.post.sections.head, 0));
   Helpers.dom.triggerDelete(editor, DIRECTION.FORWARD);
 
   assert.hasNoElement('#my-simple-card', 'removes card after delete');
@@ -182,20 +157,11 @@ test('forward-delete when cursor is positioned at start of a card deletes card, 
 });
 
 test('forward-delete when cursor is positioned at end of a card and next section is blank deletes next section', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection, markupSection}) => {
-    return post([
-      cardSection(positionCard.name),
-      markupSection()
-    ]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [positionCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['[position]|',''], editorOpts);
 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasElement('#editor p', 'precond - has blank markup section');
 
-  editor.selectRange(Range.create(editor.post.sections.head, 1));
   Helpers.dom.triggerDelete(editor, DIRECTION.FORWARD);
 
   assert.hasElement('#my-simple-card', 'still has card after delete');
@@ -203,17 +169,11 @@ test('forward-delete when cursor is positioned at end of a card and next section
 });
 
 test('selecting a card and deleting deletes the card', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-    return post([cardSection(positionCard.name)]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [positionCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['<[position]>'], editorOpts);
 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.selectRange(editor.post.sections.head.toRange());
   Helpers.dom.triggerDelete(editor);
 
   assert.hasNoElement('#my-simple-card', 'has no card after delete');
@@ -221,128 +181,56 @@ test('selecting a card and deleting deletes the card', (assert) => {
 });
 
 test('selecting a card and some text after and deleting deletes card and text', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection, markupSection, marker}) => {
-    return post([
-      cardSection(positionCard.name),
-      markupSection('p', [marker('abc')])
-    ]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [positionCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['<[position]','a>bc'], editorOpts);
 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasElement('#editor p:contains(abc)', 'precond - has markup section');
 
-  Helpers.dom.moveCursorTo(editor, editorElement.firstChild.firstChild, 0,
-                           editorElement.lastChild.firstChild, 1);
   Helpers.dom.triggerDelete(editor);
 
   assert.hasNoElement('#my-simple-card', 'has no card after delete');
-  let p = $('#editor p');
-  assert.equal(p.length, 1, 'only 1 paragraph');
-  assert.equal(p.text(), 'bc', '"a" is deleted from markup section');
+  assert.hasElement('p:contains(bc)', 'p with bc');
+  assert.hasNoElement('p:contains(abc)', '"a" is deleted');
 });
 
 test('deleting at start of empty markup section with prev card deletes the markup section', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection, markupSection}) => {
-    return post([
-      cardSection(positionCard.name),
-      markupSection('p')
-    ]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [positionCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['[position]','|'], editorOpts);
 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasElement('#editor p', 'precond - has blank markup section');
 
-  editor.selectRange(Range.create(editor.post.sections.tail, 0));
   Helpers.dom.triggerDelete(editor);
 
   assert.hasElement('#my-simple-card', 'has card after delete');
   assert.hasNoElement('#editor p', 'paragraph is gone');
-
-  let { range } = editor;
-  assert.ok(range.head.section === editor.post.sections.head,
-            'correct cursor position');
-  assert.equal(range.head.offset, 1,
-            'correct cursor offset');
 });
 
 test('press enter at end of card inserts section after card', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-    return post([cardSection(positionCard.name)]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [positionCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['[position]|'], editorOpts);
 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.selectRange(Range.create(editor.post.sections.tail, 1));
   Helpers.dom.triggerEnter(editor);
 
   assert.hasElement('#my-simple-card', 'has card after enter');
   assert.hasElement('#editor p', 'markup section is added');
-
-  let { range } = editor;
-  assert.ok(!editor.post.sections.tail.isCardSection,
-            'markup section (not card secton) is at end of post abstract');
-  assert.ok(range.head.section === editor.post.sections.tail,
-            'correct cursor position');
-  assert.equal(range.head.offset, 0,
-            'correct cursor offset');
 });
 
 test('press enter at start of card inserts section before card', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-    return post([cardSection(positionCard.name)]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [positionCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['|[position]'], editorOpts);
 
   assert.hasElement('#my-simple-card', 'precond - renders card');
   assert.hasNoElement('#editor p', 'precond - has no markup section');
 
-  editor.selectRange(Range.create(editor.post.sections.tail, 0));
   Helpers.dom.triggerEnter(editor);
 
   assert.hasElement('#my-simple-card', 'has card after enter');
   assert.hasElement('#editor p', 'markup section is added');
-
-  let { range } = editor;
-  assert.ok(editor.post.sections.head.isMarkerable,
-            'markup section at head of post');
-  assert.ok(editor.post.sections.tail.isCardSection,
-            'card section at end of post');
-  assert.ok(range.head.section === editor.post.sections.tail,
-            'correct cursor position');
-  assert.equal(range.head.offset, 0,
-            'correct cursor offset');
 });
 
 test('editor ignores events when focus is inside a card', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, cardSection}) => {
-    return post([
-      markupSection(),
-      cardSection('simple-card')
-    ]);
-  });
-
-  const cards = [{
-    name: 'simple-card',
-    type: 'dom',
-    render() {
-      return $('<input id="simple-card-input">')[0];
-    }
-  }];
-
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
+  editor = buildFromText(['','[input]'], editorOpts);
 
   assert.hasElement('#simple-card-input', 'precond - renders card');
 
@@ -361,17 +249,10 @@ test('editor ignores events when focus is inside a card', (assert) => {
 });
 
 test('a moved card retains its inital editing mode', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, cardSection}) => {
-    let card = cardSection('simple-card');
-    return post([
-      markupSection(),
-      card
-    ]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [simpleCard]});
-  editor.post.sections.tail.setInitialMode(CARD_MODES.EDIT);
-  editor.render(editorElement);
+  editorOpts.beforeRender = (editor) => {
+    editor.post.sections.tail.setInitialMode(CARD_MODES.EDIT);
+  };
+  editor = buildFromText(['','[simple]'], editorOpts);
 
   assert.hasElement('#edit-button', 'precond - card is in edit mode');
 
@@ -384,27 +265,44 @@ test('a moved card retains its inital editing mode', (assert) => {
 });
 
 test('a moved card retains its current editing mode', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, cardSection}) => {
-    return post([
-      markupSection(),
-      cardSection('simple-card')
-    ]);
-  });
-
-  editor = new Editor({mobiledoc, cards: [simpleCard]});
-  editor.render(editorElement);
+  editor = buildFromText(['','[simple]'], editorOpts);
 
   assert.hasNoElement('#edit-button', 'precond - card is not in edit mode');
 
-  let card = editor.post.sections.tail;
-  editor.editCard(card);
-
+  editor.editCard(editor.post.sections.tail);
   assert.hasElement('#edit-button', 'precond - card is in edit mode');
 
-  editor.run(postEditor => {
-    let card = editor.post.sections.tail;
-    postEditor.moveSectionUp(card);
-  });
+  editor.run(postEditor => postEditor.moveSectionUp(editor.post.sections.tail));
 
   assert.hasElement('#edit-button', 'card is still in edit mode');
+});
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/475
+test('when editing is disabled, cards can be moved and deleted', (assert) => {
+  let removeHook;
+  editorOpts.unknownCardHandler = ({env: {name, remove}}) => {
+    if (name === 'card-b') {
+      removeHook = remove;
+    }
+    return $(`<h1>${name}</h1>`)[0];
+  };
+  editor = buildFromText(['[card-a]','[card-b]|'], editorOpts);
+  editor.disableEditing();
+
+  let card = editor.post.sections.tail;
+  editor.run(postEditor => {
+    // In order to recreate the problematic scenario, we must explicitly set the range
+    // here to the moved section's tail position
+    let movedSection = postEditor.moveSectionUp(card);
+    postEditor.setRange(movedSection.tailPosition());
+  });
+
+  assert.hasElement('h1:contains(card-a)');
+  assert.hasElement('h1:contains(card-b)');
+  let text = $(editorElement).text();
+  assert.ok(text.indexOf('card-b') < text.indexOf('card-a'), 'card b is moved up');
+
+  removeHook();
+
+  assert.hasNoElement('h1:contains(card-b)');
 });

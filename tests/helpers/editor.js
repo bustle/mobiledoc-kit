@@ -36,14 +36,20 @@ function buildFromText(texts, editorOptions={}) {
   let renderElement = editorOptions.element;
   delete editorOptions.element;
 
+  let beforeRender = editorOptions.beforeRender || () => {};
+  delete editorOptions.beforeRender;
+
   let {post, range} = PostAbstractHelpers.buildFromText(texts);
   let mobiledoc = MobiledocRenderer.render(post);
   editorOptions.mobiledoc = mobiledoc;
   let editor = new Editor(editorOptions);
   if (renderElement) {
+    beforeRender(editor);
     editor.render(renderElement);
-    range = retargetRange(range, editor.post);
-    editor.selectRange(range);
+    if (range) {
+      range = retargetRange(range, editor.post);
+      editor.selectRange(range);
+    }
   }
   return editor;
 }
