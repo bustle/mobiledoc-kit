@@ -2,36 +2,32 @@ import DOMParser from 'mobiledoc-kit/parsers/dom';
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import Helpers from '../../test-helpers';
 import { TAB } from 'mobiledoc-kit/utils/characters';
-import Editor from 'mobiledoc-kit/editor/editor';
 
 const {module, test} = Helpers;
+const { postAbstract: { buildFromText } } = Helpers;
 const ZWNJ = '\u200c';
 
 let editorElement, builder, parser, editor;
+let editorOpts;
 let buildDOM = Helpers.dom.fromHTML;
 
-function renderMobiledoc(builderFn) {
-  let mobiledoc = Helpers.mobiledoc.build(builderFn);
-  let mentionAtom = {
-    name: 'mention',
-    type: 'dom',
-    render({value}) {
-      let element = document.createElement('span');
-      element.setAttribute('id', 'mention-atom');
-      element.appendChild(document.createTextNode(value));
-      return element;
-    }
-  };
-  editor = new Editor({mobiledoc, atoms: [mentionAtom]});
-  editor.render(editorElement);
-  return editor;
-}
+let mentionAtom = {
+  name: 'mention',
+  type: 'dom',
+  render({value}) {
+    let element = document.createElement('span');
+    element.setAttribute('id', 'mention-atom');
+    element.appendChild(document.createTextNode(value));
+    return element;
+  }
+};
 
 module('Unit: Parser: DOMParser', {
   beforeEach() {
     editorElement = $('#editor')[0];
     builder = new PostNodeBuilder();
     parser = new DOMParser(builder);
+    editorOpts = { element: editorElement, atoms: [mentionAtom] };
   },
   afterEach() {
     builder = null;
@@ -43,65 +39,55 @@ module('Unit: Parser: DOMParser', {
   }
 });
 
-test('#parse can parse a section element', (assert) => {
-  let element = buildDOM("<p>some text</p>");
+let expectations = [
+  ['<p>some text</p>', ['some text']],
+  ['<p>some text</p><p>some other text</p>', ['some text','some other text']],
+  ['<p>some &nbsp;text &nbsp;&nbsp;for &nbsp; &nbsp;you</p>', ['some  text   for    you']],
+  ['<p>a\u2003b</p>', [`a${TAB}b`]], 
 
-  const post = parser.parse(element);
-  assert.ok(post, 'gets post');
-  assert.equal(post.sections.length, 1, 'has 1 section');
+  // multiple ps, with and without adjacent text nodes
+  ['<p>first line</p>\n<p>second line</p>', ['first line','second line']],
+  ['<p>first line</p>middle line<p>third line</p>', ['first line','middle line','third line']],
+  ['<p>first line</p>second line', ['first line','second line']],
 
-  const s1 = post.sections.head;
-  assert.equal(s1.markers.length, 1, 's1 has 1 marker');
-  assert.equal(s1.markers.head.value, 'some text', 'has text');
-});
+  ['<b>bold text</b>',['*bold text*']],
 
-test('#parse can parse multiple elements', (assert) => {
-  let element = buildDOM('<p>some text</p><p>some other text</p>');
+  // unrecognized tags
+  ['<p>before<span>span</span>after</p>',['beforespanafter']],
+  ['<p><span><span>inner</span></span></p>', ['inner']],
 
-  const post = parser.parse(element);
-  assert.ok(post, 'gets post');
-  assert.equal(post.sections.length, 2, 'has 2 sections');
+  //  unrecognized attribute
+  ['<p><span style="font-color:red;">was red</span></p>', ['was red']],
 
-  const [s1, s2] = post.sections.toArray();
-  assert.equal(s1.markers.length, 1, 's1 has 1 marker');
-  assert.equal(s1.markers.head.value, 'some text');
+  // list elements
+  ['<ul><li>first element</li><li>second element</li></ul>', ['* first element', '* second element']],
 
-  assert.equal(s2.markers.length, 1, 's2 has 1 marker');
-  assert.equal(s2.markers.head.value, 'some other text');
-});
+  // nested list elements
+  ['<ul><li>first element</li><li><ul><li>nested element</li></ul></li></ul>', ['* first element', '* nested element']],
 
-test('#parse can parse spaces and breaking spaces', (assert) => {
-  let element = buildDOM("<p>some &nbsp;text &nbsp;&nbsp;for &nbsp; &nbsp;you</p>");
+  // See https://github.com/bustlelabs/mobiledoc-kit/issues/333
+  ['abc\ndef', ['abcdef']]
+];
 
-  const post = parser.parse(element);
-  const s1 = post.sections.head;
-  assert.equal(s1.markers.length, 1, 's1 has 1 marker');
-  assert.equal(s1.markers.head.value, 'some  text   for    you', 'has text');
-});
+expectations.forEach(([html, dslText]) => {
+  test(`#parse ${html} -> ${dslText}`, (assert) => {
+    let post = parser.parse( buildDOM(html) );
+    let { post: expected } = buildFromText(dslText);
 
-test('#parse can parse tabs', (assert) => {
-  let element = buildDOM("<p>a\u2003b</p>");
-  let post = parser.parse(element);
-  let s1 = post.sections.head;
-  assert.equal(s1.markers.length, 1, 's1 has 1 marker');
-  assert.equal(s1.markers.head.value, `a${TAB}b`);
+    assert.postIsSimilar(post, expected);
+  });
 });
 
 test('editor#parse fixes text in atom headTextNode when atom is at start of section', (assert) => {
   let done = assert.async();
-  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
-    return post([markupSection('p', [marker('X'), atom('mention', 'bob')])]);
-  });
-
-  editor = renderMobiledoc(({post, atom, markupSection}) => {
-    return post([markupSection('p', [atom('mention', 'bob')])]);
-  });
+  let {post: expected} = buildFromText(['X@("name": "mention", "value": "bob")']);
+  editor = Helpers.editor.buildFromText('@("name": "mention", "value": "bob")', editorOpts);
 
   let headTextNode = editor.post.sections.head.markers.head.renderNode.headTextNode;
   assert.ok(!!headTextNode, 'precond - headTextNode');
   headTextNode.textContent = ZWNJ + 'X';
 
-  Helpers.wait(() => {
+  Helpers.wait(() => { // wait for mutation
     assert.postIsSimilar(editor.post, expected);
     assert.renderTreeIsEqual(editor._renderTree, expected);
 
@@ -110,33 +96,25 @@ test('editor#parse fixes text in atom headTextNode when atom is at start of sect
 });
 
 test('editor#parse fixes text in atom headTextNode when atom has atom before it', (assert) => {
-  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
-    return post([markupSection('p', [atom('mention', 'first'), marker('X'), atom('mention', 'last')])]);
-  });
-
-  editor = renderMobiledoc(({post, atom, markupSection}) => {
-    return post([markupSection('p', [atom('mention', 'first'), atom('mention', 'last')])]);
-  });
+  let done = assert.async();
+  let {post: expected} = buildFromText('@("name": "mention", "value": "first")X@("name": "mention", "value": "last")');
+  editor = Helpers.editor.buildFromText('@("name": "mention", "value": "first")@("name": "mention", "value": "last")', editorOpts);
 
   let headTextNode = editor.post.sections.head.markers.tail.renderNode.headTextNode;
   assert.ok(!!headTextNode, 'precond - headTextNode');
   headTextNode.textContent = ZWNJ + 'X';
 
-  editor._reparseSections([editor.post.sections.head]);
-
-  assert.postIsSimilar(editor.post, expected);
-  assert.renderTreeIsEqual(editor._renderTree, expected);
+  Helpers.wait(() => {
+    assert.postIsSimilar(editor.post, expected);
+    assert.renderTreeIsEqual(editor._renderTree, expected);
+    done();
+  });
 });
 
 test('editor#parse fixes text in atom headTextNode when atom has marker before it', (assert) => {
   let done = assert.async();
-  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
-    return post([markupSection('p', [marker('textX'), atom('mention', 'bob')])]);
-  });
-
-  editor = renderMobiledoc(({post, atom, markupSection, marker}) => {
-    return post([markupSection('p', [marker('text'), atom('mention', 'bob')])]);
-  });
+  let {post: expected} = buildFromText('textX@("name":"mention","value":"bob")');
+  editor = Helpers.editor.buildFromText('text@("name":"mention","value":"bob")', editorOpts);
 
   let headTextNode = editor.post.sections.head.markers.objectAt(1).renderNode.headTextNode;
   assert.ok(!!headTextNode, 'precond - headTextNode');
@@ -151,13 +129,8 @@ test('editor#parse fixes text in atom headTextNode when atom has marker before i
 
 test('editor#parse fixes text in atom tailTextNode when atom is at end of section', (assert) => {
   let done = assert.async();
-  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
-    return post([markupSection('p', [atom('mention', 'bob'), marker('X')])]);
-  });
-
-  editor = renderMobiledoc(({post, atom, markupSection}) => {
-    return post([markupSection('p', [atom('mention', 'bob')])]);
-  });
+  let {post: expected} = buildFromText('@("name":"mention","value":"bob")X');
+  editor = Helpers.editor.buildFromText('@("name":"mention","value":"bob")', editorOpts);
 
   let tailTextNode = editor.post.sections.head.markers.head.renderNode.tailTextNode;
   assert.ok(!!tailTextNode, 'precond - tailTextNode');
@@ -172,13 +145,9 @@ test('editor#parse fixes text in atom tailTextNode when atom is at end of sectio
 
 test('editor#parse fixes text in atom tailTextNode when atom has atom after it', (assert) => {
   let done = assert.async();
-  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
-    return post([markupSection('p', [atom('mention', 'first'), marker('X'), atom('mention', 'last')])]);
-  });
-
-  editor = renderMobiledoc(({post, atom, markupSection}) => {
-    return post([markupSection('p', [atom('mention', 'first'), atom('mention', 'last')])]);
-  });
+  let {post: expected} = buildFromText('@("name":"mention","value":"first")X@("name":"mention","value":"last")');
+  editor = Helpers.editor.buildFromText('@("name":"mention","value":"first")@("name":"mention","value":"last")',
+                                        editorOpts);
 
   let tailTextNode = editor.post.sections.head.markers.head.renderNode.tailTextNode;
   assert.ok(!!tailTextNode, 'precond - tailTextNode');
@@ -193,14 +162,9 @@ test('editor#parse fixes text in atom tailTextNode when atom has atom after it',
 
 test('editor#parse fixes text in atom tailTextNode when atom has marker after it', (assert) => {
   let done = assert.async();
-
-  let expected = Helpers.postAbstract.build(({post, atom, marker, markupSection}) => {
-    return post([markupSection('p', [atom('mention', 'bob'), marker('Xabc')])]);
-  });
-
-  editor = renderMobiledoc(({post, atom, markupSection, marker}) => {
-    return post([markupSection('p', [atom('mention', 'bob'), marker('abc')])]);
-  });
+  let {post: expected} = buildFromText('@("name":"mention","value":"bob")Xabc');
+  editor = Helpers.editor.buildFromText('@("name":"mention","value":"bob")abc',
+                                        editorOpts);
 
   let tailTextNode = editor.post.sections.head.markers.head.renderNode.tailTextNode;
   assert.ok(!!tailTextNode, 'precond - tailTextNode');
@@ -220,49 +184,13 @@ test('parse empty content', (assert) => {
   assert.ok(post.isBlank, 'post is blank');
 });
 
-test('blank textnodes are ignored', (assert) => {
-  let post = parser.parse(buildDOM('<p>first line</p>\n<p>second line</p>'));
-
-  assert.equal(post.sections.length, 2, 'parse 2 sections');
-  assert.equal(post.sections.objectAt(0).text, 'first line');
-  assert.equal(post.sections.objectAt(1).text, 'second line');
-});
-
-test('adjacent textnodes are turned into sections', (assert) => {
-  let post = parser.parse(buildDOM('<p>first line</p>middle line<p>third line</p>'));
-
-  assert.equal(post.sections.length, 3, 'parse 3 sections');
-  assert.equal(post.sections.objectAt(0).text, 'first line');
-  assert.equal(post.sections.objectAt(1).text, 'middle line');
-  assert.equal(post.sections.objectAt(2).text, 'third line');
-});
-
-test('textnode adjacent to p tag becomes section', (assert) => {
-  const post = parser.parse(buildDOM('<p>first line</p>second line'));
-
-  assert.equal(post.sections.length, 2, 'parse 2 sections');
-  assert.equal(post.sections.objectAt(0).text, 'first line');
-  assert.equal(post.sections.objectAt(1).text, 'second line');
-});
-
 test('plain text creates a section', (assert) => {
   let container = buildDOM('plain text');
   let element = container.firstChild;
   const post = parser.parse(element);
+  let {post: expected} = buildFromText('plain text');
 
-  assert.equal(post.sections.length, 1, 'parse 1 section');
-  assert.equal(post.sections.objectAt(0).text, 'plain text');
-});
-
-test('strong tag + text node creates section', (assert) => {
-  let element = buildDOM('<b>bold text</b>');
-  const post = parser.parse(element);
-
-  assert.equal(post.sections.length, 1, 'parse 1 section');
-  assert.equal(post.sections.objectAt(0).text, 'bold text');
-  let marker = post.sections.head.markers.head;
-  assert.equal(marker.value, 'bold text');
-  assert.ok(marker.hasMarkup('b'), 'marker has b');
+  assert.postIsSimilar(post, expected);
 });
 
 test('strong tag + em + text node creates section', (assert) => {
@@ -307,24 +235,6 @@ test('link (A tag) is parsed', (assert) => {
   assert.equal(markup.getAttribute('ref'), ref, 'has ref attr');
 });
 
-test('unrecognized tags are ignored', (assert) => {
-  let element = buildDOM(`<p>before<span>span</span>after</p>`);
-  const post = parser.parse(element);
-
-  assert.equal(post.sections.length, 1, '1 section');
-  assert.equal(post.sections.objectAt(0).text, 'beforespanafter');
-  assert.equal(post.sections.objectAt(0).markers.length, 1, '1 marker');
-});
-
-test('doubly-nested span with text is parsed into a section', (assert) => {
-  let element = buildDOM(`<p><span><span>inner</span></span></p>`);
-  const post = parser.parse(element);
-
-  assert.equal(post.sections.length, 1, '1 section');
-  assert.equal(post.sections.objectAt(0).text, 'inner');
-  assert.equal(post.sections.objectAt(0).markers.length, 1, '1 marker');
-});
-
 test('span with font-style italic maps to em', (assert) => {
   let element = buildDOM(`<p><span style="font-style:ItaLic;">emph</span></p>`);
   const post = parser.parse(element);
@@ -367,54 +277,16 @@ test('span with font-weight "bold" maps to strong', (assert) => {
   assert.ok(marker.hasMarkup('strong'), 'marker is strong');
 });
 
-test('unrecognized inline styles are ignored', (assert) => {
-  let element = buildDOM(`<p><span style="font-color:red;">was red</span></p>`);
-  const post = parser.parse(element);
+let recognizedTags = ['h1','h2','h3','blockquote'];
+recognizedTags.forEach(tag => {
+  test(`recognized markup section tags are parsed (${tag})`, (assert) => {
+    let element = buildDOM(`<${tag}>${tag} text</${tag}>`);
+    const post = parser.parse(element);
 
-  assert.equal(post.sections.length, 1, '1 section');
-
-  let section = post.sections.objectAt(0);
-  assert.equal(section.markers.length, 1, '1 marker');
-  let marker = section.markers.objectAt(0);
-
-  assert.equal(marker.value, 'was red');
-  assert.equal(marker.markups.length, 0, 'no markups');
-});
-
-test('recognized markup section tags are parsed (H1)', (assert) => {
-  let element = buildDOM(`<h1>h1 text</h1>`);
-  const post = parser.parse(element);
-
-  assert.equal(post.sections.length, 1, '1 section');
-  assert.equal(post.sections.objectAt(0).text, 'h1 text');
-  assert.equal(post.sections.objectAt(0).tagName, 'h1');
-});
-
-test('recognized markup section tags are parsed (H2)', (assert) => {
-  let element = buildDOM(`<h2>h2 text</h2>`);
-  const post = parser.parse(element);
-
-  assert.equal(post.sections.length, 1, '1 section');
-  assert.equal(post.sections.objectAt(0).text, 'h2 text');
-  assert.equal(post.sections.objectAt(0).tagName, 'h2');
-});
-
-test('recognized markup section tags are parsed (H3)', (assert) => {
-  let element = buildDOM(`<h3>h3 text</h3>`);
-  const post = parser.parse(element);
-
-  assert.equal(post.sections.length, 1, '1 section');
-  assert.equal(post.sections.objectAt(0).text, 'h3 text');
-  assert.equal(post.sections.objectAt(0).tagName, 'h3');
-});
-
-test('recognized markup section tags are parsed (blockquote)', (assert) => {
-  let element = buildDOM(`<blockquote>blockquote text</blockquote>`);
-  const post = parser.parse(element);
-
-  assert.equal(post.sections.length, 1, '1 section');
-  assert.equal(post.sections.objectAt(0).text, 'blockquote text');
-  assert.equal(post.sections.objectAt(0).tagName, 'blockquote');
+    assert.equal(post.sections.length, 1, '1 section');
+    assert.equal(post.sections.objectAt(0).text, `${tag} text`);
+    assert.equal(post.sections.objectAt(0).tagName, tag);
+  });
 });
 
 test('unrecognized attributes are ignored', (assert) => {
@@ -434,20 +306,6 @@ test('unrecognized attributes are ignored', (assert) => {
   assert.ok(!markup.getAttribute('style'), 'style attribute not included');
 });
 
-test('singly-nested ul lis are parsed correctly', (assert) => {
-  let element= buildDOM(`
-    <ul><li>first element</li><li>second element</li></ul>
-  `);
-  const post = parser.parse(element);
-
-  assert.equal(post.sections.length, 1, '1 section');
-  let section = post.sections.objectAt(0);
-  assert.equal(section.tagName, 'ul');
-  assert.equal(section.items.length, 2, '2 items');
-  assert.equal(section.items.objectAt(0).text, 'first element');
-  assert.equal(section.items.objectAt(1).text, 'second element');
-});
-
 test('singly-nested ol lis are parsed correctly', (assert) => {
   let element= buildDOM(`
     <ol><li>first element</li><li>second element</li></ol>
@@ -460,23 +318,6 @@ test('singly-nested ol lis are parsed correctly', (assert) => {
   assert.equal(section.items.length, 2, '2 items');
   assert.equal(section.items.objectAt(0).text, 'first element');
   assert.equal(section.items.objectAt(1).text, 'second element');
-});
-
-test('lis in nested uls are flattened (when ul is child of li)', (assert) => {
-  let element= buildDOM(`
-    <ul>
-      <li>first element</li>
-      <li><ul><li>nested element</li></ul></li>
-    </ul>
-  `);
-  const post = parser.parse(element);
-
-  assert.equal(post.sections.length, 1, '1 section');
-  let section = post.sections.objectAt(0);
-  assert.equal(section.tagName, 'ul');
-  assert.equal(section.items.length, 2, '2 items');
-  assert.equal(section.items.objectAt(0).text, 'first element');
-  assert.equal(section.items.objectAt(1).text, 'nested element');
 });
 
 /*

@@ -113,11 +113,7 @@ function parseTextIntoMarkers(text, builder) {
         markers = markers.concat( parseTextIntoMarkers(piece, builder) );
       }
     });
-  } else if (text.indexOf('*') === -1) {
-    if (text.length) {
-      markers.push(builder.marker(text));
-    }
-  } else {
+  } else if (text.indexOf('*') !== -1) {
     let markup = builder.markup('b');
 
     let startIndex = text.indexOf('*');
@@ -133,6 +129,10 @@ function parseTextIntoMarkers(text, builder) {
         markers.push(builder.marker(piece, markups));
       }
     });
+  } else {
+    if (text.length) {
+      markers.push(builder.marker(text));
+    }
   }
 
   return markers;
