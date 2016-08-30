@@ -1,8 +1,9 @@
 import { POST_TYPE } from './types';
 import LinkedList from 'mobiledoc-kit/utils/linked-list';
-import { forEach, compact } from 'mobiledoc-kit/utils/array-utils';
+import { forEach } from 'mobiledoc-kit/utils/array-utils';
 import Set from 'mobiledoc-kit/utils/set';
 import Position from 'mobiledoc-kit/utils/cursor/position';
+import assert from 'mobiledoc-kit/utils/assert';
 
 /**
  * The Post is an in-memory representation of an editor's document.
@@ -94,59 +95,6 @@ class Post {
     return markers;
   }
 
-  cutMarkers(markers) {
-    let firstSection = markers.length && markers[0].section,
-        lastSection  = markers.length && markers[markers.length - 1].section;
-
-    let currentSection = firstSection;
-    let removedSections = [],
-        changedSections = compact([firstSection, lastSection]);
-
-    if (markers.length !== 0) {
-      markers.forEach(marker => {
-        if (marker.section !== currentSection) { // this marker is in a section we haven't seen yet
-          if (marker.section !== firstSection &&
-              marker.section !== lastSection) {
-            // section is wholly contained by markers, and can be removed
-            removedSections.push(marker.section);
-          }
-        }
-
-        currentSection = marker.section;
-        currentSection.markers.remove(marker);
-      });
-
-      if (firstSection !== lastSection) {
-        firstSection.join(lastSection);
-        removedSections.push(lastSection);
-      }
-    }
-
-    return {changedSections, removedSections};
-  }
-
-  /**
-   * Invoke `callbackFn` for all markers between the headMarker and tailMarker (inclusive),
-   * across sections
-   * @private
-   */
-  markersFrom(headMarker, tailMarker, callbackFn) {
-    let currentMarker = headMarker;
-    while (currentMarker) {
-      callbackFn(currentMarker);
-
-      if (currentMarker === tailMarker) {
-        currentMarker = null;
-      } else if (currentMarker.next) {
-        currentMarker = currentMarker.next;
-      } else {
-        let nextSection = this._nextMarkerableSection(currentMarker.section);
-        // FIXME: This will fail across cards
-        currentMarker = nextSection && nextSection.markers.head;
-      }
-    }
-  }
-
   markupsInRange(range) {
     const markups = new Set();
 
@@ -216,30 +164,19 @@ class Post {
     });
   }
 
-  _nextMarkerableSection(section) {
-    let nextSection = this._nextLeafSection(section);
-
-    while (nextSection && !nextSection.isMarkerable) {
-      nextSection = this._nextLeafSection(nextSection);
-    }
-
-    return nextSection;
-  }
-
   // return the next section that has markers after this one,
   // possibly skipping non-markerable sections
   _nextLeafSection(section) {
     if (!section) { return null; }
-    const hasChildren  = s => !!s.items;
-    const firstChild   = s => s.items.head;
 
-    // FIXME this can be refactored to use `isLeafSection`
     const next = section.next;
     if (next) {
-      if (hasChildren(next)) { // e.g. a ListSection
-        return firstChild(next);
-      } else {
+      if (next.isLeafSection) {
         return next;
+      } else if (!!next.items) {
+        return next.items.head;
+      } else {
+        assert('Cannot determine next section from non-leaf-section', false);
       }
     } else if (section.isNested) {
       // if there is no section after this, but this section is a child

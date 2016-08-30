@@ -1,4 +1,4 @@
-import { forEach, filter, reduce } from '../utils/array-utils';
+import { forEach, reduce } from '../utils/array-utils';
 import Set from '../utils/set';
 
 import LinkedList from '../utils/linked-list';
@@ -81,18 +81,6 @@ export default class Markerable extends Section {
     }
 
     return offset;
-  }
-
-  /**
-   * Splits the marker at the offset, filters empty markers from the result,
-   * and replaces this marker with the new non-empty ones
-   * @param {Marker} marker the marker to split
-   * @return {Array} the new markers that replaced `marker`
-   */
-  splitMarker(marker, offset, endOffset=marker.length) {
-    const newMarkers = filter(marker.split(offset, endOffset), m => !m.isBlank);
-    this.markers.splice(marker, 1, newMarkers);
-    return newMarkers;
   }
 
   // puts clones of this.markers into beforeSection and afterSection,
