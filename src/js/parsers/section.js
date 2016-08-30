@@ -44,6 +44,12 @@ const SKIPPABLE_ELEMENT_TAG_NAMES = [
   'style', 'head', 'title', 'meta'
 ].map(normalizeTagName);
 
+const NEWLINES = /\n/g;
+function sanitize(text) {
+  text = text.replace(NEWLINES, '');
+  return text;
+}
+
 /**
  * parses an element into a section, ignoring any non-markup
  * elements contained within
@@ -167,7 +173,7 @@ class SectionParser {
 
   parseTextNode(textNode) {
     let { state } = this;
-    state.text += textNode.textContent;
+    state.text += sanitize(textNode.textContent);
   }
 
   _updateStateFromElement(element) {
