@@ -234,7 +234,11 @@ test('#moveWord does not stop on non-word-separators', (assert) => {
   let nonSeparators = ['_', ':'];
   nonSeparators.forEach(sep => {
     let text = `abc${sep}def`;
-    let { post } = Helpers.postAbstract.buildFromText(text);
+
+    // Have to use `build` function here because "_" is a special char for `buildFromText`
+    let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+      return post([markupSection('p', [marker(text)])]);
+    });
     let pos = post.tailPosition();
     let nextPos = post.headPosition();
 

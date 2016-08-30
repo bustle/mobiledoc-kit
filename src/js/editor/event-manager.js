@@ -6,7 +6,6 @@ import {
 } from 'mobiledoc-kit/utils/parse-utils';
 import { filter, forEach } from 'mobiledoc-kit/utils/array-utils';
 import Key from 'mobiledoc-kit/utils/key';
-import { TAB } from 'mobiledoc-kit/utils/characters';
 import TextInputHandler from 'mobiledoc-kit/editor/text-input-handler';
 import SelectionManager from 'mobiledoc-kit/editor/selection-manager';
 import Browser from 'mobiledoc-kit/utils/browser';
@@ -173,8 +172,9 @@ export default class EventManager {
         editor.handleNewline(event);
         break;
       case key.isTab():
+        // Handle tab here because it does not fire a `keypress` event
         event.preventDefault();
-        editor.insertText(TAB);
+        this._textInputHandler.handle(key.toString());
         break;
     }
   }
