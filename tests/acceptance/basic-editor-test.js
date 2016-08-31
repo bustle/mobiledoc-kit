@@ -110,13 +110,7 @@ test('typing in empty post correctly adds a section to it', (assert) => {
 });
 
 test('typing when on the end of a card is blocked', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-    return post([
-      cardSection('my-card')
-    ]);
-  });
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
+  editor = Helpers.editor.buildFromText('[my-card]', {element: editorElement, cards});
 
   let endingZWNJ = $('#editor')[0].firstChild.lastChild;
   Helpers.dom.moveCursorTo(editor, endingZWNJ, 0);
@@ -128,13 +122,7 @@ test('typing when on the end of a card is blocked', (assert) => {
 });
 
 test('typing when on the start of a card is blocked', (assert) => {
-  const mobiledoc = Helpers.mobiledoc.build(({post, cardSection}) => {
-    return post([
-      cardSection('my-card')
-    ]);
-  });
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
+  editor = Helpers.editor.buildFromText('[my-card]', {element: editorElement, cards});
 
   let startingZWNJ = $('#editor')[0].firstChild.firstChild;
   Helpers.dom.moveCursorTo(editor, startingZWNJ, 0);
@@ -146,105 +134,42 @@ test('typing when on the start of a card is blocked', (assert) => {
 });
 
 test('typing tab enters a tab character', (assert) => {
-  let done = assert.async();
-  assert.expect(3);
+  editor = Helpers.editor.buildFromText('|', {element: editorElement});
 
-  let mobiledoc = Helpers.mobiledoc.build(({post}) => post());
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
-
-  assert.hasElement('#editor');
-  assert.hasNoElement('#editor p');
-
-  Helpers.dom.moveCursorTo(editor, $('#editor')[0]);
   Helpers.dom.insertText(editor, TAB);
   Helpers.dom.insertText(editor, 'Y');
-  Helpers.wait(() => {
-    let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
-      return post([
-        markupSection('p', [
-          marker(`${TAB}Y`)
-        ])
-      ]);
-    });
-    assert.postIsSimilar(editor.post, expectedPost);
-    done();
-  });
+
+  let {post: expected} = Helpers.postAbstract.buildFromText(`${TAB}Y`);
+  assert.postIsSimilar(editor.post, expected);
 });
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/215
 test('select-all and type text works ok', (assert) => {
-  let done = assert.async();
-  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
-    return post([
-      markupSection('p', [marker('abc')])
-    ]);
-  });
-  editor = new Editor({mobiledoc, cards});
-  editor.render(editorElement);
-
-  Helpers.dom.moveCursorTo(editor, editorElement.firstChild, 0);
-  let post = editor.post;
-  editor.selectRange(post.toRange());
+  editor = Helpers.editor.buildFromText('<abc>', {element: editorElement});
 
   assert.selectedText('abc', 'precond - abc is selected');
   assert.hasElement('#editor p:contains(abc)', 'precond - renders p');
   
-  Helpers.wait(() => {
-    Helpers.dom.insertText(editor, 'X');
+  Helpers.dom.insertText(editor, 'X');
 
-    Helpers.wait(function() {
-      assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
-      assert.hasElement('#editor p:contains(X)', 'inserts text');
-      done();
-    });
-  });
-
+  assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
+  assert.hasElement('#editor p:contains(X)', 'inserts text');
 });
 
 test('typing enter splits lines, sets cursor', (assert) => {
-  let done = assert.async();
-  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
-    return post([
-      markupSection('p', [ marker('hihey') ])
-    ]);
-  });
-  editor = new Editor({mobiledoc});
-  editor.render(editorElement);
+  editor = Helpers.editor.buildFromText('hi|hey', {element: editorElement});
 
-  assert.hasElement('#editor p');
+  assert.hasElement('#editor p:contains(hihey)');
 
-  Helpers.dom.moveCursorTo(editor, $('#editor p')[0].firstChild, 2);
   Helpers.dom.insertText(editor, ENTER);
-  Helpers.wait(() => {
-    let expectedPost = Helpers.postAbstract.build(({post, markupSection, marker}) => {
-      return post([
-        markupSection('p', [
-          marker(`hi`)
-        ]),
-        markupSection('p', [
-          marker(`hey`)
-        ])
-      ]);
-    });
-    assert.postIsSimilar(editor.post, expectedPost, 'correctly encoded');
-    let expectedRange = editor.post.sections.tail.headPosition().toRange();
-    assert.ok(expectedRange.isEqual(editor.range), 'range is at start of new section');
-    done();
-  });
+  let {post: expected, range: expectedRange} = Helpers.postAbstract.buildFromText(['hi','|hey']);
+  assert.postIsSimilar(editor.post, expected, 'correctly encoded');
+  assert.rangeIsEqual(editor.range, Helpers.editor.retargetRange(expectedRange, editor.post));
 });
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/306
 test('adding/removing bold text between two bold markers works', (assert) => {
-  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker, markup}) => {
-    return post([
-      markupSection('p', [
-        marker('abc', [markup('b')]),
-        marker('123', []),
-        marker('def', [markup('b')])
-      ])
-    ]);
-  });
+  editor = Helpers.editor.buildFromText('*abc*123*def*', {element: editorElement});
 
   // preconditions
   assert.hasElement('#editor b:contains(abc)');

@@ -1,4 +1,6 @@
 import Keycodes from './keycodes';
+import { TAB } from 'mobiledoc-kit/utils/characters';
+
 /**
  * @typedef Direction
  * @enum {number}
@@ -74,6 +76,7 @@ const Key = class Key {
   }
 
   toString() {
+    if (this.isTab()) { return TAB; }
     return String.fromCharCode(this.charCode);
   }
 

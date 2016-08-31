@@ -1,3 +1,4 @@
+/* jshint latedef:nofunc */
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 
 /*
@@ -68,71 +69,103 @@ function parsePositionOffsets(text) {
 const DEFAULT_ATOM_NAME = 'some-atom';
 const DEFAULT_ATOM_VALUE = '@atom';
 
+const MARKUP_CHARS = {
+  '*': 'b',
+  '_': 'em'
+};
+
+function parseTextIntoAtom(text, builder) {
+  let markers = [];
+  let atomIndex = text.indexOf('@');
+  let afterAtomIndex = atomIndex + 1;
+  let atomName = DEFAULT_ATOM_NAME,
+      atomValue = DEFAULT_ATOM_VALUE,
+      atomPayload = {};
+
+  // If "@" is followed by "( ... json ... )", parse the json data
+  if (text[atomIndex+1] === "(") {
+    let jsonStartIndex = atomIndex+1;
+    let jsonEndIndex = text.indexOf(")",jsonStartIndex);
+    afterAtomIndex = jsonEndIndex + 1;
+    if (jsonEndIndex === -1) {
+      throw new Error('Atom JSON data had unmatched "(": ' + text);
+    }
+    let jsonString = text.slice(jsonStartIndex+1, jsonEndIndex);
+    jsonString = "{" + jsonString + "}";
+    try {
+      let json = JSON.parse(jsonString);
+      if (json.name) { atomName = json.name; }
+      if (json.value) { atomValue = json.value; }
+      if (json.payload) { atomPayload = json.payload; }
+    } catch(e) {
+      throw new Error('Failed to parse atom JSON data string: ' + jsonString + ', ' + e);
+    }
+  }
+
+  // create the atom
+  let atom = builder.atom(atomName, atomValue, atomPayload);
+
+  // recursively parse the remaining text pieces
+  let pieces = [text.slice(0, atomIndex), atom, text.slice(afterAtomIndex)];
+
+  // join the markers together
+  pieces.forEach((piece, index) => {
+    if (index === 1) { // atom
+      markers.push(piece);
+    } else if (piece.length) {
+      markers = markers.concat( parseTextIntoMarkers(piece, builder) );
+    }
+  });
+
+  return markers;
+}
+
+function parseTextWithMarkup(text, builder) {
+  let markers = [];
+  let markup, char;
+  Object.keys(MARKUP_CHARS).forEach(key => {
+    if (markup) { return; }
+    if (text.indexOf(key) !== -1) {
+      markup = builder.markup(MARKUP_CHARS[key]);
+      char = key;
+    }
+  });
+  if (!markup) { throw new Error(`Failed to find markup in text: ${text}`); }
+
+  let startIndex = text.indexOf(char);
+  let endIndex = text.indexOf(char, startIndex+1);
+  if (endIndex === -1) { throw new Error(`Malformed text: char ${char} do not match`); }
+
+  let pieces = [text.slice(0, startIndex),
+                text.slice(startIndex+1, endIndex),
+                text.slice(endIndex+1)];
+  pieces.forEach((piece, index) => {
+    if (index === 1) { // marked-up text
+      markers.push(builder.marker(piece, [markup]));
+    } else {
+      markers = markers.concat(parseTextIntoMarkers(piece, builder));
+    }
+  });
+
+  return markers;
+}
+
 function parseTextIntoMarkers(text, builder) {
   text = text.replace(cursorRegex,'');
   let markers = [];
 
-  if (text.indexOf('@') !== -1) {
-    let atomIndex = text.indexOf('@');
-    let afterAtomIndex = atomIndex + 1;
-    let atomName = DEFAULT_ATOM_NAME,
-        atomValue = DEFAULT_ATOM_VALUE,
-        atomPayload = {};
+  let hasAtom = text.indexOf('@') !== -1;
+  let hasMarkup = false;
+  Object.keys(MARKUP_CHARS).forEach(key => {
+    if (text.indexOf(key) !== -1) { hasMarkup = true; }
+  });
 
-    // If "@" is followed by "( ... json ... )", parse the json data
-    if (text[atomIndex+1] === "(") {
-      let jsonStartIndex = atomIndex+1;
-      let jsonEndIndex = text.indexOf(")",jsonStartIndex);
-      afterAtomIndex = jsonEndIndex + 1;
-      if (jsonEndIndex === -1) {
-        throw new Error('Atom JSON data had unmatched "(": ' + text);
-      }
-      let jsonString = text.slice(jsonStartIndex+1, jsonEndIndex);
-      jsonString = "{" + jsonString + "}";
-      try {
-        let json = JSON.parse(jsonString);
-        if (json.name) { atomName = json.name; }
-        if (json.value) { atomValue = json.value; }
-        if (json.payload) { atomPayload = json.payload; }
-      } catch(e) {
-        throw new Error('Failed to parse atom JSON data string: ' + jsonString + ', ' + e);
-      }
-    }
-
-    // create the atom
-    let atom = builder.atom(atomName, atomValue, atomPayload);
-
-    // recursively parse the remaining text pieces
-    let pieces = [text.slice(0, atomIndex), atom, text.slice(afterAtomIndex)];
-
-    // join the markers together
-    pieces.forEach(piece => {
-      if (piece === atom) {
-        markers.push(piece);
-      } else if (piece.length) {
-        markers = markers.concat( parseTextIntoMarkers(piece, builder) );
-      }
-    });
-  } else if (text.indexOf('*') !== -1) {
-    let markup = builder.markup('b');
-
-    let startIndex = text.indexOf('*');
-    let endIndex = text.indexOf('*', startIndex+1);
-    if (endIndex === -1) { throw new Error('Malformed text: asterisks do not match'); }
-
-    let pieces = [text.slice(0, startIndex),
-                  text.slice(startIndex+1, endIndex),
-                  text.slice(endIndex+1)];
-    pieces.forEach((piece, index) => {
-      let markups = index === 1 ? [markup] : [];
-      if (piece.length) {
-        markers.push(builder.marker(piece, markups));
-      }
-    });
-  } else {
-    if (text.length) {
-      markers.push(builder.marker(text));
-    }
+  if (hasAtom) {
+    markers = markers.concat(parseTextIntoAtom(text, builder));
+  } else if (hasMarkup) {
+    markers = markers.concat(parseTextWithMarkup(text, builder));
+  } else if (text.length) {
+    markers.push(builder.marker(text));
   }
 
   return markers;

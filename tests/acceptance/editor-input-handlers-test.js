@@ -1,8 +1,11 @@
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
+import { TAB } from 'mobiledoc-kit/utils/characters';
 
 const { module, test } = Helpers;
+const { editor: { buildFromText } } = Helpers;
+const { postAbstract: { DEFAULT_ATOM_NAME } } = Helpers;
 
 let editor, editorElement;
 
@@ -11,6 +14,12 @@ function renderEditor(...args) {
   editor.selectRange(editor.post.tailPosition());
   return editor;
 }
+
+let atom = {
+  name: DEFAULT_ATOM_NAME,
+  type: 'dom',
+  render() {}
+};
 
 module('Acceptance: Editor: Text Input Handlers', {
   beforeEach() {
@@ -67,9 +76,7 @@ headerTests.forEach(({text, toInsert, headerTagName}) => {
   });
 
   test(`typing "${text}" but not "${toInsert}" does not convert to ${headerTagName}`, (assert) => {
-    renderEditor(({post, markupSection, marker}) => {
-      return post([markupSection('p',[marker(text)])]);
-    });
+    editor = buildFromText(text, {element: editorElement});
     assert.hasElement('#editor p', 'precond - has p');
     Helpers.dom.insertText(editor, 'X');
 
@@ -109,9 +116,7 @@ test('typing "* " at start of markup section does not remove it', (assert) => {
     return post([markupSection('p',[marker('*abc')])]);
   });
 
-  let position = editor.post.sections.head.headPosition();
-  position.offset = 1;
-  editor.selectRange(position);
+  editor.selectRange(editor.post.sections.head.toPosition(1));
 
   Helpers.dom.insertText(editor, ' ');
   assert.hasElement('#editor p:contains(* abc)', 'p is still there');
@@ -134,9 +139,7 @@ test('typing "* " inside of a list section does not create a new list section', 
 });
 
 test('typing "1 " converts to ol > li', (assert) => {
-  renderEditor(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('1')])]);
-  });
+  editor = buildFromText(['1|'], {element: editorElement});
   Helpers.dom.insertText(editor, ' ');
   assert.hasNoElement('#editor p', 'p is gone');
   assert.hasElement('#editor ol > li', 'p -> "ol > li"');
@@ -159,9 +162,7 @@ test('typing "1 " converts to ol > li', (assert) => {
 });
 
 test('typing "1. " converts to ol > li', (assert) => {
-  renderEditor(({post, markupSection, marker}) => {
-    return post([markupSection('p', [marker('1.')])]);
-  });
+  editor = buildFromText('1.|', {element: editorElement});
   Helpers.dom.insertText(editor, ' ');
   assert.hasNoElement('#editor p', 'p is gone');
   assert.hasElement('#editor ol > li', 'p -> "ol > li"');
@@ -171,15 +172,7 @@ test('typing "1. " converts to ol > li', (assert) => {
 });
 
 test('an input handler will trigger anywhere in the text', (assert) => {
-  let atom = {
-    name: 'mention',
-    type: 'dom',
-    render() {}
-  };
-
-  renderEditor(({post, markupSection, marker, atom}) => {
-    return post([markupSection('p', [atom('mention', 'bob'), marker('abc'), atom('mention', 'sue')])]);
-  }, {atoms: [atom]});
+  editor = buildFromText('@abc@', {element: editorElement, atoms: [atom]});
 
   let expandCount = 0;
   let lastMatches;
@@ -198,7 +191,7 @@ test('an input handler will trigger anywhere in the text', (assert) => {
   assert.deepEqual(lastMatches, ['@'], 'correct match at start');
 
   // middle
-  editor.selectRange(Range.create(editor.post.sections.head, '@'.length + 1 + 'ab'.length));
+  editor.selectRange(editor.post.sections.head.toPosition('@'.length + 1 + 'ab'.length));
   Helpers.dom.insertText(editor, '@');
   assert.equal(expandCount, 2, 'expansion was run at middle');
   assert.deepEqual(lastMatches, ['@'], 'correct match at middle');
@@ -211,15 +204,7 @@ test('an input handler will trigger anywhere in the text', (assert) => {
 });
 
 test('an input handler can provide a `match` instead of `text`', (assert) => {
-  let atom = {
-    name: 'mention',
-    type: 'dom',
-    render() {}
-  };
-
-  renderEditor(({post, markupSection, marker, atom}) => {
-    return post([markupSection('p', [atom('mention', 'bob'), marker('abc'), atom('mention', 'sue')])]);
-  }, {atoms: [atom]});
+  editor = buildFromText('@abc@', {element: editorElement, atoms: [atom]});
 
   let expandCount = 0;
   let lastMatches;
@@ -239,7 +224,7 @@ test('an input handler can provide a `match` instead of `text`', (assert) => {
   assert.deepEqual(lastMatches, regex.exec('abX'), 'correct match at start');
 
   // middle
-  editor.selectRange(Range.create(editor.post.sections.head, 'abX'.length + 1 + 'ab'.length));
+  editor.selectRange(editor.post.sections.head.toPosition('abX'.length + 1 + 'ab'.length));
   Helpers.dom.insertText(editor, '..X');
   assert.equal(expandCount, 2, 'expansion was run at middle');
   assert.deepEqual(lastMatches, regex.exec('..X'), 'correct match at middle');
@@ -252,15 +237,7 @@ test('an input handler can provide a `match` instead of `text`', (assert) => {
 });
 
 test('an input handler can provide a `match` that matches at start and end', (assert) => {
-  let atom = {
-    name: 'mention',
-    type: 'dom',
-    render() {}
-  };
-
-  renderEditor(({post, markupSection, marker, atom}) => {
-    return post([markupSection('p', [atom('mention', 'bob'), marker('abc'), atom('mention', 'sue')])]);
-  }, {atoms: [atom]});
+  editor = Helpers.editor.buildFromText(['@abc@'], {element: editorElement, atoms: [atom]});
 
   let expandCount = 0;
   let lastMatches;
@@ -274,18 +251,35 @@ test('an input handler can provide a `match` that matches at start and end', (as
   });
 
   // at start
-  editor.selectRange(new Range(editor.post.headPosition()));
+  editor.selectRange(editor.post.headPosition());
   Helpers.dom.insertText(editor, '123');
   assert.equal(expandCount, 1, 'expansion was run at start');
   assert.deepEqual(lastMatches, regex.exec('123'), 'correct match at start');
 
   // middle
-  editor.selectRange(Range.create(editor.post.sections.head, '123'.length + 2));
+  editor.selectRange(editor.post.sections.head.toPosition('123'.length+2));
   Helpers.dom.insertText(editor, '123');
   assert.equal(expandCount, 1, 'expansion was not run at middle');
 
   // end
-  editor.selectRange(new Range(editor.post.tailPosition()));
+  editor.selectRange(editor.post.tailPosition());
   Helpers.dom.insertText(editor, '123');
   assert.equal(expandCount, 1, 'expansion was not run at end');
+});
+
+// See https://github.com/bustlelabs/mobiledoc-kit/issues/400
+test('input handler can be triggered by TAB', (assert) => {
+  editor = Helpers.editor.buildFromText('abc|', {element: editorElement});
+
+  let didMatch;
+  editor.onTextInput({
+    match: /abc\t/,
+    run() {
+      didMatch = true;
+    }
+  });
+
+  Helpers.dom.insertText(editor, TAB);
+
+  assert.ok(didMatch);
 });
