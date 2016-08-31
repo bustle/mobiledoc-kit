@@ -1,6 +1,17 @@
+<a name="0.10.9"></a>
+## 0.10.9 (2016-08-31)
+
+* fix(onTextInput): Ensure `onTextInput` is triggered by tab character (#479) ([a0aaa3a](https://github.com/bustlelabs/mobiledoc-kit/commit/a0aaa3a)), closes [#400](https://github.com/bustlelabs/mobiledoc-kit/issues/400)
+* fix(newlines). Remove newline chars in text nodes (`\n`) when parsing HTML (#478) ([6036b90](https://github.com/bustlelabs/mobiledoc-kit/commit/6036b90)), closes [#333](https://github.com/bustlelabs/mobiledoc-kit/issues/333)
+* fix(range) Allow reading range from DOM when editor is disabled (#476) ([6969f5c](https://github.com/bustlelabs/mobiledoc-kit/commit/6969f5c)), closes [#475](https://github.com/bustlelabs/mobiledoc-kit/issues/475)
+* refactor(cleanup) Remove unused methods from `Post`, `Markerable` (#474) ([235f7a3](https://github.com/bustlelabs/mobiledoc-kit/commit/235f7a3))
+
+
+
 <a name="0.10.8"></a>
 ## 0.10.8 (2016-08-25)
 
+* 0.10.8 ([1cef370](https://github.com/bustlelabs/mobiledoc-kit/commit/1cef370))
 * feat(atom): Implement Atom `save` hook (#472) ([3ef3bc3](https://github.com/bustlelabs/mobiledoc-kit/commit/3ef3bc3)), closes [#399](https://github.com/bustlelabs/mobiledoc-kit/issues/399)
 * fix(atoms): Avoid rerendering atoms when section content changes. (#471) ([a59ae74](https://github.com/bustlelabs/mobiledoc-kit/commit/a59ae74)), closes [#421](https://github.com/bustlelabs/mobiledoc-kit/issues/421)
 
