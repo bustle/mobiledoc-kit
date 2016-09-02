@@ -45,6 +45,15 @@ export default class EventManager {
     this._textInputHandler.register(inputHandler);
   }
 
+  unregisterInputHandler(name) {
+    this._textInputHandler.unregister(name);
+  }
+
+  unregisterAllTextInputHandlers() {
+    this._textInputHandler.destroy();
+    this._textInputHandler = new TextInputHandler(this.editor);
+  }
+
   _addListener(context, type) {
     assert(`Missing listener for ${type}`, !!this[type]);
 

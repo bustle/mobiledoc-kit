@@ -1,5 +1,6 @@
 import { endsWith } from 'mobiledoc-kit/utils/string-utils';
 import assert from 'mobiledoc-kit/utils/assert';
+import deprecate from 'mobiledoc-kit/utils/deprecate';
 
 class TextInputHandler {
   constructor(editor) {
@@ -10,6 +11,15 @@ class TextInputHandler {
   register(handler) {
     assert(`Input Handler is not valid`, this._validateHandler(handler));
     this._handlers.push(handler);
+  }
+
+  unregister(name) {
+    let handlers = this._handlers;
+    for (let i=0; i<handlers.length; i++) {
+      if (handlers[i].name === name) {
+        handlers.splice(i, 1);
+      }
+    }
   }
 
   handle(string) {
@@ -40,6 +50,7 @@ class TextInputHandler {
   }
 
   _validateHandler(handler) {
+    deprecate('Registered input handlers require a "name" property so that they can be unregistered', !!handler.name);
     return !!handler.run &&                        // has `run`
            (!!handler.text || !!handler.match) &&  // and `text` or `match`
            !(!!handler.text && !!handler.match);   // not both `text` and `match`

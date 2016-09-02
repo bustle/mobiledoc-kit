@@ -241,6 +241,11 @@ editor.onTextInput({
 The editor has several default text input handlers that are defined in
 `src/js/editor/text-input-handlers.js`.
 
+To remove default text input handlers, simply call the unregister function.
+```javascript
+editor.unregisterAllTextInputHandlers();
+```
+
 ### DOM Parsing hooks
 
 A developer can override the default parsing behavior for leaf DOM nodes in
