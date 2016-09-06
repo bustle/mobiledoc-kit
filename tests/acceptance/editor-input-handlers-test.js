@@ -177,6 +177,7 @@ test('an input handler will trigger anywhere in the text', (assert) => {
   let expandCount = 0;
   let lastMatches;
   editor.onTextInput({
+    name: 'at',
     text: '@',
     run: (editor, matches) => {
       expandCount++;
@@ -210,6 +211,7 @@ test('an input handler can provide a `match` instead of `text`', (assert) => {
   let lastMatches;
   let regex = /.(.)X$/;
   editor.onTextInput({
+    name: 'test',
     match: regex,
     run: (editor, matches) => {
       expandCount++;
@@ -243,6 +245,7 @@ test('an input handler can provide a `match` that matches at start and end', (as
   let lastMatches;
   let regex = /^\d\d\d$/;
   editor.onTextInput({
+    name: 'test',
     match: regex,
     run: (editor, matches) => {
       expandCount++;
@@ -273,6 +276,7 @@ test('input handler can be triggered by TAB', (assert) => {
 
   let didMatch;
   editor.onTextInput({
+    name: 'test',
     match: /abc\t/,
     run() {
       didMatch = true;
@@ -282,4 +286,47 @@ test('input handler can be triggered by TAB', (assert) => {
   Helpers.dom.insertText(editor, TAB);
 
   assert.ok(didMatch);
+});
+
+test('can unregister all handlers', (assert) => {
+  editor = Helpers.editor.buildFromText('');
+  // there are 3 default helpers
+  assert.equal(editor._eventManager._textInputHandler._handlers.length, 3);
+  editor.onTextInput({
+    name: 'first',
+    match: /abc\t/,
+    run() {}
+  });
+  editor.onTextInput({
+    name: 'second',
+    match: /abc\t/,
+    run() {}
+  });
+  assert.equal(editor._eventManager._textInputHandler._handlers.length, 5);
+  editor.unregisterAllTextInputHandlers();
+  assert.equal(editor._eventManager._textInputHandler._handlers.length, 0);
+});
+
+test('can unregister handler by name', (assert) => {
+  editor = Helpers.editor.buildFromText('');
+  const handlerName = 'ul';
+  let handlers = editor._eventManager._textInputHandler._handlers;
+  assert.ok(handlers.filter(handler => handler.name === handlerName).length);
+  editor.unregisterTextInputHandler(handlerName);
+  assert.notOk(handlers.filter(handler => handler.name === handlerName).length);
+});
+
+test('can unregister handlers by duplicate name', (assert) => {
+  editor = Helpers.editor.buildFromText('');
+  const handlerName = 'ul';
+  editor.onTextInput({
+    name: handlerName,
+    match: /abc/,
+    run() {}
+  });
+  let handlers = editor._eventManager._textInputHandler._handlers;
+  assert.equal(handlers.length, 4); // 3 default + 1 custom handlers
+  editor.unregisterTextInputHandler(handlerName);
+  assert.equal(handlers.length, 2);
+  assert.notOk(handlers.filter(handler => handler.name === handlerName).length);
 });

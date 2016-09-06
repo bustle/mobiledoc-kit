@@ -53,6 +53,7 @@ export function replaceWithHeaderSection(editor, headingTagName) {
 
 export const DEFAULT_TEXT_INPUT_HANDLERS = [
   {
+    name: 'ul',
     // "* " -> ul
     match: /^\* $/,
     run(editor) {
@@ -60,6 +61,7 @@ export const DEFAULT_TEXT_INPUT_HANDLERS = [
     }
   },
   {
+    name: 'ol',
     // "1" -> ol, "1." -> ol
     match: /^1\.? $/,
     run(editor) {
@@ -67,6 +69,7 @@ export const DEFAULT_TEXT_INPUT_HANDLERS = [
     }
   },
   {
+    name: 'heading',
     // "# " -> h1, "## " -> h2, "### " -> h3
     match: /^(#{1,3}) $/,
     run(editor, matches) {

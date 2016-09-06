@@ -710,6 +710,7 @@ class Editor {
    * Register a handler that will be invoked by the editor after the user enters
    * matching text.
    * @param {Object} inputHandler
+   * @param {String} inputHandler.name Required. Used by identifying handlers.
    * @param {String} [inputHandler.text] Required if `match` is not provided
    * @param {RegExp} [inputHandler.match] Required if `text` is not provided
    * @param {Function} inputHandler.run This callback is invoked with the {@link Editor}
@@ -722,6 +723,25 @@ class Editor {
    */
   onTextInput(inputHandler) {
     this._eventManager.registerInputHandler(inputHandler);
+  }
+
+  /**
+   * Unregister all text input handlers
+   *
+   * @public
+   */
+  unregisterAllTextInputHandlers() {
+    this._eventManager.unregisterAllTextInputHandlers();
+  }
+
+  /**
+   * Unregister text input handler by name
+   * @param {String} name The name of handler to be removed
+   *
+   * @public
+   */
+  unregisterTextInputHandler(name) {
+    this._eventManager.unregisterInputHandler(name);
   }
 
   /**
