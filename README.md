@@ -1,4 +1,4 @@
-## Mobiledoc Kit
+# Mobiledoc Kit
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/mobiledoc-kit.svg)](https://saucelabs.com/u/mobiledoc-kit)
 
@@ -241,6 +241,11 @@ editor.onTextInput({
 The editor has several default text input handlers that are defined in
 `src/js/editor/text-input-handlers.js`.
 
+To remove default text input handlers, simply call the unregister function.
+```javascript
+editor.unregisterAllTextInputHandlers();
+```
+
 ### DOM Parsing hooks
 
 A developer can override the default parsing behavior for leaf DOM nodes in
@@ -282,11 +287,16 @@ Parser hooks are called with three arguments:
 Note that you *must* call `nodeFinished` to stop a DOM node from being
 parsed by the next plugin or the default parser.
 
-### Contributing
+## Caveats
+
+### Mobiledoc-kit and the Grammarly extension
+`mobiledoc-kit` and the [Grammarly extension](https://www.grammarly.com/) do not play well together (see [issue 422](https://github.com/bustlelabs/mobiledoc-kit/issues/422)). Until this is resolved, you can avoid any such problems by disabling Grammarly for the `mobiledoc-kit` instances on your page. To do this, add the `data-gram="false"` attribute to the `mobiledoc-kit` main DOM element.
+
+## Contributing
 
 Fork the repo, write a test, make a change, open a PR.
 
-#### Tests
+### Tests
 
 Install npm and bower:
 
@@ -307,7 +317,7 @@ Or run headless tests via testem:
 
 Tests in CI are run at Travis via Saucelabs (see the `test:ci` npm script).
 
-#### Demo
+### Demo
 
 There is a demo app that uses the Mobiledoc kit via the [ember-mobiledoc-editor](https://github.com/bustlelabs/ember-mobiledoc-editor)
 in `demo/`. To run the demo:
@@ -317,18 +327,18 @@ in `demo/`. To run the demo:
  * visit http://localhost:4200/
 
 
-#### Getting Help
+### Getting Help
 
 If you notice a bug or have a feature request please [open an issue on github](https://github.com/bustlelabs/mobiledoc-kit/issues).
 If you have a question about usage you can post in the [gitter channel](https://gitter.im/bustlelabs/mobiledoc-kit) or on StackOverflow using the [`mobiledoc-kit` tag](http://stackoverflow.com/questions/tagged/mobiledoc-kit).
 
-#### Releasing
+### Releasing
 
 * Use `np` (`npm install -g np`)
 * `np <version>` (e.g. `np 0.12.0`)
 * `git push <origin> --tags`
 
-#### Deploy the demo
+### Deploy the demo
 
 The demo website is hosted at github pages. To publish a new version:
 
