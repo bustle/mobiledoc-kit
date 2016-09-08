@@ -19,8 +19,11 @@ function renderIntoAndFocusTail(treeFn, options={}) {
   return editor;
 }
 
-function findModifierKey(key) {
-  return Object.keys(MODIFIERS).find(k => MODIFIERS[k] === key);
+function labelForModifier(key) {
+  switch (key) {
+  case MODIFIERS.META: return 'META';
+  case MODIFIERS.CTRL: return 'CTRL';
+  }
 }
 
 module('Acceptance: Editor: Key Commands', {
@@ -219,7 +222,7 @@ let toggleLinkTest = (assert, modifier) => {
   ]));
 
   editor.registerKeyCommand({
-    str: `${findModifierKey(modifier)}+K`,
+    str: `${labelForModifier(modifier)}+K`,
     run(editor) {
       toggleLink(editor, (prompt, defaultUrl, callback) => {
         assert.ok(true, 'calls showPrompt');
@@ -245,7 +248,7 @@ let toggleLinkUnlinkTest = (assert, modifier) => {
   ]));
 
   editor.registerKeyCommand({
-    str: `${findModifierKey(modifier)}+K`,
+    str: `${labelForModifier(modifier)}+K`,
     run(editor) {
       toggleLink(editor, (prompt, defaultUrl, callback) => {
         assert.ok(false, 'should not call showPrompt');
