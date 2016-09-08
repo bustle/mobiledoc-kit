@@ -1,4 +1,5 @@
 import Editor from './editor/editor';
+import UI from './editor/ui';
 import ImageCard from './cards/image';
 import Range from './utils/cursor/range';
 import Position from './utils/cursor/position';
@@ -7,6 +8,7 @@ import VERSION from './version';
 
 const Mobiledoc = {
   Editor,
+  UI,
   ImageCard,
   Range,
   Position,
