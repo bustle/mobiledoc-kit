@@ -3,6 +3,7 @@ import Keycodes from 'mobiledoc-kit/utils/keycodes';
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import Browser from 'mobiledoc-kit/utils/browser';
+import { toggleLink } from 'mobiledoc-kit/editor/ui';
 
 const { module, test, skip } = Helpers;
 
@@ -16,6 +17,10 @@ function renderIntoAndFocusTail(treeFn, options={}) {
   let editor = Helpers.mobiledoc.renderInto(editorElement, treeFn, options);
   editor.selectRange(new Range(editor.post.tailPosition()));
   return editor;
+}
+
+function findModifierKey(key) {
+  return Object.keys(MODIFIERS).find(k => MODIFIERS[k] === key);
 }
 
 module('Acceptance: Editor: Key Commands', {
@@ -213,12 +218,17 @@ let toggleLinkTest = (assert, modifier) => {
     markupSection('p', [marker('something')])
   ]));
 
-  assert.ok(editor.hasCursor(), 'has cursor');
+  editor.registerKeyCommand({
+    str: `${findModifierKey(modifier)}+K`,
+    run(editor) {
+      toggleLink(editor, (prompt, defaultUrl, callback) => {
+        assert.ok(true, 'calls showPrompt');
+        callback(url);
+      });
+    }
+  });
 
-  editor.showPrompt = (prompt, defaultUrl, callback) => {
-    assert.ok(true, 'calls showPrompt');
-    callback(url);
-  };
+  assert.ok(editor.hasCursor(), 'has cursor');
 
   Helpers.dom.selectText(editor ,'something', editorElement);
   Helpers.dom.triggerKeyCommand(editor, 'K', modifier);
@@ -234,11 +244,18 @@ let toggleLinkUnlinkTest = (assert, modifier) => {
     markupSection('p', [marker('something', [markup('a', {href:url})])])
   ]));
 
+  editor.registerKeyCommand({
+    str: `${findModifierKey(modifier)}+K`,
+    run(editor) {
+      toggleLink(editor, (prompt, defaultUrl, callback) => {
+        assert.ok(false, 'should not call showPrompt');
+        callback(url);
+      });
+    }
+  });
+
   assert.ok(editor.hasCursor(), 'has cursor');
 
-  editor.showPrompt = () => {
-    assert.ok(false, 'should not call showPrompt');
-  };
   assert.hasElement(`#editor a[href="${url}"]:contains(something)`,
                     'precond -- has link');
 
