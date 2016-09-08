@@ -1,23 +1,12 @@
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Keycodes from 'mobiledoc-kit/utils/keycodes';
 import Helpers from '../test-helpers';
-import Range from 'mobiledoc-kit/utils/cursor/range';
 import Browser from 'mobiledoc-kit/utils/browser';
 import { toggleLink } from 'mobiledoc-kit/editor/ui';
 
 const { module, test, skip } = Helpers;
 
 let editor, editorElement;
-
-// In Firefox, if the window isn't active (which can happen when running tests
-// at SauceLabs), the editor element won't have the selection. This helper method
-// ensures that it has a cursor selection.
-// See https://github.com/bustlelabs/mobiledoc-kit/issues/388
-function renderIntoAndFocusTail(treeFn, options={}) {
-  let editor = Helpers.mobiledoc.renderInto(editorElement, treeFn, options);
-  editor.selectRange(new Range(editor.post.tailPosition()));
-  return editor;
-}
 
 function labelForModifier(key) {
   switch (key) {
@@ -46,7 +35,7 @@ function testStatefulCommand({modifierName, key, command, markupName}) {
     let modifier = MODIFIERS[modifierName];
     let modifierKeyCode = Keycodes[modifierName];
     let initialText = 'something';
-    editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
       markupSection('p', [marker(initialText)])
     ]));
 
@@ -72,7 +61,7 @@ function testStatefulCommand({modifierName, key, command, markupName}) {
     let modifierKeyCode = Keycodes[modifierName];
     let initialText = 'something';
 
-    editor =renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
       markupSection('p', [marker(initialText)])
     ]));
 
@@ -164,7 +153,7 @@ testStatefulCommand({
 if (Browser.isMac()) {
   test(`[Mac] ctrl-k clears to the end of a line`, (assert) => {
     let initialText = 'something';
-    editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+    editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
       markupSection('p', [marker(initialText)])
     ]));
 
@@ -189,7 +178,7 @@ if (Browser.isMac()) {
 
   test(`[Mac] ctrl-k clears selected text`, (assert) => {
     let initialText = 'something';
-    editor = renderIntoAndFocusTail( ({post, markupSection, marker}) => post([
+    editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
       markupSection('p', [marker(initialText)])
     ]));
 
@@ -217,7 +206,7 @@ let toggleLinkTest = (assert, modifier) => {
   assert.expect(3);
 
   let url = 'http://bustle.com';
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
     markupSection('p', [marker('something')])
   ]));
 
@@ -243,7 +232,7 @@ let toggleLinkUnlinkTest = (assert, modifier) => {
   assert.expect(4);
 
   let url = 'http://bustle.com';
-  editor = renderIntoAndFocusTail(({post, markupSection, marker, markup}) => post([
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker, markup}) => post([
     markupSection('p', [marker('something', [markup('a', {href:url})])])
   ]));
 
@@ -308,7 +297,7 @@ toggleTests.forEach(({precondition, msg, testFn, modifier}) => {
 });
 
 test('new key commands can be registered', (assert) => {
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
     markupSection('p', [marker('something')])
   ]));
 
@@ -330,7 +319,7 @@ test('new key commands can be registered', (assert) => {
 });
 
 test('new key commands can be registered without modifiers', (assert) => {
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
     markupSection('p', [marker('something')])
   ]));
 
@@ -356,7 +345,7 @@ test('new key commands can be registered without modifiers', (assert) => {
 });
 
 test('duplicate key commands can be registered with the last registered winning', (assert) => {
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
     markupSection('p', [marker('something')])
   ]));
 
@@ -380,7 +369,7 @@ test('duplicate key commands can be registered with the last registered winning'
 });
 
 test('returning false from key command causes next match to run', (assert) => {
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
     markupSection('p', [marker('something')])
   ]));
 
@@ -407,7 +396,7 @@ test('returning false from key command causes next match to run', (assert) => {
 });
 
 test('key commands can override built-in functionality', (assert) => {
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
     markupSection('p', [marker('something')])
   ]));
 
@@ -430,7 +419,7 @@ test('key commands can override built-in functionality', (assert) => {
 });
 
 test('returning false from key command still runs built-in functionality', (assert) => {
-  editor = renderIntoAndFocusTail(({post, markupSection, marker}) => post([
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
     markupSection('p', [marker('something')])
   ]));
 
