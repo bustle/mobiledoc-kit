@@ -210,3 +210,17 @@ test('keypress events when the editor does not have selection are ignored', (ass
     done();
   });
 });
+
+test('prevent handling newline', (assert) => {
+  editor = Helpers.editor.buildFromText('', {element: editorElement});
+
+  editor.willHandleNewline(event => {
+    assert.ok(true, 'willHandleNewline should be triggered');
+    event.preventDefault();
+  });
+  let {post: expected} = Helpers.postAbstract.buildFromText(['Line1']);
+
+  Helpers.dom.insertText(editor, 'Line1');
+  Helpers.dom.insertText(editor, ENTER);
+  assert.postIsSimilar(editor.post, expected);
+});

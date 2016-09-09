@@ -63,6 +63,7 @@ const CALLBACK_QUEUES = {
   DID_RENDER: 'didRender',
   WILL_DELETE: 'willDelete',
   DID_DELETE: 'didDelete',
+  WILL_HANDLE_NEWLINE: 'willHandleNewline',
   CURSOR_DID_CHANGE: 'cursorDidChange',
   DID_REPARSE: 'didReparse',
   POST_DID_CHANGE: 'postDidChange',
@@ -339,6 +340,13 @@ class Editor {
           return;
         }
       }
+
+      // Above logic might delete redundant range, so callback must run after it.
+      let defaultPrevented = false;
+      const event = { preventDefault() { defaultPrevented = true; } };
+      this.runCallbacks(CALLBACK_QUEUES.WILL_HANDLE_NEWLINE, [event]);
+      if (defaultPrevented) { return; }
+
       cursorSection = postEditor.splitSection(range.head)[1];
       postEditor.setRange(cursorSection.headPosition());
     });
@@ -780,6 +788,14 @@ class Editor {
    */
   didDelete(callback) {
     this.addCallback(CALLBACK_QUEUES.DID_DELETE, callback);
+  }
+
+  /**
+   * @param {Function} callback This callback will be called before handling new line.
+   * @public
+   */
+  willHandleNewline(callback) {
+    this.addCallback(CALLBACK_QUEUES.WILL_HANDLE_NEWLINE, callback);
   }
 
   /**
