@@ -3,6 +3,7 @@ import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
 import { filter, reduce } from '../utils/array-utils';
 import assert from '../utils/assert';
 import Browser from '../utils/browser';
+import { toggleLink } from './ui';
 
 function selectAll(editor) {
   let { post } = editor;
@@ -35,32 +36,6 @@ function deleteToEndOfSection(editor) {
     let nextPosition = postEditor.deleteRange(range);
     postEditor.setRange(nextPosition);
   });
-}
-
-function toggleLink(editor) {
-  if (editor.range.isCollapsed) {
-    return;
-  }
-
-  let selectedText = editor.cursor.selectedText();
-  let defaultUrl = '';
-  if (selectedText.indexOf('http') !== -1) { defaultUrl = selectedText; }
-
-  let {range} = editor;
-  let hasLink = editor.detectMarkupInRange(range, 'a');
-
-  if (hasLink) {
-    editor.run(postEditor => postEditor.toggleMarkup('a'));
-  } else {
-    editor.showPrompt('Enter a URL', defaultUrl, url => {
-      if (!url) { return; }
-
-      editor.run(postEditor => {
-        let markup = postEditor.builder.createMarkup('a', {href: url});
-        postEditor.toggleMarkup(markup);
-      });
-    });
-  }
 }
 
 export const DEFAULT_KEY_COMMANDS = [{

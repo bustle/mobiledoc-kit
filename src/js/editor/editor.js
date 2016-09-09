@@ -344,10 +344,6 @@ class Editor {
     });
   }
 
-  showPrompt(message, defaultValue, callback) {
-    callback(window.prompt(message, defaultValue));
-  }
-
   /**
    * Notify the editor that the post did change, and run associated
    * callbacks.
