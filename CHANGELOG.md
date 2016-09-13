@@ -1,6 +1,14 @@
+<a name="0.10.11-beta.1"></a>
+## 0.10.11-beta.1 (2016-09-13)
+
+* fix(ui): Fix UI export (#492) ([08c0c24](https://github.com/bustlelabs/mobiledoc-kit/commit/08c0c24)), closes [#492](https://github.com/bustlelabs/mobiledoc-kit/issues/492)
+
+
+
 <a name="0.10.10"></a>
 ## 0.10.10 (2016-09-13)
 
+* 0.10.10 ([3d3bc2e](https://github.com/bustlelabs/mobiledoc-kit/commit/3d3bc2e))
 * feat(textInput): able to unregister single or all text input handlers (#484) ([68a60ae](https://github.com/bustlelabs/mobiledoc-kit/commit/68a60ae))
 * feat(UI): Export toggleLink (#491) ([3335357](https://github.com/bustlelabs/mobiledoc-kit/commit/3335357))
 * feat(willHandleNewline): add willHandleNewline hook (#489) ([f1d2262](https://github.com/bustlelabs/mobiledoc-kit/commit/f1d2262))
