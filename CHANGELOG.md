@@ -1,10 +1,22 @@
+<a name="0.10.10"></a>
+## 0.10.10 (2016-09-13)
+
+* feat(textInput): able to unregister single or all text input handlers (#484) ([68a60ae](https://github.com/bustlelabs/mobiledoc-kit/commit/68a60ae))
+* feat(UI): Export toggleLink (#491) ([3335357](https://github.com/bustlelabs/mobiledoc-kit/commit/3335357))
+* feat(willHandleNewline): add willHandleNewline hook (#489) ([f1d2262](https://github.com/bustlelabs/mobiledoc-kit/commit/f1d2262))
+* docs(grammarly): DOC - Add section about disabling Grammarly (#490) ([bbf3cfd](https://github.com/bustlelabs/mobiledoc-kit/commit/bbf3cfd))
+* fix(deprecate): Make deprecate accept conditional argument (#488) ([059fd66](https://github.com/bustlelabs/mobiledoc-kit/commit/059fd66))
+
+
+
 <a name="0.10.9"></a>
 ## 0.10.9 (2016-08-31)
 
-* fix(onTextInput): Ensure `onTextInput` is triggered by tab character (#479) ([a0aaa3a](https://github.com/bustlelabs/mobiledoc-kit/commit/a0aaa3a)), closes [#400](https://github.com/bustlelabs/mobiledoc-kit/issues/400)
+* 0.10.9 ([2fe7f0f](https://github.com/bustlelabs/mobiledoc-kit/commit/2fe7f0f))
 * fix(newlines). Remove newline chars in text nodes (`\n`) when parsing HTML (#478) ([6036b90](https://github.com/bustlelabs/mobiledoc-kit/commit/6036b90)), closes [#333](https://github.com/bustlelabs/mobiledoc-kit/issues/333)
 * fix(range) Allow reading range from DOM when editor is disabled (#476) ([6969f5c](https://github.com/bustlelabs/mobiledoc-kit/commit/6969f5c)), closes [#475](https://github.com/bustlelabs/mobiledoc-kit/issues/475)
 * refactor(cleanup) Remove unused methods from `Post`, `Markerable` (#474) ([235f7a3](https://github.com/bustlelabs/mobiledoc-kit/commit/235f7a3))
+* fix(onTextInput): Ensure `onTextInput` is triggered by tab character (#479) ([a0aaa3a](https://github.com/bustlelabs/mobiledoc-kit/commit/a0aaa3a)), closes [#400](https://github.com/bustlelabs/mobiledoc-kit/issues/400)
 
 
 
