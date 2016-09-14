@@ -1,6 +1,14 @@
+<a name="0.10.11"></a>
+## 0.10.11 (2016-09-14)
+
+* chore(exports): Export additional modules for selective importing (#493) ([5667a34](https://github.com/bustlelabs/mobiledoc-kit/commit/5667a34))
+
+
+
 <a name="0.10.11-beta.1"></a>
 ## 0.10.11-beta.1 (2016-09-13)
 
+* 0.10.11-beta.1 ([39e3026](https://github.com/bustlelabs/mobiledoc-kit/commit/39e3026))
 * fix(ui): Fix UI export (#492) ([08c0c24](https://github.com/bustlelabs/mobiledoc-kit/commit/08c0c24)), closes [#492](https://github.com/bustlelabs/mobiledoc-kit/issues/492)
 
 
