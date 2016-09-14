@@ -9,7 +9,18 @@ function parseHTML(html, options={}) {
   return new HTMLParser(builder, options).parse(html);
 }
 
-module('Unit: Parser: HTMLParser');
+let didParseVideo;
+function videoParserPlugin(node) {
+  if (node.tagName === 'VIDEO') {
+    didParseVideo = true;
+  }
+}
+
+module('Unit: Parser: HTMLParser', {
+  beforeEach() {
+    didParseVideo = false;
+  }
+});
 
 test('style tags are ignored', (assert) => {
   // This is the html you get when copying a message from Slack's desktop app
@@ -31,4 +42,30 @@ test('newlines ("\\n") are replaced with space characters', (assert) => {
   let {post: expected} = Helpers.postAbstract.buildFromText(['abc def']);
 
   assert.postIsSimilar(post, expected);
+});
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/494
+test('top-level unknown void elements are parsed', (assert) => {
+  let html = `<video />`;
+  parseHTML(html, {plugins: [videoParserPlugin]});
+  assert.ok(didParseVideo);
+});
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/494
+test('top-level unknown elements are parsed', (assert) => {
+  let html = `<video>...inner...</video>`;
+  parseHTML(html, {plugins: [videoParserPlugin]});
+  assert.ok(didParseVideo);
+});
+
+test('nested void unknown elements are parsed', (assert) => {
+  let html = `<p>...<video />...</p>`;
+  parseHTML(html, {plugins: [videoParserPlugin]});
+  assert.ok(didParseVideo);
+});
+
+test('nested unknown elements are parsed', (assert) => {
+  let html = `<p>...<video>inner</video>...</p>`;
+  parseHTML(html, {plugins: [videoParserPlugin]});
+  assert.ok(didParseVideo);
 });
