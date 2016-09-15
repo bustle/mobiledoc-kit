@@ -149,7 +149,7 @@ test('select-all and type text works ok', (assert) => {
 
   assert.selectedText('abc', 'precond - abc is selected');
   assert.hasElement('#editor p:contains(abc)', 'precond - renders p');
-  
+
   Helpers.dom.insertText(editor, 'X');
 
   assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
@@ -214,7 +214,8 @@ test('keypress events when the editor does not have selection are ignored', (ass
 test('prevent handling newline', (assert) => {
   editor = Helpers.editor.buildFromText('', {element: editorElement});
 
-  editor.willHandleNewline(event => {
+  editor.willHandleNewline((event, editor, range) => {
+    assert.equal(range.head.section.text, 'Line1', 'can access section text');
     assert.ok(true, 'willHandleNewline should be triggered');
     event.preventDefault();
   });

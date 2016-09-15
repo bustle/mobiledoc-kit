@@ -344,7 +344,7 @@ class Editor {
       // Above logic might delete redundant range, so callback must run after it.
       let defaultPrevented = false;
       const event = { preventDefault() { defaultPrevented = true; } };
-      this.runCallbacks(CALLBACK_QUEUES.WILL_HANDLE_NEWLINE, [event]);
+      this.runCallbacks(CALLBACK_QUEUES.WILL_HANDLE_NEWLINE, [event, this, range]);
       if (defaultPrevented) { return; }
 
       cursorSection = postEditor.splitSection(range.head)[1];
