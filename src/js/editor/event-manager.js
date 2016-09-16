@@ -226,6 +226,11 @@ export default class EventManager {
     if (!range.isCollapsed) {
       editor.performDelete();
     }
+
+    if (editor.post.isBlank) {
+      editor._insertEmptyMarkupSectionAtCursor();
+    }
+
     let position = editor.range.head;
     let targetFormat = this.modifierKeys.shift ? 'text' : 'html';
     let pastedPost = parsePostFromPaste(event, editor, {targetFormat});
