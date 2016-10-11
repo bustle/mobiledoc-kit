@@ -109,6 +109,20 @@ test('paste plain text with list items', (assert) => {
   assert.hasElement('#editor ul li:contains(def)', 'list item is pasted');
 });
 
+test('paste plain text into an empty Mobiledoc', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post}) => {
+    return post();
+  });
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  Helpers.dom.setCopyData(MIME_TEXT_PLAIN, 'abc');
+  Helpers.dom.triggerPasteEvent(editor);
+
+  assert.hasElement('#editor p:contains(abc)', 'pastes the text');
+});
+
 test('can cut and then paste content', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
