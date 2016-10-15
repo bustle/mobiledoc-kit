@@ -56,7 +56,7 @@
     "jsdoc": "^3.4.0",
     "saucie": "^1.4.0",
     "testem": "^1.7.4",
-    "tiny-lr": "^0.2.1"
+    "tiny-lr": "^1.0.1"
   },
   "main": "dist/commonjs/mobiledoc-kit/index.js"
 }
