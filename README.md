@@ -12,6 +12,27 @@
 Mobiledoc Kit (warning: beta) is a library for building WYSIWYG editors
 supporting rich content via cards.
 
+## Libraries
+
+This repository hosts the core Mobiledoc-Kit library. If you want to use Mobiledoc-Kit to *create a WYSIWYG editor* you have the following options:
+
+| Environment | Library |
+| ----------- | ------- |
+| Plain JavaScript | [mobiledoc-kit](https://github.com/bustlelabs/mobiledoc-kit) (this repo) |
+| Ember | [ember-mobiledoc-editor](https://github.com/bustlelabs/ember-mobiledoc-editor) |
+| React | [react-mobiledoc-editor](https://github.com/upworthy/react-mobiledoc-editor) |
+
+If you only want to use the Mobiledoc-Kit runtime, for *rendering mobiledoc posts only* (not editing or creating them), you can use:
+
+| Output Format/Environment | Library |
+| ----------  | ------- |
+| Plain JavaScript In-Browser (DOM) | [mobiledoc-dom-renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer) |
+| Server-Side Rendering (HTML) | see [mobiledoc-dom-renderer's Rendering HTML section](https://github.com/bustlelabs/mobiledoc-dom-renderer#rendering-html) |
+| Server-Side Rendering (Text-only, e.g. SEO) | [mobiledoc-text-renderer](https://github.com/bustlelabs/mobiledoc-text-renderer) |
+| In-Browser (DOM) Rendering, with Ember | [ember-mobiledoc-dom-renderer](https://github.com/bustlelabs/ember-mobiledoc-dom-renderer) |
+
+Mobiledoc is a deliberately simple and terse format, and you are encouraged to write your own renderer if you have other target output formats (e.g., a PDF renderer, an iOS Native Views Renderer, etc.).
+
 ## Demo
 
 Try a demo at [bustlelabs.github.io/mobiledoc-kit/demo](https://bustlelabs.github.io/mobiledoc-kit/demo/).
