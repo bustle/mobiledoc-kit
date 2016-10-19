@@ -21,6 +21,15 @@ const CALLBACK_QUEUES = {
   AFTER_COMPLETE: 'afterComplete'
 };
 
+// There are only two events that we're concerned about for Undo, that is inserting text and deleting content.
+// These are the only two states that go on a "run" and create a combined undo, everything else has it's own
+// deadicated undo.
+const EDIT_ACTIONS = {
+  INSERT_TEXT: 1,
+  DELETE: 2
+};
+
+
 /**
  * The PostEditor is used to modify a post. It should not be instantiated directly.
  * Instead, a new instance of a PostEditor is created by the editor and passed
@@ -44,6 +53,7 @@ class PostEditor {
     this._callbacks = new LifecycleCallbacks(values(CALLBACK_QUEUES));
 
     this._didComplete = false;
+    this.editActionTaken = null;
 
     this._renderRange = () => this.editor.selectRange(this._range);
     this._postDidChange = () => this.editor._postDidChange();
@@ -111,6 +121,8 @@ class PostEditor {
    */
   deleteRange(range) {
     assert("Must pass MobiledocKit Range to `deleteRange`", range instanceof Range);
+
+    this.editActionTaken = EDIT_ACTIONS.DELETE;
 
     let {
       head, head: {section: headSection},
@@ -577,6 +589,8 @@ class PostEditor {
     let { section, offset } = position;
     assert('Cannot insert markers at non-markerable position',
            section.isMarkerable);
+
+    this.editActionTaken = EDIT_ACTIONS.INSERT_TEXT;
 
     let edit = section.splitMarkerAtOffset(offset);
     edit.removed.forEach(marker => this._scheduleForRemoval(marker));
