@@ -9,15 +9,14 @@ dist: trusty
 cache:
   directories:
     - node_modules
+    - $HOME/.yarn-cache
 
 before_install:
-  - npm install -g npm@^3
-  - npm config set progress false
+  - npm install -g yarn
   - npm install phantomjs-prebuilt
 
 install:
-  - npm install -g broccoli-cli
-  - npm install
+  - yarn
 
 script:
   - npm run test:ci
