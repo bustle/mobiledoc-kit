@@ -319,17 +319,15 @@ Fork the repo, write a test, make a change, open a PR.
 
 ### Tests
 
-Install npm and bower:
+Install dependencies via yarn:
 
   * [Node.js](http://nodejs.org/) is required
-  * `npm install -g npm && npm install -g bower`
-  * `broccoli`, via `npm install -g broccoli-cli`
-  * `bower install`
-  * `npm install`
+  * Install [yarn](https://yarnpkg.com/en/docs/install) globally: `npm install -g yarn` or `brew install yarn`
+  * Install dependencies with yarn: `yarn install`
 
 Run tests via the built-in broccoli server:
 
-  * `broccoli serve`
+  * `npm start`
   * `open http://localhost:4200/tests`
 
 Or run headless tests via testem:
@@ -353,7 +351,7 @@ in `demo/`. To run the demo:
 If you notice a bug or have a feature request please [open an issue on github](https://github.com/bustlelabs/mobiledoc-kit/issues).
 If you have a question about usage you can post in the [gitter channel](https://gitter.im/bustlelabs/mobiledoc-kit) or on StackOverflow using the [`mobiledoc-kit` tag](http://stackoverflow.com/questions/tagged/mobiledoc-kit).
 
-### Releasing
+### Releasing (Implementer notes)
 
 * Use `np` (`npm install -g np`)
 * `np <version>` (e.g. `np 0.12.0`)

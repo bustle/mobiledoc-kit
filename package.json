@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "broccoli": "^0.16.9",
+    "broccoli-cli": "^1.0.0",
     "broccoli-funnel": "^1.0.1",
     "broccoli-inject-livereload": "^0.2.0",
     "broccoli-less-single": "^0.6.2",
