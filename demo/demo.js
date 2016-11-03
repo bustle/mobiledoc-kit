@@ -1,79 +1,77 @@
 /* global Mobiledoc */
 'use strict';
 
-$(() => {
+$(function () {
   bootstrapEditor();
   bootstrapSimpleDemo();
   bootstrapToolbarEditor();
   bootstrapCardEditor();
 });
 
-let bootstrapEditor = () => {
-  let el = $('#editor')[0];
-  let editor = new Mobiledoc.Editor({
+var bootstrapEditor = function bootstrapEditor() {
+  var el = $('#editor')[0];
+  var editor = new Mobiledoc.Editor({
     placeholder: 'Type here',
     autofocus: true
   });
   editor.render(el);
   activateButtons('#editor-wrapper', editor);
-  let displayMobiledoc = () => {
-    let mobiledoc = editor.serialize();
-    let html = mobiledocPrettyJSONRenderer(mobiledoc);
+  var displayMobiledoc = function displayMobiledoc() {
+    var mobiledoc = editor.serialize();
+    var html = mobiledocPrettyJSONRenderer(mobiledoc);
     $('#editor-output').html(html);
   };
   editor.postDidChange(displayMobiledoc);
   displayMobiledoc();
 };
 
-let bootstrapSimpleDemo = () => {
-  let el = $('#editor-basic')[0];
-  let editor = new Mobiledoc.Editor({
-    placeholder: 'Welcome to Mobiledoc',
+var bootstrapSimpleDemo = function bootstrapSimpleDemo() {
+  var el = $('#editor-basic')[0];
+  var editor = new Mobiledoc.Editor({
+    placeholder: 'Welcome to Mobiledoc'
   });
   editor.render(el);
 };
 
-let activateButtons = (parentSelector, editor) => {
-  $(`${parentSelector} button`).click(function() {
-    let button = $(this);
-    let action = button.data('action');
-    let arg = button.data('arg');
+var activateButtons = function activateButtons(parentSelector, editor) {
+  $(parentSelector + ' button').click(function () {
+    var button = $(this);
+    var action = button.data('action');
+    var arg = button.data('arg');
 
     editor[action](arg);
   });
 };
 
-let bootstrapToolbarEditor = () => {
-  let el = $('#editor-toolbar')[0];
-  let editor = new Mobiledoc.Editor({
+var bootstrapToolbarEditor = function bootstrapToolbarEditor() {
+  var el = $('#editor-toolbar')[0];
+  var editor = new Mobiledoc.Editor({
     placeholder: 'Editor with toolbar'
   });
   editor.render(el);
 
   activateButtons('#editor-toolbar-wrapper', editor);
-}
+};
 
-let bootstrapCardEditor = () => {
-  let card = {
+var bootstrapCardEditor = function bootstrapCardEditor() {
+  var card = {
     name: 'kitten',
     type: 'dom',
-    render() {
-      let el = $(`<figure><img src="http://placekitten.com/200/100">
-                 <figcaption>Image of a kitten</figcaption>
-                 </figure>`);
+    render: function render() {
+      var el = $('<figure><img src="http://placekitten.com/200/100">\n                 <figcaption>Image of a kitten</figcaption>\n                 </figure>');
       return el[0];
     }
   };
-  let atom = {
+  var atom = {
     name: 'mention',
     type: 'dom',
-    render() {
-      let el = $(`<span style='background-color: #CCC;'>@hello</span>`);
+    render: function render() {
+      var el = $('<span style=\'background-color: #CCC;\'>@hello</span>');
       return el[0];
     }
   };
-  let el = $('#editor-card')[0];
-  let editor = new Mobiledoc.Editor({
+  var el = $('#editor-card')[0];
+  var editor = new Mobiledoc.Editor({
     placeholder: 'Editor with card',
     cards: [card],
     atoms: [atom]
