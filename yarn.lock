@@ -436,7 +436,7 @@ broccoli-amd-loader@^0.1.0:
     loader.js "^3.2.0"
     lodash "^3.10.0"
 
-broccoli-babel-transpiler@^5.2.3:
+broccoli-babel-transpiler@^5.2.3, broccoli-babel-transpiler@^5.6.1:
   version "5.6.1"
   resolved "https://registry.yarnpkg.com/broccoli-babel-transpiler/-/broccoli-babel-transpiler-5.6.1.tgz#97184dcb140b40aa57f3ff38330afccc675d0a3c"
   dependencies:
