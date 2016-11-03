@@ -5,13 +5,13 @@
   "repository": "https://github.com/bustlelabs/mobiledoc-kit",
   "scripts": {
     "start": "broccoli serve",
-    "test:ci": "npm run docs && npm run build && testem ci -f testem-ci.json",
-    "test": "npm run docs && npm run build && testem ci -f testem.json",
+    "test:ci": "npm run build:docs && npm run build && testem ci -f testem-ci.json",
+    "test": "npm run build:docs && npm run build && testem ci -f testem.json",
     "build": "rm -rf dist && broccoli build dist",
-    "build-website": "npm run docs && ./bin/build-website.sh",
-    "deploy-website": "./bin/deploy-website.sh",
+    "build:docs": "jsdoc -c ./.jsdoc",
+    "build:website": "npm run build && npm run build:docs && ./bin/build-website.sh",
+    "deploy:website": "./bin/deploy-website.sh",
     "update-changelog": "conventional-changelog -i CHANGELOG.md -r 0 -s",
-    "docs": "jsdoc -c ./.jsdoc",
     "version": "npm run update-changelog && git add CHANGELOG.md",
     "prepublish": "npm run build"
   },
@@ -43,6 +43,7 @@
   "devDependencies": {
     "broccoli": "^0.16.9",
     "broccoli-cli": "^1.0.0",
+    "broccoli-babel-transpiler": "^5.6.1",
     "broccoli-funnel": "^1.0.1",
     "broccoli-inject-livereload": "^0.2.0",
     "broccoli-less-single": "^0.6.2",
