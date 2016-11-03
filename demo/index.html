@@ -1,27 +1,248 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Mobiledoc Editor Demo</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+  <meta charset="utf-8">
+  <title>Mobiledoc Kit Demo</title>
+</head>
+<body>
+  <script src="../tests/jquery/jquery.js"></script>
+  <script src="../global/mobiledoc-kit.js"></script>
+  <script src="./vendor/mobiledoc-pretty-json-renderer.js"></script>
+  <script src="./demo.js"></script>
+  <link rel="stylesheet" href="../css/mobiledoc-kit.css">
+  <link rel="stylesheet" href="./demo.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/styles/default.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
 
-    <base href="/mobiledoc-kit/demo/" />
-<meta name="mobiledoc-kit-demo/config/environment" content="%7B%22modulePrefix%22%3A%22mobiledoc-kit-demo%22%2C%22environment%22%3A%22production%22%2C%22baseURL%22%3A%22/mobiledoc-kit/demo/%22%2C%22locationType%22%3A%22auto%22%2C%22EmberENV%22%3A%7B%22FEATURES%22%3A%7B%7D%7D%2C%22APP%22%3A%7B%22name%22%3A%22mobiledoc-kit-demo%22%2C%22version%22%3A%22v0.9.6%22%7D%2C%22exportApplicationGlobal%22%3Afalse%7D" />
+<a href="https://github.com/you"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
 
-    <link rel="stylesheet" href="assets/vendor-f8373355e675ab0f089363e2035ad5d8.css">
-    <link href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Merriweather+Sans:700" rel="stylesheet">
-    <link rel="stylesheet" href="assets/mobiledoc-kit-demo-09e5fcf0adaf5e8b36183c7854487547.css">
+<header>
+  <a href='https://github.com/bustlelabs/mobiledoc-kit'>
+    <img id='logo' alt="Mobiledoc Kit Logo" src="mobiledoc-logo-color-small.png">
+  </a>
+</header>
 
-    
-  </head>
-  <body>
-    
+<section role="main">
+  <p class='strong'>
+    Mobiledoc is a publishing solution for authoring, saving and rendering rich WYSIWYG content.
+  </p>
 
-    <script src="assets/vendor-128dd8759b45b92de51678c3a59b0863.js"></script>
-    <script src="assets/mobiledoc-kit-demo-9cc5d2c5b61a28a42e3ff98c570ad54a.js"></script>
+  <p>
+    Publishers use the <a href='https://github.com/bustlelabs/mobiledoc-kit'>Mobiledoc-Kit</a> library to
+    build rich-content editors customized for their content. Posts are serialized to the
+    JSON-based <a href='https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md'>Mobiledoc format</a>, a
+    structure designed to unambiguously represent the content and be simple to render
+    in a variety of display contexts such as server-side HTML, in-browser DOM, and SEO-friendly text.
+  </p>
 
-    
-  </body>
-</html>
+  <p>
+  Mobiledoc supports rich, interactive content via <a href='https://github.com/bustlelabs/mobiledoc-kit/blob/master/CARDS.md'>cards</a> and <a href='https://github.com/bustlelabs/mobiledoc-kit/blob/master/ATOMS.md'>atoms</a>.
+  </p>
+
+  <p>
+    Development of Mobiledoc and the supporting libraries is generously funded by Bustle Labs.
+    Bustle Labs is the tech team behind the editorial staff at <a href='https://bustle.com'>Bustle</a> and <a href='https://romper.com'>Romper</a>,
+    fantastic and successful feminist and women’s interest sites based in NYC.
+  </p>
+
+  <div class="two-column">
+    <div class="column left tall">
+      <div class="info">
+        <p>
+        Enter text into the editor below...
+        </p>
+      </div>
+      <div id="editor-wrapper">
+        <div class="toolbar">
+          <button data-action='toggleSection' data-arg='h1'>Headline</button>
+          <button data-action='toggleSection' data-arg='h2'>Subheadline</button>
+          <button data-action='toggleMarkup' data-arg='strong'>Bold</button>
+          <button data-action='toggleMarkup' data-arg='em'>Italic</button>
+          <button data-action='toggleSection' data-arg='ul'>Bullet List</button>
+          <button data-action='toggleSection' data-arg='ol'>Number List</button>
+        </div>
+        <div id='editor'></div>
+      </div>
+    </div>
+    <div class="column right tall">
+       <div class="info">
+        <p>
+        And see its representation in <a href='https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md'>Mobiledoc format</a> here:
+        </p>
+      </div>
+      <div id='editor-output' class='mobiledoc-output'></div>
+    </div>
+  </div>
+</section>
+
+<section class="libraries">
+  <h2>Libraries</h2>
+
+  <p>
+    Libraries have been created by Bustlelabs and the community to support
+    Mobiledoc usage in a variety of contexts.
+  </p>
+
+  <div class="two-column">
+    <div class="column left">
+      <h3>Create Mobiledoc Editor</h3>
+      <table>
+        <tr>
+          <th>Environment</th>
+          <th>Library</th>
+        </tr>
+        <tr>
+          <td>JavaScript</td>
+          <td><a href='https://github.com/bustlelabs/mobiledoc-kit'>mobiledoc-kit</a></td>
+        </tr>
+        <tr>
+          <td>Ember.js</td>
+          <td><a href='https://github.com/bustlelabs/ember-mobiledoc-editor'>ember-mobiledoc-editor</a></td>
+        </tr>
+        <tr>
+          <td>React</td>
+          <td><a href='https://github.com/upworthy/react-mobiledoc-editor'>react-mobiledoc-editor</a></td>
+        </tr>
+      </table>
+    </div>
+    <div class="column right">
+      <h3>Render Mobiledoc</h3>
+      <table>
+        <tr>
+          <th>Output Format/Environment</th>
+          <th>Library</th>
+        </tr>
+        <tr>
+          <td>JavaScript in-browser (DOM)</td>
+          <td><a href='https://github.com/bustlelabs/mobiledoc-dom-renderer'>mobiledoc-dom-renderer</a></td>
+        </tr>
+        <tr>
+          <td>Server-side (HTML)</td>
+          <td>See mobiledoc-dom-renderer's <a href='https://github.com/bustlelabs/mobiledoc-dom-renderer#rendering-html'>Rendering HTML</a> section</td>
+        </tr>
+        <tr>
+          <td>Server-side (text)</td>
+          <td><a href='https://github.com/bustlelabs/mobiledoc-text-renderer'>mobiledoc-text-renderer</a></td>
+        </tr>
+        <tr>
+          <td>In-browser (DOM) with Ember.js</td>
+          <td><a href='https://github.com/bustlelabs/ember-mobiledoc-dom-renderer'>ember-mobiledoc-dom-renderer</a></td>
+        </tr>
+        <tr>
+          <td>In-browser (DOM) with React</td>
+          <td><a href='https://github.com/upworthy/react-mobiledoc-editor'>react-mobiledoc-editor</a></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+
+<section class="examples" style='background-color: white'>
+  <h2>Examples</h2>
+
+  <h3>Basic Editor</h3>
+
+  <p>
+  To create an editor, make a new instance of <a href='http://bustlelabs.github.io/mobiledoc-kit/demo/docs/Editor.html'><code>Mobiledoc.Editor</code></a> and render it
+  to an element.
+  </p>
+
+  <div class="two-column">
+    <div class="column left">
+      <pre><code>
+      let el = document.getElementById('editor-basic');
+      let editor = new Mobiledoc.Editor({
+        placeholder: 'Welcome to Mobiledoc'
+      });
+      editor.render(el);
+      </code></pre>
+    </div>
+    <div class="column right">
+      <div class='editor-wrapper'>
+        <div id="editor-basic" class='editor'></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <h3>Toolbar Buttons</h3>
+
+  <p>
+  Use the <a href='http://bustlelabs.github.io/mobiledoc-kit/demo/docs/Editor.html#toggleMarkup'><code>editor.toggleMarkup</code></a> and <a href='http://bustlelabs.github.io/mobiledoc-kit/demo/docs/Editor.html#toggleSection'><code>editor.toggleSelection</code></a> methods to modify
+  the text.
+  </p>
+
+  <div class="two-column">
+    <div class="column left">
+      <pre><code>
+      $('button.header').click(() =&gt; {
+        editor.toggleSection('h1');
+      });
+      $('button.strong').click(() =&gt; {
+        editor.toggleMarkup('strong');
+      });
+      </code></pre>
+    </div>
+    <div class="column right">
+      <div class="editor-wrapper" id='editor-toolbar-wrapper'>
+        <div class='toolbar'>
+          <button data-action='toggleSection' data-arg='h1'>H1</button>
+          <button data-action='toggleSection' data-arg='h2'>H2</button>
+          <button data-action='toggleMarkup' data-arg='strong'>strong</button>
+          <button data-action='toggleMarkup' data-arg='em'>em</button>
+        </div>
+        <div id="editor-toolbar" class="editor"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="cards">
+  <h2>Cards and Atoms</h2>
+
+  <p>
+  Cards and atoms are used by Mobiledoc for editing and rendering rich content.
+  Cards are rich sectons and atoms are their inline equivalent. Both can be
+  implemented with a small amount of JavaScript (or Ember.js or React components)
+  and can be created in an afternoon, not days.
+  </p>
+
+  <p>
+  Cards and atoms can be inserted using the <a href='http://bustlelabs.github.io/mobiledoc-kit/demo/docs/Editor.html#insertCard'><code>editor.insertCard</code></a> and <a href='http://bustlelabs.github.io/mobiledoc-kit/demo/docs/Editor.html#insertAtom'><code>editor.insertAtom</code></a> APIs.
+  </p>
+
+  <div class='two-column'>
+    <div class="column left">
+      <pre><code>
+      let card = {
+        name: 'kitten',
+        type: 'dom',
+        render() {
+          let el$ = $(`&lt;figure&gt;
+              &lt;img src="http://placekitten.com/200/100"&gt;
+              &lt;figcaption&gt;Image of a kitten&lt;/figcaption&gt;
+            &lt;/figura&gt;
+          `);
+          return el[0]; // return DOM node
+        }
+      };
+      $('button.insert-card').click(() =&gt; {
+        editor.insertCard('kitten');
+      });
+      </code></pre>
+    </div>
+
+    <div class='column right'>
+      <div class="editor-wrapper" id='editor-card-wrapper'>
+        <div class='toolbar'>
+          <button data-action='insertCard' data-arg='kitten'>Insert Kitten Card</button>
+          <button data-action='insertAtom' data-arg='mention'>Insert Mention Atom</button>
+        </div>
+        <div id="editor-card" class="editor"></div>
+    </div>
+  </div>
+</section>
