@@ -1,15 +1,12 @@
 /* global Mobiledoc */
 'use strict';
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
 var editor;
 
 function renderSection(section) {
-  return '[' +
-    'Section: tagName ' + section.tagName +
-    ' type: ' + section.type +
-    ' isNested? ' + section.isNested +
-    (section.isMarkerable ? (' Markers: ' + section.markers.length + ')') : '') +
-  ']';
+  return '[' + 'Section: tagName ' + section.tagName + ' type: ' + section.type + ' isNested? ' + section.isNested + (section.isMarkerable ? ' Markers: ' + section.markers.length + ')' : '') + ']';
 }
 
 function renderPosition(pos) {
@@ -54,15 +51,18 @@ function updateInputMode() {
 }
 
 function updateButtons() {
-  let activeSectionTagNames = editor.activeSections.map(section => {
+  var activeSectionTagNames = editor.activeSections.map(function (section) {
     return section.tagName;
   });
-  let activeMarkupTagNames = editor.activeMarkups.map(markup => markup.tagName);
+  var activeMarkupTagNames = editor.activeMarkups.map(function (markup) {
+    return markup.tagName;
+  });
 
-  $('#toolbar button').each(function() {
-    let toggle = $(this).data('toggle');
+  $('#toolbar button').each(function () {
+    var toggle = $(this).data('toggle');
 
-    let hasSection = false, hasMarkup = false;
+    var hasSection = false,
+        hasMarkup = false;
     if (activeSectionTagNames.indexOf(toggle) !== -1) {
       hasSection = true;
     }
@@ -77,23 +77,29 @@ function updateButtons() {
   });
 }
 
-let mentionAtom = {
+var mentionAtom = {
   name: 'mention',
   type: 'dom',
-  render({value}) {
-    let el = $(`<span>@${value}</span>`)[0];
+  render: function render(_ref) {
+    var value = _ref.value;
+
+    var el = $('<span>@' + value + '</span>')[0];
     return el;
   }
 };
 
-let clickAtom = {
+var clickAtom = {
   name: 'click',
   type: 'dom',
-  render({env, value, payload}) {
-    let el = document.createElement('button');
-    let clicks = payload.clicks || 0;
+  render: function render(_ref2) {
+    var env = _ref2.env;
+    var value = _ref2.value;
+    var payload = _ref2.payload;
+
+    var el = document.createElement('button');
+    var clicks = payload.clicks || 0;
     el.appendChild(document.createTextNode('Clicks: ' + clicks));
-    el.onclick = () => {
+    el.onclick = function () {
       payload.clicks = payload.clicks || 0;
       payload.clicks++;
       env.save(value, payload);
@@ -102,11 +108,19 @@ let clickAtom = {
   }
 };
 
-let tableCard = {
+var tableCard = {
   name: 'table',
   type: 'dom',
-  render() {
-    let [table, tr, td] = ['table','tr','td'].map(tagName => document.createElement(tagName));
+  render: function render() {
+    var _map = ['table', 'tr', 'td'].map(function (tagName) {
+      return document.createElement(tagName);
+    });
+
+    var _map2 = _slicedToArray(_map, 3);
+
+    var table = _map2[0];
+    var tr = _map2[1];
+    var td = _map2[2];
 
     table.appendChild(tr);
     tr.appendChild(td);
@@ -117,7 +131,7 @@ let tableCard = {
 };
 
 function moveCard(section, dir) {
-  editor.run(postEditor => {
+  editor.run(function (postEditor) {
     if (dir === 'up') {
       postEditor.moveSectionUp(section);
     } else {
@@ -126,46 +140,70 @@ function moveCard(section, dir) {
   });
 }
 
-let movableCard = {
+var movableCard = {
   name: 'movable',
   type: 'dom',
-  render({env, payload}) {
-    let cardSection = env.postModel;
-    let text = payload.text || 'new';
-    let up = $('<button>up</button>').click(() => moveCard(cardSection, 'up'));
-    let down = $('<button>down</button>').click(() => moveCard(cardSection, 'down'));
-    let x = $('<button>X</button>').click(env.remove);
+  render: function render(_ref3) {
+    var env = _ref3.env;
+    var payload = _ref3.payload;
 
-    let edit = $('<button>edit</button>').click(env.edit);
+    var cardSection = env.postModel;
+    var text = payload.text || 'new';
+    var up = $('<button>up</button>').click(function () {
+      return moveCard(cardSection, 'up');
+    });
+    var down = $('<button>down</button>').click(function () {
+      return moveCard(cardSection, 'down');
+    });
+    var x = $('<button>X</button>').click(env.remove);
 
-    let el = $('<div>').append([text,up,down,x,edit])[0];
+    var edit = $('<button>edit</button>').click(env.edit);
+
+    var el = $('<div>').append([text, up, down, x, edit])[0];
     return el;
   },
-  edit({env, payload}) {
-    let cardSection = env.postModel;
-    let text = payload.text || 'new';
-    let up = $('<button>up</button>').click(() => moveCard(cardSection, 'up'));
-    let down = $('<button>down</button>').click(() => moveCard(cardSection, 'down'));
-    let x = $('<button>X</button>').click(env.remove);
+  edit: function edit(_ref4) {
+    var env = _ref4.env;
+    var payload = _ref4.payload;
 
-    let input = $('<input>');
-    let save = $('<button>save</button>').click(() => {
+    var cardSection = env.postModel;
+    var text = payload.text || 'new';
+    var up = $('<button>up</button>').click(function () {
+      return moveCard(cardSection, 'up');
+    });
+    var down = $('<button>down</button>').click(function () {
+      return moveCard(cardSection, 'down');
+    });
+    var x = $('<button>X</button>').click(env.remove);
+
+    var input = $('<input>');
+    var save = $('<button>save</button>').click(function () {
       payload.text = input.val();
       env.save(payload);
     });
-    let el = $('<div>').append([text, up,down,x,input,save])[0];
+    var el = $('<div>').append([text, up, down, x, input, save])[0];
     return el;
   }
 };
 
-function speakingPlugin(node, builder, {addSection, addMarkerable, nodeFinished}) {
-  console.log('got node!',node);
+function speakingPlugin(node, builder, _ref5) {
+  var addSection = _ref5.addSection;
+  var addMarkerable = _ref5.addMarkerable;
+  var nodeFinished = _ref5.nodeFinished;
+
+  console.log('got node!', node);
 }
 
-function tableConverterPlugin(node, builder, {addSection, addMarkerable, nodeFinished}) {
-  if (node.tagName !== 'TABLE') { return; }
+function tableConverterPlugin(node, builder, _ref6) {
+  var addSection = _ref6.addSection;
+  var addMarkerable = _ref6.addMarkerable;
+  var nodeFinished = _ref6.nodeFinished;
 
-  let tableCard = builder.createCardSection("table");
+  if (node.tagName !== 'TABLE') {
+    return;
+  }
+
+  var tableCard = builder.createCardSection("table");
   addSection(tableCard);
   nodeFinished();
 }
@@ -188,21 +226,21 @@ $(function () {
 
   editor.render(el);
 
-  $('#toolbar button.toggle').click(function() {
-    let action = $(this).data('action');
-    let toggle = $(this).data('toggle');
+  $('#toolbar button.toggle').click(function () {
+    var action = $(this).data('action');
+    var toggle = $(this).data('toggle');
 
     editor[action](toggle);
   });
 
-  $('#toolbar button.insert-atom').click(function() {
-    let name = $(this).data('name');
-    let value = $(this).data('value') || '';
+  $('#toolbar button.insert-atom').click(function () {
+    var name = $(this).data('name');
+    var value = $(this).data('value') || '';
     editor.insertAtom(name, value);
   });
 
-  $('#toolbar button.insert-card').click(function() {
-    let name = $(this).data('name');
+  $('#toolbar button.insert-card').click(function () {
+    var name = $(this).data('name');
     editor.insertCard(name);
   });
 });
