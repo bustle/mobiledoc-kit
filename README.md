@@ -107,6 +107,14 @@ editor.render(element);
   whenever it encounters an unknown atom
 * `parserPlugins` - [array] See [DOM Parsing Hooks](https://github.com/bustlelabs/mobiledoc-kit#dom-parsing-hooks)
 
+The editor leverages unicode characters, so HTML documents must opt in to
+UTF8. For example this can be done by adding the following to an HTML
+document's `<head>`:
+
+```html
+<meta charset="utf-8" />
+```
+
 ### Editor API
 
 * `editor.serialize(version="0.3.0")` - serialize the current post for persistence. Returns
