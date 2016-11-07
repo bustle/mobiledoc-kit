@@ -137,6 +137,35 @@ test('#parse doc with marker type', (assert) => {
   );
 });
 
+test('#parse pull-quote section to aside node', (assert) => {
+  const mobiledoc = {
+    version: MOBILEDOC_VERSION,
+    atoms: [],
+    cards: [],
+    markups: [],
+    sections: [
+      [
+        1,'PULL-QUOTE', [
+          [0, [], 0, 'quoted']
+        ]
+      ]
+    ]
+  };
+  const parsed = parser.parse(mobiledoc);
+
+  let section = builder.createMarkupSection('ASIDE', [], false);
+  let markers  = [
+    builder.createMarker('quoted', [])
+  ];
+  markers.forEach(marker => section.markers.append(marker));
+  post.sections.append(section);
+
+  assert.deepEqual(
+    parsed,
+    post
+  );
+});
+
 test('#parse doc with image section', (assert) => {
   const mobiledoc = {
     version: MOBILEDOC_VERSION,

@@ -5,7 +5,7 @@ import {
   MOBILEDOC_CARD_SECTION_TYPE,
   MOBILEDOC_MARKUP_MARKER_TYPE,
   MOBILEDOC_ATOM_MARKER_TYPE
-} from 'mobiledoc-kit/renderers/mobiledoc/0-3';
+} from 'mobiledoc-kit/renderers/mobiledoc/0-3-1';
 import { kvArrayToObject, filter } from "../../utils/array-utils";
 import assert from 'mobiledoc-kit/utils/assert';
 
@@ -110,7 +110,7 @@ export default class MobiledocParser {
   }
 
   parseMarkupSection([type, tagName, markers], post) {
-    const section = this.builder.createMarkupSection(tagName.toLowerCase() === 'pull-quote' ? 'aside' : tagName);
+    const section = this.builder.createMarkupSection(tagName);
     post.sections.append(section);
     this.parseMarkers(markers, section);
     // Strip blank markers after they have been created. This ensures any

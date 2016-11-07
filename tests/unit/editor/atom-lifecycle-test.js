@@ -2,7 +2,7 @@ import Helpers from '../../test-helpers';
 import { Editor } from 'mobiledoc-kit';
 let editorElement, editor;
 
-import { MOBILEDOC_VERSION as MOBILEDOC_VERSION_0_3 } from 'mobiledoc-kit/renderers/mobiledoc/0-3';
+import { MOBILEDOC_VERSION as MOBILEDOC_VERSION_0_3_1 } from 'mobiledoc-kit/renderers/mobiledoc/0-3-1';
 
 const { module, test } = Helpers;
 const { postAbstract: { DEFAULT_ATOM_NAME } } = Helpers;
@@ -29,7 +29,7 @@ function makeEl(id, text='@atom') {
 
 // Default version is 0.2 for the moment
 function build(fn) {
-  return Helpers.mobiledoc.build(fn, MOBILEDOC_VERSION_0_3);
+  return Helpers.mobiledoc.build(fn, MOBILEDOC_VERSION_0_3_1);
 }
 
 function assertRenderArguments(assert, args, expected) {

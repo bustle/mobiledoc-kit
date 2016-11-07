@@ -2730,13 +2730,13 @@ mktemp@~0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/mktemp/-/mktemp-0.4.0.tgz#6d0515611c8a8c84e484aa2000129b98e981ff0b"
 
-mobiledoc-html-renderer@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/mobiledoc-html-renderer/-/mobiledoc-html-renderer-0.3.0.tgz#a26e92d28a06007c545a597813072feec484e74a"
+mobiledoc-html-renderer@0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/mobiledoc-html-renderer/-/mobiledoc-html-renderer-0.3.1.tgz#a411181015c40be26d716d82824691a63fa8ba88"
 
-mobiledoc-text-renderer@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/mobiledoc-text-renderer/-/mobiledoc-text-renderer-0.3.0.tgz#5b18fc7e1f26d4a149e924a228396ee8e5396a43"
+mobiledoc-text-renderer@0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/mobiledoc-text-renderer/-/mobiledoc-text-renderer-0.3.1.tgz#08f06f4696925dbacdf1c508144b8caed58e1127"
 
 modify-values@^1.0.0:
   version "1.0.0"

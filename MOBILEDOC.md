@@ -36,7 +36,7 @@ The wrapper signature:
 
 ```
 {
-  version: "0.3.0",                         ──── Versioning information
+  version: "0.3.1",                         ──── Versioning information
   markups: [                              ──── Ordered list of markup types
     markup,
     markup
@@ -63,7 +63,7 @@ Markups have a tagName and an optional array of attributes. Not all markups can 
 
 ```
 {
-  version: "0.3.0",
+  version: "0.3.1",
   markups: [
     [tagName, optionalAttributesArray],   ──── Markup
     ["em"],                               ──── Example simple markup with no attributes
@@ -78,7 +78,7 @@ Atoms have a name, text value and arbitrary payload.
 
 ```
 {
-  version: "0.3.0",
+  version: "0.3.1",
   atoms: [
     [atomName, atomText, atomPayload],    ──── Atom
     ['mention', '@bob', { id: 42 }]       ──── Example 'mention' atom
@@ -92,7 +92,7 @@ Cards have a name and arbitrary payload.
 
 ```
 {
-  version: "0.3.0",
+  version: "0.3.1",
   cards: [
     [cardName, cardPayload],            ──── Card
     ['image', {                         ──── Example 'image' card
@@ -108,7 +108,7 @@ Markup sections, in addition to plain text, can include markups and atoms.
 
 ```
 {
-  version: "0.3.0",
+  version: "0.3.1",
   markups: [
     ["b"],                                ──── Markup at index 0
     ["i"]                                 ──── Markup at index 1
@@ -140,6 +140,18 @@ Markup sections, in addition to plain text, can include markups and atoms.
 }
 ```
 
+A section `tagName` must be one of:
+
+* `aside`
+* `blockquote`
+* `h1`
+* `h2`
+* `h3`
+* `h4`
+* `h5`
+* `h6`
+* `p`
+
 The index in `openMarkupsIndex` specifies which markups should be opened at
 the start of the `value` text. As these tags are opened, then create a stack
 of opened markups. The `numberOfClosedMarkups` says how many of those opened markup tags should
@@ -149,6 +161,19 @@ In addition to markers, markup sections may contain [ATOMS](ATOMS.md).
 Atoms in a markup section have a `textTypeIdentifier` of 1 and contain an `atomTypeIndex`.
 They also contain the same `openMarkupsIndex` and `numberOfClosedMarkups` values that other markers have, so that markup can flow across them.
 
+A markup definition array's first item (the markup `tagName`) must be one of:
+
+* `a` - Hypertext link
+* `b` - Bold
+* `code` - Code
+* `em` - Emphasis
+* `i` - Italic
+* `s` - Strike-through
+* `strong` - Strong
+* `sub` - Subscript
+* `sup` - Superscript
+* `u` - Underline
+
 If an atom is present in Mobiledoc but no atom implementation is registered, the text
 value of the atom will be rendered as plain text as a fallback.
 
@@ -156,7 +181,7 @@ value of the atom will be rendered as plain text as a fallback.
 
 ```
 {
-  version: "0.3.0",
+  version: "0.3.1",
   cards: [
     ["card-name", { cardPayload }]
   ],

@@ -319,9 +319,9 @@ test('renders a post with a list', (assert) => {
   });
 });
 
-test('renders a pull-quote as markup section', (assert) => {
+test('renders an aside as markup section', (assert) => {
   const post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
-    return post([markupSection('pull-quote', [marker('abc')])]);
+    return post([markupSection('aside', [marker('abc')])]);
   });
   const mobiledoc = render(post);
   assert.deepEqual(mobiledoc, {
@@ -330,7 +330,7 @@ test('renders a pull-quote as markup section', (assert) => {
     cards: [],
     markups: [],
     sections: [
-      [1, 'pull-quote', [[0, [], 0, 'abc']]]
+      [1, 'aside', [[0, [], 0, 'abc']]]
     ]
   });
 });

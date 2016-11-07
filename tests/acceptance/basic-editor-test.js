@@ -149,7 +149,7 @@ test('select-all and type text works ok', (assert) => {
 
   assert.selectedText('abc', 'precond - abc is selected');
   assert.hasElement('#editor p:contains(abc)', 'precond - renders p');
-  
+
   Helpers.dom.insertText(editor, 'X');
 
   assert.hasNoElement('#editor p:contains(abc)', 'replaces existing text');
