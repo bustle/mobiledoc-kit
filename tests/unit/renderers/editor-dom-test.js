@@ -185,6 +185,34 @@ test('renders a post with multiple markers', (assert) => {
   assert.equal(renderTree.rootElement.innerHTML, '<p>hello <b>bold, <i>italic,</i></b> world.</p>');
 });
 
+test('renders a post with marker with link markup', (assert) => {
+  let post = builder.createPost();
+  let section = builder.createMarkupSection('P');
+  post.sections.append(section);
+
+  let href = 'http://google.com';
+  let rel = 'nofollow';
+  let linkMarkup = builder.createMarkup('A', {href, rel});
+
+  section.markers.append(builder.createMarker('hello', [linkMarkup]));
+
+  const renderTree = new RenderTree(post);
+  render(renderTree);
+  let {innerHTML: html} = renderTree.rootElement;
+  assert.ok(
+    html.match(/<p><a .*>hello<\/a><\/p>/),
+    'a tag present'
+  );
+  assert.ok(
+    html.match(new RegExp(`href="${href}"`)),
+    'href present'
+  );
+  assert.ok(
+    html.match(new RegExp(`rel="${rel}"`)),
+    'rel present'
+  );
+});
+
 test('renders a post with image', (assert) => {
   let url = placeholderImageSrc;
   let post = builder.createPost();
