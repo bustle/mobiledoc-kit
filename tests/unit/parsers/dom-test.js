@@ -217,8 +217,8 @@ test('strong tag + em + text node creates section', (assert) => {
 
 test('link (A tag) is parsed', (assert) => {
   let url = 'http://bustle.com',
-      ref = 'nofollow';
-  let element = buildDOM(`<a href="${url}" ref="${ref}">link</a>`);
+      rel = 'nofollow';
+  let element = buildDOM(`<a href="${url}" rel="${rel}">link</a>`);
   const post = parser.parse(element);
 
   assert.equal(post.sections.length, 1, '1 section');
@@ -232,7 +232,7 @@ test('link (A tag) is parsed', (assert) => {
 
   let markup = marker.markups[0];
   assert.equal(markup.getAttribute('href'), url, 'has href attr');
-  assert.equal(markup.getAttribute('ref'), ref, 'has ref attr');
+  assert.equal(markup.getAttribute('rel'), rel, 'has rel attr');
 });
 
 test('span with font-style italic maps to em', (assert) => {

@@ -17,7 +17,7 @@ export const VALID_MARKUP_TAGNAMES = [
 
 export const VALID_ATTRIBUTES = [
   'href',
-  'ref'
+  'rel'
 ];
 
 class Markup {
