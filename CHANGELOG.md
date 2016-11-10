@@ -1,359 +1,200 @@
-<a name="0.10.11"></a>
-## 0.10.11 (2016-09-14)
+<a name="0.10.12"></a>
+## 0.10.12 (2016-11-10)
 
-* chore(exports): Export additional modules for selective importing (#493) ([5667a34](https://github.com/bustlelabs/mobiledoc-kit/commit/5667a34))
-
-
-
-<a name="0.10.11-beta.1"></a>
-## 0.10.11-beta.1 (2016-09-13)
-
-* 0.10.11-beta.1 ([39e3026](https://github.com/bustlelabs/mobiledoc-kit/commit/39e3026))
-* fix(ui): Fix UI export (#492) ([08c0c24](https://github.com/bustlelabs/mobiledoc-kit/commit/08c0c24)), closes [#492](https://github.com/bustlelabs/mobiledoc-kit/issues/492)
-
-
-
-<a name="0.10.10"></a>
-## 0.10.10 (2016-09-13)
-
-* 0.10.10 ([3d3bc2e](https://github.com/bustlelabs/mobiledoc-kit/commit/3d3bc2e))
-* feat(textInput): able to unregister single or all text input handlers (#484) ([68a60ae](https://github.com/bustlelabs/mobiledoc-kit/commit/68a60ae))
-* feat(UI): Export toggleLink (#491) ([3335357](https://github.com/bustlelabs/mobiledoc-kit/commit/3335357))
-* feat(willHandleNewline): add willHandleNewline hook (#489) ([f1d2262](https://github.com/bustlelabs/mobiledoc-kit/commit/f1d2262))
-* docs(grammarly): DOC - Add section about disabling Grammarly (#490) ([bbf3cfd](https://github.com/bustlelabs/mobiledoc-kit/commit/bbf3cfd))
-* fix(deprecate): Make deprecate accept conditional argument (#488) ([059fd66](https://github.com/bustlelabs/mobiledoc-kit/commit/059fd66))
-
-
-
-<a name="0.10.9"></a>
-## 0.10.9 (2016-08-31)
-
-* 0.10.9 ([2fe7f0f](https://github.com/bustlelabs/mobiledoc-kit/commit/2fe7f0f))
-* fix(newlines). Remove newline chars in text nodes (`\n`) when parsing HTML (#478) ([6036b90](https://github.com/bustlelabs/mobiledoc-kit/commit/6036b90)), closes [#333](https://github.com/bustlelabs/mobiledoc-kit/issues/333)
-* fix(range) Allow reading range from DOM when editor is disabled (#476) ([6969f5c](https://github.com/bustlelabs/mobiledoc-kit/commit/6969f5c)), closes [#475](https://github.com/bustlelabs/mobiledoc-kit/issues/475)
-* refactor(cleanup) Remove unused methods from `Post`, `Markerable` (#474) ([235f7a3](https://github.com/bustlelabs/mobiledoc-kit/commit/235f7a3))
-* fix(onTextInput): Ensure `onTextInput` is triggered by tab character (#479) ([a0aaa3a](https://github.com/bustlelabs/mobiledoc-kit/commit/a0aaa3a)), closes [#400](https://github.com/bustlelabs/mobiledoc-kit/issues/400)
-
-
-
-<a name="0.10.8"></a>
-## 0.10.8 (2016-08-25)
-
-* 0.10.8 ([1cef370](https://github.com/bustlelabs/mobiledoc-kit/commit/1cef370))
-* feat(atom): Implement Atom `save` hook (#472) ([3ef3bc3](https://github.com/bustlelabs/mobiledoc-kit/commit/3ef3bc3)), closes [#399](https://github.com/bustlelabs/mobiledoc-kit/issues/399)
-* fix(atoms): Avoid rerendering atoms when section content changes. (#471) ([a59ae74](https://github.com/bustlelabs/mobiledoc-kit/commit/a59ae74)), closes [#421](https://github.com/bustlelabs/mobiledoc-kit/issues/421)
-
-
-
-<a name="0.10.8-beta.1"></a>
-## 0.10.8-beta.1 (2016-08-25)
-
-* 0.10.8-beta.1 ([e3efb98](https://github.com/bustlelabs/mobiledoc-kit/commit/e3efb98))
-* fix(placeholder): Use '__has-no-content' class name to display placeholder text (#461) ([11452fe](https://github.com/bustlelabs/mobiledoc-kit/commit/11452fe)), closes [#407](https://github.com/bustlelabs/mobiledoc-kit/issues/407) [#171](https://github.com/bustlelabs/mobiledoc-kit/issues/171)
-* refactor(tests): Refactor deletion tests to be terser (#469) ([eeb9e19](https://github.com/bustlelabs/mobiledoc-kit/commit/eeb9e19))
-
-
-
-<a name="0.10.7"></a>
-## 0.10.7 (2016-08-24)
-
-* 0.10.7 ([919600c](https://github.com/bustlelabs/mobiledoc-kit/commit/919600c))
-* fix(paste): Fix insertion into blank section (#466) ([a3d274d](https://github.com/bustlelabs/mobiledoc-kit/commit/a3d274d)), closes [#466](https://github.com/bustlelabs/mobiledoc-kit/issues/466) [#462](https://github.com/bustlelabs/mobiledoc-kit/issues/462)
-* fix(paste): Handle paste card at start of middle list item (#468) ([939a541](https://github.com/bustlelabs/mobiledoc-kit/commit/939a541)), closes [#467](https://github.com/bustlelabs/mobiledoc-kit/issues/467)
-* doc(jsdoc): Fix JSDocs violations and typo (#463) ([843f381](https://github.com/bustlelabs/mobiledoc-kit/commit/843f381)), closes [#463](https://github.com/bustlelabs/mobiledoc-kit/issues/463)
-* doc(jsdoc): Make building docs part of testing, to avoid jsdocs errors (#464) ([039fd04](https://github.com/bustlelabs/mobiledoc-kit/commit/039fd04))
-* feat(post): Refactor rendering of editor element (#460) ([c9d4067](https://github.com/bustlelabs/mobiledoc-kit/commit/c9d4067)), closes [#335](https://github.com/bustlelabs/mobiledoc-kit/issues/335)
-
-
-
-<a name="0.10.6"></a>
-## 0.10.6 (2016-08-23)
-
-* 0.10.6 ([c3aed98](https://github.com/bustlelabs/mobiledoc-kit/commit/c3aed98))
-* feat(delete): add delete hooks in lifecycle (#454) ([f7c72cd](https://github.com/bustlelabs/mobiledoc-kit/commit/f7c72cd))
-* feat(delete): add range, direction and unit to delete hook (#455) ([2884ebf](https://github.com/bustlelabs/mobiledoc-kit/commit/2884ebf))
-* fix(paste): Allow inserting multiple markup sections onto a list item (#459) ([1898cf5](https://github.com/bustlelabs/mobiledoc-kit/commit/1898cf5)), closes [#456](https://github.com/bustlelabs/mobiledoc-kit/issues/456)
-
-
-
-<a name="0.10.5"></a>
-## 0.10.5 (2016-08-16)
-
-* 0.10.5 ([9c14bb3](https://github.com/bustlelabs/mobiledoc-kit/commit/9c14bb3))
-* fix(links): Ensure that CTRL+K on Windows toggles link. Fixes #452 (#453) ([3220534](https://github.com/bustlelabs/mobiledoc-kit/commit/3220534)), closes [#452](https://github.com/bustlelabs/mobiledoc-kit/issues/452) [#453](https://github.com/bustlelabs/mobiledoc-kit/issues/453)
-* style(links): Add nobreak to links in the editor so toolips are always accessible (#449) ([b75bb7d](https://github.com/bustlelabs/mobiledoc-kit/commit/b75bb7d))
-* docs(changelog): Update changelog manually ([2ceb39d](https://github.com/bustlelabs/mobiledoc-kit/commit/2ceb39d))
-
-
-
-<a name="0.10.4"></a>
-## 0.10.4 (2016-08-04)
-
-* 0.10.4 ([8674702](https://github.com/bustlelabs/mobiledoc-kit/commit/8674702))
-
-
-
-<a name="0.10.4-beta.1"></a>
-## 0.10.4-beta.1 (2016-08-04)
-
-* 0.10.4-beta.1 ([77eb772](https://github.com/bustlelabs/mobiledoc-kit/commit/77eb772))
-* Add `buildWithText` test helper, `postEditor#deleteRange` ([3327408](https://github.com/bustlelabs/mobiledoc-kit/commit/3327408))
-* Add `postEditor#deleteAtPosition`, deprecate `deleteFrom` ([92c3eb6](https://github.com/bustlelabs/mobiledoc-kit/commit/92c3eb6))
-* Add `toRange` and `toPosition` methods to Position, Section, Post ([c7ec6eb](https://github.com/bustlelabs/mobiledoc-kit/commit/c7ec6eb)), closes [#258](https://github.com/bustlelabs/mobiledoc-kit/issues/258)
-* Refactor `deleteRange` ([54f56cc](https://github.com/bustlelabs/mobiledoc-kit/commit/54f56cc))
-* remove post#sectionsContainedBy(range) ([27ba974](https://github.com/bustlelabs/mobiledoc-kit/commit/27ba974))
-* update changelog ([844239a](https://github.com/bustlelabs/mobiledoc-kit/commit/844239a))
-* Update demo to ember-cli@2.6.0 ([e8f9ac8](https://github.com/bustlelabs/mobiledoc-kit/commit/e8f9ac8))
-* update demo to ember-mobiledoc-editor 0.5.3 ([05ca4d3](https://github.com/bustlelabs/mobiledoc-kit/commit/05ca4d3))
-* update mobiledoc-pretty-json-renderer to ^2.0.1 ([9ff9f13](https://github.com/bustlelabs/mobiledoc-kit/commit/9ff9f13))
-* Use "version" script instead of postversion with --amend --no-edit ([13abc9d](https://github.com/bustlelabs/mobiledoc-kit/commit/13abc9d))
-* docs: `replaceWithListSection` and `replaceWithHeaderSection` ([2b65ad5](https://github.com/bustlelabs/mobiledoc-kit/commit/2b65ad5))
-* Tests: Extract `MockEditor`, `run`, `renderBuiltAbstract`, docs for `buildFromText` ([b473a27](https://github.com/bustlelabs/mobiledoc-kit/commit/b473a27))
-
-
-
-<a name="0.10.3"></a>
-## 0.10.3 (2016-07-26)
-
-* 0.10.3 ([b7e4ca5](https://github.com/bustlelabs/mobiledoc-kit/commit/b7e4ca5))
-* Un-deprecate editor#hasActiveMarkups, remove editor#markupsInSelection ([de9d7c5](https://github.com/bustlelabs/mobiledoc-kit/commit/de9d7c5))
-
-
-
-<a name="0.10.2"></a>
-## 0.10.2 (2016-07-26)
-
-* 0.10.2 ([3f7eb68](https://github.com/bustlelabs/mobiledoc-kit/commit/3f7eb68))
-* Add forward/backward inclusivity rules for markups fix #402 fix #392 ([300019f](https://github.com/bustlelabs/mobiledoc-kit/commit/300019f)), closes [#402](https://github.com/bustlelabs/mobiledoc-kit/issues/402) [#392](https://github.com/bustlelabs/mobiledoc-kit/issues/392) [#392](https://github.com/bustlelabs/mobiledoc-kit/issues/392) [#402](https://github.com/bustlelabs/mobiledoc-kit/issues/402)
-* Add support for word deletion on Mac (opt+del) and PC (ctrl+del) Fix #169 ([f919490](https://github.com/bustlelabs/mobiledoc-kit/commit/f919490)), closes [#169](https://github.com/bustlelabs/mobiledoc-kit/issues/169)
-* Fix incorrect test helper imports ([95b1797](https://github.com/bustlelabs/mobiledoc-kit/commit/95b1797))
-* Fix method signature for `createListItem` in ListItem#clone ([d131f17](https://github.com/bustlelabs/mobiledoc-kit/commit/d131f17))
-* Refocus editor after toggling markup when no selection. fixes #369 (#436) ([01b2e5e](https://github.com/bustlelabs/mobiledoc-kit/commit/01b2e5e)), closes [#369](https://github.com/bustlelabs/mobiledoc-kit/issues/369) [#436](https://github.com/bustlelabs/mobiledoc-kit/issues/436)
-* Remove deprecated Post#cloneRange Editor#registerExpansion, Editor#on ([272a2c7](https://github.com/bustlelabs/mobiledoc-kit/commit/272a2c7))
-* Update ember-mobiledoc-editor for demo/ ([4fbd912](https://github.com/bustlelabs/mobiledoc-kit/commit/4fbd912))
-* update relase instructions in readme ([89f1b58](https://github.com/bustlelabs/mobiledoc-kit/commit/89f1b58))
-
-
-
-<a name="0.10.1"></a>
-## 0.10.1 (2016-07-15)
-
-* [demo] fix simple card demo (include "remove" button) ([82a141c](https://github.com/bustlelabs/mobiledoc-kit/commit/82a141c))
-* 0.10.1 ([63c1912](https://github.com/bustlelabs/mobiledoc-kit/commit/63c1912))
-* Ensure the activeElement is set after rendering cursor ([2ce581e](https://github.com/bustlelabs/mobiledoc-kit/commit/2ce581e))
-
-
-
-<a name="0.10.0"></a>
-# 0.10.0 (2016-07-15)
-
-* 0.10.0 ([270123b](https://github.com/bustlelabs/mobiledoc-kit/commit/270123b))
-
-
-
-<a name="0.10.0-beta.3"></a>
-# 0.10.0-beta.3 (2016-07-15)
-
-* 0.10.0-beta.2 ([4d5db27](https://github.com/bustlelabs/mobiledoc-kit/commit/4d5db27))
-* 0.10.0-beta.3 ([dc63306](https://github.com/bustlelabs/mobiledoc-kit/commit/dc63306))
-* update postversion npm script ([870d9c8](https://github.com/bustlelabs/mobiledoc-kit/commit/870d9c8))
-
-
-
-<a name="0.10.0-beta.1"></a>
-# 0.10.0-beta.1 (2016-07-15)
-
-* 0.10.0-beta.1 ([4cc772a](https://github.com/bustlelabs/mobiledoc-kit/commit/4cc772a))
-* Add SelectionChangeObserver, use it for editor.range updates ([2ff0590](https://github.com/bustlelabs/mobiledoc-kit/commit/2ff0590))
-* update demo app ember-cli version to 1.13.13 ([ce7f1d9](https://github.com/bustlelabs/mobiledoc-kit/commit/ce7f1d9))
-* Update npm tasks for for `np` ([fdf79c4](https://github.com/bustlelabs/mobiledoc-kit/commit/fdf79c4))
-
-
-
-<a name="0.9.8"></a>
-## 0.9.8 (2016-07-07)
-
-* Add some tests for desired behavior when adding markups ([ae7f0c1](https://github.com/bustlelabs/mobiledoc-kit/commit/ae7f0c1))
-* didRender is defined on the card regardless of editing context ([a0c7b51](https://github.com/bustlelabs/mobiledoc-kit/commit/a0c7b51))
-* Document `Editor({ mobiledoc: ... })` option ([67dee12](https://github.com/bustlelabs/mobiledoc-kit/commit/67dee12))
-* Document Editor({ parserPlugins: ... }) option ([da52ebb](https://github.com/bustlelabs/mobiledoc-kit/commit/da52ebb))
-* Ensure editor instances in tests are properly torn down ([90a1f5e](https://github.com/bustlelabs/mobiledoc-kit/commit/90a1f5e))
-* Fix #addMarkupToRange documentation ([51e4627](https://github.com/bustlelabs/mobiledoc-kit/commit/51e4627))
-* Fix finicky test failure for FF at SauceLabs ([23bce3e](https://github.com/bustlelabs/mobiledoc-kit/commit/23bce3e))
-* Fix typo in README ([6594649](https://github.com/bustlelabs/mobiledoc-kit/commit/6594649))
-* It's useful to expose replace section functions ([8a5945b](https://github.com/bustlelabs/mobiledoc-kit/commit/8a5945b))
-* Pull in mobiledoc-pretty-json-renderer for the demo app ([f096b54](https://github.com/bustlelabs/mobiledoc-kit/commit/f096b54))
-* Return card and atom from high-level insert methods ([fd3dcd2](https://github.com/bustlelabs/mobiledoc-kit/commit/fd3dcd2))
-* Tweak postEditor#addMarkupToRange to consider existing markups ([18463b9](https://github.com/bustlelabs/mobiledoc-kit/commit/18463b9)), closes [#360](https://github.com/bustlelabs/mobiledoc-kit/issues/360)
-* Use `assertEditor` helper in Helpers.dom (minor change) ([f6878e2](https://github.com/bustlelabs/mobiledoc-kit/commit/f6878e2))
-* v0.9.8 ([9a470af](https://github.com/bustlelabs/mobiledoc-kit/commit/9a470af))
-* chore(package): update jquery to version 3.0.0 ([402d949](https://github.com/bustlelabs/mobiledoc-kit/commit/402d949))
-
-
-
-<a name="0.9.7"></a>
-## 0.9.7 (2016-05-31)
-
-* Add failing test. ([a6f3944](https://github.com/bustlelabs/mobiledoc-kit/commit/a6f3944))
-* add onTextInput to Editor Lifecycle Hook section ([101e639](https://github.com/bustlelabs/mobiledoc-kit/commit/101e639)), closes [#398](https://github.com/bustlelabs/mobiledoc-kit/issues/398)
-* built website from 6e3437d74688f91838b1203dad61d1961dc7eba4 ([c74223a](https://github.com/bustlelabs/mobiledoc-kit/commit/c74223a))
-* Comment of @bantic. ([b033f02](https://github.com/bustlelabs/mobiledoc-kit/commit/b033f02))
-* fastboot-friendly browser test ([0db96d0](https://github.com/bustlelabs/mobiledoc-kit/commit/0db96d0))
-* Fix bug #395 ([7b0b97d](https://github.com/bustlelabs/mobiledoc-kit/commit/7b0b97d)), closes [#395](https://github.com/bustlelabs/mobiledoc-kit/issues/395)
-* Fix emoji's on iPad. ([8f205b3](https://github.com/bustlelabs/mobiledoc-kit/commit/8f205b3))
-* Fix failing test on the other browsers. ([de1d869](https://github.com/bustlelabs/mobiledoc-kit/commit/de1d869))
-* Fix tests for IE11 and Edge. ([0e4803f](https://github.com/bustlelabs/mobiledoc-kit/commit/0e4803f))
-* Prevent 'Invalid argument' error when triple-clicking to select on IE ([6c41499](https://github.com/bustlelabs/mobiledoc-kit/commit/6c41499))
-* update testem to 1.7.4 ([e09e1af](https://github.com/bustlelabs/mobiledoc-kit/commit/e09e1af))
-* Use trusty dist and phantomjs-prebuilt at travis ([06853f4](https://github.com/bustlelabs/mobiledoc-kit/commit/06853f4))
-* v0.9.7 ([d829e09](https://github.com/bustlelabs/mobiledoc-kit/commit/d829e09))
-* chore(package): update testem to version 1.7.0 ([947b436](https://github.com/bustlelabs/mobiledoc-kit/commit/947b436))
-
-
-
-<a name="0.9.6"></a>
-## 0.9.6 (2016-05-10)
-
-* [docs] Document card `env.didRender` hook ([3a1edde](https://github.com/bustlelabs/mobiledoc-kit/commit/3a1edde))
-* [docs] Fix markups/markers text in ATOMS.md ([8833ec7](https://github.com/bustlelabs/mobiledoc-kit/commit/8833ec7))
-* [docs] Fix transposition in mobiledoc atom docs ([995d034](https://github.com/bustlelabs/mobiledoc-kit/commit/995d034))
-* Add didRender to card lifecycle hooks ([f9e040e](https://github.com/bustlelabs/mobiledoc-kit/commit/f9e040e))
-* Added support to CMD+Left/Right for Mac navigation ([d1f7eff](https://github.com/bustlelabs/mobiledoc-kit/commit/d1f7eff))
-* built website from 5a4714193d5fb9b443d9629955617a5cee2d3c0a ([5b1dfac](https://github.com/bustlelabs/mobiledoc-kit/commit/5b1dfac))
-* Clarify test ([1896a8b](https://github.com/bustlelabs/mobiledoc-kit/commit/1896a8b))
-* Consider HOME and END keys as movement keys ([c4b2c51](https://github.com/bustlelabs/mobiledoc-kit/commit/c4b2c51)), closes [#377](https://github.com/bustlelabs/mobiledoc-kit/issues/377)
-* Explicitly set range in some tests so they pass in Firefox ([d84c861](https://github.com/bustlelabs/mobiledoc-kit/commit/d84c861)), closes [#388](https://github.com/bustlelabs/mobiledoc-kit/issues/388)
-* minor - update docs for onTextInput ([651bc57](https://github.com/bustlelabs/mobiledoc-kit/commit/651bc57))
-* v0.9.6 ([6e3437d](https://github.com/bustlelabs/mobiledoc-kit/commit/6e3437d))
-* chore(package): update broccoli-less-single to version 0.6.2 ([874ef2d](https://github.com/bustlelabs/mobiledoc-kit/commit/874ef2d))
-* chore(package): update conventional-changelog-cli to version 1.2.0 ([d0f1da7](https://github.com/bustlelabs/mobiledoc-kit/commit/d0f1da7))
-
-
-
-<a name="0.9.5"></a>
-## 0.9.5 (2016-04-26)
-
+* [BUGFIX] Do not handle key events when the editor has no cursor ([251675e](https://github.com/bustlelabs/mobiledoc-kit/commit/251675e)), closes [#344](https://github.com/bustlelabs/mobiledoc-kit/issues/344)
 * [bugfix] Ensure cursor is in li after "* " expands to li ([be898fb](https://github.com/bustlelabs/mobiledoc-kit/commit/be898fb))
 * [bugfix] Ensure cursor positioning on a blank markup section or list item works ([9d20ed1](https://github.com/bustlelabs/mobiledoc-kit/commit/9d20ed1))
-* Add `Editor#onTextInput` to handle text or regex-match input ([a0347b2](https://github.com/bustlelabs/mobiledoc-kit/commit/a0347b2)), closes [#367](https://github.com/bustlelabs/mobiledoc-kit/issues/367)
-* Add Editor#enableLogging and Editor#disableLogging ([0f54784](https://github.com/bustlelabs/mobiledoc-kit/commit/0f54784))
-* Build docs when building website ([5e05d72](https://github.com/bustlelabs/mobiledoc-kit/commit/5e05d72))
-* built website from 98999423290fe13d7276d0b07801ecb8bfb7e213 ([fbb52f4](https://github.com/bustlelabs/mobiledoc-kit/commit/fbb52f4))
-* built website from fbb52f4b0a8437866cd15e96201f1ab1559bea18 ([be85869](https://github.com/bustlelabs/mobiledoc-kit/commit/be85869))
-* Change Range#extend and Position#move to move multiple units ([bff7bc7](https://github.com/bustlelabs/mobiledoc-kit/commit/bff7bc7))
-* enable logging in demo app ([f8582fc](https://github.com/bustlelabs/mobiledoc-kit/commit/f8582fc))
-* Update README.md ([77fba45](https://github.com/bustlelabs/mobiledoc-kit/commit/77fba45))
-* v0.9.5 ([5a47141](https://github.com/bustlelabs/mobiledoc-kit/commit/5a47141))
-
-
-
-<a name="0.9.4"></a>
-## 0.9.4 (2016-04-20)
-
-* Add #insertAtom and #insertCard to Editor, fix #insertText ([b14d7be](https://github.com/bustlelabs/mobiledoc-kit/commit/b14d7be))
-* Allow destroying an editor when it failed to render properly ([e16e0d6](https://github.com/bustlelabs/mobiledoc-kit/commit/e16e0d6))
-* Better description of markup attributes in MOBILEDOC.md ([f04d2e6](https://github.com/bustlelabs/mobiledoc-kit/commit/f04d2e6))
-* build docs into demo ([d2af3ac](https://github.com/bustlelabs/mobiledoc-kit/commit/d2af3ac))
-* built website from a3221dd3557ebd0215422264f6c2f7fa8cce7e59 ([ed24ba5](https://github.com/bustlelabs/mobiledoc-kit/commit/ed24ba5))
-* built website from d2af3ac0dd1fed55537b376946d38cf44da813ed ([1ce6592](https://github.com/bustlelabs/mobiledoc-kit/commit/1ce6592))
-* bump demo deps ([a3221dd](https://github.com/bustlelabs/mobiledoc-kit/commit/a3221dd))
-* change doc output to demo/public/docs ([3ca5353](https://github.com/bustlelabs/mobiledoc-kit/commit/3ca5353))
-* Ignore mutation events from within atoms ([8aac800](https://github.com/bustlelabs/mobiledoc-kit/commit/8aac800))
-* Minor changes: Remove references to embed intent, add FIXME ([46e50be](https://github.com/bustlelabs/mobiledoc-kit/commit/46e50be))
-* Update broccoli build to copy version from package.json to src/js/version.js ([ae06afc](https://github.com/bustlelabs/mobiledoc-kit/commit/ae06afc))
-* Update the README to add links to docs ([e346abd](https://github.com/bustlelabs/mobiledoc-kit/commit/e346abd))
-* v0.9.4 ([9899942](https://github.com/bustlelabs/mobiledoc-kit/commit/9899942))
-
-
-
-<a name="0.9.3"></a>
-## 0.9.3 (2016-04-14)
-
-* Turn off mutation-parser logging ([4ba228d](https://github.com/bustlelabs/mobiledoc-kit/commit/4ba228d))
-* v0.9.3 ([f1faa73](https://github.com/bustlelabs/mobiledoc-kit/commit/f1faa73))
-
-
-
-<a name="0.9.2"></a>
-## 0.9.2 (2016-04-14)
-
 * [BUGFIX] Ensure Editor#hasActiveMarkup detects complex markups ([36be12a](https://github.com/bustlelabs/mobiledoc-kit/commit/36be12a))
 * [BUGFIX] Ensure inputModeDidChange fires when changing from ol -> ul ([c4680aa](https://github.com/bustlelabs/mobiledoc-kit/commit/c4680aa))
+* [BUGFIX] up/down arrows in Firefox should not update mobiledoc ([81e1cb0](https://github.com/bustlelabs/mobiledoc-kit/commit/81e1cb0))
+* [CLEANUP] DRY copy/paste and drop event handling. Add editor#serializeTo ([8a1ae77](https://github.com/bustlelabs/mobiledoc-kit/commit/8a1ae77))
 * [CLEANUP] Enable live-reload for tests ([a5f4c3d](https://github.com/bustlelabs/mobiledoc-kit/commit/a5f4c3d))
 * [CLEANUP] Fix jsdoc formatting, add `docs` npm script. ([2b28d95](https://github.com/bustlelabs/mobiledoc-kit/commit/2b28d95))
 * [CLEANUP] Improve documentation for Editor, Post, PostNodeBuilder, Range ([97140e9](https://github.com/bustlelabs/mobiledoc-kit/commit/97140e9))
+* [demo] fix simple card demo (include "remove" button) ([82a141c](https://github.com/bustlelabs/mobiledoc-kit/commit/82a141c))
 * [DOC] minor change for `activeSections` and `activeMarkups` ([1b255c1](https://github.com/bustlelabs/mobiledoc-kit/commit/1b255c1))
+* [docs] Document card `env.didRender` hook ([3a1edde](https://github.com/bustlelabs/mobiledoc-kit/commit/3a1edde))
+* [docs] Fix markups/markers text in ATOMS.md ([8833ec7](https://github.com/bustlelabs/mobiledoc-kit/commit/8833ec7))
+* [docs] Fix transposition in mobiledoc atom docs ([995d034](https://github.com/bustlelabs/mobiledoc-kit/commit/995d034))
 * [FEATURE] [BUGFIX] Refactor editor hooks ([de52092](https://github.com/bustlelabs/mobiledoc-kit/commit/de52092)), closes [#319](https://github.com/bustlelabs/mobiledoc-kit/issues/319)
-* built website from 36a7d5eb46db8b41887103974f59bc197adfd890 ([3fe5b35](https://github.com/bustlelabs/mobiledoc-kit/commit/3fe5b35))
-* v0.9.2 ([cb51433](https://github.com/bustlelabs/mobiledoc-kit/commit/cb51433))
-* minor: change Range docs ([d5aefae](https://github.com/bustlelabs/mobiledoc-kit/commit/d5aefae))
-
-
-
-<a name="0.9.1"></a>
-## 0.9.1 (2016-03-24)
-
-* [BUGFIX] Do not handle key events when the editor has no cursor ([251675e](https://github.com/bustlelabs/mobiledoc-kit/commit/251675e)), closes [#344](https://github.com/bustlelabs/mobiledoc-kit/issues/344)
-* [BUGFIX] up/down arrows in Firefox should not update mobiledoc ([81e1cb0](https://github.com/bustlelabs/mobiledoc-kit/commit/81e1cb0))
-* [CLEANUP] DRY copy/paste and drop event handling. Add editor#serializeTo ([8a1ae77](https://github.com/bustlelabs/mobiledoc-kit/commit/8a1ae77))
 * [FEATURE] holding shift while pasting pastes plain text ([a006366](https://github.com/bustlelabs/mobiledoc-kit/commit/a006366)), closes [#334](https://github.com/bustlelabs/mobiledoc-kit/issues/334)
+* 0.10.0 ([270123b](https://github.com/bustlelabs/mobiledoc-kit/commit/270123b))
+* 0.10.0-beta.1 ([4cc772a](https://github.com/bustlelabs/mobiledoc-kit/commit/4cc772a))
+* 0.10.0-beta.2 ([4d5db27](https://github.com/bustlelabs/mobiledoc-kit/commit/4d5db27))
+* 0.10.0-beta.3 ([dc63306](https://github.com/bustlelabs/mobiledoc-kit/commit/dc63306))
+* 0.10.1 ([63c1912](https://github.com/bustlelabs/mobiledoc-kit/commit/63c1912))
+* 0.10.10 ([3d3bc2e](https://github.com/bustlelabs/mobiledoc-kit/commit/3d3bc2e))
+* 0.10.11 ([8a3633e](https://github.com/bustlelabs/mobiledoc-kit/commit/8a3633e))
+* 0.10.11-beta.1 ([39e3026](https://github.com/bustlelabs/mobiledoc-kit/commit/39e3026))
+* 0.10.2 ([3f7eb68](https://github.com/bustlelabs/mobiledoc-kit/commit/3f7eb68))
+* 0.10.3 ([b7e4ca5](https://github.com/bustlelabs/mobiledoc-kit/commit/b7e4ca5))
+* 0.10.4 ([8674702](https://github.com/bustlelabs/mobiledoc-kit/commit/8674702))
+* 0.10.4-beta.1 ([77eb772](https://github.com/bustlelabs/mobiledoc-kit/commit/77eb772))
+* 0.10.5 ([9c14bb3](https://github.com/bustlelabs/mobiledoc-kit/commit/9c14bb3))
+* 0.10.6 ([c3aed98](https://github.com/bustlelabs/mobiledoc-kit/commit/c3aed98))
+* 0.10.7 ([919600c](https://github.com/bustlelabs/mobiledoc-kit/commit/919600c))
+* 0.10.8 ([1cef370](https://github.com/bustlelabs/mobiledoc-kit/commit/1cef370))
+* 0.10.8-beta.1 ([e3efb98](https://github.com/bustlelabs/mobiledoc-kit/commit/e3efb98))
+* 0.10.9 ([2fe7f0f](https://github.com/bustlelabs/mobiledoc-kit/commit/2fe7f0f))
+* 0.8.4 ([bc9da8b](https://github.com/bustlelabs/mobiledoc-kit/commit/bc9da8b))
+* 0.8.5 ([d062577](https://github.com/bustlelabs/mobiledoc-kit/commit/d062577))
+* Add #insertAtom and #insertCard to Editor, fix #insertText ([b14d7be](https://github.com/bustlelabs/mobiledoc-kit/commit/b14d7be))
+* Add `buildWithText` test helper, `postEditor#deleteRange` ([3327408](https://github.com/bustlelabs/mobiledoc-kit/commit/3327408))
+* Add `Editor#onTextInput` to handle text or regex-match input ([a0347b2](https://github.com/bustlelabs/mobiledoc-kit/commit/a0347b2)), closes [#367](https://github.com/bustlelabs/mobiledoc-kit/issues/367)
+* Add `postEditor#deleteAtPosition`, deprecate `deleteFrom` ([92c3eb6](https://github.com/bustlelabs/mobiledoc-kit/commit/92c3eb6))
+* Add `toRange` and `toPosition` methods to Position, Section, Post ([c7ec6eb](https://github.com/bustlelabs/mobiledoc-kit/commit/c7ec6eb)), closes [#258](https://github.com/bustlelabs/mobiledoc-kit/issues/258)
 * Add card with drag/drop listeners to demo app ([f374958](https://github.com/bustlelabs/mobiledoc-kit/commit/f374958))
-* Handle drop events semantically ([b2a49c9](https://github.com/bustlelabs/mobiledoc-kit/commit/b2a49c9))
-* Update README.md ([dad9dc3](https://github.com/bustlelabs/mobiledoc-kit/commit/dad9dc3))
-* v0.9.1 ([36a7d5e](https://github.com/bustlelabs/mobiledoc-kit/commit/36a7d5e))
-* chore(package): update testem to version 1.6.0 ([7117017](https://github.com/bustlelabs/mobiledoc-kit/commit/7117017))
-
-
-
-<a name="0.9.0"></a>
-# 0.9.0 (2016-03-22)
-
-* Ensure using arrow keys when text is selected moves cursor correctly ([58dec72](https://github.com/bustlelabs/mobiledoc-kit/commit/58dec72))
-* v0.9.0 ([67a8292](https://github.com/bustlelabs/mobiledoc-kit/commit/67a8292))
-
-
-
-<a name="0.9.0-beta.1"></a>
-# 0.9.0-beta.1 (2016-03-17)
-
 * Add ctrl+z, ctrl+shift+z key commands for non-mac ([8ad1377](https://github.com/bustlelabs/mobiledoc-kit/commit/8ad1377))
+* Add didRender to card lifecycle hooks ([f9e040e](https://github.com/bustlelabs/mobiledoc-kit/commit/f9e040e))
+* Add Editor#enableLogging and Editor#disableLogging ([0f54784](https://github.com/bustlelabs/mobiledoc-kit/commit/0f54784))
+* Add failing test. ([a6f3944](https://github.com/bustlelabs/mobiledoc-kit/commit/a6f3944))
+* Add forward/backward inclusivity rules for markups fix #402 fix #392 ([300019f](https://github.com/bustlelabs/mobiledoc-kit/commit/300019f)), closes [#402](https://github.com/bustlelabs/mobiledoc-kit/issues/402) [#392](https://github.com/bustlelabs/mobiledoc-kit/issues/392) [#392](https://github.com/bustlelabs/mobiledoc-kit/issues/392) [#402](https://github.com/bustlelabs/mobiledoc-kit/issues/402)
+* Add further undo/redo tests ([2164ea5](https://github.com/bustlelabs/mobiledoc-kit/commit/2164ea5))
 * Add npm test:ci script, use mobiledoc-kit saucelabs creds ([e52172b](https://github.com/bustlelabs/mobiledoc-kit/commit/e52172b))
+* add onTextInput to Editor Lifecycle Hook section ([101e639](https://github.com/bustlelabs/mobiledoc-kit/commit/101e639)), closes [#398](https://github.com/bustlelabs/mobiledoc-kit/issues/398)
+* Add SelectionChangeObserver, use it for editor.range updates ([2ff0590](https://github.com/bustlelabs/mobiledoc-kit/commit/2ff0590))
+* Add some tests for desired behavior when adding markups ([ae7f0c1](https://github.com/bustlelabs/mobiledoc-kit/commit/ae7f0c1))
+* Add support for word deletion on Mac (opt+del) and PC (ctrl+del) Fix #169 ([f919490](https://github.com/bustlelabs/mobiledoc-kit/commit/f919490)), closes [#169](https://github.com/bustlelabs/mobiledoc-kit/issues/169)
 * Add tests for copy-pasting on IE11. ([2a743fa](https://github.com/bustlelabs/mobiledoc-kit/commit/2a743fa))
+* Added support to CMD+Left/Right for Mac navigation ([d1f7eff](https://github.com/bustlelabs/mobiledoc-kit/commit/d1f7eff))
+* Allow destroying an editor when it failed to render properly ([e16e0d6](https://github.com/bustlelabs/mobiledoc-kit/commit/e16e0d6))
+* Better description of markup attributes in MOBILEDOC.md ([f04d2e6](https://github.com/bustlelabs/mobiledoc-kit/commit/f04d2e6))
+* build docs into demo ([d2af3ac](https://github.com/bustlelabs/mobiledoc-kit/commit/d2af3ac))
+* Build docs when building website ([5e05d72](https://github.com/bustlelabs/mobiledoc-kit/commit/5e05d72))
+* built website from 36a7d5eb46db8b41887103974f59bc197adfd890 ([3fe5b35](https://github.com/bustlelabs/mobiledoc-kit/commit/3fe5b35))
+* built website from 5a4714193d5fb9b443d9629955617a5cee2d3c0a ([5b1dfac](https://github.com/bustlelabs/mobiledoc-kit/commit/5b1dfac))
+* built website from 6e3437d74688f91838b1203dad61d1961dc7eba4 ([c74223a](https://github.com/bustlelabs/mobiledoc-kit/commit/c74223a))
+* built website from 915e516e9d9088f265b45f3b6087c543719efa52 ([1d53f94](https://github.com/bustlelabs/mobiledoc-kit/commit/1d53f94))
+* built website from 98999423290fe13d7276d0b07801ecb8bfb7e213 ([fbb52f4](https://github.com/bustlelabs/mobiledoc-kit/commit/fbb52f4))
+* built website from a3221dd3557ebd0215422264f6c2f7fa8cce7e59 ([ed24ba5](https://github.com/bustlelabs/mobiledoc-kit/commit/ed24ba5))
+* built website from d2af3ac0dd1fed55537b376946d38cf44da813ed ([1ce6592](https://github.com/bustlelabs/mobiledoc-kit/commit/1ce6592))
+* built website from fbb52f4b0a8437866cd15e96201f1ab1559bea18 ([be85869](https://github.com/bustlelabs/mobiledoc-kit/commit/be85869))
+* bump demo deps ([a3221dd](https://github.com/bustlelabs/mobiledoc-kit/commit/a3221dd))
+* bump to 0.8.5 ([037ff4a](https://github.com/bustlelabs/mobiledoc-kit/commit/037ff4a))
+* change doc output to demo/public/docs ([3ca5353](https://github.com/bustlelabs/mobiledoc-kit/commit/3ca5353))
+* Change Range#extend and Position#move to move multiple units ([bff7bc7](https://github.com/bustlelabs/mobiledoc-kit/commit/bff7bc7))
+* Clarify test ([1896a8b](https://github.com/bustlelabs/mobiledoc-kit/commit/1896a8b))
+* Comment of @bantic. ([b033f02](https://github.com/bustlelabs/mobiledoc-kit/commit/b033f02))
+* Consider HOME and END keys as movement keys ([c4b2c51](https://github.com/bustlelabs/mobiledoc-kit/commit/c4b2c51)), closes [#377](https://github.com/bustlelabs/mobiledoc-kit/issues/377)
+* didRender is defined on the card regardless of editing context ([a0c7b51](https://github.com/bustlelabs/mobiledoc-kit/commit/a0c7b51))
+* Do not permit changes inside cards to reparse ([7b5c272](https://github.com/bustlelabs/mobiledoc-kit/commit/7b5c272))
+* Document `Editor({ mobiledoc: ... })` option ([67dee12](https://github.com/bustlelabs/mobiledoc-kit/commit/67dee12))
+* Document Editor({ parserPlugins: ... }) option ([da52ebb](https://github.com/bustlelabs/mobiledoc-kit/commit/da52ebb))
+* enable logging in demo app ([f8582fc](https://github.com/bustlelabs/mobiledoc-kit/commit/f8582fc))
+* Ensure editor instances in tests are properly torn down ([90a1f5e](https://github.com/bustlelabs/mobiledoc-kit/commit/90a1f5e))
+* Ensure the activeElement is set after rendering cursor ([2ce581e](https://github.com/bustlelabs/mobiledoc-kit/commit/2ce581e))
+* Ensure using arrow keys when text is selected moves cursor correctly ([58dec72](https://github.com/bustlelabs/mobiledoc-kit/commit/58dec72))
+* Explicitly set range in some tests so they pass in Firefox ([d84c861](https://github.com/bustlelabs/mobiledoc-kit/commit/d84c861)), closes [#388](https://github.com/bustlelabs/mobiledoc-kit/issues/388)
+* Expose version ([9a49660](https://github.com/bustlelabs/mobiledoc-kit/commit/9a49660))
 * Extract clipboard getters/setters into utility functions. ([f6307ea](https://github.com/bustlelabs/mobiledoc-kit/commit/f6307ea))
+* fastboot-friendly browser test ([0db96d0](https://github.com/bustlelabs/mobiledoc-kit/commit/0db96d0))
+* Fix #addMarkupToRange documentation ([51e4627](https://github.com/bustlelabs/mobiledoc-kit/commit/51e4627))
 * Fix a typo in Readme ([b20a76a](https://github.com/bustlelabs/mobiledoc-kit/commit/b20a76a))
 * Fix bug #326: Cross-browser testing on CI ([19874f8](https://github.com/bustlelabs/mobiledoc-kit/commit/19874f8)), closes [#326](https://github.com/bustlelabs/mobiledoc-kit/issues/326)
 * Fix bug #329: Copy-pasting does not work on IE11 ([b4c46c3](https://github.com/bustlelabs/mobiledoc-kit/commit/b4c46c3)), closes [#329](https://github.com/bustlelabs/mobiledoc-kit/issues/329)
+* Fix bug #395 ([7b0b97d](https://github.com/bustlelabs/mobiledoc-kit/commit/7b0b97d)), closes [#395](https://github.com/bustlelabs/mobiledoc-kit/issues/395)
+* Fix emoji's on iPad. ([8f205b3](https://github.com/bustlelabs/mobiledoc-kit/commit/8f205b3))
+* Fix failing test on the other browsers. ([de1d869](https://github.com/bustlelabs/mobiledoc-kit/commit/de1d869))
+* Fix finicky test failure for FF at SauceLabs ([23bce3e](https://github.com/bustlelabs/mobiledoc-kit/commit/23bce3e))
+* Fix incorrect test helper imports ([95b1797](https://github.com/bustlelabs/mobiledoc-kit/commit/95b1797))
+* Fix method signature for `createListItem` in ListItem#clone ([d131f17](https://github.com/bustlelabs/mobiledoc-kit/commit/d131f17))
+* Fix tests for IE11 and Edge. ([0e4803f](https://github.com/bustlelabs/mobiledoc-kit/commit/0e4803f))
+* Fix typo in README ([6594649](https://github.com/bustlelabs/mobiledoc-kit/commit/6594649))
+* fix(newlines). Remove newline chars in text nodes (`\n`) when parsing HTML (#478) ([6036b90](https://github.com/bustlelabs/mobiledoc-kit/commit/6036b90)), closes [#333](https://github.com/bustlelabs/mobiledoc-kit/issues/333)
+* fix(range) Allow reading range from DOM when editor is disabled (#476) ([6969f5c](https://github.com/bustlelabs/mobiledoc-kit/commit/6969f5c)), closes [#475](https://github.com/bustlelabs/mobiledoc-kit/issues/475)
+* Handle drop events semantically ([b2a49c9](https://github.com/bustlelabs/mobiledoc-kit/commit/b2a49c9))
+* Ignore mutation events from within atoms ([8aac800](https://github.com/bustlelabs/mobiledoc-kit/commit/8aac800))
+* It's useful to expose replace section functions ([8a5945b](https://github.com/bustlelabs/mobiledoc-kit/commit/8a5945b))
+* minor - update docs for onTextInput ([651bc57](https://github.com/bustlelabs/mobiledoc-kit/commit/651bc57))
+* Minor changes: Remove references to embed intent, add FIXME ([46e50be](https://github.com/bustlelabs/mobiledoc-kit/commit/46e50be))
+* Prevent 'Invalid argument' error when triple-clicking to select on IE ([6c41499](https://github.com/bustlelabs/mobiledoc-kit/commit/6c41499))
+* Pull in mobiledoc-pretty-json-renderer for the demo app ([f096b54](https://github.com/bustlelabs/mobiledoc-kit/commit/f096b54))
+* Refactor `deleteRange` ([54f56cc](https://github.com/bustlelabs/mobiledoc-kit/commit/54f56cc))
+* refactor(cleanup) Remove unused methods from `Post`, `Markerable` (#474) ([235f7a3](https://github.com/bustlelabs/mobiledoc-kit/commit/235f7a3))
+* Refocus editor after toggling markup when no selection. fixes #369 (#436) ([01b2e5e](https://github.com/bustlelabs/mobiledoc-kit/commit/01b2e5e)), closes [#369](https://github.com/bustlelabs/mobiledoc-kit/issues/369) [#436](https://github.com/bustlelabs/mobiledoc-kit/issues/436)
+* Remove deprecated Post#cloneRange Editor#registerExpansion, Editor#on ([272a2c7](https://github.com/bustlelabs/mobiledoc-kit/commit/272a2c7))
+* remove post#sectionsContainedBy(range) ([27ba974](https://github.com/bustlelabs/mobiledoc-kit/commit/27ba974))
 * Replace broken Node.contains with custom containsNode ([c80f5ad](https://github.com/bustlelabs/mobiledoc-kit/commit/c80f5ad))
+* Return card and atom from high-level insert methods ([fd3dcd2](https://github.com/bustlelabs/mobiledoc-kit/commit/fd3dcd2))
+* Turn off mutation-parser logging ([4ba228d](https://github.com/bustlelabs/mobiledoc-kit/commit/4ba228d))
+* Tweak postEditor#addMarkupToRange to consider existing markups ([18463b9](https://github.com/bustlelabs/mobiledoc-kit/commit/18463b9)), closes [#360](https://github.com/bustlelabs/mobiledoc-kit/issues/360)
+* Un-deprecate editor#hasActiveMarkups, remove editor#markupsInSelection ([de9d7c5](https://github.com/bustlelabs/mobiledoc-kit/commit/de9d7c5))
+* Update broccoli build to copy version from package.json to src/js/version.js ([ae06afc](https://github.com/bustlelabs/mobiledoc-kit/commit/ae06afc))
+* update changelog ([844239a](https://github.com/bustlelabs/mobiledoc-kit/commit/844239a))
+* Update changelog ([3a097cd](https://github.com/bustlelabs/mobiledoc-kit/commit/3a097cd))
 * Update changelog ([9e50f5b](https://github.com/bustlelabs/mobiledoc-kit/commit/9e50f5b))
+* Update changelog ([e94e13f](https://github.com/bustlelabs/mobiledoc-kit/commit/e94e13f))
+* update demo app ember-cli version to 1.13.13 ([ce7f1d9](https://github.com/bustlelabs/mobiledoc-kit/commit/ce7f1d9))
+* Update demo to ember-cli@2.6.0 ([e8f9ac8](https://github.com/bustlelabs/mobiledoc-kit/commit/e8f9ac8))
+* update demo to ember-mobiledoc-editor 0.5.3 ([05ca4d3](https://github.com/bustlelabs/mobiledoc-kit/commit/05ca4d3))
 * update demo to use ember-mobiledoc-dom-renderer ^0.4.0 ([a1e7cf4](https://github.com/bustlelabs/mobiledoc-kit/commit/a1e7cf4))
+* Update ember-mobiledoc-editor for demo/ ([4fbd912](https://github.com/bustlelabs/mobiledoc-kit/commit/4fbd912))
+* update mobiledoc-pretty-json-renderer to ^2.0.1 ([9ff9f13](https://github.com/bustlelabs/mobiledoc-kit/commit/9ff9f13))
+* Update npm tasks for for `np` ([fdf79c4](https://github.com/bustlelabs/mobiledoc-kit/commit/fdf79c4))
+* update postversion npm script ([870d9c8](https://github.com/bustlelabs/mobiledoc-kit/commit/870d9c8))
 * update readme release instructions ([deb69f3](https://github.com/bustlelabs/mobiledoc-kit/commit/deb69f3))
-* Update README.md ([60b0b4f](https://github.com/bustlelabs/mobiledoc-kit/commit/60b0b4f))
+* Update README.md ([dad9dc3](https://github.com/bustlelabs/mobiledoc-kit/commit/dad9dc3))
 * Update README.md ([89a17ad](https://github.com/bustlelabs/mobiledoc-kit/commit/89a17ad))
+* Update README.md ([60b0b4f](https://github.com/bustlelabs/mobiledoc-kit/commit/60b0b4f))
+* Update README.md ([77fba45](https://github.com/bustlelabs/mobiledoc-kit/commit/77fba45))
+* update relase instructions in readme ([89f1b58](https://github.com/bustlelabs/mobiledoc-kit/commit/89f1b58))
+* update testem to 1.7.4 ([e09e1af](https://github.com/bustlelabs/mobiledoc-kit/commit/e09e1af))
+* Update the README to add links to docs ([e346abd](https://github.com/bustlelabs/mobiledoc-kit/commit/e346abd))
+* Use "version" script instead of postversion with --amend --no-edit ([13abc9d](https://github.com/bustlelabs/mobiledoc-kit/commit/13abc9d))
+* Use `assertEditor` helper in Helpers.dom (minor change) ([f6878e2](https://github.com/bustlelabs/mobiledoc-kit/commit/f6878e2))
 * Use keypress event to enter text ([2701e71](https://github.com/bustlelabs/mobiledoc-kit/commit/2701e71))
+* Use trusty dist and phantomjs-prebuilt at travis ([06853f4](https://github.com/bustlelabs/mobiledoc-kit/commit/06853f4))
+* v0.9.0 ([67a8292](https://github.com/bustlelabs/mobiledoc-kit/commit/67a8292))
 * v0.9.0-beta.1 ([5768110](https://github.com/bustlelabs/mobiledoc-kit/commit/5768110))
+* v0.9.1 ([36a7d5e](https://github.com/bustlelabs/mobiledoc-kit/commit/36a7d5e))
+* v0.9.2 ([cb51433](https://github.com/bustlelabs/mobiledoc-kit/commit/cb51433))
+* v0.9.3 ([f1faa73](https://github.com/bustlelabs/mobiledoc-kit/commit/f1faa73))
+* v0.9.4 ([9899942](https://github.com/bustlelabs/mobiledoc-kit/commit/9899942))
+* v0.9.5 ([5a47141](https://github.com/bustlelabs/mobiledoc-kit/commit/5a47141))
+* v0.9.6 ([6e3437d](https://github.com/bustlelabs/mobiledoc-kit/commit/6e3437d))
+* v0.9.7 ([d829e09](https://github.com/bustlelabs/mobiledoc-kit/commit/d829e09))
+* v0.9.8 ([9a470af](https://github.com/bustlelabs/mobiledoc-kit/commit/9a470af))
+* chore(deps): update yarn.lock ([915e516](https://github.com/bustlelabs/mobiledoc-kit/commit/915e516))
+* chore(exports): Export additional modules for selective importing (#493) ([5667a34](https://github.com/bustlelabs/mobiledoc-kit/commit/5667a34))
+* chore(package): update broccoli-less-single to version 0.6.2 ([874ef2d](https://github.com/bustlelabs/mobiledoc-kit/commit/874ef2d))
+* chore(package): update conventional-changelog-cli to version 1.2.0 ([d0f1da7](https://github.com/bustlelabs/mobiledoc-kit/commit/d0f1da7))
 * chore(package): update dependencies ([b9bb08d](https://github.com/bustlelabs/mobiledoc-kit/commit/b9bb08d))
 * chore(package): update jquery to version 2.2.2 ([ce0a2c6](https://github.com/bustlelabs/mobiledoc-kit/commit/ce0a2c6))
+* chore(package): update jquery to version 3.0.0 ([402d949](https://github.com/bustlelabs/mobiledoc-kit/commit/402d949))
+* chore(package): update jsdoc to version 3.4.2 (#501) ([8f48cbb](https://github.com/bustlelabs/mobiledoc-kit/commit/8f48cbb))
 * chore(package): update testem to version 1.5.0 ([7a8eff8](https://github.com/bustlelabs/mobiledoc-kit/commit/7a8eff8))
-
-
-
-<a name="0.8.5"></a>
-## 0.8.5 (2016-02-11)
-
-* 0.8.5 ([d062577](https://github.com/bustlelabs/mobiledoc-kit/commit/d062577))
-* bump to 0.8.5 ([037ff4a](https://github.com/bustlelabs/mobiledoc-kit/commit/037ff4a))
-* Expose version ([9a49660](https://github.com/bustlelabs/mobiledoc-kit/commit/9a49660))
-* Update changelog ([3a097cd](https://github.com/bustlelabs/mobiledoc-kit/commit/3a097cd))
-
-
-
-<a name="0.8.4"></a>
-## 0.8.4 (2016-02-10)
-
-* 0.8.4 ([bc9da8b](https://github.com/bustlelabs/mobiledoc-kit/commit/bc9da8b))
-* Add further undo/redo tests ([2164ea5](https://github.com/bustlelabs/mobiledoc-kit/commit/2164ea5))
-* Do not permit changes inside cards to reparse ([7b5c272](https://github.com/bustlelabs/mobiledoc-kit/commit/7b5c272))
-* Update changelog ([e94e13f](https://github.com/bustlelabs/mobiledoc-kit/commit/e94e13f))
+* chore(package): update testem to version 1.6.0 ([7117017](https://github.com/bustlelabs/mobiledoc-kit/commit/7117017))
+* chore(package): update testem to version 1.7.0 ([947b436](https://github.com/bustlelabs/mobiledoc-kit/commit/947b436))
+* chore(package): update tiny-lr to version 1.0.2 (#505) ([29f35a7](https://github.com/bustlelabs/mobiledoc-kit/commit/29f35a7))
+* chore(website): Use plain-js demo (#509) ([a6e5805](https://github.com/bustlelabs/mobiledoc-kit/commit/a6e5805))
+* chore(yarn): use yarn, update readme (#508) ([0271871](https://github.com/bustlelabs/mobiledoc-kit/commit/0271871))
+* docs: `replaceWithListSection` and `replaceWithHeaderSection` ([2b65ad5](https://github.com/bustlelabs/mobiledoc-kit/commit/2b65ad5))
+* docs(changelog): Update changelog manually ([2ceb39d](https://github.com/bustlelabs/mobiledoc-kit/commit/2ceb39d))
+* docs(grammarly): DOC - Add section about disabling Grammarly (#490) ([bbf3cfd](https://github.com/bustlelabs/mobiledoc-kit/commit/bbf3cfd))
+* docs(README): Add table to README (#506) ([b75b0d3](https://github.com/bustlelabs/mobiledoc-kit/commit/b75b0d3))
+* fix(atoms): Avoid rerendering atoms when section content changes. (#471) ([a59ae74](https://github.com/bustlelabs/mobiledoc-kit/commit/a59ae74)), closes [#421](https://github.com/bustlelabs/mobiledoc-kit/issues/421)
+* fix(deprecate): Make deprecate accept conditional argument (#488) ([059fd66](https://github.com/bustlelabs/mobiledoc-kit/commit/059fd66))
+* fix(links): Ensure that CTRL+K on Windows toggles link. Fixes #452 (#453) ([3220534](https://github.com/bustlelabs/mobiledoc-kit/commit/3220534)), closes [#452](https://github.com/bustlelabs/mobiledoc-kit/issues/452) [#453](https://github.com/bustlelabs/mobiledoc-kit/issues/453)
+* fix(onTextInput): Ensure `onTextInput` is triggered by tab character (#479) ([a0aaa3a](https://github.com/bustlelabs/mobiledoc-kit/commit/a0aaa3a)), closes [#400](https://github.com/bustlelabs/mobiledoc-kit/issues/400)
+* fix(paste): Allow inserting multiple markup sections onto a list item (#459) ([1898cf5](https://github.com/bustlelabs/mobiledoc-kit/commit/1898cf5)), closes [#456](https://github.com/bustlelabs/mobiledoc-kit/issues/456)
+* fix(paste): Fix bug #498:  Pasting into an empty Mobiledoc via the browser File menu does not work ( ([c75711c](https://github.com/bustlelabs/mobiledoc-kit/commit/c75711c)), closes [#498](https://github.com/bustlelabs/mobiledoc-kit/issues/498) [#499](https://github.com/bustlelabs/mobiledoc-kit/issues/499) [#498](https://github.com/bustlelabs/mobiledoc-kit/issues/498)
+* fix(paste): Fix insertion into blank section (#466) ([a3d274d](https://github.com/bustlelabs/mobiledoc-kit/commit/a3d274d)), closes [#466](https://github.com/bustlelabs/mobiledoc-kit/issues/466) [#462](https://github.com/bustlelabs/mobiledoc-kit/issues/462)
+* fix(paste): Handle paste card at start of middle list item (#468) ([939a541](https://github.com/bustlelabs/mobiledoc-kit/commit/939a541)), closes [#467](https://github.com/bustlelabs/mobiledoc-kit/issues/467)
+* fix(placeholder): Use '__has-no-content' class name to display placeholder text (#461) ([11452fe](https://github.com/bustlelabs/mobiledoc-kit/commit/11452fe)), closes [#407](https://github.com/bustlelabs/mobiledoc-kit/issues/407) [#171](https://github.com/bustlelabs/mobiledoc-kit/issues/171)
+* fix(ui): Fix UI export (#492) ([08c0c24](https://github.com/bustlelabs/mobiledoc-kit/commit/08c0c24)), closes [#492](https://github.com/bustlelabs/mobiledoc-kit/issues/492)
+* feat(atom): Implement Atom `save` hook (#472) ([3ef3bc3](https://github.com/bustlelabs/mobiledoc-kit/commit/3ef3bc3)), closes [#399](https://github.com/bustlelabs/mobiledoc-kit/issues/399)
+* feat(delete): add delete hooks in lifecycle (#454) ([f7c72cd](https://github.com/bustlelabs/mobiledoc-kit/commit/f7c72cd))
+* feat(delete): add range, direction and unit to delete hook (#455) ([2884ebf](https://github.com/bustlelabs/mobiledoc-kit/commit/2884ebf))
+* feat(post): Refactor rendering of editor element (#460) ([c9d4067](https://github.com/bustlelabs/mobiledoc-kit/commit/c9d4067)), closes [#335](https://github.com/bustlelabs/mobiledoc-kit/issues/335)
+* feat(textInput): able to unregister single or all text input handlers (#484) ([68a60ae](https://github.com/bustlelabs/mobiledoc-kit/commit/68a60ae))
+* feat(UI): Export toggleLink (#491) ([3335357](https://github.com/bustlelabs/mobiledoc-kit/commit/3335357))
+* feat(willHandleNewline): add willHandleNewline hook (#489) ([f1d2262](https://github.com/bustlelabs/mobiledoc-kit/commit/f1d2262))
+* refactor(tests): Refactor deletion tests to be terser (#469) ([eeb9e19](https://github.com/bustlelabs/mobiledoc-kit/commit/eeb9e19))
+* doc(jsdoc): Fix JSDocs violations and typo (#463) ([843f381](https://github.com/bustlelabs/mobiledoc-kit/commit/843f381)), closes [#463](https://github.com/bustlelabs/mobiledoc-kit/issues/463)
+* doc(jsdoc): Make building docs part of testing, to avoid jsdocs errors (#464) ([039fd04](https://github.com/bustlelabs/mobiledoc-kit/commit/039fd04))
+* style(links): Add nobreak to links in the editor so toolips are always accessible (#449) ([b75bb7d](https://github.com/bustlelabs/mobiledoc-kit/commit/b75bb7d))
+* Tests: Extract `MockEditor`, `run`, `renderBuiltAbstract`, docs for `buildFromText` ([b473a27](https://github.com/bustlelabs/mobiledoc-kit/commit/b473a27))
+* minor: change Range docs ([d5aefae](https://github.com/bustlelabs/mobiledoc-kit/commit/d5aefae))
 
 
 
@@ -547,8 +388,15 @@
 <a name="0.6.1"></a>
 ## 0.6.1 (2015-11-18)
 
-* 0.6.0 ([0001015](https://github.com/bustlelabs/mobiledoc-kit/commit/0001015))
 * 0.6.1 ([ff637c1](https://github.com/bustlelabs/mobiledoc-kit/commit/ff637c1))
+* Retain edit mode on cloned cards ([ebe19b8](https://github.com/bustlelabs/mobiledoc-kit/commit/ebe19b8))
+
+
+
+<a name="0.6.0"></a>
+# 0.6.0 (2015-11-16)
+
+* 0.6.0 ([0001015](https://github.com/bustlelabs/mobiledoc-kit/commit/0001015))
 * Add `update-changelog` npm script, update readme ([29e5278](https://github.com/bustlelabs/mobiledoc-kit/commit/29e5278))
 * add changelog ([1aa18a6](https://github.com/bustlelabs/mobiledoc-kit/commit/1aa18a6))
 * add logo to demo assets ([45e3b42](https://github.com/bustlelabs/mobiledoc-kit/commit/45e3b42))
@@ -557,7 +405,6 @@
 * add small logo ([76f8e6e](https://github.com/bustlelabs/mobiledoc-kit/commit/76f8e6e))
 * built website from 45e3b42b562ded870fe99c62af2918cbe55c3694 ([0937781](https://github.com/bustlelabs/mobiledoc-kit/commit/0937781))
 * Fix project in a link ([e7bcab2](https://github.com/bustlelabs/mobiledoc-kit/commit/e7bcab2))
-* Retain edit mode on cloned cards ([ebe19b8](https://github.com/bustlelabs/mobiledoc-kit/commit/ebe19b8))
 * Update demo for mobiledoc 0.2.0-beta ([e078eeb](https://github.com/bustlelabs/mobiledoc-kit/commit/e078eeb))
 * Update demos, add different renderers ([1d9b124](https://github.com/bustlelabs/mobiledoc-kit/commit/1d9b124))
 * Update links to mobiledoc renderers ([d5d573e](https://github.com/bustlelabs/mobiledoc-kit/commit/d5d573e))
