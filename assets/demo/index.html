@@ -222,10 +222,11 @@
         name: 'kitten',
         type: 'dom',
         render() {
-          let el$ = $(`&lt;figure&gt;
+          let el$ = $(`
+            &lt;figure&gt;
               &lt;img src="http://placekitten.com/200/100"&gt;
               &lt;figcaption&gt;Image of a kitten&lt;/figcaption&gt;
-            &lt;/figura&gt;
+            &lt;/figure&gt;
           `);
           return el[0]; // return DOM node
         }
