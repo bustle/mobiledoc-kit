@@ -1,6 +1,7 @@
 import Helpers from '../../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
+import { detect } from '../utils/array-utils';
 
 const { FORWARD, BACKWARD } = DIRECTION;
 const {module, test} = Helpers;
@@ -186,4 +187,36 @@ test('#extend(0) returns same range', (assert) => {
 
   assert.rangeIsEqual(collapsedRange.extend(0), collapsedRange, 'extending collapsed range 0 is no-op');
   assert.rangeIsEqual(nonCollapsedRange.extend(0), nonCollapsedRange, 'extending non-collapsed range 0 is no-op');
+});
+
+test('#expandByMarker processed markers in a callback and continues as long as the callback returns true', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    let bold = markup('b');
+    let italic = markup('i');
+    return post([
+      markupSection('p', [
+        marker('aiya', []),
+        marker('biya', [bold, italic]),
+        marker('ciya', [bold]),
+        marker('diya', [bold]),
+      ])
+    ]);
+  });
+
+  let section = post.sections.head;
+  let head = section.toPosition(9); // i in the third hiya
+  let tail = section.toPosition(15); // y in the last hiya
+  let range = head.toRange(tail);
+  let expandedRange = range.expandByMarker(marker => {
+    return !!(detect(marker.markups, markup => markup.tagName === 'b'));
+  });
+
+  assert.positionIsEqual(
+    expandedRange.head, section.toPosition(4),
+    'range head is start of second marker'
+  );
+  assert.positionIsEqual(
+    expandedRange.tail, section.toPosition(16),
+    'range tail did not change'
+  );
 });

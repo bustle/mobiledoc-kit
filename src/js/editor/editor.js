@@ -11,7 +11,7 @@ import mobiledocRenderers from '../renderers/mobiledoc';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 import { mergeWithOptions } from '../utils/merge';
 import { normalizeTagName, clearChildNodes } from '../utils/dom-utils';
-import { forEach, filter, contains, values } from '../utils/array-utils';
+import { forEach, filter, contains, values, detect } from '../utils/array-utils';
 import { setData } from '../utils/element-utils';
 import Cursor from '../utils/cursor';
 import Range from '../utils/cursor/range';
@@ -22,7 +22,6 @@ import {
   DEFAULT_KEY_COMMANDS, buildKeyCommand, findKeyCommands, validateKeyCommand
 } from './key-commands';
 import { CARD_MODES } from '../models/card';
-import { detect } from '../utils/array-utils';
 import assert from '../utils/assert';
 import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
 import EditHistory from 'mobiledoc-kit/editor/edit-history';

@@ -117,6 +117,40 @@ class Range {
     }
   }
 
+  /**
+   * expand a range to all markers matching a given check
+   *
+   * @param {Function} detectMarker
+   * @return {Range} The expanded range
+   *
+   * @public
+   */
+  expandByMarker(detectMarker) {
+    let {
+      head,
+      tail,
+      direction
+    } = this;
+    let {section: headSection} = head;
+    if (headSection !== tail.section) {
+      throw new Error('#expandByMarker does not work across sections. Perhaps you should confirm the range is collapsed');
+    }
+
+    let firstNotMatchingDetect = i => {
+      return !detectMarker(i);
+    };
+
+    let headMarker = head.section.markers.detect(firstNotMatchingDetect, head.marker, true);
+    headMarker = (headMarker && headMarker.next) || head.marker;
+    let headPosition = new Position(headSection, headSection.offsetOfMarker(headMarker));
+
+    let tailMarker = tail.section.markers.detect(firstNotMatchingDetect, tail.marker);
+    tailMarker = (tailMarker && tailMarker.prev) || tail.marker;
+    let tailPosition = new Position(tail.section, tail.section.offsetOfMarker(tailMarker) + tailMarker.length);
+
+    return headPosition.toRange(tailPosition, direction);
+  }
+
   _collapse(direction) {
     return new Range(direction === DIRECTION.BACKWARD ? this.head : this.tail);
   }

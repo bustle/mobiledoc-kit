@@ -110,8 +110,8 @@ Position = class Position {
    * @return {Range}
    * @public
    */
-  toRange(tail=this) {
-    return new Range(this, tail);
+  toRange(tail=this, direction=null) {
+    return new Range(this, tail, direction);
   }
 
   get leafSectionIndex() {
