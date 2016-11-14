@@ -143,12 +143,12 @@ export default class LinkedList {
   toArray() {
     return this.readRange();
   }
-  detect(callback, item=this.head) {
+  detect(callback, item=this.head, reverse=false) {
     while (item) {
       if (callback(item)) {
         return item;
       }
-      item = item.next;
+      item = reverse ? item.prev : item.next;
     }
   }
   any(callback) {

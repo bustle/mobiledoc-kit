@@ -128,6 +128,62 @@ document's `<head>`:
   immediately if the card is already rendered, or will ensure that when the card
   does get rendered it will be rendered in the "edit" state initially)
 * `editor.displayCard(cardSection)` - same as `editCard` except in display mode.
+* `editor.range` - Read the current Range object for the cursor.
+
+### Position API
+
+A `Position` object represents a location in a document. For example your
+cursor may be at a position, text may be inserted at a position, and a range
+has a starting position and an ending position.
+
+Position objects are returned by several APIs, for example `deleteRange` returns
+a position. Some methods, like `splitSection` accept a position as an argument.
+
+A position can be created for any point in a document with
+`section#toPosition(offset)`.
+
+Position API includes:
+
+* `position.section` - The section of this position
+* `position.offset` - The character offset of this position in the section.
+* `position.marker` - Based on the section and offset, the marker this position
+  if on. A position may not always have a marker (for example a cursor before
+  or after a card).
+* `position.toRange(endPosition)` - Create a range based on two positions. Accepts
+  the direction of the range as a second optional argument.
+* `position.isEqual(otherPosition)` - Is this position the same as another
+* `position.move(characterCount)` - Move a number of characters to the right
+  (positive number) or left (negative number)
+* `position.moveWord(direction)` - Move a single word in a given direction.
+
+### Range API
+
+`Range` represent a range of a document. A range has a starting position
+(`head`), ending position (`tail`), and a direction (for example highlighting
+text left-to-right is a forward direction, highlighting right-to-left is a
+backward direction).
+
+Ranges are retured by serveral APIs, but most often you will be interested in
+the current range selected by the user (be it their cursor or an actual
+selection). This can be accessed at `editor#range`. Several post editor APIs
+expect a range as an argument, for example `setRange` or `deleteRange`.
+
+Ranges sport several public APIs for manipulation, each of which returns a new,
+unique range instance:
+
+* `range.head` - The position on the range closer to the start of the document.
+* `range.tail` - The position on the range closer to the end of the document.
+* `range.isCollapsed` - A range is collapsed when its head and tail are the same
+  position.
+* `range.focusedPosition` - If a range has a forward direction, then tail. If
+  it has a backward direction, the head.
+* `range.extend(characterCount)` - Grow a range one character in whatever its
+  direction is.
+* `range.move(direction)` - If the range is collapsed, move the range forward
+  one character. If it is not, collapse it in the direction passed.
+* `range.expandByMarker(callback)` - In both directions attempt grow the
+  range as long as `callback` returns true. `callback` is passed each marker
+  as the range is grown.
 
 ### Editor Lifecycle Hooks
 
