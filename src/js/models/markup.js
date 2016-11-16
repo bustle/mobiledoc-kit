@@ -4,15 +4,16 @@ import { MARKUP_TYPE } from './types';
 import assert from '../utils/assert';
 
 export const VALID_MARKUP_TAGNAMES = [
-  'b',
-  'i',
-  'strong',
-  'em',
   'a',
-  'u',
+  'b',
+  'code',
+  'em',
+  'i',
+  's',   // strikethrough
+  'strong',
   'sub', // subscript
   'sup', // superscript
-  's'    // strikethrough
+  'u'
 ].map(normalizeTagName);
 
 export const VALID_ATTRIBUTES = [

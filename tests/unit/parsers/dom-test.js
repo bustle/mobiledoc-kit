@@ -277,7 +277,7 @@ test('span with font-weight "bold" maps to strong', (assert) => {
   assert.ok(marker.hasMarkup('strong'), 'marker is strong');
 });
 
-let recognizedTags = ['h1','h2','h3','blockquote'];
+let recognizedTags = ['aside', 'blockquote', 'h1','h2','h3','h4','h5','h6','p'];
 recognizedTags.forEach(tag => {
   test(`recognized markup section tags are parsed (${tag})`, (assert) => {
     let element = buildDOM(`<${tag}>${tag} text</${tag}>`);

@@ -1,6 +1,6 @@
 import PostAbstractHelpers from './post-abstract';
 import Editor from 'mobiledoc-kit/editor/editor';
-import MobiledocRenderer from 'mobiledoc-kit/renderers/mobiledoc/0-3';
+import MobiledocRenderer from 'mobiledoc-kit/renderers/mobiledoc/0-3-1';
 
 function retargetPosition(position, toPost) {
   let fromPost = position.section.post;

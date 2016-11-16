@@ -42,6 +42,18 @@ const headerTests = [{
   text: '###',
   toInsert: ' ',
   headerTagName: 'h3'
+}, {
+  text: '####',
+  toInsert: ' ',
+  headerTagName: 'h4'
+}, {
+  text: '#####',
+  toInsert: ' ',
+  headerTagName: 'h5'
+}, {
+  text: '######',
+  toInsert: ' ',
+  headerTagName: 'h6'
 }];
 
 headerTests.forEach(({text, toInsert, headerTagName}) => {

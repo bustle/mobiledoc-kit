@@ -3,7 +3,9 @@ import Helpers from '../test-helpers';
 
 const { module, test } = Helpers;
 
-let editor, editorElement;
+const undoBlockTimeout = 2000;
+
+let editor, editorElement, oldDateNow;
 
 function undo(editor) {
   Helpers.dom.triggerKeyCommand(editor, 'Z', [MODIFIERS.META]);
@@ -16,8 +18,10 @@ function redo(editor) {
 module('Acceptance: Editor: Undo/Redo', {
   beforeEach() {
     editorElement = $('#editor')[0];
+    oldDateNow = Date.now;
   },
   afterEach() {
+    Date.now = oldDateNow;
     if (editor) {
       editor.destroy();
       editor = null;
@@ -111,7 +115,7 @@ test('make sure undo/redo events group when adding text', (assert) => {
     afterUndo1 = post([markupSection('p', [marker('123456')])]);
     afterUndo2 = post([markupSection('p', [marker('123')])]);
     return afterUndo2;
-  }, {undoBlockTimeout: 100});
+  }, {undoBlockTimeout});
 
   let textNode = Helpers.dom.findTextNode(editorElement, '123');
   Helpers.dom.moveCursorTo(editor, textNode, '123'.length);
@@ -122,26 +126,29 @@ test('make sure undo/redo events group when adding text', (assert) => {
     Helpers.dom.insertText(editor, '5');
     Helpers.wait(()  => {
       Helpers.dom.insertText(editor, '6');
-      window.setTimeout(()  => {
-          Helpers.dom.insertText(editor, '7');
+      Helpers.wait(()  => {
+        Date.now = function() {
+          return oldDateNow.call(Date) + undoBlockTimeout + 1;
+        };
+        Helpers.dom.insertText(editor, '7');
+        Helpers.wait(()  => {
+          Helpers.dom.insertText(editor, '8');
           Helpers.wait(()  => {
-            Helpers.dom.insertText(editor, '8');
-            Helpers.wait(()  => {
-              Helpers.dom.insertText(editor, '9');
-              assert.postIsSimilar(editor.post, beforeUndo);
+            Helpers.dom.insertText(editor, '9');
+            assert.postIsSimilar(editor.post, beforeUndo);
 
-              undo(editor);
-              assert.postIsSimilar(editor.post, afterUndo1);
+            undo(editor);
+            assert.postIsSimilar(editor.post, afterUndo1);
 
-              undo(editor);
-              assert.postIsSimilar(editor.post, afterUndo2);
+            undo(editor);
+            assert.postIsSimilar(editor.post, afterUndo2);
 
-              redo(editor);
-              assert.postIsSimilar(editor.post, afterUndo1);
-              done();
-            });
+            redo(editor);
+            assert.postIsSimilar(editor.post, afterUndo1);
+            done();
           });
-      },120);
+        });
+      });
     });
   });
 });
@@ -155,7 +162,7 @@ test('make sure undo/redo events group when deleting text', (assert) => {
     afterUndo1 = post([markupSection('p', [marker('123456')])]);
     afterUndo2 = post([markupSection('p', [marker('123456789')])]);
     return afterUndo2;
-  }, {undoBlockTimeout: 100});
+  }, {undoBlockTimeout});
 
   let textNode = Helpers.dom.findTextNode(editorElement, '123456789');
   Helpers.dom.moveCursorTo(editor, textNode, '123456789'.length);
@@ -164,7 +171,10 @@ test('make sure undo/redo events group when deleting text', (assert) => {
     Helpers.dom.triggerDelete(editor);
     Helpers.dom.triggerDelete(editor);
 
-    window.setTimeout(()  => {
+    Helpers.wait(()  => {
+      Date.now = function() {
+        return oldDateNow.call(Date) + undoBlockTimeout + 1;
+      };
 
       Helpers.dom.triggerDelete(editor);
       Helpers.dom.triggerDelete(editor);
@@ -181,7 +191,7 @@ test('make sure undo/redo events group when deleting text', (assert) => {
       redo(editor);
       assert.postIsSimilar(editor.post, afterUndo1);
       done();
-    },120);
+    });
 });
 
 

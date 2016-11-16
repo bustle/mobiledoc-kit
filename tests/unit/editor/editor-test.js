@@ -186,6 +186,9 @@ test('#serialize serializes to MOBILEDOC_VERSION by default', (assert) => {
   let mobiledoc3 = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
   }, '0.3.0');
+  let mobiledoc3_1 = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  }, '0.3.1');
 
   editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
     return post([markupSection('p', [marker('abc')])]);
@@ -193,7 +196,8 @@ test('#serialize serializes to MOBILEDOC_VERSION by default', (assert) => {
 
   assert.deepEqual(editor.serialize('0.2.0'), mobiledoc2, 'serializes 0.2.0');
   assert.deepEqual(editor.serialize('0.3.0'), mobiledoc3, 'serializes 0.3.0');
-  assert.deepEqual(editor.serialize(), mobiledoc3, 'serializes 0.3.0 by default');
+  assert.deepEqual(editor.serialize('0.3.1'), mobiledoc3_1, 'serializes 0.3.1');
+  assert.deepEqual(editor.serialize(), mobiledoc3_1, 'serializes 0.3.1 by default');
 
   assert.throws(
     () => editor.serialize('unknown'),

@@ -80,7 +80,7 @@ export default class MobiledocParser {
   }
 
   parseMarkupSection([type, tagName, markers], post) {
-    const section = this.builder.createMarkupSection(tagName);
+    const section = this.builder.createMarkupSection(tagName.toLowerCase() === 'pull-quote' ? 'aside' : tagName);
     post.sections.append(section);
     this.parseMarkers(markers, section);
     // Strip blank markers after they have been created. This ensures any

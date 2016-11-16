@@ -52,7 +52,7 @@ var mobiledocPrettyJSONRenderer =
 	  if (doc == null || typeof doc === 'string') {
 	    return JSON.stringify(doc);
 	  }
-	  if (doc.version !== '0.3.0') {
+	  if (doc.version && doc.version.indexOf('0.3') === 0) {
 	    return JSON.stringify(doc, null, 2);
 	  }
 	  var lists = [
