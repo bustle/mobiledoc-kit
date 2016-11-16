@@ -43,6 +43,7 @@ const defaults = {
   spellcheck: true,
   autofocus: true,
   undoDepth: 5,
+  undoBlockTimeout: 5000, // ms for an undo event
   cards: [],
   atoms: [],
   cardOptions: {},
@@ -135,7 +136,7 @@ class Editor {
     this.post = this.loadPost();
     this._renderTree = new RenderTree(this.post);
 
-    this._editHistory = new EditHistory(this, this.undoDepth);
+    this._editHistory = new EditHistory(this, this.undoDepth, this.undoBlockTimeout);
     this._eventManager = new EventManager(this);
     this._mutationHandler = new MutationHandler(this);
     this._editState = new EditState(this);
@@ -687,7 +688,7 @@ class Editor {
     if (postEditor._shouldCancelSnapshot) {
       this._editHistory._pendingSnapshot = null;
     }
-    this._editHistory.storeSnapshot();
+    this._editHistory.storeSnapshot(postEditor.editActionTaken);
 
     return result;
   }

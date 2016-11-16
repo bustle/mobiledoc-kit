@@ -12,9 +12,11 @@ function findLeafSectionAtIndex(post, index) {
 }
 
 export class Snapshot {
-  constructor(editor) {
+  constructor(takenAt, editor, editAction=null) {
     this.mobiledoc = editor.serialize();
     this.editor = editor;
+    this.editAction = editAction;
+    this.takenAt = takenAt;
 
     this.snapshotRange();
   }
@@ -44,15 +46,24 @@ export class Snapshot {
       return head.toRange(tail);
     }
   }
+
+  groupsWith(groupingTimeout, editAction, takenAt) {
+    return (
+      editAction !== null &&
+      this.editAction === editAction &&
+      this.takenAt + groupingTimeout > takenAt
+    );
+  }
 }
 
 export default class EditHistory {
-  constructor(editor, queueLength) {
+  constructor(editor, queueLength, groupingTimeout) {
     this.editor = editor;
     this._undoStack = new FixedQueue(queueLength);
     this._redoStack = new FixedQueue(queueLength);
 
     this._pendingSnapshot = null;
+    this._groupingTimeout = groupingTimeout;
   }
 
   snapshot() {
@@ -62,15 +73,19 @@ export default class EditHistory {
     }
   }
 
-  storeSnapshot() {
+  storeSnapshot(editAction=null) {
+    let now = Date.now();
     // store pending snapshot
-    if (this._pendingSnapshot) {
-      this._undoStack.push(this._pendingSnapshot);
+    let pendingSnapshot = this._pendingSnapshot;
+    if (pendingSnapshot) {
+      if (!pendingSnapshot.groupsWith(this._groupingTimeout, editAction, now)) {
+        this._undoStack.push(pendingSnapshot);
+      }
       this._redoStack.clear();
     }
 
     // take new pending snapshot to store next time `storeSnapshot` is called
-    this._pendingSnapshot = new Snapshot(this.editor);
+    this._pendingSnapshot = new Snapshot(now, this.editor, editAction);
   }
 
   stepBackward(postEditor) {
@@ -79,7 +94,7 @@ export default class EditHistory {
 
     let snapshot = this._undoStack.pop();
     if (snapshot) {
-      this._redoStack.push(new Snapshot(this.editor));
+      this._redoStack.push(new Snapshot(Date.now(), this.editor));
       this._restoreFromSnapshot(snapshot, postEditor);
     }
   }
@@ -87,7 +102,7 @@ export default class EditHistory {
   stepForward(postEditor) {
     let snapshot = this._redoStack.pop();
     if (snapshot) {
-      this._undoStack.push(new Snapshot(this.editor));
+      this._undoStack.push(new Snapshot(Date.now(), this.editor));
       this._restoreFromSnapshot(snapshot, postEditor);
     }
     postEditor.cancelSnapshot();

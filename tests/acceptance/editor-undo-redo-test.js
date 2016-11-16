@@ -64,12 +64,11 @@ test('undo/redo the insertion of a character', (assert) => {
 // when typing characters
 test('undo/redo the insertion of multiple characters', (assert) => {
   let done = assert.async();
-  let beforeUndo, afterUndo1, afterUndo2;
+  let beforeUndo, afterUndo;
   editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => {
     beforeUndo = post([markupSection('p', [marker('abcDE')])]);
-    afterUndo1 = post([markupSection('p', [marker('abcD')])]);
-    afterUndo2 = post([markupSection('p', [marker('abc')])]);
-    return afterUndo2;
+    afterUndo = post([markupSection('p', [marker('abc')])]);
+    return afterUndo;
   });
 
   let textNode = Helpers.dom.findTextNode(editorElement, 'abc');
@@ -81,7 +80,97 @@ test('undo/redo the insertion of multiple characters', (assert) => {
     Helpers.dom.insertText(editor, 'E');
 
     Helpers.wait(()  => {
-      assert.postIsSimilar(editor.post, beforeUndo); // precond
+      assert.postIsSimilar(
+        editor.post, beforeUndo,
+        'precond - post was updated with new characters'
+      );
+
+      undo(editor);
+      assert.postIsSimilar(
+        editor.post, afterUndo,
+        'ensure undo grouped to include both characters'
+      );
+
+      redo(editor);
+      assert.postIsSimilar(
+        editor.post, beforeUndo,
+        'ensure redo grouped to include both characters'
+      );
+      done();
+    });
+  });
+});
+
+
+// Test to ensure that undo events group after a timeout
+test('make sure undo/redo events group when adding text', (assert) => {
+  let done = assert.async();
+  let beforeUndo, afterUndo1, afterUndo2;
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => {
+    beforeUndo = post([markupSection('p', [marker('123456789')])]);
+    afterUndo1 = post([markupSection('p', [marker('123456')])]);
+    afterUndo2 = post([markupSection('p', [marker('123')])]);
+    return afterUndo2;
+  }, {undoBlockTimeout: 100});
+
+  let textNode = Helpers.dom.findTextNode(editorElement, '123');
+  Helpers.dom.moveCursorTo(editor, textNode, '123'.length);
+
+  Helpers.dom.insertText(editor, '4');
+
+  Helpers.wait(()  => {
+    Helpers.dom.insertText(editor, '5');
+    Helpers.wait(()  => {
+      Helpers.dom.insertText(editor, '6');
+      window.setTimeout(()  => {
+          Helpers.dom.insertText(editor, '7');
+          Helpers.wait(()  => {
+            Helpers.dom.insertText(editor, '8');
+            Helpers.wait(()  => {
+              Helpers.dom.insertText(editor, '9');
+              assert.postIsSimilar(editor.post, beforeUndo);
+
+              undo(editor);
+              assert.postIsSimilar(editor.post, afterUndo1);
+
+              undo(editor);
+              assert.postIsSimilar(editor.post, afterUndo2);
+
+              redo(editor);
+              assert.postIsSimilar(editor.post, afterUndo1);
+              done();
+            });
+          });
+      },120);
+    });
+  });
+});
+
+
+test('make sure undo/redo events group when deleting text', (assert) => {
+  let done = assert.async();
+  let beforeUndo, afterUndo1, afterUndo2;
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => {
+    beforeUndo = post([markupSection('p', [marker('123')])]);
+    afterUndo1 = post([markupSection('p', [marker('123456')])]);
+    afterUndo2 = post([markupSection('p', [marker('123456789')])]);
+    return afterUndo2;
+  }, {undoBlockTimeout: 100});
+
+  let textNode = Helpers.dom.findTextNode(editorElement, '123456789');
+  Helpers.dom.moveCursorTo(editor, textNode, '123456789'.length);
+
+    Helpers.dom.triggerDelete(editor);
+    Helpers.dom.triggerDelete(editor);
+    Helpers.dom.triggerDelete(editor);
+
+    window.setTimeout(()  => {
+
+      Helpers.dom.triggerDelete(editor);
+      Helpers.dom.triggerDelete(editor);
+      Helpers.dom.triggerDelete(editor);
+
+      assert.postIsSimilar(editor.post, beforeUndo);
 
       undo(editor);
       assert.postIsSimilar(editor.post, afterUndo1);
@@ -91,12 +180,49 @@ test('undo/redo the insertion of multiple characters', (assert) => {
 
       redo(editor);
       assert.postIsSimilar(editor.post, afterUndo1);
-
-      redo(editor);
-      assert.postIsSimilar(editor.post, beforeUndo);
       done();
-    });
+    },120);
+});
+
+
+test('adding and deleting characters break the undo group/run', (assert) => {
+  let beforeUndo, afterUndo1, afterUndo2;
+  let done = assert.async();
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => {
+    beforeUndo = post([markupSection('p', [marker('abcXY')])]);
+    afterUndo1 = post([markupSection('p', [marker('abc')])]);
+    afterUndo2 = post([markupSection('p', [marker('abcDE')])]);
+    return afterUndo2;
   });
+
+  let textNode = Helpers.dom.findTextNode(editorElement, 'abcDE');
+  Helpers.dom.moveCursorTo(editor, textNode, 'abcDE'.length);
+
+  Helpers.dom.triggerDelete(editor);
+  Helpers.dom.triggerDelete(editor);
+
+    Helpers.dom.insertText(editor, 'X');
+
+    Helpers.wait(()  => {
+      Helpers.dom.insertText(editor, 'Y');
+
+      Helpers.wait(()  => {
+        assert.postIsSimilar(editor.post, beforeUndo); // precond
+
+        undo(editor);
+        assert.postIsSimilar(editor.post, afterUndo1);
+
+        undo(editor);
+        assert.postIsSimilar(editor.post, afterUndo2);
+
+        redo(editor);
+        assert.postIsSimilar(editor.post, afterUndo1);
+
+        redo(editor);
+        assert.postIsSimilar(editor.post, beforeUndo);
+        done();
+      });
+    });
 });
 
 test('undo the deletion of a character', (assert) => {
@@ -206,7 +332,7 @@ test('undo stack length can be configured (depth 1)', (assert) => {
   let beforeUndo, afterUndo;
   editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => {
     beforeUndo = post([markupSection('p', [marker('abcDE')])]);
-    afterUndo = post([markupSection('p', [marker('abcD')])]);
+    afterUndo = post([markupSection('p', [marker('abc')])]);
     return post([markupSection('p', [marker('abc')])]);
   }, editorOptions);
 
@@ -349,11 +475,18 @@ test('take and undo a snapshot when removing an atom', (assert) => {
 
   let beforeUndo, afterUndo;
   editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker, atom}) => {
-     beforeUndo = post([markupSection('p', [marker(text)])]);
-     afterUndo = post([
-       markupSection('p', [marker(text), atom('my-atom', 'content', {})]),
-     ]);
-     return afterUndo;
+    beforeUndo = post([
+      markupSection('p', [
+        marker(text)
+      ])
+    ]);
+    afterUndo = post([
+      markupSection('p', [
+        marker(text),
+        atom('my-atom', 'content', {})
+      ]),
+    ]);
+    return afterUndo;
   }, {
     atoms: [myAtom]
   });
