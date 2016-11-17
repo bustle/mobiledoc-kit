@@ -1,3 +1,15 @@
+<a name="0.10.14-0"></a>
+## 0.10.14-0 (2016-11-17)
+
+* Bump saucie and other deps ([88b98dc](https://github.com/bustlelabs/mobiledoc-kit/commit/88b98dc))
+* Default tests to run on all IPs ([a5c5f2a](https://github.com/bustlelabs/mobiledoc-kit/commit/a5c5f2a))
+* Grouped undo and redo statements. refs #502 ([ce4d8d4](https://github.com/bustlelabs/mobiledoc-kit/commit/ce4d8d4))
+* Install phantom after yarn ([c98ba15](https://github.com/bustlelabs/mobiledoc-kit/commit/c98ba15))
+* Mobiledoc format 0.3.1, new section and markup tags ([57670bb](https://github.com/bustlelabs/mobiledoc-kit/commit/57670bb))
+* Refactor undo/redo tests to avoid timeouts ([9a5244a](https://github.com/bustlelabs/mobiledoc-kit/commit/9a5244a))
+
+
+
 <a name="0.10.13"></a>
 ## 0.10.13 (2016-11-14)
 
@@ -27,6 +39,7 @@
 * 0.10.11 ([8a3633e](https://github.com/bustlelabs/mobiledoc-kit/commit/8a3633e))
 * 0.10.11-beta.1 ([39e3026](https://github.com/bustlelabs/mobiledoc-kit/commit/39e3026))
 * 0.10.12 ([cf115f1](https://github.com/bustlelabs/mobiledoc-kit/commit/cf115f1))
+* 0.10.13 ([a705767](https://github.com/bustlelabs/mobiledoc-kit/commit/a705767))
 * 0.10.2 ([3f7eb68](https://github.com/bustlelabs/mobiledoc-kit/commit/3f7eb68))
 * 0.10.3 ([b7e4ca5](https://github.com/bustlelabs/mobiledoc-kit/commit/b7e4ca5))
 * 0.10.4 ([8674702](https://github.com/bustlelabs/mobiledoc-kit/commit/8674702))
