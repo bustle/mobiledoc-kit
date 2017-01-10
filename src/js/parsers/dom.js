@@ -116,10 +116,6 @@ class DOMParser {
   }
 
   appendSection(post, section) {
-    if (section.isBlank || (section.isMarkerable && trim(section.text) === '')) {
-      return;
-    }
-
     let lastSection = post.sections.tail;
     if (lastSection &&
         lastSection._inferredTagName &&
