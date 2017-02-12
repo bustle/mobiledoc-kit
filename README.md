@@ -412,7 +412,7 @@ The assets for the demo are in `assets/demo`.
 ### Getting Help
 
 If you notice a bug or have a feature request please [open an issue on github](https://github.com/bustlelabs/mobiledoc-kit/issues).
-If you have a question about usage you can post in the [slack channel](https://mobiledoc-kit.slack.com/) (automatic invites available [here](https://mobiledoc-slack.herokuapp.com/) or on StackOverflow using the [`mobiledoc-kit` tag](http://stackoverflow.com/questions/tagged/mobiledoc-kit).
+If you have a question about usage you can post in the [slack channel](https://mobiledoc-kit.slack.com/) (automatic invites available from our [slackin app](https://mobiledoc-slack.herokuapp.com/)) or on StackOverflow using the [`mobiledoc-kit` tag](http://stackoverflow.com/questions/tagged/mobiledoc-kit).
 
 ### Releasing (Implementer notes)
 
