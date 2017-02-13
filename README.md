@@ -21,6 +21,7 @@ This repository hosts the core Mobiledoc-Kit library. If you want to use Mobiled
 | Plain JavaScript | [mobiledoc-kit](https://github.com/bustlelabs/mobiledoc-kit) (this repo) |
 | Ember | [ember-mobiledoc-editor](https://github.com/bustlelabs/ember-mobiledoc-editor) |
 | React | [react-mobiledoc-editor](https://github.com/upworthy/react-mobiledoc-editor) |
+| Vue | [vue-mobiledoc-editor](https://github.com/alidcastano/vue-mobiledoc-editor) |
 
 If you only want to use the Mobiledoc-Kit runtime, for *rendering mobiledoc posts only* (not editing or creating them), you can use:
 
