@@ -5,9 +5,7 @@
 [![Dependency Status](https://david-dm.org/bustlelabs/mobiledoc-kit/master.svg)](https://david-dm.org/bustlelabs/mobiledoc-kit/master)
 [![devDependency Status](https://david-dm.org/bustlelabs/mobiledoc-kit/master/dev-status.svg)](https://david-dm.org/bustlelabs/mobiledoc-kit/master#info=devDependencies)
 
-![Mobiledoc Logo](https://raw.githubusercontent.com/bustlelabs/mobiledoc-kit/master/demo/public/images/mobiledoc-logo-color-small.png)
-
-[![Join the chat at https://gitter.im/bustlelabs/mobiledoc-kit](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bustlelabs/mobiledoc-kit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+![Mobiledoc Logo](https://bustlelabs.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png)
 
 Mobiledoc Kit (warning: beta) is a library for building WYSIWYG editors
 supporting rich content via cards.
