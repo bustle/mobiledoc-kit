@@ -10,7 +10,7 @@ import RenderTree from 'mobiledoc-kit/models/render-tree';
 import mobiledocRenderers from '../renderers/mobiledoc';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
 import { mergeWithOptions } from '../utils/merge';
-import { normalizeTagName, clearChildNodes } from '../utils/dom-utils';
+import { normalizeTagName, clearChildNodes, serializeHTML } from '../utils/dom-utils';
 import { forEach, filter, contains, values, detect } from '../utils/array-utils';
 import { setData } from '../utils/element-utils';
 import Cursor from '../utils/cursor';
@@ -27,7 +27,7 @@ import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
 import EditHistory from 'mobiledoc-kit/editor/edit-history';
 import EventManager from 'mobiledoc-kit/editor/event-manager';
 import EditState from 'mobiledoc-kit/editor/edit-state';
-import HTMLRenderer from 'mobiledoc-html-renderer';
+import DOMRenderer from 'mobiledoc-dom-renderer';
 import TextRenderer from 'mobiledoc-text-renderer';
 import LifecycleCallbacks from 'mobiledoc-kit/models/lifecycle-callbacks';
 import LogManager from 'mobiledoc-kit/utils/log-manager';
@@ -547,8 +547,8 @@ class Editor {
 
       switch (format) {
         case 'html':
-          rendered = new HTMLRenderer(rendererOptions).render(mobiledoc);
-          return rendered.result;
+          rendered = new DOMRenderer(rendererOptions).render(mobiledoc);
+          return `<div>${serializeHTML(rendered.result)}</div>`;
         case 'text':
           rendered = new TextRenderer(rendererOptions).render(mobiledoc);
           return rendered.result;

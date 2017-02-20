@@ -92,9 +92,15 @@ function normalizeTagName(tagName) {
 }
 
 function parseHTML(html) {
-  var div = document.createElement('div');
+  const div = document.createElement('div');
   div.innerHTML = html;
   return div;
+}
+
+function serializeHTML(node) {
+  const div = document.createElement('div');
+  div.appendChild(node);
+  return div.innerHTML;
 }
 
 export {
@@ -109,5 +115,6 @@ export {
   isTextNode,
   isCommentNode,
   isElementNode,
-  parseHTML
+  parseHTML,
+  serializeHTML
 };

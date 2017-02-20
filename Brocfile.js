@@ -13,8 +13,8 @@ var replace = require('broccoli-string-replace');
 var demoTree = require('./broccoli/demo');
 
 var vendoredModules = [
-  {name: 'mobiledoc-html-renderer'},
-  {name: 'mobiledoc-text-renderer'}
+  { name: 'mobiledoc-dom-renderer' },
+  { name: 'mobiledoc-text-renderer' }
 ];
 var packageName = require('./package.json').name;
 
