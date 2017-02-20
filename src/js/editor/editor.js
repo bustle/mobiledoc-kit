@@ -285,6 +285,20 @@ class Editor {
   }
 
   /**
+   * @param {String} name If the keyCommand event has a name attribute it can be removed.
+   * @public
+   */
+  unregisterKeyCommands(name) {
+    for(let i = this.keyCommands.length-1; i > -1; i--) {
+      let keyCommand = this.keyCommands[i];
+
+      if(keyCommand.name === name) {
+        this.keyCommands.splice(i,1);
+      }
+    }
+  }
+
+  /**
    * Convenience for {@link PostEditor#deleteAtPosition}. Deletes and puts the
    * cursor in the new position.
    * @public

@@ -443,3 +443,40 @@ test('returning false from key command still runs built-in functionality', (asse
 
   assert.equal($('#editor p').length, 2, 'has added a new paragraph');
 });
+
+test('new key commands can be registered and then unregistered', (assert) => {
+  editor = Helpers.mobiledoc.renderIntoAndFocusTail(editorElement, ({post, markupSection, marker}) => post([
+    markupSection('p', [marker('something')])
+  ]));
+
+  assert.ok(editor.hasCursor(), 'has cursor');
+  let passedEditorCount = 0;
+  let passedEditor;
+  editor.registerKeyCommand({
+    name: 'cut',
+    str: 'ctrl+x',
+    run(editor) { passedEditor = editor; passedEditorCount++; }
+  });
+
+  editor.registerKeyCommand({
+    name: 'cut',
+    str: 'ctrl+d',
+    run(editor) { passedEditor = editor; passedEditorCount++; }
+  });
+
+
+
+
+  Helpers.dom.triggerKeyCommand(editor, 'x', MODIFIERS.CTRL);
+  Helpers.dom.triggerKeyCommand(editor, 'd', MODIFIERS.CTRL);
+
+  assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
+  assert.ok(passedEditorCount === 2, 'the passedEditor has been called twice');
+
+  editor.unregisterKeyCommands('cut');
+
+  Helpers.dom.triggerKeyCommand(editor, 'x', MODIFIERS.CTRL);
+  Helpers.dom.triggerKeyCommand(editor, 'd', MODIFIERS.CTRL);
+
+  assert.ok(passedEditorCount === 2, 'the passedEditor has still only been called twice');
+});
