@@ -16,6 +16,7 @@ import { setData } from '../utils/element-utils';
 import Cursor from '../utils/cursor';
 import Range from '../utils/cursor/range';
 import Position from '../utils/cursor/position';
+import Environment from '../utils/environment';
 import PostNodeBuilder from '../models/post-node-builder';
 import { DEFAULT_TEXT_INPUT_HANDLERS } from './text-input-handlers';
 import {
@@ -547,8 +548,23 @@ class Editor {
 
       switch (format) {
         case 'html':
-          rendered = new DOMRenderer(rendererOptions).render(mobiledoc);
-          return `<div>${serializeHTML(rendered.result)}</div>`;
+          let html;
+          if (Environment.isBrowser) {
+            rendered = new DOMRenderer(rendererOptions).render(mobiledoc);
+            html = `<div>${serializeHTML(rendered.result)}</div>`;
+          } else if (Environment.isNode) {
+            // TODO: need dependency on SimpleDOM
+            let renderer = new DOMRenderer({
+              dom: new SimpleDOM.Document()
+            });
+            let rendered = renderer.render(mobiledoc);
+            let serializer = new SimpleDOM.HTMLSerializer([]);
+            html = serializer.serializeChildren(rendered.result);
+          } else {
+            assert(`Unknown runtime environment.`);
+          }
+
+          return html;
         case 'text':
           rendered = new TextRenderer(rendererOptions).render(mobiledoc);
           return rendered.result;
