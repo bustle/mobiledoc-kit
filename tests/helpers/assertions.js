@@ -38,7 +38,12 @@ function comparePostNode(actual, expected, assert, path='root', deepCompare=fals
     return;
   }
   if (actual.type !== expected.type) {
-    assert.push(false, actual.type, expected.type, `wrong type at ${path}`);
+    assert.pushResult({
+      result: false,
+      actual: actual.type,
+      expected: expected.type,
+      message: `wrong type at ${path}`
+    });
   }
 
   switch (actual.type) {
@@ -124,14 +129,24 @@ export default function registerAssertions() {
   QUnit.assert.hasElement = function(selector,
                                      message=`hasElement "${selector}"`) {
     let found = $(selector);
-    this.push(found.length > 0, found.length, selector, message);
+    this.pushResult({
+      result: found.length > 0,
+      actual: found.length,
+      expected: selector,
+      message: message
+    });
     return found;
   };
 
   QUnit.assert.hasNoElement = function(selector,
                                        message=`hasNoElement "${selector}"`) {
     let found = $(selector);
-    this.push(found.length === 0, found.length, selector, message);
+    this.pushResult({
+      result: found.length === 0,
+      actual: found.length,
+      expected: selector,
+      message: message
+    });
     return found;
   };
 
@@ -157,10 +172,12 @@ export default function registerAssertions() {
 
   QUnit.assert.selectedText = function(text, message=`selectedText "${text}"`) {
     const selected = DOMHelper.getSelectedText();
-    this.push(selected === text,
-              selected,
-              text,
-              message);
+    this.pushResult({
+      result: selected === text,
+      actual: selected,
+      expected: text,
+      message: message
+    });
   };
 
   QUnit.assert.inArray = function(element, array,
@@ -216,15 +233,26 @@ export default function registerAssertions() {
   QUnit.assert.positionIsEqual = function(position, expected,
                                           message=`position is equal`) {
     if (position.section !== expected.section) {
-      this.push(false,
-                `${position.section.type}:${position.section.tagName}`,
-                `${expected.section.type}:${expected.section.tagName}`,
-               `incorrect position section (${message})`);
+      this.pushResult({
+        result: false,
+        actual: `${position.section.type}:${position.section.tagName}`,
+        expected: `${expected.section.type}:${expected.section.tagName}`,
+        message: `incorrect position section (${message})`
+      });
     } else if (position.offset !== expected.offset) {
-      this.push(false, position.offset, expected.offset,
-                `incorrect position offset (${message})`);
+      this.pushResult({
+        result: false,
+        actual: position.offset,
+        expected: expected.offset,
+        message: `incorrect position offset (${message})`
+      });
     } else {
-      this.push(true, position, expected, message);
+      this.pushResult({
+        result: true,
+        actual: position,
+        expected: expected,
+        message: message
+      });
     }
   };
 
@@ -242,32 +270,51 @@ export default function registerAssertions() {
 
     if (!head.isEqual(expectedHead)) {
       failed = true;
-      this.push(false,
-                `${head.section.type}:${head.section.tagName}`,
-                `${expectedHead.section.type}:${expectedHead.section.tagName}`,
-                'incorrect head position');
+      this.pushResult({
+        result: false,
+        actual: `${head.section.type}:${head.section.tagName}`,
+        expected: `${expectedHead.section.type}:${expectedHead.section.tagName}`,
+        message: 'incorrect head position'
+      });
     }
 
     if (!tail.isEqual(expectedTail)) {
       failed = true;
-      this.push(false,
-                `${tail.section.type}:${tail.section.tagName}`,
-                `${expectedTail.section.type}:${expectedTail.section.tagName}`,
-                'incorrect tail position');
+      this.pushResult({
+        result: false,
+        actual: `${tail.section.type}:${tail.section.tagName}`,
+        expected: `${expectedTail.section.type}:${expectedTail.section.tagName}`,
+        message: 'incorrect tail position'
+      });
     }
 
     if (isCollapsed !== expectedIsCollapsed) {
       failed = true;
-      this.push(false, isCollapsed, expectedIsCollapsed, 'wrong value for isCollapsed');
+      this.pushResult({
+        result: false,
+        actual: isCollapsed,
+        expected: expectedIsCollapsed,
+        message: 'wrong value for isCollapsed'
+      });
     }
 
     if (direction !== expectedDirection) {
       failed = true;
-      this.push(false, direction, expectedDirection, 'wrong value for direction');
+      this.pushResult({
+        result: false,
+        actual: direction,
+        expected: expectedDirection,
+        message: 'wrong value for direction'
+      });
     }
 
     if (!failed) {
-      this.push(true, range, expected, message);
+      this.pushResult({
+        result: true,
+        actual: range,
+        expected: expected,
+        message: message
+      });
     }
   };
 
