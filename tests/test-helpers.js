@@ -42,6 +42,34 @@ QUnit.testStart(() => {
   $('<div id="editor"></div>').appendTo('#qunit-fixture');
 });
 
+let sauceLog = [];
+
+QUnit.done(function (test_results) {
+  var tests = [];
+  for(var i = 0, len = sauceLog.length; i < len; i++) {
+    var details = sauceLog[i];
+    tests.push({
+      name: details.name,
+      result: details.result,
+      expected: details.expected,
+      actual: details.actual,
+      source: details.source
+    });
+  }
+  test_results.tests = tests;
+
+  window.global_test_results = test_results;
+});
+
+QUnit.testStart(function(testDetails){
+  QUnit.log(function(details){
+    if (!details.result) {
+      details.name = testDetails.name;
+      sauceLog.push(details);
+    }
+  });
+});
+
 export default {
   dom: DOMHelpers,
   mobiledoc: MobiledocHelpers,
