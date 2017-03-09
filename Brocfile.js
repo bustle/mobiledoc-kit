@@ -2,10 +2,10 @@
 
 var broccoli = require('broccoli');
 var Watcher = require('broccoli-sane-watcher');
+var Funnel = require('broccoli-funnel');
 var builder = require('broccoli-multi-builder');
 var mergeTrees = require('broccoli-merge-trees');
 var testTreeBuilder = require('broccoli-test-builder');
-var styles = require('./broccoli/styles');
 var jquery = require('./broccoli/jquery');
 var injectLiveReload = require('broccoli-inject-livereload');
 var LiveReload = require('tiny-lr');
@@ -16,6 +16,11 @@ var vendoredModules = [
   {name: 'mobiledoc-html-renderer'},
   {name: 'mobiledoc-text-renderer'}
 ];
+
+var cssFiles = new Funnel('src/css', {
+  destDir: 'css'
+});
+
 var packageName = require('./package.json').name;
 
 var buildOptions = {
@@ -58,7 +63,7 @@ module.exports = mergeTrees([
   replaceVersion(builder.build('amd', buildOptions)),
   replaceVersion(builder.build('global', buildOptions)),
   replaceVersion(builder.build('commonjs', buildOptions)),
-  styles(),
+  cssFiles,
   injectLiveReload(testTree),
   demoTree()
 ]);
