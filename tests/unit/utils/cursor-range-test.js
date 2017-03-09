@@ -1,7 +1,7 @@
 import Helpers from '../../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
-import { detect } from '../utils/array-utils';
+import { detect } from 'mobiledoc-kit/utils/array-utils';
 
 const { FORWARD, BACKWARD } = DIRECTION;
 const {module, test} = Helpers;
