@@ -125,7 +125,7 @@ function comparePostNode(actual, expected, assert, path='root', deepCompare=fals
   }
 }
 
-export default function registerAssertions() {
+export default function registerAssertions(QUnit) {
   QUnit.assert.hasElement = function(selector,
                                      message=`hasElement "${selector}"`) {
     let found = $(selector);
@@ -317,5 +317,4 @@ export default function registerAssertions() {
       });
     }
   };
-
 }
