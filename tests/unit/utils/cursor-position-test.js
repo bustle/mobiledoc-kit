@@ -469,6 +469,44 @@ test('#fromNode when node is card section element or next to it', (assert) => {
                          leftPos, 'card div offset 1');
 });
 
+/**
+ * When triple-clicking text in a disabled editor, some browsers will
+ * expand the selection to include the start of a node outside the editor.
+ * See: https://github.com/bustlelabs/mobiledoc-kit/issues/486
+ *
+ * Chrome and Safari appear to extend the selection to the next node in the document
+ * that has a textNode in it. Firefox does not suffer from this issue.
+ */
+test('#fromNode when selection is outside (after) the editor element', function(assert) {
+  let done = assert.async();
+  let div$ = $('<div><p>AFTER</p></div>').insertAfter($(editorElement));
+  let p = div$[0].firstChild;
+
+  editor = Helpers.mobiledoc.renderInto(editorElement,
+    ({post, markupSection, marker}) => post([markupSection('p', [marker('abcdef')])])
+  );
+
+  // If the editor isn't disabled, some browsers will "fix" the selection range we are
+  // about to add by constraining it within the contentEditable container div
+  editor.disableEditing();
+
+  let anchorNode = $(editorElement).find('p:contains(abcdef)')[0].firstChild;
+  let focusNode = p;
+  Helpers.dom.selectRange(anchorNode, 0, focusNode, 0);
+
+  Helpers.wait(() => {
+    assert.ok(window.getSelection().anchorNode === anchorNode, 'precond - anchor node');
+    assert.ok(window.getSelection().focusNode === focusNode, 'precond - focus node');
+    let range = editor.range;
+
+    assert.positionIsEqual(range.head, editor.post.headPosition(), 'head');
+    assert.positionIsEqual(range.tail, editor.post.tailPosition(), 'tail');
+
+    div$.remove();
+    done();
+  });
+});
+
 test('Position cannot be on list section', (assert) => {
   let post = Helpers.postAbstract.build(({post, listSection, listItem}) => {
     return post([listSection('ul', [listItem()])]);
