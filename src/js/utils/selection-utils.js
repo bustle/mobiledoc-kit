@@ -80,6 +80,53 @@ function findOffsetInNode(node, coords) {
   return {node, offset};
 }
 
+function constrainNodeTo(node, parentNode, existingOffset) {
+  let compare = parentNode.compareDocumentPosition(node);
+  if (compare & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+    // the node is inside parentNode, do nothing
+    return { node, offset: existingOffset};
+  } else if (compare & Node.DOCUMENT_POSITION_CONTAINS) {
+    // the node contains parentNode. This shouldn't happen.
+    return { node, offset: existingOffset};
+  } else if (compare & Node.DOCUMENT_POSITION_PRECEDING) {
+    // node is before parentNode. return start of deepest first child
+    let child = parentNode.firstChild;
+    while (child.firstChild) {
+      child = child.firstChild;
+    }
+    return { node: child, offset: 0};
+  } else if (compare & Node.DOCUMENT_POSITION_FOLLOWING) {
+    // node is after parentNode. return end of deepest last child
+    let child = parentNode.lastChild;
+    while (child.lastChild) {
+      child = child.lastChild;
+    }
+
+    let offset = isTextNode(child) ? child.textContent.length : 1;
+    return {node: child, offset};
+  } else {
+    return { node, offset: existingOffset};
+  }
+}
+
+/*
+ * Returns a new selection that is constrained within parentNode.
+ * If the anchorNode or focusNode are outside the parentNode, they are replaced with the beginning
+ * or end of the parentNode's children
+ */
+function constrainSelectionTo(selection, parentNode) {
+  let {
+    node: anchorNode,
+    offset: anchorOffset
+  } = constrainNodeTo(selection.anchorNode, parentNode, selection.anchorOffset);
+  let {
+    node: focusNode,
+    offset: focusOffset
+  } = constrainNodeTo(selection.focusNode, parentNode, selection.focusOffset);
+
+  return { anchorNode, anchorOffset, focusNode, focusOffset };
+}
+
 function comparePosition(selection) {
   let { anchorNode, focusNode, anchorOffset, focusOffset } = selection;
   let headNode, tailNode, headOffset, tailOffset, direction;
@@ -157,5 +204,6 @@ function comparePosition(selection) {
 export {
   clearSelection,
   comparePosition,
-  findOffsetInNode
+  findOffsetInNode,
+  constrainSelectionTo
 };

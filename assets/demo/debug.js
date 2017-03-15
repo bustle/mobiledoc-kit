@@ -3,6 +3,14 @@
 
 var editor;
 
+function renderError(event) {
+  let error = event.error;
+  $('#error .name').text(error.name);
+  $('#error .message').text(error.message);
+}
+
+window.addEventListener('error', renderError);
+
 function renderSection(section) {
   return '[' +
     'Section: tagName ' + section.tagName +
@@ -27,6 +35,31 @@ function updateCursor() {
   var html = 'Head ' + head + '<br>Tail ' + tail;
 
   $('#cursor').html(html);
+}
+
+document.addEventListener('selectionchange', renderNativeSelection);
+
+function renderNativeSelection(event) {
+  let sel = window.getSelection();
+  let { anchorNode, focusNode, anchorOffset, focusOffset, isCollapsed, rangeCount } = sel;
+  if (anchorNode === null && focusNode === null) {
+    $('#selection').html(`<em>None</em>`);
+    return;
+  }
+  $('#selection').html(`
+    <div class='node'>Anchor: ${renderNode(anchorNode)} (${anchorOffset})</div>
+    <div class='node'>Focus: ${renderNode(focusNode)} (${focusOffset})</div>
+    <div>${isCollapsed ? 'Collapsed' : 'Not collapsed'}</div>
+    <div class='ranges'>Ranges: ${rangeCount}</div>
+  `);
+}
+
+function renderNode(node) {
+  let text = node.textContent.slice(0, 22);
+  if (node.textContent.length > 22) { text += '...'; }
+
+  let type = node.nodeType === Node.TEXT_NODE ? 'text' : `el (${node.tagName})`;
+  return `<span class='type'>${type}</span>: ${text}`;
 }
 
 function renderMarkup(markup) {
@@ -193,6 +226,18 @@ $(function () {
     let toggle = $(this).data('toggle');
 
     editor[action](toggle);
+  });
+
+  $('#toolbar button.toggle-method').click(function() {
+    let isOn = $(this).data('is-on') === 'true';
+    let methodOn = $(this).data('on');
+    let methodOff = $(this).data('off');
+
+    let nextState = isOn ? 'false' : 'true';
+    let method = isOn ? methodOff : methodOn;
+
+    $(this).data('is-on', nextState);
+    editor[method]();
   });
 
   $('#toolbar button.insert-atom').click(function() {
