@@ -287,50 +287,22 @@ test('#moveWord across markerable/non-markerable section boundaries', (assert) =
                          'beforeTail -> cardTail');
 });
 
-function buildPostWithTextAndAtom(textWithAtoms) {
-  return Helpers.postAbstract.build(({post, markupSection, marker, atom}) => {
-    let {markers} = textWithAtoms.split("").reduce(({markerText, markers}, ch, index) => {
-      let isLast = index === textWithAtoms.length - 1;
-
-      if (ch === 'A') { // "A" is for "atom"
-        if (markerText.length) {
-          markers.push(marker(markerText));
-          markerText = '';
-        }
-        markers.push(atom('the-atom'));
-      } else {
-        markerText += ch;
-      }
-
-      if (isLast && markerText.length) {
-        markers.push(marker(markerText));
-      }
-      return {markerText, markers};
-    }, {markerText: '', markers: []});
-
-    return post([markupSection('p', markers)]);
-  });
-}
-
 test('#moveWord with atoms (backward)', (assert) => {
   let expectations = [
-    ['abc A|', 'abc |A'],
-    ['abc |A', '|abc A'],
-    ['A|', '|A'],
-    ['A  |', 'A|  '],
-    ['AA|', 'A|A'],
-    ['|A', '|A']
+    ['abc @|', 'abc |@'],
+    ['abc |@', '|abc @'],
+    ['@|', '|@'],
+    ['@  |', '@|  '],
+    ['@@|', '@|@'],
+    ['@|@', '|@@'],
+    ['|@@', '|@@']
   ];
 
   expectations.forEach(([before, after]) => {
-    let textWithAtoms = before.replace('|', '');
-    let beforeIndex = before.indexOf('|');
-    let afterIndex = after.indexOf('|');
-
-    let post = buildPostWithTextAndAtom(textWithAtoms);
+    let { post, range: { head: pos } } = Helpers.postAbstract.buildFromText(before);
+    let { range: { head: nextPos } } = Helpers.postAbstract.buildFromText(after);
     let section = post.sections.head;
-    let pos = section.toPosition(beforeIndex);
-    let nextPos = section.toPosition(afterIndex);
+    nextPos = section.toPosition(nextPos.offset);
 
     assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos,
                            `move word with atoms "${before}" -> "${after}"`);
@@ -363,22 +335,21 @@ test('#moveWord in text (forward)', (assert) => {
 
 test('#moveWord with atoms (forward)', (assert) => {
   let expectations = [
-    ['|A', 'A|'],
-    ['A|', 'A|'],
-    ['|  A', '  A|'],
-    ['abc| A', 'abc A|'],
-    ['A|A', 'AA|']
+    ['|@', '@|'],
+    ['@|', '@|'],
+    ['|  @', '  @|'],
+    ['|  @ x', '  @ |x'],
+    ['abc| @', 'abc @|'],
+    ['|@@', '@|@'],
+    ['@|@', '@@|'],
+    ['@@|', '@@|']
   ];
 
   expectations.forEach(([before, after]) => {
-    let textWithAtoms = before.replace('|', '');
-    let beforeIndex = before.indexOf('|');
-    let afterIndex = after.indexOf('|');
-
-    let post = buildPostWithTextAndAtom(textWithAtoms);
+    let { post, range: { head: pos } } = Helpers.postAbstract.buildFromText(before);
+    let { range: { head: nextPos } } = Helpers.postAbstract.buildFromText(after);
     let section = post.sections.head;
-    let pos = section.toPosition(beforeIndex);
-    let nextPos = section.toPosition(afterIndex);
+    nextPos = section.toPosition(nextPos.offset);
 
     assert.positionIsEqual(pos.moveWord(FORWARD), nextPos,
                            `move word with atoms "${before}" -> "${after}"`);
