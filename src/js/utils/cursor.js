@@ -6,6 +6,7 @@ import { containsNode } from '../utils/dom-utils';
 import Position from './cursor/position';
 import Range from './cursor/range';
 import { DIRECTION } from '../utils/key';
+import { constrainSelectionTo } from '../utils/selection-utils';
 
 export { Position, Range };
 
@@ -61,7 +62,9 @@ const Cursor = class Cursor {
   get offsets() {
     if (!this.hasCursor()) { return Range.blankRange(); }
 
-    const { selection, renderTree } = this;
+    let { selection, renderTree } = this;
+    let parentNode = this.editor.element;
+    selection = constrainSelectionTo(selection, parentNode);
 
     const {
       headNode, headOffset, tailNode, tailOffset, direction
