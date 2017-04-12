@@ -146,7 +146,7 @@ Position API includes:
 * `position.section` - The section of this position
 * `position.offset` - The character offset of this position in the section.
 * `position.marker` - Based on the section and offset, the marker this position
-  if on. A position may not always have a marker (for example a cursor before
+  is on. A position may not always have a marker (for example a cursor before
   or after a card).
 * `position.toRange(endPosition)` - Create a range based on two positions. Accepts
   the direction of the range as a second optional argument.
@@ -157,12 +157,12 @@ Position API includes:
 
 ### Range API
 
-`Range` represent a range of a document. A range has a starting position
+`Range` represents a range of a document. A range has a starting position
 (`head`), ending position (`tail`), and a direction (for example highlighting
 text left-to-right is a forward direction, highlighting right-to-left is a
 backward direction).
 
-Ranges are retured by serveral APIs, but most often you will be interested in
+Ranges are returned by several APIs, but most often you will be interested in
 the current range selected by the user (be it their cursor or an actual
 selection). This can be accessed at `editor#range`. Several post editor APIs
 expect a range as an argument, for example `setRange` or `deleteRange`.
@@ -175,7 +175,7 @@ unique range instance:
 * `range.isCollapsed` - A range is collapsed when its head and tail are the same
   position.
 * `range.focusedPosition` - If a range has a forward direction, then tail. If
-  it has a backward direction, the head.
+  it has a backward direction, then head.
 * `range.extend(characterCount)` - Grow a range one character in whatever its
   direction is.
 * `range.move(direction)` - If the range is collapsed, move the range forward
