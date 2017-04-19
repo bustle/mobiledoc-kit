@@ -557,3 +557,18 @@ test('placing cursor inside a strong section should cause activeMarkups to conta
 
   assert.ok(editor.activeMarkups.indexOf(bold) === -1, 'strong is not in selection');
 });
+
+test('when the tail of the selection is outside the editor and editing is disabled, it should select everything from the start of the selection until the end of the editor', (assert) => {
+  let done = assert.async();
+  $('#qunit-fixture').append('<p>outside section</p>');
+
+  editor = new Editor({mobiledoc: mobileDocWithSection});
+  editor.render(editorElement);
+  editor.disableEditing();
+
+  const outside = $('p:contains(outside section)')[0];
+  Helpers.dom.selectText(editor ,'one trick', $('#editor')[0], 'section', outside);
+
+  const selectedText = Helpers.dom.getSelectedText();
+  assert.equal(selectedText, 'one trick pony', 'selects the text inside the editor');
+});
