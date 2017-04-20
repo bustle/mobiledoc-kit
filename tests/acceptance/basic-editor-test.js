@@ -214,7 +214,8 @@ test('keypress events when the editor does not have selection are ignored', (ass
 test('prevent handling newline', (assert) => {
   editor = Helpers.editor.buildFromText('', {element: editorElement});
 
-  editor.willHandleNewline(event => {
+  editor.willHandleNewline((event, {range}) => {
+    assert.equal(range.head.section.text, 'Line1', 'can access section text');
     assert.ok(true, 'willHandleNewline should be triggered');
     event.preventDefault();
   });
