@@ -219,6 +219,9 @@ The available lifecycle hooks are:
 * `editor.cursorDidChange()` - When the cursor (or selection) changes as a result of arrow-key
   movement or clicking in the document.
 * `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))
+* `editor.inputModeDidChange()` - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with `Editor#activeMarkups` and `Editor#activeSections` to implement a custom toolbar.
+
+For more details on the lifecycle hooks, see the [API documentation](https://github.com/bustlelabs/mobiledoc-kit/blob/2295cfcacf2e73b07d101b47af9eafc4e7107bc9/src/js/editor/editor.js#L75).
 
 ### Programmatic Post Editing
 
