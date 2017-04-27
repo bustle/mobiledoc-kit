@@ -1150,7 +1150,7 @@ crc@^3.4.4:
   version "3.4.4"
   resolved "https://registry.yarnpkg.com/crc/-/crc-3.4.4.tgz#9da1e980e3bd44fc5c93bf5ab3da3378d85e466b"
 
-cross-spawn@^5.0.0:
+cross-spawn@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-5.1.0.tgz#e8bd0efee58fcff6f8f94510a0a554bbfa235449"
   dependencies:
@@ -2461,6 +2461,10 @@ lodash.uniq@^4.2.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
 
+lodash.uniqby@^4.7.0:
+  version "4.7.0"
+  resolved "https://registry.yarnpkg.com/lodash.uniqby/-/lodash.uniqby-4.7.0.tgz#d99c07a669e9e6d24e1362dfe266c67616af1302"
+
 lodash@3.7.x:
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.7.0.tgz#3678bd8ab995057c07ade836ed2ef087da811d45"
@@ -3641,16 +3645,16 @@ tempfile@^1.1.1:
     os-tmpdir "^1.0.0"
     uuid "^2.0.1"
 
-testem@^1.7.4:
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-1.15.0.tgz#2e3a9e7ac29f16a20f718eb0c4b12e7a44900675"
+testem@^1.16.0:
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-1.16.0.tgz#3933040b5d5b5fbdb6a2b1e7032e511b54a05867"
   dependencies:
     backbone "^1.1.2"
     bluebird "^3.4.6"
     charm "^1.0.0"
     commander "^2.6.0"
     consolidate "^0.14.0"
-    cross-spawn "^5.0.0"
+    cross-spawn "^5.1.0"
     express "^4.10.7"
     fireworm "^0.7.0"
     glob "^7.0.4"
@@ -3659,6 +3663,7 @@ testem@^1.7.4:
     lodash.assignin "^4.1.0"
     lodash.clonedeep "^4.4.1"
     lodash.find "^4.5.1"
+    lodash.uniqby "^4.7.0"
     mkdirp "^0.5.1"
     mustache "^2.2.1"
     node-notifier "^5.0.1"
