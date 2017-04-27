@@ -59,6 +59,16 @@ export const DEFAULT_KEY_COMMANDS = [{
     editor.toggleMarkup('em');
   }
 }, {
+  str: 'META+U',
+  run(editor) {
+    editor.toggleMarkup('u');
+  }
+}, {
+  str: 'CTRL+U',
+  run(editor) {
+    editor.toggleMarkup('u');
+  }
+}, {
   str: 'CTRL+K',
   run(editor) {
     if (Browser.isMac()) {

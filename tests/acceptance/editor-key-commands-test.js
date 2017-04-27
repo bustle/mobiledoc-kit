@@ -150,6 +150,20 @@ testStatefulCommand({
   markupName: 'em'
 });
 
+testStatefulCommand({
+  modifierName: 'META',
+  key: 'U',
+  command: 'command-U',
+  markupName: 'u'
+});
+
+testStatefulCommand({
+  modifierName: 'CTRL',
+  key: 'U',
+  command: 'ctrl-U',
+  markupName: 'u'
+});
+
 if (Browser.isMac()) {
   test(`[Mac] ctrl-k clears to the end of a line`, (assert) => {
     let initialText = 'something';
