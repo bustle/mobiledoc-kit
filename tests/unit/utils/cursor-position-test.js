@@ -472,7 +472,7 @@ test('#fromNode when node is card section element or next to it', (assert) => {
 /**
  * When triple-clicking text in a disabled editor, some browsers will
  * expand the selection to include the start of a node outside the editor.
- * See: https://github.com/bustlelabs/mobiledoc-kit/issues/486
+ * See: https://github.com/bustle/mobiledoc-kit/issues/486
  *
  * Chrome and Safari appear to extend the selection to the next node in the document
  * that has a textNode in it. Firefox does not suffer from this issue.

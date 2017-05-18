@@ -2,7 +2,7 @@
   "name": "mobiledoc-kit",
   "version": "0.10.15",
   "description": "A toolkit for building WYSIWYG editors with Mobiledoc",
-  "repository": "https://github.com/bustlelabs/mobiledoc-kit",
+  "repository": "https://github.com/bustle/mobiledoc-kit",
   "scripts": {
     "start": "broccoli serve --host 0.0.0.0",
     "test:ci": "PATH=node_modules/phantomjs-prebuilt/bin/:$PATH npm run build:docs && npm run build && testem ci -f testem-ci.json",

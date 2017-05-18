@@ -55,8 +55,8 @@ function renderHTMLText(marker) {
   // If the first marker has a leading space or the last marker has a
   // trailing space, the browser will collapse the space when we position
   // the cursor.
-  // See https://github.com/bustlelabs/mobiledoc-kit/issues/68
-  //   and https://github.com/bustlelabs/mobiledoc-kit/issues/75
+  // See https://github.com/bustle/mobiledoc-kit/issues/68
+  //   and https://github.com/bustle/mobiledoc-kit/issues/75
   if (marker.isMarker && endsWithSpace(text) && !marker.next) {
     text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
   }

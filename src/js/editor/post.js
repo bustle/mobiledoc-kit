@@ -690,7 +690,7 @@ class PostEditor {
       // and re-opening of surrounding tags.
       // So, we look for any tags open across the whole range, and push into the stack
       // at the end of those.
-      // Prompted by https://github.com/bustlelabs/mobiledoc-kit/issues/360
+      // Prompted by https://github.com/bustle/mobiledoc-kit/issues/360
 
       let markupsOpenAcrossRange = reduce(markers, function (soFar, marker) {
         return commonItems(soFar, marker.markups);

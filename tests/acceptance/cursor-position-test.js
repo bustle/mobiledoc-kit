@@ -161,7 +161,7 @@ test('cursor focused on card wrapper with 0 offset', (assert) => {
   assert.positionIsEqual(range.tail, editor.post.sections.tail.headPosition());
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/215
+// see https://github.com/bustle/mobiledoc-kit/issues/215
 test('selecting the entire editor element reports a selection range of the entire post', (assert) => {
   let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([

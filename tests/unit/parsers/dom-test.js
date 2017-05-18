@@ -65,7 +65,7 @@ let expectations = [
   // nested list elements
   ['<ul><li>first element</li><li><ul><li>nested element</li></ul></li></ul>', ['* first element', '* nested element']],
 
-  // See https://github.com/bustlelabs/mobiledoc-kit/issues/333
+  // See https://github.com/bustle/mobiledoc-kit/issues/333
   ['abc\ndef', ['abcdef']]
 ];
 

@@ -485,7 +485,7 @@ test('selecting text that touches bold text should not be considered bold', (ass
   assert.ok(editor.activeMarkups.indexOf(bold) === -1, 'strong is not in selection');
 });
 
-// https://github.com/bustlelabs/mobiledoc-kit/issues/121
+// https://github.com/bustle/mobiledoc-kit/issues/121
 test('selecting text that includes a 1-character marker and unbolding it', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker, markup}) => {
     const b = markup('strong');
@@ -510,7 +510,7 @@ test('selecting text that includes a 1-character marker and unbolding it', (asse
   assert.hasNoElement('#editor strong', 'bold text is unboldened');
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/128
+// see https://github.com/bustle/mobiledoc-kit/issues/128
 test('selecting text that includes an empty section and applying markup to it', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
     return post([

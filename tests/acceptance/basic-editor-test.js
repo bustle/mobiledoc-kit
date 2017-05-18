@@ -143,7 +143,7 @@ test('typing tab enters a tab character', (assert) => {
   assert.postIsSimilar(editor.post, expected);
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/215
+// see https://github.com/bustle/mobiledoc-kit/issues/215
 test('select-all and type text works ok', (assert) => {
   editor = Helpers.editor.buildFromText('<abc>', {element: editorElement});
 
@@ -167,7 +167,7 @@ test('typing enter splits lines, sets cursor', (assert) => {
   assert.rangeIsEqual(editor.range, Helpers.editor.retargetRange(expectedRange, editor.post));
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/306
+// see https://github.com/bustle/mobiledoc-kit/issues/306
 test('adding/removing bold text between two bold markers works', (assert) => {
   editor = Helpers.editor.buildFromText('*abc*123*def*', {element: editorElement});
 
