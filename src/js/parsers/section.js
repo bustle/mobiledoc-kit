@@ -75,9 +75,13 @@ class SectionParser {
     if (this.state.section.isListSection) {
       this.parseListItems(childNodes);
     } else {
-      forEach(childNodes, el => {
-        this.parseNode(el);
-      });
+      if(childNodes.length > 0) {
+        forEach(childNodes, (el) => {
+          this.parseNode(el);
+        });
+      } else {
+        this.parseNode(element);
+      }
     }
 
     this._closeCurrentSection();
