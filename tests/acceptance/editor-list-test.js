@@ -218,7 +218,7 @@ test('hitting enter at empty last list item exists list', (assert) => {
   assert.hasElement('#editor p:contains(X)', 'text goes in right spot');
 });
 
-// https://github.com/bustlelabs/mobiledoc-kit/issues/117
+// https://github.com/bustle/mobiledoc-kit/issues/117
 test('deleting at start of non-empty section after list item joins it with list item', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(builder => {
     const {post, markupSection, marker, listSection, listItem} = builder;
@@ -237,7 +237,7 @@ test('deleting at start of non-empty section after list item joins it with list 
   assert.hasElement('#editor li:contains(abcdef)');
 });
 
-// https://github.com/bustlelabs/mobiledoc-kit/issues/117
+// https://github.com/bustle/mobiledoc-kit/issues/117
 test('deleting at start of empty section after list item joins it with list item', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(builder => {
     const {post, markupSection, marker, listSection, listItem} = builder;
@@ -389,7 +389,7 @@ test('forward-delete end of li with markup section after', (assert) => {
   assert.hasElement('#editor li:contains(abcXdef)', 'inserts text at right spot');
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/130
+// see https://github.com/bustle/mobiledoc-kit/issues/130
 test('selecting empty list items does not cause error', (assert) => {
   const done = assert.async();
   const mobiledoc = Helpers.mobiledoc.build(builder => {
@@ -419,7 +419,7 @@ test('selecting empty list items does not cause error', (assert) => {
   });
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/128
+// see https://github.com/bustle/mobiledoc-kit/issues/128
 test('selecting list item and deleting leaves following section intact', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(builder => {
     const {post, markupSection, listSection, listItem, marker} = builder;

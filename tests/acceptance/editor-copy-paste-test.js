@@ -361,7 +361,7 @@ test('pasting when cursor is on left/right side of card adds content before/afte
   assert.postIsSimilar(editor.post, expected2, 'content pasted after card');
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/249
+// see https://github.com/bustle/mobiledoc-kit/issues/249
 test('pasting when replacing a list item works', (assert) => {
   let mobiledoc = Helpers.mobiledoc.build(
     ({post, listSection, listItem, markupSection, marker}) => {

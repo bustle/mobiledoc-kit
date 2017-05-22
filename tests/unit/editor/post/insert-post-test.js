@@ -4,7 +4,7 @@ const { module, test } = Helpers;
 const { editor: { retargetRange } } = Helpers;
 
 let editor, editorElement;
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/259
+// see https://github.com/bustle/mobiledoc-kit/issues/259
 module('Unit: PostEditor: #insertPost', {
   beforeEach() {
     editorElement = $('#editor')[0];
@@ -22,7 +22,7 @@ let blankSectionExpecations = [
   ['* abc'], // single list item
   ['* abc','* def'], // multiple list items
   ['abc'], // single section
-  ['abc','def'], // multiple sections, see https://github.com/bustlelabs/mobiledoc-kit/issues/462
+  ['abc','def'], // multiple sections, see https://github.com/bustle/mobiledoc-kit/issues/462
   ['*abc*'], // section with markup
   ['[my-card]'], // single card
   ['[my-card]', '[my-other-card]'], // multiple cards
@@ -135,7 +135,7 @@ let expectationGroups = [{
 
     // insert multiple markup sections
     [['* abc|'], ['def', 'ghi'], ['* abcdef', '* ghi|']],
-    // See https://github.com/bustlelabs/mobiledoc-kit/issues/456
+    // See https://github.com/bustle/mobiledoc-kit/issues/456
     [['* abc','* def|'], ['ghi', 'jkl'], ['* abc', '* defghi', '* jkl|']],
 
     // insert markup sections + card
@@ -170,7 +170,7 @@ let expectationGroups = [{
     [['* abc|','* def'], ['[my-card]'], ['* abc','[my-card]|','* def']],
     [['* ab|c','* def'], ['[my-card]'], ['* ab','[my-card]|','* c','* def']],
     [['* abc|','* def'], ['[my-card]'], ['* abc','[my-card]|','* def']],
-    // See https://github.com/bustlelabs/mobiledoc-kit/issues/467
+    // See https://github.com/bustle/mobiledoc-kit/issues/467
     [['* abc','* |def'], ['[my-card]'], ['* abc','[my-card]|','* def']],
 
     // insert markup section between list items

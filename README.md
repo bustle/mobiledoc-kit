@@ -2,10 +2,10 @@
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/mobiledoc-kit.svg)](https://saucelabs.com/u/mobiledoc-kit)
 
-[![Dependency Status](https://david-dm.org/bustlelabs/mobiledoc-kit/master.svg)](https://david-dm.org/bustlelabs/mobiledoc-kit/master)
-[![devDependency Status](https://david-dm.org/bustlelabs/mobiledoc-kit/master/dev-status.svg)](https://david-dm.org/bustlelabs/mobiledoc-kit/master#info=devDependencies)
+[![Dependency Status](https://david-dm.org/bustle/mobiledoc-kit/master.svg)](https://david-dm.org/bustle/mobiledoc-kit/master)
+[![devDependency Status](https://david-dm.org/bustle/mobiledoc-kit/master/dev-status.svg)](https://david-dm.org/bustle/mobiledoc-kit/master#info=devDependencies)
 
-![Mobiledoc Logo](https://bustlelabs.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png)
+![Mobiledoc Logo](https://bustle.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png)
 
 Mobiledoc Kit (warning: beta) is a library for building WYSIWYG editors
 supporting rich content via cards.
@@ -16,8 +16,8 @@ This repository hosts the core Mobiledoc-Kit library. If you want to use Mobiled
 
 | Environment | Library |
 | ----------- | ------- |
-| Plain JavaScript | [mobiledoc-kit](https://github.com/bustlelabs/mobiledoc-kit) (this repo) |
-| Ember | [ember-mobiledoc-editor](https://github.com/bustlelabs/ember-mobiledoc-editor) |
+| Plain JavaScript | [mobiledoc-kit](https://github.com/bustle/mobiledoc-kit) (this repo) |
+| Ember | [ember-mobiledoc-editor](https://github.com/bustle/ember-mobiledoc-editor) |
 | React | [react-mobiledoc-editor](https://github.com/upworthy/react-mobiledoc-editor) |
 | Vue | [vue-mobiledoc-editor](https://github.com/alidcastano/vue-mobiledoc-editor) |
 
@@ -25,20 +25,20 @@ If you only want to use the Mobiledoc-Kit runtime, for *rendering mobiledoc post
 
 | Output Format/Environment | Library |
 | ----------  | ------- |
-| Plain JavaScript In-Browser (DOM) | [mobiledoc-dom-renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer) |
-| Server-Side Rendering (HTML) | see [mobiledoc-dom-renderer's Rendering HTML section](https://github.com/bustlelabs/mobiledoc-dom-renderer#rendering-html) |
-| Server-Side Rendering (Text-only, e.g. SEO) | [mobiledoc-text-renderer](https://github.com/bustlelabs/mobiledoc-text-renderer) |
-| In-Browser (DOM) Rendering, with Ember | [ember-mobiledoc-dom-renderer](https://github.com/bustlelabs/ember-mobiledoc-dom-renderer) |
+| Plain JavaScript In-Browser (DOM) | [mobiledoc-dom-renderer](https://github.com/bustle/mobiledoc-dom-renderer) |
+| Server-Side Rendering (HTML) | see [mobiledoc-dom-renderer's Rendering HTML section](https://github.com/bustle/mobiledoc-dom-renderer#rendering-html) |
+| Server-Side Rendering (Text-only, e.g. SEO) | [mobiledoc-text-renderer](https://github.com/bustle/mobiledoc-text-renderer) |
+| In-Browser (DOM) Rendering, with Ember | [ember-mobiledoc-dom-renderer](https://github.com/bustle/ember-mobiledoc-dom-renderer) |
 
 Mobiledoc is a deliberately simple and terse format, and you are encouraged to write your own renderer if you have other target output formats (e.g., a PDF renderer, an iOS Native Views Renderer, etc.).
 
 ## Demo
 
-Try a demo at [bustlelabs.github.io/mobiledoc-kit/demo](https://bustlelabs.github.io/mobiledoc-kit/demo/).
+Try a demo at [bustle.github.io/mobiledoc-kit/demo](https://bustle.github.io/mobiledoc-kit/demo/).
 
 ## API Documentation
 
-API Documentation is [available online](http://bustlelabs.github.io/mobiledoc-kit/demo/docs/).
+API Documentation is [available online](http://bustle.github.io/mobiledoc-kit/demo/docs/).
 
 ## Intro to Mobiledoc Kit
 
@@ -51,10 +51,10 @@ API Documentation is [available online](http://bustlelabs.github.io/mobiledoc-ki
   article "cards" and rich inline elements "atoms" and implementing a new one doesn't require an understanding
   of Mobiledoc editor internals. Adding a new atom or card takes an afternoon, not several
   days. To learn more, see the docs for
-  **[Atoms](https://github.com/bustlelabs/mobiledoc-kit/blob/master/ATOMS.md)**,
-  **[Cards](https://github.com/bustlelabs/mobiledoc-kit/blob/master/CARDS.md)**
+  **[Atoms](https://github.com/bustle/mobiledoc-kit/blob/master/ATOMS.md)**,
+  **[Cards](https://github.com/bustle/mobiledoc-kit/blob/master/CARDS.md)**
   and
-  **[Mobiledoc Renderers](https://github.com/bustlelabs/mobiledoc-kit/blob/master/RENDERERS.md)**
+  **[Mobiledoc Renderers](https://github.com/bustle/mobiledoc-kit/blob/master/RENDERERS.md)**
 
 To learn more about the ideas behind Mobiledoc and the editor (note that the
 editor used to be named Content-Kit), see these blog posts:
@@ -64,7 +64,7 @@ editor used to be named Content-Kit), see these blog posts:
 * [Content-Kit: Programmatic Editing](http://madhatted.com/2015/8/25/content-kit-programmatic-editing)
 
 The Mobiledoc kit saves posts in
-**[Mobiledoc format](https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md)**.
+**[Mobiledoc format](https://github.com/bustle/mobiledoc-kit/blob/master/MOBILEDOC.md)**.
 
 ### Usage
 
@@ -104,7 +104,7 @@ editor.render(element);
   whenever it encounters an unknown card
 * `unknownAtomHandler` - [function] This will be invoked by the editor-renderer
   whenever it encounters an unknown atom
-* `parserPlugins` - [array] See [DOM Parsing Hooks](https://github.com/bustlelabs/mobiledoc-kit#dom-parsing-hooks)
+* `parserPlugins` - [array] See [DOM Parsing Hooks](https://github.com/bustle/mobiledoc-kit#dom-parsing-hooks)
 
 The editor leverages unicode characters, so HTML documents must opt in to
 UTF8. For example this can be done by adding the following to an HTML
@@ -218,7 +218,7 @@ The available lifecycle hooks are:
 * `editor.didDelete((range, direction, unit))` - Provides `range`, `direction` and `unit` to identify the completed deletion.
 * `editor.cursorDidChange()` - When the cursor (or selection) changes as a result of arrow-key
   movement or clicking in the document.
-* `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))
+* `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustle/mobiledoc-kit#responding-to-text-input))
 
 ### Programmatic Post Editing
 
@@ -249,10 +249,10 @@ editor.run(postEditor => {
 });
 ```
 
-For more details on the API of `postEditor`, see the [API documentation](https://github.com/bustlelabs/mobiledoc-kit/blob/master/src/js/editor/post.js).
+For more details on the API of `postEditor`, see the [API documentation](https://github.com/bustle/mobiledoc-kit/blob/master/src/js/editor/post.js).
 
 For more details on the API for the builder, required to create new sections
-atoms, and markers, see the [builder API](https://github.com/bustlelabs/mobiledoc-kit/blob/master/src/js/models/post-node-builder.js).
+atoms, and markers, see the [builder API](https://github.com/bustle/mobiledoc-kit/blob/master/src/js/models/post-node-builder.js).
 
 ### Configuring hot keys
 
@@ -374,7 +374,7 @@ parsed by the next plugin or the default parser.
 ## Caveats
 
 ### Mobiledoc-kit and the Grammarly extension
-`mobiledoc-kit` and the [Grammarly extension](https://www.grammarly.com/) do not play well together (see [issue 422](https://github.com/bustlelabs/mobiledoc-kit/issues/422)). Until this is resolved, you can avoid any such problems by disabling Grammarly for the `mobiledoc-kit` instances on your page. To do this, add the `data-gramm="false"` attribute to the `mobiledoc-kit` main DOM element.
+`mobiledoc-kit` and the [Grammarly extension](https://www.grammarly.com/) do not play well together (see [issue 422](https://github.com/bustle/mobiledoc-kit/issues/422)). Until this is resolved, you can avoid any such problems by disabling Grammarly for the `mobiledoc-kit` instances on your page. To do this, add the `data-gramm="false"` attribute to the `mobiledoc-kit` main DOM element.
 
 ## Contributing
 
@@ -410,7 +410,7 @@ The assets for the demo are in `assets/demo`.
 
 ### Getting Help
 
-If you notice a bug or have a feature request please [open an issue on github](https://github.com/bustlelabs/mobiledoc-kit/issues).
+If you notice a bug or have a feature request please [open an issue on github](https://github.com/bustle/mobiledoc-kit/issues).
 If you have a question about usage you can post in the [slack channel](https://mobiledoc-kit.slack.com/) (automatic invites available from our [slackin app](https://mobiledoc-slack.herokuapp.com/)) or on StackOverflow using the [`mobiledoc-kit` tag](http://stackoverflow.com/questions/tagged/mobiledoc-kit).
 
 ### Releasing (Implementer notes)
@@ -427,6 +427,6 @@ The demo website is hosted at github pages. To publish a new version:
   * `npm run deploy:website` - Pushes the `website/` subtree to the `gh-pages`
      branch of your `origin` at github
 
-Visit [bustlelabs.github.io/mobiledoc-kit/demo](https://bustlelabs.github.io/mobiledoc-kit/demo).
+Visit [bustle.github.io/mobiledoc-kit/demo](https://bustle.github.io/mobiledoc-kit/demo).
 
 *Development of Mobiledoc and the supporting libraries was generously funded by [Bustle Labs](http://www.bustle.com/labs). Bustle Labs is the tech team behind the editorial staff at [Bustle](http://www.bustle.com), a fantastic and successful feminist and women’s interest site based in NYC.*

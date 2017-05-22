@@ -140,7 +140,7 @@ define('tests/acceptance/basic-editor-test', ['exports', 'mobiledoc-kit', '../te
     assert.postIsSimilar(editor.post, expected);
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/215
+  // see https://github.com/bustle/mobiledoc-kit/issues/215
   test('select-all and type text works ok', function (assert) {
     editor = _testHelpers['default'].editor.buildFromText('<abc>', { element: editorElement });
 
@@ -169,7 +169,7 @@ define('tests/acceptance/basic-editor-test', ['exports', 'mobiledoc-kit', '../te
     assert.rangeIsEqual(editor.range, _testHelpers['default'].editor.retargetRange(expectedRange, editor.post));
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/306
+  // see https://github.com/bustle/mobiledoc-kit/issues/306
   test('adding/removing bold text between two bold markers works', function (assert) {
     editor = _testHelpers['default'].editor.buildFromText('*abc*123*def*', { element: editorElement });
 
@@ -1061,7 +1061,7 @@ define('tests/acceptance/cursor-position-test', ['exports', 'mobiledoc-kit', '..
     assert.positionIsEqual(range.tail, editor.post.sections.tail.headPosition());
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/215
+  // see https://github.com/bustle/mobiledoc-kit/issues/215
   test('selecting the entire editor element reports a selection range of the entire post', function (assert) {
     var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref9) {
       var post = _ref9.post;
@@ -1419,7 +1419,7 @@ define('tests/acceptance/editor-atoms-test', ['exports', 'mobiledoc-kit', '../te
     }));
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/313
+  // see https://github.com/bustle/mobiledoc-kit/issues/313
   test('keystroke of enter at markup section head before atom creates new section', function (assert) {
     var expected = undefined;
     editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref12) {
@@ -1441,7 +1441,7 @@ define('tests/acceptance/editor-atoms-test', ['exports', 'mobiledoc-kit', '../te
     assert.positionIsEqual(editor.range.head, editor.post.sections.tail.headPosition());
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/313
+  // see https://github.com/bustle/mobiledoc-kit/issues/313
   test('keystroke of enter at list item head before atom creates new section', function (assert) {
     var expected = undefined;
     editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref13) {
@@ -1861,7 +1861,7 @@ define('tests/acceptance/editor-cards-test', ['exports', 'mobiledoc-kit/utils/ke
     assert.hasElement('#edit-button', 'card is still in edit mode');
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/475
+  // see https://github.com/bustle/mobiledoc-kit/issues/475
   test('when editing is disabled, cards can be moved and deleted', function (assert) {
     var removeHook = undefined;
     editorOpts.unknownCardHandler = function (_ref4) {
@@ -2276,7 +2276,7 @@ define('tests/acceptance/editor-copy-paste-test', ['exports', 'mobiledoc-kit', '
     assert.postIsSimilar(editor.post, expected2, 'content pasted after card');
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/249
+  // see https://github.com/bustle/mobiledoc-kit/issues/249
   test('pasting when replacing a list item works', function (assert) {
     var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref16) {
       var post = _ref16.post;
@@ -2554,7 +2554,7 @@ define('tests/acceptance/editor-input-handlers-test', ['exports', '../test-helpe
     assert.hasElement('#editor ul > li:contains(X)', 'text is inserted correctly');
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/280
+  // see https://github.com/bustle/mobiledoc-kit/issues/280
   test('typing "* " at start of markup section does not remove it', function (assert) {
     renderEditor(function (_ref4) {
       var post = _ref4.post;
@@ -2723,7 +2723,7 @@ define('tests/acceptance/editor-input-handlers-test', ['exports', '../test-helpe
     assert.equal(expandCount, 1, 'expansion was not run at end');
   });
 
-  // See https://github.com/bustlelabs/mobiledoc-kit/issues/400
+  // See https://github.com/bustle/mobiledoc-kit/issues/400
   test('input handler can be triggered by TAB', function (assert) {
     editor = _testHelpers['default'].editor.buildFromText('abc|', { element: editorElement });
 
@@ -3513,7 +3513,7 @@ define('tests/acceptance/editor-list-test', ['exports', 'mobiledoc-kit', '../tes
     assert.hasElement('#editor p:contains(X)', 'text goes in right spot');
   });
 
-  // https://github.com/bustlelabs/mobiledoc-kit/issues/117
+  // https://github.com/bustle/mobiledoc-kit/issues/117
   test('deleting at start of non-empty section after list item joins it with list item', function (assert) {
     var mobiledoc = _testHelpers['default'].mobiledoc.build(function (builder) {
       var post = builder.post;
@@ -3534,7 +3534,7 @@ define('tests/acceptance/editor-list-test', ['exports', 'mobiledoc-kit', '../tes
     assert.hasElement('#editor li:contains(abcdef)');
   });
 
-  // https://github.com/bustlelabs/mobiledoc-kit/issues/117
+  // https://github.com/bustle/mobiledoc-kit/issues/117
   test('deleting at start of empty section after list item joins it with list item', function (assert) {
     var mobiledoc = _testHelpers['default'].mobiledoc.build(function (builder) {
       var post = builder.post;
@@ -3696,7 +3696,7 @@ define('tests/acceptance/editor-list-test', ['exports', 'mobiledoc-kit', '../tes
     assert.hasElement('#editor li:contains(abcXdef)', 'inserts text at right spot');
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/130
+  // see https://github.com/bustle/mobiledoc-kit/issues/130
   test('selecting empty list items does not cause error', function (assert) {
     var done = assert.async();
     var mobiledoc = _testHelpers['default'].mobiledoc.build(function (builder) {
@@ -3723,7 +3723,7 @@ define('tests/acceptance/editor-list-test', ['exports', 'mobiledoc-kit', '../tes
     });
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/128
+  // see https://github.com/bustle/mobiledoc-kit/issues/128
   test('selecting list item and deleting leaves following section intact', function (assert) {
     var mobiledoc = _testHelpers['default'].mobiledoc.build(function (builder) {
       var post = builder.post;
@@ -5455,7 +5455,7 @@ define('tests/acceptance/editor-selections-test', ['exports', 'mobiledoc-kit', '
     assert.ok(editor.activeMarkups.indexOf(bold) === -1, 'strong is not in selection');
   });
 
-  // https://github.com/bustlelabs/mobiledoc-kit/issues/121
+  // https://github.com/bustle/mobiledoc-kit/issues/121
   test('selecting text that includes a 1-character marker and unbolding it', function (assert) {
     var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref8) {
       var post = _ref8.post;
@@ -5483,7 +5483,7 @@ define('tests/acceptance/editor-selections-test', ['exports', 'mobiledoc-kit', '
     assert.hasNoElement('#editor strong', 'bold text is unboldened');
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/128
+  // see https://github.com/bustle/mobiledoc-kit/issues/128
   test('selecting text that includes an empty section and applying markup to it', function (assert) {
     var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref9) {
       var post = _ref9.post;
@@ -6872,7 +6872,7 @@ define('tests/helpers/mobiledoc', ['exports', './post-abstract', 'mobiledoc-kit/
   // In Firefox, if the window isn't active (which can happen when running tests
   // at SauceLabs), the editor element won't have the selection. This helper method
   // ensures that it has a cursor selection.
-  // See https://github.com/bustlelabs/mobiledoc-kit/issues/388
+  // See https://github.com/bustle/mobiledoc-kit/issues/388
   function renderIntoAndFocusTail(editorElement, treeFn) {
     var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
@@ -8388,7 +8388,7 @@ define('tests/unit/editor/atom-lifecycle-test', ['exports', '../../test-helpers'
     assert.ok(teardown, 'calls teardown');
   });
 
-  // See https://github.com/bustlelabs/mobiledoc-kit/issues/421
+  // See https://github.com/bustle/mobiledoc-kit/issues/421
   test('render is not called again when modifying other parts of the section', function (assert) {
     var renderCount = 0;
     var atom = {
@@ -10860,7 +10860,7 @@ define('tests/unit/editor/post-test', ['exports', 'mobiledoc-kit/editor/post', '
     assert.equal(markers[1].value, 'de', 'marker 1');
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/121
+  // see https://github.com/bustle/mobiledoc-kit/issues/121
   test('#splitMarkers when single-character marker at start', function (assert) {
     var post = undefined,
         section = undefined;
@@ -12626,7 +12626,7 @@ define('tests/unit/editor/post/insert-post-test', ['exports', '../../../test-hel
 
   var editor = undefined,
       editorElement = undefined;
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/259
+  // see https://github.com/bustle/mobiledoc-kit/issues/259
   _module('Unit: PostEditor: #insertPost', {
     beforeEach: function beforeEach() {
       editorElement = $('#editor')[0];
@@ -12643,7 +12643,7 @@ define('tests/unit/editor/post/insert-post-test', ['exports', '../../../test-hel
   var blankSectionExpecations = [['* abc'], // single list item
   ['* abc', '* def'], // multiple list items
   ['abc'], // single section
-  ['abc', 'def'], // multiple sections, see https://github.com/bustlelabs/mobiledoc-kit/issues/462
+  ['abc', 'def'], // multiple sections, see https://github.com/bustle/mobiledoc-kit/issues/462
   ['*abc*'], // section with markup
   ['[my-card]'], // single card
   ['[my-card]', '[my-other-card]'], // multiple cards
@@ -12730,7 +12730,7 @@ define('tests/unit/editor/post/insert-post-test', ['exports', '../../../test-hel
 
     // insert multiple markup sections
     [['* abc|'], ['def', 'ghi'], ['* abcdef', '* ghi|']],
-    // See https://github.com/bustlelabs/mobiledoc-kit/issues/456
+    // See https://github.com/bustle/mobiledoc-kit/issues/456
     [['* abc', '* def|'], ['ghi', 'jkl'], ['* abc', '* defghi', '* jkl|']],
 
     // insert markup sections + card
@@ -12752,7 +12752,7 @@ define('tests/unit/editor/post/insert-post-test', ['exports', '../../../test-hel
 
     // insert card between list items
     [['* abc|', '* def'], ['[my-card]'], ['* abc', '[my-card]|', '* def']], [['* ab|c', '* def'], ['[my-card]'], ['* ab', '[my-card]|', '* c', '* def']], [['* abc|', '* def'], ['[my-card]'], ['* abc', '[my-card]|', '* def']],
-    // See https://github.com/bustlelabs/mobiledoc-kit/issues/467
+    // See https://github.com/bustle/mobiledoc-kit/issues/467
     [['* abc', '* |def'], ['[my-card]'], ['* abc', '[my-card]|', '* def']],
 
     // insert markup section between list items
@@ -13167,7 +13167,7 @@ define('tests/unit/models/marker-test', ['exports', '../../test-helpers', 'mobil
     assert.equal(marker.markups.length, cloned.markups.length, 'markup length is the same');
   });
 
-  // https://github.com/bustlelabs/mobiledoc-kit/issues/274
+  // https://github.com/bustle/mobiledoc-kit/issues/274
   test('#deleteValueAtOffset handles emoji', function (assert) {
     var str = 'monkey 🙈';
     assert.equal(str.length, 'monkey '.length + 2, 'string length reports monkey emoji as length 2');
@@ -14160,7 +14160,7 @@ define('tests/unit/parsers/dom-test', ['exports', 'mobiledoc-kit/parsers/dom', '
   // nested list elements
   ['<ul><li>first element</li><li><ul><li>nested element</li></ul></li></ul>', ['* first element', '* nested element']],
 
-  // See https://github.com/bustlelabs/mobiledoc-kit/issues/333
+  // See https://github.com/bustle/mobiledoc-kit/issues/333
   ['abc\ndef', ['abcdef']]];
 
   expectations.forEach(function (_ref2) {
@@ -14703,7 +14703,7 @@ define('tests/unit/parsers/html-test', ['exports', 'mobiledoc-kit/parsers/html',
     assert.postIsSimilar(post, expected);
   });
 
-  // See https://github.com/bustlelabs/mobiledoc-kit/issues/333
+  // See https://github.com/bustle/mobiledoc-kit/issues/333
   test('newlines ("\\n") are ignored', function (assert) {
     var html = "abc\ndef";
     var post = parseHTML(html);
@@ -16311,7 +16311,7 @@ define('tests/unit/renderers/editor-dom-test', ['exports', 'mobiledoc-kit/models
     assert.ok(true, 'ok to destroy');
   });
 
-  // see https://github.com/bustlelabs/mobiledoc-kit/issues/306
+  // see https://github.com/bustle/mobiledoc-kit/issues/306
   test('rerender after adding markup to a marker when the marker siblings have that markup', function (assert) {
     var strong = undefined,
         expected = undefined;

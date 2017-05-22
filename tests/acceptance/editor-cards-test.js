@@ -277,7 +277,7 @@ test('a moved card retains its current editing mode', (assert) => {
   assert.hasElement('#edit-button', 'card is still in edit mode');
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/475
+// see https://github.com/bustle/mobiledoc-kit/issues/475
 test('when editing is disabled, cards can be moved and deleted', (assert) => {
   let removeHook;
   editorOpts.unknownCardHandler = ({env: {name, remove}}) => {

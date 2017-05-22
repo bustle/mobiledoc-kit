@@ -870,7 +870,7 @@ test('#destroy is safe to call if renderer has not rendered', (assert) => {
   assert.ok(true, 'ok to destroy');
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/306
+// see https://github.com/bustle/mobiledoc-kit/issues/306
 test('rerender after adding markup to a marker when the marker siblings have that markup', (assert) => {
   let strong, expected;
   let post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {

@@ -257,7 +257,7 @@ test('onTeardown hook is called when atom is destroyed', (assert) => {
   assert.ok(teardown, 'calls teardown');
 });
 
-// See https://github.com/bustlelabs/mobiledoc-kit/issues/421
+// See https://github.com/bustle/mobiledoc-kit/issues/421
 test('render is not called again when modifying other parts of the section', (assert) => {
   let renderCount = 0;
   let atom = {
