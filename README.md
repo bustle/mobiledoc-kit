@@ -218,7 +218,10 @@ The available lifecycle hooks are:
 * `editor.didDelete((range, direction, unit))` - Provides `range`, `direction` and `unit` to identify the completed deletion.
 * `editor.cursorDidChange()` - When the cursor (or selection) changes as a result of arrow-key
   movement or clicking in the document.
-* `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustle/mobiledoc-kit#responding-to-text-input))
+* `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))
+* `editor.inputModeDidChange()` - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with `Editor#activeMarkups` and `Editor#activeSections` to implement a custom toolbar.
+
+For more details on the lifecycle hooks, see the [Editor documentation](https://bustlelabs.github.io/mobiledoc-kit/demo/docs/Editor.html).
 
 ### Programmatic Post Editing
 
