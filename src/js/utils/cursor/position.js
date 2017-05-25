@@ -193,7 +193,7 @@ Position = class Position {
   }
 
   /**
-   * @return {Boolean} If this position is at the head of its section
+   * @return {Boolean} If this position is at the tail of its section
    */
   isTail() {
     return this.isEqual(this.section.tailPosition());
