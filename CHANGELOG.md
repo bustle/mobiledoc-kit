@@ -1,15 +1,30 @@
+<a name="0.10.16"></a>
+## 0.10.16 (2017-05-25)
+
+* fix: issue #551 (#554) ([0a09408](https://github.com/bustle/mobiledoc-kit/commit/0a09408))
+* fix(486): Constrain selection to editor element when probing for range (#542) ([9b7f58c](https://github.com/bustle/mobiledoc-kit/commit/9b7f58c)), closes [#486](https://github.com/bustle/mobiledoc-kit/issues/486)
+* chore: Updates of devDependencies (#555) ([96350a5](https://github.com/bustle/mobiledoc-kit/commit/96350a5))
+* chore(tests): Ensure TestLoader module load failures are counted as test failures (#541) ([749eec0](https://github.com/bustle/mobiledoc-kit/commit/749eec0))
+* docs: Document inputModeDidChange() lifecycle hook (#553) ([88c5bda](https://github.com/bustle/mobiledoc-kit/commit/88c5bda))
+* docs: Fix typo in documentation (#556) ([f128d5e](https://github.com/bustle/mobiledoc-kit/commit/f128d5e)), closes [#556](https://github.com/bustle/mobiledoc-kit/issues/556)
+* docs(rename): renaming bustlelabs -> bustle with the exception of gitter.im links (#560) ([cf2eee6](https://github.com/bustle/mobiledoc-kit/commit/cf2eee6))
+* Fix minor typos in README ([eaa712a](https://github.com/bustle/mobiledoc-kit/commit/eaa712a))
+
+
+
 <a name="0.10.15"></a>
 ## 0.10.15 (2017-03-10)
 
-* chore: Replace deprecated mobiledoc-html-renderer with mobiledoc-dom-renderer (#538) ([2295cfc](https://github.com/bustle/mobiledoc-kit/commit/2295cfc))
-* chore: Upgrade broccoli dependencies (#539) ([3155800](https://github.com/bustle/mobiledoc-kit/commit/3155800))
-* chore: Upgrade saucie to latest (#540) ([9662756](https://github.com/bustle/mobiledoc-kit/commit/9662756))
-* style(css): Drop LESS dependency (#537) ([e9d0276](https://github.com/bustle/mobiledoc-kit/commit/e9d0276))
+* 0.10.15 ([91041c7](https://github.com/bustle/mobiledoc-kit/commit/91041c7))
 * Allows users to add an optional `name` attribute to a keyCommand object as passed to the `registerKe ([0cc12d3](https://github.com/bustle/mobiledoc-kit/commit/0cc12d3))
 * fix github url at demo page (#536) ([4fd6cf0](https://github.com/bustle/mobiledoc-kit/commit/4fd6cf0)), closes [#536](https://github.com/bustle/mobiledoc-kit/issues/536)
 * Fixed broken logo link and removed Gitter link ([5179440](https://github.com/bustle/mobiledoc-kit/commit/5179440))
 * Made content more explicit. ([a94190a](https://github.com/bustle/mobiledoc-kit/commit/a94190a))
 * Replaced gitter with slack. ([daa81dc](https://github.com/bustle/mobiledoc-kit/commit/daa81dc))
+* chore: Replace deprecated mobiledoc-html-renderer with mobiledoc-dom-renderer (#538) ([2295cfc](https://github.com/bustle/mobiledoc-kit/commit/2295cfc))
+* chore: Upgrade broccoli dependencies (#539) ([3155800](https://github.com/bustle/mobiledoc-kit/commit/3155800))
+* chore: Upgrade saucie to latest (#540) ([9662756](https://github.com/bustle/mobiledoc-kit/commit/9662756))
+* style(css): Drop LESS dependency (#537) ([e9d0276](https://github.com/bustle/mobiledoc-kit/commit/e9d0276))
 * docs(README): added vue-mobiledoc-editor to library options (#531) ([c0d4cf3](https://github.com/bustle/mobiledoc-kit/commit/c0d4cf3))
 
 
