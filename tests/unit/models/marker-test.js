@@ -95,7 +95,7 @@ test('#clone a marker', (assert) => {
   assert.equal(marker.markups.length, cloned.markups.length, 'markup length is the same');
 });
 
-// https://github.com/bustlelabs/mobiledoc-kit/issues/274
+// https://github.com/bustle/mobiledoc-kit/issues/274
 test('#deleteValueAtOffset handles emoji', (assert) => {
   let str = 'monkey 🙈';
   assert.equal(str.length, 'monkey '.length + 2,

@@ -1,11 +1,11 @@
 # Mobiledoc Cards
 
 Cards are an API supported by
-[Mobiledoc Kit](https://github.com/bustlelabs/mobiledoc-kit),
-the [Mobiledoc format](https://github.com/bustlelabs/mobiledoc-kit/blob/master/MOBILEDOC.md),
-the [Mobiledoc DOM Renderer](https://github.com/bustlelabs/mobiledoc-dom-renderer),
-the [Mobiledoc HTML Renderer](https://github.com/bustlelabs/mobiledoc-html-renderer),
-and the [Mobiledoc Text Renderer](https://github.com/bustlelabs/mobiledoc-text-renderer).
+[Mobiledoc Kit](https://github.com/bustle/mobiledoc-kit),
+the [Mobiledoc format](https://github.com/bustle/mobiledoc-kit/blob/master/MOBILEDOC.md),
+the [Mobiledoc DOM Renderer](https://github.com/bustle/mobiledoc-dom-renderer),
+the [Mobiledoc HTML Renderer](https://github.com/bustle/mobiledoc-html-renderer),
+and the [Mobiledoc Text Renderer](https://github.com/bustle/mobiledoc-text-renderer).
 
 
 ## Card format

@@ -2552,7 +2552,7 @@ define('mobiledoc-kit/editor/editor', ['exports', 'mobiledoc-kit/views/tooltip',
           // the selection but lose focus, and the next keystroke by the user
           // will cause an unexpected DOM mutation (which can wipe out the
           // card).
-          // See: https://github.com/bustlelabs/mobiledoc-kit/issues/286
+          // See: https://github.com/bustle/mobiledoc-kit/issues/286
           postEditor.setRange(card.tailPosition());
         });
         return card;
@@ -4206,7 +4206,7 @@ define('mobiledoc-kit/editor/post', ['exports', 'mobiledoc-kit/utils/cursor/posi
             // and re-opening of surrounding tags.
             // So, we look for any tags open across the whole range, and push into the stack
             // at the end of those.
-            // Prompted by https://github.com/bustlelabs/mobiledoc-kit/issues/360
+            // Prompted by https://github.com/bustle/mobiledoc-kit/issues/360
 
             var markupsOpenAcrossRange = (0, _mobiledocKitUtilsArrayUtils.reduce)(markers, function (soFar, marker) {
               return (0, _mobiledocKitUtilsArrayUtils.commonItems)(soFar, marker.markups);
@@ -9281,8 +9281,8 @@ define('mobiledoc-kit/renderers/editor-dom', ['exports', 'mobiledoc-kit/models/c
     // If the first marker has a leading space or the last marker has a
     // trailing space, the browser will collapse the space when we position
     // the cursor.
-    // See https://github.com/bustlelabs/mobiledoc-kit/issues/68
-    //   and https://github.com/bustlelabs/mobiledoc-kit/issues/75
+    // See https://github.com/bustle/mobiledoc-kit/issues/68
+    //   and https://github.com/bustle/mobiledoc-kit/issues/75
     if (marker.isMarker && endsWithSpace(text) && !marker.next) {
       text = text.substr(0, text.length - 1) + NO_BREAK_SPACE;
     }

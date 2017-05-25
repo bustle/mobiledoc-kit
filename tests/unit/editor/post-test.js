@@ -83,7 +83,7 @@ test('#splitMarkers when head section = tail section, but different markers', (a
   assert.equal(markers[1].value, 'de', 'marker 1');
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/121
+// see https://github.com/bustle/mobiledoc-kit/issues/121
 test('#splitMarkers when single-character marker at start', (assert) => {
   let post, section;
   Helpers.postAbstract.build(({marker, markupSection, post: buildPost}) => {

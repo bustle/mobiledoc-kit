@@ -240,7 +240,7 @@ test('keystroke of enter before atom and after marker creates new section', (ass
     }));
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/313
+// see https://github.com/bustle/mobiledoc-kit/issues/313
 test('keystroke of enter at markup section head before atom creates new section', (assert) => {
   let expected;
   editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, atom}) => {
@@ -261,7 +261,7 @@ test('keystroke of enter at markup section head before atom creates new section'
                          editor.post.sections.tail.headPosition());
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/313
+// see https://github.com/bustle/mobiledoc-kit/issues/313
 test('keystroke of enter at list item head before atom creates new section', (assert) => {
   let expected;
   editor = Helpers.mobiledoc.renderInto(editorElement, ({post, listSection, listItem, atom, marker}) => {

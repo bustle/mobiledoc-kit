@@ -122,7 +122,7 @@ test('typing "* " converts to ul > li', (assert) => {
   assert.hasElement('#editor ul > li:contains(X)', 'text is inserted correctly');
 });
 
-// see https://github.com/bustlelabs/mobiledoc-kit/issues/280
+// see https://github.com/bustle/mobiledoc-kit/issues/280
 test('typing "* " at start of markup section does not remove it', (assert) => {
   renderEditor(({post, markupSection, marker}) => {
     return post([markupSection('p',[marker('*abc')])]);
@@ -282,7 +282,7 @@ test('an input handler can provide a `match` that matches at start and end', (as
   assert.equal(expandCount, 1, 'expansion was not run at end');
 });
 
-// See https://github.com/bustlelabs/mobiledoc-kit/issues/400
+// See https://github.com/bustle/mobiledoc-kit/issues/400
 test('input handler can be triggered by TAB', (assert) => {
   editor = Helpers.editor.buildFromText('abc|', {element: editorElement});
 

@@ -54,7 +54,7 @@ function renderInto(element, treeFn, editorOptions={}) {
 // In Firefox, if the window isn't active (which can happen when running tests
 // at SauceLabs), the editor element won't have the selection. This helper method
 // ensures that it has a cursor selection.
-// See https://github.com/bustlelabs/mobiledoc-kit/issues/388
+// See https://github.com/bustle/mobiledoc-kit/issues/388
 function renderIntoAndFocusTail(editorElement, treeFn, options={}) {
   let editor = renderInto(editorElement, treeFn, options);
   editor.selectRange(new Range(editor.post.tailPosition()));
