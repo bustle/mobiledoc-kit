@@ -424,12 +424,18 @@ If you have a question about usage you can post in the [slack channel](https://m
 
 ### Deploy the demo
 
-The demo website is hosted at github pages. To publish a new version:
+The demo website is hosted at
+[bustle.github.io/mobiledoc-kit/demo](https://bustle.github.io/mobiledoc-kit/demo).
+
+To preview the website, start the server and visit
+[http://localhost:4200/demo/](http://localhost:4200/demo/). The code for
+this website can be found in `assets/demo/`. Note that the development server
+does not rebuild jsdoc.
+
+To publish a new version:
 
   * `npm run build:website` - This builds the website into `website/` and commits it
   * `npm run deploy:website` - Pushes the `website/` subtree to the `gh-pages`
      branch of your `origin` at github
-
-Visit [bustle.github.io/mobiledoc-kit/demo](https://bustle.github.io/mobiledoc-kit/demo).
 
 *Development of Mobiledoc and the supporting libraries was generously funded by [Bustle Labs](http://www.bustle.com/labs). Bustle Labs is the tech team behind the editorial staff at [Bustle](http://www.bustle.com), a fantastic and successful feminist and women’s interest site based in NYC.*
