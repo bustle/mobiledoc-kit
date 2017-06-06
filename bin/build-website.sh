@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo "Arranging built website in $(pwd)/website"
+echo "Clearing $(pwd)/website"
 rm -rf website
-mkdir -p website/demo
+mkdir website
 
 echo "Copying $(pwd)/dist/* to $(pwd)/website/"
 cp -R dist/* website/

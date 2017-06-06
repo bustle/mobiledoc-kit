@@ -48,8 +48,8 @@ Session.vim
 # Builds
 keys.txt
 export.sh
-dist/
-tmp/
-/docs/
+/dist
+/tmp
+/docs
 
 server.sh
