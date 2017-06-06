@@ -211,6 +211,9 @@ var Cursor = (function () {
       var selection = this.selection;
       var renderTree = this.renderTree;
 
+      var parentNode = this.editor.element;
+      selection = (0, _utilsSelectionUtils.constrainSelectionTo)(selection, parentNode);
+
       var _comparePosition = (0, _utilsSelectionUtils.comparePosition)(selection);
 
       var headNode = _comparePosition.headNode;

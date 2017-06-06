@@ -1,38 +1,45 @@
-define('mobiledoc-html-renderer/cards/image', ['exports', 'mobiledoc-html-renderer/utils/render-type'], function (exports, _mobiledocHtmlRendererUtilsRenderType) {
+define('mobiledoc-dom-renderer/cards/image', ['exports', 'mobiledoc-dom-renderer/utils/render-type'], function (exports, _mobiledocDomRendererUtilsRenderType) {
   'use strict';
 
   exports['default'] = {
-    name: 'image-card',
-    type: _mobiledocHtmlRendererUtilsRenderType['default'],
+    name: 'image',
+    type: _mobiledocDomRendererUtilsRenderType['default'],
     render: function render(_ref) {
-      var env = _ref.env;
-      var options = _ref.options;
       var payload = _ref.payload;
+      var dom = _ref.env.dom;
 
-      if (payload.src) {
-        return '<img src="' + payload.src + '">';
-      }
+      var img = dom.createElement('img');
+      img.src = payload.src;
+      return img;
     }
   };
 });
-define('mobiledoc-html-renderer', ['exports', 'mobiledoc-html-renderer/renderer-factory', 'mobiledoc-html-renderer/utils/render-type'], function (exports, _mobiledocHtmlRendererRendererFactory, _mobiledocHtmlRendererUtilsRenderType) {
+define('mobiledoc-dom-renderer', ['exports', 'mobiledoc-dom-renderer/renderer-factory', 'mobiledoc-dom-renderer/utils/render-type'], function (exports, _mobiledocDomRendererRendererFactory, _mobiledocDomRendererUtilsRenderType) {
   'use strict';
 
   exports.registerGlobal = registerGlobal;
+  exports.RENDER_TYPE = _mobiledocDomRendererUtilsRenderType['default'];
 
   function registerGlobal(window) {
-    window.MobiledocHTMLRenderer = _mobiledocHtmlRendererRendererFactory['default'];
+    window.MobiledocDOMRenderer = _mobiledocDomRendererRendererFactory['default'];
   }
 
-  exports.RENDER_TYPE = _mobiledocHtmlRendererUtilsRenderType['default'];
-  exports['default'] = _mobiledocHtmlRendererRendererFactory['default'];
+  exports['default'] = _mobiledocDomRendererRendererFactory['default'];
 });
-define('mobiledoc-html-renderer/renderer-factory', ['exports', 'mobiledoc-html-renderer/renderers/0-2', 'mobiledoc-html-renderer/renderers/0-3', 'mobiledoc-html-renderer/utils/render-type'], function (exports, _mobiledocHtmlRendererRenderers02, _mobiledocHtmlRendererRenderers03, _mobiledocHtmlRendererUtilsRenderType) {
+define('mobiledoc-dom-renderer/renderer-factory', ['exports', 'mobiledoc-dom-renderer/renderers/0-2', 'mobiledoc-dom-renderer/renderers/0-3', 'mobiledoc-dom-renderer/utils/render-type'], function (exports, _mobiledocDomRendererRenderers02, _mobiledocDomRendererRenderers03, _mobiledocDomRendererUtilsRenderType) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  /**
+   * runtime DOM renderer
+   * renders a mobiledoc to DOM
+   *
+   * input: mobiledoc
+   * output: DOM
+   */
 
   function validateCards(cards) {
     if (!Array.isArray(cards)) {
@@ -40,8 +47,8 @@ define('mobiledoc-html-renderer/renderer-factory', ['exports', 'mobiledoc-html-r
     }
     for (var i = 0; i < cards.length; i++) {
       var card = cards[i];
-      if (card.type !== _mobiledocHtmlRendererUtilsRenderType['default']) {
-        throw new Error('Card "' + card.name + '" must be of type "' + _mobiledocHtmlRendererUtilsRenderType['default'] + '", was "' + card.type + '"');
+      if (card.type !== _mobiledocDomRendererUtilsRenderType['default']) {
+        throw new Error('Card "' + card.name + '" must be of type "' + _mobiledocDomRendererUtilsRenderType['default'] + '", was "' + card.type + '"');
       }
       if (!card.render) {
         throw new Error('Card "' + card.name + '" must define `render`');
@@ -55,8 +62,8 @@ define('mobiledoc-html-renderer/renderer-factory', ['exports', 'mobiledoc-html-r
     }
     for (var i = 0; i < atoms.length; i++) {
       var atom = atoms[i];
-      if (atom.type !== _mobiledocHtmlRendererUtilsRenderType['default']) {
-        throw new Error('Atom "' + atom.name + '" must be type "' + _mobiledocHtmlRendererUtilsRenderType['default'] + '", was "' + atom.type + '"');
+      if (atom.type !== _mobiledocDomRendererUtilsRenderType['default']) {
+        throw new Error('Atom "' + atom.name + '" must be type "' + _mobiledocDomRendererUtilsRenderType['default'] + '", was "' + atom.type + '"');
       }
       if (!atom.render) {
         throw new Error('Atom "' + atom.name + '" must define `render`');
@@ -68,28 +75,44 @@ define('mobiledoc-html-renderer/renderer-factory', ['exports', 'mobiledoc-html-r
     function RendererFactory() {
       var _ref = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-      var cards = _ref.cards;
-      var atoms = _ref.atoms;
-      var cardOptions = _ref.cardOptions;
+      var _ref$cards = _ref.cards;
+      var cards = _ref$cards === undefined ? [] : _ref$cards;
+      var _ref$atoms = _ref.atoms;
+      var atoms = _ref$atoms === undefined ? [] : _ref$atoms;
+      var _ref$cardOptions = _ref.cardOptions;
+      var cardOptions = _ref$cardOptions === undefined ? {} : _ref$cardOptions;
       var unknownCardHandler = _ref.unknownCardHandler;
       var unknownAtomHandler = _ref.unknownAtomHandler;
-      var sectionElementRenderer = _ref.sectionElementRenderer;
+      var _ref$markupElementRenderer = _ref.markupElementRenderer;
+      var markupElementRenderer = _ref$markupElementRenderer === undefined ? {} : _ref$markupElementRenderer;
+      var _ref$sectionElementRenderer = _ref.sectionElementRenderer;
+      var sectionElementRenderer = _ref$sectionElementRenderer === undefined ? {} : _ref$sectionElementRenderer;
+      var dom = _ref.dom;
+      var _ref$markupSanitizer = _ref.markupSanitizer;
+      var markupSanitizer = _ref$markupSanitizer === undefined ? null : _ref$markupSanitizer;
 
       _classCallCheck(this, RendererFactory);
 
-      cards = cards || [];
       validateCards(cards);
-      atoms = atoms || [];
       validateAtoms(atoms);
-      cardOptions = cardOptions || {};
 
-      this.state = {
+      if (!dom) {
+        if (typeof window === 'undefined') {
+          throw new Error('A `dom` option must be provided to the renderer when running without window.document');
+        }
+        dom = window.document;
+      }
+
+      this.options = {
         cards: cards,
         atoms: atoms,
         cardOptions: cardOptions,
         unknownCardHandler: unknownCardHandler,
         unknownAtomHandler: unknownAtomHandler,
-        sectionElementRenderer: sectionElementRenderer
+        markupElementRenderer: markupElementRenderer,
+        sectionElementRenderer: sectionElementRenderer,
+        dom: dom,
+        markupSanitizer: markupSanitizer
       };
     }
 
@@ -99,12 +122,13 @@ define('mobiledoc-html-renderer/renderer-factory', ['exports', 'mobiledoc-html-r
         var version = mobiledoc.version;
 
         switch (version) {
-          case _mobiledocHtmlRendererRenderers02.MOBILEDOC_VERSION:
+          case _mobiledocDomRendererRenderers02.MOBILEDOC_VERSION:
           case undefined:
           case null:
-            return new _mobiledocHtmlRendererRenderers02['default'](mobiledoc, this.state).render();
-          case _mobiledocHtmlRendererRenderers03.MOBILEDOC_VERSION:
-            return new _mobiledocHtmlRendererRenderers03['default'](mobiledoc, this.state).render();
+            return new _mobiledocDomRendererRenderers02['default'](mobiledoc, this.options).render();
+          case _mobiledocDomRendererRenderers03.MOBILEDOC_VERSION_0_3_0:
+          case _mobiledocDomRendererRenderers03.MOBILEDOC_VERSION_0_3_1:
+            return new _mobiledocDomRendererRenderers03['default'](mobiledoc, this.options).render();
           default:
             throw new Error('Unexpected Mobiledoc version "' + version + '"');
         }
@@ -116,7 +140,7 @@ define('mobiledoc-html-renderer/renderer-factory', ['exports', 'mobiledoc-html-r
 
   exports['default'] = RendererFactory;
 });
-define('mobiledoc-html-renderer/renderers/0-2', ['exports', 'mobiledoc-html-renderer/utils/dom', 'mobiledoc-html-renderer/cards/image', 'mobiledoc-html-renderer/utils/render-type', 'mobiledoc-html-renderer/utils/section-types', 'mobiledoc-html-renderer/utils/tag-names'], function (exports, _mobiledocHtmlRendererUtilsDom, _mobiledocHtmlRendererCardsImage, _mobiledocHtmlRendererUtilsRenderType, _mobiledocHtmlRendererUtilsSectionTypes, _mobiledocHtmlRendererUtilsTagNames) {
+define('mobiledoc-dom-renderer/renderers/0-2', ['exports', 'mobiledoc-dom-renderer/utils/dom', 'mobiledoc-dom-renderer/cards/image', 'mobiledoc-dom-renderer/utils/render-type', 'mobiledoc-dom-renderer/utils/section-types', 'mobiledoc-dom-renderer/utils/tag-names', 'mobiledoc-dom-renderer/utils/sanitization-utils', 'mobiledoc-dom-renderer/utils/render-utils'], function (exports, _mobiledocDomRendererUtilsDom, _mobiledocDomRendererCardsImage, _mobiledocDomRendererUtilsRenderType, _mobiledocDomRendererUtilsSectionTypes, _mobiledocDomRendererUtilsTagNames, _mobiledocDomRendererUtilsSanitizationUtils, _mobiledocDomRendererUtilsRenderUtils) {
   'use strict';
 
   var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
@@ -128,32 +152,7 @@ define('mobiledoc-html-renderer/renderers/0-2', ['exports', 'mobiledoc-html-rend
   var MOBILEDOC_VERSION = '0.2.0';
 
   exports.MOBILEDOC_VERSION = MOBILEDOC_VERSION;
-  /**
-   * runtime HTML renderer
-   * renders a mobiledoc to HTML
-   *
-   * input: mobiledoc
-   * output: HTML
-   */
-
-  function createElementFromMarkerType() {
-    var _ref = arguments.length <= 0 || arguments[0] === undefined ? ['', []] : arguments[0];
-
-    var _ref2 = _slicedToArray(_ref, 2);
-
-    var tagName = _ref2[0];
-    var attributes = _ref2[1];
-
-    var element = (0, _mobiledocHtmlRendererUtilsDom.createElement)(tagName);
-    attributes = attributes || [];
-
-    for (var i = 0, l = attributes.length; i < l; i = i + 2) {
-      var propName = attributes[i],
-          propValue = attributes[i + 1];
-      (0, _mobiledocHtmlRendererUtilsDom.setAttribute)(element, propName, propValue);
-    }
-    return element;
-  }
+  var IMAGE_SECTION_TAG_NAME = 'img';
 
   function validateVersion(version) {
     if (version !== MOBILEDOC_VERSION) {
@@ -162,13 +161,17 @@ define('mobiledoc-html-renderer/renderers/0-2', ['exports', 'mobiledoc-html-rend
   }
 
   var Renderer = (function () {
-    function Renderer(mobiledoc, state) {
+    function Renderer(mobiledoc, options) {
+      var _this = this;
+
       _classCallCheck(this, Renderer);
 
-      var cards = state.cards;
-      var cardOptions = state.cardOptions;
-      var unknownCardHandler = state.unknownCardHandler;
-      var sectionElementRenderer = state.sectionElementRenderer;
+      var cards = options.cards;
+      var cardOptions = options.cardOptions;
+      var unknownCardHandler = options.unknownCardHandler;
+      var markupElementRenderer = options.markupElementRenderer;
+      var sectionElementRenderer = options.sectionElementRenderer;
+      var dom = options.dom;
       var version = mobiledoc.version;
       var sectionData = mobiledoc.sections;
 
@@ -179,39 +182,56 @@ define('mobiledoc-html-renderer/renderers/0-2', ['exports', 'mobiledoc-html-rend
       var markerTypes = _sectionData[0];
       var sections = _sectionData[1];
 
-      this.root = (0, _mobiledocHtmlRendererUtilsDom.createDocumentFragment)();
+      this.dom = dom;
+      this.root = dom.createDocumentFragment();
       this.markerTypes = markerTypes;
       this.sections = sections;
       this.cards = cards;
       this.cardOptions = cardOptions;
       this.unknownCardHandler = unknownCardHandler || this._defaultUnknownCardHandler;
 
-      this.sectionElementRenderer = {};
-      if (sectionElementRenderer) {
-        for (var key in sectionElementRenderer) {
-          if (sectionElementRenderer.hasOwnProperty(key)) {
-            this.sectionElementRenderer[key.toLowerCase()] = sectionElementRenderer[key];
-          }
-        }
-      }
+      this.sectionElementRenderer = {
+        '__default__': _mobiledocDomRendererUtilsRenderUtils.defaultSectionElementRenderer
+      };
+      Object.keys(sectionElementRenderer).forEach(function (key) {
+        _this.sectionElementRenderer[key.toLowerCase()] = sectionElementRenderer[key];
+      });
 
+      this.markupElementRenderer = {
+        '__default__': _mobiledocDomRendererUtilsRenderUtils.defaultMarkupElementRenderer
+      };
+      Object.keys(markupElementRenderer).forEach(function (key) {
+        _this.markupElementRenderer[key.toLowerCase()] = markupElementRenderer[key];
+      });
+
+      this._renderCallbacks = [];
       this._teardownCallbacks = [];
+      this._renderedChildNodes = [];
     }
 
     _createClass(Renderer, [{
       key: 'render',
       value: function render() {
-        var _this = this;
+        var _this2 = this;
 
         this.sections.forEach(function (section) {
-          var rendered = _this.renderSection(section);
+          var rendered = _this2.renderSection(section);
           if (rendered) {
-            (0, _mobiledocHtmlRendererUtilsDom.appendChild)(_this.root, rendered);
+            _this2.root.appendChild(rendered);
           }
         });
-
-        return { result: this.root.toString(), teardown: function teardown() {
-            return _this.teardown();
+        for (var i = 0; i < this._renderCallbacks.length; i++) {
+          this._renderCallbacks[i]();
+        }
+        // maintain a reference to child nodes so they can be cleaned up later by teardown
+        this._renderedChildNodes = [];
+        var node = this.root.firstChild;
+        while (node) {
+          this._renderedChildNodes.push(node);
+          node = node.nextSibling;
+        }
+        return { result: this.root, teardown: function teardown() {
+            return _this2.teardown();
           } };
       }
     }, {
@@ -219,6 +239,12 @@ define('mobiledoc-html-renderer/renderers/0-2', ['exports', 'mobiledoc-html-rend
       value: function teardown() {
         for (var i = 0; i < this._teardownCallbacks.length; i++) {
           this._teardownCallbacks[i]();
+        }
+        for (var i = 0; i < this._renderedChildNodes.length; i++) {
+          var node = this._renderedChildNodes[i];
+          if (node.parentNode) {
+            node.parentNode.removeChild(node);
+          }
         }
       }
     }, {
@@ -229,168 +255,29 @@ define('mobiledoc-html-renderer/renderers/0-2', ['exports', 'mobiledoc-html-rend
         var type = _section[0];
 
         switch (type) {
-          case _mobiledocHtmlRendererUtilsSectionTypes.MARKUP_SECTION_TYPE:
+          case _mobiledocDomRendererUtilsSectionTypes.MARKUP_SECTION_TYPE:
             return this.renderMarkupSection(section);
-          case _mobiledocHtmlRendererUtilsSectionTypes.IMAGE_SECTION_TYPE:
+          case _mobiledocDomRendererUtilsSectionTypes.IMAGE_SECTION_TYPE:
             return this.renderImageSection(section);
-          case _mobiledocHtmlRendererUtilsSectionTypes.LIST_SECTION_TYPE:
+          case _mobiledocDomRendererUtilsSectionTypes.LIST_SECTION_TYPE:
             return this.renderListSection(section);
-          case _mobiledocHtmlRendererUtilsSectionTypes.CARD_SECTION_TYPE:
+          case _mobiledocDomRendererUtilsSectionTypes.CARD_SECTION_TYPE:
             return this.renderCardSection(section);
           default:
-            throw new Error('Renderer cannot render type "' + type + '"');
+            throw new Error('Cannot render mobiledoc section of type "' + type + '"');
         }
       }
     }, {
-      key: 'renderListSection',
-      value: function renderListSection(_ref3) {
-        var _this2 = this;
-
-        var _ref32 = _slicedToArray(_ref3, 3);
-
-        var type = _ref32[0];
-        var tagName = _ref32[1];
-        var items = _ref32[2];
-
-        if (!(0, _mobiledocHtmlRendererUtilsTagNames.isValidSectionTagName)(tagName, _mobiledocHtmlRendererUtilsSectionTypes.LIST_SECTION_TYPE)) {
-          return;
-        }
-        var element = (0, _mobiledocHtmlRendererUtilsDom.createElement)(tagName);
-        items.forEach(function (li) {
-          (0, _mobiledocHtmlRendererUtilsDom.appendChild)(element, _this2.renderListItem(li));
-        });
-        return element;
-      }
-    }, {
-      key: 'renderListItem',
-      value: function renderListItem(markers) {
-        var element = (0, _mobiledocHtmlRendererUtilsDom.createElement)('li');
-        this._renderMarkersOnElement(element, markers);
-        return element;
-      }
-    }, {
-      key: 'renderImageSection',
-      value: function renderImageSection(_ref4) {
-        var _ref42 = _slicedToArray(_ref4, 2);
-
-        var type = _ref42[0];
-        var url = _ref42[1];
-
-        var element = (0, _mobiledocHtmlRendererUtilsDom.createElement)('img');
-        (0, _mobiledocHtmlRendererUtilsDom.setAttribute)(element, 'src', url);
-        return element;
-      }
-    }, {
-      key: 'findCard',
-      value: function findCard(name) {
-        for (var i = 0; i < this.cards.length; i++) {
-          if (this.cards[i].name === name) {
-            return this.cards[i];
-          }
-        }
-        if (name === _mobiledocHtmlRendererCardsImage['default'].name) {
-          return _mobiledocHtmlRendererCardsImage['default'];
-        }
-        return this._createUnknownCard(name);
-      }
-    }, {
-      key: '_createUnknownCard',
-      value: function _createUnknownCard(name) {
-        return {
-          name: name,
-          type: _mobiledocHtmlRendererUtilsRenderType['default'],
-          render: this.unknownCardHandler
-        };
-      }
-    }, {
-      key: 'renderCardSection',
-      value: function renderCardSection(_ref5) {
-        var _ref52 = _slicedToArray(_ref5, 3);
-
-        var type = _ref52[0];
-        var name = _ref52[1];
-        var payload = _ref52[2];
-
-        var card = this.findCard(name);
-
-        var cardWrapper = this._createCardElement();
-        var cardArg = this._createCardArgument(card, payload);
-        var rendered = card.render(cardArg);
-
-        this._validateCardRender(rendered, card.name);
-
-        if (rendered) {
-          (0, _mobiledocHtmlRendererUtilsDom.appendChild)(cardWrapper, rendered);
-        }
-
-        return cardWrapper;
-      }
-    }, {
-      key: '_registerTeardownCallback',
-      value: function _registerTeardownCallback(callback) {
-        this._teardownCallbacks.push(callback);
-      }
-    }, {
-      key: '_createCardArgument',
-      value: function _createCardArgument(card) {
-        var _this3 = this;
-
-        var payload = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-        var env = {
-          name: card.name,
-          isInEditor: false,
-          onTeardown: function onTeardown(callback) {
-            return _this3._registerTeardownCallback(callback);
-          }
-        };
-
-        var options = this.cardOptions;
-
-        return { env: env, options: options, payload: payload };
-      }
-    }, {
-      key: '_validateCardRender',
-      value: function _validateCardRender(rendered, cardName) {
-        if (!rendered) {
-          return;
-        }
-
-        if (typeof rendered !== 'string') {
-          throw new Error('Card "' + cardName + '" must render ' + _mobiledocHtmlRendererUtilsRenderType['default'] + ', but result was ' + typeof rendered + '"');
-        }
-      }
-    }, {
-      key: '_createCardElement',
-      value: function _createCardElement() {
-        return (0, _mobiledocHtmlRendererUtilsDom.createElement)('div');
-      }
-    }, {
-      key: 'renderMarkupSection',
-      value: function renderMarkupSection(_ref6) {
-        var _ref62 = _slicedToArray(_ref6, 3);
-
-        var type = _ref62[0];
-        var tagName = _ref62[1];
-        var markers = _ref62[2];
-
-        if (!(0, _mobiledocHtmlRendererUtilsTagNames.isValidSectionTagName)(tagName, _mobiledocHtmlRendererUtilsSectionTypes.MARKUP_SECTION_TYPE)) {
-          return;
-        }
-        var renderer = _mobiledocHtmlRendererUtilsDom.createElement;
-        var lowerCaseTagName = tagName.toLowerCase();
-        if (this.sectionElementRenderer[lowerCaseTagName]) {
-          renderer = this.sectionElementRenderer[lowerCaseTagName];
-        }
-        var element = renderer(tagName);
-        this._renderMarkersOnElement(element, markers);
-        return element;
-      }
-    }, {
-      key: '_renderMarkersOnElement',
-      value: function _renderMarkersOnElement(element, markers) {
+      key: 'renderMarkersOnElement',
+      value: function renderMarkersOnElement(element, markers) {
         var elements = [element];
         var currentElement = element;
+
+        var pushElement = function pushElement(openedElement) {
+          currentElement.appendChild(openedElement);
+          elements.push(openedElement);
+          currentElement = openedElement;
+        };
 
         for (var i = 0, l = markers.length; i < l; i++) {
           var marker = markers[i];
@@ -404,21 +291,20 @@ define('mobiledoc-html-renderer/renderers/0-2', ['exports', 'mobiledoc-html-rend
           for (var j = 0, m = openTypes.length; j < m; j++) {
             var markerType = this.markerTypes[openTypes[j]];
 
-            var _markerType = _slicedToArray(markerType, 1);
+            var _markerType = _slicedToArray(markerType, 2);
 
             var tagName = _markerType[0];
+            var _markerType$1 = _markerType[1];
+            var attrs = _markerType$1 === undefined ? [] : _markerType$1;
 
-            if ((0, _mobiledocHtmlRendererUtilsTagNames.isValidMarkerType)(tagName)) {
-              var openedElement = createElementFromMarkerType(markerType);
-              (0, _mobiledocHtmlRendererUtilsDom.appendChild)(currentElement, openedElement);
-              elements.push(openedElement);
-              currentElement = openedElement;
+            if ((0, _mobiledocDomRendererUtilsTagNames.isValidMarkerType)(tagName)) {
+              pushElement(this.renderMarkupElement(tagName, attrs));
             } else {
               closeCount--;
             }
           }
 
-          (0, _mobiledocHtmlRendererUtilsDom.appendChild)(currentElement, (0, _mobiledocHtmlRendererUtilsDom.createTextNode)(text));
+          currentElement.appendChild((0, _mobiledocDomRendererUtilsDom.createTextNode)(this.dom, text));
 
           for (var j = 0, m = closeCount; j < m; j++) {
             elements.pop();
@@ -426,11 +312,177 @@ define('mobiledoc-html-renderer/renderers/0-2', ['exports', 'mobiledoc-html-rend
           }
         }
       }
+
+      /**
+       * @param attrs Array
+       */
+    }, {
+      key: 'renderMarkupElement',
+      value: function renderMarkupElement(tagName, attrs) {
+        tagName = tagName.toLowerCase();
+        attrs = (0, _mobiledocDomRendererUtilsSanitizationUtils.reduceAttributes)(attrs);
+
+        var renderer = this.markupElementRendererFor(tagName);
+        return renderer(tagName, this.dom, attrs);
+      }
+    }, {
+      key: 'markupElementRendererFor',
+      value: function markupElementRendererFor(tagName) {
+        return this.markupElementRenderer[tagName] || this.markupElementRenderer.__default__;
+      }
+    }, {
+      key: 'renderListItem',
+      value: function renderListItem(markers) {
+        var element = this.dom.createElement('li');
+        this.renderMarkersOnElement(element, markers);
+        return element;
+      }
+    }, {
+      key: 'renderListSection',
+      value: function renderListSection(_ref) {
+        var _this3 = this;
+
+        var _ref2 = _slicedToArray(_ref, 3);
+
+        var type = _ref2[0];
+        var tagName = _ref2[1];
+        var listItems = _ref2[2];
+
+        if (!(0, _mobiledocDomRendererUtilsTagNames.isValidSectionTagName)(tagName, _mobiledocDomRendererUtilsSectionTypes.LIST_SECTION_TYPE)) {
+          return;
+        }
+        var element = this.dom.createElement(tagName);
+        listItems.forEach(function (li) {
+          element.appendChild(_this3.renderListItem(li));
+        });
+        return element;
+      }
+    }, {
+      key: 'renderImageSection',
+      value: function renderImageSection(_ref3) {
+        var _ref32 = _slicedToArray(_ref3, 2);
+
+        var type = _ref32[0];
+        var src = _ref32[1];
+
+        var element = this.dom.createElement(IMAGE_SECTION_TAG_NAME);
+        element.src = src;
+        return element;
+      }
+    }, {
+      key: 'findCard',
+      value: function findCard(name) {
+        for (var i = 0; i < this.cards.length; i++) {
+          if (this.cards[i].name === name) {
+            return this.cards[i];
+          }
+        }
+        if (name === _mobiledocDomRendererCardsImage['default'].name) {
+          return _mobiledocDomRendererCardsImage['default'];
+        }
+        return this._createUnknownCard(name);
+      }
+    }, {
+      key: '_createUnknownCard',
+      value: function _createUnknownCard(name) {
+        return {
+          name: name,
+          type: _mobiledocDomRendererUtilsRenderType['default'],
+          render: this.unknownCardHandler
+        };
+      }
+    }, {
+      key: '_createCardArgument',
+      value: function _createCardArgument(card) {
+        var _this4 = this;
+
+        var payload = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+        var env = {
+          name: card.name,
+          isInEditor: false,
+          dom: this.dom,
+          didRender: function didRender(callback) {
+            return _this4._registerRenderCallback(callback);
+          },
+          onTeardown: function onTeardown(callback) {
+            return _this4._registerTeardownCallback(callback);
+          }
+        };
+
+        var options = this.cardOptions;
+
+        return { env: env, options: options, payload: payload };
+      }
+    }, {
+      key: '_registerRenderCallback',
+      value: function _registerRenderCallback(callback) {
+        this._renderCallbacks.push(callback);
+      }
+    }, {
+      key: '_registerTeardownCallback',
+      value: function _registerTeardownCallback(callback) {
+        this._teardownCallbacks.push(callback);
+      }
+    }, {
+      key: 'renderCardSection',
+      value: function renderCardSection(_ref4) {
+        var _ref42 = _slicedToArray(_ref4, 3);
+
+        var type = _ref42[0];
+        var name = _ref42[1];
+        var payload = _ref42[2];
+
+        var card = this.findCard(name);
+
+        var cardArg = this._createCardArgument(card, payload);
+        var rendered = card.render(cardArg);
+
+        this._validateCardRender(rendered, card.name);
+
+        return rendered;
+      }
+    }, {
+      key: '_validateCardRender',
+      value: function _validateCardRender(rendered, cardName) {
+        if (!rendered) {
+          return;
+        }
+
+        if (typeof rendered !== 'object') {
+          throw new Error('Card "' + cardName + '" must render ' + _mobiledocDomRendererUtilsRenderType['default'] + ', but result was "' + rendered + '"');
+        }
+      }
+    }, {
+      key: 'renderMarkupSection',
+      value: function renderMarkupSection(_ref5) {
+        var _ref52 = _slicedToArray(_ref5, 3);
+
+        var type = _ref52[0];
+        var tagName = _ref52[1];
+        var markers = _ref52[2];
+
+        tagName = tagName.toLowerCase();
+        if (!(0, _mobiledocDomRendererUtilsTagNames.isValidSectionTagName)(tagName, _mobiledocDomRendererUtilsSectionTypes.MARKUP_SECTION_TYPE)) {
+          return;
+        }
+
+        var renderer = this.sectionElementRendererFor(tagName);
+        var element = renderer(tagName, this.dom);
+
+        this.renderMarkersOnElement(element, markers);
+        return element;
+      }
+    }, {
+      key: 'sectionElementRendererFor',
+      value: function sectionElementRendererFor(tagName) {
+        return this.sectionElementRenderer[tagName] || this.sectionElementRenderer.__default__;
+      }
     }, {
       key: '_defaultUnknownCardHandler',
       get: function get() {
-        return function (_ref7) {
-          var name = _ref7.env.name;
+        return function (_ref6) {
+          var name = _ref6.env.name;
 
           throw new Error('Card "' + name + '" not found but no unknownCardHandler was registered');
         };
@@ -442,7 +494,7 @@ define('mobiledoc-html-renderer/renderers/0-2', ['exports', 'mobiledoc-html-rend
 
   exports['default'] = Renderer;
 });
-define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-renderer/utils/dom', 'mobiledoc-html-renderer/cards/image', 'mobiledoc-html-renderer/utils/render-type', 'mobiledoc-html-renderer/utils/section-types', 'mobiledoc-html-renderer/utils/tag-names', 'mobiledoc-html-renderer/utils/marker-types'], function (exports, _mobiledocHtmlRendererUtilsDom, _mobiledocHtmlRendererCardsImage, _mobiledocHtmlRendererUtilsRenderType, _mobiledocHtmlRendererUtilsSectionTypes, _mobiledocHtmlRendererUtilsTagNames, _mobiledocHtmlRendererUtilsMarkerTypes) {
+define('mobiledoc-dom-renderer/renderers/0-3', ['exports', 'mobiledoc-dom-renderer/utils/dom', 'mobiledoc-dom-renderer/cards/image', 'mobiledoc-dom-renderer/utils/render-type', 'mobiledoc-dom-renderer/utils/section-types', 'mobiledoc-dom-renderer/utils/tag-names', 'mobiledoc-dom-renderer/utils/sanitization-utils', 'mobiledoc-dom-renderer/utils/render-utils', 'mobiledoc-dom-renderer/utils/marker-types'], function (exports, _mobiledocDomRendererUtilsDom, _mobiledocDomRendererCardsImage, _mobiledocDomRendererUtilsRenderType, _mobiledocDomRendererUtilsSectionTypes, _mobiledocDomRendererUtilsTagNames, _mobiledocDomRendererUtilsSanitizationUtils, _mobiledocDomRendererUtilsRenderUtils, _mobiledocDomRendererUtilsMarkerTypes) {
   'use strict';
 
   var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
@@ -451,44 +503,29 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  var MOBILEDOC_VERSION = '0.3.0';
+  var MOBILEDOC_VERSION_0_3_0 = '0.3.0';
+  exports.MOBILEDOC_VERSION_0_3_0 = MOBILEDOC_VERSION_0_3_0;
+  var MOBILEDOC_VERSION_0_3_1 = '0.3.1';
+  exports.MOBILEDOC_VERSION_0_3_1 = MOBILEDOC_VERSION_0_3_1;
+  var MOBILEDOC_VERSION = MOBILEDOC_VERSION_0_3_0;
 
   exports.MOBILEDOC_VERSION = MOBILEDOC_VERSION;
-  /**
-   * runtime HTML renderer
-   * renders a mobiledoc to HTML
-   *
-   * input: mobiledoc
-   * output: HTML
-   */
-
-  function createElementFromMarkerType() {
-    var _ref = arguments.length <= 0 || arguments[0] === undefined ? ['', []] : arguments[0];
-
-    var _ref2 = _slicedToArray(_ref, 2);
-
-    var tagName = _ref2[0];
-    var attributes = _ref2[1];
-
-    var element = (0, _mobiledocHtmlRendererUtilsDom.createElement)(tagName);
-    attributes = attributes || [];
-
-    for (var i = 0, l = attributes.length; i < l; i = i + 2) {
-      var propName = attributes[i],
-          propValue = attributes[i + 1];
-      (0, _mobiledocHtmlRendererUtilsDom.setAttribute)(element, propName, propValue);
-    }
-    return element;
-  }
+  var IMAGE_SECTION_TAG_NAME = 'img';
 
   function validateVersion(version) {
-    if (version !== MOBILEDOC_VERSION) {
-      throw new Error('Unexpected Mobiledoc version "' + version + '"');
+    switch (version) {
+      case MOBILEDOC_VERSION_0_3_0:
+      case MOBILEDOC_VERSION_0_3_1:
+        return;
+      default:
+        throw new Error('Unexpected Mobiledoc version "' + version + '"');
     }
   }
 
   var Renderer = (function () {
     function Renderer(mobiledoc, state) {
+      var _this = this;
+
       _classCallCheck(this, Renderer);
 
       var cards = state.cards;
@@ -496,7 +533,9 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
       var atoms = state.atoms;
       var unknownCardHandler = state.unknownCardHandler;
       var unknownAtomHandler = state.unknownAtomHandler;
+      var markupElementRenderer = state.markupElementRenderer;
       var sectionElementRenderer = state.sectionElementRenderer;
+      var dom = state.dom;
       var version = mobiledoc.version;
       var sections = mobiledoc.sections;
       var atomTypes = mobiledoc.atoms;
@@ -505,7 +544,8 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
 
       validateVersion(version);
 
-      this.root = (0, _mobiledocHtmlRendererUtilsDom.createDocumentFragment)();
+      this.dom = dom;
+      this.root = this.dom.createDocumentFragment();
       this.sections = sections;
       this.atomTypes = atomTypes;
       this.cardTypes = cardTypes;
@@ -516,32 +556,42 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
       this.unknownCardHandler = unknownCardHandler || this._defaultUnknownCardHandler;
       this.unknownAtomHandler = unknownAtomHandler || this._defaultUnknownAtomHandler;
 
-      this.sectionElementRenderer = {};
-      if (sectionElementRenderer) {
-        for (var key in sectionElementRenderer) {
-          if (sectionElementRenderer.hasOwnProperty(key)) {
-            this.sectionElementRenderer[key.toLowerCase()] = sectionElementRenderer[key];
-          }
-        }
-      }
+      this.sectionElementRenderer = {
+        '__default__': _mobiledocDomRendererUtilsRenderUtils.defaultSectionElementRenderer
+      };
+      Object.keys(sectionElementRenderer).forEach(function (key) {
+        _this.sectionElementRenderer[key.toLowerCase()] = sectionElementRenderer[key];
+      });
 
+      this.markupElementRenderer = {
+        '__default__': _mobiledocDomRendererUtilsRenderUtils.defaultMarkupElementRenderer
+      };
+      Object.keys(markupElementRenderer).forEach(function (key) {
+        _this.markupElementRenderer[key.toLowerCase()] = markupElementRenderer[key];
+      });
+
+      this._renderCallbacks = [];
       this._teardownCallbacks = [];
     }
 
     _createClass(Renderer, [{
       key: 'render',
       value: function render() {
-        var _this = this;
+        var _this2 = this;
 
         this.sections.forEach(function (section) {
-          var rendered = _this.renderSection(section);
+          var rendered = _this2.renderSection(section);
           if (rendered) {
-            (0, _mobiledocHtmlRendererUtilsDom.appendChild)(_this.root, rendered);
+            _this2.root.appendChild(rendered);
           }
         });
-
-        return { result: this.root.toString(), teardown: function teardown() {
-            return _this.teardown();
+        for (var i = 0; i < this._renderCallbacks.length; i++) {
+          this._renderCallbacks[i]();
+        }
+        // maintain a reference to child nodes so they can be cleaned up later by teardown
+        this._renderedChildNodes = Array.prototype.slice.call(this.root.childNodes);
+        return { result: this.root, teardown: function teardown() {
+            return _this2.teardown();
           } };
       }
     }, {
@@ -549,6 +599,12 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
       value: function teardown() {
         for (var i = 0; i < this._teardownCallbacks.length; i++) {
           this._teardownCallbacks[i]();
+        }
+        for (var i = 0; i < this._renderedChildNodes.length; i++) {
+          var node = this._renderedChildNodes[i];
+          if (node.parentNode) {
+            node.parentNode.removeChild(node);
+          }
         }
       }
     }, {
@@ -559,55 +615,128 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
         var type = _section[0];
 
         switch (type) {
-          case _mobiledocHtmlRendererUtilsSectionTypes.MARKUP_SECTION_TYPE:
+          case _mobiledocDomRendererUtilsSectionTypes.MARKUP_SECTION_TYPE:
             return this.renderMarkupSection(section);
-          case _mobiledocHtmlRendererUtilsSectionTypes.IMAGE_SECTION_TYPE:
+          case _mobiledocDomRendererUtilsSectionTypes.IMAGE_SECTION_TYPE:
             return this.renderImageSection(section);
-          case _mobiledocHtmlRendererUtilsSectionTypes.LIST_SECTION_TYPE:
+          case _mobiledocDomRendererUtilsSectionTypes.LIST_SECTION_TYPE:
             return this.renderListSection(section);
-          case _mobiledocHtmlRendererUtilsSectionTypes.CARD_SECTION_TYPE:
+          case _mobiledocDomRendererUtilsSectionTypes.CARD_SECTION_TYPE:
             return this.renderCardSection(section);
           default:
-            throw new Error('Renderer cannot render type "' + type + '"');
+            throw new Error('Cannot render mobiledoc section of type "' + type + '"');
         }
       }
     }, {
-      key: 'renderListSection',
-      value: function renderListSection(_ref3) {
-        var _this2 = this;
+      key: 'renderMarkersOnElement',
+      value: function renderMarkersOnElement(element, markers) {
+        var elements = [element];
+        var currentElement = element;
 
-        var _ref32 = _slicedToArray(_ref3, 3);
+        var pushElement = function pushElement(openedElement) {
+          currentElement.appendChild(openedElement);
+          elements.push(openedElement);
+          currentElement = openedElement;
+        };
 
-        var type = _ref32[0];
-        var tagName = _ref32[1];
-        var items = _ref32[2];
+        for (var i = 0, l = markers.length; i < l; i++) {
+          var marker = markers[i];
 
-        if (!(0, _mobiledocHtmlRendererUtilsTagNames.isValidSectionTagName)(tagName, _mobiledocHtmlRendererUtilsSectionTypes.LIST_SECTION_TYPE)) {
-          return;
+          var _marker = _slicedToArray(marker, 4);
+
+          var type = _marker[0];
+          var openTypes = _marker[1];
+          var closeCount = _marker[2];
+          var value = _marker[3];
+
+          for (var j = 0, m = openTypes.length; j < m; j++) {
+            var markerType = this.markerTypes[openTypes[j]];
+
+            var _markerType = _slicedToArray(markerType, 2);
+
+            var tagName = _markerType[0];
+            var _markerType$1 = _markerType[1];
+            var attrs = _markerType$1 === undefined ? [] : _markerType$1;
+
+            if ((0, _mobiledocDomRendererUtilsTagNames.isValidMarkerType)(tagName)) {
+              pushElement(this.renderMarkupElement(tagName, attrs));
+            } else {
+              closeCount--;
+            }
+          }
+
+          switch (type) {
+            case _mobiledocDomRendererUtilsMarkerTypes.MARKUP_MARKER_TYPE:
+              currentElement.appendChild((0, _mobiledocDomRendererUtilsDom.createTextNode)(this.dom, value));
+              break;
+            case _mobiledocDomRendererUtilsMarkerTypes.ATOM_MARKER_TYPE:
+              currentElement.appendChild(this._renderAtom(value));
+              break;
+            default:
+              throw new Error('Unknown markup type (' + type + ')');
+          }
+
+          for (var j = 0, m = closeCount; j < m; j++) {
+            elements.pop();
+            currentElement = elements[elements.length - 1];
+          }
         }
-        var element = (0, _mobiledocHtmlRendererUtilsDom.createElement)(tagName);
-        items.forEach(function (li) {
-          (0, _mobiledocHtmlRendererUtilsDom.appendChild)(element, _this2.renderListItem(li));
-        });
-        return element;
+      }
+
+      /**
+       * @param attrs Array
+       */
+    }, {
+      key: 'renderMarkupElement',
+      value: function renderMarkupElement(tagName, attrs) {
+        tagName = tagName.toLowerCase();
+        attrs = (0, _mobiledocDomRendererUtilsSanitizationUtils.reduceAttributes)(attrs);
+
+        var renderer = this.markupElementRendererFor(tagName);
+        return renderer(tagName, this.dom, attrs);
+      }
+    }, {
+      key: 'markupElementRendererFor',
+      value: function markupElementRendererFor(tagName) {
+        return this.markupElementRenderer[tagName] || this.markupElementRenderer.__default__;
       }
     }, {
       key: 'renderListItem',
       value: function renderListItem(markers) {
-        var element = (0, _mobiledocHtmlRendererUtilsDom.createElement)('li');
-        this._renderMarkersOnElement(element, markers);
+        var element = this.dom.createElement('li');
+        this.renderMarkersOnElement(element, markers);
+        return element;
+      }
+    }, {
+      key: 'renderListSection',
+      value: function renderListSection(_ref) {
+        var _this3 = this;
+
+        var _ref2 = _slicedToArray(_ref, 3);
+
+        var type = _ref2[0];
+        var tagName = _ref2[1];
+        var listItems = _ref2[2];
+
+        if (!(0, _mobiledocDomRendererUtilsTagNames.isValidSectionTagName)(tagName, _mobiledocDomRendererUtilsSectionTypes.LIST_SECTION_TYPE)) {
+          return;
+        }
+        var element = this.dom.createElement(tagName);
+        listItems.forEach(function (li) {
+          element.appendChild(_this3.renderListItem(li));
+        });
         return element;
       }
     }, {
       key: 'renderImageSection',
-      value: function renderImageSection(_ref4) {
-        var _ref42 = _slicedToArray(_ref4, 2);
+      value: function renderImageSection(_ref3) {
+        var _ref32 = _slicedToArray(_ref3, 2);
 
-        var type = _ref42[0];
-        var url = _ref42[1];
+        var type = _ref32[0];
+        var src = _ref32[1];
 
-        var element = (0, _mobiledocHtmlRendererUtilsDom.createElement)('img');
-        (0, _mobiledocHtmlRendererUtilsDom.setAttribute)(element, 'src', url);
+        var element = this.dom.createElement(IMAGE_SECTION_TAG_NAME);
+        element.src = src;
         return element;
       }
     }, {
@@ -618,8 +747,8 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
             return this.cards[i];
           }
         }
-        if (name === _mobiledocHtmlRendererCardsImage['default'].name) {
-          return _mobiledocHtmlRendererCardsImage['default'];
+        if (name === _mobiledocDomRendererCardsImage['default'].name) {
+          return _mobiledocDomRendererCardsImage['default'];
         }
         return this._createUnknownCard(name);
       }
@@ -648,52 +777,26 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
       value: function _createUnknownCard(name) {
         return {
           name: name,
-          type: _mobiledocHtmlRendererUtilsRenderType['default'],
+          type: _mobiledocDomRendererUtilsRenderType['default'],
           render: this.unknownCardHandler
         };
       }
     }, {
-      key: 'renderCardSection',
-      value: function renderCardSection(_ref5) {
-        var _ref52 = _slicedToArray(_ref5, 2);
-
-        var type = _ref52[0];
-        var index = _ref52[1];
-
-        var _findCardByIndex2 = this._findCardByIndex(index);
-
-        var card = _findCardByIndex2.card;
-        var payload = _findCardByIndex2.payload;
-
-        var cardWrapper = this._createCardElement();
-        var cardArg = this._createCardArgument(card, payload);
-        var rendered = card.render(cardArg);
-
-        this._validateCardRender(rendered, card.name);
-
-        if (rendered) {
-          (0, _mobiledocHtmlRendererUtilsDom.appendChild)(cardWrapper, rendered);
-        }
-
-        return cardWrapper;
-      }
-    }, {
-      key: '_registerTeardownCallback',
-      value: function _registerTeardownCallback(callback) {
-        this._teardownCallbacks.push(callback);
-      }
-    }, {
       key: '_createCardArgument',
       value: function _createCardArgument(card) {
-        var _this3 = this;
+        var _this4 = this;
 
         var payload = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
         var env = {
           name: card.name,
           isInEditor: false,
+          dom: this.dom,
+          didRender: function didRender(callback) {
+            return _this4._registerRenderCallback(callback);
+          },
           onTeardown: function onTeardown(callback) {
-            return _this3._registerTeardownCallback(callback);
+            return _this4._registerTeardownCallback(callback);
           }
         };
 
@@ -702,42 +805,45 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
         return { env: env, options: options, payload: payload };
       }
     }, {
+      key: '_registerTeardownCallback',
+      value: function _registerTeardownCallback(callback) {
+        this._teardownCallbacks.push(callback);
+      }
+    }, {
+      key: '_registerRenderCallback',
+      value: function _registerRenderCallback(callback) {
+        this._renderCallbacks.push(callback);
+      }
+    }, {
+      key: 'renderCardSection',
+      value: function renderCardSection(_ref4) {
+        var _ref42 = _slicedToArray(_ref4, 2);
+
+        var type = _ref42[0];
+        var index = _ref42[1];
+
+        var _findCardByIndex2 = this._findCardByIndex(index);
+
+        var card = _findCardByIndex2.card;
+        var payload = _findCardByIndex2.payload;
+
+        var cardArg = this._createCardArgument(card, payload);
+        var rendered = card.render(cardArg);
+
+        this._validateCardRender(rendered, card.name);
+
+        return rendered;
+      }
+    }, {
       key: '_validateCardRender',
       value: function _validateCardRender(rendered, cardName) {
         if (!rendered) {
           return;
         }
 
-        if (typeof rendered !== 'string') {
-          throw new Error('Card "' + cardName + '" must render ' + _mobiledocHtmlRendererUtilsRenderType['default'] + ', but result was ' + typeof rendered + '"');
+        if (typeof rendered !== 'object') {
+          throw new Error('Card "' + cardName + '" must render ' + _mobiledocDomRendererUtilsRenderType['default'] + ', but result was "' + rendered + '"');
         }
-      }
-    }, {
-      key: '_createCardElement',
-      value: function _createCardElement() {
-        return (0, _mobiledocHtmlRendererUtilsDom.createElement)('div');
-      }
-    }, {
-      key: 'renderMarkupSection',
-      value: function renderMarkupSection(_ref6) {
-        var _ref62 = _slicedToArray(_ref6, 3);
-
-        var type = _ref62[0];
-        var tagName = _ref62[1];
-        var markers = _ref62[2];
-
-        if (!(0, _mobiledocHtmlRendererUtilsTagNames.isValidSectionTagName)(tagName, _mobiledocHtmlRendererUtilsSectionTypes.MARKUP_SECTION_TYPE)) {
-          return;
-        }
-        var renderer = _mobiledocHtmlRendererUtilsDom.createElement;
-        var lowerCaseTagName = tagName.toLowerCase();
-        if (this.sectionElementRenderer[lowerCaseTagName]) {
-          renderer = this.sectionElementRenderer[lowerCaseTagName];
-        }
-
-        var element = renderer(tagName);
-        this._renderMarkersOnElement(element, markers);
-        return element;
       }
     }, {
       key: 'findAtom',
@@ -754,19 +860,21 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
       value: function _createUnknownAtom(name) {
         return {
           name: name,
-          type: _mobiledocHtmlRendererUtilsRenderType['default'],
+          type: _mobiledocDomRendererUtilsRenderType['default'],
           render: this.unknownAtomHandler
         };
       }
     }, {
       key: '_createAtomArgument',
       value: function _createAtomArgument(atom, value, payload) {
-        var _this4 = this;
+        var _this5 = this;
 
         var env = {
           name: atom.name,
+          isInEditor: false,
+          dom: this.dom,
           onTeardown: function onTeardown(callback) {
-            return _this4._registerTeardownCallback(callback);
+            return _this5._registerTeardownCallback(callback);
           }
         };
 
@@ -781,8 +889,8 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
           return;
         }
 
-        if (typeof rendered !== 'string') {
-          throw new Error('Atom "' + atomName + '" must render ' + _mobiledocHtmlRendererUtilsRenderType['default'] + ', but result was ' + typeof rendered + '"');
+        if (typeof rendered !== 'object') {
+          throw new Error('Atom "' + atomName + '" must render ' + _mobiledocDomRendererUtilsRenderType['default'] + ', but result was "' + rendered + '"');
         }
       }
     }, {
@@ -821,63 +929,38 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
 
         this._validateAtomRender(rendered, atom.name);
 
-        return rendered || (0, _mobiledocHtmlRendererUtilsDom.createTextNode)('');
+        return rendered || (0, _mobiledocDomRendererUtilsDom.createTextNode)(this.dom, '');
       }
     }, {
-      key: '_renderMarkersOnElement',
-      value: function _renderMarkersOnElement(element, markers) {
-        var elements = [element];
-        var currentElement = element;
+      key: 'renderMarkupSection',
+      value: function renderMarkupSection(_ref5) {
+        var _ref52 = _slicedToArray(_ref5, 3);
 
-        for (var i = 0, l = markers.length; i < l; i++) {
-          var marker = markers[i];
+        var type = _ref52[0];
+        var tagName = _ref52[1];
+        var markers = _ref52[2];
 
-          var _marker = _slicedToArray(marker, 4);
-
-          var type = _marker[0];
-          var openTypes = _marker[1];
-          var closeCount = _marker[2];
-          var value = _marker[3];
-
-          for (var j = 0, m = openTypes.length; j < m; j++) {
-            var markerType = this.markerTypes[openTypes[j]];
-
-            var _markerType = _slicedToArray(markerType, 1);
-
-            var tagName = _markerType[0];
-
-            if ((0, _mobiledocHtmlRendererUtilsTagNames.isValidMarkerType)(tagName)) {
-              var openedElement = createElementFromMarkerType(markerType);
-              (0, _mobiledocHtmlRendererUtilsDom.appendChild)(currentElement, openedElement);
-              elements.push(openedElement);
-              currentElement = openedElement;
-            } else {
-              closeCount--;
-            }
-          }
-
-          switch (type) {
-            case _mobiledocHtmlRendererUtilsMarkerTypes.MARKUP_MARKER_TYPE:
-              (0, _mobiledocHtmlRendererUtilsDom.appendChild)(currentElement, (0, _mobiledocHtmlRendererUtilsDom.createTextNode)(value));
-              break;
-            case _mobiledocHtmlRendererUtilsMarkerTypes.ATOM_MARKER_TYPE:
-              (0, _mobiledocHtmlRendererUtilsDom.appendChild)(currentElement, this._renderAtom(value));
-              break;
-            default:
-              throw new Error('Unknown markup type (' + type + ')');
-          }
-
-          for (var j = 0, m = closeCount; j < m; j++) {
-            elements.pop();
-            currentElement = elements[elements.length - 1];
-          }
+        tagName = tagName.toLowerCase();
+        if (!(0, _mobiledocDomRendererUtilsTagNames.isValidSectionTagName)(tagName, _mobiledocDomRendererUtilsSectionTypes.MARKUP_SECTION_TYPE)) {
+          return;
         }
+
+        var renderer = this.sectionElementRendererFor(tagName);
+        var element = renderer(tagName, this.dom);
+
+        this.renderMarkersOnElement(element, markers);
+        return element;
+      }
+    }, {
+      key: 'sectionElementRendererFor',
+      value: function sectionElementRendererFor(tagName) {
+        return this.sectionElementRenderer[tagName] || this.sectionElementRenderer.__default__;
       }
     }, {
       key: '_defaultUnknownCardHandler',
       get: function get() {
-        return function (_ref7) {
-          var name = _ref7.env.name;
+        return function (_ref6) {
+          var name = _ref6.env.name;
 
           throw new Error('Card "' + name + '" not found but no unknownCardHandler was registered');
         };
@@ -885,8 +968,8 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
     }, {
       key: '_defaultUnknownAtomHandler',
       get: function get() {
-        return function (_ref8) {
-          var name = _ref8.env.name;
+        return function (_ref7) {
+          var name = _ref7.env.name;
 
           throw new Error('Atom "' + name + '" not found but no unknownAtomHandler was registered');
         };
@@ -898,116 +981,40 @@ define('mobiledoc-html-renderer/renderers/0-3', ['exports', 'mobiledoc-html-rend
 
   exports['default'] = Renderer;
 });
-define('mobiledoc-html-renderer/utils/dom', ['exports'], function (exports) {
-  'use strict';
+define("mobiledoc-dom-renderer/utils/array-utils", ["exports"], function (exports) {
+  "use strict";
 
-  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+  exports.includes = includes;
 
-  exports.createElement = createElement;
-  exports.appendChild = appendChild;
-  exports.createTextNode = createTextNode;
-  exports.setAttribute = setAttribute;
-  exports.createDocumentFragment = createDocumentFragment;
-  exports.normalizeTagName = normalizeTagName;
-
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-  var VOID_TAGS = 'area base br col command embed hr img input keygen link meta param source track wbr'.split(' ');
-
-  var Element = (function () {
-    function Element(tagName) {
-      _classCallCheck(this, Element);
-
-      this.tagName = tagName.toLowerCase();
-      this.isVoid = VOID_TAGS.indexOf(this.tagName) !== -1;
-      this.childNodes = [];
-      this.attributes = [];
+  function includes(array, detectValue) {
+    for (var i = 0; i < array.length; i++) {
+      var value = array[i];
+      if (value === detectValue) {
+        return true;
+      }
     }
-
-    _createClass(Element, [{
-      key: 'appendChild',
-      value: function appendChild(element) {
-        this.childNodes.push(element);
-      }
-    }, {
-      key: 'setAttribute',
-      value: function setAttribute(propName, propValue) {
-        this.attributes.push(propName, propValue);
-      }
-    }, {
-      key: 'toString',
-      value: function toString() {
-        var html = '<' + this.tagName;
-
-        if (this.attributes.length) {
-          for (var i = 0; i < this.attributes.length; i = i + 2) {
-            var propName = this.attributes[i],
-                propValue = this.attributes[i + 1];
-            html += ' ' + propName + '="' + propValue + '"';
-          }
-        }
-        html += '>';
-
-        if (!this.isVoid) {
-          for (var i = 0; i < this.childNodes.length; i++) {
-            html += this.childNodes[i].toString();
-          }
-          html += '</' + this.tagName + '>';
-        }
-
-        return html;
-      }
-    }]);
-
-    return Element;
-  })();
-
-  function addHTMLSpaces(text) {
-    return text.replace(/  /g, ' &nbsp;');
-  }
-
-  var TextNode = (function () {
-    function TextNode(value) {
-      _classCallCheck(this, TextNode);
-
-      this.value = value;
-    }
-
-    _createClass(TextNode, [{
-      key: 'toString',
-      value: function toString() {
-        return addHTMLSpaces(this.value);
-      }
-    }]);
-
-    return TextNode;
-  })();
-
-  function createElement(tagName) {
-    return new Element(tagName);
-  }
-
-  function appendChild(target, child) {
-    target.appendChild(child);
-  }
-
-  function createTextNode(text) {
-    return new TextNode(text);
-  }
-
-  function setAttribute(element, propName, propValue) {
-    element.setAttribute(propName, propValue);
-  }
-
-  function createDocumentFragment() {
-    return createElement('div');
-  }
-
-  function normalizeTagName(name) {
-    return name.toLowerCase();
+    return false;
   }
 });
-define("mobiledoc-html-renderer/utils/marker-types", ["exports"], function (exports) {
+define('mobiledoc-dom-renderer/utils/dom', ['exports'], function (exports) {
+  'use strict';
+
+  exports.createTextNode = createTextNode;
+  exports.normalizeTagName = normalizeTagName;
+  function addHTMLSpaces(text) {
+    var nbsp = ' ';
+    return text.replace(/  /g, ' ' + nbsp);
+  }
+
+  function createTextNode(dom, text) {
+    return dom.createTextNode(addHTMLSpaces(text));
+  }
+
+  function normalizeTagName(tagName) {
+    return tagName.toLowerCase();
+  }
+});
+define("mobiledoc-dom-renderer/utils/marker-types", ["exports"], function (exports) {
   "use strict";
 
   var MARKUP_MARKER_TYPE = 0;
@@ -1015,12 +1022,89 @@ define("mobiledoc-html-renderer/utils/marker-types", ["exports"], function (expo
   var ATOM_MARKER_TYPE = 1;
   exports.ATOM_MARKER_TYPE = ATOM_MARKER_TYPE;
 });
-define('mobiledoc-html-renderer/utils/render-type', ['exports'], function (exports) {
+define('mobiledoc-dom-renderer/utils/render-type', ['exports'], function (exports) {
   'use strict';
 
-  exports['default'] = 'html';
+  exports['default'] = 'dom';
 });
-define("mobiledoc-html-renderer/utils/section-types", ["exports"], function (exports) {
+define('mobiledoc-dom-renderer/utils/render-utils', ['exports', 'mobiledoc-dom-renderer/utils/tag-names', 'mobiledoc-dom-renderer/utils/sanitization-utils'], function (exports, _mobiledocDomRendererUtilsTagNames, _mobiledocDomRendererUtilsSanitizationUtils) {
+  'use strict';
+
+  exports.defaultSectionElementRenderer = defaultSectionElementRenderer;
+  exports.defaultMarkupElementRenderer = defaultMarkupElementRenderer;
+
+  function defaultSectionElementRenderer(tagName, dom) {
+    var element = undefined;
+    if ((0, _mobiledocDomRendererUtilsTagNames.isMarkupSectionElementName)(tagName)) {
+      element = dom.createElement(tagName);
+    } else {
+      element = dom.createElement('div');
+      element.setAttribute('class', tagName);
+    }
+
+    return element;
+  }
+
+  function sanitizeAttribute(tagName, attrName, attrValue) {
+    if (tagName === 'a' && attrName === 'href') {
+      return (0, _mobiledocDomRendererUtilsSanitizationUtils.sanitizeHref)(attrValue);
+    } else {
+      return attrValue;
+    }
+  }
+
+  function defaultMarkupElementRenderer(tagName, dom, attrsObj) {
+    var element = dom.createElement(tagName);
+    Object.keys(attrsObj).forEach(function (attrName) {
+      var attrValue = attrsObj[attrName];
+      attrValue = sanitizeAttribute(tagName, attrName, attrValue);
+      element.setAttribute(attrName, attrValue);
+    });
+    return element;
+  }
+});
+define('mobiledoc-dom-renderer/utils/sanitization-utils', ['exports', 'mobiledoc-dom-renderer/utils/array-utils'], function (exports, _mobiledocDomRendererUtilsArrayUtils) {
+  'use strict';
+
+  exports.sanitizeHref = sanitizeHref;
+  exports.reduceAttributes = reduceAttributes;
+
+  var PROTOCOL_REGEXP = /^([a-z0-9.+-]+:)/i;
+
+  var badProtocols = ['javascript:', // jshint ignore:line
+  'vbscript:' // jshint ignore:line
+  ];
+
+  function getProtocol(url) {
+    var matches = url && url.match(PROTOCOL_REGEXP);
+    var protocol = matches && matches[0] || ':';
+    return protocol;
+  }
+
+  function sanitizeHref(url) {
+    var protocol = getProtocol(url);
+    if ((0, _mobiledocDomRendererUtilsArrayUtils.includes)(badProtocols, protocol)) {
+      return 'unsafe:' + url;
+    }
+    return url;
+  }
+
+  /**
+   * @param attributes array
+   * @return obj with normalized attribute names (lowercased)
+   */
+
+  function reduceAttributes(attributes) {
+    var obj = {};
+    for (var i = 0; i < attributes.length; i += 2) {
+      var key = attributes[i];
+      var val = attributes[i + 1];
+      obj[key.toLowerCase()] = val;
+    }
+    return obj;
+  }
+});
+define("mobiledoc-dom-renderer/utils/section-types", ["exports"], function (exports) {
   "use strict";
 
   var MARKUP_SECTION_TYPE = 1;
@@ -1032,37 +1116,45 @@ define("mobiledoc-html-renderer/utils/section-types", ["exports"], function (exp
   var CARD_SECTION_TYPE = 10;
   exports.CARD_SECTION_TYPE = CARD_SECTION_TYPE;
 });
-define('mobiledoc-html-renderer/utils/tag-names', ['exports', 'mobiledoc-html-renderer/utils/section-types', 'mobiledoc-html-renderer/utils/dom'], function (exports, _mobiledocHtmlRendererUtilsSectionTypes, _mobiledocHtmlRendererUtilsDom) {
+define('mobiledoc-dom-renderer/utils/tag-names', ['exports', 'mobiledoc-dom-renderer/utils/section-types', 'mobiledoc-dom-renderer/utils/dom'], function (exports, _mobiledocDomRendererUtilsSectionTypes, _mobiledocDomRendererUtilsDom) {
   'use strict';
 
   exports.isValidSectionTagName = isValidSectionTagName;
+  exports.isMarkupSectionElementName = isMarkupSectionElementName;
   exports.isValidMarkerType = isValidMarkerType;
 
-  var MARKUP_SECTION_TAG_NAMES = ['p', 'h1', 'h2', 'h3', 'blockquote', 'pull-quote'].map(_mobiledocHtmlRendererUtilsDom.normalizeTagName);
+  var MARKUP_SECTION_TAG_NAMES = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pull-quote', 'aside'].map(_mobiledocDomRendererUtilsDom.normalizeTagName);
 
-  var LIST_SECTION_TAG_NAMES = ['ul', 'ol'].map(_mobiledocHtmlRendererUtilsDom.normalizeTagName);
+  var MARKUP_SECTION_ELEMENT_NAMES = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'aside'].map(_mobiledocDomRendererUtilsDom.normalizeTagName);
 
-  var MARKUP_TYPES = ['b', 'i', 'strong', 'em', 'a', 'u', 'sub', 'sup', 's'].map(_mobiledocHtmlRendererUtilsDom.normalizeTagName);
+  var LIST_SECTION_TAG_NAMES = ['ul', 'ol'].map(_mobiledocDomRendererUtilsDom.normalizeTagName);
+
+  var MARKUP_TYPES = ['b', 'i', 'strong', 'em', 'a', 'u', 'sub', 'sup', 's', 'code'].map(_mobiledocDomRendererUtilsDom.normalizeTagName);
 
   function contains(array, item) {
     return array.indexOf(item) !== -1;
   }
 
   function isValidSectionTagName(tagName, sectionType) {
-    tagName = (0, _mobiledocHtmlRendererUtilsDom.normalizeTagName)(tagName);
+    tagName = (0, _mobiledocDomRendererUtilsDom.normalizeTagName)(tagName);
 
     switch (sectionType) {
-      case _mobiledocHtmlRendererUtilsSectionTypes.MARKUP_SECTION_TYPE:
+      case _mobiledocDomRendererUtilsSectionTypes.MARKUP_SECTION_TYPE:
         return contains(MARKUP_SECTION_TAG_NAMES, tagName);
-      case _mobiledocHtmlRendererUtilsSectionTypes.LIST_SECTION_TYPE:
+      case _mobiledocDomRendererUtilsSectionTypes.LIST_SECTION_TYPE:
         return contains(LIST_SECTION_TAG_NAMES, tagName);
       default:
         throw new Error('Cannot validate tagName for unknown section type "' + sectionType + '"');
     }
   }
 
+  function isMarkupSectionElementName(tagName) {
+    tagName = (0, _mobiledocDomRendererUtilsDom.normalizeTagName)(tagName);
+    return contains(MARKUP_SECTION_ELEMENT_NAMES, tagName);
+  }
+
   function isValidMarkerType(type) {
-    type = (0, _mobiledocHtmlRendererUtilsDom.normalizeTagName)(type);
+    type = (0, _mobiledocDomRendererUtilsDom.normalizeTagName)(type);
     return contains(MARKUP_TYPES, type);
   }
 });
@@ -1104,11 +1196,15 @@ define('mobiledoc-kit/editor/edit-history', ['exports', 'mobiledoc-kit/parsers/m
   }
 
   var Snapshot = (function () {
-    function Snapshot(editor) {
+    function Snapshot(takenAt, editor) {
+      var editAction = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+
       _classCallCheck(this, Snapshot);
 
       this.mobiledoc = editor.serialize();
       this.editor = editor;
+      this.editAction = editAction;
+      this.takenAt = takenAt;
 
       this.snapshotRange();
     }
@@ -1159,6 +1255,11 @@ define('mobiledoc-kit/editor/edit-history', ['exports', 'mobiledoc-kit/parsers/m
           return head.toRange(tail);
         }
       }
+    }, {
+      key: 'groupsWith',
+      value: function groupsWith(groupingTimeout, editAction, takenAt) {
+        return editAction !== null && this.editAction === editAction && this.takenAt + groupingTimeout > takenAt;
+      }
     }]);
 
     return Snapshot;
@@ -1167,7 +1268,7 @@ define('mobiledoc-kit/editor/edit-history', ['exports', 'mobiledoc-kit/parsers/m
   exports.Snapshot = Snapshot;
 
   var EditHistory = (function () {
-    function EditHistory(editor, queueLength) {
+    function EditHistory(editor, queueLength, groupingTimeout) {
       _classCallCheck(this, EditHistory);
 
       this.editor = editor;
@@ -1175,6 +1276,7 @@ define('mobiledoc-kit/editor/edit-history', ['exports', 'mobiledoc-kit/parsers/m
       this._redoStack = new _mobiledocKitUtilsFixedQueue['default'](queueLength);
 
       this._pendingSnapshot = null;
+      this._groupingTimeout = groupingTimeout;
     }
 
     _createClass(EditHistory, [{
@@ -1188,14 +1290,20 @@ define('mobiledoc-kit/editor/edit-history', ['exports', 'mobiledoc-kit/parsers/m
     }, {
       key: 'storeSnapshot',
       value: function storeSnapshot() {
+        var editAction = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+
+        var now = Date.now();
         // store pending snapshot
-        if (this._pendingSnapshot) {
-          this._undoStack.push(this._pendingSnapshot);
+        var pendingSnapshot = this._pendingSnapshot;
+        if (pendingSnapshot) {
+          if (!pendingSnapshot.groupsWith(this._groupingTimeout, editAction, now)) {
+            this._undoStack.push(pendingSnapshot);
+          }
           this._redoStack.clear();
         }
 
         // take new pending snapshot to store next time `storeSnapshot` is called
-        this._pendingSnapshot = new Snapshot(this.editor);
+        this._pendingSnapshot = new Snapshot(now, this.editor, editAction);
       }
     }, {
       key: 'stepBackward',
@@ -1205,7 +1313,7 @@ define('mobiledoc-kit/editor/edit-history', ['exports', 'mobiledoc-kit/parsers/m
 
         var snapshot = this._undoStack.pop();
         if (snapshot) {
-          this._redoStack.push(new Snapshot(this.editor));
+          this._redoStack.push(new Snapshot(Date.now(), this.editor));
           this._restoreFromSnapshot(snapshot, postEditor);
         }
       }
@@ -1214,7 +1322,7 @@ define('mobiledoc-kit/editor/edit-history', ['exports', 'mobiledoc-kit/parsers/m
       value: function stepForward(postEditor) {
         var snapshot = this._redoStack.pop();
         if (snapshot) {
-          this._undoStack.push(new Snapshot(this.editor));
+          this._undoStack.push(new Snapshot(Date.now(), this.editor));
           this._restoreFromSnapshot(snapshot, postEditor);
         }
         postEditor.cancelSnapshot();
@@ -1409,7 +1517,7 @@ define('mobiledoc-kit/editor/edit-state', ['exports', 'mobiledoc-kit/utils/array
 
   exports['default'] = EditState;
 });
-define('mobiledoc-kit/editor/editor', ['exports', 'mobiledoc-kit/views/tooltip', 'mobiledoc-kit/editor/post', 'mobiledoc-kit/cards/image', 'mobiledoc-kit/utils/key', 'mobiledoc-kit/parsers/mobiledoc', 'mobiledoc-kit/parsers/html', 'mobiledoc-kit/parsers/dom', 'mobiledoc-kit/renderers/editor-dom', 'mobiledoc-kit/models/render-tree', 'mobiledoc-kit/renderers/mobiledoc', 'mobiledoc-kit/utils/merge', 'mobiledoc-kit/utils/dom-utils', 'mobiledoc-kit/utils/array-utils', 'mobiledoc-kit/utils/element-utils', 'mobiledoc-kit/utils/cursor', 'mobiledoc-kit/utils/cursor/range', 'mobiledoc-kit/utils/cursor/position', 'mobiledoc-kit/models/post-node-builder', 'mobiledoc-kit/editor/text-input-handlers', 'mobiledoc-kit/editor/key-commands', 'mobiledoc-kit/models/card', 'mobiledoc-kit/utils/assert', 'mobiledoc-kit/editor/mutation-handler', 'mobiledoc-kit/editor/edit-history', 'mobiledoc-kit/editor/event-manager', 'mobiledoc-kit/editor/edit-state', 'mobiledoc-html-renderer', 'mobiledoc-text-renderer', 'mobiledoc-kit/models/lifecycle-callbacks', 'mobiledoc-kit/utils/log-manager', 'mobiledoc-kit/utils/to-range', 'mobiledoc-kit/utils/mobiledoc-error'], function (exports, _mobiledocKitViewsTooltip, _mobiledocKitEditorPost, _mobiledocKitCardsImage, _mobiledocKitUtilsKey, _mobiledocKitParsersMobiledoc, _mobiledocKitParsersHtml, _mobiledocKitParsersDom, _mobiledocKitRenderersEditorDom, _mobiledocKitModelsRenderTree, _mobiledocKitRenderersMobiledoc, _mobiledocKitUtilsMerge, _mobiledocKitUtilsDomUtils, _mobiledocKitUtilsArrayUtils, _mobiledocKitUtilsElementUtils, _mobiledocKitUtilsCursor, _mobiledocKitUtilsCursorRange, _mobiledocKitUtilsCursorPosition, _mobiledocKitModelsPostNodeBuilder, _mobiledocKitEditorTextInputHandlers, _mobiledocKitEditorKeyCommands, _mobiledocKitModelsCard, _mobiledocKitUtilsAssert, _mobiledocKitEditorMutationHandler, _mobiledocKitEditorEditHistory, _mobiledocKitEditorEventManager, _mobiledocKitEditorEditState, _mobiledocHtmlRenderer, _mobiledocTextRenderer, _mobiledocKitModelsLifecycleCallbacks, _mobiledocKitUtilsLogManager, _mobiledocKitUtilsToRange, _mobiledocKitUtilsMobiledocError) {
+define('mobiledoc-kit/editor/editor', ['exports', 'mobiledoc-kit/views/tooltip', 'mobiledoc-kit/editor/post', 'mobiledoc-kit/cards/image', 'mobiledoc-kit/utils/key', 'mobiledoc-kit/parsers/mobiledoc', 'mobiledoc-kit/parsers/html', 'mobiledoc-kit/parsers/dom', 'mobiledoc-kit/renderers/editor-dom', 'mobiledoc-kit/models/render-tree', 'mobiledoc-kit/renderers/mobiledoc', 'mobiledoc-kit/utils/merge', 'mobiledoc-kit/utils/dom-utils', 'mobiledoc-kit/utils/array-utils', 'mobiledoc-kit/utils/element-utils', 'mobiledoc-kit/utils/cursor', 'mobiledoc-kit/utils/cursor/range', 'mobiledoc-kit/utils/cursor/position', 'mobiledoc-kit/utils/environment', 'mobiledoc-kit/models/post-node-builder', 'mobiledoc-kit/editor/text-input-handlers', 'mobiledoc-kit/editor/key-commands', 'mobiledoc-kit/models/card', 'mobiledoc-kit/utils/assert', 'mobiledoc-kit/editor/mutation-handler', 'mobiledoc-kit/editor/edit-history', 'mobiledoc-kit/editor/event-manager', 'mobiledoc-kit/editor/edit-state', 'mobiledoc-dom-renderer', 'mobiledoc-text-renderer', 'mobiledoc-kit/models/lifecycle-callbacks', 'mobiledoc-kit/utils/log-manager', 'mobiledoc-kit/utils/to-range', 'mobiledoc-kit/utils/mobiledoc-error'], function (exports, _mobiledocKitViewsTooltip, _mobiledocKitEditorPost, _mobiledocKitCardsImage, _mobiledocKitUtilsKey, _mobiledocKitParsersMobiledoc, _mobiledocKitParsersHtml, _mobiledocKitParsersDom, _mobiledocKitRenderersEditorDom, _mobiledocKitModelsRenderTree, _mobiledocKitRenderersMobiledoc, _mobiledocKitUtilsMerge, _mobiledocKitUtilsDomUtils, _mobiledocKitUtilsArrayUtils, _mobiledocKitUtilsElementUtils, _mobiledocKitUtilsCursor, _mobiledocKitUtilsCursorRange, _mobiledocKitUtilsCursorPosition, _mobiledocKitUtilsEnvironment, _mobiledocKitModelsPostNodeBuilder, _mobiledocKitEditorTextInputHandlers, _mobiledocKitEditorKeyCommands, _mobiledocKitModelsCard, _mobiledocKitUtilsAssert, _mobiledocKitEditorMutationHandler, _mobiledocKitEditorEditHistory, _mobiledocKitEditorEventManager, _mobiledocKitEditorEditState, _mobiledocDomRenderer, _mobiledocTextRenderer, _mobiledocKitModelsLifecycleCallbacks, _mobiledocKitUtilsLogManager, _mobiledocKitUtilsToRange, _mobiledocKitUtilsMobiledocError) {
   'use strict';
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -1430,6 +1538,7 @@ define('mobiledoc-kit/editor/editor', ['exports', 'mobiledoc-kit/views/tooltip',
     spellcheck: true,
     autofocus: true,
     undoDepth: 5,
+    undoBlockTimeout: 5000, // ms for an undo event
     cards: [],
     atoms: [],
     cardOptions: {},
@@ -1540,7 +1649,7 @@ define('mobiledoc-kit/editor/editor', ['exports', 'mobiledoc-kit/views/tooltip',
       this.post = this.loadPost();
       this._renderTree = new _mobiledocKitModelsRenderTree['default'](this.post);
 
-      this._editHistory = new _mobiledocKitEditorEditHistory['default'](this, this.undoDepth);
+      this._editHistory = new _mobiledocKitEditorEditHistory['default'](this, this.undoDepth, this.undoBlockTimeout);
       this._eventManager = new _mobiledocKitEditorEventManager['default'](this);
       this._mutationHandler = new _mobiledocKitEditorMutationHandler['default'](this);
       this._editState = new _mobiledocKitEditorEditState['default'](this);
@@ -1696,6 +1805,22 @@ define('mobiledoc-kit/editor/editor', ['exports', 'mobiledoc-kit/views/tooltip',
         var keyCommand = (0, _mobiledocKitEditorKeyCommands.buildKeyCommand)(rawKeyCommand);
         (0, _mobiledocKitUtilsAssert['default'])('Key Command is not valid', (0, _mobiledocKitEditorKeyCommands.validateKeyCommand)(keyCommand));
         this.keyCommands.unshift(keyCommand);
+      }
+
+      /**
+       * @param {String} name If the keyCommand event has a name attribute it can be removed.
+       * @public
+       */
+    }, {
+      key: 'unregisterKeyCommands',
+      value: function unregisterKeyCommands(name) {
+        for (var i = this.keyCommands.length - 1; i > -1; i--) {
+          var keyCommand = this.keyCommands[i];
+
+          if (keyCommand.name === name) {
+            this.keyCommands.splice(i, 1);
+          }
+        }
       }
 
       /**
@@ -1981,8 +2106,15 @@ define('mobiledoc-kit/editor/editor', ['exports', 'mobiledoc-kit/views/tooltip',
 
           switch (format) {
             case 'html':
-              rendered = new _mobiledocHtmlRenderer['default'](rendererOptions).render(mobiledoc);
-              return rendered.result;
+              var result = undefined;
+              if (_mobiledocKitUtilsEnvironment['default'].hasDOM()) {
+                rendered = new _mobiledocDomRenderer['default'](rendererOptions).render(mobiledoc);
+                result = '<div>' + (0, _mobiledocKitUtilsDomUtils.serializeHTML)(rendered.result) + '</div>';
+              } else {
+                // Fallback to text serialization
+                result = this.serializePost(post, 'text', options);
+              }
+              return result;
             case 'text':
               rendered = new _mobiledocTextRenderer['default'](rendererOptions).render(mobiledoc);
               return rendered.result;
@@ -2142,7 +2274,7 @@ define('mobiledoc-kit/editor/editor', ['exports', 'mobiledoc-kit/views/tooltip',
         if (postEditor._shouldCancelSnapshot) {
           this._editHistory._pendingSnapshot = null;
         }
-        this._editHistory.storeSnapshot();
+        this._editHistory.storeSnapshot(postEditor.editActionTaken);
 
         return result;
       }
@@ -3095,6 +3227,16 @@ define('mobiledoc-kit/editor/key-commands', ['exports', 'mobiledoc-kit/utils/key
       editor.toggleMarkup('em');
     }
   }, {
+    str: 'META+U',
+    run: function run(editor) {
+      editor.toggleMarkup('u');
+    }
+  }, {
+    str: 'CTRL+U',
+    run: function run(editor) {
+      editor.toggleMarkup('u');
+    }
+  }, {
     str: 'CTRL+K',
     run: function run(editor) {
       if (_mobiledocKitUtilsBrowser['default'].isMac()) {
@@ -3434,6 +3576,14 @@ define('mobiledoc-kit/editor/post', ['exports', 'mobiledoc-kit/utils/cursor/posi
     AFTER_COMPLETE: 'afterComplete'
   };
 
+  // There are only two events that we're concerned about for Undo, that is inserting text and deleting content.
+  // These are the only two states that go on a "run" and create a combined undo, everything else has it's own
+  // deadicated undo.
+  var EDIT_ACTIONS = {
+    INSERT_TEXT: 1,
+    DELETE: 2
+  };
+
   /**
    * The PostEditor is used to modify a post. It should not be instantiated directly.
    * Instead, a new instance of a PostEditor is created by the editor and passed
@@ -3463,6 +3613,7 @@ define('mobiledoc-kit/editor/post', ['exports', 'mobiledoc-kit/utils/cursor/posi
       this._callbacks = new _mobiledocKitModelsLifecycleCallbacks['default']((0, _mobiledocKitUtilsArrayUtils.values)(CALLBACK_QUEUES));
 
       this._didComplete = false;
+      this.editActionTaken = null;
 
       this._renderRange = function () {
         return _this.editor.selectRange(_this._range);
@@ -3551,6 +3702,8 @@ define('mobiledoc-kit/editor/post', ['exports', 'mobiledoc-kit/utils/cursor/posi
       key: 'deleteRange',
       value: function deleteRange(range) {
         (0, _mobiledocKitUtilsAssert['default'])("Must pass MobiledocKit Range to `deleteRange`", range instanceof _mobiledocKitUtilsCursorRange['default']);
+
+        this.editActionTaken = EDIT_ACTIONS.DELETE;
 
         var head = range.head;
         var headSection = range.head.section;
@@ -4082,6 +4235,8 @@ define('mobiledoc-kit/editor/post', ['exports', 'mobiledoc-kit/utils/cursor/posi
         var offset = position.offset;
 
         (0, _mobiledocKitUtilsAssert['default'])('Cannot insert markers at non-markerable position', section.isMarkerable);
+
+        this.editActionTaken = EDIT_ACTIONS.INSERT_TEXT;
 
         var edit = section.splitMarkerAtOffset(offset);
         edit.removed.forEach(function (marker) {
@@ -5473,7 +5628,7 @@ define('mobiledoc-kit/editor/text-input-handlers', ['exports'], function (export
    * Does nothing if the cursor position is not at the start of the section.
    *
    * @param {Editor} editor
-   * @param {String} headingTagName ("h1","h2","h3")
+   * @param {String} headingTagName ('h1', 'h2', 'h3', 'h4', 'h5', 'h6')
    * @public
    */
 
@@ -5512,8 +5667,15 @@ define('mobiledoc-kit/editor/text-input-handlers', ['exports'], function (export
     }
   }, {
     name: 'heading',
-    // "# " -> h1, "## " -> h2, "### " -> h3
-    match: /^(#{1,3}) $/,
+    /*
+     * "# " -> h1
+     * "## " -> h2
+     * "### " -> h3
+     * "#### " -> h4
+     * "##### " -> h5
+     * "###### " -> h6
+     */
+    match: /^(#{1,6}) $/,
     run: function run(editor, matches) {
       var capture = matches[1];
       var headingTag = 'h' + capture.length;
@@ -7072,15 +7234,15 @@ define('mobiledoc-kit/models/markup-section', ['exports', 'mobiledoc-kit/models/
   function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   // valid values of `tagName` for a MarkupSection
-  var VALID_MARKUP_SECTION_TAGNAMES = ['p', 'h3', 'h2', 'h1', 'blockquote', 'pull-quote'].map(_mobiledocKitUtilsDomUtils.normalizeTagName);
+  var VALID_MARKUP_SECTION_TAGNAMES = ['aside', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].map(_mobiledocKitUtilsDomUtils.normalizeTagName);
 
   exports.VALID_MARKUP_SECTION_TAGNAMES = VALID_MARKUP_SECTION_TAGNAMES;
   // valid element names for a MarkupSection. A MarkupSection with a tagName
   // not in this will be rendered as a div with a className matching the
   // tagName
-  var MARKUP_SECTION_ELEMENT_NAMES = ['p', 'h3', 'h2', 'h1', 'blockquote'].map(_mobiledocKitUtilsDomUtils.normalizeTagName);
+  var MARKUP_SECTION_ELEMENT_NAMES = ['aside', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].map(_mobiledocKitUtilsDomUtils.normalizeTagName);
   exports.MARKUP_SECTION_ELEMENT_NAMES = MARKUP_SECTION_ELEMENT_NAMES;
-  var DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[0];
+  var DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[8];
 
   exports.DEFAULT_TAG_NAME = DEFAULT_TAG_NAME;
   var MarkupSection = (function (_Markerable) {
@@ -7124,13 +7286,13 @@ define('mobiledoc-kit/models/markup', ['exports', 'mobiledoc-kit/utils/dom-utils
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  var VALID_MARKUP_TAGNAMES = ['b', 'i', 'strong', 'em', 'a', 'u', 'sub', // subscript
+  var VALID_MARKUP_TAGNAMES = ['a', 'b', 'code', 'em', 'i', 's', // strikethrough
+  'strong', 'sub', // subscript
   'sup', // superscript
-  's' // strikethrough
-  ].map(_mobiledocKitUtilsDomUtils.normalizeTagName);
+  'u'].map(_mobiledocKitUtilsDomUtils.normalizeTagName);
 
   exports.VALID_MARKUP_TAGNAMES = VALID_MARKUP_TAGNAMES;
-  var VALID_ATTRIBUTES = ['href', 'ref'];
+  var VALID_ATTRIBUTES = ['href', 'rel'];
 
   exports.VALID_ATTRIBUTES = VALID_ATTRIBUTES;
 
@@ -8415,7 +8577,7 @@ define('mobiledoc-kit/parsers/mobiledoc/0-2', ['exports', 'mobiledoc-kit/rendere
         var tagName = _ref52[1];
         var markers = _ref52[2];
 
-        var section = this.builder.createMarkupSection(tagName);
+        var section = this.builder.createMarkupSection(tagName.toLowerCase() === 'pull-quote' ? 'aside' : tagName);
         post.sections.append(section);
         this.parseMarkers(markers, section);
         // Strip blank markers after they have been created. This ensures any
@@ -8481,6 +8643,293 @@ define('mobiledoc-kit/parsers/mobiledoc/0-2', ['exports', 'mobiledoc-kit/rendere
         var marker = this.builder.createMarker(value, this.markups.slice());
         parent.markers.append(marker);
         this.markups = this.markups.slice(0, this.markups.length - closeCount);
+      }
+    }]);
+
+    return MobiledocParser;
+  })();
+
+  exports['default'] = MobiledocParser;
+});
+define('mobiledoc-kit/parsers/mobiledoc/0-3-1', ['exports', 'mobiledoc-kit/renderers/mobiledoc/0-3-1', 'mobiledoc-kit/utils/array-utils', 'mobiledoc-kit/utils/assert'], function (exports, _mobiledocKitRenderersMobiledoc031, _mobiledocKitUtilsArrayUtils, _mobiledocKitUtilsAssert) {
+  'use strict';
+
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+  var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+  /*
+   * Parses from mobiledoc -> post
+   */
+
+  var MobiledocParser = (function () {
+    function MobiledocParser(builder) {
+      _classCallCheck(this, MobiledocParser);
+
+      this.builder = builder;
+    }
+
+    /**
+     * @param {Mobiledoc}
+     * @return {Post}
+     */
+
+    _createClass(MobiledocParser, [{
+      key: 'parse',
+      value: function parse(_ref) {
+        var version = _ref.version;
+        var sections = _ref.sections;
+        var markerTypes = _ref.markups;
+        var cardTypes = _ref.cards;
+        var atomTypes = _ref.atoms;
+
+        try {
+          var post = this.builder.createPost();
+
+          this.markups = [];
+          this.markerTypes = this.parseMarkerTypes(markerTypes);
+          this.cardTypes = this.parseCardTypes(cardTypes);
+          this.atomTypes = this.parseAtomTypes(atomTypes);
+          this.parseSections(sections, post);
+
+          return post;
+        } catch (e) {
+          (0, _mobiledocKitUtilsAssert['default'])('Unable to parse mobiledoc: ' + e.message, false);
+        }
+      }
+    }, {
+      key: 'parseMarkerTypes',
+      value: function parseMarkerTypes(markerTypes) {
+        var _this = this;
+
+        return markerTypes.map(function (markerType) {
+          return _this.parseMarkerType(markerType);
+        });
+      }
+    }, {
+      key: 'parseMarkerType',
+      value: function parseMarkerType(_ref2) {
+        var _ref22 = _slicedToArray(_ref2, 2);
+
+        var tagName = _ref22[0];
+        var attributesArray = _ref22[1];
+
+        var attributesObject = (0, _mobiledocKitUtilsArrayUtils.kvArrayToObject)(attributesArray || []);
+        return this.builder.createMarkup(tagName, attributesObject);
+      }
+    }, {
+      key: 'parseCardTypes',
+      value: function parseCardTypes(cardTypes) {
+        var _this2 = this;
+
+        return cardTypes.map(function (cardType) {
+          return _this2.parseCardType(cardType);
+        });
+      }
+    }, {
+      key: 'parseCardType',
+      value: function parseCardType(_ref3) {
+        var _ref32 = _slicedToArray(_ref3, 2);
+
+        var cardName = _ref32[0];
+        var cardPayload = _ref32[1];
+
+        return [cardName, cardPayload];
+      }
+    }, {
+      key: 'parseAtomTypes',
+      value: function parseAtomTypes(atomTypes) {
+        var _this3 = this;
+
+        return atomTypes.map(function (atomType) {
+          return _this3.parseAtomType(atomType);
+        });
+      }
+    }, {
+      key: 'parseAtomType',
+      value: function parseAtomType(_ref4) {
+        var _ref42 = _slicedToArray(_ref4, 3);
+
+        var atomName = _ref42[0];
+        var atomValue = _ref42[1];
+        var atomPayload = _ref42[2];
+
+        return [atomName, atomValue, atomPayload];
+      }
+    }, {
+      key: 'parseSections',
+      value: function parseSections(sections, post) {
+        var _this4 = this;
+
+        sections.forEach(function (section) {
+          return _this4.parseSection(section, post);
+        });
+      }
+    }, {
+      key: 'parseSection',
+      value: function parseSection(section, post) {
+        var _section = _slicedToArray(section, 1);
+
+        var type = _section[0];
+
+        switch (type) {
+          case _mobiledocKitRenderersMobiledoc031.MOBILEDOC_MARKUP_SECTION_TYPE:
+            this.parseMarkupSection(section, post);
+            break;
+          case _mobiledocKitRenderersMobiledoc031.MOBILEDOC_IMAGE_SECTION_TYPE:
+            this.parseImageSection(section, post);
+            break;
+          case _mobiledocKitRenderersMobiledoc031.MOBILEDOC_CARD_SECTION_TYPE:
+            this.parseCardSection(section, post);
+            break;
+          case _mobiledocKitRenderersMobiledoc031.MOBILEDOC_LIST_SECTION_TYPE:
+            this.parseListSection(section, post);
+            break;
+          default:
+            (0, _mobiledocKitUtilsAssert['default'])('Unexpected section type ${type}', false);
+        }
+      }
+    }, {
+      key: 'getAtomTypeFromIndex',
+      value: function getAtomTypeFromIndex(index) {
+        var atomType = this.atomTypes[index];
+        (0, _mobiledocKitUtilsAssert['default'])('No atom definition found at index ' + index, !!atomType);
+        return atomType;
+      }
+    }, {
+      key: 'getCardTypeFromIndex',
+      value: function getCardTypeFromIndex(index) {
+        var cardType = this.cardTypes[index];
+        (0, _mobiledocKitUtilsAssert['default'])('No card definition found at index ' + index, !!cardType);
+        return cardType;
+      }
+    }, {
+      key: 'parseCardSection',
+      value: function parseCardSection(_ref5, post) {
+        var _ref52 = _slicedToArray(_ref5, 2);
+
+        var type = _ref52[0];
+        var cardIndex = _ref52[1];
+
+        var _getCardTypeFromIndex = this.getCardTypeFromIndex(cardIndex);
+
+        var _getCardTypeFromIndex2 = _slicedToArray(_getCardTypeFromIndex, 2);
+
+        var name = _getCardTypeFromIndex2[0];
+        var payload = _getCardTypeFromIndex2[1];
+
+        var section = this.builder.createCardSection(name, payload);
+        post.sections.append(section);
+      }
+    }, {
+      key: 'parseImageSection',
+      value: function parseImageSection(_ref6, post) {
+        var _ref62 = _slicedToArray(_ref6, 2);
+
+        var type = _ref62[0];
+        var src = _ref62[1];
+
+        var section = this.builder.createImageSection(src);
+        post.sections.append(section);
+      }
+    }, {
+      key: 'parseMarkupSection',
+      value: function parseMarkupSection(_ref7, post) {
+        var _ref72 = _slicedToArray(_ref7, 3);
+
+        var type = _ref72[0];
+        var tagName = _ref72[1];
+        var markers = _ref72[2];
+
+        var section = this.builder.createMarkupSection(tagName);
+        post.sections.append(section);
+        this.parseMarkers(markers, section);
+        // Strip blank markers after they have been created. This ensures any
+        // markup they include has been correctly populated.
+        (0, _mobiledocKitUtilsArrayUtils.filter)(section.markers, function (m) {
+          return m.isBlank;
+        }).forEach(function (m) {
+          section.markers.remove(m);
+        });
+      }
+    }, {
+      key: 'parseListSection',
+      value: function parseListSection(_ref8, post) {
+        var _ref82 = _slicedToArray(_ref8, 3);
+
+        var type = _ref82[0];
+        var tagName = _ref82[1];
+        var items = _ref82[2];
+
+        var section = this.builder.createListSection(tagName);
+        post.sections.append(section);
+        this.parseListItems(items, section);
+      }
+    }, {
+      key: 'parseListItems',
+      value: function parseListItems(items, section) {
+        var _this5 = this;
+
+        items.forEach(function (i) {
+          return _this5.parseListItem(i, section);
+        });
+      }
+    }, {
+      key: 'parseListItem',
+      value: function parseListItem(markers, section) {
+        var item = this.builder.createListItem();
+        this.parseMarkers(markers, item);
+        section.items.append(item);
+      }
+    }, {
+      key: 'parseMarkers',
+      value: function parseMarkers(markers, parent) {
+        var _this6 = this;
+
+        markers.forEach(function (m) {
+          return _this6.parseMarker(m, parent);
+        });
+      }
+    }, {
+      key: 'parseMarker',
+      value: function parseMarker(_ref9, parent) {
+        var _this7 = this;
+
+        var _ref92 = _slicedToArray(_ref9, 4);
+
+        var type = _ref92[0];
+        var markerTypeIndexes = _ref92[1];
+        var closeCount = _ref92[2];
+        var value = _ref92[3];
+
+        markerTypeIndexes.forEach(function (index) {
+          _this7.markups.push(_this7.markerTypes[index]);
+        });
+
+        var marker = this.buildMarkerType(type, value);
+        parent.markers.append(marker);
+
+        this.markups = this.markups.slice(0, this.markups.length - closeCount);
+      }
+    }, {
+      key: 'buildMarkerType',
+      value: function buildMarkerType(type, value) {
+        switch (type) {
+          case _mobiledocKitRenderersMobiledoc031.MOBILEDOC_MARKUP_MARKER_TYPE:
+            return this.builder.createMarker(value, this.markups.slice());
+          case _mobiledocKitRenderersMobiledoc031.MOBILEDOC_ATOM_MARKER_TYPE:
+            var _getAtomTypeFromIndex = this.getAtomTypeFromIndex(value),
+                _getAtomTypeFromIndex2 = _slicedToArray(_getAtomTypeFromIndex, 3),
+                atomName = _getAtomTypeFromIndex2[0],
+                atomValue = _getAtomTypeFromIndex2[1],
+                atomPayload = _getAtomTypeFromIndex2[2];
+
+            return this.builder.createAtom(atomName, atomValue, atomPayload, this.markups.slice());
+          default:
+            (0, _mobiledocKitUtilsAssert['default'])('Unexpected marker type ' + type, false);
+        }
       }
     }]);
 
@@ -8681,7 +9130,7 @@ define('mobiledoc-kit/parsers/mobiledoc/0-3', ['exports', 'mobiledoc-kit/rendere
         var tagName = _ref72[1];
         var markers = _ref72[2];
 
-        var section = this.builder.createMarkupSection(tagName);
+        var section = this.builder.createMarkupSection(tagName.toLowerCase() === 'pull-quote' ? 'aside' : tagName);
         post.sections.append(section);
         this.parseMarkers(markers, section);
         // Strip blank markers after they have been created. This ensures any
@@ -8776,7 +9225,7 @@ define('mobiledoc-kit/parsers/mobiledoc/0-3', ['exports', 'mobiledoc-kit/rendere
 
   exports['default'] = MobiledocParser;
 });
-define('mobiledoc-kit/parsers/mobiledoc', ['exports', 'mobiledoc-kit/parsers/mobiledoc/0-2', 'mobiledoc-kit/parsers/mobiledoc/0-3', 'mobiledoc-kit/renderers/mobiledoc/0-2', 'mobiledoc-kit/renderers/mobiledoc/0-3', 'mobiledoc-kit/utils/assert'], function (exports, _mobiledocKitParsersMobiledoc02, _mobiledocKitParsersMobiledoc03, _mobiledocKitRenderersMobiledoc02, _mobiledocKitRenderersMobiledoc03, _mobiledocKitUtilsAssert) {
+define('mobiledoc-kit/parsers/mobiledoc', ['exports', 'mobiledoc-kit/parsers/mobiledoc/0-2', 'mobiledoc-kit/parsers/mobiledoc/0-3', 'mobiledoc-kit/parsers/mobiledoc/0-3-1', 'mobiledoc-kit/renderers/mobiledoc/0-2', 'mobiledoc-kit/renderers/mobiledoc/0-3', 'mobiledoc-kit/renderers/mobiledoc/0-3-1', 'mobiledoc-kit/utils/assert'], function (exports, _mobiledocKitParsersMobiledoc02, _mobiledocKitParsersMobiledoc03, _mobiledocKitParsersMobiledoc031, _mobiledocKitRenderersMobiledoc02, _mobiledocKitRenderersMobiledoc03, _mobiledocKitRenderersMobiledoc031, _mobiledocKitUtilsAssert) {
   'use strict';
 
   function parseVersion(mobiledoc) {
@@ -8791,6 +9240,8 @@ define('mobiledoc-kit/parsers/mobiledoc', ['exports', 'mobiledoc-kit/parsers/mob
           return new _mobiledocKitParsersMobiledoc02['default'](builder).parse(mobiledoc);
         case _mobiledocKitRenderersMobiledoc03.MOBILEDOC_VERSION:
           return new _mobiledocKitParsersMobiledoc03['default'](builder).parse(mobiledoc);
+        case _mobiledocKitRenderersMobiledoc031.MOBILEDOC_VERSION:
+          return new _mobiledocKitParsersMobiledoc031['default'](builder).parse(mobiledoc);
         default:
           (0, _mobiledocKitUtilsAssert['default'])('Unknown version of mobiledoc parser requested: ' + version, false);
       }
@@ -9980,6 +10431,150 @@ define('mobiledoc-kit/renderers/mobiledoc/0-2', ['exports', 'mobiledoc-kit/utils
     }
   };
 });
+define('mobiledoc-kit/renderers/mobiledoc/0-3-1', ['exports', 'mobiledoc-kit/utils/compiler', 'mobiledoc-kit/utils/array-utils', 'mobiledoc-kit/models/types'], function (exports, _mobiledocKitUtilsCompiler, _mobiledocKitUtilsArrayUtils, _mobiledocKitModelsTypes) {
+  'use strict';
+
+  var _visitor;
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+  var MOBILEDOC_VERSION = '0.3.1';
+  exports.MOBILEDOC_VERSION = MOBILEDOC_VERSION;
+  var MOBILEDOC_MARKUP_SECTION_TYPE = 1;
+  exports.MOBILEDOC_MARKUP_SECTION_TYPE = MOBILEDOC_MARKUP_SECTION_TYPE;
+  var MOBILEDOC_IMAGE_SECTION_TYPE = 2;
+  exports.MOBILEDOC_IMAGE_SECTION_TYPE = MOBILEDOC_IMAGE_SECTION_TYPE;
+  var MOBILEDOC_LIST_SECTION_TYPE = 3;
+  exports.MOBILEDOC_LIST_SECTION_TYPE = MOBILEDOC_LIST_SECTION_TYPE;
+  var MOBILEDOC_CARD_SECTION_TYPE = 10;
+
+  exports.MOBILEDOC_CARD_SECTION_TYPE = MOBILEDOC_CARD_SECTION_TYPE;
+  var MOBILEDOC_MARKUP_MARKER_TYPE = 0;
+  exports.MOBILEDOC_MARKUP_MARKER_TYPE = MOBILEDOC_MARKUP_MARKER_TYPE;
+  var MOBILEDOC_ATOM_MARKER_TYPE = 1;
+
+  exports.MOBILEDOC_ATOM_MARKER_TYPE = MOBILEDOC_ATOM_MARKER_TYPE;
+  var visitor = (_visitor = {}, _defineProperty(_visitor, _mobiledocKitModelsTypes.POST_TYPE, function (node, opcodes) {
+    opcodes.push(['openPost']);
+    (0, _mobiledocKitUtilsCompiler.visitArray)(visitor, node.sections, opcodes);
+  }), _defineProperty(_visitor, _mobiledocKitModelsTypes.MARKUP_SECTION_TYPE, function (node, opcodes) {
+    opcodes.push(['openMarkupSection', node.tagName]);
+    (0, _mobiledocKitUtilsCompiler.visitArray)(visitor, node.markers, opcodes);
+  }), _defineProperty(_visitor, _mobiledocKitModelsTypes.LIST_SECTION_TYPE, function (node, opcodes) {
+    opcodes.push(['openListSection', node.tagName]);
+    (0, _mobiledocKitUtilsCompiler.visitArray)(visitor, node.items, opcodes);
+  }), _defineProperty(_visitor, _mobiledocKitModelsTypes.LIST_ITEM_TYPE, function (node, opcodes) {
+    opcodes.push(['openListItem']);
+    (0, _mobiledocKitUtilsCompiler.visitArray)(visitor, node.markers, opcodes);
+  }), _defineProperty(_visitor, _mobiledocKitModelsTypes.IMAGE_SECTION_TYPE, function (node, opcodes) {
+    opcodes.push(['openImageSection', node.src]);
+  }), _defineProperty(_visitor, _mobiledocKitModelsTypes.CARD_TYPE, function (node, opcodes) {
+    opcodes.push(['openCardSection', node.name, node.payload]);
+  }), _defineProperty(_visitor, _mobiledocKitModelsTypes.MARKER_TYPE, function (node, opcodes) {
+    opcodes.push(['openMarker', node.closedMarkups.length, node.value]);
+    (0, _mobiledocKitUtilsCompiler.visitArray)(visitor, node.openedMarkups, opcodes);
+  }), _defineProperty(_visitor, _mobiledocKitModelsTypes.MARKUP_TYPE, function (node, opcodes) {
+    opcodes.push(['openMarkup', node.tagName, (0, _mobiledocKitUtilsArrayUtils.objectToSortedKVArray)(node.attributes)]);
+  }), _defineProperty(_visitor, _mobiledocKitModelsTypes.ATOM_TYPE, function (node, opcodes) {
+    opcodes.push(['openAtom', node.closedMarkups.length, node.name, node.value, node.payload]);
+    (0, _mobiledocKitUtilsCompiler.visitArray)(visitor, node.openedMarkups, opcodes);
+  }), _visitor);
+
+  var postOpcodeCompiler = {
+    openMarker: function openMarker(closeCount, value) {
+      this.markupMarkerIds = [];
+      this.markers.push([MOBILEDOC_MARKUP_MARKER_TYPE, this.markupMarkerIds, closeCount, value || '']);
+    },
+    openMarkupSection: function openMarkupSection(tagName) {
+      this.markers = [];
+      this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers]);
+    },
+    openListSection: function openListSection(tagName) {
+      this.items = [];
+      this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items]);
+    },
+    openListItem: function openListItem() {
+      this.markers = [];
+      this.items.push(this.markers);
+    },
+    openImageSection: function openImageSection(url) {
+      this.sections.push([MOBILEDOC_IMAGE_SECTION_TYPE, url]);
+    },
+    openCardSection: function openCardSection(name, payload) {
+      var index = this._addCardTypeIndex(name, payload);
+      this.sections.push([MOBILEDOC_CARD_SECTION_TYPE, index]);
+    },
+    openAtom: function openAtom(closeCount, name, value, payload) {
+      var index = this._addAtomTypeIndex(name, value, payload);
+      this.markupMarkerIds = [];
+      this.markers.push([MOBILEDOC_ATOM_MARKER_TYPE, this.markupMarkerIds, closeCount, index]);
+    },
+    openPost: function openPost() {
+      this.atomTypes = [];
+      this.cardTypes = [];
+      this.markerTypes = [];
+      this.sections = [];
+      this.result = {
+        version: MOBILEDOC_VERSION,
+        atoms: this.atomTypes,
+        cards: this.cardTypes,
+        markups: this.markerTypes,
+        sections: this.sections
+      };
+    },
+    openMarkup: function openMarkup(tagName, attributes) {
+      var index = this._findOrAddMarkerTypeIndex(tagName, attributes);
+      this.markupMarkerIds.push(index);
+    },
+    _addCardTypeIndex: function _addCardTypeIndex(cardName, payload) {
+      var cardType = [cardName, payload];
+      this.cardTypes.push(cardType);
+      return this.cardTypes.length - 1;
+    },
+    _addAtomTypeIndex: function _addAtomTypeIndex(atomName, atomValue, payload) {
+      var atomType = [atomName, atomValue, payload];
+      this.atomTypes.push(atomType);
+      return this.atomTypes.length - 1;
+    },
+    _findOrAddMarkerTypeIndex: function _findOrAddMarkerTypeIndex(tagName, attributesArray) {
+      if (!this._markerTypeCache) {
+        this._markerTypeCache = {};
+      }
+      var key = tagName + '-' + attributesArray.join('-');
+
+      var index = this._markerTypeCache[key];
+      if (index === undefined) {
+        var markerType = [tagName];
+        if (attributesArray.length) {
+          markerType.push(attributesArray);
+        }
+        this.markerTypes.push(markerType);
+
+        index = this.markerTypes.length - 1;
+        this._markerTypeCache[key] = index;
+      }
+
+      return index;
+    }
+  };
+
+  /**
+   * Render from post -> mobiledoc
+   */
+  exports['default'] = {
+    /**
+     * @param {Post}
+     * @return {Mobiledoc}
+     */
+    render: function render(post) {
+      var opcodes = [];
+      (0, _mobiledocKitUtilsCompiler.visit)(visitor, post, opcodes);
+      var compiler = Object.create(postOpcodeCompiler);
+      (0, _mobiledocKitUtilsCompiler.compile)(compiler, opcodes);
+      return compiler.result;
+    }
+  };
+});
 define('mobiledoc-kit/renderers/mobiledoc/0-3', ['exports', 'mobiledoc-kit/utils/compiler', 'mobiledoc-kit/utils/array-utils', 'mobiledoc-kit/models/types'], function (exports, _mobiledocKitUtilsCompiler, _mobiledocKitUtilsArrayUtils, _mobiledocKitModelsTypes) {
   'use strict';
 
@@ -10124,10 +10719,10 @@ define('mobiledoc-kit/renderers/mobiledoc/0-3', ['exports', 'mobiledoc-kit/utils
     }
   };
 });
-define('mobiledoc-kit/renderers/mobiledoc', ['exports', 'mobiledoc-kit/renderers/mobiledoc/0-2', 'mobiledoc-kit/renderers/mobiledoc/0-3', 'mobiledoc-kit/utils/assert'], function (exports, _mobiledocKitRenderersMobiledoc02, _mobiledocKitRenderersMobiledoc03, _mobiledocKitUtilsAssert) {
+define('mobiledoc-kit/renderers/mobiledoc', ['exports', 'mobiledoc-kit/renderers/mobiledoc/0-2', 'mobiledoc-kit/renderers/mobiledoc/0-3', 'mobiledoc-kit/renderers/mobiledoc/0-3-1', 'mobiledoc-kit/utils/assert'], function (exports, _mobiledocKitRenderersMobiledoc02, _mobiledocKitRenderersMobiledoc03, _mobiledocKitRenderersMobiledoc031, _mobiledocKitUtilsAssert) {
   'use strict';
 
-  var MOBILEDOC_VERSION = _mobiledocKitRenderersMobiledoc03.MOBILEDOC_VERSION;
+  var MOBILEDOC_VERSION = _mobiledocKitRenderersMobiledoc031.MOBILEDOC_VERSION;
 
   exports.MOBILEDOC_VERSION = MOBILEDOC_VERSION;
   exports['default'] = {
@@ -10135,10 +10730,12 @@ define('mobiledoc-kit/renderers/mobiledoc', ['exports', 'mobiledoc-kit/renderers
       switch (version) {
         case _mobiledocKitRenderersMobiledoc02.MOBILEDOC_VERSION:
           return _mobiledocKitRenderersMobiledoc02['default'].render(post);
-        case undefined:
-        case null:
         case _mobiledocKitRenderersMobiledoc03.MOBILEDOC_VERSION:
           return _mobiledocKitRenderersMobiledoc03['default'].render(post);
+        case undefined:
+        case null:
+        case _mobiledocKitRenderersMobiledoc031.MOBILEDOC_VERSION:
+          return _mobiledocKitRenderersMobiledoc031['default'].render(post);
         default:
           (0, _mobiledocKitUtilsAssert['default'])('Unknown version of mobiledoc renderer requested: ' + version, false);
       }
@@ -10636,6 +11233,9 @@ define('mobiledoc-kit/utils/cursor', ['exports', 'mobiledoc-kit/utils/selection-
         var selection = this.selection;
         var renderTree = this.renderTree;
 
+        var parentNode = this.editor.element;
+        selection = (0, _mobiledocKitUtilsSelectionUtils.constrainSelectionTo)(selection, parentNode);
+
         var _comparePosition = (0, _mobiledocKitUtilsSelectionUtils.comparePosition)(selection);
 
         var headNode = _comparePosition.headNode;
@@ -10674,7 +11274,7 @@ define('mobiledoc-kit/utils/cursor', ['exports', 'mobiledoc-kit/utils/selection-
 define('mobiledoc-kit/utils/cursor/position', ['exports', 'mobiledoc-kit/utils/dom-utils', 'mobiledoc-kit/utils/assert', 'mobiledoc-kit/models/marker', 'mobiledoc-kit/utils/selection-utils', 'mobiledoc-kit/utils/key', 'mobiledoc-kit/utils/cursor/range'], function (exports, _mobiledocKitUtilsDomUtils, _mobiledocKitUtilsAssert, _mobiledocKitModelsMarker, _mobiledocKitUtilsSelectionUtils, _mobiledocKitUtilsKey, _mobiledocKitUtilsCursorRange) {
   'use strict';
 
-  var _get = function get(_x4, _x5, _x6) { var _again = true; _function: while (_again) { var object = _x4, property = _x5, receiver = _x6; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x4 = parent; _x5 = property; _x6 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+  var _get = function get(_x5, _x6, _x7) { var _again = true; _function: while (_again) { var object = _x5, property = _x6, receiver = _x7; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x5 = parent; _x6 = property; _x7 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
   var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -10778,8 +11378,9 @@ define('mobiledoc-kit/utils/cursor/position', ['exports', 'mobiledoc-kit/utils/d
        */
       value: function toRange() {
         var tail = arguments.length <= 0 || arguments[0] === undefined ? this : arguments[0];
+        var direction = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
-        return new _mobiledocKitUtilsCursorRange['default'](this, tail);
+        return new _mobiledocKitUtilsCursorRange['default'](this, tail, direction);
       }
     }, {
       key: 'markerIn',
@@ -10847,7 +11448,7 @@ define('mobiledoc-kit/utils/cursor/position', ['exports', 'mobiledoc-kit/utils/d
       }
 
       /**
-       * @return {Boolean} If this position is at the head of its section
+       * @return {Boolean} If this position is at the tail of its section
        */
     }, {
       key: 'isTail',
@@ -11361,6 +11962,41 @@ define('mobiledoc-kit/utils/cursor/range', ['exports', 'mobiledoc-kit/utils/curs
           return this._collapse(direction);
         }
       }
+
+      /**
+       * expand a range to all markers matching a given check
+       *
+       * @param {Function} detectMarker
+       * @return {Range} The expanded range
+       *
+       * @public
+       */
+    }, {
+      key: 'expandByMarker',
+      value: function expandByMarker(detectMarker) {
+        var head = this.head;
+        var tail = this.tail;
+        var direction = this.direction;
+        var headSection = head.section;
+
+        if (headSection !== tail.section) {
+          throw new Error('#expandByMarker does not work across sections. Perhaps you should confirm the range is collapsed');
+        }
+
+        var firstNotMatchingDetect = function firstNotMatchingDetect(i) {
+          return !detectMarker(i);
+        };
+
+        var headMarker = head.section.markers.detect(firstNotMatchingDetect, head.marker, true);
+        headMarker = headMarker && headMarker.next || head.marker;
+        var headPosition = new _mobiledocKitUtilsCursorPosition['default'](headSection, headSection.offsetOfMarker(headMarker));
+
+        var tailMarker = tail.section.markers.detect(firstNotMatchingDetect, tail.marker);
+        tailMarker = tailMarker && tailMarker.prev || tail.marker;
+        var tailPosition = new _mobiledocKitUtilsCursorPosition['default'](tail.section, tail.section.offsetOfMarker(tailMarker) + tailMarker.length);
+
+        return headPosition.toRange(tailPosition, direction);
+      }
     }, {
       key: '_collapse',
       value: function _collapse(direction) {
@@ -11584,6 +12220,12 @@ define('mobiledoc-kit/utils/dom-utils', ['exports', 'mobiledoc-kit/utils/array-u
     return div;
   }
 
+  function serializeHTML(node) {
+    var div = document.createElement('div');
+    div.appendChild(node);
+    return div.innerHTML;
+  }
+
   exports.containsNode = containsNode;
   exports.clearChildNodes = clearChildNodes;
   exports.getAttributes = getAttributes;
@@ -11596,6 +12238,7 @@ define('mobiledoc-kit/utils/dom-utils', ['exports', 'mobiledoc-kit/utils/array-u
   exports.isCommentNode = isCommentNode;
   exports.isElementNode = isElementNode;
   exports.parseHTML = parseHTML;
+  exports.serializeHTML = serializeHTML;
 });
 define('mobiledoc-kit/utils/element-map', ['exports', 'mobiledoc-kit/utils/assert'], function (exports, _mobiledocKitUtilsAssert) {
   'use strict';
@@ -11717,6 +12360,15 @@ define('mobiledoc-kit/utils/element-utils', ['exports', 'mobiledoc-kit/utils/str
   exports.positionElementToRect = positionElementToRect;
   exports.positionElementHorizontallyCenteredToRect = positionElementHorizontallyCenteredToRect;
   exports.positionElementCenteredBelow = positionElementCenteredBelow;
+});
+define('mobiledoc-kit/utils/environment', ['exports'], function (exports) {
+  'use strict';
+
+  exports['default'] = {
+    hasDOM: function hasDOM() {
+      return typeof document !== 'undefined';
+    }
+  };
 });
 define("mobiledoc-kit/utils/fixed-queue", ["exports"], function (exports) {
   "use strict";
@@ -12305,12 +12957,13 @@ define('mobiledoc-kit/utils/linked-list', ['exports', 'mobiledoc-kit/utils/asser
       key: 'detect',
       value: function detect(callback) {
         var item = arguments.length <= 1 || arguments[1] === undefined ? this.head : arguments[1];
+        var reverse = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
         while (item) {
           if (callback(item)) {
             return item;
           }
-          item = item.next;
+          item = reverse ? item.prev : item.next;
         }
       }
     }, {
@@ -12935,6 +13588,54 @@ define('mobiledoc-kit/utils/selection-utils', ['exports', 'mobiledoc-kit/utils/k
     }
   }
 
+  function constrainNodeTo(node, parentNode, existingOffset) {
+    var compare = parentNode.compareDocumentPosition(node);
+    if (compare & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+      // the node is inside parentNode, do nothing
+      return { node: node, offset: existingOffset };
+    } else if (compare & Node.DOCUMENT_POSITION_CONTAINS) {
+      // the node contains parentNode. This shouldn't happen.
+      return { node: node, offset: existingOffset };
+    } else if (compare & Node.DOCUMENT_POSITION_PRECEDING) {
+      // node is before parentNode. return start of deepest first child
+      var child = parentNode.firstChild;
+      while (child.firstChild) {
+        child = child.firstChild;
+      }
+      return { node: child, offset: 0 };
+    } else if (compare & Node.DOCUMENT_POSITION_FOLLOWING) {
+      // node is after parentNode. return end of deepest last child
+      var child = parentNode.lastChild;
+      while (child.lastChild) {
+        child = child.lastChild;
+      }
+
+      var offset = (0, _mobiledocKitUtilsDomUtils.isTextNode)(child) ? child.textContent.length : 1;
+      return { node: child, offset: offset };
+    } else {
+      return { node: node, offset: existingOffset };
+    }
+  }
+
+  /*
+   * Returns a new selection that is constrained within parentNode.
+   * If the anchorNode or focusNode are outside the parentNode, they are replaced with the beginning
+   * or end of the parentNode's children
+   */
+  function constrainSelectionTo(selection, parentNode) {
+    var _constrainNodeTo = constrainNodeTo(selection.anchorNode, parentNode, selection.anchorOffset);
+
+    var anchorNode = _constrainNodeTo.node;
+    var anchorOffset = _constrainNodeTo.offset;
+
+    var _constrainNodeTo2 = constrainNodeTo(selection.focusNode, parentNode, selection.focusOffset);
+
+    var focusNode = _constrainNodeTo2.node;
+    var focusOffset = _constrainNodeTo2.offset;
+
+    return { anchorNode: anchorNode, anchorOffset: anchorOffset, focusNode: focusNode, focusOffset: focusOffset };
+  }
+
   function comparePosition(_x3) {
     var _again2 = true;
 
@@ -13034,6 +13735,7 @@ define('mobiledoc-kit/utils/selection-utils', ['exports', 'mobiledoc-kit/utils/k
   exports.clearSelection = clearSelection;
   exports.comparePosition = comparePosition;
   exports.findOffsetInNode = findOffsetInNode;
+  exports.constrainSelectionTo = constrainSelectionTo;
 });
 define("mobiledoc-kit/utils/set", ["exports"], function (exports) {
   "use strict";
@@ -13138,7 +13840,7 @@ define('mobiledoc-kit/utils/to-range', ['exports', 'mobiledoc-kit/utils/cursor/r
 define('mobiledoc-kit/version', ['exports'], function (exports) {
   'use strict';
 
-  exports['default'] = '0.10.11';
+  exports['default'] = '0.10.16';
 });
 define('mobiledoc-kit/views/tooltip', ['exports', 'mobiledoc-kit/views/view', 'mobiledoc-kit/utils/element-utils'], function (exports, _mobiledocKitViewsView, _mobiledocKitUtilsElementUtils) {
   'use strict';
@@ -13382,10 +14084,11 @@ define('mobiledoc-text-renderer/renderer-factory', ['exports', 'mobiledoc-text-r
 
         switch (version) {
           case _mobiledocTextRendererRenderers02.MOBILEDOC_VERSION:
+            return new _mobiledocTextRendererRenderers02['default'](mobiledoc, this.state).render();
           case undefined:
           case null:
-            return new _mobiledocTextRendererRenderers02['default'](mobiledoc, this.state).render();
-          case _mobiledocTextRendererRenderers03.MOBILEDOC_VERSION:
+          case _mobiledocTextRendererRenderers03.MOBILEDOC_VERSION_0_3:
+          case _mobiledocTextRendererRenderers03.MOBILEDOC_VERSION_0_3_1:
             return new _mobiledocTextRendererRenderers03['default'](mobiledoc, this.state).render();
           default:
             throw new Error('Unexpected Mobiledoc version "' + version + '"');
@@ -13649,11 +14352,15 @@ define('mobiledoc-text-renderer/renderers/0-3', ['exports', 'mobiledoc-text-rend
 
   var LINE_BREAK = '\n';
 
-  var MOBILEDOC_VERSION = '0.3.0';
+  var MOBILEDOC_VERSION_0_3 = '0.3.0';
+  exports.MOBILEDOC_VERSION_0_3 = MOBILEDOC_VERSION_0_3;
+  var MOBILEDOC_VERSION_0_3_1 = '0.3.1';
+  exports.MOBILEDOC_VERSION_0_3_1 = MOBILEDOC_VERSION_0_3_1;
+  var MOBILEDOC_VERSION = MOBILEDOC_VERSION_0_3_1;
 
   exports.MOBILEDOC_VERSION = MOBILEDOC_VERSION;
   function validateVersion(version) {
-    if (version !== MOBILEDOC_VERSION) {
+    if (version !== MOBILEDOC_VERSION_0_3 && version !== MOBILEDOC_VERSION_0_3_1) {
       throw new Error('Unexpected Mobiledoc version "' + version + '"');
     }
   }

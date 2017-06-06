@@ -42,7 +42,7 @@ function replaceWithListSection(editor, listTagName) {
  * Does nothing if the cursor position is not at the start of the section.
  *
  * @param {Editor} editor
- * @param {String} headingTagName ("h1","h2","h3")
+ * @param {String} headingTagName ('h1', 'h2', 'h3', 'h4', 'h5', 'h6')
  * @public
  */
 
@@ -81,8 +81,15 @@ var DEFAULT_TEXT_INPUT_HANDLERS = [{
   }
 }, {
   name: 'heading',
-  // "# " -> h1, "## " -> h2, "### " -> h3
-  match: /^(#{1,3}) $/,
+  /*
+   * "# " -> h1
+   * "## " -> h2
+   * "### " -> h3
+   * "#### " -> h4
+   * "##### " -> h5
+   * "###### " -> h6
+   */
+  match: /^(#{1,6}) $/,
   run: function run(editor, matches) {
     var capture = matches[1];
     var headingTag = 'h' + capture.length;

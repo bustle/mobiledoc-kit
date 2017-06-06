@@ -6,7 +6,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _renderersMobiledoc03 = require('../../renderers/mobiledoc/0-3');
+var _renderersMobiledoc031 = require('../../renderers/mobiledoc/0-3-1');
 
 var _utilsArrayUtils = require("../../utils/array-utils");
 
@@ -127,16 +127,16 @@ var MobiledocParser = (function () {
       var type = _section[0];
 
       switch (type) {
-        case _renderersMobiledoc03.MOBILEDOC_MARKUP_SECTION_TYPE:
+        case _renderersMobiledoc031.MOBILEDOC_MARKUP_SECTION_TYPE:
           this.parseMarkupSection(section, post);
           break;
-        case _renderersMobiledoc03.MOBILEDOC_IMAGE_SECTION_TYPE:
+        case _renderersMobiledoc031.MOBILEDOC_IMAGE_SECTION_TYPE:
           this.parseImageSection(section, post);
           break;
-        case _renderersMobiledoc03.MOBILEDOC_CARD_SECTION_TYPE:
+        case _renderersMobiledoc031.MOBILEDOC_CARD_SECTION_TYPE:
           this.parseCardSection(section, post);
           break;
-        case _renderersMobiledoc03.MOBILEDOC_LIST_SECTION_TYPE:
+        case _renderersMobiledoc031.MOBILEDOC_LIST_SECTION_TYPE:
           this.parseListSection(section, post);
           break;
         default:
@@ -195,7 +195,7 @@ var MobiledocParser = (function () {
       var tagName = _ref72[1];
       var markers = _ref72[2];
 
-      var section = this.builder.createMarkupSection(tagName.toLowerCase() === 'pull-quote' ? 'aside' : tagName);
+      var section = this.builder.createMarkupSection(tagName);
       post.sections.append(section);
       this.parseMarkers(markers, section);
       // Strip blank markers after they have been created. This ensures any
@@ -269,9 +269,9 @@ var MobiledocParser = (function () {
     key: 'buildMarkerType',
     value: function buildMarkerType(type, value) {
       switch (type) {
-        case _renderersMobiledoc03.MOBILEDOC_MARKUP_MARKER_TYPE:
+        case _renderersMobiledoc031.MOBILEDOC_MARKUP_MARKER_TYPE:
           return this.builder.createMarker(value, this.markups.slice());
-        case _renderersMobiledoc03.MOBILEDOC_ATOM_MARKER_TYPE:
+        case _renderersMobiledoc031.MOBILEDOC_ATOM_MARKER_TYPE:
           var _getAtomTypeFromIndex = this.getAtomTypeFromIndex(value),
               _getAtomTypeFromIndex2 = _slicedToArray(_getAtomTypeFromIndex, 3),
               atomName = _getAtomTypeFromIndex2[0],

@@ -77,6 +77,16 @@ var DEFAULT_KEY_COMMANDS = [{
     editor.toggleMarkup('em');
   }
 }, {
+  str: 'META+U',
+  run: function run(editor) {
+    editor.toggleMarkup('u');
+  }
+}, {
+  str: 'CTRL+U',
+  run: function run(editor) {
+    editor.toggleMarkup('u');
+  }
+}, {
   str: 'CTRL+K',
   run: function run(editor) {
     if (_utilsBrowser['default'].isMac()) {

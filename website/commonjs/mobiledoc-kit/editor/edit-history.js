@@ -21,11 +21,15 @@ function findLeafSectionAtIndex(post, index) {
 }
 
 var Snapshot = (function () {
-  function Snapshot(editor) {
+  function Snapshot(takenAt, editor) {
+    var editAction = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+
     _classCallCheck(this, Snapshot);
 
     this.mobiledoc = editor.serialize();
     this.editor = editor;
+    this.editAction = editAction;
+    this.takenAt = takenAt;
 
     this.snapshotRange();
   }
@@ -76,6 +80,11 @@ var Snapshot = (function () {
         return head.toRange(tail);
       }
     }
+  }, {
+    key: 'groupsWith',
+    value: function groupsWith(groupingTimeout, editAction, takenAt) {
+      return editAction !== null && this.editAction === editAction && this.takenAt + groupingTimeout > takenAt;
+    }
   }]);
 
   return Snapshot;
@@ -84,7 +93,7 @@ var Snapshot = (function () {
 exports.Snapshot = Snapshot;
 
 var EditHistory = (function () {
-  function EditHistory(editor, queueLength) {
+  function EditHistory(editor, queueLength, groupingTimeout) {
     _classCallCheck(this, EditHistory);
 
     this.editor = editor;
@@ -92,6 +101,7 @@ var EditHistory = (function () {
     this._redoStack = new _utilsFixedQueue['default'](queueLength);
 
     this._pendingSnapshot = null;
+    this._groupingTimeout = groupingTimeout;
   }
 
   _createClass(EditHistory, [{
@@ -105,14 +115,20 @@ var EditHistory = (function () {
   }, {
     key: 'storeSnapshot',
     value: function storeSnapshot() {
+      var editAction = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+
+      var now = Date.now();
       // store pending snapshot
-      if (this._pendingSnapshot) {
-        this._undoStack.push(this._pendingSnapshot);
+      var pendingSnapshot = this._pendingSnapshot;
+      if (pendingSnapshot) {
+        if (!pendingSnapshot.groupsWith(this._groupingTimeout, editAction, now)) {
+          this._undoStack.push(pendingSnapshot);
+        }
         this._redoStack.clear();
       }
 
       // take new pending snapshot to store next time `storeSnapshot` is called
-      this._pendingSnapshot = new Snapshot(this.editor);
+      this._pendingSnapshot = new Snapshot(now, this.editor, editAction);
     }
   }, {
     key: 'stepBackward',
@@ -122,7 +138,7 @@ var EditHistory = (function () {
 
       var snapshot = this._undoStack.pop();
       if (snapshot) {
-        this._redoStack.push(new Snapshot(this.editor));
+        this._redoStack.push(new Snapshot(Date.now(), this.editor));
         this._restoreFromSnapshot(snapshot, postEditor);
       }
     }
@@ -131,7 +147,7 @@ var EditHistory = (function () {
     value: function stepForward(postEditor) {
       var snapshot = this._redoStack.pop();
       if (snapshot) {
-        this._undoStack.push(new Snapshot(this.editor));
+        this._undoStack.push(new Snapshot(Date.now(), this.editor));
         this._restoreFromSnapshot(snapshot, postEditor);
       }
       postEditor.cancelSnapshot();

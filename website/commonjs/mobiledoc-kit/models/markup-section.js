@@ -17,15 +17,15 @@ var _utilsArrayUtils = require('../utils/array-utils');
 var _types = require('./types');
 
 // valid values of `tagName` for a MarkupSection
-var VALID_MARKUP_SECTION_TAGNAMES = ['p', 'h3', 'h2', 'h1', 'blockquote', 'pull-quote'].map(_utilsDomUtils.normalizeTagName);
+var VALID_MARKUP_SECTION_TAGNAMES = ['aside', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].map(_utilsDomUtils.normalizeTagName);
 
 exports.VALID_MARKUP_SECTION_TAGNAMES = VALID_MARKUP_SECTION_TAGNAMES;
 // valid element names for a MarkupSection. A MarkupSection with a tagName
 // not in this will be rendered as a div with a className matching the
 // tagName
-var MARKUP_SECTION_ELEMENT_NAMES = ['p', 'h3', 'h2', 'h1', 'blockquote'].map(_utilsDomUtils.normalizeTagName);
+var MARKUP_SECTION_ELEMENT_NAMES = ['aside', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].map(_utilsDomUtils.normalizeTagName);
 exports.MARKUP_SECTION_ELEMENT_NAMES = MARKUP_SECTION_ELEMENT_NAMES;
-var DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[0];
+var DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[8];
 
 exports.DEFAULT_TAG_NAME = DEFAULT_TAG_NAME;
 var MarkupSection = (function (_Markerable) {

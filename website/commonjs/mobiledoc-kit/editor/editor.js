@@ -38,6 +38,8 @@ var _utilsCursorRange = require('../utils/cursor/range');
 
 var _utilsCursorPosition = require('../utils/cursor/position');
 
+var _utilsEnvironment = require('../utils/environment');
+
 var _modelsPostNodeBuilder = require('../models/post-node-builder');
 
 var _textInputHandlers = require('./text-input-handlers');
@@ -56,7 +58,7 @@ var _editorEventManager = require('../editor/event-manager');
 
 var _editorEditState = require('../editor/edit-state');
 
-var _mobiledocHtmlRenderer = require('mobiledoc-html-renderer');
+var _mobiledocDomRenderer = require('mobiledoc-dom-renderer');
 
 var _mobiledocTextRenderer = require('mobiledoc-text-renderer');
 
@@ -82,6 +84,7 @@ var defaults = {
   spellcheck: true,
   autofocus: true,
   undoDepth: 5,
+  undoBlockTimeout: 5000, // ms for an undo event
   cards: [],
   atoms: [],
   cardOptions: {},
@@ -192,7 +195,7 @@ var Editor = (function () {
     this.post = this.loadPost();
     this._renderTree = new _modelsRenderTree['default'](this.post);
 
-    this._editHistory = new _editorEditHistory['default'](this, this.undoDepth);
+    this._editHistory = new _editorEditHistory['default'](this, this.undoDepth, this.undoBlockTimeout);
     this._eventManager = new _editorEventManager['default'](this);
     this._mutationHandler = new _editorMutationHandler['default'](this);
     this._editState = new _editorEditState['default'](this);
@@ -348,6 +351,22 @@ var Editor = (function () {
       var keyCommand = (0, _keyCommands.buildKeyCommand)(rawKeyCommand);
       (0, _utilsAssert['default'])('Key Command is not valid', (0, _keyCommands.validateKeyCommand)(keyCommand));
       this.keyCommands.unshift(keyCommand);
+    }
+
+    /**
+     * @param {String} name If the keyCommand event has a name attribute it can be removed.
+     * @public
+     */
+  }, {
+    key: 'unregisterKeyCommands',
+    value: function unregisterKeyCommands(name) {
+      for (var i = this.keyCommands.length - 1; i > -1; i--) {
+        var keyCommand = this.keyCommands[i];
+
+        if (keyCommand.name === name) {
+          this.keyCommands.splice(i, 1);
+        }
+      }
     }
 
     /**
@@ -633,8 +652,15 @@ var Editor = (function () {
 
         switch (format) {
           case 'html':
-            rendered = new _mobiledocHtmlRenderer['default'](rendererOptions).render(mobiledoc);
-            return rendered.result;
+            var result = undefined;
+            if (_utilsEnvironment['default'].hasDOM()) {
+              rendered = new _mobiledocDomRenderer['default'](rendererOptions).render(mobiledoc);
+              result = '<div>' + (0, _utilsDomUtils.serializeHTML)(rendered.result) + '</div>';
+            } else {
+              // Fallback to text serialization
+              result = this.serializePost(post, 'text', options);
+            }
+            return result;
           case 'text':
             rendered = new _mobiledocTextRenderer['default'](rendererOptions).render(mobiledoc);
             return rendered.result;
@@ -794,7 +820,7 @@ var Editor = (function () {
       if (postEditor._shouldCancelSnapshot) {
         this._editHistory._pendingSnapshot = null;
       }
-      this._editHistory.storeSnapshot();
+      this._editHistory.storeSnapshot(postEditor.editActionTaken);
 
       return result;
     }

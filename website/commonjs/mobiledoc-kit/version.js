@@ -1,3 +1,3 @@
 'use strict';
 
-exports['default'] = '0.10.11';
+exports['default'] = '0.10.16';

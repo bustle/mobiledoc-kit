@@ -5,6 +5,14 @@ var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = 
 
 var editor;
 
+function renderError(event) {
+  var error = event.error;
+  $('#error .name').text(error.name);
+  $('#error .message').text(error.message);
+}
+
+window.addEventListener('error', renderError);
+
 function renderSection(section) {
   return '[' + 'Section: tagName ' + section.tagName + ' type: ' + section.type + ' isNested? ' + section.isNested + (section.isMarkerable ? ' Markers: ' + section.markers.length + ')' : '') + ']';
 }
@@ -24,6 +32,34 @@ function updateCursor() {
   var html = 'Head ' + head + '<br>Tail ' + tail;
 
   $('#cursor').html(html);
+}
+
+document.addEventListener('selectionchange', renderNativeSelection);
+
+function renderNativeSelection(event) {
+  var sel = window.getSelection();
+  var anchorNode = sel.anchorNode;
+  var focusNode = sel.focusNode;
+  var anchorOffset = sel.anchorOffset;
+  var focusOffset = sel.focusOffset;
+  var isCollapsed = sel.isCollapsed;
+  var rangeCount = sel.rangeCount;
+
+  if (anchorNode === null && focusNode === null) {
+    $('#selection').html('<em>None</em>');
+    return;
+  }
+  $('#selection').html('\n    <div class=\'node\'>Anchor: ' + renderNode(anchorNode) + ' (' + anchorOffset + ')</div>\n    <div class=\'node\'>Focus: ' + renderNode(focusNode) + ' (' + focusOffset + ')</div>\n    <div>' + (isCollapsed ? 'Collapsed' : 'Not collapsed') + '</div>\n    <div class=\'ranges\'>Ranges: ' + rangeCount + '</div>\n  ');
+}
+
+function renderNode(node) {
+  var text = node.textContent.slice(0, 22);
+  if (node.textContent.length > 22) {
+    text += '...';
+  }
+
+  var type = node.nodeType === Node.TEXT_NODE ? 'text' : 'el (' + node.tagName + ')';
+  return '<span class=\'type\'>' + type + '</span>: ' + text;
 }
 
 function renderMarkup(markup) {
@@ -231,6 +267,18 @@ $(function () {
     var toggle = $(this).data('toggle');
 
     editor[action](toggle);
+  });
+
+  $('#toolbar button.toggle-method').click(function () {
+    var isOn = $(this).data('is-on') === 'true';
+    var methodOn = $(this).data('on');
+    var methodOff = $(this).data('off');
+
+    var nextState = isOn ? 'false' : 'true';
+    var method = isOn ? methodOff : methodOn;
+
+    $(this).data('is-on', nextState);
+    editor[method]();
   });
 
   $('#toolbar button.insert-atom').click(function () {

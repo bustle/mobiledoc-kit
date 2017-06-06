@@ -12,13 +12,13 @@ var _types = require('./types');
 
 var _utilsAssert = require('../utils/assert');
 
-var VALID_MARKUP_TAGNAMES = ['b', 'i', 'strong', 'em', 'a', 'u', 'sub', // subscript
+var VALID_MARKUP_TAGNAMES = ['a', 'b', 'code', 'em', 'i', 's', // strikethrough
+'strong', 'sub', // subscript
 'sup', // superscript
-'s' // strikethrough
-].map(_utilsDomUtils.normalizeTagName);
+'u'].map(_utilsDomUtils.normalizeTagName);
 
 exports.VALID_MARKUP_TAGNAMES = VALID_MARKUP_TAGNAMES;
-var VALID_ATTRIBUTES = ['href', 'ref'];
+var VALID_ATTRIBUTES = ['href', 'rel'];
 
 exports.VALID_ATTRIBUTES = VALID_ATTRIBUTES;
 

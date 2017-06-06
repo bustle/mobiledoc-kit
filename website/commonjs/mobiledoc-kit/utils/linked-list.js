@@ -186,12 +186,13 @@ var LinkedList = (function () {
     key: 'detect',
     value: function detect(callback) {
       var item = arguments.length <= 1 || arguments[1] === undefined ? this.head : arguments[1];
+      var reverse = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
       while (item) {
         if (callback(item)) {
           return item;
         }
-        item = item.next;
+        item = reverse ? item.prev : item.next;
       }
     }
   }, {

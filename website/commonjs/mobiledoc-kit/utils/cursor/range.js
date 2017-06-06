@@ -131,6 +131,41 @@ var Range = (function () {
         return this._collapse(direction);
       }
     }
+
+    /**
+     * expand a range to all markers matching a given check
+     *
+     * @param {Function} detectMarker
+     * @return {Range} The expanded range
+     *
+     * @public
+     */
+  }, {
+    key: 'expandByMarker',
+    value: function expandByMarker(detectMarker) {
+      var head = this.head;
+      var tail = this.tail;
+      var direction = this.direction;
+      var headSection = head.section;
+
+      if (headSection !== tail.section) {
+        throw new Error('#expandByMarker does not work across sections. Perhaps you should confirm the range is collapsed');
+      }
+
+      var firstNotMatchingDetect = function firstNotMatchingDetect(i) {
+        return !detectMarker(i);
+      };
+
+      var headMarker = head.section.markers.detect(firstNotMatchingDetect, head.marker, true);
+      headMarker = headMarker && headMarker.next || head.marker;
+      var headPosition = new _position['default'](headSection, headSection.offsetOfMarker(headMarker));
+
+      var tailMarker = tail.section.markers.detect(firstNotMatchingDetect, tail.marker);
+      tailMarker = tailMarker && tailMarker.prev || tail.marker;
+      var tailPosition = new _position['default'](tail.section, tail.section.offsetOfMarker(tailMarker) + tailMarker.length);
+
+      return headPosition.toRange(tailPosition, direction);
+    }
   }, {
     key: '_collapse',
     value: function _collapse(direction) {

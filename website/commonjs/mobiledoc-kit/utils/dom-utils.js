@@ -111,6 +111,12 @@ function parseHTML(html) {
   return div;
 }
 
+function serializeHTML(node) {
+  var div = document.createElement('div');
+  div.appendChild(node);
+  return div.innerHTML;
+}
+
 exports.containsNode = containsNode;
 exports.clearChildNodes = clearChildNodes;
 exports.getAttributes = getAttributes;
@@ -123,3 +129,4 @@ exports.isTextNode = isTextNode;
 exports.isCommentNode = isCommentNode;
 exports.isElementNode = isElementNode;
 exports.parseHTML = parseHTML;
+exports.serializeHTML = serializeHTML;

@@ -95,6 +95,54 @@ function findOffsetInNode(_x, _x2) {
   }
 }
 
+function constrainNodeTo(node, parentNode, existingOffset) {
+  var compare = parentNode.compareDocumentPosition(node);
+  if (compare & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+    // the node is inside parentNode, do nothing
+    return { node: node, offset: existingOffset };
+  } else if (compare & Node.DOCUMENT_POSITION_CONTAINS) {
+    // the node contains parentNode. This shouldn't happen.
+    return { node: node, offset: existingOffset };
+  } else if (compare & Node.DOCUMENT_POSITION_PRECEDING) {
+    // node is before parentNode. return start of deepest first child
+    var child = parentNode.firstChild;
+    while (child.firstChild) {
+      child = child.firstChild;
+    }
+    return { node: child, offset: 0 };
+  } else if (compare & Node.DOCUMENT_POSITION_FOLLOWING) {
+    // node is after parentNode. return end of deepest last child
+    var child = parentNode.lastChild;
+    while (child.lastChild) {
+      child = child.lastChild;
+    }
+
+    var offset = (0, _utilsDomUtils.isTextNode)(child) ? child.textContent.length : 1;
+    return { node: child, offset: offset };
+  } else {
+    return { node: node, offset: existingOffset };
+  }
+}
+
+/*
+ * Returns a new selection that is constrained within parentNode.
+ * If the anchorNode or focusNode are outside the parentNode, they are replaced with the beginning
+ * or end of the parentNode's children
+ */
+function constrainSelectionTo(selection, parentNode) {
+  var _constrainNodeTo = constrainNodeTo(selection.anchorNode, parentNode, selection.anchorOffset);
+
+  var anchorNode = _constrainNodeTo.node;
+  var anchorOffset = _constrainNodeTo.offset;
+
+  var _constrainNodeTo2 = constrainNodeTo(selection.focusNode, parentNode, selection.focusOffset);
+
+  var focusNode = _constrainNodeTo2.node;
+  var focusOffset = _constrainNodeTo2.offset;
+
+  return { anchorNode: anchorNode, anchorOffset: anchorOffset, focusNode: focusNode, focusOffset: focusOffset };
+}
+
 function comparePosition(_x3) {
   var _again2 = true;
 
@@ -194,3 +242,4 @@ function comparePosition(_x3) {
 exports.clearSelection = clearSelection;
 exports.comparePosition = comparePosition;
 exports.findOffsetInNode = findOffsetInNode;
+exports.constrainSelectionTo = constrainSelectionTo;

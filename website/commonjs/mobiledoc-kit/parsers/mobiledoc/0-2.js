@@ -134,7 +134,7 @@ var MobiledocParser = (function () {
       var tagName = _ref52[1];
       var markers = _ref52[2];
 
-      var section = this.builder.createMarkupSection(tagName);
+      var section = this.builder.createMarkupSection(tagName.toLowerCase() === 'pull-quote' ? 'aside' : tagName);
       post.sections.append(section);
       this.parseMarkers(markers, section);
       // Strip blank markers after they have been created. This ensures any

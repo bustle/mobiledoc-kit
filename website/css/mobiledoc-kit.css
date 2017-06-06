@@ -1,6 +1,7 @@
 /**
  * Editor
  */
+
 .__mobiledoc-editor {
   font-family: 'Lora', Georgia, serif;
   margin: 1em 0;
@@ -10,12 +11,15 @@
   position: relative;
   min-height: 1em;
 }
+
 .__mobiledoc-editor:focus {
   outline: none;
 }
+
 .__mobiledoc-editor > * {
   position: relative;
 }
+
 .__mobiledoc-editor.__has-no-content:after {
   content: attr(data-placeholder);
   color: #bbb;
@@ -23,10 +27,12 @@
   position: absolute;
   top: 0;
 }
+
 .__mobiledoc-editor a {
   color: #0b8bff;
   white-space: nowrap;
 }
+
 .__mobiledoc-editor h1,
 .__mobiledoc-editor h2,
 .__mobiledoc-editor h3,
@@ -37,56 +43,60 @@
   font-weight: 800;
   letter-spacing: -0.02em;
 }
+
 .__mobiledoc-editor blockquote {
   border-left: 4px solid #0b8bff;
   margin: 1em 0 1em -1.2em;
   padding-left: 1.05em;
   color: #a0a0a0;
 }
+
 .__mobiledoc-editor img {
   display: block;
   max-width: 100%;
   margin: 0 auto;
 }
+
 .__mobiledoc-editor div,
 .__mobiledoc-editor iframe {
   max-width: 100%;
 }
+
+/**
+ * Cards
+ */
+
 .__mobiledoc-card {
   display: inline-block;
 }
+
 /**
- * Tooltip
+ * Tooltips
  */
+
 @-webkit-keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 @keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
+
 .__mobiledoc-tooltip {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 0.7em;
   white-space: nowrap;
   position: absolute;
-  background-color: rgba(43, 43, 43, 0.9);
+  background-color: rgba(43,43,43,0.9);
   border-radius: 3px;
   line-height: 1em;
   padding: 0.7em 0.9em;
   color: #FFF;
   -webkit-animation: fade-in 0.2s;
-  animation: fade-in 0.2s;
+          animation: fade-in 0.2s;
 }
+
 .__mobiledoc-tooltip:before {
   content: '';
   position: absolute;
@@ -95,12 +105,13 @@
   height: 0;
   border-left: 0.4em solid transparent;
   border-right: 0.4em solid transparent;
-  border-bottom: 0.4em solid rgba(43, 43, 43, 0.9);
+  border-bottom: 0.4em solid rgba(43,43,43,0.9);
   top: -0.4em;
   margin-left: -0.4em;
 }
+
+/* help keeps mouseover state when moving from link to tooltip */
 .__mobiledoc-tooltip:after {
-  /* help keeps mouseover state when moving from link to tooltip */
   content: '';
   position: absolute;
   left: 0;
@@ -108,10 +119,12 @@
   top: -0.4em;
   height: 0.4em;
 }
+
 .__mobiledoc-tooltip a {
   color: #FFF;
   text-decoration: none;
 }
+
 .__mobiledoc-tooltip a:hover {
   text-decoration: underline;
 }

@@ -481,8 +481,8 @@ define('tests/acceptance/cursor-movement-test', ['exports', 'mobiledoc-kit', '..
       var atom = _ref7.atom;
 
       return post([markupSection('p', [marker('aa'), atom('my-atom'), marker('cc')])]);
-      // TODO just make 0.3.0 default
-    }, '0.3.0');
+      // TODO just make 0.3.1 default
+    }, '0.3.1');
     editor = new _mobiledocKit.Editor({ mobiledoc: mobiledoc, atoms: atoms });
     editor.render(editorElement);
 
@@ -529,8 +529,8 @@ define('tests/acceptance/cursor-movement-test', ['exports', 'mobiledoc-kit', '..
       var atom = _ref8.atom;
 
       return post([markupSection('p', [marker('aa'), atom('my-atom'), marker('cc')])]);
-      // TODO just make 0.3.0 default
-    }, '0.3.0');
+      // TODO just make 0.3.1 default
+    }, '0.3.1');
     editor = new _mobiledocKit.Editor({ mobiledoc: mobiledoc, atoms: atoms });
     editor.render(editorElement);
 
@@ -1172,7 +1172,7 @@ define('tests/acceptance/cursor-position-test', ['exports', 'mobiledoc-kit', '..
     assert.positionIsEqual(range.head, positionAfterAtom);
   });
 });
-define('tests/acceptance/editor-atoms-test', ['exports', 'mobiledoc-kit', '../test-helpers', 'mobiledoc-kit/renderers/mobiledoc/0-3', 'mobiledoc-kit/utils/cursor/range'], function (exports, _mobiledocKit, _testHelpers, _mobiledocKitRenderersMobiledoc03, _mobiledocKitUtilsCursorRange) {
+define('tests/acceptance/editor-atoms-test', ['exports', 'mobiledoc-kit', '../test-helpers', 'mobiledoc-kit/renderers/mobiledoc/0-3-1', 'mobiledoc-kit/utils/cursor/range'], function (exports, _mobiledocKit, _testHelpers, _mobiledocKitRenderersMobiledoc031, _mobiledocKitUtilsCursorRange) {
   'use strict';
 
   var test = _testHelpers['default'].test;
@@ -1194,7 +1194,7 @@ define('tests/acceptance/editor-atoms-test', ['exports', 'mobiledoc-kit', '../te
   var editor = undefined,
       editorElement = undefined;
   var mobiledocWithAtom = {
-    version: _mobiledocKitRenderersMobiledoc03.MOBILEDOC_VERSION,
+    version: _mobiledocKitRenderersMobiledoc031.MOBILEDOC_VERSION,
     atoms: [['simple-atom', 'Bob']],
     cards: [],
     markups: [],
@@ -2474,6 +2474,18 @@ define('tests/acceptance/editor-input-handlers-test', ['exports', '../test-helpe
     text: '###',
     toInsert: ' ',
     headerTagName: 'h3'
+  }, {
+    text: '####',
+    toInsert: ' ',
+    headerTagName: 'h4'
+  }, {
+    text: '#####',
+    toInsert: ' ',
+    headerTagName: 'h5'
+  }, {
+    text: '######',
+    toInsert: ' ',
+    headerTagName: 'h6'
   }];
 
   headerTests.forEach(function (_ref) {
@@ -2951,6 +2963,20 @@ define('tests/acceptance/editor-key-commands-test', ['exports', 'mobiledoc-kit/u
     markupName: 'em'
   });
 
+  testStatefulCommand({
+    modifierName: 'META',
+    key: 'U',
+    command: 'command-U',
+    markupName: 'u'
+  });
+
+  testStatefulCommand({
+    modifierName: 'CTRL',
+    key: 'U',
+    command: 'ctrl-U',
+    markupName: 'u'
+  });
+
   if (_mobiledocKitUtilsBrowser['default'].isMac()) {
     test('[Mac] ctrl-k clears to the end of a line', function (assert) {
       var initialText = 'something';
@@ -3290,6 +3316,47 @@ define('tests/acceptance/editor-key-commands-test', ['exports', 'mobiledoc-kit/u
     assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
 
     assert.equal($('#editor p').length, 2, 'has added a new paragraph');
+  });
+
+  test('new key commands can be registered and then unregistered', function (assert) {
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref19) {
+      var post = _ref19.post;
+      var markupSection = _ref19.markupSection;
+      var marker = _ref19.marker;
+      return post([markupSection('p', [marker('something')])]);
+    });
+
+    assert.ok(editor.hasCursor(), 'has cursor');
+    var passedEditorCount = 0;
+    var passedEditor = undefined;
+    editor.registerKeyCommand({
+      name: 'cut',
+      str: 'ctrl+x',
+      run: function run(editor) {
+        passedEditor = editor;passedEditorCount++;
+      }
+    });
+
+    editor.registerKeyCommand({
+      name: 'cut',
+      str: 'ctrl+d',
+      run: function run(editor) {
+        passedEditor = editor;passedEditorCount++;
+      }
+    });
+
+    _testHelpers['default'].dom.triggerKeyCommand(editor, 'x', _mobiledocKitUtilsKey.MODIFIERS.CTRL);
+    _testHelpers['default'].dom.triggerKeyCommand(editor, 'd', _mobiledocKitUtilsKey.MODIFIERS.CTRL);
+
+    assert.ok(!!passedEditor && passedEditor === editor, 'run method is called');
+    assert.ok(passedEditorCount === 2, 'the passedEditor has been called twice');
+
+    editor.unregisterKeyCommands('cut');
+
+    _testHelpers['default'].dom.triggerKeyCommand(editor, 'x', _mobiledocKitUtilsKey.MODIFIERS.CTRL);
+    _testHelpers['default'].dom.triggerKeyCommand(editor, 'd', _mobiledocKitUtilsKey.MODIFIERS.CTRL);
+
+    assert.ok(passedEditorCount === 2, 'the passedEditor has still only been called twice');
   });
 });
 define('tests/acceptance/editor-list-test', ['exports', 'mobiledoc-kit', '../test-helpers'], function (exports, _mobiledocKit, _testHelpers) {
@@ -5541,8 +5608,11 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
   var _module = _testHelpers['default'].module;
   var test = _testHelpers['default'].test;
 
+  var undoBlockTimeout = 2000;
+
   var editor = undefined,
-      editorElement = undefined;
+      editorElement = undefined,
+      oldDateNow = undefined;
 
   function undo(editor) {
     _testHelpers['default'].dom.triggerKeyCommand(editor, 'Z', [_mobiledocKitUtilsKey.MODIFIERS.META]);
@@ -5555,8 +5625,10 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
   _module('Acceptance: Editor: Undo/Redo', {
     beforeEach: function beforeEach() {
       editorElement = $('#editor')[0];
+      oldDateNow = Date.now;
     },
     afterEach: function afterEach() {
+      Date.now = oldDateNow;
       if (editor) {
         editor.destroy();
         editor = null;
@@ -5609,17 +5681,15 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
   test('undo/redo the insertion of multiple characters', function (assert) {
     var done = assert.async();
     var beforeUndo = undefined,
-        afterUndo1 = undefined,
-        afterUndo2 = undefined;
+        afterUndo = undefined;
     editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref2) {
       var post = _ref2.post;
       var markupSection = _ref2.markupSection;
       var marker = _ref2.marker;
 
       beforeUndo = post([markupSection('p', [marker('abcDE')])]);
-      afterUndo1 = post([markupSection('p', [marker('abcD')])]);
-      afterUndo2 = post([markupSection('p', [marker('abc')])]);
-      return afterUndo2;
+      afterUndo = post([markupSection('p', [marker('abc')])]);
+      return afterUndo;
     });
 
     var textNode = _testHelpers['default'].dom.findTextNode(editorElement, 'abc');
@@ -5629,6 +5699,145 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
 
     _testHelpers['default'].wait(function () {
       _testHelpers['default'].dom.insertText(editor, 'E');
+
+      _testHelpers['default'].wait(function () {
+        assert.postIsSimilar(editor.post, beforeUndo, 'precond - post was updated with new characters');
+
+        undo(editor);
+        assert.postIsSimilar(editor.post, afterUndo, 'ensure undo grouped to include both characters');
+
+        redo(editor);
+        assert.postIsSimilar(editor.post, beforeUndo, 'ensure redo grouped to include both characters');
+        done();
+      });
+    });
+  });
+
+  // Test to ensure that undo events group after a timeout
+  test('make sure undo/redo events group when adding text', function (assert) {
+    var done = assert.async();
+    var beforeUndo = undefined,
+        afterUndo1 = undefined,
+        afterUndo2 = undefined;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref3) {
+      var post = _ref3.post;
+      var markupSection = _ref3.markupSection;
+      var marker = _ref3.marker;
+
+      beforeUndo = post([markupSection('p', [marker('123456789')])]);
+      afterUndo1 = post([markupSection('p', [marker('123456')])]);
+      afterUndo2 = post([markupSection('p', [marker('123')])]);
+      return afterUndo2;
+    }, { undoBlockTimeout: undoBlockTimeout });
+
+    var textNode = _testHelpers['default'].dom.findTextNode(editorElement, '123');
+    _testHelpers['default'].dom.moveCursorTo(editor, textNode, '123'.length);
+
+    _testHelpers['default'].dom.insertText(editor, '4');
+
+    _testHelpers['default'].wait(function () {
+      _testHelpers['default'].dom.insertText(editor, '5');
+      _testHelpers['default'].wait(function () {
+        _testHelpers['default'].dom.insertText(editor, '6');
+        _testHelpers['default'].wait(function () {
+          Date.now = function () {
+            return oldDateNow.call(Date) + undoBlockTimeout + 1;
+          };
+          _testHelpers['default'].dom.insertText(editor, '7');
+          _testHelpers['default'].wait(function () {
+            _testHelpers['default'].dom.insertText(editor, '8');
+            _testHelpers['default'].wait(function () {
+              _testHelpers['default'].dom.insertText(editor, '9');
+              assert.postIsSimilar(editor.post, beforeUndo);
+
+              undo(editor);
+              assert.postIsSimilar(editor.post, afterUndo1);
+
+              undo(editor);
+              assert.postIsSimilar(editor.post, afterUndo2);
+
+              redo(editor);
+              assert.postIsSimilar(editor.post, afterUndo1);
+              done();
+            });
+          });
+        });
+      });
+    });
+  });
+
+  test('make sure undo/redo events group when deleting text', function (assert) {
+    var done = assert.async();
+    var beforeUndo = undefined,
+        afterUndo1 = undefined,
+        afterUndo2 = undefined;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref4) {
+      var post = _ref4.post;
+      var markupSection = _ref4.markupSection;
+      var marker = _ref4.marker;
+
+      beforeUndo = post([markupSection('p', [marker('123')])]);
+      afterUndo1 = post([markupSection('p', [marker('123456')])]);
+      afterUndo2 = post([markupSection('p', [marker('123456789')])]);
+      return afterUndo2;
+    }, { undoBlockTimeout: undoBlockTimeout });
+
+    var textNode = _testHelpers['default'].dom.findTextNode(editorElement, '123456789');
+    _testHelpers['default'].dom.moveCursorTo(editor, textNode, '123456789'.length);
+
+    _testHelpers['default'].dom.triggerDelete(editor);
+    _testHelpers['default'].dom.triggerDelete(editor);
+    _testHelpers['default'].dom.triggerDelete(editor);
+
+    _testHelpers['default'].wait(function () {
+      Date.now = function () {
+        return oldDateNow.call(Date) + undoBlockTimeout + 1;
+      };
+
+      _testHelpers['default'].dom.triggerDelete(editor);
+      _testHelpers['default'].dom.triggerDelete(editor);
+      _testHelpers['default'].dom.triggerDelete(editor);
+
+      assert.postIsSimilar(editor.post, beforeUndo);
+
+      undo(editor);
+      assert.postIsSimilar(editor.post, afterUndo1);
+
+      undo(editor);
+      assert.postIsSimilar(editor.post, afterUndo2);
+
+      redo(editor);
+      assert.postIsSimilar(editor.post, afterUndo1);
+      done();
+    });
+  });
+
+  test('adding and deleting characters break the undo group/run', function (assert) {
+    var beforeUndo = undefined,
+        afterUndo1 = undefined,
+        afterUndo2 = undefined;
+    var done = assert.async();
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref5) {
+      var post = _ref5.post;
+      var markupSection = _ref5.markupSection;
+      var marker = _ref5.marker;
+
+      beforeUndo = post([markupSection('p', [marker('abcXY')])]);
+      afterUndo1 = post([markupSection('p', [marker('abc')])]);
+      afterUndo2 = post([markupSection('p', [marker('abcDE')])]);
+      return afterUndo2;
+    });
+
+    var textNode = _testHelpers['default'].dom.findTextNode(editorElement, 'abcDE');
+    _testHelpers['default'].dom.moveCursorTo(editor, textNode, 'abcDE'.length);
+
+    _testHelpers['default'].dom.triggerDelete(editor);
+    _testHelpers['default'].dom.triggerDelete(editor);
+
+    _testHelpers['default'].dom.insertText(editor, 'X');
+
+    _testHelpers['default'].wait(function () {
+      _testHelpers['default'].dom.insertText(editor, 'Y');
 
       _testHelpers['default'].wait(function () {
         assert.postIsSimilar(editor.post, beforeUndo); // precond
@@ -5652,10 +5861,10 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
   test('undo the deletion of a character', function (assert) {
     var expectedBeforeUndo = undefined,
         expectedAfterUndo = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref3) {
-      var post = _ref3.post;
-      var markupSection = _ref3.markupSection;
-      var marker = _ref3.marker;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref6) {
+      var post = _ref6.post;
+      var markupSection = _ref6.markupSection;
+      var marker = _ref6.marker;
 
       expectedBeforeUndo = post([markupSection('p', [marker('abc')])]);
       expectedAfterUndo = post([markupSection('p', [marker('abcD')])]);
@@ -5685,10 +5894,10 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
   test('undo the deletion of a range', function (assert) {
     var expectedBeforeUndo = undefined,
         expectedAfterUndo = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref4) {
-      var post = _ref4.post;
-      var markupSection = _ref4.markupSection;
-      var marker = _ref4.marker;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref7) {
+      var post = _ref7.post;
+      var markupSection = _ref7.markupSection;
+      var marker = _ref7.marker;
 
       expectedBeforeUndo = post([markupSection('p', [marker('ad')])]);
       expectedAfterUndo = post([markupSection('p', [marker('abcd')])]);
@@ -5725,11 +5934,11 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
     var done = assert.async();
     var expectedBeforeUndo = undefined,
         expectedAfterUndo = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref5) {
-      var post = _ref5.post;
-      var listSection = _ref5.listSection;
-      var listItem = _ref5.listItem;
-      var marker = _ref5.marker;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref8) {
+      var post = _ref8.post;
+      var listSection = _ref8.listSection;
+      var listItem = _ref8.listItem;
+      var marker = _ref8.marker;
 
       expectedBeforeUndo = post([listSection('ul', [listItem([marker('abcD')])])]);
       expectedAfterUndo = post([listSection('ul', [listItem([marker('abc')])])]);
@@ -5773,13 +5982,13 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
 
     var beforeUndo = undefined,
         afterUndo = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref6) {
-      var post = _ref6.post;
-      var markupSection = _ref6.markupSection;
-      var marker = _ref6.marker;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref9) {
+      var post = _ref9.post;
+      var markupSection = _ref9.markupSection;
+      var marker = _ref9.marker;
 
       beforeUndo = post([markupSection('p', [marker('abcDE')])]);
-      afterUndo = post([markupSection('p', [marker('abcD')])]);
+      afterUndo = post([markupSection('p', [marker('abc')])]);
       return post([markupSection('p', [marker('abc')])]);
     }, editorOptions);
 
@@ -5813,10 +6022,10 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
     var editorOptions = { undoDepth: 0 };
 
     var beforeUndo = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref7) {
-      var post = _ref7.post;
-      var markupSection = _ref7.markupSection;
-      var marker = _ref7.marker;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref10) {
+      var post = _ref10.post;
+      var markupSection = _ref10.markupSection;
+      var marker = _ref10.marker;
 
       beforeUndo = post([markupSection('p', [marker('abcDE')])]);
       return post([markupSection('p', [marker('abc')])]);
@@ -5845,10 +6054,10 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
   test('taking and restoring a snapshot with no cursor', function (assert) {
     var beforeUndo = undefined,
         afterUndo = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref8) {
-      var post = _ref8.post;
-      var markupSection = _ref8.markupSection;
-      var marker = _ref8.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref11) {
+      var post = _ref11.post;
+      var markupSection = _ref11.markupSection;
+      var marker = _ref11.marker;
 
       beforeUndo = post([markupSection('p', [marker('abc')])]);
       afterUndo = post([markupSection('p', [])]);
@@ -5870,10 +6079,10 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
     var text = 'abc';
     var beforeUndo = undefined,
         afterUndo = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref9) {
-      var post = _ref9.post;
-      var markupSection = _ref9.markupSection;
-      var marker = _ref9.marker;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref12) {
+      var post = _ref12.post;
+      var markupSection = _ref12.markupSection;
+      var marker = _ref12.marker;
 
       beforeUndo = post([markupSection('p', [marker(text)])]);
       afterUndo = post([markupSection('p', [marker('a')])]);
@@ -5904,11 +6113,11 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
 
     var beforeUndo = undefined,
         afterUndo = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref10) {
-      var post = _ref10.post;
-      var markupSection = _ref10.markupSection;
-      var marker = _ref10.marker;
-      var cardSection = _ref10.cardSection;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref13) {
+      var post = _ref13.post;
+      var markupSection = _ref13.markupSection;
+      var marker = _ref13.marker;
+      var cardSection = _ref13.cardSection;
 
       beforeUndo = post([markupSection('p', [marker(text)]), cardSection('my-card', {})]);
       afterUndo = post([markupSection('p', [marker(text)])]);
@@ -5939,11 +6148,11 @@ define('tests/acceptance/editor-undo-redo-test', ['exports', 'mobiledoc-kit/util
 
     var beforeUndo = undefined,
         afterUndo = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref11) {
-      var post = _ref11.post;
-      var markupSection = _ref11.markupSection;
-      var marker = _ref11.marker;
-      var atom = _ref11.atom;
+    editor = _testHelpers['default'].mobiledoc.renderIntoAndFocusTail(editorElement, function (_ref14) {
+      var post = _ref14.post;
+      var markupSection = _ref14.markupSection;
+      var marker = _ref14.marker;
+      var atom = _ref14.atom;
 
       beforeUndo = post([markupSection('p', [marker(text)])]);
       afterUndo = post([markupSection('p', [marker(text), atom('my-atom', 'content', {})])]);
@@ -6053,7 +6262,12 @@ define('tests/helpers/assertions', ['exports', './dom', 'mobiledoc-kit/renderers
       return;
     }
     if (actual.type !== expected.type) {
-      assert.push(false, actual.type, expected.type, 'wrong type at ' + path);
+      assert.pushResult({
+        result: false,
+        actual: actual.type,
+        expected: expected.type,
+        message: 'wrong type at ' + path
+      });
     }
 
     switch (actual.type) {
@@ -6126,12 +6340,17 @@ define('tests/helpers/assertions', ['exports', './dom', 'mobiledoc-kit/renderers
     }
   }
 
-  function registerAssertions() {
+  function registerAssertions(QUnit) {
     QUnit.assert.hasElement = function (selector) {
       var message = arguments.length <= 1 || arguments[1] === undefined ? 'hasElement "' + selector + '"' : arguments[1];
       return (function () {
         var found = $(selector);
-        this.push(found.length > 0, found.length, selector, message);
+        this.pushResult({
+          result: found.length > 0,
+          actual: found.length,
+          expected: selector,
+          message: message
+        });
         return found;
       }).apply(this, arguments);
     };
@@ -6140,7 +6359,12 @@ define('tests/helpers/assertions', ['exports', './dom', 'mobiledoc-kit/renderers
       var message = arguments.length <= 1 || arguments[1] === undefined ? 'hasNoElement "' + selector + '"' : arguments[1];
       return (function () {
         var found = $(selector);
-        this.push(found.length === 0, found.length, selector, message);
+        this.pushResult({
+          result: found.length === 0,
+          actual: found.length,
+          expected: selector,
+          message: message
+        });
         return found;
       }).apply(this, arguments);
     };
@@ -6173,7 +6397,12 @@ define('tests/helpers/assertions', ['exports', './dom', 'mobiledoc-kit/renderers
       var message = arguments.length <= 1 || arguments[1] === undefined ? 'selectedText "' + text + '"' : arguments[1];
       return (function () {
         var selected = _dom['default'].getSelectedText();
-        this.push(selected === text, selected, text, message);
+        this.pushResult({
+          result: selected === text,
+          actual: selected,
+          expected: text,
+          message: message
+        });
       }).apply(this, arguments);
     };
 
@@ -6232,11 +6461,26 @@ define('tests/helpers/assertions', ['exports', './dom', 'mobiledoc-kit/renderers
       var message = arguments.length <= 2 || arguments[2] === undefined ? 'position is equal' : arguments[2];
 
       if (position.section !== expected.section) {
-        this.push(false, position.section.type + ':' + position.section.tagName, expected.section.type + ':' + expected.section.tagName, 'incorrect position section (' + message + ')');
+        this.pushResult({
+          result: false,
+          actual: position.section.type + ':' + position.section.tagName,
+          expected: expected.section.type + ':' + expected.section.tagName,
+          message: 'incorrect position section (' + message + ')'
+        });
       } else if (position.offset !== expected.offset) {
-        this.push(false, position.offset, expected.offset, 'incorrect position offset (' + message + ')');
+        this.pushResult({
+          result: false,
+          actual: position.offset,
+          expected: expected.offset,
+          message: 'incorrect position offset (' + message + ')'
+        });
       } else {
-        this.push(true, position, expected, message);
+        this.pushResult({
+          result: true,
+          actual: position,
+          expected: expected,
+          message: message
+        });
       }
     };
 
@@ -6255,26 +6499,51 @@ define('tests/helpers/assertions', ['exports', './dom', 'mobiledoc-kit/renderers
 
       if (!head.isEqual(expectedHead)) {
         failed = true;
-        this.push(false, head.section.type + ':' + head.section.tagName, expectedHead.section.type + ':' + expectedHead.section.tagName, 'incorrect head position');
+        this.pushResult({
+          result: false,
+          actual: head.section.type + ':' + head.section.tagName,
+          expected: expectedHead.section.type + ':' + expectedHead.section.tagName,
+          message: 'incorrect head position'
+        });
       }
 
       if (!tail.isEqual(expectedTail)) {
         failed = true;
-        this.push(false, tail.section.type + ':' + tail.section.tagName, expectedTail.section.type + ':' + expectedTail.section.tagName, 'incorrect tail position');
+        this.pushResult({
+          result: false,
+          actual: tail.section.type + ':' + tail.section.tagName,
+          expected: expectedTail.section.type + ':' + expectedTail.section.tagName,
+          message: 'incorrect tail position'
+        });
       }
 
       if (isCollapsed !== expectedIsCollapsed) {
         failed = true;
-        this.push(false, isCollapsed, expectedIsCollapsed, 'wrong value for isCollapsed');
+        this.pushResult({
+          result: false,
+          actual: isCollapsed,
+          expected: expectedIsCollapsed,
+          message: 'wrong value for isCollapsed'
+        });
       }
 
       if (direction !== expectedDirection) {
         failed = true;
-        this.push(false, direction, expectedDirection, 'wrong value for direction');
+        this.pushResult({
+          result: false,
+          actual: direction,
+          expected: expectedDirection,
+          message: 'wrong value for direction'
+        });
       }
 
       if (!failed) {
-        this.push(true, range, expected, message);
+        this.pushResult({
+          result: true,
+          actual: range,
+          expected: expected,
+          message: message
+        });
       }
     };
   }
@@ -6749,7 +7018,7 @@ define('tests/helpers/dom', ['exports', 'mobiledoc-kit/utils/selection-utils', '
   exports.triggerEvent = triggerEvent;
   exports['default'] = DOMHelper;
 });
-define('tests/helpers/editor', ['exports', './post-abstract', 'mobiledoc-kit/editor/editor', 'mobiledoc-kit/renderers/mobiledoc/0-3'], function (exports, _postAbstract, _mobiledocKitEditorEditor, _mobiledocKitRenderersMobiledoc03) {
+define('tests/helpers/editor', ['exports', './post-abstract', 'mobiledoc-kit/editor/editor', 'mobiledoc-kit/renderers/mobiledoc/0-3-1'], function (exports, _postAbstract, _mobiledocKitEditorEditor, _mobiledocKitRenderersMobiledoc031) {
   'use strict';
 
   function retargetPosition(position, toPost) {
@@ -6802,7 +7071,7 @@ define('tests/helpers/editor', ['exports', './post-abstract', 'mobiledoc-kit/edi
     var post = _PostAbstractHelpers$buildFromText.post;
     var range = _PostAbstractHelpers$buildFromText.range;
 
-    var mobiledoc = _mobiledocKitRenderersMobiledoc03['default'].render(post);
+    var mobiledoc = _mobiledocKitRenderersMobiledoc031['default'].render(post);
     editorOptions.mobiledoc = mobiledoc;
     var editor = new _mobiledocKitEditorEditor['default'](editorOptions);
     if (renderElement) {
@@ -6820,7 +7089,7 @@ define('tests/helpers/editor', ['exports', './post-abstract', 'mobiledoc-kit/edi
   exports.retargetRange = retargetRange;
   exports.retargetPosition = retargetPosition;
 });
-define('tests/helpers/mobiledoc', ['exports', './post-abstract', 'mobiledoc-kit/renderers/mobiledoc', 'mobiledoc-kit/renderers/mobiledoc/0-2', 'mobiledoc-kit/renderers/mobiledoc/0-3', 'mobiledoc-kit/editor/editor', 'mobiledoc-kit/utils/cursor/range', 'mobiledoc-kit/utils/merge'], function (exports, _postAbstract, _mobiledocKitRenderersMobiledoc, _mobiledocKitRenderersMobiledoc02, _mobiledocKitRenderersMobiledoc03, _mobiledocKitEditorEditor, _mobiledocKitUtilsCursorRange, _mobiledocKitUtilsMerge) {
+define('tests/helpers/mobiledoc', ['exports', './post-abstract', 'mobiledoc-kit/renderers/mobiledoc', 'mobiledoc-kit/renderers/mobiledoc/0-2', 'mobiledoc-kit/renderers/mobiledoc/0-3', 'mobiledoc-kit/renderers/mobiledoc/0-3-1', 'mobiledoc-kit/editor/editor', 'mobiledoc-kit/utils/cursor/range', 'mobiledoc-kit/utils/merge'], function (exports, _postAbstract, _mobiledocKitRenderersMobiledoc, _mobiledocKitRenderersMobiledoc02, _mobiledocKitRenderersMobiledoc03, _mobiledocKitRenderersMobiledoc031, _mobiledocKitEditorEditor, _mobiledocKitUtilsCursorRange, _mobiledocKitUtilsMerge) {
   'use strict';
 
   /*
@@ -6841,6 +7110,8 @@ define('tests/helpers/mobiledoc', ['exports', './post-abstract', 'mobiledoc-kit/
         return _mobiledocKitRenderersMobiledoc02['default'].render(post);
       case _mobiledocKitRenderersMobiledoc03.MOBILEDOC_VERSION:
         return _mobiledocKitRenderersMobiledoc03['default'].render(post);
+      case _mobiledocKitRenderersMobiledoc031.MOBILEDOC_VERSION:
+        return _mobiledocKitRenderersMobiledoc031['default'].render(post);
       case undefined:
       case null:
         return _mobiledocKitRenderersMobiledoc['default'].render(post);
@@ -6932,6 +7203,34 @@ define('tests/helpers/mock-editor', ['exports', 'mobiledoc-kit/editor/post', 'mo
   })();
 
   exports['default'] = MockEditor;
+});
+define('tests/helpers/module-load-failure', ['exports', 'ember-cli/test-loader'], function (exports, _emberCliTestLoader) {
+  'use strict';
+
+  /**
+   * Ensures that when the TestLoader failures to load a test module, the error
+   * is reported. Without this the rest of the full test suite still passes and there is an
+   * error printed in the console only.
+   * The technique is from: https://github.com/ember-cli/ember-cli-qunit/blob/master/vendor/ember-cli-qunit/test-loader.js#L55
+   */
+
+  exports['default'] = function (QUnit) {
+    var moduleLoadFailures = [];
+
+    _emberCliTestLoader['default'].prototype.moduleLoadFailure = function (moduleName, error) {
+      moduleLoadFailures.push(error);
+      QUnit.module('TestLoader Failures');
+      QUnit.test(moduleName + ': could not be loaded', function () {
+        throw error;
+      });
+    };
+
+    QUnit.done(function () {
+      if (moduleLoadFailures.length) {
+        throw new Error('\n' + moduleLoadFailures.join('\n'));
+      }
+    });
+  };
 });
 define('tests/helpers/post-abstract', ['exports', 'mobiledoc-kit/models/post-node-builder'], function (exports, _mobiledocKitModelsPostNodeBuilder) {
   /* jshint latedef:nofunc */
@@ -7317,728 +7616,899 @@ define("tests/helpers/wait", ["exports"], function (exports) {
 });
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/basic-editor-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/basic-editor-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/cursor-movement-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/cursor-movement-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/cursor-position-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/cursor-position-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-atoms-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-atoms-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-cards-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-cards-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-copy-paste-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-copy-paste-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-drag-drop-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-drag-drop-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-input-handlers-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-input-handlers-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-key-commands-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-key-commands-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-list-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-list-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-post-editor-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-post-editor-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-reparse-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-reparse-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-sections-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-sections-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-selections-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-selections-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/acceptance');
 QUnit.test('tests/jshint/acceptance/editor-undo-redo-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/acceptance/editor-undo-redo-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/fixtures');
 QUnit.test('tests/jshint/fixtures/google-docs.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/fixtures/google-docs.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/assertions.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/assertions.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/browsers.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/browsers.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/dom.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/dom.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/editor.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/editor.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/mobiledoc.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/mobiledoc.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/mock-editor.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/mock-editor.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
+QUnit.test('tests/jshint/helpers/module-load-failure.js should pass jshint', function(assert) { 
+  assert.expect(1);
+  assert.ok(true, 'tests/jshint/helpers/module-load-failure.js should pass jshint.'); 
+});
+
+QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/post-abstract.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/post-abstract.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/post-editor-run.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/post-editor-run.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/render-built-abstract.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/render-built-abstract.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/helpers');
 QUnit.test('tests/jshint/helpers/wait.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/helpers/wait.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/cards');
 QUnit.test('tests/jshint/js/cards/image.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/cards/image.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/edit-history.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/edit-history.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/edit-state.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/edit-state.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/editor.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/editor.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/event-manager.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/event-manager.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/key-commands.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/key-commands.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/mutation-handler.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/mutation-handler.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/post.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/post.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor/post');
 QUnit.test('tests/jshint/js/editor/post/post-inserter.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/post/post-inserter.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/selection-change-observer.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/selection-change-observer.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/selection-manager.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/selection-manager.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/text-input-handler.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/text-input-handler.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/text-input-handlers.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/text-input-handlers.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/editor');
 QUnit.test('tests/jshint/js/editor/ui.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/editor/ui.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js');
 QUnit.test('tests/jshint/js/index.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/index.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/_markerable.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/_markerable.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/_section.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/_section.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/atom-node.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/atom-node.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/atom.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/atom.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/card-node.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/card-node.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/card.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/card.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/image.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/image.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/lifecycle-callbacks.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/lifecycle-callbacks.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/list-item.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/list-item.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/list-section.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/list-section.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/marker.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/marker.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/markup-section.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/markup-section.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/markup.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/markup.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/post-node-builder.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/post-node-builder.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/post.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/post.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/render-node.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/render-node.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/render-tree.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/render-tree.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/models');
 QUnit.test('tests/jshint/js/models/types.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/models/types.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/parsers');
 QUnit.test('tests/jshint/js/parsers/dom.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/parsers/dom.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/parsers');
 QUnit.test('tests/jshint/js/parsers/html.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/parsers/html.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/parsers/mobiledoc');
 QUnit.test('tests/jshint/js/parsers/mobiledoc/0-2.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/parsers/mobiledoc/0-2.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/parsers/mobiledoc');
+QUnit.test('tests/jshint/js/parsers/mobiledoc/0-3-1.js should pass jshint', function(assert) { 
+  assert.expect(1);
+  assert.ok(true, 'tests/jshint/js/parsers/mobiledoc/0-3-1.js should pass jshint.'); 
+});
+
+QUnit.module('JSHint - tests/jshint/js/parsers/mobiledoc');
 QUnit.test('tests/jshint/js/parsers/mobiledoc/0-3.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/parsers/mobiledoc/0-3.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/parsers/mobiledoc');
 QUnit.test('tests/jshint/js/parsers/mobiledoc/index.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/parsers/mobiledoc/index.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/parsers');
 QUnit.test('tests/jshint/js/parsers/section.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/parsers/section.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/parsers');
 QUnit.test('tests/jshint/js/parsers/text.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/parsers/text.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/renderers');
 QUnit.test('tests/jshint/js/renderers/editor-dom.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/renderers/editor-dom.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/renderers/mobiledoc');
 QUnit.test('tests/jshint/js/renderers/mobiledoc/0-2.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/renderers/mobiledoc/0-2.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/renderers/mobiledoc');
+QUnit.test('tests/jshint/js/renderers/mobiledoc/0-3-1.js should pass jshint', function(assert) { 
+  assert.expect(1);
+  assert.ok(true, 'tests/jshint/js/renderers/mobiledoc/0-3-1.js should pass jshint.'); 
+});
+
+QUnit.module('JSHint - tests/jshint/js/renderers/mobiledoc');
 QUnit.test('tests/jshint/js/renderers/mobiledoc/0-3.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/renderers/mobiledoc/0-3.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/renderers/mobiledoc');
 QUnit.test('tests/jshint/js/renderers/mobiledoc/index.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/renderers/mobiledoc/index.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/array-utils.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/array-utils.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/assert.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/assert.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/browser.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/browser.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/characters.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/characters.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/compiler.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/compiler.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/copy.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/copy.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/cursor.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/cursor.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils/cursor');
 QUnit.test('tests/jshint/js/utils/cursor/position.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/cursor/position.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils/cursor');
 QUnit.test('tests/jshint/js/utils/cursor/range.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/cursor/range.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/deprecate.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/deprecate.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/dom-utils.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/dom-utils.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/element-map.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/element-map.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/element-utils.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/element-utils.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
+QUnit.test('tests/jshint/js/utils/environment.js should pass jshint', function(assert) { 
+  assert.expect(1);
+  assert.ok(true, 'tests/jshint/js/utils/environment.js should pass jshint.'); 
+});
+
+QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/fixed-queue.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/fixed-queue.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/key.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/key.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/keycodes.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/keycodes.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/linked-item.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/linked-item.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/linked-list.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/linked-list.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/log-manager.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/log-manager.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/markuperable.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/markuperable.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/merge.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/merge.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/mixin.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/mixin.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/mobiledoc-error.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/mobiledoc-error.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/parse-utils.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/parse-utils.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/placeholder-image-src.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/placeholder-image-src.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/selection-utils.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/selection-utils.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/set.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/set.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/string-utils.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/string-utils.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/utils');
 QUnit.test('tests/jshint/js/utils/to-range.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/utils/to-range.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js');
 QUnit.test('tests/jshint/js/version.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/version.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/views');
 QUnit.test('tests/jshint/js/views/tooltip.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/views/tooltip.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/js/views');
 QUnit.test('tests/jshint/js/views/view.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/js/views/view.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint');
 QUnit.test('tests/jshint/test-helpers.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/test-helpers.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor');
 QUnit.test('tests/jshint/unit/editor/atom-lifecycle-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/atom-lifecycle-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor');
 QUnit.test('tests/jshint/unit/editor/card-lifecycle-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/card-lifecycle-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor');
 QUnit.test('tests/jshint/unit/editor/editor-events-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/editor-events-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor');
 QUnit.test('tests/jshint/unit/editor/editor-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/editor-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor');
 QUnit.test('tests/jshint/unit/editor/key-commands-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/key-commands-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor');
 QUnit.test('tests/jshint/unit/editor/post-delete-at-position-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/post-delete-at-position-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor');
 QUnit.test('tests/jshint/unit/editor/post-delete-range-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/post-delete-range-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor');
 QUnit.test('tests/jshint/unit/editor/post-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/post-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor/post');
 QUnit.test('tests/jshint/unit/editor/post/insert-post-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/post/insert-post-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/editor');
 QUnit.test('tests/jshint/unit/editor/ui-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/editor/ui-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/models');
 QUnit.test('tests/jshint/unit/models/atom-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/models/atom-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/models');
 QUnit.test('tests/jshint/unit/models/card-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/models/card-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/models');
 QUnit.test('tests/jshint/unit/models/lifecycle-callbacks-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/models/lifecycle-callbacks-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/models');
 QUnit.test('tests/jshint/unit/models/list-section-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/models/list-section-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/models');
 QUnit.test('tests/jshint/unit/models/marker-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/models/marker-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/models');
 QUnit.test('tests/jshint/unit/models/markup-section-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/models/markup-section-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/models');
 QUnit.test('tests/jshint/unit/models/post-node-builder-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/models/post-node-builder-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/models');
 QUnit.test('tests/jshint/unit/models/post-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/models/post-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/parsers');
 QUnit.test('tests/jshint/unit/parsers/dom-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/parsers/dom-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/parsers');
 QUnit.test('tests/jshint/unit/parsers/html-google-docs-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/parsers/html-google-docs-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/parsers');
 QUnit.test('tests/jshint/unit/parsers/html-google-sheets-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/parsers/html-google-sheets-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/parsers');
 QUnit.test('tests/jshint/unit/parsers/html-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/parsers/html-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/parsers');
 QUnit.test('tests/jshint/unit/parsers/mobiledoc-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/parsers/mobiledoc-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/parsers/mobiledoc');
 QUnit.test('tests/jshint/unit/parsers/mobiledoc/0-2-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/parsers/mobiledoc/0-2-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/parsers/mobiledoc');
 QUnit.test('tests/jshint/unit/parsers/mobiledoc/0-3-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/parsers/mobiledoc/0-3-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/parsers');
 QUnit.test('tests/jshint/unit/parsers/section-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/parsers/section-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/parsers');
 QUnit.test('tests/jshint/unit/parsers/text-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/parsers/text-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/renderers');
 QUnit.test('tests/jshint/unit/renderers/editor-dom-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/renderers/editor-dom-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/renderers');
 QUnit.test('tests/jshint/unit/renderers/mobiledoc-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/renderers/mobiledoc-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/renderers/mobiledoc');
 QUnit.test('tests/jshint/unit/renderers/mobiledoc/0-2-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/renderers/mobiledoc/0-2-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/renderers/mobiledoc');
 QUnit.test('tests/jshint/unit/renderers/mobiledoc/0-3-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/renderers/mobiledoc/0-3-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/array-utils-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/array-utils-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/assert-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/assert-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/copy-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/copy-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/cursor-position-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/cursor-position-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/cursor-range-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/cursor-range-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/fixed-queue-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/fixed-queue-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/key-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/key-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/linked-list-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/linked-list-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/parse-utils-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/parse-utils-test.js should pass jshint.'); 
 });
 
 QUnit.module('JSHint - tests/jshint/unit/utils');
 QUnit.test('tests/jshint/unit/utils/selection-utils-test.js should pass jshint', function(assert) { 
+  assert.expect(1);
   assert.ok(true, 'tests/jshint/unit/utils/selection-utils-test.js should pass jshint.'); 
 });
 
-define('tests/test-helpers', ['exports', './helpers/assertions', './helpers/dom', './helpers/mobiledoc', './helpers/post-abstract', './helpers/browsers', './helpers/wait', './helpers/mock-editor', './helpers/render-built-abstract', './helpers/post-editor-run', './helpers/editor'], function (exports, _helpersAssertions, _helpersDom, _helpersMobiledoc, _helpersPostAbstract, _helpersBrowsers, _helpersWait, _helpersMockEditor, _helpersRenderBuiltAbstract, _helpersPostEditorRun, _helpersEditor) {
+define('tests/test-helpers', ['exports', './helpers/assertions', './helpers/module-load-failure', './helpers/dom', './helpers/mobiledoc', './helpers/post-abstract', './helpers/browsers', './helpers/wait', './helpers/mock-editor', './helpers/render-built-abstract', './helpers/post-editor-run', './helpers/editor'], function (exports, _helpersAssertions, _helpersModuleLoadFailure, _helpersDom, _helpersMobiledoc, _helpersPostAbstract, _helpersBrowsers, _helpersWait, _helpersMockEditor, _helpersRenderBuiltAbstract, _helpersPostEditorRun, _helpersEditor) {
+  /* global QUnit */
   'use strict';
 
-  (0, _helpersAssertions['default'])();
+  (0, _helpersAssertions['default'])(QUnit);
+
+  (0, _helpersModuleLoadFailure['default'])(QUnit);
 
   var _QUnit = QUnit;
   var qunitTest = _QUnit.test;
@@ -8074,6 +8544,34 @@ define('tests/test-helpers', ['exports', './helpers/assertions', './helpers/dom'
     $('<div id="editor"></div>').appendTo('#qunit-fixture');
   });
 
+  var sauceLog = [];
+
+  QUnit.done(function (test_results) {
+    var tests = [];
+    for (var i = 0, len = sauceLog.length; i < len; i++) {
+      var details = sauceLog[i];
+      tests.push({
+        name: details.name,
+        result: details.result,
+        expected: details.expected,
+        actual: details.actual,
+        source: details.source
+      });
+    }
+    test_results.tests = tests;
+
+    window.global_test_results = test_results;
+  });
+
+  QUnit.testStart(function (testDetails) {
+    QUnit.log(function (details) {
+      if (!details.result) {
+        details.name = testDetails.name;
+        sauceLog.push(details);
+      }
+    });
+  });
+
   exports['default'] = {
     dom: _helpersDom['default'],
     mobiledoc: _helpersMobiledoc['default'],
@@ -8087,7 +8585,7 @@ define('tests/test-helpers', ['exports', './helpers/assertions', './helpers/dom'
     postEditor: { run: _helpersPostEditorRun['default'], renderBuiltAbstract: _helpersRenderBuiltAbstract['default'], MockEditor: _helpersMockEditor['default'] }
   };
 });
-define('tests/unit/editor/atom-lifecycle-test', ['exports', '../../test-helpers', 'mobiledoc-kit', 'mobiledoc-kit/renderers/mobiledoc/0-3'], function (exports, _testHelpers, _mobiledocKit, _mobiledocKitRenderersMobiledoc03) {
+define('tests/unit/editor/atom-lifecycle-test', ['exports', '../../test-helpers', 'mobiledoc-kit', 'mobiledoc-kit/renderers/mobiledoc/0-3-1'], function (exports, _testHelpers, _mobiledocKit, _mobiledocKitRenderersMobiledoc031) {
   'use strict';
 
   var editorElement = undefined,
@@ -8121,7 +8619,7 @@ define('tests/unit/editor/atom-lifecycle-test', ['exports', '../../test-helpers'
 
   // Default version is 0.2 for the moment
   function build(fn) {
-    return _testHelpers['default'].mobiledoc.build(fn, _mobiledocKitRenderersMobiledoc03.MOBILEDOC_VERSION);
+    return _testHelpers['default'].mobiledoc.build(fn, _mobiledocKitRenderersMobiledoc031.MOBILEDOC_VERSION);
   }
 
   function assertRenderArguments(assert, args, expected) {
@@ -9865,18 +10363,26 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
 
       return post([markupSection('p', [marker('abc')])]);
     }, '0.3.0');
-
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref6) {
+    var mobiledoc3_1 = _testHelpers['default'].mobiledoc.build(function (_ref6) {
       var post = _ref6.post;
       var markupSection = _ref6.markupSection;
       var marker = _ref6.marker;
+
+      return post([markupSection('p', [marker('abc')])]);
+    }, '0.3.1');
+
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref7) {
+      var post = _ref7.post;
+      var markupSection = _ref7.markupSection;
+      var marker = _ref7.marker;
 
       return post([markupSection('p', [marker('abc')])]);
     });
 
     assert.deepEqual(editor.serialize('0.2.0'), mobiledoc2, 'serializes 0.2.0');
     assert.deepEqual(editor.serialize('0.3.0'), mobiledoc3, 'serializes 0.3.0');
-    assert.deepEqual(editor.serialize(), mobiledoc3, 'serializes 0.3.0 by default');
+    assert.deepEqual(editor.serialize('0.3.1'), mobiledoc3_1, 'serializes 0.3.1');
+    assert.deepEqual(editor.serialize(), mobiledoc3_1, 'serializes 0.3.1 by default');
 
     assert.throws(function () {
       return editor.serialize('unknown');
@@ -9946,8 +10452,8 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
   });
 
   test('activeSections of a rendered blank mobiledoc is an empty array', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref7) {
-      var post = _ref7.post;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref8) {
+      var post = _ref8.post;
 
       return post();
     });
@@ -9957,10 +10463,10 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
   });
 
   test('activeSections is empty when the editor has no cursor', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref8) {
-      var post = _ref8.post;
-      var markupSection = _ref8.markupSection;
-      var marker = _ref8.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref9) {
+      var post = _ref9.post;
+      var markupSection = _ref9.markupSection;
+      var marker = _ref9.marker;
 
       return post([markupSection('p', [marker('abc')])]);
     }, { autofocus: false });
@@ -9970,8 +10476,8 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
   });
 
   test('editor.cursor.hasCursor() is false before rendering', function (assert) {
-    var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref9) {
-      var post = _ref9.post;
+    var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref10) {
+      var post = _ref10.post;
       return post();
     });
     editor = new _mobiledocKitEditorEditor['default']({ mobiledoc: mobiledoc });
@@ -9984,8 +10490,8 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
   });
 
   test('#destroy clears selection if it has one', function (assert) {
-    var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref10) {
-      var post = _ref10.post;
+    var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref11) {
+      var post = _ref11.post;
       return post();
     });
     editor = new _mobiledocKitEditorEditor['default']({ mobiledoc: mobiledoc });
@@ -10000,8 +10506,8 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
   });
 
   test('#destroy does not clear selection if it is outside the editor element', function (assert) {
-    var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref11) {
-      var post = _ref11.post;
+    var mobiledoc = _testHelpers['default'].mobiledoc.build(function (_ref12) {
+      var post = _ref12.post;
       return post();
     });
     editor = new _mobiledocKitEditorEditor['default']({ mobiledoc: mobiledoc });
@@ -10029,11 +10535,11 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
   });
 
   test('#activeMarkups returns the markups at cursor when range is collapsed', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref12) {
-      var post = _ref12.post;
-      var markupSection = _ref12.markupSection;
-      var marker = _ref12.marker;
-      var markup = _ref12.markup;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref13) {
+      var post = _ref13.post;
+      var markupSection = _ref13.markupSection;
+      var marker = _ref13.marker;
+      var markup = _ref13.markup;
 
       return post([markupSection('p', [marker('abc'), marker('def', [markup('b')]), marker('ghi')])]);
     });
@@ -10055,11 +10561,11 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
   });
 
   test('#hasActiveMarkup returns true for complex markups', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref13) {
-      var post = _ref13.post;
-      var markupSection = _ref13.markupSection;
-      var marker = _ref13.marker;
-      var markup = _ref13.markup;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref14) {
+      var post = _ref14.post;
+      var markupSection = _ref14.markupSection;
+      var marker = _ref14.marker;
+      var markup = _ref14.markup;
 
       return post([markupSection('p', [marker('abc '), marker('def', [markup('a', { href: 'http://bustle.com' })]), marker(' ghi')])]);
     });
@@ -10080,10 +10586,10 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
   });
 
   test('#insertText inserts text at cursor position, replacing existing range if non-collapsed', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref14) {
-      var post = _ref14.post;
-      var markupSection = _ref14.markupSection;
-      var marker = _ref14.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref15) {
+      var post = _ref15.post;
+      var markupSection = _ref15.markupSection;
+      var marker = _ref15.marker;
 
       return post([markupSection('p', [marker('b')])]);
     });
@@ -10106,11 +10612,11 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
   });
 
   test('#insertText inserts text at cursor position, inheriting active markups', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref15) {
-      var post = _ref15.post;
-      var markupSection = _ref15.markupSection;
-      var marker = _ref15.marker;
-      var markup = _ref15.markup;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref16) {
+      var post = _ref16.post;
+      var markupSection = _ref16.markupSection;
+      var marker = _ref16.marker;
+      var markup = _ref16.markup;
 
       return post([markupSection('p', [marker('a'), marker('b', [markup('b')])])]);
     });
@@ -10130,10 +10636,10 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
 
   test('#insertText is no-op when editor does not have cursor', function (assert) {
     var expected = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref16) {
-      var post = _ref16.post;
-      var markupSection = _ref16.markupSection;
-      var marker = _ref16.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref17) {
+      var post = _ref17.post;
+      var markupSection = _ref17.markupSection;
+      var marker = _ref17.marker;
 
       expected = post([markupSection('p', [marker('abc')])]);
       return post([markupSection('p', [marker('abc')])]);
@@ -10147,10 +10653,10 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
 
   test('#insertText when post is blank', function (assert) {
     var expected = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref17) {
-      var post = _ref17.post;
-      var markupSection = _ref17.markupSection;
-      var marker = _ref17.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref18) {
+      var post = _ref18.post;
+      var markupSection = _ref18.markupSection;
+      var marker = _ref18.marker;
 
       expected = post([markupSection('p', [marker('blah blah')])]);
       return post();
@@ -10173,10 +10679,10 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
       render: function render() {}
     };
 
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref18) {
-      var post = _ref18.post;
-      var markupSection = _ref18.markupSection;
-      var marker = _ref18.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref19) {
+      var post = _ref19.post;
+      var markupSection = _ref19.markupSection;
+      var marker = _ref19.marker;
 
       return post([markupSection('p', [marker('b')])]);
     }, { atoms: [atom] });
@@ -10203,10 +10709,10 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
     };
 
     var expected = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref19) {
-      var post = _ref19.post;
-      var markupSection = _ref19.markupSection;
-      var marker = _ref19.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref20) {
+      var post = _ref20.post;
+      var markupSection = _ref20.markupSection;
+      var marker = _ref20.marker;
 
       expected = post([markupSection('p', [marker('abc')])]);
       return post([markupSection('p', [marker('abc')])]);
@@ -10226,10 +10732,10 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
     };
 
     var expected = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref20) {
-      var post = _ref20.post;
-      var atom = _ref20.atom;
-      var markupSection = _ref20.markupSection;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref21) {
+      var post = _ref21.post;
+      var atom = _ref21.atom;
+      var markupSection = _ref21.markupSection;
 
       expected = post([markupSection('p', [atom('the-atom', 'THEATOMTEXT')])]);
       return post();
@@ -10251,8 +10757,8 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
       render: function render() {}
     };
 
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref21) {
-      var post = _ref21.post;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref22) {
+      var post = _ref22.post;
 
       return post();
     }, { atoms: [atom] });
@@ -10275,10 +10781,10 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
       render: function render() {}
     };
 
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref22) {
-      var post = _ref22.post;
-      var markupSection = _ref22.markupSection;
-      var marker = _ref22.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref23) {
+      var post = _ref23.post;
+      var markupSection = _ref23.markupSection;
+      var marker = _ref23.marker;
 
       return post([markupSection('p', [marker('b')])]);
     }, { cards: [card] });
@@ -10319,12 +10825,12 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
       render: function render() {}
     };
 
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref23) {
-      var post = _ref23.post;
-      var markupSection = _ref23.markupSection;
-      var marker = _ref23.marker;
-      var listItem = _ref23.listItem;
-      var listSection = _ref23.listSection;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref24) {
+      var post = _ref24.post;
+      var markupSection = _ref24.markupSection;
+      var marker = _ref24.marker;
+      var listItem = _ref24.listItem;
+      var listSection = _ref24.listSection;
 
       return post([listSection('ul', [listItem([marker('abc')]), listItem([marker('def')])])]);
     }, { cards: [card] });
@@ -10344,10 +10850,10 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
     };
 
     var expected = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref24) {
-      var post = _ref24.post;
-      var markupSection = _ref24.markupSection;
-      var marker = _ref24.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref25) {
+      var post = _ref25.post;
+      var markupSection = _ref25.markupSection;
+      var marker = _ref25.marker;
 
       expected = post([markupSection('p', [marker('abc')])]);
       return post([markupSection('p', [marker('abc')])]);
@@ -10367,9 +10873,9 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
     };
 
     var expected = undefined;
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref25) {
-      var post = _ref25.post;
-      var cardSection = _ref25.cardSection;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref26) {
+      var post = _ref26.post;
+      var cardSection = _ref26.cardSection;
 
       expected = post([cardSection('the-card')]);
       return post();
@@ -10392,8 +10898,8 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
       render: function render() {}
     };
 
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref26) {
-      var post = _ref26.post;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref27) {
+      var post = _ref27.post;
 
       return post();
     }, { cards: [card] });
@@ -10416,8 +10922,8 @@ define('tests/unit/editor/editor-test', ['exports', 'mobiledoc-kit/editor/editor
       render: function render() {}
     };
 
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref27) {
-      var post = _ref27.post;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref28) {
+      var post = _ref28.post;
 
       return post();
     }, { cards: [card] });
@@ -14348,8 +14854,8 @@ define('tests/unit/parsers/dom-test', ['exports', 'mobiledoc-kit/parsers/dom', '
 
   test('link (A tag) is parsed', function (assert) {
     var url = 'http://bustle.com',
-        ref = 'nofollow';
-    var element = buildDOM('<a href="' + url + '" ref="' + ref + '">link</a>');
+        rel = 'nofollow';
+    var element = buildDOM('<a href="' + url + '" rel="' + rel + '">link</a>');
     var post = parser.parse(element);
 
     assert.equal(post.sections.length, 1, '1 section');
@@ -14367,7 +14873,7 @@ define('tests/unit/parsers/dom-test', ['exports', 'mobiledoc-kit/parsers/dom', '
 
     var markup = marker.markups[0];
     assert.equal(markup.getAttribute('href'), url, 'has href attr');
-    assert.equal(markup.getAttribute('ref'), ref, 'has ref attr');
+    assert.equal(markup.getAttribute('rel'), rel, 'has rel attr');
   });
 
   test('span with font-style italic maps to em', function (assert) {
@@ -14412,7 +14918,7 @@ define('tests/unit/parsers/dom-test', ['exports', 'mobiledoc-kit/parsers/dom', '
     assert.ok(marker.hasMarkup('strong'), 'marker is strong');
   });
 
-  var recognizedTags = ['h1', 'h2', 'h3', 'blockquote'];
+  var recognizedTags = ['aside', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'];
   recognizedTags.forEach(function (tag) {
     test('recognized markup section tags are parsed (' + tag + ')', function (assert) {
       var element = buildDOM('<' + tag + '>' + tag + ' text</' + tag + '>');
@@ -14858,6 +15364,23 @@ define('tests/unit/parsers/mobiledoc/0-2-test', ['exports', 'mobiledoc-kit/parse
     assert.deepEqual(parsed, post);
   });
 
+  test('#parse pull-quote section to aside node', function (assert) {
+    var mobiledoc = {
+      version: _mobiledocKitRenderersMobiledoc02.MOBILEDOC_VERSION,
+      sections: [[], [[1, 'PULL-QUOTE', [[[], 0, 'quoted']]]]]
+    };
+    var parsed = parser.parse(mobiledoc);
+
+    var section = builder.createMarkupSection('ASIDE', [], false);
+    var markers = [builder.createMarker('quoted', [])];
+    markers.forEach(function (marker) {
+      return section.markers.append(marker);
+    });
+    post.sections.append(section);
+
+    assert.deepEqual(parsed, post);
+  });
+
   test('#parse doc with image section', function (assert) {
     var mobiledoc = {
       version: _mobiledocKitRenderersMobiledoc02.MOBILEDOC_VERSION,
@@ -15001,6 +15524,26 @@ define('tests/unit/parsers/mobiledoc/0-3-test', ['exports', 'mobiledoc-kit/parse
     var bMarkerType = builder.createMarkup('B');
 
     var markers = [builder.createMarker('hello', [aMarkerType]), builder.createMarker('brave new', [aMarkerType, bMarkerType]), builder.createMarker('world', [aMarkerType])];
+    markers.forEach(function (marker) {
+      return section.markers.append(marker);
+    });
+    post.sections.append(section);
+
+    assert.deepEqual(parsed, post);
+  });
+
+  test('#parse pull-quote section to aside node', function (assert) {
+    var mobiledoc = {
+      version: _mobiledocKitRenderersMobiledoc03.MOBILEDOC_VERSION,
+      atoms: [],
+      cards: [],
+      markups: [],
+      sections: [[1, 'PULL-QUOTE', [[0, [], 0, 'quoted']]]]
+    };
+    var parsed = parser.parse(mobiledoc);
+
+    var section = builder.createMarkupSection('ASIDE', [], false);
+    var markers = [builder.createMarker('quoted', [])];
     markers.forEach(function (marker) {
       return section.markers.append(marker);
     });
@@ -15649,6 +16192,26 @@ define('tests/unit/renderers/editor-dom-test', ['exports', 'mobiledoc-kit/models
     assert.equal(renderTree.rootElement.innerHTML, '<p>hello <b>bold, <i>italic,</i></b> world.</p>');
   });
 
+  test('renders a post with marker with link markup', function (assert) {
+    var post = builder.createPost();
+    var section = builder.createMarkupSection('P');
+    post.sections.append(section);
+
+    var href = 'http://google.com';
+    var rel = 'nofollow';
+    var linkMarkup = builder.createMarkup('A', { href: href, rel: rel });
+
+    section.markers.append(builder.createMarker('hello', [linkMarkup]));
+
+    var renderTree = new _mobiledocKitModelsRenderTree['default'](post);
+    render(renderTree);
+    var html = renderTree.rootElement.innerHTML;
+
+    assert.ok(html.match(/<p><a .*>hello<\/a><\/p>/), 'a tag present');
+    assert.ok(html.match(new RegExp('href="' + href + '"')), 'href present');
+    assert.ok(html.match(new RegExp('rel="' + rel + '"')), 'rel present');
+  });
+
   test('renders a post with image', function (assert) {
     var url = _mobiledocKitUtilsPlaceholderImageSrc['default'];
     var post = builder.createPost();
@@ -16191,19 +16754,19 @@ define('tests/unit/renderers/editor-dom-test', ['exports', 'mobiledoc-kit/models
     assert.equal(section.renderNode.childNodes.length, 0, 'section render node has all children removed');
   });
 
-  test('renders markup section "pull-quote" as <div class="pull-quote"></div>', function (assert) {
+  test('renders markup section "aside" as <aside></aside>', function (assert) {
     var post = _testHelpers['default'].postAbstract.build(function (_ref16) {
       var post = _ref16.post;
       var markupSection = _ref16.markupSection;
       var marker = _ref16.marker;
 
-      return post([markupSection('pull-quote', [marker('abc')])]);
+      return post([markupSection('aside', [marker('abc')])]);
     });
     var renderTree = new _mobiledocKitModelsRenderTree['default'](post);
     render(renderTree);
 
     var expectedDOM = _testHelpers['default'].dom.build(function (t) {
-      return t('div', { "class": "pull-quote" }, [t.text('abc')]);
+      return t('aside', {}, [t.text('abc')]);
     });
 
     assert.equal(renderTree.rootElement.innerHTML, expectedDOM.outerHTML);
@@ -16542,18 +17105,18 @@ define('tests/unit/renderers/mobiledoc/0-2-test', ['exports', 'mobiledoc-kit/ren
     });
   });
 
-  test('renders a pull-quote as markup section', function (assert) {
+  test('renders an aside as markup section', function (assert) {
     var post = _testHelpers['default'].postAbstract.build(function (_ref4) {
       var post = _ref4.post;
       var markupSection = _ref4.markupSection;
       var marker = _ref4.marker;
 
-      return post([markupSection('pull-quote', [marker('abc')])]);
+      return post([markupSection('aside', [marker('abc')])]);
     });
     var mobiledoc = render(post);
     assert.deepEqual(mobiledoc, {
       version: _mobiledocKitRenderersMobiledoc02.MOBILEDOC_VERSION,
-      sections: [[], [[1, 'pull-quote', [[[], 0, 'abc']]]]]
+      sections: [[], [[1, 'aside', [[[], 0, 'abc']]]]]
     });
   });
 });
@@ -16819,13 +17382,13 @@ define('tests/unit/renderers/mobiledoc/0-3-test', ['exports', 'mobiledoc-kit/ren
     });
   });
 
-  test('renders a pull-quote as markup section', function (assert) {
+  test('renders an aside as markup section', function (assert) {
     var post = _testHelpers['default'].postAbstract.build(function (_ref7) {
       var post = _ref7.post;
       var markupSection = _ref7.markupSection;
       var marker = _ref7.marker;
 
-      return post([markupSection('pull-quote', [marker('abc')])]);
+      return post([markupSection('aside', [marker('abc')])]);
     });
     var mobiledoc = render(post);
     assert.deepEqual(mobiledoc, {
@@ -16833,7 +17396,7 @@ define('tests/unit/renderers/mobiledoc/0-3-test', ['exports', 'mobiledoc-kit/ren
       atoms: [],
       cards: [],
       markups: [],
-      sections: [[1, 'pull-quote', [[0, [], 0, 'abc']]]]
+      sections: [[1, 'aside', [[0, [], 0, 'abc']]]]
     });
   });
 });
@@ -17208,72 +17771,14 @@ define('tests/unit/utils/cursor-position-test', ['exports', '../../test-helpers'
     assert.positionIsEqual(beforeTail.moveWord(FORWARD), cardTail, 'beforeTail -> cardTail');
   });
 
-  function buildPostWithTextAndAtom(textWithAtoms) {
-    return _testHelpers['default'].postAbstract.build(function (_ref14) {
-      var post = _ref14.post;
-      var markupSection = _ref14.markupSection;
-      var marker = _ref14.marker;
-      var atom = _ref14.atom;
-
-      var _textWithAtoms$split$reduce = textWithAtoms.split("").reduce(function (_ref15, ch, index) {
-        var markerText = _ref15.markerText;
-        var markers = _ref15.markers;
-
-        var isLast = index === textWithAtoms.length - 1;
-
-        if (ch === 'A') {
-          // "A" is for "atom"
-          if (markerText.length) {
-            markers.push(marker(markerText));
-            markerText = '';
-          }
-          markers.push(atom('the-atom'));
-        } else {
-          markerText += ch;
-        }
-
-        if (isLast && markerText.length) {
-          markers.push(marker(markerText));
-        }
-        return { markerText: markerText, markers: markers };
-      }, { markerText: '', markers: [] });
-
-      var markers = _textWithAtoms$split$reduce.markers;
-
-      return post([markupSection('p', markers)]);
-    });
-  }
-
   test('#moveWord with atoms (backward)', function (assert) {
-    var expectations = [['abc A|', 'abc |A'], ['abc |A', '|abc A'], ['A|', '|A'], ['A  |', 'A|  '], ['AA|', 'A|A'], ['|A', '|A']];
+    var expectations = [['abc @|', 'abc |@'], ['abc |@', '|abc @'], ['@|', '|@'], ['@  |', '@|  '], ['@@|', '@|@'], ['@|@', '|@@'], ['|@@', '|@@']];
 
-    expectations.forEach(function (_ref16) {
-      var _ref162 = _slicedToArray(_ref16, 2);
+    expectations.forEach(function (_ref14) {
+      var _ref142 = _slicedToArray(_ref14, 2);
 
-      var before = _ref162[0];
-      var after = _ref162[1];
-
-      var textWithAtoms = before.replace('|', '');
-      var beforeIndex = before.indexOf('|');
-      var afterIndex = after.indexOf('|');
-
-      var post = buildPostWithTextAndAtom(textWithAtoms);
-      var section = post.sections.head;
-      var pos = section.toPosition(beforeIndex);
-      var nextPos = section.toPosition(afterIndex);
-
-      assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos, 'move word with atoms "' + before + '" -> "' + after + '"');
-    });
-  });
-
-  test('#moveWord in text (forward)', function (assert) {
-    var expectations = [['|abc def', 'abc| def'], ['a|bc def', 'abc| def'], ['abc| def', 'abc def|'], ['abc |def', 'abc def|'], ['abc def|', 'abc def|'], ['abc|', 'abc|'], ['ab|c', 'abc|'], ['|abc', 'abc|'], ['|  abc', '  abc|']];
-
-    expectations.forEach(function (_ref17) {
-      var _ref172 = _slicedToArray(_ref17, 2);
-
-      var before = _ref172[0];
-      var after = _ref172[1];
+      var before = _ref142[0];
+      var after = _ref142[1];
 
       var _Helpers$postAbstract$buildFromText4 = _testHelpers['default'].postAbstract.buildFromText(before);
 
@@ -17285,6 +17790,31 @@ define('tests/unit/utils/cursor-position-test', ['exports', '../../test-helpers'
       var nextPos = _Helpers$postAbstract$buildFromText5.range.head;
 
       var section = post.sections.head;
+      nextPos = section.toPosition(nextPos.offset);
+
+      assert.positionIsEqual(pos.moveWord(BACKWARD), nextPos, 'move word with atoms "' + before + '" -> "' + after + '"');
+    });
+  });
+
+  test('#moveWord in text (forward)', function (assert) {
+    var expectations = [['|abc def', 'abc| def'], ['a|bc def', 'abc| def'], ['abc| def', 'abc def|'], ['abc |def', 'abc def|'], ['abc def|', 'abc def|'], ['abc|', 'abc|'], ['ab|c', 'abc|'], ['|abc', 'abc|'], ['|  abc', '  abc|']];
+
+    expectations.forEach(function (_ref15) {
+      var _ref152 = _slicedToArray(_ref15, 2);
+
+      var before = _ref152[0];
+      var after = _ref152[1];
+
+      var _Helpers$postAbstract$buildFromText6 = _testHelpers['default'].postAbstract.buildFromText(before);
+
+      var post = _Helpers$postAbstract$buildFromText6.post;
+      var pos = _Helpers$postAbstract$buildFromText6.range.head;
+
+      var _Helpers$postAbstract$buildFromText7 = _testHelpers['default'].postAbstract.buildFromText(after);
+
+      var nextPos = _Helpers$postAbstract$buildFromText7.range.head;
+
+      var section = post.sections.head;
       nextPos = section.toPosition(nextPos.offset); // fix section
 
       assert.positionIsEqual(pos.moveWord(FORWARD), nextPos, 'move word "' + before + '"->"' + after + '"');
@@ -17292,32 +17822,35 @@ define('tests/unit/utils/cursor-position-test', ['exports', '../../test-helpers'
   });
 
   test('#moveWord with atoms (forward)', function (assert) {
-    var expectations = [['|A', 'A|'], ['A|', 'A|'], ['|  A', '  A|'], ['abc| A', 'abc A|'], ['A|A', 'AA|']];
+    var expectations = [['|@', '@|'], ['@|', '@|'], ['|  @', '  @|'], ['|  @ x', '  @ |x'], ['abc| @', 'abc @|'], ['|@@', '@|@'], ['@|@', '@@|'], ['@@|', '@@|']];
 
-    expectations.forEach(function (_ref18) {
-      var _ref182 = _slicedToArray(_ref18, 2);
+    expectations.forEach(function (_ref16) {
+      var _ref162 = _slicedToArray(_ref16, 2);
 
-      var before = _ref182[0];
-      var after = _ref182[1];
+      var before = _ref162[0];
+      var after = _ref162[1];
 
-      var textWithAtoms = before.replace('|', '');
-      var beforeIndex = before.indexOf('|');
-      var afterIndex = after.indexOf('|');
+      var _Helpers$postAbstract$buildFromText8 = _testHelpers['default'].postAbstract.buildFromText(before);
 
-      var post = buildPostWithTextAndAtom(textWithAtoms);
+      var post = _Helpers$postAbstract$buildFromText8.post;
+      var pos = _Helpers$postAbstract$buildFromText8.range.head;
+
+      var _Helpers$postAbstract$buildFromText9 = _testHelpers['default'].postAbstract.buildFromText(after);
+
+      var nextPos = _Helpers$postAbstract$buildFromText9.range.head;
+
       var section = post.sections.head;
-      var pos = section.toPosition(beforeIndex);
-      var nextPos = section.toPosition(afterIndex);
+      nextPos = section.toPosition(nextPos.offset);
 
       assert.positionIsEqual(pos.moveWord(FORWARD), nextPos, 'move word with atoms "' + before + '" -> "' + after + '"');
     });
   });
 
   test('#fromNode when node is marker text node', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref19) {
-      var post = _ref19.post;
-      var markupSection = _ref19.markupSection;
-      var marker = _ref19.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref17) {
+      var post = _ref17.post;
+      var markupSection = _ref17.markupSection;
+      var marker = _ref17.marker;
 
       return post([markupSection('p', [marker('abc'), marker('123')])]);
     });
@@ -17335,10 +17868,10 @@ define('tests/unit/utils/cursor-position-test', ['exports', '../../test-helpers'
   });
 
   test('#fromNode when node is section node with offset', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref20) {
-      var post = _ref20.post;
-      var markupSection = _ref20.markupSection;
-      var marker = _ref20.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref18) {
+      var post = _ref18.post;
+      var markupSection = _ref18.markupSection;
+      var marker = _ref18.marker;
 
       return post([markupSection('p', [marker('abc'), marker('123')])]);
     });
@@ -17353,10 +17886,10 @@ define('tests/unit/utils/cursor-position-test', ['exports', '../../test-helpers'
   });
 
   test('#fromNode when node is root element and offset is 0', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref21) {
-      var post = _ref21.post;
-      var markupSection = _ref21.markupSection;
-      var marker = _ref21.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref19) {
+      var post = _ref19.post;
+      var markupSection = _ref19.markupSection;
+      var marker = _ref19.marker;
 
       return post([markupSection('p', [marker('abc'), marker('123')])]);
     });
@@ -17368,10 +17901,10 @@ define('tests/unit/utils/cursor-position-test', ['exports', '../../test-helpers'
   });
 
   test('#fromNode when node is root element and offset is > 0', function (assert) {
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref22) {
-      var post = _ref22.post;
-      var markupSection = _ref22.markupSection;
-      var marker = _ref22.marker;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref20) {
+      var post = _ref20.post;
+      var markupSection = _ref20.markupSection;
+      var marker = _ref20.marker;
 
       return post([markupSection('p', [marker('abc'), marker('123')])]);
     });
@@ -17390,9 +17923,9 @@ define('tests/unit/utils/cursor-position-test', ['exports', '../../test-helpers'
           return $('<div id="the-card">this is the card</div>')[0];
         }
       }] };
-    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref23) {
-      var post = _ref23.post;
-      var cardSection = _ref23.cardSection;
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref21) {
+      var post = _ref21.post;
+      var cardSection = _ref21.cardSection;
 
       return post([cardSection('some-card')]);
     }, editorOptions);
@@ -17428,11 +17961,52 @@ define('tests/unit/utils/cursor-position-test', ['exports', '../../test-helpers'
     assert.positionIsEqual(_mobiledocKitUtilsCursorPosition['default'].fromNode(renderTree, nodes.cardDiv, 1), leftPos, 'card div offset 1');
   });
 
+  /**
+   * When triple-clicking text in a disabled editor, some browsers will
+   * expand the selection to include the start of a node outside the editor.
+   * See: https://github.com/bustle/mobiledoc-kit/issues/486
+   *
+   * Chrome and Safari appear to extend the selection to the next node in the document
+   * that has a textNode in it. Firefox does not suffer from this issue.
+   */
+  test('#fromNode when selection is outside (after) the editor element', function (assert) {
+    var done = assert.async();
+    var div$ = $('<div><p>AFTER</p></div>').insertAfter($(editorElement));
+    var p = div$[0].firstChild;
+
+    editor = _testHelpers['default'].mobiledoc.renderInto(editorElement, function (_ref22) {
+      var post = _ref22.post;
+      var markupSection = _ref22.markupSection;
+      var marker = _ref22.marker;
+      return post([markupSection('p', [marker('abcdef')])]);
+    });
+
+    // If the editor isn't disabled, some browsers will "fix" the selection range we are
+    // about to add by constraining it within the contentEditable container div
+    editor.disableEditing();
+
+    var anchorNode = $(editorElement).find('p:contains(abcdef)')[0].firstChild;
+    var focusNode = p;
+    _testHelpers['default'].dom.selectRange(anchorNode, 0, focusNode, 0);
+
+    _testHelpers['default'].wait(function () {
+      assert.ok(window.getSelection().anchorNode === anchorNode, 'precond - anchor node');
+      assert.ok(window.getSelection().focusNode === focusNode, 'precond - focus node');
+      var range = editor.range;
+
+      assert.positionIsEqual(range.head, editor.post.headPosition(), 'head');
+      assert.positionIsEqual(range.tail, editor.post.tailPosition(), 'tail');
+
+      div$.remove();
+      done();
+    });
+  });
+
   test('Position cannot be on list section', function (assert) {
-    var post = _testHelpers['default'].postAbstract.build(function (_ref24) {
-      var post = _ref24.post;
-      var listSection = _ref24.listSection;
-      var listItem = _ref24.listItem;
+    var post = _testHelpers['default'].postAbstract.build(function (_ref23) {
+      var post = _ref23.post;
+      var listSection = _ref23.listSection;
+      var listItem = _ref23.listItem;
 
       return post([listSection('ul', [listItem()])]);
     });
@@ -17449,7 +18023,7 @@ define('tests/unit/utils/cursor-position-test', ['exports', '../../test-helpers'
     assert.ok(position, 'position with list item is ok');
   });
 });
-define('tests/unit/utils/cursor-range-test', ['exports', '../../test-helpers', 'mobiledoc-kit/utils/cursor/range', 'mobiledoc-kit/utils/key'], function (exports, _testHelpers, _mobiledocKitUtilsCursorRange, _mobiledocKitUtilsKey) {
+define('tests/unit/utils/cursor-range-test', ['exports', '../../test-helpers', 'mobiledoc-kit/utils/cursor/range', 'mobiledoc-kit/utils/key', 'mobiledoc-kit/utils/array-utils'], function (exports, _testHelpers, _mobiledocKitUtilsCursorRange, _mobiledocKitUtilsKey, _mobiledocKitUtilsArrayUtils) {
   'use strict';
 
   var FORWARD = _mobiledocKitUtilsKey.DIRECTION.FORWARD;
@@ -17651,6 +18225,32 @@ define('tests/unit/utils/cursor-range-test', ['exports', '../../test-helpers', '
 
     assert.rangeIsEqual(collapsedRange.extend(0), collapsedRange, 'extending collapsed range 0 is no-op');
     assert.rangeIsEqual(nonCollapsedRange.extend(0), nonCollapsedRange, 'extending non-collapsed range 0 is no-op');
+  });
+
+  test('#expandByMarker processed markers in a callback and continues as long as the callback returns true', function (assert) {
+    var post = _testHelpers['default'].postAbstract.build(function (_ref14) {
+      var post = _ref14.post;
+      var markupSection = _ref14.markupSection;
+      var marker = _ref14.marker;
+      var markup = _ref14.markup;
+
+      var bold = markup('b');
+      var italic = markup('i');
+      return post([markupSection('p', [marker('aiya', []), marker('biya', [bold, italic]), marker('ciya', [bold]), marker('diya', [bold])])]);
+    });
+
+    var section = post.sections.head;
+    var head = section.toPosition(9); // i in the third hiya
+    var tail = section.toPosition(15); // y in the last hiya
+    var range = head.toRange(tail);
+    var expandedRange = range.expandByMarker(function (marker) {
+      return !!(0, _mobiledocKitUtilsArrayUtils.detect)(marker.markups, function (markup) {
+        return markup.tagName === 'b';
+      });
+    });
+
+    assert.positionIsEqual(expandedRange.head, section.toPosition(4), 'range head is start of second marker');
+    assert.positionIsEqual(expandedRange.tail, section.toPosition(16), 'range tail did not change');
   });
 });
 define('tests/unit/utils/fixed-queue-test', ['exports', '../../test-helpers', 'mobiledoc-kit/utils/fixed-queue'], function (exports, _testHelpers, _mobiledocKitUtilsFixedQueue) {
@@ -18131,6 +18731,38 @@ define('tests/unit/utils/linked-list-test', ['exports', '../../test-helpers', 'm
     }), undefined, 'no item detected');
   });
 
+  test('#detect finds w/ start', function (assert) {
+    var list = new _mobiledocKitUtilsLinkedList['default']();
+    var itemOne = new _mobiledocKitUtilsLinkedItem['default']();
+    var itemTwo = new _mobiledocKitUtilsLinkedItem['default']();
+    var itemThree = new _mobiledocKitUtilsLinkedItem['default']();
+    list.append(itemOne);
+    list.append(itemTwo);
+    list.append(itemThree);
+    assert.equal(list.detect(function (item) {
+      return item === itemOne;
+    }, itemOne), itemOne, 'itemOne detected');
+    assert.equal(list.detect(function (item) {
+      return item === itemTwo;
+    }, itemThree), null, 'no item detected');
+  });
+
+  test('#detect finds w/ reverse', function (assert) {
+    var list = new _mobiledocKitUtilsLinkedList['default']();
+    var itemOne = new _mobiledocKitUtilsLinkedItem['default']();
+    var itemTwo = new _mobiledocKitUtilsLinkedItem['default']();
+    var itemThree = new _mobiledocKitUtilsLinkedItem['default']();
+    list.append(itemOne);
+    list.append(itemTwo);
+    list.append(itemThree);
+    assert.equal(list.detect(function (item) {
+      return item === itemOne;
+    }, itemOne, true), itemOne, 'itemTwo detected');
+    assert.equal(list.detect(function (item) {
+      return item === itemThree;
+    }, itemThree, true), itemThree, 'itemThree');
+  });
+
   test('#objectAt looks up by index', function (assert) {
     var list = new _mobiledocKitUtilsLinkedList['default']();
     var itemOne = new _mobiledocKitUtilsLinkedItem['default']();
@@ -18489,4 +19121,4 @@ define('tests/unit/utils/selection-utils-test', ['exports', '../../test-helpers'
     var result = (0, _mobiledocKitUtilsSelectionUtils.comparePosition)(selection);
     assert.equal(_mobiledocKitUtilsKey.DIRECTION.BACKWARD, result.direction);
   });
-});
+});//# sourceMappingURL=built-amd-tests.map
