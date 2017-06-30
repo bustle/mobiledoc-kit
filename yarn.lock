@@ -748,7 +748,7 @@ broccoli-string-replace@^0.1.1:
     broccoli-persistent-filter "^1.1.5"
     minimatch "^3.0.3"
 
-broccoli-test-builder@0.4.0:
+broccoli-test-builder@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/broccoli-test-builder/-/broccoli-test-builder-0.4.0.tgz#7f35f1cd7a75acfe640db642bc87319c52aa2090"
   dependencies:
@@ -1493,7 +1493,7 @@ eslint-scope@^3.7.1:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-eslint@^4.0.0, eslint@^4.1.1:
+eslint@^4.0.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-4.1.1.tgz#facbdfcfe3e0facd3a8b80dc98c4e6c13ae582df"
   dependencies:
