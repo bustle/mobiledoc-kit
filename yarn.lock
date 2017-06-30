@@ -748,9 +748,9 @@ broccoli-string-replace@^0.1.1:
     broccoli-persistent-filter "^1.1.5"
     minimatch "^3.0.3"
 
-"broccoli-test-builder@https://github.com/sutori/broccoli-test-builder.git#eebe23e":
-  version "0.3.0"
-  resolved "https://github.com/sutori/broccoli-test-builder.git#eebe23e"
+broccoli-test-builder@0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/broccoli-test-builder/-/broccoli-test-builder-0.4.0.tgz#7f35f1cd7a75acfe640db642bc87319c52aa2090"
   dependencies:
     broccoli-amd-loader "^0.2.0"
     broccoli-babel-transpiler "^5.6.2"
