@@ -9,6 +9,6 @@
  */
 export default function deprecate(message, conditional=false) {
   if (!conditional) {
-    console.log(`[mobiledoc-kit] [DEPRECATED]: ${message}`); // jshint ignore:line
+    console.log(`[mobiledoc-kit] [DEPRECATED]: ${message}`);
   }
 }

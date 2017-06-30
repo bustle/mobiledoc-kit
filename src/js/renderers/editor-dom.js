@@ -601,10 +601,8 @@ export default class Renderer {
 
       method = postNode.type;
       assert(`EditorDom visitor cannot handle type ${method}`, !!this.visitor[method]);
-      // jshint -W083
       this.visitor[method](renderNode, postNode,
                            (...args) => this.visit(renderTree, ...args));
-      // jshint +W083
       renderNode.markClean();
       renderNode = this.nodes.shift();
     }

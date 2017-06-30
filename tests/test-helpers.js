@@ -26,7 +26,7 @@ const test = (msg, callback) => {
   let originalCallback = callback;
   callback = (...args) => {
     if (QUnit.config.debugTest) {
-      debugger; // jshint ignore:line
+      debugger;
     }
     originalCallback(...args);
   };

@@ -14,7 +14,6 @@ import {
   ATOM_TYPE
 } from 'mobiledoc-kit/models/types';
 
-/*jshint latedef: false */
 function compareMarkers(actual, expected, assert, path, deepCompare) {
   if (actual.value !== expected.value) {
     assert.equal(actual.value, expected.value, `wrong value at ${path}`);
