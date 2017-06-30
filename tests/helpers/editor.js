@@ -36,7 +36,7 @@ function buildFromText(texts, editorOptions={}) {
   let renderElement = editorOptions.element;
   delete editorOptions.element;
 
-  let beforeRender = editorOptions.beforeRender || () => {};
+  let beforeRender = editorOptions.beforeRender || function() {};
   delete editorOptions.beforeRender;
 
   let {post, range} = PostAbstractHelpers.buildFromText(texts);
