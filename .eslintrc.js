@@ -115,7 +115,6 @@ module.exports = {
     "no-eval": "error",
     "no-extend-native": "error",
     "no-extra-bind": "error",
-    "no-extra-boolean-cast": "off",
     "no-extra-label": "error",
     "no-extra-parens": "off",
     "no-floating-decimal": "error",
