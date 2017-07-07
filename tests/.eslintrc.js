@@ -6,7 +6,6 @@ module.exports = {
     "no-debugger": "off",
     "no-multiple-empty-lines": "off",
     "no-new": "off",
-    "no-redeclare": "off",
     "no-use-before-define": "off",
     "no-unused-vars": "off"
   }
