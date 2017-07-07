@@ -43,7 +43,7 @@ let expectations = [
   ['<p>some text</p>', ['some text']],
   ['<p>some text</p><p>some other text</p>', ['some text','some other text']],
   ['<p>some &nbsp;text &nbsp;&nbsp;for &nbsp; &nbsp;you</p>', ['some  text   for    you']],
-  ['<p>a\u2003b</p>', [`a${TAB}b`]], 
+  ['<p>a\u2003b</p>', [`a${TAB}b`]],
 
   // multiple ps, with and without adjacent text nodes
   ['<p>first line</p>\n<p>second line</p>', ['first line','second line']],
@@ -71,7 +71,7 @@ let expectations = [
 
 expectations.forEach(([html, dslText]) => {
   test(`#parse ${html} -> ${dslText}`, (assert) => {
-    let post = parser.parse( buildDOM(html) );
+    let post = parser.parse(buildDOM(html));
     let { post: expected } = buildFromText(dslText);
 
     assert.postIsSimilar(post, expected);

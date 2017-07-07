@@ -9,7 +9,6 @@ module.exports = {
     "no-redeclare": "off",
     "no-use-before-define": "off",
     "no-useless-concat": "off",
-    "no-unused-vars": "off",
-    "space-in-parens": "off"
+    "no-unused-vars": "off"
   }
 };

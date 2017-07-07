@@ -112,7 +112,7 @@ function parseTextIntoAtom(text, builder) {
     if (index === 1) { // atom
       markers.push(piece);
     } else if (piece.length) {
-      markers = markers.concat( parseTextIntoMarkers(piece, builder) );
+      markers = markers.concat(parseTextIntoMarkers(piece, builder));
     }
   });
 
