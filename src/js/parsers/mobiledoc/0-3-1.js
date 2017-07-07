@@ -155,9 +155,10 @@ export default class MobiledocParser {
     switch (type) {
       case MOBILEDOC_MARKUP_MARKER_TYPE:
         return this.builder.createMarker(value, this.markups.slice());
-      case MOBILEDOC_ATOM_MARKER_TYPE:
+      case MOBILEDOC_ATOM_MARKER_TYPE: {
         const [atomName, atomValue, atomPayload] = this.getAtomTypeFromIndex(value);
         return this.builder.createAtom(atomName, atomValue, atomPayload, this.markups.slice());
+      }
       default:
         assert(`Unexpected marker type ${type}`, false);
     }

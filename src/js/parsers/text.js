@@ -62,11 +62,12 @@ export default class TextParser {
     let markers = [this.builder.createMarker(text)];
 
     switch (type) {
-      case LIST_SECTION_TYPE:
+      case LIST_SECTION_TYPE: {
         let item = this.builder.createListItem(markers);
         let list = this.builder.createListSection(tagName, [item]);
         section = list;
         break;
+      }
       case MARKUP_SECTION_TYPE:
         section = this.builder.createMarkupSection(tagName, markers);
         break;

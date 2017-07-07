@@ -103,7 +103,6 @@ module.exports = {
     "no-await-in-loop": "error",
     "no-bitwise": "off",
     "no-caller": "error",
-    "no-case-declarations": "off",
     "no-catch-shadow": "error",
     "no-compare-neg-zero": "error",
     "no-confusing-arrow": "error",

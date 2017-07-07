@@ -155,7 +155,7 @@ export default class EventManager {
 
     switch(true) {
       // FIXME This should be restricted to only card/atom boundaries
-      case key.isHorizontalArrowWithoutModifiersOtherThanShift():
+      case key.isHorizontalArrowWithoutModifiersOtherThanShift(): {
         let newRange;
         if (key.isShift()) {
           newRange = range.extend(key.direction * 1);
@@ -166,7 +166,8 @@ export default class EventManager {
         editor.selectRange(newRange);
         event.preventDefault();
         break;
-      case key.isDelete():
+      }
+      case key.isDelete(): {
         let { direction } = key;
         let unit = 'char';
         if (this.modifierKeys.alt && Browser.isMac()) {
@@ -177,6 +178,7 @@ export default class EventManager {
         editor.performDelete({direction, unit});
         event.preventDefault();
         break;
+      }
       case key.isEnter():
         editor.handleNewline(event);
         break;

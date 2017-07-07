@@ -89,9 +89,10 @@ class Range {
         return new Range(head, tail.move(units), currentDirection);
       case DIRECTION.BACKWARD:
         return new Range(head.move(units), tail, currentDirection);
-      default:
+      default: {
         let newDirection = units > 0 ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
         return new Range(head, tail, newDirection).extend(units);
+      }
     }
   }
 
