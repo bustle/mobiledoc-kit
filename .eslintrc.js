@@ -189,7 +189,6 @@ module.exports = {
     "no-unmodified-loop-condition": "off",
     "no-unneeded-ternary": "off",
     "no-unused-expressions": "error",
-    "no-unused-vars": "off",
     "no-use-before-define": "error",
     "no-useless-call": "off",
     "no-useless-computed-key": "error",

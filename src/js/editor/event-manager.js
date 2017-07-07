@@ -76,7 +76,7 @@ export default class EventManager {
       filter(this._listeners, ([_context, _type]) => {
         return _context === context && _type === type;
       }),
-      ([context, type, listener]) => {
+      ([context,, listener]) => {
         listener.call(context, event);
       }
     );

@@ -19,7 +19,7 @@ export default class MobiledocParser {
    * @param {Mobiledoc}
    * @return {Post}
    */
-  parse({version, sections: sectionData}) {
+  parse({sections: sectionData}) {
     try {
       const markerTypes = sectionData[0];
       const sections    = sectionData[1];
@@ -69,17 +69,17 @@ export default class MobiledocParser {
     }
   }
 
-  parseCardSection([type, name, payload], post) {
+  parseCardSection([, name, payload], post) {
     const section = this.builder.createCardSection(name, payload);
     post.sections.append(section);
   }
 
-  parseImageSection([type, src], post) {
+  parseImageSection([, src], post) {
     const section = this.builder.createImageSection(src);
     post.sections.append(section);
   }
 
-  parseMarkupSection([type, tagName, markers], post) {
+  parseMarkupSection([, tagName, markers], post) {
     const section = this.builder.createMarkupSection(tagName.toLowerCase() === 'pull-quote' ? 'aside' : tagName);
     post.sections.append(section);
     this.parseMarkers(markers, section);
@@ -90,7 +90,7 @@ export default class MobiledocParser {
     });
   }
 
-  parseListSection([type, tagName, items], post) {
+  parseListSection([, tagName, items], post) {
     const section = this.builder.createListSection(tagName);
     post.sections.append(section);
     this.parseListItems(items, section);

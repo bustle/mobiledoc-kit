@@ -884,7 +884,7 @@ class PostEditor {
     let positionIsMiddle = !position.isHead() && !position.isTail();
     if (positionIsMiddle) {
       let item = position.section;
-      let [pre, post] =
+      let [pre,] =
         this._splitListItem(item, position);
       position = pre.tailPosition();
     }
@@ -970,7 +970,7 @@ class PostEditor {
     let markupSection = this.builder.createMarkupSection(newTagName);
     markupSection.join(section);
 
-    let [prev, mid, next] = this._splitListAtItem(listSection, section);
+    let [, mid,] = this._splitListAtItem(listSection, section);
     this.replaceSection(mid, markupSection);
     return markupSection;
   }
@@ -988,7 +988,7 @@ class PostEditor {
 
     let sectionToReplace;
     if (section.isListItem) {
-      let [prev, mid, next] = this._splitListAtItem(section.parent, section);
+      let [, mid,] = this._splitListAtItem(section.parent, section);
       sectionToReplace = mid;
     } else {
       sectionToReplace = section;

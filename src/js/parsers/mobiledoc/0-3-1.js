@@ -21,7 +21,7 @@ export default class MobiledocParser {
    * @param {Mobiledoc}
    * @return {Post}
    */
-  parse({ version, sections, markups: markerTypes, cards: cardTypes, atoms: atomTypes }) {
+  parse({ sections, markups: markerTypes, cards: cardTypes, atoms: atomTypes }) {
     try {
       const post = this.builder.createPost();
 
@@ -98,18 +98,18 @@ export default class MobiledocParser {
     return cardType;
   }
 
-  parseCardSection([type, cardIndex], post) {
+  parseCardSection([, cardIndex], post) {
     const [name, payload] = this.getCardTypeFromIndex(cardIndex);
     const section = this.builder.createCardSection(name, payload);
     post.sections.append(section);
   }
 
-  parseImageSection([type, src], post) {
+  parseImageSection([, src], post) {
     const section = this.builder.createImageSection(src);
     post.sections.append(section);
   }
 
-  parseMarkupSection([type, tagName, markers], post) {
+  parseMarkupSection([, tagName, markers], post) {
     const section = this.builder.createMarkupSection(tagName);
     post.sections.append(section);
     this.parseMarkers(markers, section);
@@ -120,7 +120,7 @@ export default class MobiledocParser {
     });
   }
 
-  parseListSection([type, tagName, items], post) {
+  parseListSection([, tagName, items], post) {
     const section = this.builder.createListSection(tagName);
     post.sections.append(section);
     this.parseListItems(items, section);
