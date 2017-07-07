@@ -478,9 +478,6 @@ test('new key commands can be registered and then unregistered', (assert) => {
     run(editor) { passedEditor = editor; passedEditorCount++; }
   });
 
-
-
-
   Helpers.dom.triggerKeyCommand(editor, 'x', MODIFIERS.CTRL);
   Helpers.dom.triggerKeyCommand(editor, 'd', MODIFIERS.CTRL);
 
