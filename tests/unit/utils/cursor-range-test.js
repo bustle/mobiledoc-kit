@@ -140,7 +140,7 @@ test('#extend expands range in multiple units in direction', (assert) => {
                       Range.create(headSection, 0, headSection, 2, FORWARD),
                       'extend forward 2');
 
-  assert.rangeIsEqual(collapsedRange.extend(FORWARD*(('abcd' + '12').length+1)),
+  assert.rangeIsEqual(collapsedRange.extend(FORWARD*('abcd12'.length+1)),
                       Range.create(headSection, 0, tailSection, 2, FORWARD),
                       'extend forward across sections');
 
@@ -148,7 +148,7 @@ test('#extend expands range in multiple units in direction', (assert) => {
                       Range.create(headSection, 0, headSection, 3, FORWARD),
                       'extend non-collapsed forward 2');
 
-  assert.rangeIsEqual(nonCollapsedRange.extend(FORWARD*(('bcd' + '12').length+1)),
+  assert.rangeIsEqual(nonCollapsedRange.extend(FORWARD*('bcd12'.length+1)),
                       Range.create(headSection, 0, tailSection, 2, FORWARD),
                       'extend non-collapsed across sections');
 
@@ -159,7 +159,7 @@ test('#extend expands range in multiple units in direction', (assert) => {
                       Range.create(tailSection, '12'.length, tailSection, '1234'.length, BACKWARD),
                       'extend backward 2');
 
-  assert.rangeIsEqual(collapsedRange.extend(BACKWARD*(('1234' + 'cd').length+1)),
+  assert.rangeIsEqual(collapsedRange.extend(BACKWARD*('1234cd'.length+1)),
                       Range.create(headSection, 'ab'.length, tailSection, '1234'.length, BACKWARD),
                       'extend backward across sections');
 
@@ -167,7 +167,7 @@ test('#extend expands range in multiple units in direction', (assert) => {
                       Range.create(tailSection, 0, tailSection, '1234'.length, BACKWARD),
                       'extend non-collapsed backward 2');
 
-  assert.rangeIsEqual(nonCollapsedRange.extend(BACKWARD*(('bcd' + '12').length+1)),
+  assert.rangeIsEqual(nonCollapsedRange.extend(BACKWARD*('bcd12'.length+1)),
                       Range.create(headSection, 'a'.length, tailSection, '1234'.length, BACKWARD),
                       'extend non-collapsed backward across sections');
 });
