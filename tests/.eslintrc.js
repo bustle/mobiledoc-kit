@@ -1,6 +1,5 @@
 module.exports = {
   "rules": {
-    "complexity": "off",
     "dot-location": "off",
     "no-new": "off",
     "no-use-before-define": "off",
