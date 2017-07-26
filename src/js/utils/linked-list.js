@@ -65,7 +65,7 @@ export default class LinkedList {
         this.head = item;
 
         break;
-      case 'middle':
+      case 'middle': {
         let prevItem  = nextItem.prev;
         item.next     = nextItem;
         item.prev     = prevItem;
@@ -73,7 +73,8 @@ export default class LinkedList {
         prevItem.next = item;
 
         break;
-      case 'end':
+      }
+      case 'end': {
         let tail = this.tail;
         item.prev = tail;
 
@@ -85,6 +86,7 @@ export default class LinkedList {
         this.tail = item;
 
         break;
+      }
     }
   }
   remove(item) {

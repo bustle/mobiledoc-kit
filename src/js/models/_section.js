@@ -106,7 +106,7 @@ export default class Section extends LinkedItem {
   nextLeafSection() {
     const next = this.next;
     if (next) {
-      if (!!next.items) {
+      if (next.items) {
         return next.items.head;
       } else {
         return next;
@@ -130,7 +130,7 @@ export default class Section extends LinkedItem {
     const prev = this.prev;
 
     if (prev) {
-      if (!!prev.items) {
+      if (prev.items) {
         return prev.items.tail;
       } else {
         return prev;

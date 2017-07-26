@@ -149,7 +149,7 @@ class Visitor {
       let blank = this.builder.createMarkupSection();
       this._insertSectionAfter(blank, parent);
     } else {
-      let [pre, blank, post] = this._breakListAtCursor(); // jshint ignore:line
+      let [, blank,] = this._breakListAtCursor();
       this.cursorPosition = blank.tailPosition();
     }
   }
@@ -211,7 +211,7 @@ class Visitor {
   }
 
   _breakMarkerableAtCursor() {
-    let [pre, post] = // jshint ignore:line
+    let [pre,] =
       this.postEditor.splitSection(this.cursorPosition);
 
     this.cursorPosition = pre.tailPosition();

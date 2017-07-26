@@ -167,8 +167,8 @@ test('#markupsInRange obeys left- and right-inclusive rules for "A" markups', (a
       marker('123', [a]),
       marker(' abc '),
       marker('def', [a]),
-      marker( ' ghi '),
-      marker( 'jkl', [a])
+      marker(' ghi '),
+      marker('jkl', [a])
     ])]);
   });
 

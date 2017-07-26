@@ -14,7 +14,6 @@ import {
   ATOM_TYPE
 } from 'mobiledoc-kit/models/types';
 
-/*jshint latedef: false */
 function compareMarkers(actual, expected, assert, path, deepCompare) {
   if (actual.value !== expected.value) {
     assert.equal(actual.value, expected.value, `wrong value at ${path}`);
@@ -31,6 +30,7 @@ function compareMarkers(actual, expected, assert, path, deepCompare) {
   }
 }
 
+/* eslint-disable complexity */
 function comparePostNode(actual, expected, assert, path='root', deepCompare=false) {
   if (!actual || !expected) {
     assert.ok(!!actual, `missing actual post node at ${path}`);
@@ -124,6 +124,7 @@ function comparePostNode(actual, expected, assert, path='root', deepCompare=fals
       throw new Error('wrong type :' + actual.type);
   }
 }
+/* eslint-enable complexity */
 
 export default function registerAssertions(QUnit) {
   QUnit.assert.hasElement = function(selector,

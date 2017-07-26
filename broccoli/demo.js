@@ -1,4 +1,3 @@
-/* jshint node:true */
 var funnel = require('broccoli-funnel');
 var babel = require('broccoli-babel-transpiler');
 

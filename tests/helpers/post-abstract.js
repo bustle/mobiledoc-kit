@@ -1,4 +1,3 @@
-/* jshint latedef:nofunc */
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 
 /*
@@ -113,7 +112,7 @@ function parseTextIntoAtom(text, builder) {
     if (index === 1) { // atom
       markers.push(piece);
     } else if (piece.length) {
-      markers = markers.concat( parseTextIntoMarkers(piece, builder) );
+      markers = markers.concat(parseTextIntoMarkers(piece, builder));
     }
   });
 
@@ -209,7 +208,7 @@ function parseSingleText(text, builder) {
 /**
  * Shorthand to create a mobiledoc simply.
  * Pass a string or an array of strings.
- * 
+ *
  * Returns { post, range }, a post built from the mobiledoc and a range.
  *
  * Use "|" to indicate the cursor position or "<" and ">" to indicate a range.

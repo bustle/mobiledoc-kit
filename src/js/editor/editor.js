@@ -561,7 +561,7 @@ class Editor {
       let rendererOptions = { unknownCardHandler, unknownAtomHandler };
 
       switch (format) {
-        case 'html':
+        case 'html': {
           let result;
           if (Environment.hasDOM()) {
             rendered = new DOMRenderer(rendererOptions).render(mobiledoc);
@@ -571,6 +571,7 @@ class Editor {
             result = this.serializePost(post, 'text', options);
           }
           return result;
+        }
         case 'text':
           rendered = new TextRenderer(rendererOptions).render(mobiledoc);
           return rendered.result;

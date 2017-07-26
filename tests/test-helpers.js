@@ -26,7 +26,8 @@ const test = (msg, callback) => {
   let originalCallback = callback;
   callback = (...args) => {
     if (QUnit.config.debugTest) {
-      debugger; // jshint ignore:line
+      // eslint-disable-next-line no-debugger
+      debugger;
     }
     originalCallback(...args);
   };

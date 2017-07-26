@@ -30,9 +30,7 @@ function walkDOMUntil(topNode, conditionFn=() => {}) {
       return currentElement;
     }
 
-    // jshint -W083
     forEach(currentElement.childNodes, el => stack.push(el));
-    // jshint +W083
   }
 }
 
@@ -226,8 +224,8 @@ function insertText(editor, string) {
   });
 }
 
-function triggerKeyEvent(editor, eventName, options={}) {
-  let event = createMockEvent(eventName, editor.element, options);
+function triggerKeyEvent(editor, type, options) {
+  let event = createMockEvent(type, editor.element, options);
   _triggerEditorEvent(editor, event);
 }
 
@@ -247,11 +245,6 @@ function triggerKeyCommand(editor, string, modifiers=[]) {
     ctrlKey: contains(modifiers, MODIFIERS.CTRL)
   });
   _triggerEditorEvent(editor, keyEvent);
-}
-
-function triggerKeyEvent(editor, type, options) {
-  let event = createMockEvent(type, editor.element, options);
-  _triggerEditorEvent(editor, event);
 }
 
 function triggerRightArrowKey(editor, modifier) {

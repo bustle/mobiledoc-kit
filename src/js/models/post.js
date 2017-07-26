@@ -173,7 +173,7 @@ class Post {
     if (next) {
       if (next.isLeafSection) {
         return next;
-      } else if (!!next.items) {
+      } else if (next.items) {
         return next.items.head;
       } else {
         assert('Cannot determine next section from non-leaf-section', false);

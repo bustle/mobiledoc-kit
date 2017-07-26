@@ -261,13 +261,16 @@ test('after #toggleMarkup, editor refocuses if it had selection', (assert) => {
   let done = assert.async();
   assert.expect(3);
 
-  let button = $('<button>BOLD</button>').appendTo('#qunit-fixture').click(() => {
-    Helpers.dom.selectText(editor, 'this', editorElement); // necessary for Safari to detect a selection in the editor
-    button.focus();
+  let button =
+    $('<button>BOLD</button>')
+      .appendTo('#qunit-fixture')
+      .click(() => {
+        Helpers.dom.selectText(editor, 'this', editorElement); // necessary for Safari to detect a selection in the editor
+        button.focus();
 
-    assert.ok(document.activeElement !== editor.element, 'precond - editor element is not focused');
-    editor.toggleMarkup('b');
-  });
+        assert.ok(document.activeElement !== editor.element, 'precond - editor element is not focused');
+        editor.toggleMarkup('b');
+      });
 
   editor.selectRange(new Range(editor.post.headPosition()));
 
