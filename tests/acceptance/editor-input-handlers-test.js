@@ -2,6 +2,7 @@ import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 import { TAB } from 'mobiledoc-kit/utils/characters';
+import { MODIFIERS }  from 'mobiledoc-kit/utils/key';
 
 const { module, test } = Helpers;
 const { editor: { buildFromText } } = Helpers;
@@ -298,6 +299,15 @@ test('input handler can be triggered by TAB', (assert) => {
   Helpers.dom.insertText(editor, TAB);
 
   assert.ok(didMatch);
+});
+
+// See https://github.com/bustle/mobiledoc-kit/issues/565
+test('typing ctrl-TAB does not insert TAB text', (assert) => {
+  editor = Helpers.editor.buildFromText('abc|', {element: editorElement});
+
+  Helpers.dom.triggerKeyCommand(editor, TAB, [MODIFIERS.CTRL]);
+
+  assert.equal(editorElement.textContent, 'abc', 'no TAB is inserted');
 });
 
 test('can unregister all handlers', (assert) => {

@@ -141,8 +141,14 @@ const Key = class Key {
     return this.keyCode === Keycodes.SPACE;
   }
 
+  // In Firefox, pressing ctrl-TAB will switch to another open browser tab, but it will
+  // also fire a keydown event for the tab+modifier (ctrl). This causes Mobiledoc
+  // to erroneously insert a tab character before FF switches to the new browser tab.
+  // Chrome doesn't fire this event so the issue doesn't arise there.
+  // Fix this by returning false when the TAB key event includes a modifier.
+  // See: https://github.com/bustle/mobiledoc-kit/issues/565
   isTab() {
-    return this.keyCode === Keycodes.TAB;
+    return !this.hasAnyModifier() && this.keyCode === Keycodes.TAB;
   }
 
   isEnter() {
