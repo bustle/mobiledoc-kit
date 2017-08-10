@@ -855,11 +855,12 @@ class Editor {
    * (aka a non-collapsed range), the selections' markup will be toggled.
    * If the editor is not focused and has no active range, nothing happens.
    * @param {String} markup E.g. "b", "em", "a"
+   * @param {Object} [attributes={}] E.g. {href: "http://bustle.com"}
    * @public
    * @see PostEditor#toggleMarkup
    */
-  toggleMarkup(markup) {
-    markup = this.builder.createMarkup(markup);
+  toggleMarkup(markup, attributes={}) {
+    markup = this.builder.createMarkup(markup, attributes);
     let { range } = this;
     if (range.isCollapsed) {
       this._editState.toggleMarkupState(markup);
