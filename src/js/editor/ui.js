@@ -55,15 +55,12 @@ export function toggleLink(editor, showPrompt=defaultShowPrompt) {
   let hasLink = editor.detectMarkupInRange(range, 'a');
 
   if (hasLink) {
-    editor.run(postEditor => postEditor.toggleMarkup('a'));
+    editor.toggleMarkup('a');
   } else {
     showPrompt('Enter a URL', defaultUrl, url => {
       if (!url) { return; }
 
-      editor.run(postEditor => {
-        let markup = postEditor.builder.createMarkup('a', {href: url});
-        postEditor.toggleMarkup(markup);
-      });
+      editor.toggleMarkup('a', {href: url});
     });
   }
 }

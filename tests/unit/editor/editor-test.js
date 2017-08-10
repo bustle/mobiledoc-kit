@@ -722,3 +722,33 @@ test('#insertCard focuses the cursor at the end of the card', (assert) => {
   assert.positionIsEqual(range.tail, insertedCard.tailPosition(), 'range tail on card tail');
   assert.ok(document.activeElement === editorElement, 'editor element retains focus');
 });
+
+test('#toggleMarkup removes A tag when no attributes given', function(assert) {
+  editor = Helpers.mobiledoc.renderInto(editorElement,
+    ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [
+      marker('^'), marker('link', [markup('a', {href: 'google.com'})]), marker('$')
+    ])]);
+  });
+  Helpers.dom.selectText(editor, 'link');
+  editor.toggleMarkup('a');
+
+  assert.selectedText('link', 'text "link" still selected');
+  assert.ok(editor.hasCursor(), 'editor has cursor');
+  assert.hasElement('#editor p:contains(^link$)');
+  assert.hasNoElement('#editor a', 'a tag is removed');
+});
+
+test('#toggleMarkup adds A tag with attributes', function(assert) {
+  editor = Helpers.mobiledoc.renderInto(editorElement,
+    ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [marker('^link$')])]);
+  });
+  Helpers.dom.selectText(editor, 'link');
+  editor.toggleMarkup('a', {href: 'google.com'});
+
+  assert.selectedText('link', 'text "link" still selected');
+  assert.ok(editor.hasCursor(), 'editor has cursor');
+  assert.hasElement('#editor a:contains(link)');
+  assert.hasElement('#editor a[href="google.com"]:contains(link)');
+});

@@ -53,7 +53,7 @@ function selectRange(startNode, startOffset, endNode, endOffset) {
 
 function selectText(editor,
                     startText,
-                    startContainingElement,
+                    startContainingElement=editor.element,
                     endText=startText,
                     endContainingElement=startContainingElement) {
 
