@@ -66,6 +66,20 @@ function setData(element, name, value) {
   }
 }
 
+function whenElementIsNotInDOM(element, callback) {
+  let isCanceled = false;
+  const observerFn = () => {
+    if (isCanceled) { return; }
+    if (!element.parentNode) {
+      callback();
+    } else {
+      window.requestAnimationFrame(observerFn);
+    }
+  };
+  observerFn();
+  return { cancel: () => isCanceled = true };
+}
+
 export {
   setData,
   getEventTargetMatchingTag,
@@ -73,5 +87,6 @@ export {
   getElementComputedStyleNumericProp,
   positionElementToRect,
   positionElementHorizontallyCenteredToRect,
-  positionElementCenteredBelow
+  positionElementCenteredBelow,
+  whenElementIsNotInDOM
 };

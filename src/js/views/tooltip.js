@@ -1,5 +1,9 @@
 import View from './view';
-import { positionElementCenteredBelow, getEventTargetMatchingTag } from '../utils/element-utils';
+import {
+  positionElementCenteredBelow,
+  getEventTargetMatchingTag,
+  whenElementIsNotInDOM
+} from '../utils/element-utils';
 
 const DELAY = 200;
 
@@ -21,6 +25,7 @@ export default class Tooltip extends View {
     
     this.addEventListener(rootElement, 'mouseout', (e) => {
       clearTimeout(timeout);
+      if (this.elementObserver) { this.elementObserver.cancel(); }
       let toElement = e.toElement || e.relatedTarget;
       if (toElement && toElement.className !== this.element.className) {
         this.hide();
@@ -38,5 +43,6 @@ export default class Tooltip extends View {
   showLink(link, element) {
     let message = `<a href="${link}" target="_blank">${link}</a>`;
     this.showMessage(message, element);
+    this.elementObserver = whenElementIsNotInDOM(element, () => this.hide());
   }
 }
