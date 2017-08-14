@@ -92,6 +92,8 @@ const CALLBACK_QUEUES = {
  *     a custom toolbar.
  *   * {@link Editor#onTextInput} -- Register callbacks when the user enters text
  *     that matches a given string or regex.
+ *   * {@link Editor#beforeToggleMarkup} -- Register callbacks that will be run before
+ *     applying changes from {@link Editor#toggleMarkup}
  */
 class Editor {
   /**
@@ -142,6 +144,7 @@ class Editor {
     this._mutationHandler = new MutationHandler(this);
     this._editState = new EditState(this);
     this._callbacks = new LifecycleCallbacks(values(CALLBACK_QUEUES));
+    this._beforeHooks = { toggleMarkup: [] };
 
     DEFAULT_TEXT_INPUT_HANDLERS.forEach(handler => this.onTextInput(handler));
 
@@ -849,11 +852,33 @@ class Editor {
   }
 
   /**
+   * @callback editorBeforeCallback
+   * @param { Object } details
+   * @param { Markup } details.markup
+   * @param { Range } details.range
+   * @param { boolean } details.willAdd Whether the markup will be applied
+   */
+
+  /**
+   * Register a callback that will be run before {@link Editor#toggleMarkup} is applied.
+   * If any callback returns literal `false`, the toggling of markup will be canceled.
+   * Note this only applies to calling `editor#toggleMarkup`. Using `editor.run` and
+   * modifying markup with the `postEditor` will skip any `beforeToggleMarkup` callbacks.
+   * @param {editorBeforeCallback}
+   */
+  beforeToggleMarkup(callback) {
+    this._beforeHooks.toggleMarkup.push(callback);
+  }
+
+  /**
    * Toggles the given markup at the editor's current {@link Range}.
    * If the range is collapsed this changes the editor's state so that the
    * next characters typed will be affected. If there is text selected
    * (aka a non-collapsed range), the selections' markup will be toggled.
    * If the editor is not focused and has no active range, nothing happens.
+   * Hooks added using #beforeToggleMarkup will be run before toggling,
+   * and if any of them returns literal false, toggling the markup will be canceled
+   * and no change will be applied.
    * @param {String} markup E.g. "b", "em", "a"
    * @param {Object} [attributes={}] E.g. {href: "http://bustle.com"}
    * @public
@@ -862,6 +887,10 @@ class Editor {
   toggleMarkup(markup, attributes={}) {
     markup = this.builder.createMarkup(markup, attributes);
     let { range } = this;
+    let willAdd = !this.detectMarkupInRange(range, markup.tagName);
+    let shouldCancel = this._runBeforeHooks('toggleMarkup', {markup, range, willAdd});
+    if (shouldCancel) { return; }
+
     if (range.isCollapsed) {
       this._editState.toggleMarkupState(markup);
       this._inputModeDidChange();
@@ -1092,6 +1121,21 @@ class Editor {
       return;
     }
     this._callbacks.runCallbacks(...args);
+  }
+
+  /**
+   * Runs each callback for the given hookName.
+   * Only the hookName 'toggleMarkup' is currently supported
+   * @return {Boolean} shouldCancel Whether the action in `hookName` should be canceled
+   * @private
+   */
+  _runBeforeHooks(hookName, ...args) {
+    let hooks = this._beforeHooks[hookName] || [];
+    for (let i = 0; i < hooks.length; i++) {
+      if (hooks[i](...args) === false) {
+        return true;
+      }
+    }
   }
 }
 
