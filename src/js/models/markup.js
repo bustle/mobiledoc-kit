@@ -21,6 +21,12 @@ export const VALID_ATTRIBUTES = [
   'rel'
 ];
 
+/**
+ * A Markup is similar with an inline HTML tag that might be added to
+ * text to modify its meaning and/or display. Examples of types of markup
+ * that could be added are bold ('b'), italic ('i'), strikethrough ('s'), and `a` tags (links).
+ * @property {String} tagName
+ */
 class Markup {
   /*
    * @param {Object} attributes key-values
@@ -38,6 +44,11 @@ class Markup {
            VALID_MARKUP_TAGNAMES.indexOf(this.tagName) !== -1);
   }
 
+  /**
+   * Whether text in the forward direction of the cursor (i.e. to the right in ltr text)
+   * should be considered to have this markup applied to it.
+   * @private
+   */
   isForwardInclusive() {
     return this.tagName === normalizeTagName("a") ? false : true;
   }
@@ -50,6 +61,10 @@ class Markup {
     return this.tagName === normalizeTagName(tagName);
   }
 
+  /**
+   * Returns the attribute value
+   * @param {String} name, e.g. "href"
+   */
   getAttribute(name) {
     return this.attributes[name];
   }

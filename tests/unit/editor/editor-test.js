@@ -752,3 +752,51 @@ test('#toggleMarkup adds A tag with attributes', function(assert) {
   assert.hasElement('#editor a:contains(link)');
   assert.hasElement('#editor a[href="google.com"]:contains(link)');
 });
+
+test('#toggleMarkup calls #beforeToggleMarkup hooks', function(assert) {
+  assert.expect(5*3 + 2);
+
+  let callbackCount = 0;
+  editor = Helpers.mobiledoc.renderInto(editorElement,
+    ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [marker('^link$')])]);
+  });
+  Helpers.dom.selectText(editor, 'link');
+  let callback = ({markup, range, willAdd}) => {
+    assert.ok(true, 'calls #beforeToggleMarkup');
+    assert.equal(markup.tagName, 'a', 'passes markup');
+    assert.equal(markup.getAttribute('href'), 'google.com',
+      'passes markup with attrs');
+    assert.ok(!!range, 'passes a range');
+    assert.ok(willAdd, 'correct value for willAdd');
+    callbackCount++;
+  };
+
+  // 3 times
+  editor.beforeToggleMarkup(callback);
+  editor.beforeToggleMarkup(callback);
+  editor.beforeToggleMarkup(callback);
+
+  editor.toggleMarkup('a', {href: 'google.com'});
+  assert.equal(callbackCount, 3, 'calls once for each callback');
+  assert.hasElement('#editor a[href="google.com"]:contains(link)',
+    'adds link');
+});
+
+test('#toggleMarkup is canceled if #beforeToggleMarkup hook returns false', function(assert) {
+  assert.expect(2);
+  editor = Helpers.mobiledoc.renderInto(editorElement,
+    ({post, markupSection, marker, markup}) => {
+    return post([markupSection('p', [marker('^link$')])]);
+  });
+  Helpers.dom.selectText(editor, 'link');
+  let callback = ({markup, range, willAdd}) => {
+    assert.ok(true, 'calls #beforeToggleMarkup');
+    return false;
+  };
+
+  editor.beforeToggleMarkup(callback);
+
+  editor.toggleMarkup('a', {href: 'google.com'});
+  assert.hasNoElement('#editor a', 'not adds link');
+});

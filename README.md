@@ -7,7 +7,7 @@
 
 ![Mobiledoc Logo](https://bustle.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png)
 
-Mobiledoc Kit (warning: beta) is a library for building WYSIWYG editors
+Mobiledoc Kit (beta) is a framework-agnostic library for building WYSIWYG editors
 supporting rich content via cards.
 
 ## Libraries
@@ -121,7 +121,7 @@ document's `<head>`:
 * `editor.destroy()` - teardown the editor event listeners, free memory etc.
 * `editor.disableEditing()` - stop the user from being able to edit the
   current post with their cursor. Programmatic edits are still allowed.
-* `editor.enableEditing()` - allow the user to make direct edits directly
+* `editor.enableEditing()` - allow the user to make edits directly
   to a post's text.
 * `editor.editCard(cardSection)` - change the card to its edit mode (will change
   immediately if the card is already rendered, or will ensure that when the card
@@ -220,6 +220,11 @@ The available lifecycle hooks are:
   movement or clicking in the document.
 * `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))
 * `editor.inputModeDidChange()` - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with `Editor#activeMarkups` and `Editor#activeSections` to implement a custom toolbar.
+* `editor.beforeToggleMarkup(({markup, range, willAdd} => {...})` - Register a
+  callback that will be called before `editor#toggleMarkup` is applied. If any
+  callback returns literal `false`, the toggling of markup will be canceled.
+  (Toggling markup done via the postEditor, e.g. `editor.run(postEditor =>
+  postEditor.toggleMarkup(...))` will skip this callback.
 
 For more details on the lifecycle hooks, see the [Editor documentation](https://bustlelabs.github.io/mobiledoc-kit/demo/docs/Editor.html).
 
