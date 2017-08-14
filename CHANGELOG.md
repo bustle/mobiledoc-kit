@@ -1,6 +1,24 @@
+<a name="0.10.17"></a>
+## 0.10.17 (2017-08-14)
+
+* feat(beforeToggleMarkup): Add Editor#beforeToggleMarkup hook (#571) ([6017e56](https://github.com/bustle/mobiledoc-kit/commit/6017e56))
+* feat(toggleMarkup): Editor#toggleMarkup accepts attributes (#569) ([de70839](https://github.com/bustle/mobiledoc-kit/commit/de70839))
+* fix(tab character insertion): Key#isTab is false if a modifier key is pressed (#566) ([ecf5912](https://github.com/bustle/mobiledoc-kit/commit/ecf5912)), closes [#565](https://github.com/bustle/mobiledoc-kit/issues/565)
+* fix(tooltip): Hide link tooltip if that link is toggled off (#568) ([29dfca5](https://github.com/bustle/mobiledoc-kit/commit/29dfca5))
+* chore(eslint): Move to ESLint (#563) ([26364f4](https://github.com/bustle/mobiledoc-kit/commit/26364f4))
+* built website from 1222772e6c820f59df91a8cf95f04bf340fb7fbf ([e75e339](https://github.com/bustle/mobiledoc-kit/commit/e75e339))
+* chore:(yarn Updates) (#564) ([63f50a5](https://github.com/bustle/mobiledoc-kit/commit/63f50a5))
+* Small build cleanup ([1f7f40c](https://github.com/bustle/mobiledoc-kit/commit/1f7f40c))
+* Tweak README.md for website stuff ([aa7b23f](https://github.com/bustle/mobiledoc-kit/commit/aa7b23f))
+* yarn upgrade ([d760e89](https://github.com/bustle/mobiledoc-kit/commit/d760e89))
+
+
+
 <a name="0.10.16"></a>
 ## 0.10.16 (2017-05-25)
 
+* 0.10.16 ([1222772](https://github.com/bustle/mobiledoc-kit/commit/1222772))
+* Fix minor typos in README ([eaa712a](https://github.com/bustle/mobiledoc-kit/commit/eaa712a))
 * fix: issue #551 (#554) ([0a09408](https://github.com/bustle/mobiledoc-kit/commit/0a09408))
 * fix(486): Constrain selection to editor element when probing for range (#542) ([9b7f58c](https://github.com/bustle/mobiledoc-kit/commit/9b7f58c)), closes [#486](https://github.com/bustle/mobiledoc-kit/issues/486)
 * chore: Updates of devDependencies (#555) ([96350a5](https://github.com/bustle/mobiledoc-kit/commit/96350a5))
@@ -8,7 +26,6 @@
 * docs: Document inputModeDidChange() lifecycle hook (#553) ([88c5bda](https://github.com/bustle/mobiledoc-kit/commit/88c5bda))
 * docs: Fix typo in documentation (#556) ([f128d5e](https://github.com/bustle/mobiledoc-kit/commit/f128d5e)), closes [#556](https://github.com/bustle/mobiledoc-kit/issues/556)
 * docs(rename): renaming bustlelabs -> bustle with the exception of gitter.im links (#560) ([cf2eee6](https://github.com/bustle/mobiledoc-kit/commit/cf2eee6))
-* Fix minor typos in README ([eaa712a](https://github.com/bustle/mobiledoc-kit/commit/eaa712a))
 
 
 
