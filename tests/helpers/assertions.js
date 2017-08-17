@@ -127,13 +127,22 @@ function comparePostNode(actual, expected, assert, path='root', deepCompare=fals
 /* eslint-enable complexity */
 
 export default function registerAssertions(QUnit) {
+  QUnit.assert.isBlank = function(val, message=`value is blank`) {
+    this.pushResult({
+      result: val === null || val === undefined || val === '' || val === false,
+      actual: `${val} (typeof ${typeof val})`,
+      expected: `null|undefined|''|false`,
+      message
+    });
+  };
+
   QUnit.assert.hasElement = function(selector,
                                      message=`hasElement "${selector}"`) {
     let found = $(selector);
     this.pushResult({
       result: found.length > 0,
-      actual: found.length,
-      expected: selector,
+      actual: `${found.length} matches for '${selector}'`,
+      expected: `>0 matches for '${selector}'`,
       message: message
     });
     return found;
@@ -144,8 +153,8 @@ export default function registerAssertions(QUnit) {
     let found = $(selector);
     this.pushResult({
       result: found.length === 0,
-      actual: found.length,
-      expected: selector,
+      actual: `${found.length} matches for '${selector}'`,
+      expected: `0 matches for '${selector}'`,
       message: message
     });
     return found;

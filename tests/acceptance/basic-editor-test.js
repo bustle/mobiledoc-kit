@@ -31,47 +31,6 @@ test('sets element as contenteditable', (assert) => {
                'element is contenteditable');
 });
 
-test('#disableEditing before render is meaningful', (assert) => {
-  editor = new Editor();
-  editor.disableEditing();
-  editor.render(editorElement);
-
-  assert.ok(!editorElement.hasAttribute('contenteditable'),
-            'element is not contenteditable');
-  editor.enableEditing();
-  assert.equal(editorElement.getAttribute('contenteditable'),
-               'true',
-               'element is contenteditable');
-});
-
-test('when editing is disabled, the placeholder is not shown', (assert) => {
-  editor = new Editor({placeholder: 'the placeholder'});
-  editor.disableEditing();
-  editor.render(editorElement);
-
-  assert.ok(!$('#editor').data('placeholder'), 'no placeholder when disabled');
-  editor.enableEditing();
-  assert.equal($('#editor').data('placeholder'), 'the placeholder',
-               'placeholder is shown when editable');
-});
-
-test('#disableEditing and #enableEditing toggle contenteditable', (assert) => {
-  editor = new Editor();
-  editor.render(editorElement);
-
-  assert.equal(editorElement.getAttribute('contenteditable'),
-               'true',
-               'element is contenteditable');
-  editor.disableEditing();
-  assert.equal(editorElement.getAttribute('contenteditable'),
-               'false',
-               'element is not contenteditable');
-  editor.enableEditing();
-  assert.equal(editorElement.getAttribute('contenteditable'),
-               'true',
-               'element is contenteditable');
-});
-
 test('clicking outside the editor does not raise an error', (assert) => {
   const done = assert.async();
   editor = new Editor({autofocus: false});

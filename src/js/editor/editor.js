@@ -122,7 +122,7 @@ class Editor {
     assert('editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation',
           (options && !options.nodeType));
     this._views = [];
-    this.isEditable = null;
+    this.isEditable = true;
     this._parserPlugins = options.parserPlugins || [];
 
     // FIXME: This should merge onto this.options
@@ -239,10 +239,6 @@ class Editor {
 
     this.element = element;
 
-    if (this.isEditable === null) {
-      this.enableEditing();
-    }
-
     this._addTooltip();
 
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
@@ -257,6 +253,12 @@ class Editor {
 
     this._mutationHandler.init();
     this._eventManager.init();
+
+    if (this.isEditable === false) {
+      this.disableEditing();
+    } else {
+      this.enableEditing();
+    }
 
     if (this.autofocus) {
       this.selectRange(this.post.headPosition());
@@ -629,10 +631,9 @@ class Editor {
    * @public
    */
   disableEditing() {
-    if (this.isEditable === false) { return; }
-
     this.isEditable = false;
     if (this.hasRendered) {
+      this._eventManager.stop();
       this.element.setAttribute('contentEditable', false);
       this.setPlaceholder('');
       this.selectRange(Range.blankRange());
@@ -648,7 +649,8 @@ class Editor {
    */
   enableEditing() {
     this.isEditable = true;
-    if (this.element) {
+    if (this.hasRendered) {
+      this._eventManager.start();
       this.element.setAttribute('contentEditable', true);
       this.setPlaceholder(this.placeholder);
     }

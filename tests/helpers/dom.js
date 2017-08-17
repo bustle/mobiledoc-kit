@@ -9,6 +9,7 @@ import {
   MIME_TEXT_PLAIN,
   MIME_TEXT_HTML
 } from 'mobiledoc-kit/utils/parse-utils';
+import { dasherize } from 'mobiledoc-kit/utils/string-utils';
 
 function assertEditor(editor) {
   if (!(editor instanceof Editor)) {
@@ -365,6 +366,14 @@ function blur() {
   input.focus();
 }
 
+function getData(element, name) {
+  if (element.dataset) {
+    return element.dataset[name];
+  } else {
+    return element.getAttribute(dasherize(name));
+  }
+}
+
 const DOMHelper = {
   moveCursorTo,
   moveCursorWithoutNotifyingEditorTo,
@@ -394,7 +403,8 @@ const DOMHelper = {
   clearCopyData,
   createMockEvent,
   findTextNode,
-  blur
+  blur,
+  getData
 };
 
 export { triggerEvent };

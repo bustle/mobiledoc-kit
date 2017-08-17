@@ -28,6 +28,7 @@ export default class EventManager {
 
     this._selectionManager = new SelectionManager(
       this.editor, this.selectionDidChange.bind(this));
+    this.started = true;
   }
 
   init() {
@@ -39,6 +40,14 @@ export default class EventManager {
     });
 
     this._selectionManager.start();
+  }
+
+  start() {
+    this.started = true;
+  }
+
+  stop() {
+    this.started = false;
   }
 
   registerInputHandler(inputHandler) {
@@ -90,6 +99,11 @@ export default class EventManager {
 
   _handleEvent(type, event) {
     let {target: element} = event;
+    if (!this.started) {
+      // abort handling this event
+      return true;
+    }
+
     if (!this.isElementAddressable(element)) {
       // abort handling this event
       return true;
