@@ -1,16 +1,24 @@
+<a name="0.10.18"></a>
+## 0.10.18 (2017-08-17)
+
+* fix(disableEditing): Disable event manager when editing is disabled (#573) ([64c7f6c](https://github.com/bustle/mobiledoc-kit/commit/64c7f6c)), closes [#572](https://github.com/bustle/mobiledoc-kit/issues/572)
+
+
+
 <a name="0.10.17"></a>
 ## 0.10.17 (2017-08-14)
 
+* built website from 1222772e6c820f59df91a8cf95f04bf340fb7fbf ([e75e339](https://github.com/bustle/mobiledoc-kit/commit/e75e339))
+* chore:(yarn Updates) (#564) ([63f50a5](https://github.com/bustle/mobiledoc-kit/commit/63f50a5))
+* Small build cleanup ([1f7f40c](https://github.com/bustle/mobiledoc-kit/commit/1f7f40c))
+* Tweak README.md for website stuff ([aa7b23f](https://github.com/bustle/mobiledoc-kit/commit/aa7b23f))
+* v0.10.17 ([3d8cf49](https://github.com/bustle/mobiledoc-kit/commit/3d8cf49))
+* yarn upgrade ([d760e89](https://github.com/bustle/mobiledoc-kit/commit/d760e89))
 * feat(beforeToggleMarkup): Add Editor#beforeToggleMarkup hook (#571) ([6017e56](https://github.com/bustle/mobiledoc-kit/commit/6017e56))
 * feat(toggleMarkup): Editor#toggleMarkup accepts attributes (#569) ([de70839](https://github.com/bustle/mobiledoc-kit/commit/de70839))
 * fix(tab character insertion): Key#isTab is false if a modifier key is pressed (#566) ([ecf5912](https://github.com/bustle/mobiledoc-kit/commit/ecf5912)), closes [#565](https://github.com/bustle/mobiledoc-kit/issues/565)
 * fix(tooltip): Hide link tooltip if that link is toggled off (#568) ([29dfca5](https://github.com/bustle/mobiledoc-kit/commit/29dfca5))
 * chore(eslint): Move to ESLint (#563) ([26364f4](https://github.com/bustle/mobiledoc-kit/commit/26364f4))
-* built website from 1222772e6c820f59df91a8cf95f04bf340fb7fbf ([e75e339](https://github.com/bustle/mobiledoc-kit/commit/e75e339))
-* chore:(yarn Updates) (#564) ([63f50a5](https://github.com/bustle/mobiledoc-kit/commit/63f50a5))
-* Small build cleanup ([1f7f40c](https://github.com/bustle/mobiledoc-kit/commit/1f7f40c))
-* Tweak README.md for website stuff ([aa7b23f](https://github.com/bustle/mobiledoc-kit/commit/aa7b23f))
-* yarn upgrade ([d760e89](https://github.com/bustle/mobiledoc-kit/commit/d760e89))
 
 
 
