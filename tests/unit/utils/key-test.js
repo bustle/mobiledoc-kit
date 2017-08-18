@@ -43,15 +43,6 @@ test('#hasModifier with SHIFT', (assert) => {
   assert.ok(key.hasModifier(MODIFIERS.SHIFT), "SHIFT pressed");
 });
 
-function simulateKeyPress(keyCode) {
-  let element = $('#qunit-fixture')[0];
-  let event = Helpers.dom.createMockEvent('keypress', element, {
-    keyCode,
-    charCode: 0
-  });
-  return Key.fromEvent(event);
-}
-
 // Firefox will fire keypress events for some keys that should not be printable
 test('firefox: non-printable are treated as not printable', (assert) => {
   const KEYCODES = [
