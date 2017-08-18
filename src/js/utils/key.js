@@ -243,6 +243,17 @@ const Key = class Key {
     return MODIFIERS.ALT & this.modifierMask;
   }
 
+  isPrintableKey() {
+    return !(
+      this.isArrow() ||
+      this.isHome() || this.isEnd() ||
+      this.isPageUp() || this.isPageDown() ||
+      this.isInsert() || this.isClear() || this.isPause() ||
+      this.isFKey() ||
+      this.isEscape()
+    );
+  }
+
   /**
    * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
    *   and http://stackoverflow.com/a/12467610/137784
@@ -255,11 +266,7 @@ const Key = class Key {
     const {keyCode:code} = this;
 
     // Firefox calls keypress events for some keys that should not be printable
-    if (
-      this.isArrow() || this.isHome() || this.isEnd() || this.isPageUp() ||
-      this.isPageDown() || this.isInsert() || this.isClear() ||
-      this.isPause() || this.isFKey()
-    ) {
+    if (!this.isPrintableKey()) {
       return false;
     }
 
