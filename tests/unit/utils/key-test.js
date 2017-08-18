@@ -63,8 +63,6 @@ test('firefox: non-printable are treated as not printable', (assert) => {
     Keycodes.INS,
     Keycodes.CLEAR,
     Keycodes.PAUSE,
-    Keycodes.F1,
-    Keycodes.F12,
     Keycodes.ESC
   ];
 

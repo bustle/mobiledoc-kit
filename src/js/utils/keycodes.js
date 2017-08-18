@@ -39,8 +39,5 @@ export default {
   INS:         45,
   META:        91,
   ALT:         18,
-  CTRL:        17,
-
-  F1:         112,
-  F12:        123
+  CTRL:        17
 };

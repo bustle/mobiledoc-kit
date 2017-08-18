@@ -148,10 +148,6 @@ const Key = class Key {
     return this.keyCode === Keycodes.PAUSE;
   }
 
-  isFKey() {
-    return this.keyCode >= Keycodes.F1 && this.keyCode <= Keycodes.F12;
-  }
-
   get direction() {
     switch (true) {
       case this.isDelete():
@@ -249,7 +245,6 @@ const Key = class Key {
       this.isHome() || this.isEnd() ||
       this.isPageUp() || this.isPageDown() ||
       this.isInsert() || this.isClear() || this.isPause() ||
-      this.isFKey() ||
       this.isEscape()
     );
   }
