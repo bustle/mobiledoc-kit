@@ -43,14 +43,38 @@ test('#hasModifier with SHIFT', (assert) => {
   assert.ok(key.hasModifier(MODIFIERS.SHIFT), "SHIFT pressed");
 });
 
-// Firefox will fire keypress events for up/down arrow keys,
-// they should not be considered printable
-test('firefox arrow keypress is not printable', (assert) => {
+function simulateKeyPress(keyCode) {
   let element = $('#qunit-fixture')[0];
   let event = Helpers.dom.createMockEvent('keypress', element, {
-    keyCode: Keycodes.DOWN,
+    keyCode,
     charCode: 0
   });
-  let key = Key.fromEvent(event);
-  assert.ok(!key.isPrintable());
+  return Key.fromEvent(event);
+}
+
+// Firefox will fire keypress events for some keys that should not be printable
+test('firefox: non-printable are treated as not printable', (assert) => {
+  const KEYCODES = [
+    Keycodes.DOWN,
+    Keycodes.HOME,
+    Keycodes.END,
+    Keycodes.PAGEUP,
+    Keycodes.PAGEDOWN,
+    Keycodes.INS,
+    Keycodes.CLEAR,
+    Keycodes.PAUSE,
+    Keycodes.F1,
+    Keycodes.F12
+  ];
+
+  KEYCODES.forEach((keyCode) => {
+    let element = $('#qunit-fixture')[0];
+    let event = Helpers.dom.createMockEvent('keypress', element, {
+      keyCode,
+      charCode: 0
+    });
+    let key = Key.fromEvent(event);
+
+    assert.ok(!key.isPrintable(), `key with code ${keyCode} is not printable`);
+  });
 });
