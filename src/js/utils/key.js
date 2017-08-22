@@ -128,6 +128,26 @@ const Key = class Key {
     return this.keyCode === Keycodes.END;
   }
 
+  isPageUp() {
+    return this.keyCode === Keycodes.PAGEUP;
+  }
+
+  isPageDown() {
+    return this.keyCode === Keycodes.PAGEDOWN;
+  }
+
+  isInsert() {
+    return this.keyCode === Keycodes.INS;
+  }
+
+  isClear() {
+    return this.keyCode === Keycodes.CLEAR;
+  }
+
+  isPause() {
+    return this.keyCode === Keycodes.PAUSE;
+  }
+
   get direction() {
     switch (true) {
       case this.isDelete():
@@ -219,6 +239,16 @@ const Key = class Key {
     return MODIFIERS.ALT & this.modifierMask;
   }
 
+  isPrintableKey() {
+    return !(
+      this.isArrow() ||
+      this.isHome() || this.isEnd() ||
+      this.isPageUp() || this.isPageDown() ||
+      this.isInsert() || this.isClear() || this.isPause() ||
+      this.isEscape()
+    );
+  }
+
   /**
    * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
    *   and http://stackoverflow.com/a/12467610/137784
@@ -230,9 +260,8 @@ const Key = class Key {
 
     const {keyCode:code} = this;
 
-    // Firefox calls keypress events for arrow keys, but they should not be
-    // considered printable
-    if (this.isArrow()) {
+    // Firefox calls keypress events for some keys that should not be printable
+    if (!this.isPrintableKey()) {
       return false;
     }
 

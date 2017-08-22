@@ -20,12 +20,14 @@ export default {
   '"':        222,
 
   // Input Method Editor uses multiple keystrokes to display characters.
-  // Example on mac: press option-i then i. This fires 2 key events in Chrome 
+  // Example on mac: press option-i then i. This fires 2 key events in Chrome
   // with keyCode 229 and displays ˆ and then î.
   // See http://lists.w3.org/Archives/Public/www-dom/2010JulSep/att-0182/keyCode-spec.html#fixed-virtual-key-codes
   IME:        229,
 
   TAB:          9,
+  CLEAR:       12,
+  PAUSE:       19,
   PAGEUP:      33,
   PAGEDOWN:    34,
   END:         35,
