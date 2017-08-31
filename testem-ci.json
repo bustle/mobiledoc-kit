@@ -36,15 +36,19 @@
     }
   },
   "launch_in_ci": [
-    "PhantomJS",
+    "Chrome",
     "SL_Firefox_Current",
     "SL_Chrome_Current",
     "SL_Safari_Current",
     "SL_MS_Edge",
     "SL_IE_11"
   ],
-  "launch_in_dev": [
-    "PhantomJS",
-    "Chrome"
-  ]
+  "browser_args": {
+    "Chrome": [
+      "--disable-gpu",
+      "--headless",
+      "--remote-debugging-port=9222",
+      "--window-size=1440,900"
+    ]
+  }
 }
