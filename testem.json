@@ -8,6 +8,11 @@
   "launch_in_dev": [
     "Chrome"
   ],
+  "launch_in_ci": [
+    "Chrome",
+    "Firefox",
+    "Safari"
+  ],
   "browser_args": {
     "Chrome": [
       "--disable-gpu",
