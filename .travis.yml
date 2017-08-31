@@ -8,6 +8,9 @@ dist: trusty
 
 addons:
   chrome: stable
+  sauce_connect:
+    username: mobiledoc-kit
+    access_key: f9cad21d-1141-452d-8f64-c6ba3f43faa6
 
 cache:
   yarn: true
@@ -18,6 +21,3 @@ before_install:
 
 script:
   - yarn test:ci
-
-env:
-  - SAUCE_USERNAME=mobiledoc-kit SAUCE_ACCESS_KEY=f9cad21d-1141-452d-8f64-c6ba3f43faa6
