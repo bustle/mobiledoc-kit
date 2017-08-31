@@ -29,6 +29,7 @@
     }
   },
   "launch_in_ci": [
+    "Chrome",
     "SL_Firefox_Current",
     "SL_Safari_Current",
     "SL_MS_Edge",
