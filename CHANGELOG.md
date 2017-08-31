@@ -1,6 +1,17 @@
+<a name="0.10.19"></a>
+## 0.10.19 (2017-08-31)
+
+* chore: upgrade deps (#579) ([1a379e9](https://github.com/bustle/mobiledoc-kit/commit/1a379e9))
+* chore(ci): use chrome at travis (#577) ([c33b804](https://github.com/bustle/mobiledoc-kit/commit/c33b804))
+* chore(ci): use travis sauce_connect addon (#578) ([2338b25](https://github.com/bustle/mobiledoc-kit/commit/2338b25))
+* fix: Fix non-printable keys in firefox (#575) ([b47f6d9](https://github.com/bustle/mobiledoc-kit/commit/b47f6d9)), closes [#575](https://github.com/bustle/mobiledoc-kit/issues/575)
+
+
+
 <a name="0.10.18"></a>
 ## 0.10.18 (2017-08-17)
 
+* v0.10.18 ([4a56c90](https://github.com/bustle/mobiledoc-kit/commit/4a56c90))
 * fix(disableEditing): Disable event manager when editing is disabled (#573) ([64c7f6c](https://github.com/bustle/mobiledoc-kit/commit/64c7f6c)), closes [#572](https://github.com/bustle/mobiledoc-kit/issues/572)
 
 
