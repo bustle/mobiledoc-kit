@@ -79,7 +79,8 @@ const Key = class Key {
     if (this.isTab()) { return TAB; }
     return String.fromCharCode(this.charCode);
   }
-isEscape() {
+
+  isEscape() {
     return this.keyCode === Keycodes.ESC;
   }
 
