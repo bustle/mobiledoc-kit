@@ -79,8 +79,7 @@ const Key = class Key {
     if (this.isTab()) { return TAB; }
     return String.fromCharCode(this.charCode);
   }
-
-  isEscape() {
+isEscape() {
     return this.keyCode === Keycodes.ESC;
   }
 
@@ -125,7 +124,10 @@ const Key = class Key {
   }
 
   isEnd() {
-    return this.keyCode === Keycodes.END;
+    return (
+      this.keyCode === Keycodes.END &&
+      !this.modifierMask
+    );
   }
 
   isPageUp() {
@@ -241,11 +243,7 @@ const Key = class Key {
 
   isPrintableKey() {
     return !(
-      this.isArrow() ||
-      this.isHome() || this.isEnd() ||
-      this.isPageUp() || this.isPageDown() ||
-      this.isInsert() || this.isClear() || this.isPause() ||
-      this.isEscape()
+      this.isArrow()
     );
   }
 
