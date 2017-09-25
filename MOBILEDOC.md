@@ -30,7 +30,7 @@ Often Mobiledoc will be used with one or more of:
 ## Specification
 
 Mobiledoc consists of a wrapping object, type definitions for markup, atoms and cards,
-and an array of section data. Using arrays makes Mobiledocs each to render quickly.
+and an array of section data. Markup, atoms and cards are referenced (one or more times) from within section data by array index. Using arrays makes Mobiledocs each to render quickly.
 
 The wrapper signature:
 
@@ -56,6 +56,8 @@ The wrapper signature:
   ]
 }
 ```
+
+### Signatures
 
 **Markup definition signature**
 
@@ -102,6 +104,110 @@ Cards have a name and arbitrary payload.
 }
 ```
 
+**Section definition signature**
+
+Sections have an identifier and other values depending on their type. See _Sections_.
+
+```
+{
+  version: "0.3.1",
+  sections: [
+    [sectionTypeIdentifier, <type dependent>], ──── Card
+    [1, "h2", [                        ──── Example 'heading 2 text' section
+      [0, [], 0, "Simple h2 example"],
+    ]]
+}
+```
+
+**Marker definition signature**
+
+The text of a document is held in markers which signal where markup and atoms apply. Markers are used in text and list sections.
+
+```
+{
+  version: "0.3.1",
+  markups: [
+    ["b"],                                ──── Markup at index 0
+    ["i"]                                 ──── Markup at index 1
+  ],
+  atoms: [
+    ["mention", "@bob", { id: 42 }]       ──── mention Atom at index 0
+    ["mention", "@tom", { id: 12 }]       ──── mention Atom at index 1
+  ]
+  sections: [
+    [1, "p", [
+      [textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, value],
+      [0, [], 0, "Example with no markup"],      ──── textTypeIdentifier for markup is always 0
+      [0, [0], 1, "Example wrapped in b tag (opened markup #0), 1 closed markup"],
+      [0, [1], 0, "Example opening i tag (opened markup with #1, 0 closed markups)"],
+      [0, [], 1, "Example closing i tag (no opened markups, 1 closed markup)"],
+      [0, [1, 0], 1, "Example opening i tag and b tag, closing b tag (opened markups #1 and #0, 1 closed markup [closes markup #1])"],
+      [0, [], 1, "Example closing b tag, (no opened markups, 1 closed markup [closes markup #0])"],
+    ]],
+    [1, "p", [
+      [textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, atomIndex],
+      [1, [], 0, 0],             ──── mention atom at index 0 (@bob), textTypeIdentifier for atom is always 1
+      [1, [0], 1, 1]             ──── mention atom at index 1 (@tom) wrapped in b tag (markup index 0)
+    ]]
+  ]
+}
+```
+
+## Markers
+
+Opening and closing of markups are tracked by markers. They are expected to be balanced for a valid document. Opening markups are specificed by referencing the markups array in the document by index. Markups are closed in the order they are opened, in the quantity specified in the marker.
+
+```
+[textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, atomIndex],
+```
+
+The index in `openMarkupsIndex` specifies which markups should be opened at the start of the `value` text. As these tags are opened, then create a stack of opened markups. `value` has the open markups from all previous markers (that are unclosed) and its own marker applied. The `numberOfClosedMarkups` says how many of those opened markup tags should be closed at the end of a `value`. Markups closed in this marker will not be applied to the next marker value.
+
+There are two types of markers, identified with the following numbers:
+
+* `0` - Text
+* `1` - Atom
+
+**Text marker**
+
+`value` is plain text
+
+**Atom marker**
+
+`value` is an index reference to the atoms array in the document. How markups are applied to atoms is left to the renderer. If an atom is present in Mobiledoc but no atom implementation is registered, the text value of the atom will be rendered as plain text as a fallback.
+
+## Markup
+
+General text decorations are given by markup. A markup definition array's first item (the markup `tagName`) must be one of:
+
+* `a` - Hypertext link
+* `b` - Bold
+* `code` - Code
+* `em` - Emphasis
+* `i` - Italic
+* `s` - Strike-through
+* `strong` - Strong
+* `sub` - Subscript
+* `sup` - Superscript
+* `u` - Underline
+
+Attributes are specified in pairs in an array after the markup name. Where a markup is used with different attributes, that markup will have to be in the markup list for each unique set of attributes.
+
+**Hypertext link**
+
+An `href` attribute is expected with this markup.
+
+## Sections
+
+There are four section types. Each section has a different signature dependent on it's type. Sections are identified with the following numbers:
+
+* `1` - Markup (Text)
+* `2` - Image
+* `3` - List
+* `10` - Card
+
+_Section identifiers 4 through 9 are reserved for future use_
+
 **Markup Section**
 
 Markup sections, in addition to plain text, can include markups and atoms.
@@ -144,38 +250,62 @@ A section `tagName` must be one of:
 
 * `aside`
 * `blockquote`
-* `h1`
+* `h1` - Heading 1
 * `h2`
 * `h3`
 * `h4`
 * `h5`
 * `h6`
-* `p`
+* `p` - Paragraph
 
-The index in `openMarkupsIndex` specifies which markups should be opened at
-the start of the `value` text. As these tags are opened, then create a stack
-of opened markups. The `numberOfClosedMarkups` says how many of those opened markup tags should
-be closed at the end of a `value`.
+**Image section**
 
-In addition to markers, markup sections may contain [ATOMS](ATOMS.md).
-Atoms in a markup section have a `textTypeIdentifier` of 1 and contain an `atomTypeIndex`.
-They also contain the same `openMarkupsIndex` and `numberOfClosedMarkups` values that other markers have, so that markup can flow across them.
+Renders an image. In many scenarios, a card to suit your needs is better.
 
-A markup definition array's first item (the markup `tagName`) must be one of:
+```
+{
+  version: "0.3.1",
+  sections: [
+    [sectionTypeIdentifier, src],
+    [2, "http://placekitten.com/200/100"]
+  ]
+}
+```
 
-* `a` - Hypertext link
-* `b` - Bold
-* `code` - Code
-* `em` - Emphasis
-* `i` - Italic
-* `s` - Strike-through
-* `strong` - Strong
-* `sub` - Subscript
-* `sup` - Superscript
-* `u` - Underline
+**List section**
 
-If an atom is present in Mobiledoc but no atom implementation is registered, the text
-value of the atom will be rendered as plain text as a fallback.
+List similar to markup sections but have a set of markers for each list item.
+
+```
+{
+  version: "0.3.1",
+  markups: [
+    ["b"]                                ──── Markup at index 0
+  ],
+  atoms: [
+    ["mention", "@bob", { id: 42 }]       ──── mention Atom at index 0
+  ]
+  sections: [
+    [sectionTypeIdentifier, tagName, [marker, marker, markers]],
+    [3, "ol", [ 
+      [
+        [0, [], 0, "Plain"]
+      ],
+      [
+        [0, [0], 1, "Bold"]
+      ],
+      [
+        [1, [], 0, 0]                  ──── mention atom at index 0 (@bob)
+      ],
+    ]],
+  ]
+}
+```
+
+A section `tagName` must be one of:
+
+* `ul` - Unordered list
+* `ol` - Ordered list
 
 **Card Section**
 
