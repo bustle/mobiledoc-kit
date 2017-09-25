@@ -226,7 +226,7 @@ The available lifecycle hooks are:
   (Toggling markup done via the postEditor, e.g. `editor.run(postEditor =>
   postEditor.toggleMarkup(...))` will skip this callback.
 
-For more details on the lifecycle hooks, see the [Editor documentation](https://bustlelabs.github.io/mobiledoc-kit/demo/docs/Editor.html).
+For more details on the lifecycle hooks, see the [Editor documentation](https://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html).
 
 ### Programmatic Post Editing
 
