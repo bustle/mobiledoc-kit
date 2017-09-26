@@ -234,8 +234,8 @@ Markup sections, in addition to plain text, can include markups and atoms.
       [0, [0], 1, "Example wrapped in b tag (opened markup #0), 1 closed markup"],
       [0, [1], 0, "Example opening i tag (opened markup with #1, 0 closed markups)"],
       [0, [], 1, "Example closing i tag (no opened markups, 1 closed markup)"],
-      [0, [1, 0], 1, "Example opening i tag and b tag, closing b tag (opened markups #1 and #0, 1 closed markup [closes markup #1])"],
-      [0, [], 1, "Example closing b tag, (no opened markups, 1 closed markup [closes markup #0])"],
+      [0, [1, 0], 1, "Example opening i tag and b tag, closing b tag (opened markups #1 and #0, 1 closed markup [closes markup #0])"],
+      [0, [], 1, "Example closing i tag, (no opened markups, 1 closed markup [closes markup #1])"],
     ]],
     [1, "p", [
       [textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, atomIndex],
@@ -286,7 +286,7 @@ List similar to markup sections but have a set of markers for each list item.
     ["mention", "@bob", { id: 42 }]       ──── mention Atom at index 0
   ]
   sections: [
-    [sectionTypeIdentifier, tagName, [marker, marker, markers]],
+    [sectionTypeIdentifier, tagName, [markers, markers, markers]],
     [3, "ol", [ 
       [
         [0, [], 0, "Plain"]
