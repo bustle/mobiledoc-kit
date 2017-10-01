@@ -46,15 +46,7 @@ test('#hasModifier with SHIFT', (assert) => {
 // Firefox will fire keypress events for some keys that should not be printable
 test('firefox: non-printable are treated as not printable', (assert) => {
   const KEYCODES = [
-    Keycodes.DOWN,
-    Keycodes.HOME,
-    Keycodes.END,
-    Keycodes.PAGEUP,
-    Keycodes.PAGEDOWN,
-    Keycodes.INS,
-    Keycodes.CLEAR,
-    Keycodes.PAUSE,
-    Keycodes.ESC
+    Keycodes.DOWN
   ];
 
   KEYCODES.forEach((keyCode) => {

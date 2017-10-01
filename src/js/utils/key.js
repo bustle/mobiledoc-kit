@@ -125,7 +125,10 @@ const Key = class Key {
   }
 
   isEnd() {
-    return this.keyCode === Keycodes.END;
+    return (
+      this.keyCode === Keycodes.END &&
+      !this.modifierMask
+    );
   }
 
   isPageUp() {
@@ -241,11 +244,7 @@ const Key = class Key {
 
   isPrintableKey() {
     return !(
-      this.isArrow() ||
-      this.isHome() || this.isEnd() ||
-      this.isPageUp() || this.isPageDown() ||
-      this.isInsert() || this.isClear() || this.isPause() ||
-      this.isEscape()
+      this.isArrow()
     );
   }
 
