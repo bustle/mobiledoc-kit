@@ -81,6 +81,11 @@ const Key = class Key {
     return new Key(event);
   }
 
+  toString() {
+    if (this.isTab()) { return TAB; }
+    return String.fromCharCode(this.charCode);
+  }
+
   // See https://caniuse.com/#feat=keyboardevent-key for browser support.
   isKeySupported() {
     return this.key;
@@ -94,11 +99,6 @@ const Key = class Key {
       assert(`Must define Keycodes.${identifier}.`, Keycodes[identifier]);
       return this.keyCode === Keycodes[identifier];
     }
-  }
-
-  toString() {
-    if (this.isTab()) { return TAB; }
-    return String.fromCharCode(this.charCode);
   }
 
   isEscape() {

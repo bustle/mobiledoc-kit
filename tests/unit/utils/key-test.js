@@ -1,6 +1,7 @@
 import Helpers from '../../test-helpers';
 import Key from 'mobiledoc-kit/utils/key';
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
+import Keys from 'mobiledoc-kit/utils/keys';
 import Keycodes from 'mobiledoc-kit/utils/keycodes';
 
 const {module, test} = Helpers;
@@ -45,26 +46,48 @@ test('#hasModifier with SHIFT', (assert) => {
 
 // Firefox will fire keypress events for some keys that should not be printable
 test('firefox: non-printable are treated as not printable', (assert) => {
-  const KEYCODES = [
-    Keycodes.DOWN,
-    Keycodes.HOME,
-    Keycodes.END,
-    Keycodes.PAGEUP,
-    Keycodes.PAGEDOWN,
-    Keycodes.INS,
-    Keycodes.CLEAR,
-    Keycodes.PAUSE,
-    Keycodes.ESC
+  const KEYS = [
+    Keys.DOWN,
+    Keys.HOME,
+    Keys.END,
+    Keys.PAGEUP,
+    Keys.PAGEDOWN,
+    Keys.INS,
+    Keys.CLEAR,
+    Keys.PAUSE,
+    Keys.ESC
   ];
 
-  KEYCODES.forEach((keyCode) => {
+  KEYS.forEach((key) => {
     let element = $('#qunit-fixture')[0];
     let event = Helpers.dom.createMockEvent('keypress', element, {
-      keyCode,
-      charCode: 0
+      key,
     });
-    let key = Key.fromEvent(event);
+    let keyInstance = Key.fromEvent(event);
 
-    assert.ok(!key.isPrintable(), `key with code ${keyCode} is not printable`);
+    assert.ok(!keyInstance.isPrintable(), `key ${key} is not printable`);
   });
+});
+
+test('uses keyCode as a fallback if key is not supported', (assert) => {
+  let element = $('#qunit-fixture')[0];
+
+  let event = Helpers.dom.createMockEvent('keypress', element, {
+    key: Keys.ESC,
+    keyCode: Keycodes.SPACE
+  });
+  let keyInstance = Key.fromEvent(event);
+  assert.ok(
+    keyInstance.isEscape(),
+    'key is preferred over keyCode if supported'
+  );
+
+  event = Helpers.dom.createMockEvent('keypress', element, {
+    keyCode: Keycodes.SPACE
+  });
+  keyInstance = Key.fromEvent(event);
+  assert.ok(
+    keyInstance.isSpace(),
+    'keyCode is used if key is not supported'
+  );
 });
