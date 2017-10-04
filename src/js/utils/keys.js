@@ -16,9 +16,8 @@ export default {
   ALT: 'Alt',
   CTRL: 'Control',
 
-
   LEFT: 'ArrowLeft',
   RIGHT: 'ArrowRight',
   UP: 'ArrowUp',
-  DOWN: 'ArrowDown',
-}
+  DOWN: 'ArrowDown'
+};

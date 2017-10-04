@@ -34,7 +34,7 @@ export function modifierMask(event) {
          modVal(altKey,   MODIFIERS.ALT);
 }
 
-export const SPECIAL_KEYS = {
+const SPECIAL_KEYS = {
   BACKSPACE: Keycodes.BACKSPACE,
   TAB:       Keycodes.TAB,
   ENTER:     Keycodes.ENTER,
@@ -52,6 +52,10 @@ export const SPECIAL_KEYS = {
   DEL:       Keycodes.DELETE
 };
 
+export function specialCharacterToCode(specialCharacter) {
+  return SPECIAL_KEYS[specialCharacter];
+}
+
 // heuristic for determining if `event` is a key event
 function isKeyEvent(event) {
   return /^key/.test(event.type);
@@ -64,7 +68,6 @@ function isKeyEvent(event) {
  */
 const Key = class Key {
   constructor(event) {
-    console.log(event);
     this.key = event.key;
     this.keyCode = event.keyCode;
     this.charCode = event.charCode;
@@ -213,7 +216,7 @@ const Key = class Key {
   isIME() {
     // FIXME the IME action seems to get lost when we issue an
     // `editor.deleteSelection` before it (in Chrome)
-    return this.keyCode === Keycodes.IME
+    return this.keyCode === Keycodes.IME;
   }
 
   get direction() {

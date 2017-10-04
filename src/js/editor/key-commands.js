@@ -1,5 +1,5 @@
 import Key from '../utils/key';
-import { MODIFIERS, SPECIAL_KEYS } from '../utils/key';
+import { MODIFIERS, specialCharacterToCode } from '../utils/key';
 import { filter, reduce } from '../utils/array-utils';
 import assert from '../utils/assert';
 import Browser from '../utils/browser';
@@ -147,7 +147,7 @@ function modifierNamesToMask(modiferNames) {
 
 function characterToCode(character) {
   const upperCharacter = character.toUpperCase();
-  const special = SPECIAL_KEYS[upperCharacter];
+  const special = specialCharacterToCode(upperCharacter);
   if (special) {
     return special;
   } else {
