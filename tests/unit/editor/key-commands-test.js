@@ -1,10 +1,28 @@
 import { buildKeyCommand, findKeyCommands } from 'mobiledoc-kit/editor/key-commands';
-import { MODIFIERS, SPECIAL_KEYS, modifierMask as createModifierMask } from 'mobiledoc-kit/utils/key';
+import { MODIFIERS, modifierMask as createModifierMask } from 'mobiledoc-kit/utils/key';
 import Keycodes from 'mobiledoc-kit/utils/keycodes';
 
 import Helpers from '../../test-helpers';
 
 const { module, test } = Helpers;
+
+const SPECIAL_KEYS = {
+  BACKSPACE: Keycodes.BACKSPACE,
+  TAB:       Keycodes.TAB,
+  ENTER:     Keycodes.ENTER,
+  ESC:       Keycodes.ESC,
+  SPACE:     Keycodes.SPACE,
+  PAGEUP:    Keycodes.PAGEUP,
+  PAGEDOWN:  Keycodes.PAGEDOWN,
+  END:       Keycodes.END,
+  HOME:      Keycodes.HOME,
+  LEFT:      Keycodes.LEFT,
+  UP:        Keycodes.UP,
+  RIGHT:     Keycodes.RIGHT,
+  DOWN:      Keycodes.DOWN,
+  INS:       Keycodes.INS,
+  DEL:       Keycodes.DELETE
+};
 
 module('Unit: Editor key commands');
 

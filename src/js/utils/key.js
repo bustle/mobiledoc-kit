@@ -1,4 +1,5 @@
 import Keycodes from './keycodes';
+import Keys from './keys';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 
 /**
@@ -33,7 +34,7 @@ export function modifierMask(event) {
          modVal(altKey,   MODIFIERS.ALT);
 }
 
-export const SPECIAL_KEYS = {
+const SPECIAL_KEYS = {
   BACKSPACE: Keycodes.BACKSPACE,
   TAB:       Keycodes.TAB,
   ENTER:     Keycodes.ENTER,
@@ -51,6 +52,10 @@ export const SPECIAL_KEYS = {
   DEL:       Keycodes.DELETE
 };
 
+export function specialCharacterToCode(specialCharacter) {
+  return SPECIAL_KEYS[specialCharacter];
+}
+
 // heuristic for determining if `event` is a key event
 function isKeyEvent(event) {
   return /^key/.test(event.type);
@@ -63,6 +68,7 @@ function isKeyEvent(event) {
  */
 const Key = class Key {
   constructor(event) {
+    this.key = event.key;
     this.keyCode = event.keyCode;
     this.charCode = event.charCode;
     this.event = event;
@@ -80,17 +86,31 @@ const Key = class Key {
     return String.fromCharCode(this.charCode);
   }
 
+  // See https://caniuse.com/#feat=keyboardevent-key for browser support.
+  isKeySupported() {
+    return this.key;
+  }
+
+  isKey(identifier) {
+    if (this.isKeySupported()) {
+      assert(`Must define Keys.${identifier}.`, Keys[identifier]);
+      return this.key === Keys[identifier];
+    } else {
+      assert(`Must define Keycodes.${identifier}.`, Keycodes[identifier]);
+      return this.keyCode === Keycodes[identifier];
+    }
+  }
+
   isEscape() {
-    return this.keyCode === Keycodes.ESC;
+    return this.isKey('ESC');
   }
 
   isDelete() {
-    return this.keyCode === Keycodes.BACKSPACE ||
-           this.keyCode === Keycodes.DELETE;
+    return this.isKey('BACKSPACE') || this.isForwardDelete();
   }
 
   isForwardDelete() {
-    return this.keyCode === Keycodes.DELETE;
+    return this.isKey('DELETE');
   }
 
   isArrow() {
@@ -98,8 +118,7 @@ const Key = class Key {
   }
 
   isHorizontalArrow() {
-    return this.keyCode === Keycodes.LEFT ||
-           this.keyCode === Keycodes.RIGHT;
+    return this.isLeftArrow() || this.isRightArrow();
   }
 
   isHorizontalArrowWithoutModifiersOtherThanShift() {
@@ -108,44 +127,96 @@ const Key = class Key {
   }
 
   isVerticalArrow() {
-    return this.keyCode === Keycodes.UP ||
-      this.keyCode === Keycodes.DOWN;
+    return this.isKey('UP') || this.isKey('DOWN');
   }
 
   isLeftArrow() {
-    return this.keyCode === Keycodes.LEFT;
+    return this.isKey('LEFT');
   }
 
   isRightArrow() {
-    return this.keyCode === Keycodes.RIGHT;
+    return this.isKey('RIGHT');
   }
 
   isHome() {
-    return this.keyCode === Keycodes.HOME;
+    return this.isKey('HOME');
   }
 
   isEnd() {
-    return this.keyCode === Keycodes.END;
+    return this.isKey('END');
   }
 
   isPageUp() {
-    return this.keyCode === Keycodes.PAGEUP;
+    return this.isKey('PAGEUP');
   }
 
   isPageDown() {
-    return this.keyCode === Keycodes.PAGEDOWN;
+    return this.isKey('PAGEDOWN');
   }
 
   isInsert() {
-    return this.keyCode === Keycodes.INS;
+    return this.isKey('INS');
   }
 
   isClear() {
-    return this.keyCode === Keycodes.CLEAR;
+    return this.isKey('CLEAR');
   }
 
   isPause() {
-    return this.keyCode === Keycodes.PAUSE;
+    return this.isKey('PAUSE');
+  }
+
+  isSpace() {
+    return this.isKey('SPACE');
+  }
+
+  // In Firefox, pressing ctrl-TAB will switch to another open browser tab, but
+  // it will also fire a keydown event for the tab+modifier (ctrl). This causes
+  // Mobiledoc to erroneously insert a tab character before FF switches to the
+  // new browser tab.  Chrome doesn't fire this event so the issue doesn't
+  // arise there. Fix this by returning false when the TAB key event includes a
+  // modifier.
+  // See: https://github.com/bustle/mobiledoc-kit/issues/565
+  isTab() {
+    return !this.hasAnyModifier() && this.isKey('TAB');
+  }
+
+  isEnter() {
+    return this.isKey('ENTER');
+  }
+
+  /*
+   * If the key is the actual shift key. This is false when the shift key
+   * is held down and the source `event` is not the shift key.
+   * @see {isShift}
+   * @return {bool}
+   */
+  isShiftKey() {
+    return this.isKey('SHIFT');
+  }
+
+  /*
+   * If the key is the actual alt key (aka "option" on mac). This is false when the alt key
+   * is held down and the source `event` is not the alt key.
+   * @return {bool}
+   */
+  isAltKey() {
+    return this.isKey('ALT');
+  }
+
+  /*
+   * If the key is the actual ctrl key. This is false when the ctrl key
+   * is held down and the source `event` is not the ctrl key.
+   * @return {bool}
+   */
+  isCtrlKey() {
+    return this.isKey('CTRL');
+  }
+
+  isIME() {
+    // FIXME the IME action seems to get lost when we issue an
+    // `editor.deleteSelection` before it (in Chrome)
+    return this.keyCode === Keycodes.IME;
   }
 
   get direction() {
@@ -155,24 +226,6 @@ const Key = class Key {
       case this.isHorizontalArrow():
         return this.isRightArrow() ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
     }
-  }
-
-  isSpace() {
-    return this.keyCode === Keycodes.SPACE;
-  }
-
-  // In Firefox, pressing ctrl-TAB will switch to another open browser tab, but it will
-  // also fire a keydown event for the tab+modifier (ctrl). This causes Mobiledoc
-  // to erroneously insert a tab character before FF switches to the new browser tab.
-  // Chrome doesn't fire this event so the issue doesn't arise there.
-  // Fix this by returning false when the TAB key event includes a modifier.
-  // See: https://github.com/bustle/mobiledoc-kit/issues/565
-  isTab() {
-    return !this.hasAnyModifier() && this.keyCode === Keycodes.TAB;
-  }
-
-  isEnter() {
-    return this.keyCode === Keycodes.ENTER;
   }
 
   /**
@@ -185,34 +238,6 @@ const Key = class Key {
    */
   isShift() {
     return this.shiftKey;
-  }
-
-  /*
-   * If the key is the actual shift key. This is false when the shift key
-   * is held down and the source `event` is not the shift key.
-   * @see {isShift}
-   * @return {bool}
-   */
-  isShiftKey() {
-    return this.keyCode === Keycodes.SHIFT;
-  }
-
-  /*
-   * If the key is the actual alt key (aka "option" on mac). This is false when the alt key
-   * is held down and the source `event` is not the alt key.
-   * @return {bool}
-   */
-  isAltKey() {
-    return this.keyCode === Keycodes.ALT;
-  }
-
-  /*
-   * If the key is the actual ctrl key. This is false when the ctrl key
-   * is held down and the source `event` is not the ctrl key.
-   * @return {bool}
-   */
-  isCtrlKey() {
-    return this.keyCode === Keycodes.CTRL;
   }
 
   hasModifier(modifier) {
@@ -249,6 +274,40 @@ const Key = class Key {
     );
   }
 
+  isNumberKey() {
+    if (this.isKeySupported()) {
+      return this.key >= '0' && this.key <= '9';
+    } else {
+      const code = this.keyCode;
+      return (code >= Keycodes['0'] && code <= Keycodes['9']) ||
+        (code >= Keycodes.NUMPAD_0 && code <= Keycodes.NUMPAD_9); // numpad keys
+    }
+  }
+
+  isLetterKey() {
+    if (this.isKeySupported()) {
+      const key = this.key;
+      return (key >= 'a' && key <= 'z') ||
+        (key >= 'A' && key <= 'Z');
+    } else {
+      const code = this.keyCode;
+      return (code >= Keycodes.A && code <= Keycodes.Z) ||
+        (code >= Keycodes.a && code <= Keycodes.z);
+    }
+  }
+
+  isPunctuation() {
+    if (this.isKeySupported()) {
+      const key = this.key;
+      return (key >= ';' && key <= '`') ||
+        (key >= '[' && key <= '"');
+    } else {
+      const code = this.keyCode;
+      return (code >= Keycodes[';'] && code <= Keycodes['`']) ||
+      (code >= Keycodes['['] && code <= Keycodes['"']);
+    }
+  }
+
   /**
    * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
    *   and http://stackoverflow.com/a/12467610/137784
@@ -258,30 +317,21 @@ const Key = class Key {
       return false;
     }
 
-    const {keyCode:code} = this;
-
     // Firefox calls keypress events for some keys that should not be printable
     if (!this.isPrintableKey()) {
       return false;
     }
 
     return (
-      code !== 0 ||
+      this.keyCode !== 0 ||
       this.toString().length > 0 ||
-      (code >= Keycodes['0'] && code <= Keycodes['9']) ||         // number keys
+      this.isNumberKey() ||
       this.isSpace() ||
       this.isTab()   ||
       this.isEnter() ||
-      (
-        (code >= Keycodes.A && code <= Keycodes.Z) ||               // letter keys
-        (code >= Keycodes.a && code <= Keycodes.z)
-      ) ||
-      (code >= Keycodes.NUMPAD_0 && code <= Keycodes.NUMPAD_9) || // numpad keys
-      (code >= Keycodes[';'] && code <= Keycodes['`']) ||         // punctuation
-      (code >= Keycodes['['] && code <= Keycodes['"']) ||
-      // FIXME the IME action seems to get lost when we issue an `editor.deleteSelection`
-      // before it (in Chrome)
-      code === Keycodes.IME
+      this.isLetterKey() ||
+      this.isPunctuation() ||
+      this.isIME()
     );
   }
 };
