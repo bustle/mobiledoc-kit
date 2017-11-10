@@ -1,6 +1,18 @@
+<a name="0.10.20"></a>
+## 0.10.20 (2017-11-10)
+
+* Add more detail to format documentation (#585) ([2d85ea1](https://github.com/bustle/mobiledoc-kit/commit/2d85ea1))
+* Fix broken link in README (#586) ([1d4796b](https://github.com/bustle/mobiledoc-kit/commit/1d4796b)), closes [#586](https://github.com/bustle/mobiledoc-kit/issues/586)
+* Prefer KeyboardEvent.key over KeyboardEvent.keyCode (#587) ([42d8735](https://github.com/bustle/mobiledoc-kit/commit/42d8735))
+* fix(docs): incorrect Marker definition signature (#588) ([6a6940a](https://github.com/bustle/mobiledoc-kit/commit/6a6940a))
+* chore(scripts): Clean up package.json test:ci script (#580) ([00528be](https://github.com/bustle/mobiledoc-kit/commit/00528be))
+
+
+
 <a name="0.10.19"></a>
 ## 0.10.19 (2017-08-31)
 
+* v0.10.19 ([766fba5](https://github.com/bustle/mobiledoc-kit/commit/766fba5))
 * chore: upgrade deps (#579) ([1a379e9](https://github.com/bustle/mobiledoc-kit/commit/1a379e9))
 * chore(ci): use chrome at travis (#577) ([c33b804](https://github.com/bustle/mobiledoc-kit/commit/c33b804))
 * chore(ci): use travis sauce_connect addon (#578) ([2338b25](https://github.com/bustle/mobiledoc-kit/commit/2338b25))
