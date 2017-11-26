@@ -122,47 +122,53 @@ function testStatefulCommand({modifierName, key, command, markupName}) {
   });
 }
 
-testStatefulCommand({
-  modifierName: 'META',
-  key: 'B',
-  command: 'command-B',
-  markupName: 'strong'
-});
+if (Browser.isMac()) {
+  testStatefulCommand({
+    modifierName: 'META',
+    key: 'B',
+    command: 'command-B',
+    markupName: 'strong'
+  });
+} else {
+  testStatefulCommand({
+    modifierName: 'CTRL',
+    key: 'B',
+    command: 'ctrl-B',
+    markupName: 'strong'
+  });
+}
 
-testStatefulCommand({
-  modifierName: 'CTRL',
-  key: 'B',
-  command: 'ctrl-B',
-  markupName: 'strong'
-});
+if (Browser.isMac()) {
+  testStatefulCommand({
+    modifierName: 'META',
+    key: 'I',
+    command: 'command-I',
+    markupName: 'em'
+  });
+} else {
+  testStatefulCommand({
+    modifierName: 'CTRL',
+    key: 'I',
+    command: 'ctrl-I',
+    markupName: 'em'
+  });
+}
 
-testStatefulCommand({
-  modifierName: 'META',
-  key: 'I',
-  command: 'command-I',
-  markupName: 'em'
-});
-
-testStatefulCommand({
-  modifierName: 'CTRL',
-  key: 'I',
-  command: 'ctrl-I',
-  markupName: 'em'
-});
-
-testStatefulCommand({
-  modifierName: 'META',
-  key: 'U',
-  command: 'command-U',
-  markupName: 'u'
-});
-
-testStatefulCommand({
-  modifierName: 'CTRL',
-  key: 'U',
-  command: 'ctrl-U',
-  markupName: 'u'
-});
+if (Browser.isMac()) {
+  testStatefulCommand({
+    modifierName: 'META',
+    key: 'U',
+    command: 'command-U',
+    markupName: 'u'
+  });
+} else {
+  testStatefulCommand({
+    modifierName: 'CTRL',
+    key: 'U',
+    command: 'ctrl-U',
+    markupName: 'u'
+  });
+}
 
 if (Browser.isMac()) {
   test(`[Mac] ctrl-k clears to the end of a line`, (assert) => {
