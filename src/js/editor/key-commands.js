@@ -38,101 +38,115 @@ function deleteToEndOfSection(editor) {
   });
 }
 
-export const DEFAULT_KEY_COMMANDS = [{
+const MAC_KEY_COMMANDS = [{
   str: 'META+B',
-  run(editor) {
-    editor.toggleMarkup('strong');
-  }
-}, {
-  str: 'CTRL+B',
+  name: 'default-bold',
   run(editor) {
     editor.toggleMarkup('strong');
   }
 }, {
   str: 'META+I',
-  run(editor) {
-    editor.toggleMarkup('em');
-  }
-}, {
-  str: 'CTRL+I',
+  name: 'default-italic',
   run(editor) {
     editor.toggleMarkup('em');
   }
 }, {
   str: 'META+U',
+  name: 'default-underline',
   run(editor) {
     editor.toggleMarkup('u');
   }
 }, {
+  str: 'META+K',
+  name: 'default-link',
+  run(editor) {
+    return toggleLink(editor);
+  }
+}, {
+  str: 'META+A',
+  name: 'default-select-all',
+  run(editor) {
+    selectAll(editor);
+  }
+}, {
+  str: 'META+Z',
+  name: 'default-undo',
+  run(editor) {
+    editor.run(postEditor => postEditor.undoLastChange());
+  }
+}, {
+  str: 'META+SHIFT+Z',
+  name: 'default-redo',
+  run(editor) {
+    editor.run(postEditor => postEditor.redoLastChange());
+  }
+}, {
+  str: 'CTRL+K',
+  name: 'default-delete-line',
+  run(editor) {
+    return deleteToEndOfSection(editor);
+  }
+}, {
+  str: 'CTRL+A',
+  name: 'default-goto-line-start',
+  run(editor) {
+    gotoStartOfLine(editor);
+  }
+}, {
+  str: 'CTRL+E',
+  name: 'default-goto-line-end',
+  run(editor) {
+    gotoEndOfLine(editor);
+  }
+}];
+
+const WINDOWS_KEY_COMMANDS = [{
+  str: 'CTRL+B',
+  name: 'default-bold',
+  run(editor) {
+    editor.toggleMarkup('strong');
+  }
+}, {
+  str: 'CTRL+I',
+  name: 'default-italic',
+  run(editor) {
+    editor.toggleMarkup('em');
+  }
+}, {
   str: 'CTRL+U',
+  name: 'default-underline',
   run(editor) {
     editor.toggleMarkup('u');
   }
 }, {
   str: 'CTRL+K',
+  name: 'default-link',
   run(editor) {
-    if (Browser.isMac()) {
-      return deleteToEndOfSection(editor);
-    } else if (Browser.isWin()) {
-      return toggleLink(editor);
-    }
+    return toggleLink(editor);
   }
 }, {
   str: 'CTRL+A',
+  name: 'default-select-all',
   run(editor) {
-    if (Browser.isMac()) {
-      gotoStartOfLine(editor);
-    } else {
-      selectAll(editor);
-    }
-  }
-}, {
-  str: 'META+A',
-  run(editor) {
-    if (Browser.isMac()) {
-      selectAll(editor);
-    }
-  }
-}, {
-  str: 'CTRL+E',
-  run(editor) {
-    if (Browser.isMac()) {
-      gotoEndOfLine(editor);
-    }
-  }
-}, {
-  str: 'META+K',
-  run(editor) {
-    return toggleLink(editor);
-  },
-
-}, {
-  str: 'META+Z',
-  run(editor) {
-    editor.run(postEditor => {
-      postEditor.undoLastChange();
-    });
-  }
-}, {
-  str: 'META+SHIFT+Z',
-  run(editor) {
-    editor.run(postEditor => {
-      postEditor.redoLastChange();
-    });
+    selectAll(editor);
   }
 }, {
   str: 'CTRL+Z',
+  name: 'default-undo',
   run(editor) {
-    if (Browser.isMac()) { return false; }
     editor.run(postEditor => postEditor.undoLastChange());
   }
 }, {
   str: 'CTRL+SHIFT+Z',
+  name: 'default-redo',
   run(editor) {
-    if (Browser.isMac()) { return false; }
     editor.run(postEditor => postEditor.redoLastChange());
   }
 }];
+
+export const DEFAULT_KEY_COMMANDS = (Browser.isMac() && MAC_KEY_COMMANDS)
+                                 || (Browser.isWin() && WINDOWS_KEY_COMMANDS)
+                                 || [];
 
 function modifierNamesToMask(modiferNames) {
   let defaultVal = 0;
