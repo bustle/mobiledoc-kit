@@ -37,8 +37,12 @@ let activateButtons = (parentSelector, editor) => {
   $(`${parentSelector} button`).click(function() {
     let button = $(this);
     let action = button.data('action');
-    let arg = button.data('arg');
+    if (action === 'toggleLink') {
+      Mobiledoc.UI.toggleLink(editor);
+      return;
+    }
 
+    let arg = button.data('arg');
     editor[action](arg);
   });
 };
