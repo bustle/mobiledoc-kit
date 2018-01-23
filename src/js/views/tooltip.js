@@ -1,4 +1,5 @@
 import View from './view';
+import { toggleLink } from '../editor/ui'
 import {
   positionElementCenteredBelow,
   getEventTargetMatchingTag,
@@ -6,10 +7,11 @@ import {
 } from '../utils/element-utils';
 
 const DELAY = 200;
+const EDIT_LINK_CLASSNAME = '__mobiledoc-tooltip__edit-link';
 
 export default class Tooltip extends View {
   constructor(options) {
-    let { rootElement } = options;
+    let { rootElement, editor } = options;
     let timeout;
     options.classNames = ['__mobiledoc-tooltip'];
     super(options);
@@ -31,6 +33,19 @@ export default class Tooltip extends View {
         this.hide();
       }
     });
+
+    this.addEventListener(this.element, 'click', (e) => {
+      let target = e.target;
+      if (target.classList.contains(EDIT_LINK_CLASSNAME)) {
+        e.preventDefault();
+        editor.selectNode(this.linkElement);
+        console.log(editor.range.head.offset, editor.range.tail.offset, '(', editor.cursor.offsets.head.offset, editor.cursor.offsets.tail.offset ,')')
+        editor.run(() => {})
+        console.log(editor.range.head.offset, editor.range.tail.offset, '(', editor.cursor.offsets.head.offset, editor.cursor.offsets.tail.offset ,')')
+        // editor.run(postEditor => postEditor.setRange(editor.range));
+        toggleLink(editor);
+      }
+    });
   }
 
   showMessage(message, element) {
@@ -40,8 +55,10 @@ export default class Tooltip extends View {
     positionElementCenteredBelow(tooltipElement, element);
   }
 
-  showLink(link, element) {
-    let message = `<a href="${link}" target="_blank">${link}</a>`;
+  showLink(url, element) {
+    this.linkUrl = url;
+    this.linkElement = element;
+    let message = `<a href="${url}" target="_blank" class="__mobiledoc-tooltip__link-url">${url}</a><button class="${EDIT_LINK_CLASSNAME}">Edit</button>`;
     this.showMessage(message, element);
     this.elementObserver = whenElementIsNotInDOM(element, () => this.hide());
   }

@@ -124,6 +124,10 @@ const Cursor = class Cursor {
     this.editor._ensureFocus();
   }
 
+  selectNode(node) {
+    this._moveToNode(node, 0, node, node.childNodes.length);
+  }
+
   get selection() {
     return window.getSelection();
   }

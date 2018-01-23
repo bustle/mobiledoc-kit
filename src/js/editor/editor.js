@@ -268,7 +268,8 @@ class Editor {
   _addTooltip() {
     this.addView(new Tooltip({
       rootElement: this.element,
-      showForTag: 'a'
+      showForTag: 'a',
+      editor: this
     }));
   }
 
@@ -392,6 +393,11 @@ class Editor {
 
     this.cursor.selectRange(range);
     this.range = range;
+  }
+
+  selectNode(node) {
+    this.cursor.selectNode(node);
+    this.range = this.cursor.offsets;
   }
 
   get cursor() {

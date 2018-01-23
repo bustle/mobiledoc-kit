@@ -48,13 +48,14 @@ export function toggleLink(editor, showPrompt=defaultShowPrompt) {
   }
 
   let selectedText = editor.cursor.selectedText();
+
+  let {range} = editor;
+  let link = editor.detectMarkupInRange(range, 'a');
+
   let defaultUrl = '';
   if (selectedText.indexOf('http') !== -1) { defaultUrl = selectedText; }
 
-  let {range} = editor;
-  let hasLink = editor.detectMarkupInRange(range, 'a');
-
-  if (hasLink) {
+  if (link) {
     editor.toggleMarkup('a');
   } else {
     showPrompt('Enter a URL', defaultUrl, url => {
