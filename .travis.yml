@@ -3,7 +3,7 @@ language: node_js
 node_js:
   - "6"
 
-sudo: false
+sudo: required
 dist: trusty
 
 addons:
@@ -16,8 +16,11 @@ cache:
   yarn: true
 
 before_install:
-  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 0.27.5
+  - curl -o- -L https://yarnpkg.com/install.sh | bash
   - export PATH=$HOME/.yarn/bin:$PATH
+
+install:
+  - yarn install --no-lockfile --non-interactive
 
 script:
   - yarn test:ci
