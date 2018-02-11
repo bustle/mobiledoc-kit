@@ -46,8 +46,7 @@ const SKIPPABLE_ELEMENT_TAG_NAMES = [
 
 const NEWLINES = /\n/g;
 function sanitize(text) {
-  text = text.replace(NEWLINES, '');
-  return text;
+  return text.replace(NEWLINES, ' ');
 }
 
 /**

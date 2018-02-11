@@ -25,10 +25,10 @@ test('style tags are ignored', (assert) => {
 });
 
 // See https://github.com/bustle/mobiledoc-kit/issues/333
-test('newlines ("\\n") are ignored', (assert) => {
+test('newlines ("\\n") are replaced with space characters', (assert) => {
   let html = "abc\ndef";
   let post = parseHTML(html);
-  let {post: expected} = Helpers.postAbstract.buildFromText(['abcdef']);
+  let {post: expected} = Helpers.postAbstract.buildFromText(['abc def']);
 
   assert.postIsSimilar(post, expected);
 });
