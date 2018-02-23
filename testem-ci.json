@@ -9,7 +9,7 @@
   "launchers": {
     "SL_MS_Edge": {
       "exe": "saucie",
-      "args": ["-b", "microsoftedge", "--no-connect", "-u"],
+      "args": ["-b", "microsoftedge", "-v", "15", "--no-connect", "-u"],
       "protocol": "tap"
     },
     "SL_IE_11": {
