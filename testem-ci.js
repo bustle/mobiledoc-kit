@@ -1,4 +1,5 @@
-{
+/* eslint-env node */
+module.exports = {
   "framework": "qunit",
   "parallel": 5,
   "disable_watching": true,
@@ -17,11 +18,6 @@
       "args": ["-b", "internet explorer", "-v", "11", "--no-connect", "-u"],
       "protocol": "tap"
     },
-    "SL_Firefox_Current": {
-      "exe": "saucie",
-      "args": ["-b", "firefox", "-p", "Windows 10", "-v", "latest", "--no-connect", "-u"],
-      "protocol": "tap"
-    },
     "SL_Safari_Current": {
       "exe": "saucie",
       "args": ["-b", "safari", "-v", "9", "--no-connect", "-u"],
@@ -30,17 +26,18 @@
   },
   "launch_in_ci": [
     "Chrome",
-    "SL_Firefox_Current",
+    "Firefox",
     "SL_Safari_Current",
     "SL_MS_Edge",
     "SL_IE_11"
   ],
   "browser_args": {
     "Chrome": [
+      "--no-sandbox", // Fixes issue starting ChromeHeadless, see https://github.com/travis-ci/travis-ci/issues/9024
       "--disable-gpu",
       "--headless",
       "--remote-debugging-port=9222",
       "--window-size=1440,900"
     ]
   }
-}
+};

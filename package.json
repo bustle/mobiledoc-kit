@@ -5,8 +5,8 @@
   "repository": "https://github.com/bustle/mobiledoc-kit",
   "scripts": {
     "start": "broccoli serve --host 0.0.0.0",
-    "test:ci": "npm run build:docs && npm run build && testem ci -f testem-ci.json",
-    "test": "npm run build:docs && npm run build && testem ci -f testem.json",
+    "test:ci": "npm run build:docs && npm run build && testem ci -f testem-ci.js",
+    "test": "npm run build:docs && npm run build && testem ci -f testem.js",
     "build": "rm -rf dist && broccoli build dist",
     "build:docs": "jsdoc -c ./.jsdoc",
     "build:website": "npm run build && npm run build:docs && ./bin/build-website.sh",
