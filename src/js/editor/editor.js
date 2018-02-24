@@ -43,6 +43,7 @@ const defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
+  showLinkTooltips: true,
   undoDepth: 5,
   undoBlockTimeout: 5000, // ms for an undo event
   cards: [],
@@ -113,6 +114,7 @@ class Editor {
    * @param {String} [options.placeholder] Default text to show before user starts typing.
    * @param {Boolean} [options.spellcheck=true] Whether to enable spellcheck
    * @param {Boolean} [options.autofocus=true] Whether to focus the editor when it is first rendered.
+   * @param {Boolean} [options.showLinkTooltips=true] Whether to show the url tooltip for links
    * @param {number} [options.undoDepth=5] How many undo levels will be available.
    *        Set to 0 to disable undo/redo functionality.
    * @return {Editor}
@@ -239,7 +241,9 @@ class Editor {
 
     this.element = element;
 
-    this._addTooltip();
+    if (this.showLinkTooltips) {
+      this._addTooltip();
+    }
 
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
     // postEditor.

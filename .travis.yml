@@ -8,16 +8,16 @@ dist: trusty
 
 addons:
   chrome: stable
+  firefox: "latest"
   sauce_connect:
-    username: mobiledoc-kit
-    access_key: f9cad21d-1141-452d-8f64-c6ba3f43faa6
+    username: "mobiledoc-kit"
+    access_key: "f9cad21d-1141-452d-8f64-c6ba3f43faa6"
+
+env:
+  - MOZ_HEADLESS=1 # necessary for Firefox headless, see https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-the-Firefox-addon-in-headless-mode
 
 cache:
   yarn: true
-
-before_install:
-  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 0.27.5
-  - export PATH=$HOME/.yarn/bin:$PATH
 
 script:
   - yarn test:ci

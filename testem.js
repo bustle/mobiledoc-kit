@@ -1,4 +1,5 @@
-{
+/* eslint-env node */
+module.exports = {
   "framework": "qunit",
   "test_page": "dist/tests/index.html?hidepassed",
   "src_files": [
@@ -21,4 +22,4 @@
       "--window-size=1440,900"
     ]
   }
-}
+};
