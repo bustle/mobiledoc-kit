@@ -35,6 +35,7 @@ function findOffsetInTextNode(node, coords) {
  * @see https://github.com/ProseMirror/prosemirror/blob/4c22e3fe97d87a355a0534e25d65aaf0c0d83e57/src/edit/dompos.js
  * @return {Object} {node, offset}
  */
+/* eslint-disable complexity */
 function findOffsetInNode(node, coords) {
   let closest, dyClosest = 1e8, coordsClosest, offset = 0;
   for (let child = node.firstChild; child; child = child.nextSibling) {
@@ -79,6 +80,7 @@ function findOffsetInNode(node, coords) {
   }
   return {node, offset};
 }
+/* eslint-enable complexity */
 
 function constrainNodeTo(node, parentNode, existingOffset) {
   let compare = parentNode.compareDocumentPosition(node);
