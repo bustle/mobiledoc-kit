@@ -1,9 +1,21 @@
+<a name="0.10.21"></a>
+## 0.10.21 (2018-03-02)
+
+* docs(readme): Add travis-ci badge to readme (#607) ([9e27e9a](https://github.com/bustle/mobiledoc-kit/commit/9e27e9a))
+* Fix bug #600 (#601) ([f57215f](https://github.com/bustle/mobiledoc-kit/commit/f57215f)), closes [#600](https://github.com/bustle/mobiledoc-kit/issues/600) [#601](https://github.com/bustle/mobiledoc-kit/issues/601)
+* feat(toolips): Editor link tooltips can be disabled (#602) ([7da84f8](https://github.com/bustle/mobiledoc-kit/commit/7da84f8))
+* chore(ci): Fix CI: Sauce Connect, ChromeHeadless, and MS Edge (#604) ([5cc0112](https://github.com/bustle/mobiledoc-kit/commit/5cc0112)), closes [#604](https://github.com/bustle/mobiledoc-kit/issues/604) [#595](https://github.com/bustle/mobiledoc-kit/issues/595)
+* chore(ci): Improve CI builds (#605) ([ce378e2](https://github.com/bustle/mobiledoc-kit/commit/ce378e2))
+
+
+
 <a name="0.10.20"></a>
 ## 0.10.20 (2017-11-10)
 
 * Add more detail to format documentation (#585) ([2d85ea1](https://github.com/bustle/mobiledoc-kit/commit/2d85ea1))
 * Fix broken link in README (#586) ([1d4796b](https://github.com/bustle/mobiledoc-kit/commit/1d4796b)), closes [#586](https://github.com/bustle/mobiledoc-kit/issues/586)
 * Prefer KeyboardEvent.key over KeyboardEvent.keyCode (#587) ([42d8735](https://github.com/bustle/mobiledoc-kit/commit/42d8735))
+* v0.10.20 ([8ae4d6b](https://github.com/bustle/mobiledoc-kit/commit/8ae4d6b))
 * fix(docs): incorrect Marker definition signature (#588) ([6a6940a](https://github.com/bustle/mobiledoc-kit/commit/6a6940a))
 * chore(scripts): Clean up package.json test:ci script (#580) ([00528be](https://github.com/bustle/mobiledoc-kit/commit/00528be))
 
