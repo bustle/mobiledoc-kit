@@ -1,5 +1,7 @@
 # Mobiledoc Kit
 
+[![Travis CI Build Status](https://travis-ci.org/bustle/mobiledoc-kit.svg?branch=master)](https://travis-ci.org/bustle/mobiledoc-kit)
+
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/mobiledoc-kit.svg)](https://saucelabs.com/u/mobiledoc-kit)
 
 [![Dependency Status](https://david-dm.org/bustle/mobiledoc-kit/master.svg)](https://david-dm.org/bustle/mobiledoc-kit/master)
