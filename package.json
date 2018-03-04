@@ -56,7 +56,7 @@
     "jquery": "^3.2.1",
     "jsdoc": "^3.5.4",
     "saucie": "^3.3.0",
-    "testem": "^1.18.4"
+    "testem": "^2.0.0"
   },
   "main": "dist/commonjs/mobiledoc-kit/index.js"
 }
