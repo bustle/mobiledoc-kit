@@ -158,10 +158,12 @@ The text of a document is held in markers which signal where markup and atoms ap
 Opening and closing of markups are tracked by markers. They are expected to be balanced for a valid document. Opening markups are specificed by referencing the markups array in the document by index. Markups are closed in the order they are opened, in the quantity specified in the marker.
 
 ```
-[textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, atomIndex],
+[textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, value],
 ```
 
-The index in `openMarkupsIndex` specifies which markups should be opened at the start of the `value` text. As these tags are opened, then create a stack of opened markups. `value` has the open markups from all previous markers (that are unclosed) and its own marker applied. The `numberOfClosedMarkups` says how many of those opened markup tags should be closed at the end of a `value`. Markups closed in this marker will not be applied to the next marker value.
+The index in `openMarkupsIndexes` specifies which markups should be opened at the start of the `value`. As these tags are opened, they create a stack of opened markups: `value` is enclosed by the markups from all previous unclosed markers plus its own.
+
+The `numberOfClosedMarkups` says how many of those opened markup tags should be closed at the end of the `value`. Markups closed in this marker will not be applied to the next marker's `value`.
 
 There are two types of markers, identified with the following numbers:
 
