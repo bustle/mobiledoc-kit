@@ -9,12 +9,11 @@ dist: trusty
 addons:
   chrome: stable
   firefox: "latest"
-  sauce_connect:
-    username: "mobiledoc-kit"
-    access_key: "f9cad21d-1141-452d-8f64-c6ba3f43faa6"
 
 env:
   - MOZ_HEADLESS=1 # necessary for Firefox headless, see https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-the-Firefox-addon-in-headless-mode
+  - SAUCE_USERNAME=mobiledoc-kit
+  - SAUCE_ACCESS_KEY=f9cad21d-1141-452d-8f64-c6ba3f43faa6
 
 cache:
   yarn: true

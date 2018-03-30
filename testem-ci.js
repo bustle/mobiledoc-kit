@@ -6,8 +6,15 @@ module.exports = {
   "timeout": 600,
   "browser_start_timeout": 90,
   "test_page": "dist/tests/index.html?hidepassed",
+  "on_start": "./sauce_labs/saucie-connect.js",
+  "on_exit": "./sauce_labs/saucie-disconnect.js",
   "port": 8080,
   "launchers": {
+    "SL_Chrome_Current": {
+      "exe": "saucie",
+      "args": ["-b", "chrome", "-p", "Windows 10", "-v", "latest", "--no-connect", "-u"],
+      "protocol": "tap"
+    },
     "SL_MS_Edge": {
       "exe": "saucie",
       "args": ["-b", "microsoftedge", "-v", "15", "--no-connect", "-u"],
