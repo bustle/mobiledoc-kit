@@ -412,3 +412,25 @@ test('paste with shift key pastes plain text', (assert) => {
 
   assert.postIsSimilar(editor.post, expected);
 });
+
+test('paste with html that parses to blank doc doesn\'t error', (assert) => {
+  let expected;
+  let mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    expected = post([
+      markupSection('p', [])
+    ]);
+
+    return post([
+      markupSection('p', [marker('abcd')])
+    ]);
+  });
+
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  Helpers.dom.setCopyData('text/html', `<div></div>`);
+  editor.selectRange(editor.post.toRange());
+  Helpers.dom.triggerPasteEvent(editor);
+
+  assert.postIsSimilar(editor.post, expected);
+});
