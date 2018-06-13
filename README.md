@@ -31,6 +31,7 @@ If you only want to use the Mobiledoc-Kit runtime, for *rendering mobiledoc post
 | Server-Side Rendering (HTML) | see [mobiledoc-dom-renderer's Rendering HTML section](https://github.com/bustle/mobiledoc-dom-renderer#rendering-html) |
 | Server-Side Rendering (Text-only, e.g. SEO) | [mobiledoc-text-renderer](https://github.com/bustle/mobiledoc-text-renderer) |
 | In-Browser (DOM) Rendering, with Ember | [ember-mobiledoc-dom-renderer](https://github.com/bustle/ember-mobiledoc-dom-renderer) |
+| React Server and Browser Renderer | [mobiledoc-react-renderer](https://github.com/dailybeast/mobiledoc-react-renderer) |
 
 Mobiledoc is a deliberately simple and terse format, and you are encouraged to write your own renderer if you have other target output formats (e.g., a PDF renderer, an iOS Native Views Renderer, etc.).
 
