@@ -69,14 +69,18 @@ class SectionParser {
 
     this._updateStateFromElement(element);
 
-    let childNodes = isTextNode(element) ? [element] : element.childNodes;
+    let finished = this.runPlugins(element);
 
-    if (this.state.section.isListSection) {
-      this.parseListItems(childNodes);
-    } else {
-      forEach(childNodes, el => {
-        this.parseNode(el);
-      });
+    if (!finished) {
+      let childNodes = isTextNode(element) ? [element] : element.childNodes;
+
+      if (this.state.section.isListSection) {
+        this.parseListItems(childNodes);
+      } else {
+        forEach(childNodes, el => {
+          this.parseNode(el);
+        });
+      }
     }
 
     this._closeCurrentSection();

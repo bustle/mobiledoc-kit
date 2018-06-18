@@ -47,25 +47,37 @@ test('newlines ("\\n") are replaced with space characters', (assert) => {
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/494
 test('top-level unknown void elements are parsed', (assert) => {
   let html = `<video />`;
-  parseHTML(html, {plugins: [videoParserPlugin]});
+  let post = parseHTML(html, {plugins: [videoParserPlugin]});
+  let {post: expected} = Helpers.postAbstract.buildFromText([]);
+
   assert.ok(didParseVideo);
+  assert.postIsSimilar(post, expected);
 });
 
 // see https://github.com/bustlelabs/mobiledoc-kit/issues/494
 test('top-level unknown elements are parsed', (assert) => {
   let html = `<video>...inner...</video>`;
-  parseHTML(html, {plugins: [videoParserPlugin]});
+  let post = parseHTML(html, {plugins: [videoParserPlugin]});
+  let {post: expected} = Helpers.postAbstract.buildFromText(['...inner...']);
+
   assert.ok(didParseVideo);
+  assert.postIsSimilar(post, expected);
 });
 
 test('nested void unknown elements are parsed', (assert) => {
   let html = `<p>...<video />...</p>`;
-  parseHTML(html, {plugins: [videoParserPlugin]});
+  let post = parseHTML(html, {plugins: [videoParserPlugin]});
+  let {post: expected} = Helpers.postAbstract.buildFromText(['......']);
+
   assert.ok(didParseVideo);
+  assert.postIsSimilar(post, expected);
 });
 
 test('nested unknown elements are parsed', (assert) => {
   let html = `<p>...<video>inner</video>...</p>`;
-  parseHTML(html, {plugins: [videoParserPlugin]});
+  let post = parseHTML(html, {plugins: [videoParserPlugin]});
+  let {post: expected} = Helpers.postAbstract.buildFromText(['...inner...']);
+
   assert.ok(didParseVideo);
+  assert.postIsSimilar(post, expected);
 });

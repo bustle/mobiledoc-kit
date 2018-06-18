@@ -354,7 +354,7 @@ test('editor parses HTML post using parser plugins', (assert) => {
   editor = new Editor({html, parserPlugins: [parserPlugin]});
   assert.ok(!!editor.post, 'editor loads post');
 
-  assert.deepEqual(seenTagNames, ['TEXTAREA', 'IMG']);
+  assert.deepEqual(seenTagNames, ['P', 'TEXTAREA', 'IMG']);
 });
 
 test('#activeMarkups returns the markups at cursor when range is collapsed', (assert) => {
