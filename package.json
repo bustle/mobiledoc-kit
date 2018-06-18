@@ -1,6 +1,6 @@
 {
-  "name": "mobiledoc-kit",
-  "version": "0.11.1",
+  "name": "@tryghost/mobiledoc-kit",
+  "version": "0.11.1-ghost.3",
   "description": "A toolkit for building WYSIWYG editors with Mobiledoc",
   "repository": "https://github.com/bustle/mobiledoc-kit",
   "scripts": {

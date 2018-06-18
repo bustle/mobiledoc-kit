@@ -18,7 +18,7 @@ var vendoredModules = [
 
 var cssFiles = new Funnel("src/css", { destDir: "css" });
 
-var packageName = require("./package.json").name;
+var packageName = 'mobiledoc-kit';
 
 var buildOptions = {
   libDirName: "src/js",
