@@ -69,7 +69,13 @@ class SectionParser {
 
     this._updateStateFromElement(element);
 
-    let finished = this.runPlugins(element);
+    let finished = false;
+
+    // top-level text nodes will be run through parseNode later so avoid running
+    // the node through parserPlugins twice
+    if (!isTextNode(element)) {
+      finished = this.runPlugins(element);
+    }
 
     if (!finished) {
       let childNodes = isTextNode(element) ? [element] : element.childNodes;
