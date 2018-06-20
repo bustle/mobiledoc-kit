@@ -21,9 +21,7 @@ export default class EventManager {
     this._textInputHandler = new TextInputHandler(editor);
     this._listeners = [];
     this.modifierKeys = {
-      shift: false,
-      alt:   false,
-      ctrl:  false
+      shift: false
     };
 
     this._selectionManager = new SelectionManager(
@@ -184,9 +182,9 @@ export default class EventManager {
       case key.isDelete(): {
         let { direction } = key;
         let unit = 'char';
-        if (this.modifierKeys.alt && Browser.isMac()) {
+        if (key.altKey && Browser.isMac()) {
           unit = 'word';
-        } else if (this.modifierKeys.ctrl && Browser.isWin()) {
+        } else if (key.ctrlKey && Browser.isWin()) {
           unit = 'word';
         }
         editor.performDelete({direction, unit});
@@ -284,10 +282,6 @@ export default class EventManager {
   _updateModifiersFromKey(key, {isDown}) {
     if (key.isShiftKey()) {
       this.modifierKeys.shift = isDown;
-    } else if (key.isAltKey()) {
-      this.modifierKeys.alt = isDown;
-    } else if (key.isCtrlKey()) {
-      this.modifierKeys.ctrl = isDown;
     }
   }
 

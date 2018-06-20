@@ -154,18 +154,20 @@ function createMockEvent(eventName, element, options={}) {
   return event;
 }
 
-function triggerDelete(editor, direction=DIRECTION.BACKWARD) {
+// options is merged into the mocked `KeyboardEvent` data.
+// Useful for simulating modifier keys, eg:
+// triggerDelete(editor, DIRECTION.BACKWARD, {altKey: true})
+function triggerDelete(editor, direction=DIRECTION.BACKWARD, options={}) {
   assertEditor(editor);
   const keyCode = direction === DIRECTION.BACKWARD ? KEY_CODES.BACKSPACE :
                                                      KEY_CODES.DELETE;
-  let event = createMockEvent('keydown', editor.element, {
-    keyCode
-  });
+  let eventOptions = merge({keyCode}, options);
+  let event = createMockEvent('keydown', editor.element, eventOptions);
   _triggerEditorEvent(editor, event);
 }
 
-function triggerForwardDelete(editor) {
-  return triggerDelete(editor, DIRECTION.FORWARD);
+function triggerForwardDelete(editor, options) {
+  return triggerDelete(editor, DIRECTION.FORWARD, options);
 }
 
 function triggerEnter(editor) {
