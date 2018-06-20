@@ -278,7 +278,9 @@ export default class Inserter {
 
   insert(cursorPosition, newPost) {
     let visitor = new Visitor(this, cursorPosition);
-    visitor.visit(newPost);
+    if (!newPost.isBlank) {
+      visitor.visit(newPost);
+    }
     return visitor.cursorPosition;
   }
 }
