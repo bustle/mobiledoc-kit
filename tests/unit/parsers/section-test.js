@@ -1,6 +1,9 @@
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder';
 import SectionParser from 'mobiledoc-kit/parsers/section';
 import Helpers from '../../test-helpers';
+import {
+  NODE_TYPES
+} from 'mobiledoc-kit/utils/dom-utils';
 
 const {module, test} = Helpers;
 
@@ -138,7 +141,7 @@ test('#parse allows passing in parserPlugins that can override text parsing', (a
 
   let element = container.firstChild;
   let plugins = [function(element, builder, {addMarkerable, nodeFinished}) {
-    if (element.nodeType === 3) {
+    if (element.nodeType === NODE_TYPES.TEXT) {
       if (element.textContent === 'text 1') {
         addMarkerable(builder.createMarker('oh my'));
       }
@@ -150,6 +153,24 @@ test('#parse allows passing in parserPlugins that can override text parsing', (a
 
   assert.equal(sections.length, 1, '1 section');
   assert.equal(sections[0].text, 'oh my');
+});
+
+test('#parse only runs text nodes through parserPlugins once', (assert) => {
+  let container = buildDOM('text');
+  let textNode = container.firstChild;
+
+  assert.equal(textNode.nodeType, NODE_TYPES.TEXT);
+
+  let pluginRunCount = 0;
+  let plugins = [function (element) {
+    if (element.nodeType === NODE_TYPES.TEXT && element.textContent === 'text') {
+      pluginRunCount++;
+    }
+  }];
+  parser = new SectionParser(builder, {plugins});
+  parser.parse(textNode);
+
+  assert.equal(pluginRunCount, 1);
 });
 
 test('#parse skips STYLE nodes', (assert) => {

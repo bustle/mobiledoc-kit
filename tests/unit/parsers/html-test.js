@@ -9,7 +9,18 @@ function parseHTML(html, options={}) {
   return new HTMLParser(builder, options).parse(html);
 }
 
-module('Unit: Parser: HTMLParser');
+let didParseVideo;
+function videoParserPlugin(node) {
+  if (node.tagName === 'VIDEO') {
+    didParseVideo = true;
+  }
+}
+
+module('Unit: Parser: HTMLParser', {
+  beforeEach() {
+    didParseVideo = false;
+  }
+});
 
 test('style tags are ignored', (assert) => {
   // This is the html you get when copying a message from Slack's desktop app
@@ -30,5 +41,43 @@ test('newlines ("\\n") are replaced with space characters', (assert) => {
   let post = parseHTML(html);
   let {post: expected} = Helpers.postAbstract.buildFromText(['abc def']);
 
+  assert.postIsSimilar(post, expected);
+});
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/494
+test('top-level unknown void elements are parsed', (assert) => {
+  let html = `<video />`;
+  let post = parseHTML(html, {plugins: [videoParserPlugin]});
+  let {post: expected} = Helpers.postAbstract.buildFromText([]);
+
+  assert.ok(didParseVideo);
+  assert.postIsSimilar(post, expected);
+});
+
+// see https://github.com/bustlelabs/mobiledoc-kit/issues/494
+test('top-level unknown elements are parsed', (assert) => {
+  let html = `<video>...inner...</video>`;
+  let post = parseHTML(html, {plugins: [videoParserPlugin]});
+  let {post: expected} = Helpers.postAbstract.buildFromText(['...inner...']);
+
+  assert.ok(didParseVideo);
+  assert.postIsSimilar(post, expected);
+});
+
+test('nested void unknown elements are parsed', (assert) => {
+  let html = `<p>...<video />...</p>`;
+  let post = parseHTML(html, {plugins: [videoParserPlugin]});
+  let {post: expected} = Helpers.postAbstract.buildFromText(['......']);
+
+  assert.ok(didParseVideo);
+  assert.postIsSimilar(post, expected);
+});
+
+test('nested unknown elements are parsed', (assert) => {
+  let html = `<p>...<video>inner</video>...</p>`;
+  let post = parseHTML(html, {plugins: [videoParserPlugin]});
+  let {post: expected} = Helpers.postAbstract.buildFromText(['...inner...']);
+
+  assert.ok(didParseVideo);
   assert.postIsSimilar(post, expected);
 });
