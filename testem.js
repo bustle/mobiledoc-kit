@@ -1,6 +1,7 @@
 /* eslint-env node */
 module.exports = {
   "framework": "qunit",
+  "browser_start_timeout": 120,
   "test_page": "dist/tests/index.html?hidepassed",
   "src_files": [
     "tests/**/*.js",
