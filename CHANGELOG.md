@@ -1,13 +1,23 @@
+<a name="0.11.1"></a>
+## <small>0.11.1 (2018-06-21)</small>
+
+
+
+
 <a name="0.11.0"></a>
 ## 0.11.0 (2018-06-21)
 
 * Add react renderer to readme ([04e20ae](https://github.com/bustle/mobiledoc-kit/commit/04e20ae))
+* Avoid running top-level text nodes through parserPlugins twice ([9de4405](https://github.com/bustle/mobiledoc-kit/commit/9de4405))
 * Be more patient for Safari getting focus ([c82acfe](https://github.com/bustle/mobiledoc-kit/commit/c82acfe))
 * Bump yarn.lock ([215e755](https://github.com/bustle/mobiledoc-kit/commit/215e755))
+* Failing tests for #494 ([be446f6](https://github.com/bustle/mobiledoc-kit/commit/be446f6)), closes [#494](https://github.com/bustle/mobiledoc-kit/issues/494)
 * Fix error when pasting HTML that parses to a blank doc ([cd7fa1d](https://github.com/bustle/mobiledoc-kit/commit/cd7fa1d)), closes [#619](https://github.com/bustle/mobiledoc-kit/issues/619)
 * Fix sticky modifier keys for word deletion ([fce2d90](https://github.com/bustle/mobiledoc-kit/commit/fce2d90))
 * Fix typo in README.md ([1abaf40](https://github.com/bustle/mobiledoc-kit/commit/1abaf40))
+* Run parser plugins for top-level unknown elements ([daf2fe0](https://github.com/bustle/mobiledoc-kit/commit/daf2fe0))
 * Scope package.json scripts ([7111f85](https://github.com/bustle/mobiledoc-kit/commit/7111f85))
+* v0.11.0 ([79b074d](https://github.com/bustle/mobiledoc-kit/commit/79b074d))
 * chore(tests): Revert sauce connect addon (#612) ([2bcafaf](https://github.com/bustle/mobiledoc-kit/commit/2bcafaf)), closes [#612](https://github.com/bustle/mobiledoc-kit/issues/612)
 * chore(upgrade): yarn upgrade (#614) ([e363b9b](https://github.com/bustle/mobiledoc-kit/commit/e363b9b)), closes [#614](https://github.com/bustle/mobiledoc-kit/issues/614)
 * chore(upgrade): Yoran brondsema yarn upgrade (#613) ([2e79133](https://github.com/bustle/mobiledoc-kit/commit/2e79133)), closes [#613](https://github.com/bustle/mobiledoc-kit/issues/613)
