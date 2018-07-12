@@ -203,7 +203,8 @@ test('#moveWord in text (backward)', (assert) => {
     ['abc|', '|abc'],
     ['ab|c', '|abc'],
     ['|abc', '|abc'],
-    ['abc  |', '|abc']
+    ['abc  |', '|abc'],
+    ['abcdéf|', '|abcdéf']
   ];
 
   expectations.forEach(([before, after]) => {
