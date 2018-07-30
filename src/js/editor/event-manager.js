@@ -184,7 +184,7 @@ export default class EventManager {
         let unit = 'char';
         if (key.altKey && Browser.isMac()) {
           unit = 'word';
-        } else if (key.ctrlKey && Browser.isWin()) {
+        } else if (key.ctrlKey && !Browser.isMac()) {
           unit = 'word';
         }
         editor.performDelete({direction, unit});
