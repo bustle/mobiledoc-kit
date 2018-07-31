@@ -62,6 +62,40 @@ function findOffsetInSection(section, node, offset) {
   }
 }
 
+// TODO: expose as utility function, update cursor._findNodeForPosition
+function findNodeForPosition(position) {
+  let { section } = position;
+  let node, offset;
+  if (section.isCardSection) {
+    offset = 0;
+    if (position.offset === 0) {
+      node = section.renderNode.element.firstChild;
+    } else {
+      node = section.renderNode.element.lastChild;
+    }
+  } else if (section.isBlank) {
+    node = section.renderNode.cursorElement;
+    offset = 0;
+  } else {
+    let { marker, offsetInMarker } = position;
+    if (marker.isAtom) {
+      if (offsetInMarker > 0) {
+        // FIXME -- if there is a next marker, focus on it?
+        offset = 0;
+        node = marker.renderNode.tailTextNode;
+      } else {
+        offset = 0;
+        node = marker.renderNode.headTextNode;
+      }
+    } else {
+      node = marker.renderNode.element;
+      offset = offsetInMarker;
+    }
+  }
+
+  return { node, offset };
+}
+
 let Position, BlankPosition;
 
 Position = class Position {
@@ -99,6 +133,24 @@ Position = class Position {
 
     let { node, offset } = findOffsetInNode(elementFromPoint, {left: x, top: y});
     return Position.fromNode(_renderTree, node, offset);
+  }
+
+  static atStartOfLine(position, editor) {
+    let isPostBoundary = position.isHeadOfPost();
+    if (isPostBoundary) {
+      return position;
+    }
+
+    let { node, offset } = findNodeForPosition(position);
+
+    let range = document.createRange();
+    range.setStart(node, offset);
+    range.setEnd(node, offset);
+
+    let { y, height } = range.getBoundingClientRect();
+    let { left } = position.section.renderNode.element.getBoundingClientRect();
+
+    return Position.atPoint(left, y + height / 2, editor);
   }
 
   static blankPosition() {
