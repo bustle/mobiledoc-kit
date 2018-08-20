@@ -1,6 +1,7 @@
 import { endsWith } from 'mobiledoc-kit/utils/string-utils';
 import assert from 'mobiledoc-kit/utils/assert';
 import deprecate from 'mobiledoc-kit/utils/deprecate';
+import { ENTER } from 'mobiledoc-kit/utils/characters';
 
 class TextInputHandler {
   constructor(editor) {
@@ -24,6 +25,7 @@ class TextInputHandler {
 
   handle(string) {
     let { editor } = this;
+
     editor.insertText(string);
 
     let matchedHandler = this._findHandler();
@@ -33,9 +35,19 @@ class TextInputHandler {
     }
   }
 
-  _findHandler() {
+  handleNewLine() {
+    let { editor } = this;
+
+    let matchedHandler = this._findHandler(ENTER);
+    if (matchedHandler) {
+      let [ handler, matches ] = matchedHandler;
+      handler.run(editor, matches);
+    }
+  }
+
+  _findHandler(string = "") {
     let { editor: { range: { head, head: { section } } } } = this;
-    let preText = section.textUntil(head);
+    let preText = section.textUntil(head) + string;
 
     for (let i=0; i < this._handlers.length; i++) {
       let handler = this._handlers[i];
