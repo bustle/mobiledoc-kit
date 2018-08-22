@@ -222,6 +222,7 @@ class Post {
         );
       } else {
         newSection = section.clone();
+        sectionParent = post;
       }
       if (sectionParent) {
         sectionParent.sections.append(newSection);

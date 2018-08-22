@@ -299,6 +299,46 @@ test('copy-paste can copy list sections', (assert) => {
   assert.hasElement($('#editor ul:eq(0) li:contains(list)'));
 });
 
+test('copy-paste can copy card following list section', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker, listSection, listItem, cardSection}) => {
+      return post([
+        markupSection('p', [marker('abc')]),
+        listSection('ul', [
+          listItem([marker('list')])
+        ]),
+        cardSection('test-card', {foo: 'bar'}),
+        markupSection('p', [marker('123')])
+      ]);
+    });
+  let cards = [{
+    name: 'test-card',
+    type: 'dom',
+    render({ payload }) {
+      return $(`<div class='${payload.foo}'>${payload.foo}</div>`)[0];
+    }
+  }];
+  editor = new Editor({mobiledoc, cards});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor .bar', 'precond - renders card');
+
+  Helpers.dom.selectText(editor, 'c', editor.element, '3', editor.element);
+
+  Helpers.dom.triggerCopyEvent(editor);
+
+  let textNode = $('#editor p')[1].childNodes[0];
+  assert.equal(textNode.textContent, '123', 'precond - correct textNode');
+
+  Helpers.dom.moveCursorTo(editor, textNode, 3); // end of node
+  Helpers.dom.triggerPasteEvent(editor);
+
+  assert.equal($('#editor ul').length, 2, 'pastes the list');
+  assert.hasElement('#editor ul:eq(1) li:contains(list)');
+
+  assert.equal($('#editor .bar').length, 2, 'renders a second card');
+});
+
 test('copy sets html & text for pasting externally', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
