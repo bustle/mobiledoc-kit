@@ -1,7 +1,7 @@
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
-import { TAB } from 'mobiledoc-kit/utils/characters';
+import { TAB, ENTER } from 'mobiledoc-kit/utils/characters';
 import { MODIFIERS }  from 'mobiledoc-kit/utils/key';
 
 const { module, test } = Helpers;
@@ -297,6 +297,23 @@ test('input handler can be triggered by TAB', (assert) => {
   });
 
   Helpers.dom.insertText(editor, TAB);
+
+  assert.ok(didMatch);
+});
+
+test('input handler can be triggered by ENTER', (assert) => {
+  editor = Helpers.editor.buildFromText('abc|', {element: editorElement});
+
+  let didMatch;
+  editor.onTextInput({
+    name: 'test',
+    match: /abc\n/,
+    run() {
+      didMatch = true;
+    }
+  });
+
+  Helpers.dom.insertText(editor, ENTER);
 
   assert.ok(didMatch);
 });

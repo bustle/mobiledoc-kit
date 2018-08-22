@@ -192,6 +192,7 @@ export default class EventManager {
         break;
       }
       case key.isEnter():
+        this._textInputHandler.handleNewLine();
         editor.handleNewline(event);
         break;
       case key.isTab():
