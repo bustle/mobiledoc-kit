@@ -333,12 +333,34 @@ editor.onTextInput({
   }
 });
 ```
+
 The editor has several default text input handlers that are defined in
 `src/js/editor/text-input-handlers.js`.
 
-To remove default text input handlers, simply call the unregister function.
+To remove default text input handlers call the unregister function.
+
 ```javascript
 editor.unregisterAllTextInputHandlers();
+```
+
+#### `\n` special-case match character
+
+When writing a matching string it is common to use `\s` at the end of a match
+regex, thus triggering the handler for a given string when the users presses
+the space or tab key.
+
+When the enter key is pressed no actual characters are added to a document.
+Instead a new section is created following the current section. Despite this,
+you may use `\n` in a match regex to capture moments when the enter key is
+pressed. For example if you wanted to process a URL for auto-linking you
+might want to process the string on both the space key and when the user hits
+enter.
+
+Since `\s` is a superset of `\n`, that makes the following regex a valid match
+for a hand-typed URL after the user presses space or enter:
+
+```regex
+/\b(https?:\/\/[^\s]+)\s$/
 ```
 
 ### DOM Parsing hooks
