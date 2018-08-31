@@ -98,7 +98,7 @@ Cards have a name and arbitrary payload.
   cards: [
     [cardName, cardPayload],            ──── Card
     ['image', {                         ──── Example 'image' card
-      src: 'http://google.com/logo.png'
+      'src': 'http://google.com/logo.png'
     }]
   ]
 }
