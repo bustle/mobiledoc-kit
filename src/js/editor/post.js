@@ -401,7 +401,16 @@ class PostEditor {
       this.toggleSection('p', position);
       return this._range.head;
     } else {
-      let prevPosition = unit === 'word' ? position.moveWord(BACKWARD) : position.move(BACKWARD);
+      let prevPosition;
+
+      if (unit === 'word') {
+        prevPosition = position.moveWord(BACKWARD);
+      } else if (unit === 'line') {
+        prevPosition = Position.atStartOfLine(position, this.editor);
+      } else {
+        prevPosition = position.move(BACKWARD);
+      }
+
       let range = prevPosition.toRange(position);
       return this.deleteRange(range);
     }

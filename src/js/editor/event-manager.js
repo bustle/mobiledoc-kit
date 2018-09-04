@@ -184,6 +184,8 @@ export default class EventManager {
         let unit = 'char';
         if (key.altKey && Browser.isMac()) {
           unit = 'word';
+        } else if (key.metaKey && Browser.isMac()) {
+          unit = 'line';
         } else if (key.ctrlKey && Browser.isWin()) {
           unit = 'word';
         }
