@@ -16,6 +16,7 @@ import {
   normalizeTagName
 } from '../utils/dom-utils';
 import {
+  contains,
   detect,
   forEach
 } from '../utils/array-utils';
@@ -24,6 +25,7 @@ import { ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
 
 import SectionParser from 'mobiledoc-kit/parsers/section';
 import Markup from 'mobiledoc-kit/models/markup';
+import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section';
 
 const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/;
 
@@ -89,6 +91,25 @@ function walkMarkerableNodes(parent, callback) {
   }
 }
 
+function walkSectionNodes(parent, callback) {
+  var currentNode = parent;
+
+  // If we found a text node, we went too far
+  if (isTextNode(currentNode)) {
+    callback(currentNode.parentNode);
+  } else if (isElementNode(currentNode) &&
+    contains(VALID_MARKUP_SECTION_TAGNAMES, currentNode.tagName)
+  ) {
+    callback(currentNode);
+  } else {
+    currentNode = currentNode.firstChild;
+    while (currentNode) {
+      walkSectionNodes(currentNode, callback);
+      currentNode = currentNode.nextSibling;
+    }
+  }
+}
+
 /**
  * Parses DOM element -> Post
  * @private
@@ -103,7 +124,7 @@ class DOMParser {
     const post = this.builder.createPost();
     let rootElement = detectRootElement(element);
 
-    this._eachChildNode(rootElement, child => {
+    walkSectionNodes(rootElement, child => {
       let sections = this.parseSections(child);
       this.appendSections(post, sections);
     });
