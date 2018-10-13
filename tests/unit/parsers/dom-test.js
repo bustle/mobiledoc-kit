@@ -66,7 +66,10 @@ let expectations = [
   ['<ul><li>first element</li><li><ul><li>nested element</li></ul></li></ul>', ['* first element', '* nested element']],
 
   // See https://github.com/bustle/mobiledoc-kit/issues/333
-  ['abc\ndef', ['abc def']]
+  ['abc\ndef', ['abc def']],
+
+  // See https://github.com/bustle/mobiledoc-kit/issues/648
+  ['<div><p>first</p><p>second</p></div>', ['first', 'second']]
 ];
 
 expectations.forEach(([html, dslText]) => {
