@@ -103,9 +103,14 @@ function walkMarkerableNodes(parent, callback) {
 function walkSectionNodes(parent, callback) {
   var currentNode = parent;
 
-  // If we found a text node, we went too far
   if (isTextNode(currentNode)) {
+    // If we found a text node with no siblings, we probably went too far
+    if (currentNode.parentNode.childNodes.length === 1) {
     callback(currentNode.parentNode);
+    } else {
+      callback(currentNode);
+    }
+
   // If we find a valid section, callback
   } else if (isValidSection(currentNode)) {
     callback(currentNode);
