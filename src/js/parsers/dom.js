@@ -25,7 +25,11 @@ import { ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
 
 import SectionParser from 'mobiledoc-kit/parsers/section';
 import Markup from 'mobiledoc-kit/models/markup';
+import { VALID_LIST_SECTION_TAGNAMES } from 'mobiledoc-kit/models/list-section';
 import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section';
+import { VALID_MARKUP_TAGNAMES } from 'mobiledoc-kit/models/markup';
+
+const VALID_TAGNAMES = [].concat(VALID_LIST_SECTION_TAGNAMES, VALID_MARKUP_SECTION_TAGNAMES, VALID_MARKUP_TAGNAMES);
 
 const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/;
 
@@ -47,7 +51,7 @@ function isGoogleDocsContainer(element) {
 
 function isValidSection(element) {
   return isElementNode(element) &&
-    contains(VALID_MARKUP_SECTION_TAGNAMES, normalizeTagName(element.tagName));
+    contains(VALID_TAGNAMES, normalizeTagName(element.tagName));
 }
 
 function detectRootElement(element) {
