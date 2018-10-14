@@ -45,6 +45,11 @@ function isGoogleDocsContainer(element) {
          GOOGLE_DOCS_CONTAINER_ID_REGEX.test(element.id);
 }
 
+function isValidSection(element) {
+  return isElementNode(element) &&
+    contains(VALID_MARKUP_SECTION_TAGNAMES, normalizeTagName(element.tagName));
+}
+
 function detectRootElement(element) {
   let childNodes = element.childNodes || [];
   let googleDocsContainer = detect(childNodes, isGoogleDocsContainer);
@@ -97,10 +102,10 @@ function walkSectionNodes(parent, callback) {
   // If we found a text node, we went too far
   if (isTextNode(currentNode)) {
     callback(currentNode.parentNode);
-  } else if (isElementNode(currentNode) &&
-    contains(VALID_MARKUP_SECTION_TAGNAMES, currentNode.tagName)
-  ) {
+  // If we find a valid section, callback
+  } else if (isValidSection(currentNode)) {
     callback(currentNode);
+  // Otherwise, look at the next available node
   } else {
     currentNode = currentNode.firstChild;
     while (currentNode) {
