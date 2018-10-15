@@ -116,6 +116,9 @@ function walkSectionNodes(parent, callback) {
     callback(currentNode);
   // Otherwise, look at the next available node
   } else {
+    if (!currentNode.firstChild) {
+      callback(currentNode);
+    }
     currentNode = currentNode.firstChild;
     while (currentNode) {
       walkSectionNodes(currentNode, callback);
