@@ -69,7 +69,10 @@ let expectations = [
   ['abc\ndef', ['abc def']],
 
   // See https://github.com/bustle/mobiledoc-kit/issues/648
-  ['<div><p>first</p><p>second</p></div>', ['first', 'second']]
+  ['<div><p>first</p><p>second</p></div>', ['first', 'second']],
+  ['<div><div><p>first</p><p>second</p></div></div>', ['first', 'second']],
+  ['<div><div><p>first</p></div><p>second</p></div>', ['first', 'second']],
+  ['<div><p>first</p><div><p>second</p></div></div>', ['first', 'second']]
 ];
 
 expectations.forEach(([html, dslText]) => {
