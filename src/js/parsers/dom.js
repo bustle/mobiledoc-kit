@@ -27,9 +27,8 @@ import SectionParser from 'mobiledoc-kit/parsers/section';
 import Markup from 'mobiledoc-kit/models/markup';
 import { VALID_LIST_SECTION_TAGNAMES } from 'mobiledoc-kit/models/list-section';
 import { VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section';
-import { VALID_MARKUP_TAGNAMES } from 'mobiledoc-kit/models/markup';
 
-const VALID_TAGNAMES = [].concat(VALID_LIST_SECTION_TAGNAMES, VALID_MARKUP_SECTION_TAGNAMES, VALID_MARKUP_TAGNAMES);
+const VALID_TAGNAMES = [].concat(VALID_LIST_SECTION_TAGNAMES, VALID_MARKUP_SECTION_TAGNAMES);
 
 const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/;
 
