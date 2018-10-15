@@ -50,7 +50,9 @@ function isGoogleDocsContainer(element) {
 
 function isValidSection(element) {
   return isElementNode(element) &&
-    contains(VALID_TAGNAMES, normalizeTagName(element.tagName));
+    contains(VALID_TAGNAMES, normalizeTagName(element.tagName)) &&
+    // We should never treat a Google Docs container as a section
+    !isGoogleDocsContainer(element);
 }
 
 function detectRootElement(element) {
