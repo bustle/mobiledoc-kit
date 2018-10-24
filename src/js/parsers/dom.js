@@ -16,6 +16,7 @@ import {
   normalizeTagName
 } from '../utils/dom-utils';
 import {
+  contains,
   detect,
   forEach
 } from '../utils/array-utils';
@@ -43,15 +44,34 @@ function isGoogleDocsContainer(element) {
          GOOGLE_DOCS_CONTAINER_ID_REGEX.test(element.id);
 }
 
+function isWrapperElement(element) {
+  return !isTextNode(element) &&
+    !isCommentNode(element) &&
+    contains([normalizeTagName('div'), normalizeTagName('section')], normalizeTagName(element.tagName));
+}
+
+function skipRootWrapperElements(element) {
+  let childNodes = element.childNodes || [];
+
+  if (
+    childNodes.length === 1 &&
+    isWrapperElement(element.firstChild)
+  ) {
+    return skipRootWrapperElements(element.firstChild);
+  }
+
+  return element;
+}
+
 function detectRootElement(element) {
   let childNodes = element.childNodes || [];
   let googleDocsContainer = detect(childNodes, isGoogleDocsContainer);
 
   if (googleDocsContainer) {
     return googleDocsContainer;
-  } else {
-    return element;
   }
+
+  return skipRootWrapperElements(element);
 }
 
 const TAG_REMAPPING = {
