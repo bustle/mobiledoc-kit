@@ -50,19 +50,6 @@ function isWrapperElement(element) {
     contains([normalizeTagName('div'), normalizeTagName('section')], normalizeTagName(element.tagName));
 }
 
-function skipRootWrapperElements(element) {
-  let childNodes = element.childNodes || [];
-
-  if (
-    childNodes.length === 1 &&
-    isWrapperElement(element.firstChild)
-  ) {
-    return skipRootWrapperElements(element.firstChild);
-  }
-
-  return element;
-}
-
 function detectRootElement(element) {
   let childNodes = element.childNodes || [];
   let googleDocsContainer = detect(childNodes, isGoogleDocsContainer);
@@ -71,7 +58,7 @@ function detectRootElement(element) {
     return googleDocsContainer;
   }
 
-  return skipRootWrapperElements(element);
+  return element;
 }
 
 const TAG_REMAPPING = {
@@ -123,10 +110,7 @@ class DOMParser {
     const post = this.builder.createPost();
     let rootElement = detectRootElement(element);
 
-    this._eachChildNode(rootElement, child => {
-      let sections = this.parseSections(child);
-      this.appendSections(post, sections);
-    });
+    this._parseChildNodes(rootElement, post);
 
     return post;
   }
@@ -151,9 +135,17 @@ class DOMParser {
     }
   }
 
-  _eachChildNode(element, callback) {
-    let nodes = isTextNode(element) ? [element] : element.childNodes;
-    forEach(nodes, node => callback(node));
+  _parseChildNodes(element, post) {
+    let childNodes = isTextNode(element) ? [element] : element.childNodes;
+
+    forEach(childNodes, child => {
+      if (isWrapperElement(child)) {
+        this._parseChildNodes(child, post);
+      } else {
+        let sections = this.parseSections(child);
+        this.appendSections(post, sections);
+      }
+    });
   }
 
   parseSections(element) {
