@@ -1,6 +1,22 @@
+<a name="0.11.1-ghost.4"></a>
+## <small>0.11.1-ghost.4 (2018-11-19)</small>
+
+* add failing test for #642 ([18d53a1](https://github.com/bustle/mobiledoc-kit/commit/18d53a1)), closes [#642](https://github.com/bustle/mobiledoc-kit/issues/642)
+* Add some docs re: the newline in matchers ([7e11dfd](https://github.com/bustle/mobiledoc-kit/commit/7e11dfd))
+* Changed module scope to @tryghost ([8f94b80](https://github.com/bustle/mobiledoc-kit/commit/8f94b80))
+* Fix json format issue in card description ([f095bb6](https://github.com/bustle/mobiledoc-kit/commit/f095bb6))
+* Fix website typo (#652) ([1f115a0](https://github.com/bustle/mobiledoc-kit/commit/1f115a0)), closes [#652](https://github.com/bustle/mobiledoc-kit/issues/652)
+* Fixed copy/paste of card section following a list section ([5a171e1](https://github.com/bustle/mobiledoc-kit/commit/5a171e1))
+* Fixed Ctrl+Backspace word delete on Linux ([c523c92](https://github.com/bustle/mobiledoc-kit/commit/c523c92)), closes [#634](https://github.com/bustle/mobiledoc-kit/issues/634)
+* Fixed word movements stopping on accented/non-latin chars ([a192cdb](https://github.com/bustle/mobiledoc-kit/commit/a192cdb)), closes [#628](https://github.com/bustle/mobiledoc-kit/issues/628)
+* trigger handlers without inserting newline ([71c438c](https://github.com/bustle/mobiledoc-kit/commit/71c438c))
+
+
+
 <a name="0.11.1"></a>
 ## <small>0.11.1 (2018-06-21)</small>
 
+* v0.11.1 ([9cbb2ba](https://github.com/bustle/mobiledoc-kit/commit/9cbb2ba))
 
 
 
@@ -13,6 +29,7 @@
 * Bump yarn.lock ([215e755](https://github.com/bustle/mobiledoc-kit/commit/215e755))
 * Failing tests for #494 ([be446f6](https://github.com/bustle/mobiledoc-kit/commit/be446f6)), closes [#494](https://github.com/bustle/mobiledoc-kit/issues/494)
 * Fix error when pasting HTML that parses to a blank doc ([cd7fa1d](https://github.com/bustle/mobiledoc-kit/commit/cd7fa1d)), closes [#619](https://github.com/bustle/mobiledoc-kit/issues/619)
+* Fix issue #592 ([d318a2b](https://github.com/bustle/mobiledoc-kit/commit/d318a2b)), closes [#592](https://github.com/bustle/mobiledoc-kit/issues/592)
 * Fix sticky modifier keys for word deletion ([fce2d90](https://github.com/bustle/mobiledoc-kit/commit/fce2d90))
 * Fix typo in README.md ([1abaf40](https://github.com/bustle/mobiledoc-kit/commit/1abaf40))
 * Run parser plugins for top-level unknown elements ([daf2fe0](https://github.com/bustle/mobiledoc-kit/commit/daf2fe0))
