@@ -225,35 +225,6 @@ test("#parse handles multiple headers in list item", assert => {
 });
 
 // see https://github.com/bustle/mobiledoc-kit/issues/656
-//
-// this is a minimal example of markup that was causing errors when copy/pasting
-// from Medium. The original markup stucture that was pasted looked something like this:
-//
-// <section>
-//   <div>
-//     <div>
-//       <h4>title</h4>
-//       <ul><li>one - one</li></ul>
-//       <figure><img /></figure>
-//       <ul><li>two - one</li></ul>
-//     </div>
-//   </div>
-// </section>
-// <section>
-//   <div><hr /></div>
-//   <div><div><br /></div></div>
-// </section>
-//
-// NOTE: because DOMParser passes each top-level element to SectionParser rather
-// than passing the leaf-most section with content, the SectionParser needs to
-// deal with nested wrapper elements (section->div->div->[h4,ul,figure,ul])
-//
-// the error being thrown was
-// ---
-// Uncaught TypeError: Cannot read property 'append' of undefined
-// at SectionParser._createMarker
-// ---
-// the line in question was `state.section.markers.append(marker);`
 test('#parse handles list following node handled by parserPlugin', (assert) => {
   let container = buildDOM(`
     <div><img src="https://placehold.it/100x100"><ul><li>LI One</li></ul></div>
@@ -281,6 +252,19 @@ test('#parse handles list following node handled by parserPlugin', (assert) => {
 
   let listSection = sections[1];
   assert.equal(listSection.type, 'list-section');
+  assert.equal(listSection.items.length, 1, '1 list item');
+});
+
+test('#parse avoids empty paragraph around wrapped list', (assert) => {
+  let container = buildDOM(`
+    <div><ul><li>One</li></ul></div>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1, 'single list section');
 });
 
 test('#parse skips STYLE nodes', (assert) => {
