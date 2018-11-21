@@ -173,6 +173,65 @@ test('#parse only runs text nodes through parserPlugins once', (assert) => {
   assert.equal(pluginRunCount, 1);
 });
 
+// see https://github.com/bustle/mobiledoc-kit/issues/656
+//
+// this is a minimal example of markup that was causing errors when copy/pasting
+// from Medium. The original markup stucture that was pasted looked something like this:
+//
+// <section>
+//   <div>
+//     <div>
+//       <h4>title</h4>
+//       <ul><li>one - one</li></ul>
+//       <figure><img /></figure>
+//       <ul><li>two - one</li></ul>
+//     </div>
+//   </div>
+// </section>
+// <section>
+//   <div><hr /></div>
+//   <div><div><br /></div></div>
+// </section>
+//
+// NOTE: because DOMParser passes each top-level element to SectionParser rather
+// than passing the leaf-most section with content, the SectionParser needs to
+// deal with nested wrapper elements (section->div->div->[h4,ul,figure,ul])
+//
+// the error being thrown was
+// ---
+// Uncaught TypeError: Cannot read property 'append' of undefined
+// at SectionParser._createMarker
+// ---
+// the line in question was `state.section.markers.append(marker);`
+test('#parse handles list following node handled by parserPlugin', (assert) => {
+  let container = buildDOM(`
+    <div><img src="https://placehold.it/100x100"><ul><li>LI One</li></ul></div>
+  `);
+
+  let element = container.firstChild;
+  let plugins = [function(element, builder, {addSection, nodeFinished}) {
+    if (element.tagName !== 'IMG') {
+      return;
+    }
+    let payload = {url: element.src};
+    let cardSection = builder.createCardSection('test-image', payload);
+    addSection(cardSection);
+    nodeFinished();
+  }];
+
+  parser = new SectionParser(builder, { plugins });
+  const sections = parser.parse(element);
+
+  assert.equal(sections.length, 2, '2 sections');
+
+  let cardSection = sections[0];
+  assert.equal(cardSection.name, 'test-image');
+  assert.deepEqual(cardSection.payload, {url: 'https://placehold.it/100x100'});
+
+  let listSection = sections[1];
+  assert.equal(listSection.type, 'list-section');
+});
+
 test('#parse skips STYLE nodes', (assert) => {
   let element = buildDOM(`
     <style>.rule { font-color: red; }</style>
