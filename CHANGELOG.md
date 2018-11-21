@@ -1,3 +1,13 @@
+<a name="0.11.1-ghost.5"></a>
+## <small>0.11.1-ghost.5 (2018-11-21)</small>
+
+* add nested structure tests from #654 ([8b1d241](https://github.com/bustle/mobiledoc-kit/commit/8b1d241)), closes [#654](https://github.com/bustle/mobiledoc-kit/issues/654)
+* failing test for #656 ([db7f5c8](https://github.com/bustle/mobiledoc-kit/commit/db7f5c8)), closes [#656](https://github.com/bustle/mobiledoc-kit/issues/656) [#656](https://github.com/bustle/mobiledoc-kit/issues/656)
+* handle nested section-creating elements correctly in SectionParser ([d235c52](https://github.com/bustle/mobiledoc-kit/commit/d235c52))
+* Revert "Fix issue #592" ([62da2b7](https://github.com/bustle/mobiledoc-kit/commit/62da2b7)), closes [#592](https://github.com/bustle/mobiledoc-kit/issues/592)
+
+
+
 <a name="0.11.1-ghost.4"></a>
 ## <small>0.11.1-ghost.4 (2018-11-19)</small>
 
@@ -10,6 +20,7 @@
 * Fixed Ctrl+Backspace word delete on Linux ([c523c92](https://github.com/bustle/mobiledoc-kit/commit/c523c92)), closes [#634](https://github.com/bustle/mobiledoc-kit/issues/634)
 * Fixed word movements stopping on accented/non-latin chars ([a192cdb](https://github.com/bustle/mobiledoc-kit/commit/a192cdb)), closes [#628](https://github.com/bustle/mobiledoc-kit/issues/628)
 * trigger handlers without inserting newline ([71c438c](https://github.com/bustle/mobiledoc-kit/commit/71c438c))
+* v0.11.1-ghost.4 ([44da14c](https://github.com/bustle/mobiledoc-kit/commit/44da14c))
 
 
 
