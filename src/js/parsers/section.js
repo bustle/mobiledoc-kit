@@ -109,7 +109,13 @@ class SectionParser {
     let isNodeFinished = false;
     let env = {
       addSection: (section) => {
-        this._closeCurrentSection();
+        // avoid creating empty paragraphs due to wrappers elements around
+        // parser-plugin-handled elements
+        if (this.state.section.isMarkerable && !this.state.text) {
+          this.state.section = null;
+        } else {
+          this._closeCurrentSection();
+        }
         this.sections.push(section);
       },
       addMarkerable: (marker) => {
@@ -146,6 +152,28 @@ class SectionParser {
     let nodeFinished = this.runPlugins(node);
     if (nodeFinished) {
       return;
+    }
+
+    // handle closing the current section and starting a new one if we hit a
+    // new-section-creating element. Skip if we're currently in a list-item
+    // section so that nested lists can be combined
+    if (this.state.section && !this.state.section.isListItem && !isTextNode(node) && node.tagName) {
+      // handle lists nested inside wrappers
+      if (this.state.section.isListSection) {
+        this.parseListItems(node.childNodes);
+        return;
+      }
+
+      let tagName = normalizeTagName(node.tagName);
+      if (contains(VALID_MARKUP_SECTION_TAGNAMES, tagName) || contains(VALID_LIST_SECTION_TAGNAMES, tagName)) {
+        this._closeCurrentSection();
+        this._updateStateFromElement(node);
+
+        if (this.state.section.isListSection) {
+          this.parseListItems(node.childNodes);
+          return;
+        }
+      }
     }
 
     switch (node.nodeType) {
