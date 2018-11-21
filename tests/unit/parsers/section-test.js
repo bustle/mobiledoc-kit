@@ -230,6 +230,7 @@ test('#parse handles list following node handled by parserPlugin', (assert) => {
 
   let listSection = sections[1];
   assert.equal(listSection.type, 'list-section');
+  assert.equal(listSection.items.length, 1, '1 list item');
 });
 
 test('#parse skips STYLE nodes', (assert) => {
