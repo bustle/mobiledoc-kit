@@ -267,6 +267,26 @@ test('#parse avoids empty paragraph around wrapped list', (assert) => {
   assert.equal(sections.length, 1, 'single list section');
 });
 
+test('#parse handles grouping nested lists', (assert) => {
+  let container = buildDOM(`
+    <div><ul><li>Outer-One<ul><li>Inner-Two</li><li>Inner-Three</li></ul></li><li>Outer-Four</li></ul></div>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1, 'single list section');
+
+  let list = sections[0];
+  assert.equal(list.type, 'list-section');
+  assert.equal(list.items.length, 4, '4 list items');
+  assert.equal(list.items.objectAt(0).text, 'Outer-One');
+  assert.equal(list.items.objectAt(1).text, 'Inner-Two');
+  assert.equal(list.items.objectAt(2).text, 'Inner-Three');
+  assert.equal(list.items.objectAt(3).text, 'Outer-Four');
+});
+
 test('#parse skips STYLE nodes', (assert) => {
   let element = buildDOM(`
     <style>.rule { font-color: red; }</style>
