@@ -173,6 +173,57 @@ test('#parse only runs text nodes through parserPlugins once', (assert) => {
   assert.equal(pluginRunCount, 1);
 });
 
+test("#parse handles single paragraph in list item", assert => {
+  let container = buildDOM(`
+    <ul><li><p>One</p></li>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1, "single list section");
+
+  let list = sections[0];
+  assert.equal(list.type, "list-section");
+  assert.equal(list.items.length, 1, "1 list item");
+  assert.equal(list.items.objectAt(0).text, "One");
+});
+
+test("#parse handles multiple paragraphs in list item", assert => {
+  let container = buildDOM(`
+    <ul><li><p>One</p><p>Two</p></li>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1, "single list section");
+
+  let list = sections[0];
+  assert.equal(list.type, "list-section");
+  assert.equal(list.items.length, 1, "1 list item");
+  assert.equal(list.items.objectAt(0).text, "OneTwo");
+});
+
+test("#parse handles multiple headers in list item", assert => {
+  let container = buildDOM(`
+    <ul><li><h1>One</h1><h2>Two</h2></li>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1, "single list section");
+
+  let list = sections[0];
+  assert.equal(list.type, "list-section");
+  assert.equal(list.items.length, 1, "1 list item");
+  assert.equal(list.items.objectAt(0).text, "OneTwo");
+});
+
 test('#parse skips STYLE nodes', (assert) => {
   let element = buildDOM(`
     <style>.rule { font-color: red; }</style>
