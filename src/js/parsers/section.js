@@ -80,29 +80,14 @@ class SectionParser {
     if (!finished) {
       let childNodes = isTextNode(element) ? [element] : element.childNodes;
 
-      if (this.state.section.isListSection) {
-        this.parseListItems(childNodes);
-      } else {
-        forEach(childNodes, el => {
-          this.parseNode(el);
-        });
-      }
+      forEach(childNodes, el => {
+        this.parseNode(el);
+      });
     }
 
     this._closeCurrentSection();
 
     return this.sections;
-  }
-
-  parseListItems(childNodes) {
-    let { state } = this;
-    forEach(childNodes, el => {
-      let parsed = new this.constructor(this.builder).parse(el);
-      let li = parsed[0];
-      if (li && li.isListItem) {
-        state.section.items.append(li);
-      }
-    });
   }
 
   runPlugins(node) {
@@ -155,29 +140,44 @@ class SectionParser {
     }
 
     // handle closing the current section and starting a new one if we hit a
-    // new-section-creating element
-    if (this.state.section && !this.state.section.isListItem && !isTextNode(node) && node.tagName) {
-      // handle lists nested inside wrappers
-      if (this.state.section.isListSection) {
-        this.parseListItems(node.childNodes);
-        return;
-      }
-
+    // new-section-creating element.
+    if (this.state.section && !isTextNode(node) && node.tagName) {
       let tagName = normalizeTagName(node.tagName);
-      if (contains(VALID_MARKUP_SECTION_TAGNAMES, tagName) || contains(VALID_LIST_SECTION_TAGNAMES, tagName)) {
-        // avoid creating empty paragraphs due to wrappers elements around
+      let isNestedListSection = contains(VALID_LIST_SECTION_TAGNAMES, tagName)
+        && this.state.section.isListItem;
+
+      if (
+        contains(VALID_MARKUP_SECTION_TAGNAMES, tagName) ||
+        (contains(VALID_LIST_SECTION_TAGNAMES, tagName) && !isNestedListSection) ||
+        contains(VALID_LIST_ITEM_TAGNAMES, tagName)
+      ) {
+        // don't break out of the list for list items that contain a single <p>.
+        // deals with typical case of <li><p>Text</p></li><li><p>Text</p></li>
+        if (this.state.section.isListItem && tagName === 'p' && !node.nextSibling) {
+          this.parseElementNode(node);
+          return;
+        }
+
+        // avoid creating empty paragraphs due to wrapper elements around
         // section-creating elements
         if (this.state.section.isMarkerable && !this.state.text) {
           this.state.section = null;
         } else {
           this._closeCurrentSection();
         }
-        this._updateStateFromElement(node);
 
-        if (this.state.section.isListSection) {
-          this.parseListItems(node.childNodes);
-          return;
-        }
+        this._updateStateFromElement(node);
+      }
+
+      if (this.state.section.isListSection) {
+        // ensure the list section is closed and added to the sections list.
+        // _closeCurrentSection handles pushing list items onto the list section
+        this._closeCurrentSection();
+
+        forEach(node.childNodes, (node) => {
+          this.parseNode(node);
+        });
+        return;
       }
     }
 
@@ -227,6 +227,7 @@ class SectionParser {
 
   _closeCurrentSection() {
     let { sections, state } = this;
+    let lastSection = sections[sections.length - 1];
 
     if (!state.section) {
       return;
@@ -237,7 +238,18 @@ class SectionParser {
       this._createMarker();
     }
 
-    sections.push(state.section);
+    // push listItems onto the listSection or add a new section
+    if (state.section.isListItem && lastSection && lastSection.isListSection) {
+      lastSection.items.append(state.section);
+    } else {
+      // remove empty list sections before creating a new section
+      if (lastSection && lastSection.isListSection && lastSection.items.length === 0) {
+        sections.pop();
+      }
+
+      sections.push(state.section);
+    }
+
     state.section = null;
   }
 

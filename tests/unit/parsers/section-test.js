@@ -199,12 +199,14 @@ test("#parse handles multiple paragraphs in list item", assert => {
   parser = new SectionParser(builder);
   let sections = parser.parse(element);
 
-  assert.equal(sections.length, 1, "single list section");
+  assert.equal(sections.length, 2, '2 sections');
 
-  let list = sections[0];
-  assert.equal(list.type, "list-section");
-  assert.equal(list.items.length, 1, "1 list item");
-  assert.equal(list.items.objectAt(0).text, "OneTwo");
+  let p1 = sections[0];
+  assert.equal(p1.type, 'markup-section', 'first section type');
+  assert.equal(p1.text, 'One');
+  let p2 = sections[1];
+  assert.equal(p2.type, "markup-section", "second section type");
+  assert.equal(p2.text, "Two");
 });
 
 test("#parse handles multiple headers in list item", assert => {
@@ -216,12 +218,16 @@ test("#parse handles multiple headers in list item", assert => {
   parser = new SectionParser(builder);
   let sections = parser.parse(element);
 
-  assert.equal(sections.length, 1, "single list section");
+  assert.equal(sections.length, 2, '2 sections');
 
-  let list = sections[0];
-  assert.equal(list.type, "list-section");
-  assert.equal(list.items.length, 1, "1 list item");
-  assert.equal(list.items.objectAt(0).text, "OneTwo");
+  let h1 = sections[0];
+  assert.equal(h1.type, 'markup-section', 'first section type');
+  assert.equal(h1.text, 'One');
+  assert.equal(h1.tagName, 'h1');
+  let h2 = sections[1];
+  assert.equal(h2.type, 'markup-section', 'second section type');
+  assert.equal(h2.text, 'Two');
+  assert.equal(h2.tagName, 'h2');
 });
 
 // see https://github.com/bustle/mobiledoc-kit/issues/656
