@@ -166,6 +166,11 @@ export default class EventManager {
     let range = editor.range;
 
     switch(true) {
+      case key.isIME(): {
+        // For IME（eg. typing in Japanese or Korean), we want to ignore all keydowns,
+        // especially ENTER, DELETE, and TAB, which all have special behaviors in the IME popover.
+        break;
+      }
       // FIXME This should be restricted to only card/atom boundaries
       case key.isHorizontalArrowWithoutModifiersOtherThanShift(): {
         let newRange;

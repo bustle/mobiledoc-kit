@@ -183,3 +183,18 @@ test('prevent handling newline', (assert) => {
   Helpers.dom.insertText(editor, ENTER);
   assert.postIsSimilar(editor.post, expected);
 });
+
+// These keys have meaning with the IME window so should be ignored.
+const IGNORED_IME_KEYS = [ 'Enter', 'Tab', 'ArrowLeft', 'ArrowRight', ' ', 'Backspace'];
+
+IGNORED_IME_KEYS.forEach(function(key) {
+  test(`pressing "${key}" in Input Method Editor (IME) is ignored`, (assert) => {
+    editor = Helpers.editor.buildFromText('hi|hey', {element: editorElement});
+
+    assert.hasElement('#editor p:contains(hihey)');
+
+    Helpers.dom.triggerImeKeyDown(editor, key);
+    let {post: expected} = Helpers.postAbstract.buildFromText(['hi|hey']);
+    assert.postIsSimilar(editor.post, expected, 'correctly encoded');
+  });
+});

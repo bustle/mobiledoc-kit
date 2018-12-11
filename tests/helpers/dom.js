@@ -176,6 +176,12 @@ function triggerEnter(editor) {
   _triggerEditorEvent(editor, event);
 }
 
+function triggerImeKeyDown(editor, key) {
+  assertEditor(editor);
+  let event = createMockEvent('keydown', editor.element, { key, keyCode: KEY_CODES.IME});
+  _triggerEditorEvent(editor, event);
+}
+
 // keyCodes and charCodes are similar but not the same.
 function keyCodeForChar(letter) {
   let keyCode;
@@ -391,6 +397,7 @@ const DOMHelper = {
   triggerDelete,
   triggerForwardDelete,
   triggerEnter,
+  triggerImeKeyDown,
   insertText,
   triggerKeyEvent,
   triggerKeyCommand,
