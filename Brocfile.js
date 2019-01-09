@@ -10,6 +10,7 @@ var jquery = require("./broccoli/jquery");
 var BroccoliLiveReload = require("broccoli-livereload");
 var replace = require("broccoli-string-replace");
 var demoTree = require("./broccoli/demo");
+var rollupTree = require("./broccoli/rollup");
 
 var vendoredModules = [
   { name: "mobiledoc-dom-renderer" },
@@ -41,9 +42,10 @@ function replaceVersion(tree) {
 }
 
 module.exports = mergeTrees([
-  replaceVersion(builder.build("amd", buildOptions)),
-  replaceVersion(builder.build("global", buildOptions)),
-  replaceVersion(builder.build("commonjs", buildOptions)),
+  //replaceVersion(builder.build("amd", buildOptions)),
+  //replaceVersion(builder.build("global", buildOptions)),
+  //replaceVersion(builder.build("commonjs", buildOptions)),
+  rollupTree(),
   cssFiles,
   testTree,
   demoTree()
