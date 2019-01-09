@@ -26,6 +26,8 @@ class Range {
     this.direction = direction;
   }
 
+  toRange() { return this; }
+  
   /**
    * Shorthand to create a new range from a section(s) and offset(s).
    * When given only a head section and offset, creates a collapsed range.
