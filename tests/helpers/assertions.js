@@ -1,7 +1,7 @@
 /* global QUnit, $ */
 
 import DOMHelper from './dom';
-import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc';
+import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc/index';
 import {
   MARKUP_SECTION_TYPE,
   LIST_SECTION_TYPE,

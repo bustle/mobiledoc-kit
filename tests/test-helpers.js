@@ -2,9 +2,6 @@
 import registerAssertions from './helpers/assertions';
 registerAssertions(QUnit);
 
-import registerModuleLoadFailureHandler from './helpers/module-load-failure';
-registerModuleLoadFailureHandler(QUnit);
-
 import DOMHelpers from './helpers/dom';
 import MobiledocHelpers from './helpers/mobiledoc';
 import PostAbstract from './helpers/post-abstract';

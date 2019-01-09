@@ -5,7 +5,7 @@ import Range from './utils/cursor/range';
 import Position from './utils/cursor/position';
 import Error from './utils/mobiledoc-error';
 import VERSION from './version';
-import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
+import mobiledocRenderers, { MOBILEDOC_VERSION } from './renderers/mobiledoc/index';
 
 const Mobiledoc = {
   Editor,
@@ -15,7 +15,7 @@ const Mobiledoc = {
   Position,
   Error,
   VERSION,
-  MOBILEDOC_VERSION
+  mobiledocRenderers
 };
 
 export function registerGlobal(global) {

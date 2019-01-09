@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>Mobiledoc Kit tests</title>
@@ -14,6 +15,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div id="qunit"></div>
@@ -22,15 +24,11 @@
   <script src="./jquery/jquery.js"></script>
   <script src="./qunit/qunit.js"></script>
   <script src="/testem.js"></script>
-  <script src="./loader.js/loader.js"></script>
-  <script src="../amd/mobiledoc-kit.js"></script>
-  <script src="./built-amd-tests.js"></script>
-  <script src="./test-loader/test-loader.js"></script>
+
+  <script src="../rollup/tests/index.js"></script>
   <script>
     window.QUnit.dump.maxDepth = 15;
-    var TestLoader = require('ember-cli/test-loader')['default'];
-    var testLoader = new TestLoader();
-    testLoader.loadModules();
   </script>
 </body>
+
 </html>

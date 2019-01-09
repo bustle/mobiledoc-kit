@@ -62,5 +62,8 @@
     "saucie": "^3.3.0",
     "testem": "^2.0.0"
   },
-  "main": "dist/commonjs/mobiledoc-kit/index.js"
+  "main": "dist/mobiledoc-kit/mobiledoc-kit.cjs.js",
+  "module": "dist/mobiledoc-kit/mobiledoc-kit.esm.js",
+  "browser": "dist/amd/mobiledoc-kit.js",
+  "browserGlobal": "dist/mobiledoc-kit/mobiledoc-kit.global.js"
 }

@@ -3,6 +3,7 @@ var resolve = require('rollup-plugin-node-resolve');
 var pkg = require('../package.json');
 var replace = require('rollup-plugin-replace');
 var path = require("path");
+var multiEntry = require('rollup-plugin-multi-entry');
 
 var CWD = process.cwd();
 
@@ -38,41 +39,24 @@ var rollupReplaceVersion = replace({
 });
 
 module.exports = function() {
-  return new Rollup('src', { 
+  return new Rollup('.', { 
     rollup: {
-      input: 'js/index.js',
-      output: [
-        {
-          name: 'Mobiledoc',
-          file: "amd/mobiledoc-kit.js",// pkg.browser,
-          format: 'amd',
-          amd: {
-            id: 'mobiledoc-kit'
-          },
-          exports: 'named',
-          sourcemap: true
-        },
-        {
-          name: 'Mobiledoc',
-          file: "mobiledoc-kit/mobiledoc-kit.global.js",
-          format: 'iife',
-          exports: 'named'
+      input: '**/*.js',
+      output: {
+        name: 'Mobiledoc',
+        file: 'rollup/tests/index.js',
+        format: 'iife',
+        exports: 'named',
+        globals: {
+          'mobiledoc-kit': 'Mobiledoc',
+          'ember-cli/test-loader': 'TestLoader'
         }
-        // {
-        //   exports: 'named',
-        //   file: "mobiledoc-kit/mobiledoc-kit.cjs.js",
-        //   format: 'cjs'
-        // },
-        // {
-        //   exports: 'named',
-        //   file: "mobiledoc-kit/mobiledoc-kit.esm.js",
-        //   format: 'es'
-        // }
-      ],
+      },
       plugins: [
+        multiEntry(),
         rollupReplaceVersion,
         fixMobiledocImport(),
-        resolve() // so Rollup can find packages in node-modules
+        resolve(), // so Rollup can find `ms`
       ]
     }
   });
