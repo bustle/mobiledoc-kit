@@ -23,17 +23,17 @@ module.exports = function() {
           file: "mobiledoc-kit/mobiledoc-kit.global.js",
           format: 'iife',
           exports: 'named'
+        },
+        {
+          exports: 'named',
+          file: "mobiledoc-kit/mobiledoc-kit.cjs.js",
+          format: 'cjs'
+        },
+        {
+          exports: 'named',
+          file: "mobiledoc-kit/mobiledoc-kit.esm.js",
+          format: 'es'
         }
-        // {
-        //   exports: 'named',
-        //   file: "mobiledoc-kit/mobiledoc-kit.cjs.js",
-        //   format: 'cjs'
-        // },
-        // {
-        //   exports: 'named',
-        //   file: "mobiledoc-kit/mobiledoc-kit.esm.js",
-        //   format: 'es'
-        // }
       ],
       plugins: [
         rollupReplaceVersion,
