@@ -1,9 +1,7 @@
 /* jshint node:true */
 
 var broccoli = require("broccoli");
-var Watcher = require("broccoli-sane-watcher");
 var Funnel = require("broccoli-funnel");
-var builder = require("broccoli-multi-builder");
 var mergeTrees = require("broccoli-merge-trees");
 var testTreeBuilder = require("broccoli-test-builder");
 var jquery = require("./broccoli/jquery");
@@ -13,20 +11,7 @@ var demoTree = require("./broccoli/demo");
 var rollupTree = require("./broccoli/rollup");
 var rollupTestTree = require("./broccoli/rollup-test");
 
-var vendoredModules = [
-  { name: "mobiledoc-dom-renderer" },
-  { name: "mobiledoc-text-renderer" }
-];
-
 var cssFiles = new Funnel("src/css", { destDir: "css" });
-
-var packageName = require("./package.json").name;
-
-var buildOptions = {
-  libDirName: "src/js",
-  vendoredModules: vendoredModules,
-  packageName: packageName
-};
 
 var testTree = testTreeBuilder.build({ libDirName: "src" });
 testTree = jquery.build(testTree, "/tests/jquery");
@@ -43,9 +28,6 @@ function replaceVersion(tree) {
 }
 
 module.exports = mergeTrees([
-  //replaceVersion(builder.build("amd", buildOptions)),
-  //replaceVersion(builder.build("global", buildOptions)),
-  //replaceVersion(builder.build("commonjs", buildOptions)),
   replaceVersion(rollupTree()),
   replaceVersion(rollupTestTree()),
   cssFiles,
