@@ -120,7 +120,10 @@ class PostEditor {
    * @public
    */
   deleteRange(range) {
-    assert("Must pass MobiledocKit Range to `deleteRange`", range instanceof Range);
+    // TODO getting errors here because rollup is creating two versions of the range class,
+    // Range and Range$1. Checking range instance of window.Mobiledoc.Range would work
+    // but it's hacky. Need the OR (||) because window.Mobiledoc.Range isn't there in testing.
+    assert("Must pass MobiledocKit Range to `deleteRange`", range instanceof (window.Mobiledoc.Range || Range));
 
     this.editActionTaken = EDIT_ACTIONS.DELETE;
 
