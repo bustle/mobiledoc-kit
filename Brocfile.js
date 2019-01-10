@@ -27,8 +27,27 @@ function replaceVersion(tree) {
   });
 }
 
+const rollupSrcTree = replaceVersion(rollupTree());
+
+// Ember addons like ember-mobiledoc-editor require the source file to be at
+// amd/mobiledoc-kit.map, not amd/mobiledoc-kit.js.map
+const amdRenamedTree = new Funnel(rollupSrcTree, {
+  sourceDir: 'amd',
+  destDir: '',
+  include: ['amd/mobiledoc-kit.js.map'],
+
+  getDestinationPath: function(relativePath) {
+    if (relativePath === 'amd/mobiledoc-kit.js.map') {
+      return 'amd/mobiledoc-kit.map';
+    }
+
+    return relativePath;
+  }
+});
+
 module.exports = mergeTrees([
-  replaceVersion(rollupTree()),
+  rollupSrcTree,
+  amdRenamedTree,
   replaceVersion(rollupTestTree()),
   cssFiles,
   testTree,
