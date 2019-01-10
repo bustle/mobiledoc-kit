@@ -41,8 +41,10 @@
     "mobiledoc-text-renderer": "^0.4.0-beta.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
     "broccoli": "^1.1.3",
-    "broccoli-babel-transpiler": "^6.1.2",
+    "broccoli-babel-transpiler": "^7.1.1",
     "broccoli-cli": "^1.0.0",
     "broccoli-funnel": "^2.0.0",
     "broccoli-livereload": "^1.0.0",

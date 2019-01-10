@@ -4,6 +4,7 @@ var pkg = require('../package.json');
 var replace = require('rollup-plugin-replace');
 var path = require("path");
 var multiEntry = require('rollup-plugin-multi-entry');
+var babel = require('broccoli-babel-transpiler');
 
 var CWD = process.cwd();
 
@@ -39,7 +40,7 @@ var rollupReplaceVersion = replace({
 });
 
 module.exports = function() {
-  return new Rollup('tests', { 
+  const rollupTree = new Rollup('tests', { 
     rollup: {
       input: '**/*.js',
       output: {
@@ -55,8 +56,16 @@ module.exports = function() {
         multiEntry(),
         rollupReplaceVersion,
         fixMobiledocImport(),
-        resolve(), // so Rollup can find `ms`
+        resolve() // so Rollup can find `ms`
       ]
     }
+  });
+
+  return babel(rollupTree, {
+    exclude: 'node_modules/**',
+    babelrc: false,
+    presets: [
+      ['@babel/preset-env', { targets: { "ie": "11" }}]
+    ]
   });
 };
