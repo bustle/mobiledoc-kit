@@ -3,6 +3,7 @@ var resolve = require('rollup-plugin-node-resolve');
 var pkg = require('../package.json');
 var replace = require('rollup-plugin-replace');
 var path = require("path");
+const babel = require('broccoli-babel-transpiler');
 
 var CWD = process.cwd();
 
@@ -38,7 +39,7 @@ var rollupReplaceVersion = replace({
 });
 
 module.exports = function() {
-  return new Rollup('src', { 
+  const rollupTree = new Rollup('src', { 
     rollup: {
       input: 'js/index.js',
       output: [
@@ -75,5 +76,13 @@ module.exports = function() {
         resolve() // so Rollup can find packages in node-modules
       ]
     }
+  });
+
+  return babel(rollupTree, {
+    exclude: 'node_modules/**',
+    babelrc: false,
+    presets: [
+      ['@babel/preset-env', { targets: { "ie": "11" }}]
+    ]
   });
 };
