@@ -51,9 +51,9 @@ class SelectionChangeObserver {
     this.selection = {};
   }
 
-  notifyListeners(/* newSelection, prevSelection */) {
+  notifyListeners(newSelection, prevSelection) {
     this.listeners.forEach(listener => {
-      listener.selectionDidChange(...arguments);
+      listener.selectionDidChange(newSelection, prevSelection);
     });
   }
 
