@@ -47,7 +47,7 @@ module.exports = mergeTrees([
   //replaceVersion(builder.build("global", buildOptions)),
   //replaceVersion(builder.build("commonjs", buildOptions)),
   replaceVersion(rollupTree()),
-  //rollupTestTree(),
+  replaceVersion(rollupTestTree()),
   cssFiles,
   testTree,
   demoTree()

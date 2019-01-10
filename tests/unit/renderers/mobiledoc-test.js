@@ -1,4 +1,4 @@
-import mobiledocRenderers, { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
+import mobiledocRenderers, { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/index';
 import Helpers from '../../test-helpers';
 
 const { module, test } = Helpers;

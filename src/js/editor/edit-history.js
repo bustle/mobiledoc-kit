@@ -1,4 +1,4 @@
-import mobiledocParsers from '../parsers/mobiledoc';
+import mobiledocParsers from '../parsers/mobiledoc/index';
 import FixedQueue from 'mobiledoc-kit/utils/fixed-queue';
 
 function findLeafSectionAtIndex(post, index) {

@@ -7,7 +7,7 @@ import HTMLParser from '../parsers/html';
 import DOMParser from '../parsers/dom';
 import Renderer  from 'mobiledoc-kit/renderers/editor-dom';
 import RenderTree from 'mobiledoc-kit/models/render-tree';
-import mobiledocRenderers from '../renderers/mobiledoc';
+import mobiledocRenderers from '../renderers/mobiledoc/index';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/index';
 import { mergeWithOptions } from '../utils/merge';
 import { normalizeTagName, clearChildNodes, serializeHTML } from '../utils/dom-utils';

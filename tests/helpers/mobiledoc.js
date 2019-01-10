@@ -1,5 +1,5 @@
 import PostAbstractHelpers from './post-abstract';
-import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc';
+import mobiledocRenderers from 'mobiledoc-kit/renderers/mobiledoc/index';
 import MobiledocRenderer_0_2, { MOBILEDOC_VERSION as MOBILEDOC_VERSION_0_2 } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 import MobiledocRenderer_0_3, { MOBILEDOC_VERSION as MOBILEDOC_VERSION_0_3 } from 'mobiledoc-kit/renderers/mobiledoc/0-3';
 import MobiledocRenderer_0_3_1, { MOBILEDOC_VERSION as MOBILEDOC_VERSION_0_3_1 } from 'mobiledoc-kit/renderers/mobiledoc/0-3-1';

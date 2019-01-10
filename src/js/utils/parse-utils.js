@@ -1,5 +1,5 @@
 /* global JSON */
-import mobiledocParsers from '../parsers/mobiledoc';
+import mobiledocParsers from '../parsers/mobiledoc/index';
 import HTMLParser from '../parsers/html';
 import TextParser from '../parsers/text';
 

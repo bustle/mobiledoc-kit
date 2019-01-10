@@ -10,7 +10,7 @@ import wait from './helpers/wait';
 import MockEditor from './helpers/mock-editor';
 import renderBuiltAbstract from './helpers/render-built-abstract';
 import run from './helpers/post-editor-run';
-import EditorHelpers from './helpers/editor';
+import * as EditorHelpers from './helpers/editor';
 
 const { test:qunitTest, module, skip } = QUnit;
 

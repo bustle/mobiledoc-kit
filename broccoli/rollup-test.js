@@ -39,7 +39,7 @@ var rollupReplaceVersion = replace({
 });
 
 module.exports = function() {
-  return new Rollup('.', { 
+  return new Rollup('tests', { 
     rollup: {
       input: '**/*.js',
       output: {
@@ -48,8 +48,7 @@ module.exports = function() {
         format: 'iife',
         exports: 'named',
         globals: {
-          'mobiledoc-kit': 'Mobiledoc',
-          'ember-cli/test-loader': 'TestLoader'
+          'mobiledoc-kit': 'Mobiledoc'
         }
       },
       plugins: [
