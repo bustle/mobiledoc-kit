@@ -1,10 +1,10 @@
 var Rollup = require('broccoli-rollup');
 var resolve = require('rollup-plugin-node-resolve');
-const babel = require('broccoli-babel-transpiler');
+var babel  = require('rollup-plugin-babel');
 const { rollupReplaceVersion, fixMobiledocImport } = require('./rollup-utils');
 
 module.exports = function() {
-  const rollupTree = new Rollup('src', { 
+  const rollupTree = new Rollup('src', {
     rollup: {
       input: 'js/index.js',
       output: [
@@ -38,16 +38,17 @@ module.exports = function() {
       plugins: [
         rollupReplaceVersion,
         fixMobiledocImport(),
-        resolve() // so Rollup can find packages in node-modules
+        resolve(), // so Rollup can find packages in node-modules
+        babel({
+          exclude: 'node_modules/**',
+          babelrc: false,
+          presets: [
+            ['@babel/preset-env', { targets: { "ie": "11" }}]
+          ]
+        })
       ]
     }
   });
 
-  return babel(rollupTree, {
-    exclude: 'node_modules/**',
-    babelrc: false,
-    presets: [
-      ['@babel/preset-env', { targets: { "ie": "11" }}]
-    ]
-  });
+  return rollupTree;
 };

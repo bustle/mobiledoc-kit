@@ -57,6 +57,7 @@
     "jquery": "^3.2.1",
     "jsdoc": "^3.5.4",
     "qunitjs": "^2.4.1",
+    "rollup-plugin-babel": "^4.3.0",
     "rollup-plugin-multi-entry": "^2.1.0",
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^2.1.0",
