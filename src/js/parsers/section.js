@@ -129,6 +129,7 @@ class SectionParser {
     return false;
   }
 
+  /* eslint-disable complexity */
   parseNode(node) {
     if (!this.state.section) {
       this._updateStateFromElement(node);
@@ -143,12 +144,24 @@ class SectionParser {
     // new-section-creating element.
     if (this.state.section && !isTextNode(node) && node.tagName) {
       let tagName = normalizeTagName(node.tagName);
-      let isNestedListSection = contains(VALID_LIST_SECTION_TAGNAMES, tagName)
+
+      let isListSection = contains(VALID_LIST_SECTION_TAGNAMES, tagName);
+      let isNestedListSection = isListSection
         && this.state.section.isListItem;
 
+      // if we have consecutive list sections of different types (ul, ol) then
+      // ensure we close the current section and start a new one
+      let lastSection = this.sections[this.sections.length - 1];
+      let isNewListSection = lastSection
+        && lastSection.isListSection
+        && this.state.section.isListItem
+        && isListSection
+        && tagName !== lastSection.tagName;
+
       if (
+        isNewListSection ||
+        (isListSection && !isNestedListSection) ||
         contains(VALID_MARKUP_SECTION_TAGNAMES, tagName) ||
-        (contains(VALID_LIST_SECTION_TAGNAMES, tagName) && !isNestedListSection) ||
         contains(VALID_LIST_ITEM_TAGNAMES, tagName)
       ) {
         // don't break out of the list for list items that contain a single <p>.
