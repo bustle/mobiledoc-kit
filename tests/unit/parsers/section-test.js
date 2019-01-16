@@ -173,6 +173,20 @@ test('#parse only runs text nodes through parserPlugins once', (assert) => {
   assert.equal(pluginRunCount, 1);
 });
 
+test('#parse ignores blank markup sections', assert => {
+  let container = buildDOM(`
+    <div><p>One</p><p></p><p>Three</p></div>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 2, 'Two sections');
+  assert.equal(sections[0].text, 'One');
+  assert.equal(sections[1].text, 'Three');
+});
+
 test("#parse handles single paragraph in list item", assert => {
   let container = buildDOM(`
     <ul><li><p>One</p></li>
