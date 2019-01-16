@@ -1,7 +1,7 @@
 var Rollup = require('broccoli-rollup');
 var resolve = require('rollup-plugin-node-resolve');
 var multiEntry = require('rollup-plugin-multi-entry');
-var babel = require('broccoli-babel-transpiler');
+var babel  = require('rollup-plugin-babel');
 const { rollupReplaceVersion, fixMobiledocImport } = require('./rollup-utils');
 const path = require('path');
 var mergeTrees = require("broccoli-merge-trees");
@@ -28,7 +28,7 @@ module.exports = function() {
     destDir: '/tests'
   });
 
-  const rollupTree = new Rollup('tests', { 
+  const rollupTree = new Rollup('tests', {
     rollup: {
       input: '**/*.js',
       output: {
@@ -44,21 +44,20 @@ module.exports = function() {
         multiEntry(),
         rollupReplaceVersion,
         fixMobiledocImport(),
-        resolve() // so Rollup can find `ms`
+        resolve(), // so Rollup can find `ms`
+        babel({
+          exclude: 'node_modules/**',
+          babelrc: false,
+          presets: [
+            ['@babel/preset-env', { targets: { "ie": "11" }}]
+          ]
+        })
       ]
     }
   });
 
-  const transpiledTestTree = babel(rollupTree, {
-    exclude: 'node_modules/**',
-    babelrc: false,
-    presets: [
-      ['@babel/preset-env', { targets: { "ie": "11" }}]
-    ]
-  });
-
   let testTree = mergeTrees([
-    transpiledTestTree,
+    rollupTree,
     testIndexHtmlTree,
     vendorTree
   ]);
