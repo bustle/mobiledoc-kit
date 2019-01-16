@@ -24,6 +24,7 @@ import {
 } from './key-commands';
 import { CARD_MODES } from '../models/card';
 import assert from '../utils/assert';
+import deprecate from '../utils/deprecate';
 import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
 import EditHistory from 'mobiledoc-kit/editor/edit-history';
 import EventManager from 'mobiledoc-kit/editor/event-manager';
@@ -558,6 +559,24 @@ class Editor {
     const validFormats = ['mobiledoc', 'html', 'text'];
     assert(`Unrecognized serialization format ${format}`,
            contains(validFormats, format));
+
+    deprecate(`
+    In future versions of this library using the 'format'
+    parameter to specify which renderer to use will be removed in favor of
+    requiring the standalone Dom or Text renderer, using this method to
+    retreive a 'mobiledoc' ast and passing that to the included Renderer of
+    choice.  For example:
+
+    import DOMRenderer from 'mobiledoc-dom-renderer';
+
+    let mobiledoc = serializePost(post, 'mobiledoc');
+
+    var renderer = new DOMRenderer({cards: []});
+    var rendered = renderer.render(mobiledoc);
+    var result = rendered.result;
+    document.getElementById('output').appendChild(result);
+
+    `.trim(), contains(['text', 'html'], format));
 
     if (format === 'mobiledoc') {
       let version = options.version || MOBILEDOC_VERSION;
