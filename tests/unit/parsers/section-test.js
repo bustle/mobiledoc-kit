@@ -307,6 +307,37 @@ test('#parse handles grouping nested lists', (assert) => {
   assert.equal(list.items.objectAt(3).text, 'Outer-Four');
 });
 
+test('#parse handles grouping of consecutive lists of same type', (assert) => {
+  let container = buildDOM(`
+    <div><ul><li>One</li></ul><ul><li>Two</li></ul>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1, 'single list section');
+  let list = sections[0];
+  assert.equal(list.items.objectAt(0).text, 'One');
+  assert.equal(list.items.objectAt(1).text, 'Two');
+});
+
+test('#parse doesn\'t group consecutive lists of different types', (assert) => {
+  let container = buildDOM(`
+    <div><ul><li>One</li></ul><ol><li>Two</li></ol>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 2, 'two list sections');
+  let ul = sections[0];
+  assert.equal(ul.items.objectAt(0).text, 'One');
+  let ol = sections[1];
+  assert.equal(ol.items.objectAt(0).text, 'Two');
+});
+
 test('#parse skips STYLE nodes', (assert) => {
   let element = buildDOM(`
     <style>.rule { font-color: red; }</style>
