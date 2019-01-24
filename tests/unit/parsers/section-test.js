@@ -317,6 +317,34 @@ test('#parse avoids empty paragraph around wrapped list', (assert) => {
   assert.equal(sections.length, 1, 'single list section');
 });
 
+test('#parse handles nested lists of different types', assert => {
+  let container = buildDOM(`
+    <ol><li>One</li><li><ul><li>A</li><li>B</li></ul><li>Two</li></ol>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 3, '3 sections');
+
+  assert.equal(sections[0].type, 'list-section', 'first section type');
+  assert.equal(sections[0].tagName, 'ol', 'first section tagName');
+  assert.equal(sections[0].items.length, 1, '1 list item in first list section');
+  assert.equal(sections[0].items.objectAt(0).text, 'One');
+
+  assert.equal(sections[1].type, 'list-section', 'second section type');
+  assert.equal(sections[1].tagName, 'ul', 'fourth section tagName');
+  assert.equal(sections[1].items.length, 2, '2 list items in second list section');
+  assert.equal(sections[1].items.objectAt(0).text, 'A');
+  assert.equal(sections[1].items.objectAt(1).text, 'B');
+
+  assert.equal(sections[2].type, 'list-section', 'third section type');
+  assert.equal(sections[2].tagName, 'ol', 'third section tagName');
+  assert.equal(sections[2].items.length, 1, '1 list item in third list section');
+  assert.equal(sections[2].items.objectAt(0).text, 'Two');
+});
+
 test('#parse handles grouping nested lists', (assert) => {
   let container = buildDOM(`
     <div><ul><li>Outer-One<ul><li>Inner-Two</li><li>Inner-Three</li></ul></li><li>Outer-Four</li></ul></div>
