@@ -150,6 +150,18 @@ class SectionParser {
       let isNestedListSection = isListSection && this.state.section.isListItem;
       let lastSection = this.sections[this.sections.length - 1];
 
+      // we can hit a list item after parsing a nested list, when that happens
+      // and the lists are of different types we need to make sure we switch
+      // the list type back
+      if (isListItem && lastSection && lastSection.isListSection) {
+        let parentElement = node.parentElement;
+        let parentElementTagName = normalizeTagName(parentElement.tagName);
+        if (parentElementTagName !== lastSection.tagName) {
+          this._closeCurrentSection();
+          this._updateStateFromElement(parentElement);
+        }
+      }
+
       // if we've broken out of a list due to nested section-level elements we
       // can hit the next list item without having a list section in the current
       // state. In this instance we find the parent list node and use it to
@@ -159,9 +171,8 @@ class SectionParser {
         !(this.state.section.isListItem || this.state.section.isListSection) &&
         !lastSection.isListSection
       ) {
-        let closestListNode = node.closest(VALID_LIST_SECTION_TAGNAMES.join(','));
         this._closeCurrentSection();
-        this._updateStateFromElement(closestListNode);
+        this._updateStateFromElement(node.parentElement);
       }
 
       // if we have consecutive list sections of different types (ul, ol) then
