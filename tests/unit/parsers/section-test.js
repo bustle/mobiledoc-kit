@@ -187,6 +187,36 @@ test('#parse ignores blank markup sections', assert => {
   assert.equal(sections[1].text, 'Three');
 });
 
+test('#parse handles section-level elements in list item', assert => {
+  let container = buildDOM(`
+    <ol><li>One</li><li><h4>Two</h4><p>Two - P</p></li><li>Three</li></ol>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 4, '4 sections');
+
+  assert.equal(sections[0].type, 'list-section', 'first section type');
+  assert.equal(sections[0].tagName, 'ol', 'first section tagName');
+  assert.equal(sections[0].items.length, 1, '1 list item in first list section');
+  assert.equal(sections[0].items.objectAt(0).text, 'One');
+
+  assert.equal(sections[1].type, 'markup-section', 'second section type');
+  assert.equal(sections[1].tagName, 'h4');
+  assert.equal(sections[1].text, 'Two');
+
+  assert.equal(sections[2].type, 'markup-section', 'third section type');
+  assert.equal(sections[2].tagName, 'p');
+  assert.equal(sections[2].text, 'Two - P');
+
+  assert.equal(sections[3].type, 'list-section', 'fourth section type');
+  assert.equal(sections[3].tagName, 'ol', 'fourth section tagName');
+  assert.equal(sections[3].items.length, 1, '1 list item in last list section');
+  assert.equal(sections[3].items.objectAt(0).text, 'Three');
+});
+
 test("#parse handles single paragraph in list item", assert => {
   let container = buildDOM(`
     <ul><li><p>One</p></li>
