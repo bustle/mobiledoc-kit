@@ -144,14 +144,28 @@ class SectionParser {
     // new-section-creating element.
     if (this.state.section && !isTextNode(node) && node.tagName) {
       let tagName = normalizeTagName(node.tagName);
-
       let isListSection = contains(VALID_LIST_SECTION_TAGNAMES, tagName);
-      let isNestedListSection = isListSection
-        && this.state.section.isListItem;
+      let isListItem = contains(VALID_LIST_ITEM_TAGNAMES, tagName);
+      let isMarkupSection = contains(VALID_MARKUP_SECTION_TAGNAMES, tagName);
+      let isNestedListSection = isListSection && this.state.section.isListItem;
+      let lastSection = this.sections[this.sections.length - 1];
+
+      // if we've broken out of a list due to nested section-level elements we
+      // can hit the next list item without having a list section in the current
+      // state. In this instance we find the parent list node and use it to
+      // re-initialize the state with a new list section
+      if (
+        isListItem &&
+        !(this.state.section.isListItem || this.state.section.isListSection) &&
+        !lastSection.isListSection
+      ) {
+        let closestListNode = node.closest(VALID_LIST_SECTION_TAGNAMES.join(','));
+        this._closeCurrentSection();
+        this._updateStateFromElement(closestListNode);
+      }
 
       // if we have consecutive list sections of different types (ul, ol) then
       // ensure we close the current section and start a new one
-      let lastSection = this.sections[this.sections.length - 1];
       let isNewListSection = lastSection
         && lastSection.isListSection
         && this.state.section.isListItem
@@ -161,8 +175,8 @@ class SectionParser {
       if (
         isNewListSection ||
         (isListSection && !isNestedListSection) ||
-        contains(VALID_MARKUP_SECTION_TAGNAMES, tagName) ||
-        contains(VALID_LIST_ITEM_TAGNAMES, tagName)
+        isMarkupSection ||
+        isListItem
       ) {
         // don't break out of the list for list items that contain a single <p>.
         // deals with typical case of <li><p>Text</p></li><li><p>Text</p></li>
