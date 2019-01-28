@@ -49,6 +49,7 @@ let expectations = [
   ['<p>first line</p>\n<p>second line</p>', ['first line','second line']],
   ['<p>first line</p>middle line<p>third line</p>', ['first line','middle line','third line']],
   ['<p>first line</p>second line', ['first line','second line']],
+  ['<p>first line</p><p></p><p>third line</p>', ['first line', 'third line']],
 
   ['<b>bold text</b>',['*bold text*']],
 
@@ -66,11 +67,29 @@ let expectations = [
   ['<ul><li>first element</li><li><ul><li>nested element</li></ul></li></ul>', ['* first element', '* nested element']],
 
   // See https://github.com/bustle/mobiledoc-kit/issues/333
-  ['abc\ndef', ['abc def']]
+  ['abc\ndef', ['abc def']],
+];
+
+let structures = [
+  // See https://github.com/bustle/mobiledoc-kit/issues/648
+  ['<section><p>first</p><p>second</p></section>', ['first','second'], 'one level'],
+  ['<section><div><p>first</p><p>second</p></div></section>', ['first', 'second'], 'two levels'],
+  ['<section><div><div><p>first</p><p>second</p></div></div></section>', ['first', 'second'], 'three levels'],
+  ['<section><div><p>first</p></div><p>second</p></section>', ['first', 'second'], 'offset left'],
+  ['<section><p>first</p><div><p>second</p></div></section>', ['first', 'second'], 'offset right']
 ];
 
 expectations.forEach(([html, dslText]) => {
   test(`#parse ${html} -> ${dslText}`, (assert) => {
+    let post = parser.parse(buildDOM(html));
+    let { post: expected } = buildFromText(dslText);
+
+    assert.postIsSimilar(post, expected);
+  });
+});
+
+structures.forEach(([html, dslText, name]) => {
+  test(`wrapped#parse ${html} -> ${dslText} (${name})`, (assert) => {
     let post = parser.parse(buildDOM(html));
     let { post: expected } = buildFromText(dslText);
 
@@ -195,6 +214,28 @@ test('plain text creates a section', (assert) => {
 
 test('strong tag + em + text node creates section', (assert) => {
   let element = buildDOM('<b><em>stray</em> markup tags</b>');
+  const post = parser.parse(element);
+
+  assert.equal(post.sections.length, 1, 'parse 1 section');
+  assert.equal(post.sections.objectAt(0).text, 'stray markup tags');
+
+  let markers = post.sections.objectAt(0).markers.toArray();
+  assert.equal(markers.length, 2, '2 markers');
+
+  let [m1, m2] = markers;
+
+  assert.equal(m1.value, 'stray');
+  assert.equal(m2.value, ' markup tags');
+
+  assert.ok(m1.hasMarkup('b'), 'm1 is b');
+  assert.ok(m1.hasMarkup('em'), 'm1 is em');
+
+  assert.ok(m2.hasMarkup('b'), 'm2 is b');
+  assert.ok(!m2.hasMarkup('em'), 'm1 is not em');
+});
+
+test('wrapped strong tag + em + text node creates section', (assert) => {
+  let element = buildDOM('<div><b><em>stray</em> markup tags</b></div>');
   const post = parser.parse(element);
 
   assert.equal(post.sections.length, 1, 'parse 1 section');
