@@ -83,6 +83,11 @@ function renderMarkupSection(section) {
   let element;
   if (MARKUP_SECTION_ELEMENT_NAMES.indexOf(section.tagName) !== -1) {
     element = document.createElement(section.tagName);
+
+    Object.keys(section.attributes).forEach(k => {
+      // actually do the style stuff
+    });
+
   } else {
     element = document.createElement('div');
     addClassName(element, section.tagName);

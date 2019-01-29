@@ -78,9 +78,9 @@ class PostNodeBuilder {
    * @param {Marker[]} [markers=[]]
    * @return {MarkupSection}
    */
-  createMarkupSection(tagName=DEFAULT_MARKUP_SECTION_TAG_NAME, markers=[], isGenerated=false) {
+  createMarkupSection(tagName=DEFAULT_MARKUP_SECTION_TAG_NAME, markers=[], isGenerated=false, attributes={}) {
     tagName = normalizeTagName(tagName);
-    const section = new MarkupSection(tagName, markers);
+    const section = new MarkupSection(tagName, markers, attributes);
     if (isGenerated) {
       section.isGenerated = true;
     }

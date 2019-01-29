@@ -27,7 +27,7 @@ const visitor = {
     visitArray(visitor, node.sections, opcodes);
   },
   [MARKUP_SECTION_TYPE](node, opcodes) {
-    opcodes.push(['openMarkupSection', node.tagName]);
+    opcodes.push(['openMarkupSection', node.tagName, node.attributes]);
     visitArray(visitor, node.markers, opcodes);
   },
   [LIST_SECTION_TYPE](node, opcodes) {
@@ -67,9 +67,9 @@ const postOpcodeCompiler = {
       value || ''
     ]);
   },
-  openMarkupSection(tagName) {
+  openMarkupSection(tagName, attributes) {
     this.markers = [];
-    this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers]);
+    this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers, attributes]);
   },
   openListSection(tagName) {
     this.items = [];

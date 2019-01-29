@@ -32,6 +32,22 @@ test('#insertSectionAtEnd inserts the section at the end', (assert) => {
   assert.hasElement('#editor p:eq(1):contains(123)', 'new section added at end');
 });
 
+QUnit.only('markup sections may contain attributes', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('123')], false, {'data-md-text-align': 'center'})
+    ]);
+  });
+
+  debugger;
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  debugger;
+
+  assert.ok(true);
+});
+
 test('#insertSection inserts after the cursor active section', (assert) => {
   let newSection;
   const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
