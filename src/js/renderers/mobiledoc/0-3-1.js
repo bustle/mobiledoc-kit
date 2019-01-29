@@ -27,7 +27,7 @@ const visitor = {
     visitArray(visitor, node.sections, opcodes);
   },
   [MARKUP_SECTION_TYPE](node, opcodes) {
-    opcodes.push(['openMarkupSection', node.tagName, node.attributes]);
+    opcodes.push(['openMarkupSection', node.tagName, objectToSortedKVArray(node.attributes)]);
     visitArray(visitor, node.markers, opcodes);
   },
   [LIST_SECTION_TYPE](node, opcodes) {

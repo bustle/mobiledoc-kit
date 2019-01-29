@@ -224,10 +224,10 @@ Markup sections, in addition to plain text, can include markups and atoms.
     ["mention", "@tom", { id: 12 }]       ──── mention Atom at index 1
   ]
   sections: [
-    [sectionTypeIdentifier, tagName, markers],   ──── sectionTypeIdentifier for markup sections
+    [sectionTypeIdentifier, tagName, markers, attributes],   ──── sectionTypeIdentifier for markup sections
     [1, "h2", [                                       is always 1.
       [0, [], 0, "Simple h2 example"],
-    ]],
+    ], ['data-md-text-align', 'center']],
     [1, "p", [
       [textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, value],
       [0, [], 0, "Example with no markup"],      ──── textTypeIdentifier for markup is always 0
