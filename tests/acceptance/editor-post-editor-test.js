@@ -42,7 +42,7 @@ test('markup sections may contain attributes', (assert) => {
   editor = new Editor({mobiledoc});
   editor.render(editorElement);
 
-  assert.hasElement('#editor p[style="text-align: center"]');
+  assert.hasElement('#editor p[style="text-align: center;"]');
 });
 
 test('#insertSection inserts after the cursor active section', (assert) => {

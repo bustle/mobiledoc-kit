@@ -35,7 +35,7 @@ function handleMarkupSectionAttribute(element, attributeKey, attributeValue) {
   assert(`cannot use attribute: ${attributeKey}`, _isValidAttribute(attributeKey));
 
   /* This'll work for now, but in the future should be fleshed out */
-  element.setAttribute('style', `${attributeKey.replace('data-md-','')}: ${attributeValue}`);
+  element.style.setProperty(attributeKey.replace('data-md-',''), attributeValue);
 }
 
 function createElementFromMarkup(doc, markup) {
