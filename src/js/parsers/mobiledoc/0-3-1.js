@@ -109,8 +109,9 @@ export default class MobiledocParser {
     post.sections.append(section);
   }
 
-  parseMarkupSection([, tagName, markers, attributes], post) {
-    const section = this.builder.createMarkupSection(tagName, [], false, attributes);
+  parseMarkupSection([, tagName, markers, attributesArray], post) {
+    const attributesObject = kvArrayToObject(attributesArray);
+    const section = this.builder.createMarkupSection(tagName, [], false, attributesObject);
     post.sections.append(section);
     this.parseMarkers(markers, section);
     // Strip blank markers after they have been created. This ensures any

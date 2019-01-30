@@ -16,6 +16,7 @@ import { addClassName, removeClassName } from '../utils/dom-utils';
 import { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section';
 import assert from '../utils/assert';
 import { TAB } from 'mobiledoc-kit/utils/characters';
+import { VALID_ATTRIBUTES } from '../models/_attributable';
 
 export const CARD_ELEMENT_CLASS_NAME = '__mobiledoc-card';
 export const NO_BREAK_SPACE = '\u00A0';
@@ -25,6 +26,17 @@ export const ZWNJ = '\u200c';
 export const ATOM_CLASS_NAME = '-mobiledoc-kit__atom';
 export const EDITOR_HAS_NO_CONTENT_CLASS_NAME = '__has-no-content';
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
+
+function _isValidAttribute(attr) {
+  return VALID_ATTRIBUTES.indexOf(attr) !== -1;
+}
+
+function handleMarkupSectionAttribute(element, attributeKey, attributeValue) {
+  assert(`cannot use attribute: ${attributeKey}`, _isValidAttribute(attributeKey));
+
+  /* This'll work for now, but in the future should be fleshed out */
+  element.setAttribute('style', `${attributeKey.replace('data-md-','')}: ${attributeValue}`)
+}
 
 function createElementFromMarkup(doc, markup) {
   let element = doc.createElement(markup.tagName);
@@ -85,7 +97,7 @@ function renderMarkupSection(section) {
     element = document.createElement(section.tagName);
 
     Object.keys(section.attributes).forEach(k => {
-      // actually do the style stuff
+      handleMarkupSectionAttribute(element, k, section.attributes[k]);
     });
 
   } else {
