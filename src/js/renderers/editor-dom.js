@@ -349,7 +349,6 @@ class Visitor {
   [MARKUP_SECTION_TYPE](renderNode, section, visit) {
     const originalElement = renderNode.element;
 
-    debugger;
     // Always rerender the section -- its tag name or attributes may have changed.
     // TODO make this smarter, only rerendering and replacing the element when necessary
     renderNode.element = renderMarkupSection(section);
