@@ -35,7 +35,7 @@ function handleMarkupSectionAttribute(element, attributeKey, attributeValue) {
   assert(`cannot use attribute: ${attributeKey}`, _isValidAttribute(attributeKey));
 
   /* This'll work for now, but in the future should be fleshed out */
-  element.setAttribute('style', `${attributeKey.replace('data-md-','')}: ${attributeValue}`)
+  element.setAttribute('style', `${attributeKey.replace('data-md-','')}: ${attributeValue}`);
 }
 
 function createElementFromMarkup(doc, markup) {
@@ -349,6 +349,7 @@ class Visitor {
   [MARKUP_SECTION_TYPE](renderNode, section, visit) {
     const originalElement = renderNode.element;
 
+    debugger;
     // Always rerender the section -- its tag name or attributes may have changed.
     // TODO make this smarter, only rerendering and replacing the element when necessary
     renderNode.element = renderMarkupSection(section);
