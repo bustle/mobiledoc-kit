@@ -110,7 +110,13 @@ export default class MobiledocParser {
   }
 
   parseMarkupSection([, tagName, markers, attributesArray], post) {
-    const attributesObject = kvArrayToObject(attributesArray);
+
+    let attributesObject;
+    if (Array.isArray(attributesArray)) {
+      attributesObject = kvArrayToObject(attributesArray);
+    } else {
+      attributesObject = {};
+    }
     const section = this.builder.createMarkupSection(tagName, [], false, attributesObject);
     post.sections.append(section);
     this.parseMarkers(markers, section);
