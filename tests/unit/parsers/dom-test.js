@@ -49,6 +49,7 @@ let expectations = [
   ['<p>first line</p>\n<p>second line</p>', ['first line','second line']],
   ['<p>first line</p>middle line<p>third line</p>', ['first line','middle line','third line']],
   ['<p>first line</p>second line', ['first line','second line']],
+  ['<p>first line</p><p></p><p>third line</p>', ['first line', 'third line']],
 
   ['<b>bold text</b>',['*bold text*']],
 
@@ -66,7 +67,7 @@ let expectations = [
   ['<ul><li>first element</li><li><ul><li>nested element</li></ul></li></ul>', ['* first element', '* nested element']],
 
   // See https://github.com/bustle/mobiledoc-kit/issues/333
-  ['abc\ndef', ['abc def']]
+  ['abc\ndef', ['abc def']],
 ];
 
 let structures = [

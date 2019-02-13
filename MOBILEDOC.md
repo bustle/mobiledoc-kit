@@ -274,7 +274,7 @@ Renders an image. In many scenarios, a card to suit your needs is better.
 
 **List section**
 
-List similar to markup sections but have a set of markers for each list item.
+Lists are similar to markup sections but have a set of markers for each list item.
 
 ```
 {
