@@ -396,6 +396,46 @@ test('#parse doesn\'t group consecutive lists of different types', (assert) => {
   assert.equal(ol.items.objectAt(0).text, 'Two');
 });
 
+test('#parse handles p following list', (assert) => {
+  let container = buildDOM(`
+    <div><ol><li>li1</li><li>li2</li><p>para</p></div>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 2, 'two sections');
+
+  let ol = sections[0];
+  assert.equal(ol.items.length, 2, 'two list items');
+
+  let p = sections[1];
+  assert.equal(p.text, 'para');
+});
+
+test('#parse handles link in a heading followed by paragraph', (assert) => {
+  let container = buildDOM(`
+    <div><h4><a href="https://example.com">Linked header</a></h4><p>test</p></div>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 2, '2 sections');
+  assert.equal(sections[0].text, 'Linked header');
+
+  let markers = sections[0].markers.toArray();
+  assert.equal(markers.length, 1, '1 marker');
+  let [marker] = markers;
+  assert.equal(marker.value, 'Linked header');
+  assert.ok(marker.hasMarkup('a'), 'has A markup');
+
+  let markup = marker.markups[0];
+  assert.equal(markup.getAttribute('href'), 'https://example.com');
+});
+
 test('#parse skips STYLE nodes', (assert) => {
   let element = buildDOM(`
     <style>.rule { font-color: red; }</style>
