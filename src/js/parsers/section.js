@@ -191,14 +191,19 @@ class SectionParser {
       ) {
         // don't break out of the list for list items that contain a single <p>.
         // deals with typical case of <li><p>Text</p></li><li><p>Text</p></li>
-        if (this.state.section.isListItem && tagName === 'p' && !node.nextSibling) {
+        if (
+          this.state.section.isListItem &&
+          tagName === 'p' &&
+          !node.nextSibling &&
+          contains(VALID_LIST_ITEM_TAGNAMES, normalizeTagName(node.parentElement.tagName))
+         ) {
           this.parseElementNode(node);
           return;
         }
 
         // avoid creating empty paragraphs due to wrapper elements around
         // section-creating elements
-        if (this.state.section.isMarkerable && !this.state.text) {
+        if (this.state.section.isMarkerable && !this.state.text && this.state.section.markers.length === 0) {
           this.state.section = null;
         } else {
           this._closeCurrentSection();
