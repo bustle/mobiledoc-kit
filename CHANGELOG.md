@@ -1,3 +1,28 @@
+<a name="0.11.1-ghost.6"></a>
+## <small>0.11.1-ghost.6 (2019-02-13)</small>
+
+* add failing test for #648 ([29ff9e7](https://github.com/bustle/mobiledoc-kit/commit/29ff9e7)), closes [#648](https://github.com/bustle/mobiledoc-kit/issues/648)
+* add failing test for list-items being appended as top-level sections ([548fcbf](https://github.com/bustle/mobiledoc-kit/commit/548fcbf))
+* add failing test for nested lists ([40ddff3](https://github.com/bustle/mobiledoc-kit/commit/40ddff3))
+* add failing test for nested lists of different types ([c88d6b8](https://github.com/bustle/mobiledoc-kit/commit/c88d6b8))
+* add test for paragraph in list item parsing behaviour ([be9f27b](https://github.com/bustle/mobiledoc-kit/commit/be9f27b))
+* add tests for dom and section parser ignoring blank markup sections ([100c5fb](https://github.com/bustle/mobiledoc-kit/commit/100c5fb))
+* Added more failing tests for 648 ([2eed96e](https://github.com/bustle/mobiledoc-kit/commit/2eed96e))
+* do not group consecutive list sections of different types ([45e4d27](https://github.com/bustle/mobiledoc-kit/commit/45e4d27))
+* Export MOBILEDOC_VERSION & mobiledocRenderers from index ([acbb829](https://github.com/bustle/mobiledoc-kit/commit/acbb829))
+* failing test for #656 ([4bcbec6](https://github.com/bustle/mobiledoc-kit/commit/4bcbec6)), closes [#656](https://github.com/bustle/mobiledoc-kit/issues/656) [#656](https://github.com/bustle/mobiledoc-kit/issues/656)
+* failing test for section parser handling consecutive lists of varying types ([66d2120](https://github.com/bustle/mobiledoc-kit/commit/66d2120))
+* Fix format readme missing word ([27b4588](https://github.com/bustle/mobiledoc-kit/commit/27b4588))
+* fix grouping of nested lists into single top-level list ([a5353ff](https://github.com/bustle/mobiledoc-kit/commit/a5353ff))
+* fix handling of nested list sections of different types ([2019c94](https://github.com/bustle/mobiledoc-kit/commit/2019c94))
+* fix list-items being added as top-level sections when breaking out of lists ([821bf2e](https://github.com/bustle/mobiledoc-kit/commit/821bf2e))
+* fixed SectionParser handling of paragraph following a list ([892b66a](https://github.com/bustle/mobiledoc-kit/commit/892b66a))
+* fixed SectionParser handling of paragraph following single-marker markup section ([c6ad8cd](https://github.com/bustle/mobiledoc-kit/commit/c6ad8cd))
+* Further improvements to tests ([83356fa](https://github.com/bustle/mobiledoc-kit/commit/83356fa))
+* handle nested section-creating elements correctly in SectionParser ([dfcadc3](https://github.com/bustle/mobiledoc-kit/commit/dfcadc3))
+
+
+
 <a name="0.11.1-ghost.5"></a>
 ## <small>0.11.1-ghost.5 (2018-11-21)</small>
 
@@ -5,6 +30,7 @@
 * failing test for #656 ([db7f5c8](https://github.com/bustle/mobiledoc-kit/commit/db7f5c8)), closes [#656](https://github.com/bustle/mobiledoc-kit/issues/656) [#656](https://github.com/bustle/mobiledoc-kit/issues/656)
 * handle nested section-creating elements correctly in SectionParser ([d235c52](https://github.com/bustle/mobiledoc-kit/commit/d235c52))
 * Revert "Fix issue #592" ([62da2b7](https://github.com/bustle/mobiledoc-kit/commit/62da2b7)), closes [#592](https://github.com/bustle/mobiledoc-kit/issues/592)
+* v0.11.1-ghost.5 ([f34fdf5](https://github.com/bustle/mobiledoc-kit/commit/f34fdf5))
 
 
 
