@@ -191,7 +191,12 @@ class SectionParser {
       ) {
         // don't break out of the list for list items that contain a single <p>.
         // deals with typical case of <li><p>Text</p></li><li><p>Text</p></li>
-        if (this.state.section.isListItem && tagName === 'p' && !node.nextSibling) {
+        if (
+          this.state.section.isListItem &&
+          tagName === 'p' &&
+          !node.nextSibling &&
+          contains(VALID_LIST_ITEM_TAGNAMES, normalizeTagName(node.parentElement.tagName))
+         ) {
           this.parseElementNode(node);
           return;
         }

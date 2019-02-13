@@ -396,6 +396,24 @@ test('#parse doesn\'t group consecutive lists of different types', (assert) => {
   assert.equal(ol.items.objectAt(0).text, 'Two');
 });
 
+test('#parse handles p following list', (assert) => {
+  let container = buildDOM(`
+    <div><ol><li>li1</li><li>li2</li><p>para</p></div>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 2, 'two sections');
+
+  let ol = sections[0];
+  assert.equal(ol.items.length, 2, 'two list items');
+
+  let p = sections[1];
+  assert.equal(p.text, 'para');
+});
+
 test('#parse skips STYLE nodes', (assert) => {
   let element = buildDOM(`
     <style>.rule { font-color: red; }</style>
