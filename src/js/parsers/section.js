@@ -203,7 +203,7 @@ class SectionParser {
 
         // avoid creating empty paragraphs due to wrapper elements around
         // section-creating elements
-        if (this.state.section.isMarkerable && !this.state.text) {
+        if (this.state.section.isMarkerable && !this.state.text && this.state.section.markers.length === 0) {
           this.state.section = null;
         } else {
           this._closeCurrentSection();
