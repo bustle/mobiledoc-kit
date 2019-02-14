@@ -294,6 +294,7 @@ class SectionParser {
     }
 
     state.section = null;
+    state.text = '';
   }
 
   _markupsFromElement(element) {
@@ -341,9 +342,11 @@ class SectionParser {
 
   _createMarker() {
     let { state } = this;
-    let text = transformHTMLText(state.text);
-    let marker = this.builder.createMarker(text, state.markups);
-    state.section.markers.append(marker);
+    if (state.section.isMarkerable) {
+      let text = transformHTMLText(state.text);
+      let marker = this.builder.createMarker(text, state.markups);
+      state.section.markers.append(marker);
+    }
     state.text = '';
   }
 
