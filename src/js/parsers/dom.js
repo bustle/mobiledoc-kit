@@ -36,6 +36,14 @@ export function transformHTMLText(textContent) {
   return text;
 }
 
+export function trimSectionText(section) {
+  if (section.isMarkerable && section.markers.length) {
+    let { head, tail } = section.markers;
+    head.value = head.value.replace(/^\s+/, '');
+    tail.value = tail.value.replace(/\s+$/, '');
+  }
+}
+
 function isGoogleDocsContainer(element) {
   return !isTextNode(element) &&
          !isCommentNode(element) &&
@@ -107,6 +115,10 @@ class DOMParser {
       let sections = this.parseSections(child);
       this.appendSections(post, sections);
     });
+
+    // trim leading/trailing whitespace of markerable sections to avoid
+    // unnessary whitespace from indented HTML input
+    forEach(post.sections, section => trimSectionText(section));
 
     return post;
   }

@@ -369,6 +369,24 @@ test('singly-nested ol lis are parsed correctly', (assert) => {
   assert.equal(section.items.objectAt(1).text, 'second element');
 });
 
+test('nested html doesn\'t create unneccessary whitespace', (assert) => {
+  let element = buildDOM(`
+    <div>
+      <p>
+        One
+      <p>
+      <p>
+        Two
+      </p>
+    </div>
+  `);
+  const post = parser.parse(element);
+
+  assert.equal(post.sections.length, 2, '2 sections');
+  assert.equal(post.sections.objectAt(0).text, 'One');
+  assert.equal(post.sections.objectAt(1).text, 'Two');
+});
+
 /*
  * FIXME: Google docs nests uls like this
 test('lis in nested uls are flattened (when ul is child of ul)', (assert) => {
