@@ -35,7 +35,8 @@ import {
 } from 'mobiledoc-kit/utils/array-utils';
 
 import {
-  transformHTMLText
+  transformHTMLText,
+  trimSectionText
 } from '../parsers/dom';
 
 import assert from '../utils/assert';
@@ -283,6 +284,7 @@ class SectionParser {
 
     // push listItems onto the listSection or add a new section
     if (state.section.isListItem && lastSection && lastSection.isListSection) {
+      trimSectionText(state.section);
       lastSection.items.append(state.section);
     } else {
       // remove empty list sections before creating a new section
