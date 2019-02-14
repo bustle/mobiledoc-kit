@@ -322,7 +322,7 @@ test('#parse handles insignificant whitespace', (assert) => {
   let [list] = sections;
   assert.equal(list.type, 'list-section');
   assert.equal(list.items.length, 1, '1 list item');
-  assert.equal(list.items.objectAt(0).text, '         One            ');
+  assert.equal(list.items.objectAt(0).text, 'One');
 });
 
 test('#parse avoids empty paragraph around wrapped list', (assert) => {
