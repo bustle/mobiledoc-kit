@@ -287,6 +287,13 @@ class SectionParser {
       trimSectionText(state.section);
       lastSection.items.append(state.section);
     } else {
+      // avoid creating empty markup sections, especially useful for indented source
+      if (state.section.isMarkerable && !state.section.text.trim()) {
+        state.section = null;
+        state.text = '';
+        return;
+      }
+
       // remove empty list sections before creating a new section
       if (lastSection && lastSection.isListSection && lastSection.items.length === 0) {
         sections.pop();
