@@ -1,3 +1,12 @@
+<a name="0.11.1-ghost.7"></a>
+## <small>0.11.1-ghost.7 (2019-02-22)</small>
+
+* fix error parsing list sections containing text nodes from indented HTML ([5b5296e](https://github.com/bustle/mobiledoc-kit/commit/5b5296e))
+* handle parsing of lists when wrapped with indented html ([b7fe611](https://github.com/bustle/mobiledoc-kit/commit/b7fe611))
+* trim leading/trailing whitespace from sections that can occur when parsing indented HTML ([07b6739](https://github.com/bustle/mobiledoc-kit/commit/07b6739))
+
+
+
 <a name="0.11.1-ghost.6"></a>
 ## <small>0.11.1-ghost.6 (2019-02-13)</small>
 
@@ -20,6 +29,7 @@
 * fixed SectionParser handling of paragraph following single-marker markup section ([c6ad8cd](https://github.com/bustle/mobiledoc-kit/commit/c6ad8cd))
 * Further improvements to tests ([83356fa](https://github.com/bustle/mobiledoc-kit/commit/83356fa))
 * handle nested section-creating elements correctly in SectionParser ([dfcadc3](https://github.com/bustle/mobiledoc-kit/commit/dfcadc3))
+* v0.11.1-ghost.6 ([8acf611](https://github.com/bustle/mobiledoc-kit/commit/8acf611))
 
 
 
