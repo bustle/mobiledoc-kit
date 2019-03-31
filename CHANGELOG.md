@@ -1,6 +1,46 @@
+<a name="0.11.2"></a>
+## <small>0.11.2 (2019-03-31)</small>
+
+* add failing test for #642 ([18d53a1](https://github.com/bustle/mobiledoc-kit/commit/18d53a1)), closes [#642](https://github.com/bustle/mobiledoc-kit/issues/642)
+* add failing test for #648 ([29ff9e7](https://github.com/bustle/mobiledoc-kit/commit/29ff9e7)), closes [#648](https://github.com/bustle/mobiledoc-kit/issues/648)
+* add failing test for list-items being appended as top-level sections ([548fcbf](https://github.com/bustle/mobiledoc-kit/commit/548fcbf))
+* add failing test for nested lists ([40ddff3](https://github.com/bustle/mobiledoc-kit/commit/40ddff3))
+* add failing test for nested lists of different types ([c88d6b8](https://github.com/bustle/mobiledoc-kit/commit/c88d6b8))
+* Add some docs re: the newline in matchers ([7e11dfd](https://github.com/bustle/mobiledoc-kit/commit/7e11dfd))
+* add test for paragraph in list item parsing behaviour ([be9f27b](https://github.com/bustle/mobiledoc-kit/commit/be9f27b))
+* add tests for dom and section parser ignoring blank markup sections ([100c5fb](https://github.com/bustle/mobiledoc-kit/commit/100c5fb))
+* Added more failing tests for 648 ([2eed96e](https://github.com/bustle/mobiledoc-kit/commit/2eed96e))
+* Bump travis to Node 8 ([ac8b89f](https://github.com/bustle/mobiledoc-kit/commit/ac8b89f))
+* Bump yarn deps ([f85346a](https://github.com/bustle/mobiledoc-kit/commit/f85346a))
+* do not group consecutive list sections of different types ([45e4d27](https://github.com/bustle/mobiledoc-kit/commit/45e4d27))
+* Drop Safari from the base testem ([f1486a6](https://github.com/bustle/mobiledoc-kit/commit/f1486a6))
+* Export MOBILEDOC_VERSION & mobiledocRenderers from index ([acbb829](https://github.com/bustle/mobiledoc-kit/commit/acbb829))
+* failing test for #656 ([4bcbec6](https://github.com/bustle/mobiledoc-kit/commit/4bcbec6)), closes [#656](https://github.com/bustle/mobiledoc-kit/issues/656) [#656](https://github.com/bustle/mobiledoc-kit/issues/656)
+* failing test for section parser handling consecutive lists of varying types ([66d2120](https://github.com/bustle/mobiledoc-kit/commit/66d2120))
+* fix error parsing list sections containing text nodes from indented HTML ([002f0d6](https://github.com/bustle/mobiledoc-kit/commit/002f0d6))
+* Fix format readme missing word ([27b4588](https://github.com/bustle/mobiledoc-kit/commit/27b4588))
+* fix grouping of nested lists into single top-level list ([a5353ff](https://github.com/bustle/mobiledoc-kit/commit/a5353ff))
+* fix handling of nested list sections of different types ([2019c94](https://github.com/bustle/mobiledoc-kit/commit/2019c94))
+* Fix json format issue in card description ([f095bb6](https://github.com/bustle/mobiledoc-kit/commit/f095bb6))
+* fix list-items being added as top-level sections when breaking out of lists ([821bf2e](https://github.com/bustle/mobiledoc-kit/commit/821bf2e))
+* Fix website typo (#652) ([1f115a0](https://github.com/bustle/mobiledoc-kit/commit/1f115a0)), closes [#652](https://github.com/bustle/mobiledoc-kit/issues/652)
+* Fixed copy/paste of card section following a list section ([5a171e1](https://github.com/bustle/mobiledoc-kit/commit/5a171e1))
+* Fixed Ctrl+Backspace word delete on Linux ([c523c92](https://github.com/bustle/mobiledoc-kit/commit/c523c92)), closes [#634](https://github.com/bustle/mobiledoc-kit/issues/634)
+* fixed SectionParser handling of paragraph following a list ([892b66a](https://github.com/bustle/mobiledoc-kit/commit/892b66a))
+* fixed SectionParser handling of paragraph following single-marker markup section ([c6ad8cd](https://github.com/bustle/mobiledoc-kit/commit/c6ad8cd))
+* Fixed word movements stopping on accented/non-latin chars ([a192cdb](https://github.com/bustle/mobiledoc-kit/commit/a192cdb)), closes [#628](https://github.com/bustle/mobiledoc-kit/issues/628)
+* Further improvements to tests ([83356fa](https://github.com/bustle/mobiledoc-kit/commit/83356fa))
+* handle nested section-creating elements correctly in SectionParser ([dfcadc3](https://github.com/bustle/mobiledoc-kit/commit/dfcadc3))
+* handle parsing of lists when wrapped with indented html ([ca8c6c5](https://github.com/bustle/mobiledoc-kit/commit/ca8c6c5))
+* trigger handlers without inserting newline ([71c438c](https://github.com/bustle/mobiledoc-kit/commit/71c438c))
+* trim leading/trailing whitespace from sections that can occur when parsing indented HTML ([333c293](https://github.com/bustle/mobiledoc-kit/commit/333c293))
+
+
+
 <a name="0.11.1"></a>
 ## <small>0.11.1 (2018-06-21)</small>
 
+* v0.11.1 ([9cbb2ba](https://github.com/bustle/mobiledoc-kit/commit/9cbb2ba))
 
 
 
@@ -13,6 +53,7 @@
 * Bump yarn.lock ([215e755](https://github.com/bustle/mobiledoc-kit/commit/215e755))
 * Failing tests for #494 ([be446f6](https://github.com/bustle/mobiledoc-kit/commit/be446f6)), closes [#494](https://github.com/bustle/mobiledoc-kit/issues/494)
 * Fix error when pasting HTML that parses to a blank doc ([cd7fa1d](https://github.com/bustle/mobiledoc-kit/commit/cd7fa1d)), closes [#619](https://github.com/bustle/mobiledoc-kit/issues/619)
+* Fix issue #592 ([d318a2b](https://github.com/bustle/mobiledoc-kit/commit/d318a2b)), closes [#592](https://github.com/bustle/mobiledoc-kit/issues/592)
 * Fix sticky modifier keys for word deletion ([fce2d90](https://github.com/bustle/mobiledoc-kit/commit/fce2d90))
 * Fix typo in README.md ([1abaf40](https://github.com/bustle/mobiledoc-kit/commit/1abaf40))
 * Run parser plugins for top-level unknown elements ([daf2fe0](https://github.com/bustle/mobiledoc-kit/commit/daf2fe0))
