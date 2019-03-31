@@ -305,6 +305,49 @@ test('#parse handles list following node handled by parserPlugin', (assert) => {
   assert.equal(listSection.items.length, 1, '1 list item');
 });
 
+test('#parse handles insignificant whitespace', (assert) => {
+  let container = buildDOM(`
+    <ul>
+      <li>
+        One
+      </li>
+    </ul>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1, '1 section');
+  let [list] = sections;
+  assert.equal(list.type, 'list-section');
+  assert.equal(list.items.length, 1, '1 list item');
+  assert.equal(list.items.objectAt(0).text, 'One');
+});
+
+test('#parse handles insignificant whitespace (wrapped)', (assert) => {
+  let container = buildDOM(`
+    <div>
+      <ul>
+        <li>
+          One
+        </li>
+      </ul>
+    </div>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1, '1 section');
+  let [list] = sections;
+  assert.equal(list.type, 'list-section');
+  assert.equal(list.items.length, 1, '1 list item');
+  assert.equal(list.items.objectAt(0).text, 'One');
+});
+
+
 test('#parse avoids empty paragraph around wrapped list', (assert) => {
   let container = buildDOM(`
     <div><ul><li>One</li></ul></div>

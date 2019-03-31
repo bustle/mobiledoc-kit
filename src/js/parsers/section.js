@@ -35,7 +35,8 @@ import {
 } from 'mobiledoc-kit/utils/array-utils';
 
 import {
-  transformHTMLText
+  transformHTMLText,
+  trimSectionText
 } from '../parsers/dom';
 
 import assert from '../utils/assert';
@@ -238,7 +239,7 @@ class SectionParser {
     let { state } = this;
 
     const markups = this._markupsFromElement(element);
-    if (markups.length && state.text.length) {
+    if (markups.length && state.text.length && state.section.isMarkerable) {
       this._createMarker();
     }
     state.markups.push(...markups);
@@ -247,7 +248,7 @@ class SectionParser {
       this.parseNode(node);
     });
 
-    if (markups.length && state.text.length) {
+    if (markups.length && state.text.length && state.section.isMarkerable) {
       // create the marker started for this node
       this._createMarker();
     }
@@ -277,14 +278,22 @@ class SectionParser {
     }
 
     // close a trailing text node if it exists
-    if (state.text.length) {
+    if (state.text.length && state.section.isMarkerable) {
       this._createMarker();
     }
 
     // push listItems onto the listSection or add a new section
     if (state.section.isListItem && lastSection && lastSection.isListSection) {
+      trimSectionText(state.section);
       lastSection.items.append(state.section);
     } else {
+      // avoid creating empty markup sections, especially useful for indented source
+      if (state.section.isMarkerable && !state.section.text.trim()) {
+        state.section = null;
+        state.text = '';
+        return;
+      }
+
       // remove empty list sections before creating a new section
       if (lastSection && lastSection.isListSection && lastSection.items.length === 0) {
         sections.pop();
@@ -294,6 +303,7 @@ class SectionParser {
     }
 
     state.section = null;
+    state.text = '';
   }
 
   _markupsFromElement(element) {
