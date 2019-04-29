@@ -141,12 +141,20 @@ class Range {
       return !detectMarker(i);
     };
 
-    let headMarker = head.section.markers.detect(firstNotMatchingDetect, head.marker, true);
-    headMarker = (headMarker && headMarker.next) || head.marker;
+    let headMarker = headSection.markers.detect(firstNotMatchingDetect, head.marker, true);
+    if (!headMarker && detectMarker(headSection.markers.head)) {
+      headMarker = headSection.markers.head;
+    } else {
+      headMarker = (headMarker && headMarker.next) || head.marker;
+    }
     let headPosition = new Position(headSection, headSection.offsetOfMarker(headMarker));
 
     let tailMarker = tail.section.markers.detect(firstNotMatchingDetect, tail.marker);
-    tailMarker = (tailMarker && tailMarker.prev) || tail.marker;
+    if (!tailMarker && detectMarker(headSection.markers.tail)) {
+      tailMarker = headSection.markers.tail;
+    } else {
+      tailMarker = (tailMarker && tailMarker.prev) || tail.marker;
+    }
     let tailPosition = new Position(tail.section, tail.section.offsetOfMarker(tailMarker) + tailMarker.length);
 
     return headPosition.toRange(tailPosition, direction);
