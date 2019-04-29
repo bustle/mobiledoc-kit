@@ -239,7 +239,7 @@ class SectionParser {
     let { state } = this;
 
     const markups = this._markupsFromElement(element);
-    if (markups.length && state.text.length) {
+    if (markups.length && state.text.length && state.section.isMarkerable) {
       this._createMarker();
     }
     state.markups.push(...markups);
@@ -248,7 +248,7 @@ class SectionParser {
       this.parseNode(node);
     });
 
-    if (markups.length && state.text.length) {
+    if (markups.length && state.text.length && state.section.isMarkerable) {
       // create the marker started for this node
       this._createMarker();
     }
@@ -278,7 +278,7 @@ class SectionParser {
     }
 
     // close a trailing text node if it exists
-    if (state.text.length) {
+    if (state.text.length && state.section.isMarkerable) {
       this._createMarker();
     }
 
@@ -351,11 +351,9 @@ class SectionParser {
 
   _createMarker() {
     let { state } = this;
-    if (state.section.isMarkerable) {
-      let text = transformHTMLText(state.text);
-      let marker = this.builder.createMarker(text, state.markups);
-      state.section.markers.append(marker);
-    }
+    let text = transformHTMLText(state.text);
+    let marker = this.builder.createMarker(text, state.markups);
+    state.section.markers.append(marker);
     state.text = '';
   }
 

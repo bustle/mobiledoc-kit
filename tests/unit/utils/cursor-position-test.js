@@ -414,6 +414,40 @@ test('#fromNode when node is root element and offset is > 0', (assert) => {
   assert.positionIsEqual(position, editor.post.tailPosition());
 });
 
+/**
+ * On Firefox, triple-clicking results in a different selection that on Chrome
+ * and others. Imagine we have the following content:
+ *
+ * <p>abc</p>
+ *
+ * Chrome:
+ * anchorNode: <TextNode>
+ * anchorOffset: 0
+ * focusNode: <TextNode>
+ * focusOffset: 3
+ *
+ * Firefox:
+ * anchorNode: <p>
+ * anchorOffset: 0
+ * focusNode: <p>
+ * focusOffset: 1
+ *
+ * So when getting the position for `focusNode`/`focusOffset`, we have to get
+ * the tail of section.
+ */
+test('#fromNode when offset refers to one past the number of child nodes of the node', function(assert) {
+  editor = Helpers.mobiledoc.renderInto(editorElement,
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+
+  let renderTree = editor._renderTree;
+  let elementNode = editorElement.firstChild;
+  let position = Position.fromNode(renderTree, elementNode, 1);
+
+  assert.positionIsEqual(position, editor.post.tailPosition());
+});
+
 test('#fromNode when node is card section element or next to it', (assert) => {
   let editorOptions = { cards: [{
     name: 'some-card',

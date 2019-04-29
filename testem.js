@@ -11,9 +11,9 @@ module.exports = {
     "Chrome"
   ],
   "launch_in_ci": [
+    // "Safari",
     "Chrome",
-    "Firefox",
-    "Safari"
+    "Firefox"
   ],
   "browser_args": {
     "Chrome": [

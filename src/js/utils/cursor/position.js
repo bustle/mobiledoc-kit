@@ -411,6 +411,12 @@ Position = class Position {
             sectionOffset += postNode.length;
           }
           position = new Position(section, sectionOffset);
+        } else if (offset >= elementNode.childNodes.length) {
+
+          // This is to deal with how Firefox handles triple-click selections.
+          // See https://stackoverflow.com/a/21234837/1269194 for an
+          // explanation.
+          position = section.tailPosition();
         } else {
           // The offset is 0 if the cursor is on a non-atom-wrapper element node
           // (e.g., a <br> tag in a blank markup section)

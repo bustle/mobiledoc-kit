@@ -72,19 +72,11 @@ let expectations = [
 
 let structures = [
   // See https://github.com/bustle/mobiledoc-kit/issues/648
-  ['<section><p>first</p><p>second</p></section>', ['first', 'second'], 'one level'],
+  ['<section><p>first</p><p>second</p></section>', ['first','second'], 'one level'],
   ['<section><div><p>first</p><p>second</p></div></section>', ['first', 'second'], 'two levels'],
   ['<section><div><div><p>first</p><p>second</p></div></div></section>', ['first', 'second'], 'three levels'],
   ['<section><div><p>first</p></div><p>second</p></section>', ['first', 'second'], 'offset left'],
-  ['<section><p>first</p><div><p>second</p></div></section>', ['first', 'second'], 'offset right'],
-  // Part two - siblings
-  ['<section><p>first</p></section><section><p>second</p></section>', ['first', 'second'], 'siblings'],
-  ['<div><section><p>first</p></section><section><p>second</p></section></div>', ['first', 'second'], 'wrapped siblings'],
-  ['<section><div><p>first</p></div></section><section><div><p>second</p></div></section>', ['first', 'second'], 'two-level siblings'],
-  ['<section><div><p>first</p></div></section><section><p>second</p></section>', ['first', 'second'], 'offset siblings left'],
-  ['<section><p>first</p></section><section><div><p>second</p></div></section>', ['first', 'second'], 'offset siblings right'],
-  // Part three - trees
-  ['<section><p>first</p></section><section><div><p>second</p></div><section><div><p>third</p><p>fourth</p></div></section></section>', ['first', 'second', 'third', 'fourth'], 'tree']
+  ['<section><p>first</p><div><p>second</p></div></section>', ['first', 'second'], 'offset right']
 ];
 
 expectations.forEach(([html, dslText]) => {
