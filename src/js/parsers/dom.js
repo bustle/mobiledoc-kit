@@ -16,6 +16,7 @@ import {
   normalizeTagName
 } from '../utils/dom-utils';
 import {
+  any,
   detect,
   forEach
 } from '../utils/array-utils';
@@ -128,7 +129,12 @@ class DOMParser {
   }
 
   appendSection(post, section) {
-    if (section.isBlank || (section.isMarkerable && trim(section.text) === '')) {
+    if (
+      section.isBlank ||
+      (section.isMarkerable &&
+        trim(section.text) === "" &&
+        !any(section.markers, marker => marker.isAtom))
+    ) {
       return;
     }
 

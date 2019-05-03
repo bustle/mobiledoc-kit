@@ -397,3 +397,29 @@ test('lis in nested uls are flattened (when ul is child of ul)', (assert) => {
   assert.equal(section.items.objectAt(1).text, 'inner');
 });
 
+test('#appendSection does not skip sections containing a single atom with no text value', (assert) => {
+  let options = {
+    plugins: [function (node, builder, {addMarkerable, nodeFinished}) {
+      if (node.nodeType !== 1 || node.tagName !== 'BR') {
+          return;
+      }
+
+      let softReturn = builder.createAtom('soft-return');
+      addMarkerable(softReturn);
+
+      nodeFinished();
+    }]
+  };
+  parser = new DOMParser(builder, options);
+
+  let element = buildDOM(`Testing<br>Atoms`);
+  const post = parser.parse(element);
+
+  assert.equal(post.sections.length, 1, '1 section');
+  let section = post.sections.objectAt(0);
+  assert.equal(section.tagName, 'p');
+  assert.equal(section.markers.length, 3, '3 markers');
+  assert.equal(section.markers.objectAt(0).value, 'Testing');
+  assert.equal(section.markers.objectAt(1).name, 'soft-return');
+  assert.equal(section.markers.objectAt(2).value, 'Atoms');
+});
