@@ -1,7 +1,16 @@
+<a name="0.11.2-ghost.2"></a>
+## <small>0.11.2-ghost.2 (2019-05-03)</small>
+
+* 🐛 Fixed atoms with no text value being removed when parsing top-level markerables ([8d5b337](https://github.com/bustle/mobiledoc-kit/commit/8d5b337))
+* Uncomment "FIXME" Google Docs nested uls test ([9e4a4c8](https://github.com/bustle/mobiledoc-kit/commit/9e4a4c8))
+
+
+
 <a name="0.11.2-ghost.1"></a>
 ## <small>0.11.2-ghost.1 (2019-04-29)</small>
 
 * Fixed range#expandByMarker not expanding to beginning/end of section ([ab01ecb](https://github.com/bustle/mobiledoc-kit/commit/ab01ecb))
+* v0.11.2-ghost.1 ([2a24702](https://github.com/bustle/mobiledoc-kit/commit/2a24702))
 
 
 
