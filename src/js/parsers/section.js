@@ -30,6 +30,7 @@ import {
 } from 'mobiledoc-kit/utils/dom-utils';
 
 import {
+  any,
   forEach,
   contains
 } from 'mobiledoc-kit/utils/array-utils';
@@ -288,7 +289,11 @@ class SectionParser {
       lastSection.items.append(state.section);
     } else {
       // avoid creating empty markup sections, especially useful for indented source
-      if (state.section.isMarkerable && !state.section.text.trim()) {
+      if (
+        state.section.isMarkerable &&
+        !state.section.text.trim() &&
+        !any(state.section.markers, marker => marker.isAtom)
+      ) {
         state.section = null;
         state.text = '';
         return;
