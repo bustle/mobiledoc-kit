@@ -379,8 +379,7 @@ test('nested html doesn\'t create unneccessary whitespace', (assert) => {
   assert.equal(post.sections.objectAt(1).text, 'Two');
 });
 
-/*
- * FIXME: Google docs nests uls like this
+// Google docs nests uls like this
 test('lis in nested uls are flattened (when ul is child of ul)', (assert) => {
   let element= buildDOM(`
     <ul>
@@ -397,4 +396,4 @@ test('lis in nested uls are flattened (when ul is child of ul)', (assert) => {
   assert.equal(section.items.objectAt(0).text, 'outer');
   assert.equal(section.items.objectAt(1).text, 'inner');
 });
- */
+
