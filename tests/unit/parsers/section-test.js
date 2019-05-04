@@ -511,3 +511,41 @@ test('#parse skips nested Comment nodes', (assert) => {
   assert.equal(section.text, 'some text', 'parses text surrounded by comments');
   assert.equal(section.markers.length, 1, 'only 1 marker');
 });
+
+test('#parse allows top-level Comment nodes to be parsed by parser plugins', (assert) => {
+  let element = buildDOM(`<!--parse me-->`).firstChild;
+  let plugins = [function(element, builder, {addMarkerable}) {
+    if (element.nodeType !== 8 && element.nodeValue !== 'parse me') {
+      return;
+    }
+    let marker = builder.createMarker('oh my');
+    addMarkerable(marker);
+  }];
+
+  parser = new SectionParser(builder, {plugins});
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1);
+  let [section] = sections;
+  assert.equal(section.text, 'oh my', 'parses comment with parser plugin');
+  assert.equal(section.markers.length, 1, 'only 1 marker');
+});
+
+test('#parse allows nested Comment nodes to be parsed by parser plugins', (assert) => {
+  let element = buildDOM(`<p><!--parse me--></p>`).firstChild;
+  let plugins = [function(element, builder, {addMarkerable}) {
+    if (element.nodeType !== 8 && element.nodeValue !== 'parse me') {
+      return;
+    }
+    let marker = builder.createMarker('oh my');
+    addMarkerable(marker);
+  }];
+
+  parser = new SectionParser(builder, {plugins});
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 1);
+  let [section] = sections;
+  assert.equal(section.text, 'oh my', 'parses comment with parser plugin');
+  assert.equal(section.markers.length, 1, 'only 1 marker');
+});
