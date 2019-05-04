@@ -1,8 +1,16 @@
+<a name="0.11.2-ghost.3"></a>
+## <small>0.11.2-ghost.3 (2019-05-04)</small>
+
+* 🐛 Fixed parser plugin handling of top-level comment nodes ([4696bfe](https://github.com/bustle/mobiledoc-kit/commit/4696bfe))
+
+
+
 <a name="0.11.2-ghost.2"></a>
 ## <small>0.11.2-ghost.2 (2019-05-03)</small>
 
 * 🐛 Fixed atoms with no text value being removed when parsing top-level markerables ([8d5b337](https://github.com/bustle/mobiledoc-kit/commit/8d5b337))
 * Uncomment "FIXME" Google Docs nested uls test ([9e4a4c8](https://github.com/bustle/mobiledoc-kit/commit/9e4a4c8))
+* v0.11.2-ghost.2 ([b808ae7](https://github.com/bustle/mobiledoc-kit/commit/b808ae7))
 
 
 
