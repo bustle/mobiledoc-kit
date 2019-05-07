@@ -36,7 +36,7 @@ The wrapper signature:
 
 ```
 {
-  version: "0.3.1",                         ──── Versioning information
+  version: "0.3.2",                         ──── Versioning information
   markups: [                              ──── Ordered list of markup types
     markup,
     markup
@@ -65,7 +65,7 @@ Markups have a tagName and an optional array of attributes. Not all markups can 
 
 ```
 {
-  version: "0.3.1",
+  version: "0.3.2",
   markups: [
     [tagName, optionalAttributesArray],   ──── Markup
     ["em"],                               ──── Example simple markup with no attributes
@@ -80,7 +80,7 @@ Atoms have a name, text value and arbitrary payload.
 
 ```
 {
-  version: "0.3.1",
+  version: "0.3.2",
   atoms: [
     [atomName, atomText, atomPayload],    ──── Atom
     ['mention', '@bob', { id: 42 }]       ──── Example 'mention' atom
@@ -94,7 +94,7 @@ Cards have a name and arbitrary payload.
 
 ```
 {
-  version: "0.3.1",
+  version: "0.3.2",
   cards: [
     [cardName, cardPayload],            ──── Card
     ['image', {                         ──── Example 'image' card
@@ -110,7 +110,7 @@ Sections have an identifier and other values depending on their type. See _Secti
 
 ```
 {
-  version: "0.3.1",
+  version: "0.3.2",
   sections: [
     [sectionTypeIdentifier, <type dependent>], ──── Card
     [1, "h2", [                        ──── Example 'heading 2 text' section
@@ -125,7 +125,7 @@ The text of a document is held in markers which signal where markup and atoms ap
 
 ```
 {
-  version: "0.3.1",
+  version: "0.3.2",
   markups: [
     ["b"],                                ──── Markup at index 0
     ["i"]                                 ──── Markup at index 1
@@ -214,23 +214,41 @@ Markup sections, in addition to plain text, can include markups and atoms.
 
 ```
 {
-  version: "0.3.1",
+  version: "0.3.2",
   markups: [
-    ["b"],                                ──── Markup at index 0
-    ["i"]                                 ──── Markup at index 1
+    ["b"],                           ──── Markup at index 0
+    ["i"]                            ──── Markup at index 1
   ],
   atoms: [
-    ["mention", "@bob", { id: 42 }]       ──── mention Atom at index 0
-    ["mention", "@tom", { id: 12 }]       ──── mention Atom at index 1
+    ["mention", "@bob", { id: 42 }]  ──── mention Atom at index 0
+    ["mention", "@tom", { id: 12 }]  ──── mention Atom at index 1
   ]
   sections: [
-    [sectionTypeIdentifier, tagName, markers],   ──── sectionTypeIdentifier for markup sections
-    [1, "h2", [                                       is always 1.
+    [
+      sectionTypeIdentifier,         ──── sectionTypeIdentifier for markup
+      tagName,                            sections is always 1
+      markers,
+      optionalSectionAttributesArray
+    ],
+    [1, "h2", [
       [0, [], 0, "Simple h2 example"],
     ]],
     [1, "p", [
-      [textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, value],
-      [0, [], 0, "Example with no markup"],      ──── textTypeIdentifier for markup is always 0
+      [0, [], 0, "Simple aligned example"],
+    ], ["data-md-text-align", "center"]],
+    [1, "p", [
+      [
+        textTypeIdentifier,
+        openMarkupsIndexes,
+        numberOfClosedMarkups,
+        value
+      ],
+      [
+        0,                           ──── textTypeIdentifier for markup is always 0
+        [],
+        0,
+        "Example with no markup"
+      ],
       [0, [0], 1, "Example wrapped in b tag (opened markup #0), 1 closed markup"],
       [0, [1], 0, "Example opening i tag (opened markup with #1, 0 closed markups)"],
       [0, [], 1, "Example closing i tag (no opened markups, 1 closed markup)"],
@@ -239,9 +257,14 @@ Markup sections, in addition to plain text, can include markups and atoms.
     ]],
     [1, "p", [
       [textTypeIdentifier, openMarkupsIndexes, numberOfClosedMarkups, atomIndex],
-      [1, [], 0, 0],             ──── mention atom at index 0 (@bob), textTypeIdentifier for atom is always 1
-      [1, [0], 1, 1]             ──── mention atom at index 1 (@tom) wrapped in b tag (markup index 0)
-    ]],
+      [
+        1,                           ──── mention atom at index 0 (@bob),
+        [],                               textTypeIdentifier for atom is always 1
+        0,
+        0
+      ],
+      [1, [0], 1, 1]                 ──── mention atom at index 1 (@tom) wrapped
+    ]],                                   in b tag (markup index 0)
   ]
 }
 ```
@@ -258,13 +281,20 @@ A section `tagName` must be one of:
 * `h6`
 * `p` - Paragraph
 
+A section `optionalSectionAttributesArray` is an array of key/value pairs.
+Valid keys include:
+
+* `data-md-text-align` - Alignment of text in a section. With values matching
+  those of
+  [CSS's `text-align`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-align).
+
 **Image section**
 
 Renders an image. In many scenarios, a card to suit your needs is better.
 
 ```
 {
-  version: "0.3.1",
+  version: "0.3.2",
   sections: [
     [sectionTypeIdentifier, src],
     [2, "http://placekitten.com/200/100"]
@@ -278,7 +308,7 @@ Lists are similar to markup sections but have a set of markers for each list ite
 
 ```
 {
-  version: "0.3.1",
+  version: "0.3.2",
   markups: [
     ["b"]                                ──── Markup at index 0
   ],
@@ -286,7 +316,12 @@ Lists are similar to markup sections but have a set of markers for each list ite
     ["mention", "@bob", { id: 42 }]       ──── mention Atom at index 0
   ]
   sections: [
-    [sectionTypeIdentifier, tagName, [markers, markers, markers]],
+    [
+      sectionTypeIdentifier,
+      tagName,
+      [markers, markers, markers],
+      optionalSectionAttributesArray
+    ],
     [3, "ol", [
       [
         [0, [], 0, "Plain"]
@@ -307,11 +342,18 @@ A section `tagName` must be one of:
 * `ul` - Unordered list
 * `ol` - Ordered list
 
+A section `optionalSectionAttributesArray` is an array of key/value pairs.
+Valid keys include:
+
+* `data-md-text-align` - Alignment of text in a section. With values matching
+  those of
+  [CSS's `text-align`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-align).
+
 **Card Section**
 
 ```
 {
-  version: "0.3.1",
+  version: "0.3.2",
   cards: [
     ["card-name", { cardPayload }]
   ],
