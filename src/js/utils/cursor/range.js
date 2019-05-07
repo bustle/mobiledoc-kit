@@ -145,7 +145,7 @@ class Range {
     if (!headMarker && detectMarker(headSection.markers.head)) {
       headMarker = headSection.markers.head;
     } else {
-      headMarker = (headMarker && headMarker.next) || head.marker;
+      headMarker = headMarker.next || head.marker;
     }
     let headPosition = new Position(headSection, headSection.offsetOfMarker(headMarker));
 
