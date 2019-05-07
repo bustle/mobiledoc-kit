@@ -78,9 +78,9 @@ class PostNodeBuilder {
    * @param {Marker[]} [markers=[]]
    * @return {MarkupSection}
    */
-  createMarkupSection(tagName=DEFAULT_MARKUP_SECTION_TAG_NAME, markers=[], isGenerated=false) {
+  createMarkupSection(tagName=DEFAULT_MARKUP_SECTION_TAG_NAME, markers=[], isGenerated=false, attributes={}) {
     tagName = normalizeTagName(tagName);
-    const section = new MarkupSection(tagName, markers);
+    const section = new MarkupSection(tagName, markers, attributes);
     if (isGenerated) {
       section.isGenerated = true;
     }
@@ -88,9 +88,9 @@ class PostNodeBuilder {
     return section;
   }
 
-  createListSection(tagName=DEFAULT_LIST_SECTION_TAG_NAME, items=[]) {
+  createListSection(tagName=DEFAULT_LIST_SECTION_TAG_NAME, items=[], attributes={}) {
     tagName = normalizeTagName(tagName);
-    const section = new ListSection(tagName, items);
+    const section = new ListSection(tagName, items, attributes);
     section.builder = this;
     return section;
   }

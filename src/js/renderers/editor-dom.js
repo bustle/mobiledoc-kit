@@ -88,11 +88,21 @@ function renderMarkupSection(section) {
     addClassName(element, section.tagName);
   }
 
+  section.eachAttribute((key, value) => {
+    element.style.setProperty(key.replace('data-md-',''), value);
+  });
+
   return element;
 }
 
 function renderListSection(section) {
-  return document.createElement(section.tagName);
+  let element = document.createElement(section.tagName);
+
+  section.eachAttribute((key, value) => {
+    element.style.setProperty(key.replace('data-md-',''), value);
+  });
+
+  return element;
 }
 
 function renderListItem() {

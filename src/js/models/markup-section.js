@@ -2,6 +2,7 @@ import Markerable from './_markerable';
 import { normalizeTagName } from '../utils/dom-utils';
 import { contains } from '../utils/array-utils';
 import { MARKUP_SECTION_TYPE } from './types';
+import { attributable } from './_attributable';
 
 // valid values of `tagName` for a MarkupSection
 export const VALID_MARKUP_SECTION_TAGNAMES = [
@@ -33,8 +34,12 @@ export const MARKUP_SECTION_ELEMENT_NAMES = [
 export const DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[8];
 
 const MarkupSection = class MarkupSection extends Markerable {
-  constructor(tagName=DEFAULT_TAG_NAME, markers=[]) {
+  constructor(tagName=DEFAULT_TAG_NAME, markers=[], attributes={}) {
     super(MARKUP_SECTION_TYPE, tagName, markers);
+
+    attributable(this);
+    Object.entries(attributes).forEach(([k,v]) => this.setAttribute(k, v));
+
     this.isMarkupSection = true;
   }
 
