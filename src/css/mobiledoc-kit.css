@@ -62,6 +62,27 @@
   max-width: 100%;
 }
 
+.__mobiledoc-editor [data-md-text-align='left'] {
+  text-align: left;
+}
+
+.__mobiledoc-editor [data-md-text-align='center'] {
+  text-align: center;
+}
+
+.__mobiledoc-editor [data-md-text-align='right'] {
+  text-align: right;
+}
+
+.__mobiledoc-editor [data-md-text-align='justify'] {
+  text-align: justify;
+}
+
+.__mobiledoc-editor ol,
+.__mobiledoc-editor ul {
+  list-style-position: inside;
+}
+
 /**
  * Cards
  */

@@ -812,6 +812,25 @@ class PostEditor {
     this.setRange(nextRange);
   }
 
+  setAttribute(key, value, range) {
+    range = toRange(range);
+    let { post } = this.editor;
+    let attribute = `data-md-${key}`;
+
+    post.walkMarkerableSections(range, section => {
+      if (section.isListItem) {
+        section = section.parent;
+      }
+
+      if (section.getAttribute(attribute) !== value) {
+        section.setAttribute(attribute, value);
+        this._markDirty(section);
+      }
+    });
+
+    this.setRange(range);
+  }
+
   _isSameSectionType(section, sectionTagName) {
     return section.isListItem ?
       section.parent.tagName === sectionTagName :

@@ -79,6 +79,12 @@ function penultimateParentOf(element, parentElement) {
   return element;
 }
 
+function setSectionAttributesOnElement(section, element) {
+  section.eachAttribute((key, value) => {
+    element.setAttribute(key, value);
+  });
+}
+
 function renderMarkupSection(section) {
   let element;
   if (MARKUP_SECTION_ELEMENT_NAMES.indexOf(section.tagName) !== -1) {
@@ -88,11 +94,17 @@ function renderMarkupSection(section) {
     addClassName(element, section.tagName);
   }
 
+  setSectionAttributesOnElement(section, element);
+
   return element;
 }
 
 function renderListSection(section) {
-  return document.createElement(section.tagName);
+  let element = document.createElement(section.tagName);
+
+  setSectionAttributesOnElement(section, element);
+
+  return element;
 }
 
 function renderListItem() {

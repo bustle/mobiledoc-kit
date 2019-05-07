@@ -56,12 +56,16 @@
       </div>
       <div id="editor-wrapper">
         <div class="toolbar">
-          <button data-action='toggleSection' data-arg='h1'>Headline</button>
-          <button data-action='toggleSection' data-arg='h2'>Subheadline</button>
-          <button data-action='toggleMarkup' data-arg='strong'>Bold</button>
-          <button data-action='toggleMarkup' data-arg='em'>Italic</button>
-          <button data-action='toggleSection' data-arg='ul'>Bullet List</button>
-          <button data-action='toggleSection' data-arg='ol'>Number List</button>
+          <button data-action='toggleSection' data-args='h1'>Headline</button>
+          <button data-action='toggleSection' data-args='h2'>Subheadline</button>
+          <button data-action='toggleMarkup' data-args='strong'>Bold</button>
+          <button data-action='toggleMarkup' data-args='em'>Italic</button>
+          <button data-action='toggleSection' data-args='ul'>Bullet List</button>
+          <button data-action='toggleSection' data-args='ol'>Number List</button>
+          <button data-action='setAttribute' data-args='text-align,left'>Left</button>
+          <button data-action='setAttribute' data-args='text-align,center'>Center</button>
+          <button data-action='setAttribute' data-args='text-align,right'>Right</button>
+          <button data-action='setAttribute' data-args='text-align,justify'>Justify</button>
         </div>
         <div id='editor'></div>
       </div>

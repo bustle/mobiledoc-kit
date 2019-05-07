@@ -651,6 +651,122 @@ test('moveSectionDown moves it down', (assert) => {
                'moveSectionDown is no-op when card is at bottom');
 });
 
+test('#setAttribute on empty Mobiledoc does nothing', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection}) => {
+    return post([]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  const range = Range.blankRange();
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.setAttribute('text-align', 'center', range);
+  postEditor.complete();
+
+  assert.postIsSimilar(postEditor.editor.post, post);
+});
+
+test('#setAttribute sets attribute of a single section', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection}) => {
+    return post([markupSection('p')]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  const range = Range.create(post.sections.head, 0);
+
+  assert.deepEqual(
+    post.sections.head.attributes,
+    {}
+  );
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.setAttribute('text-align', 'center', range);
+  postEditor.complete();
+
+  assert.deepEqual(
+    post.sections.head.attributes,
+    {
+      'data-md-text-align': 'center'
+    }
+  );
+});
+
+test('#setAttribute sets attribute of multiple sections', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      cardSection('my-card'),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  const range = Range.create(post.sections.head, 0,
+                             post.sections.tail, 2);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.setAttribute('text-align', 'center', range);
+  postEditor.complete();
+
+  assert.deepEqual(
+    post.sections.head.attributes,
+    {
+      'data-md-text-align': 'center'
+    }
+  );
+  assert.ok(post.sections.objectAt(1).isCardSection);
+  assert.deepEqual(
+    post.sections.tail.attributes,
+    {
+      'data-md-text-align': 'center'
+    }
+  );
+});
+
+test('#setAttribute sets attribute of a single list', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, listSection, listItem, marker, markup}) => {
+    return post([listSection('ul', [
+      listItem([marker('a')]),
+      listItem([marker('def')]),
+    ])]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  let range = Range.create(post.sections.head.items.head, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.setAttribute('text-align', 'center', range);
+  postEditor.complete();
+
+  assert.deepEqual(
+    post.sections.head.attributes,
+    {
+      'data-md-text-align': 'center'
+    }
+  );
+});
+
+test('#setAttribute when cursor is in non-markerable section changes nothing', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      cardSection('my-card')
+    ]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  const range = post.sections.head.headPosition().toRange();
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.setAttribute('text-align', 'center', range);
+  postEditor.complete();
+
+  assert.ok(post.sections.head.isCardSection, 'card section not changed');
+  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.headPosition());
+});
+
 test('#toggleSection changes single section to and from tag name', (assert) => {
   let post = Helpers.postAbstract.build(({post, markupSection}) => {
     return post([markupSection('p')]);

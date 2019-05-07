@@ -32,3 +32,9 @@ test('cloning a card copies payload', (assert) => {
   card.payload.foo = 'other foo';
   assert.equal(card2.payload.foo, 'bar', 'card2 payload not updated');
 });
+
+test('card cannot have attributes', (assert) => {
+  const card = builder.createCardSection('card-name');
+
+  assert.equal(card.attributes, undefined);
+});

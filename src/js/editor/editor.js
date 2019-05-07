@@ -953,6 +953,10 @@ class Editor {
     this.run(postEditor => postEditor.toggleSection(tagName, this.range));
   }
 
+  setAttribute(key, value) {
+    this.run(postEditor => postEditor.setAttribute(key, value, this.range));
+  }
+
   /**
    * Finds and runs the first matching key command for the event
    *
