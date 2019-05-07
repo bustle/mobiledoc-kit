@@ -220,3 +220,68 @@ test('#expandByMarker processed markers in a callback and continues as long as t
     'range tail did not change'
   );
 });
+
+// https://github.com/bustle/mobiledoc-kit/issues/676
+test('#expandByMarker can expand to beginning of section with matching markups', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    let bold = markup('b');
+    let italic = markup('i');
+    return post([
+      markupSection('p', [
+        marker('aiya', [bold]),
+        marker('biya', [bold, italic]),
+        marker('ciya', [bold]),
+        marker('diya', [bold]),
+      ])
+    ]);
+  });
+
+  let section = post.sections.head;
+  let head = section.toPosition(14); // i in 4th hiya
+  let tail = section.toPosition(14); // i in 4th hiya
+  let range = head.toRange(tail);
+  let expandedRange = range.expandByMarker(marker => {
+    return !!(detect(marker.markups, markup => markup.tagName === 'b'));
+  });
+
+  assert.positionIsEqual(
+    expandedRange.head, section.toPosition(0),
+    'range head is start of first marker'
+  );
+  assert.positionIsEqual(
+    expandedRange.tail, section.toPosition(16),
+    'range tail is at end of last marker'
+  );
+});
+
+test('#expandByMarker can expand to end of section with matching markups', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker, markup}) => {
+    let bold = markup('b');
+    let italic = markup('i');
+    return post([
+      markupSection('p', [
+        marker('aiya', [bold]),
+        marker('biya', [bold, italic]),
+        marker('ciya', [bold]),
+        marker('diya', [bold]),
+      ])
+    ]);
+  });
+
+  let section = post.sections.head;
+  let head = section.toPosition(2); // i in 4th hiya
+  let tail = section.toPosition(2); // i in 4th hiya
+  let range = head.toRange(tail);
+  let expandedRange = range.expandByMarker(marker => {
+    return !!(detect(marker.markups, markup => markup.tagName === 'b'));
+  });
+
+  assert.positionIsEqual(
+    expandedRange.head, section.toPosition(0),
+    'range head is start of first marker'
+  );
+  assert.positionIsEqual(
+    expandedRange.tail, section.toPosition(16),
+    'range tail is at end of last marker'
+  );
+});
