@@ -145,7 +145,7 @@ class Range {
     if (!headMarker && detectMarker(headSection.markers.head)) {
       headMarker = headSection.markers.head;
     } else {
-      headMarker = (headMarker && headMarker.next) || head.marker;
+      headMarker = headMarker.next || head.marker;
     }
     let headPosition = new Position(headSection, headSection.offsetOfMarker(headMarker));
 
@@ -153,7 +153,7 @@ class Range {
     if (!tailMarker && detectMarker(headSection.markers.tail)) {
       tailMarker = headSection.markers.tail;
     } else {
-      tailMarker = (tailMarker && tailMarker.prev) || tail.marker;
+      tailMarker = tailMarker.prev || tail.marker;
     }
     let tailPosition = new Position(tail.section, tail.section.offsetOfMarker(tailMarker) + tailMarker.length);
 
