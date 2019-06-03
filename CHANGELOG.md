@@ -1,7 +1,17 @@
+<a name="0.11.2-ghost.4"></a>
+## <small>0.11.2-ghost.4 (2019-06-03)</small>
+
+* 🐛 Fixed range#expandByMarker not expanding to beginning/end of section (#677) ([0000d1d](https://github.com/bustle/mobiledoc-kit/commit/0000d1d)), closes [#677](https://github.com/bustle/mobiledoc-kit/issues/677)
+* Copy update in demo ([77de471](https://github.com/bustle/mobiledoc-kit/commit/77de471))
+* Fix sectionParser obliterating plain text content in certain circumstances (#685) ([e5f877f](https://github.com/bustle/mobiledoc-kit/commit/e5f877f)), closes [#685](https://github.com/bustle/mobiledoc-kit/issues/685)
+
+
+
 <a name="0.11.2-ghost.3"></a>
 ## <small>0.11.2-ghost.3 (2019-05-04)</small>
 
 * 🐛 Fixed parser plugin handling of top-level comment nodes ([4696bfe](https://github.com/bustle/mobiledoc-kit/commit/4696bfe))
+* v0.11.2-ghost.3 ([228e2e4](https://github.com/bustle/mobiledoc-kit/commit/228e2e4))
 
 
 
@@ -9,7 +19,9 @@
 ## <small>0.11.2-ghost.2 (2019-05-03)</small>
 
 * 🐛 Fixed atoms with no text value being removed when parsing top-level markerables ([8d5b337](https://github.com/bustle/mobiledoc-kit/commit/8d5b337))
+* 🐛 Fixed atoms with no text value being removed when parsing top-level markerables ([4828dd6](https://github.com/bustle/mobiledoc-kit/commit/4828dd6))
 * Uncomment "FIXME" Google Docs nested uls test ([9e4a4c8](https://github.com/bustle/mobiledoc-kit/commit/9e4a4c8))
+* Uncomment "FIXME" Google Docs nested uls test (#678) ([358cd9d](https://github.com/bustle/mobiledoc-kit/commit/358cd9d)), closes [#678](https://github.com/bustle/mobiledoc-kit/issues/678)
 * v0.11.2-ghost.2 ([b808ae7](https://github.com/bustle/mobiledoc-kit/commit/b808ae7))
 
 
