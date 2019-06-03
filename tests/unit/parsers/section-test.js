@@ -511,3 +511,28 @@ test('#parse skips nested Comment nodes', (assert) => {
   assert.equal(section.text, 'some text', 'parses text surrounded by comments');
   assert.equal(section.markers.length, 1, 'only 1 marker');
 });
+
+// https://github.com/bustle/mobiledoc-kit/issues/683
+test('#parse handles card-creating element after plain text', (assert) => {
+  let container = buildDOM(`
+    <div><p>Before<a href="https:/example.com/image.png"><img src="https://example.com/image.png"></a></p><p>After</p></div>
+  `);
+
+  let element = container.firstChild;
+  let plugins = [function(element, builder, {addSection, nodeFinished}) {
+    if (element.tagName !== 'IMG') {
+      return;
+    }
+    let payload = {url: element.src};
+    let cardSection = builder.createCardSection('test-image', payload);
+    addSection(cardSection);
+    nodeFinished();
+  }];
+  parser = new SectionParser(builder, {plugins});
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 3, '3 sections');
+  assert.equal(sections[0].text.trim(), 'Before');
+  assert.equal(sections[1].type, 'card-section');
+  assert.equal(sections[2].text.trim(), 'After');
+});
