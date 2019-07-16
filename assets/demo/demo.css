@@ -87,9 +87,6 @@ table tr {
   border: 2px solid #ccc;
 }
 
-.editor {
-}
-
 .two-column {
   display: -webkit-flex;
   display: flex;
