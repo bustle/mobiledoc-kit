@@ -790,7 +790,6 @@ class PostEditor {
 
     sectionTagName = normalizeTagName(sectionTagName);
     let { post } = this.editor;
-    let nextRange = range;
 
     let everySectionHasTagName = true;
     post.walkMarkerableSections(range, section => {
@@ -800,16 +799,45 @@ class PostEditor {
     });
 
     let tagName = everySectionHasTagName ? 'p' : sectionTagName;
-    let firstChanged;
+    let sectionTransformations = [];
     post.walkMarkerableSections(range, section => {
       let changedSection = this.changeSectionTagName(section, tagName);
-      firstChanged = firstChanged || changedSection;
+      sectionTransformations.push({
+        from: section,
+        to: changedSection
+      });
     });
 
-    if (firstChanged) {
-      nextRange = firstChanged.headPosition().toRange();
-    }
+    let nextRange = this._determineNextRangeAfterToggleSection(range, sectionTransformations);
     this.setRange(nextRange);
+  }
+
+  _determineNextRangeAfterToggleSection(range, sectionTransformations) {
+    if (sectionTransformations.length) {
+      let changedHeadSection = sectionTransformations
+        .find(({ from }) => { return from === range.headSection; })
+        .to;
+      let changedTailSection = sectionTransformations
+        .find(({ from }) => { return from === range.tailSection; })
+        .to;
+
+      if (changedHeadSection.isListSection || changedTailSection.isListSection) {
+        // We don't know to which ListItem's the original sections point at, so
+        // we don't have enough information to reconstruct the range when
+        // dealing with lists.
+        return sectionTransformations[0].to.headPosition().toRange();
+      } else {
+        return Range.create(
+          changedHeadSection,
+          range.headSectionOffset,
+          changedTailSection,
+          range.tailSectionOffset,
+          range.direction
+        );
+      }
+    } else {
+      return range;
+    }
   }
 
   setAttribute(key, value, range=this._range) {
