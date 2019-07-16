@@ -1,3 +1,17 @@
+<a name="0.12.0-0"></a>
+## 0.12.0-0 (2019-07-16)
+
+* 🐛 Fixed atoms with no text value being removed when parsing top-level markerables ([4828dd6](https://github.com/bustle/mobiledoc-kit/commit/4828dd6))
+* 🐛 Fixed range#expandByMarker not expanding to beginning/end of section (#677) ([0000d1d](https://github.com/bustle/mobiledoc-kit/commit/0000d1d)), closes [#677](https://github.com/bustle/mobiledoc-kit/issues/677)
+* Bump spec to 0.3.2, optional section attributes (#681) ([0449e15](https://github.com/bustle/mobiledoc-kit/commit/0449e15)), closes [#681](https://github.com/bustle/mobiledoc-kit/issues/681)
+* Copy update in demo ([77de471](https://github.com/bustle/mobiledoc-kit/commit/77de471))
+* Fix sectionParser obliterating plain text content in certain circumstances (#685) ([e5f877f](https://github.com/bustle/mobiledoc-kit/commit/e5f877f)), closes [#685](https://github.com/bustle/mobiledoc-kit/issues/685)
+* Implement Mobiledoc 0.3.2 (text alignment attribute) (continued) (#688) ([9d842fb](https://github.com/bustle/mobiledoc-kit/commit/9d842fb)), closes [#688](https://github.com/bustle/mobiledoc-kit/issues/688)
+* Remove node_modules/ path from scripts in package.json (#687) ([00a1c46](https://github.com/bustle/mobiledoc-kit/commit/00a1c46)), closes [#687](https://github.com/bustle/mobiledoc-kit/issues/687)
+* Uncomment "FIXME" Google Docs nested uls test (#678) ([358cd9d](https://github.com/bustle/mobiledoc-kit/commit/358cd9d)), closes [#678](https://github.com/bustle/mobiledoc-kit/issues/678)
+
+
+
 <a name="0.11.2"></a>
 ## <small>0.11.2 (2019-03-31)</small>
 
@@ -34,6 +48,7 @@
 * handle parsing of lists when wrapped with indented html ([ca8c6c5](https://github.com/bustle/mobiledoc-kit/commit/ca8c6c5))
 * trigger handlers without inserting newline ([71c438c](https://github.com/bustle/mobiledoc-kit/commit/71c438c))
 * trim leading/trailing whitespace from sections that can occur when parsing indented HTML ([333c293](https://github.com/bustle/mobiledoc-kit/commit/333c293))
+* v0.11.2 ([2104893](https://github.com/bustle/mobiledoc-kit/commit/2104893))
 
 
 
