@@ -448,3 +448,18 @@ test('selecting list item and deleting leaves following section intact', (assert
   assert.hasNoElement('#editor li:contains(abc)', 'li text is removed');
   assert.hasElement('#editor li:contains(X)', 'text is inserted');
 });
+
+test('list sections may contain attributes', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, listSection, listItem, marker}) => {
+    return post([
+      listSection('ul', [
+        listItem([marker('abc')]), listItem()
+      ], {'data-md-text-align': 'center'})
+    ]);
+  });
+
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor ul[data-md-text-align="center"]');
+});

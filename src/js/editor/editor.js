@@ -954,6 +954,18 @@ class Editor {
   }
 
   /**
+   * Sets an attribute for the current active section(s).
+   *
+   * @param {String} key The attribute. The only valid attribute is 'text-align'.
+   * @param {String} value The value of the attribute.
+   * @public
+   * @see PostEditor#setAttribute
+   */
+  setAttribute(key, value) {
+    this.run(postEditor => postEditor.setAttribute(key, value, this.range));
+  }
+
+  /**
    * Finds and runs the first matching key command for the event
    *
    * If multiple commands are bound to a key combination, the

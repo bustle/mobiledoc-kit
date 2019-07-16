@@ -265,3 +265,16 @@ test('postEditor reads editor range, sets it with #setRange', (assert) => {
 
   assert.ok(editor.range.isEqual(newRange), 'newRange is rendered after run');
 });
+
+test('markup sections may contain attributes', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('123')], false, {'data-md-text-align': 'center'})
+    ]);
+  });
+
+  editor = new Editor({mobiledoc});
+  editor.render(editorElement);
+
+  assert.hasElement('#editor p[data-md-text-align="center"]');
+});

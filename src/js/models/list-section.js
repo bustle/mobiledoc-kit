@@ -4,6 +4,7 @@ import { LIST_SECTION_TYPE } from './types';
 import Section from './_section';
 import { normalizeTagName } from '../utils/dom-utils';
 import assert from '../utils/assert';
+import { attributable } from './_attributable';
 
 export const VALID_LIST_SECTION_TAGNAMES = [
   'ul', 'ol'
@@ -12,11 +13,14 @@ export const VALID_LIST_SECTION_TAGNAMES = [
 export const DEFAULT_TAG_NAME = VALID_LIST_SECTION_TAGNAMES[0];
 
 export default class ListSection extends Section {
-  constructor(tagName=DEFAULT_TAG_NAME, items=[]) {
+  constructor(tagName=DEFAULT_TAG_NAME, items=[], attributes={}) {
     super(LIST_SECTION_TYPE);
     this.tagName = tagName;
     this.isListSection = true;
     this.isLeafSection = false;
+
+    attributable(this);
+    Object.entries(attributes).forEach(([k,v]) => this.setAttribute(k, v));
 
     this.items = new LinkedList({
       adoptItem: i => {

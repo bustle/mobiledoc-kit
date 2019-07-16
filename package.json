@@ -37,8 +37,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "mobiledoc-dom-renderer": "0.6.5",
-    "mobiledoc-text-renderer": "0.3.2"
+    "mobiledoc-dom-renderer": "0.7.0",
+    "mobiledoc-text-renderer": "0.4.0"
   },
   "devDependencies": {
     "broccoli": "^1.1.3",

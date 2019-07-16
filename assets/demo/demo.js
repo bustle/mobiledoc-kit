@@ -37,9 +37,9 @@ let activateButtons = (parentSelector, editor) => {
   $(`${parentSelector} button`).click(function() {
     let button = $(this);
     let action = button.data('action');
-    let arg = button.data('arg');
+    let args = button.data('args').split(',');
 
-    editor[action](arg);
+    editor[action](...args);
   });
 };
 
