@@ -953,6 +953,14 @@ class Editor {
     this.run(postEditor => postEditor.toggleSection(tagName, this.range));
   }
 
+  /**
+   * Sets an attribute for the current active section(s).
+   *
+   * @param {String} key The attribute. The only valid attribute is 'text-align'.
+   * @param {String} value The value of the attribute.
+   * @public
+   * @see PostEditor#setAttribute
+   */
   setAttribute(key, value) {
     this.run(postEditor => postEditor.setAttribute(key, value, this.range));
   }

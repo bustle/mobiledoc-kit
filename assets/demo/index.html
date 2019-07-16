@@ -202,8 +202,7 @@
   <h3>Toolbar Buttons</h3>
 
   <p>
-  Use the <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#toggleMarkup'><code>editor.toggleMarkup</code></a> and <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#toggleSection'><code>editor.toggleSelection</code></a> methods to modify
-  the text.
+    Use the <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#toggleMarkup'><code>editor.toggleMarkup</code></a>, <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#toggleSection'><code>editor.toggleSection</code></a> and <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#setAttribute'><code>editor.setAttribute</code></a> methods to modify the text.
   </p>
 
   <div class="two-column">
@@ -214,6 +213,9 @@
       });
       $('button.strong').click(() =&gt; {
         editor.toggleMarkup('strong');
+      });
+      $('button.center').click(() =&gt; {
+        editor.setAttribute('text-align', 'center');
       });
       </code></pre>
     </div>
