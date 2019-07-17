@@ -812,7 +812,7 @@ class PostEditor {
     this.setRange(nextRange);
   }
 
-  setAttribute(key, value, range) {
+  setAttribute(key, value, range=this._range) {
     range = toRange(range);
     let { post } = this.editor;
     let attribute = `data-md-${key}`;
