@@ -941,7 +941,7 @@ class PostEditor {
    */
   _splitListAtItem(list, item) {
     let next = list;
-    let prev = this.builder.createListSection(next.tagName);
+    let prev = this.builder.createListSection(next.tagName, [], next.attributes);
     let mid = this.builder.createListSection(next.tagName);
 
     let addToPrev = true;
