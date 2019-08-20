@@ -310,6 +310,28 @@ test('activeSections is empty when the editor has no cursor', (assert) => {
   assert.equal(editor.activeSections.length, 0, 'empty activeSections');
 });
 
+test('activeSectionAttributes of a rendered blank mobiledoc is an empty array', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post}) => {
+    return post();
+  });
+
+  assert.ok(editor.hasRendered, 'editor has rendered');
+  assert.deepEqual(editor.activeSectionAttributes, {}, 'empty activeSectionAttributes');
+});
+
+test('activeSectionAttributes is updated based on the selection', (assert) => {
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')], false, { 'data-md-text-align': 'center' })]);
+  }, {autofocus: false});
+
+  assert.ok(!editor.hasCursor(), 'precond - no cursor');
+  assert.deepEqual(editor.activeSectionAttributes, {}, 'empty activeSectionAttributes');
+
+  let head = editor.post.sections.head;
+  editor.selectRange(Range.create(head, 'abc'.length));
+  assert.deepEqual(editor.activeSectionAttributes['text-align'], ['center'], 'active section attributes captured');
+});
+
 test('editor.cursor.hasCursor() is false before rendering', (assert) => {
   let mobiledoc = Helpers.mobiledoc.build(({post}) => post());
   editor = new Editor({mobiledoc});
