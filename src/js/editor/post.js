@@ -1,6 +1,6 @@
 import Position from '../utils/cursor/position';
 import Range from 'mobiledoc-kit/utils/cursor/range';
-import { forEach, reduce, filter, values, commonItems } from '../utils/array-utils';
+import { detect, forEach, reduce, filter, values, commonItems } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 import LifecycleCallbacks from '../models/lifecycle-callbacks';
 import assert from '../utils/assert';
@@ -814,12 +814,12 @@ class PostEditor {
 
   _determineNextRangeAfterToggleSection(range, sectionTransformations) {
     if (sectionTransformations.length) {
-      let changedHeadSection = sectionTransformations
-        .find(({ from }) => { return from === range.headSection; })
-        .to;
-      let changedTailSection = sectionTransformations
-        .find(({ from }) => { return from === range.tailSection; })
-        .to;
+      let changedHeadSection = detect(sectionTransformations, ({ from }) => {
+        return from === range.headSection;
+      }).to;
+      let changedTailSection = detect(sectionTransformations, ({ from }) => {
+        return from === range.tailSection;
+      }).to;
 
       if (changedHeadSection.isListSection || changedTailSection.isListSection) {
         // We don't know to which ListItem's the original sections point at, so
