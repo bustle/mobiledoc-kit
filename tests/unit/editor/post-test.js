@@ -815,7 +815,16 @@ test('#toggleSection changes multiple sections to and from tag name', (assert) =
   assert.equal(post.sections.head.tagName, 'p');
   assert.equal(post.sections.tail.tagName, 'p');
 
-  assert.positionIsEqual(mockEditor._renderedRange.head, post.sections.head.headPosition());
+  assert.positionIsEqual(
+    mockEditor._renderedRange.head,
+    post.sections.head.toPosition(2),
+    'Maintains the selection'
+  );
+  assert.positionIsEqual(
+    mockEditor._renderedRange.tail,
+    post.sections.tail.toPosition(2),
+    'Maintains the selection'
+  );
 });
 
 test('#toggleSection skips over non-markerable sections', (assert) => {
@@ -1299,6 +1308,33 @@ test('#toggleSection joins contiguous list items', (assert) => {
   assert.equal(post.sections.head.items.length, 3, '3 items');
   assert.deepEqual(post.sections.head.items.map(i => i.text),
                    ['abc', '123', 'def']);
+});
+
+test('#toggleSection maintains the selection when the sections in the selected range are still there', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection, marker}) => {
+    return post([
+      markupSection('p', [marker('abc')])
+    ]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  const range = Range.create(post.sections.head, 1,
+                             post.sections.head, 2);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('h1', range);
+  postEditor.complete();
+
+  assert.positionIsEqual(
+    mockEditor._renderedRange.head,
+    post.sections.head.toPosition(1),
+    'Maintains the selection'
+  );
+  assert.positionIsEqual(
+    mockEditor._renderedRange.tail,
+    post.sections.tail.toPosition(2),
+    'Maintains the selection'
+  );
 });
 
 test('#toggleMarkup when cursor is in non-markerable does nothing', (assert) => {
