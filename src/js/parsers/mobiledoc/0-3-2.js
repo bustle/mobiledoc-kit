@@ -5,9 +5,11 @@ import {
   MOBILEDOC_CARD_SECTION_TYPE,
   MOBILEDOC_MARKUP_MARKER_TYPE,
   MOBILEDOC_ATOM_MARKER_TYPE
-} from 'mobiledoc-kit/renderers/mobiledoc/0-3-2';
-import { kvArrayToObject, filter } from "../../utils/array-utils";
-import assert from 'mobiledoc-kit/utils/assert';
+} from '../../renderers/mobiledoc/0-3-2';
+
+import { kvArrayToObject, filter } from '../../utils/array-utils';
+import assert from '../../utils/assert';
+import { entries } from '../../utils/object-utils';
 
 /*
  * Parses from mobiledoc -> post
@@ -113,7 +115,7 @@ export default class MobiledocParser {
     const section = this.builder.createMarkupSection(tagName);
     post.sections.append(section);
     if (attributesArray) {
-      Object.entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
+      entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
         section.setAttribute(key, value);
       });
     }
@@ -129,7 +131,7 @@ export default class MobiledocParser {
     const section = this.builder.createListSection(tagName);
     post.sections.append(section);
     if (attributesArray) {
-      Object.entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
+      entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
         section.setAttribute(key, value);
       });
     }

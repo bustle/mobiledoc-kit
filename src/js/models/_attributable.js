@@ -1,3 +1,5 @@
+import { entries } from '../utils/object-utils';
+
 export const VALID_ATTRIBUTES = [
   'data-md-text-align'
 ];
@@ -20,6 +22,6 @@ export function attributable(ctx) {
   };
   ctx.getAttribute = key => ctx.attributes[key];
   ctx.eachAttribute = cb => {
-    Object.entries(ctx.attributes).forEach(([k,v]) => cb(k,v));
+    entries(ctx.attributes).forEach(([k,v]) => cb(k,v));
   };
 }

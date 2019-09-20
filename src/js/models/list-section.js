@@ -1,10 +1,12 @@
-import LinkedList from '../utils/linked-list';
-import { forEach, contains } from '../utils/array-utils';
 import { LIST_SECTION_TYPE } from './types';
 import Section from './_section';
+import { attributable } from './_attributable';
+
+import LinkedList from '../utils/linked-list';
+import { forEach, contains } from '../utils/array-utils';
 import { normalizeTagName } from '../utils/dom-utils';
 import assert from '../utils/assert';
-import { attributable } from './_attributable';
+import { entries } from '../utils/object-utils';
 
 export const VALID_LIST_SECTION_TAGNAMES = [
   'ul', 'ol'
@@ -20,7 +22,7 @@ export default class ListSection extends Section {
     this.isLeafSection = false;
 
     attributable(this);
-    Object.entries(attributes).forEach(([k,v]) => this.setAttribute(k, v));
+    entries(attributes).forEach(([k,v]) => this.setAttribute(k, v));
 
     this.items = new LinkedList({
       adoptItem: i => {
