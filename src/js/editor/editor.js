@@ -491,6 +491,10 @@ class Editor {
     return activeSections[activeSections.length - 1];
   }
 
+  get activeSectionAttributes() {
+    return this._editState.activeSectionAttributes;
+  }
+
   detectMarkupInRange(range, markupTagName) {
     let markups = this.post.markupsInRange(range);
     return detect(markups, markup => {
