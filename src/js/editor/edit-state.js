@@ -1,4 +1,8 @@
-import { contains, isArrayEqual } from 'mobiledoc-kit/utils/array-utils';
+import {
+  contains,
+  isArrayEqual,
+  objectToSortedKVArray
+} from 'mobiledoc-kit/utils/array-utils';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 
 /**
@@ -14,7 +18,8 @@ class EditState {
       range: Range.blankRange(),
       activeMarkups: [],
       activeSections: [],
-      activeSectionTagNames: []
+      activeSectionTagNames: [],
+      activeSectionAttributes: {}
     };
 
     this.prevState = this.state = defaultState;
@@ -46,7 +51,8 @@ class EditState {
   inputModeDidChange() {
     let { state, prevState } = this;
     return (!isArrayEqual(state.activeMarkups, prevState.activeMarkups) ||
-            !isArrayEqual(state.activeSectionTagNames, prevState.activeSectionTagNames));
+            !isArrayEqual(state.activeSectionTagNames, prevState.activeSectionTagNames) ||
+            !isArrayEqual(objectToSortedKVArray(state.activeSectionAttributes), objectToSortedKVArray(prevState.activeSectionAttributes)));
   }
 
   /**
@@ -61,6 +67,14 @@ class EditState {
    */
   get activeSections() {
     return this.state.activeSections;
+  }
+
+
+  /**
+   * @return {Object}
+   */
+  get activeSectionAttributes() {
+    return this.state.activeSectionAttributes;
   }
 
   /**
@@ -97,6 +111,7 @@ class EditState {
     state.activeSectionTagNames = state.activeSections.map(s => {
       return s.isNested ? s.parent.tagName : s.tagName;
     });
+    state.activeSectionAttributes = this._readSectionAttributes(state.activeSections);
     return state;
   }
 
@@ -113,6 +128,21 @@ class EditState {
   _readActiveMarkups(range) {
     let { editor: { post } } = this;
     return post.markupsInRange(range);
+  }
+
+  _readSectionAttributes(sections) {
+    return sections.reduce((sectionAttributes, s) => {
+      let attributes = s.isNested ? s.parent.attributes : s.attributes;
+      Object.keys(attributes || {}).forEach(attrName => {
+        let camelizedAttrName = attrName.replace(/^data-md-/, '');
+        let attrValue = attributes[attrName];
+        sectionAttributes[camelizedAttrName] = sectionAttributes[camelizedAttrName] || [];
+        if (!contains(sectionAttributes[camelizedAttrName], attrValue)) {
+          sectionAttributes[camelizedAttrName].push(attrValue);
+        }
+      });
+      return sectionAttributes;
+    }, {});
   }
 
   _removeActiveMarkup(markup) {

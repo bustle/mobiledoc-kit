@@ -222,7 +222,7 @@ The available lifecycle hooks are:
 * `editor.cursorDidChange()` - When the cursor (or selection) changes as a result of arrow-key
   movement or clicking in the document.
 * `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))
-* `editor.inputModeDidChange()` - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with `Editor#activeMarkups` and `Editor#activeSections` to implement a custom toolbar.
+* `editor.inputModeDidChange()` - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with `Editor#activeMarkups`, `Editor#activeSections`, and `Editor#activeSectionAttributes` to implement a custom toolbar.
 * `editor.beforeToggleMarkup(({markup, range, willAdd} => {...})` - Register a
   callback that will be called before `editor#toggleMarkup` is applied. If any
   callback returns literal `false`, the toggling of markup will be canceled.
