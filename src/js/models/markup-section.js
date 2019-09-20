@@ -1,8 +1,10 @@
 import Markerable from './_markerable';
+import { attributable } from './_attributable';
+import { MARKUP_SECTION_TYPE } from './types';
+
 import { normalizeTagName } from '../utils/dom-utils';
 import { contains } from '../utils/array-utils';
-import { MARKUP_SECTION_TYPE } from './types';
-import { attributable } from './_attributable';
+import { entries } from '../utils/object-utils';
 
 // valid values of `tagName` for a MarkupSection
 export const VALID_MARKUP_SECTION_TAGNAMES = [
@@ -38,7 +40,7 @@ const MarkupSection = class MarkupSection extends Markerable {
     super(MARKUP_SECTION_TYPE, tagName, markers);
 
     attributable(this);
-    Object.entries(attributes).forEach(([k,v]) => this.setAttribute(k, v));
+    entries(attributes).forEach(([k,v]) => this.setAttribute(k, v));
 
     this.isMarkupSection = true;
   }

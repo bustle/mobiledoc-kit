@@ -23,7 +23,7 @@ test('a section can append a marker', (assert) => {
   assert.equal(s1.markers.length, 1);
 });
 
-for (let attribute of VALID_ATTRIBUTES) {
+VALID_ATTRIBUTES.forEach(attribute => {
   // eslint-disable-next-line no-loop-func
   test(`a section can have attribute "${attribute.key}" with value "${attribute.value}`, (assert) => {
     const s1 = builder.createMarkupSection('P', [], false, { [attribute.key]: attribute.value });
@@ -33,16 +33,16 @@ for (let attribute of VALID_ATTRIBUTES) {
       'Attribute set at instantiation'
     );
   });
-}
+});
 
-for (let attribute of INVALID_ATTRIBUTES) {
+INVALID_ATTRIBUTES.forEach(attribute => {
   // eslint-disable-next-line no-loop-func
   test(`a section throws when invalid attribute "${attribute.key}" is passed to a marker`, (assert) => {
     assert.throws(() => {
       builder.createMarkupSection('P', [], false, attribute);
     });
   });
-}
+});
 
 test('#isBlank returns true if the text length is zero for two markers', (assert) => {
   const m1 = builder.createMarker('');
