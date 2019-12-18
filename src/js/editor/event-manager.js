@@ -166,6 +166,10 @@ export default class EventManager {
     let range = editor.range;
 
     switch(true) {
+      // Ignore IME
+      case key.isIME(): {
+        break;
+      }
       // FIXME This should be restricted to only card/atom boundaries
       case key.isHorizontalArrowWithoutModifiersOtherThanShift(): {
         let newRange;
