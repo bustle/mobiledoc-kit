@@ -691,6 +691,31 @@ test('#setAttribute sets attribute of a single section', (assert) => {
   );
 });
 
+test('#removeAttribute removes attribute of a single section', (assert) => {
+  let post = Helpers.postAbstract.build(({post, markupSection}) => {
+    return post([markupSection('p', [], false, { 'data-md-text-align': 'center' })]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  const range = Range.create(post.sections.head, 0);
+
+  assert.deepEqual(
+    post.sections.head.attributes,
+    {
+      'data-md-text-align': 'center'
+    }
+  );
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.removeAttribute('text-align', range);
+  postEditor.complete();
+
+  assert.deepEqual(
+    post.sections.head.attributes,
+    {}
+  );
+});
+
 test('#setAttribute sets attribute of multiple sections', (assert) => {
   let post = Helpers.postAbstract.build(
     ({post, markupSection, marker, cardSection}) => {
@@ -721,6 +746,35 @@ test('#setAttribute sets attribute of multiple sections', (assert) => {
     {
       'data-md-text-align': 'center'
     }
+  );
+});
+
+test('#removeAttribute removes attribute of multiple sections', (assert) => {
+  let post = Helpers.postAbstract.build(
+    ({post, markupSection, marker, cardSection}) => {
+    return post([
+      markupSection('p', [marker('abc')], false, { 'data-md-text-align': 'center' }),
+      cardSection('my-card'),
+      markupSection('p', [marker('123')], { 'data-md-text-align': 'left' })
+    ]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  const range = Range.create(post.sections.head, 0,
+                             post.sections.tail, 2);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.removeAttribute('text-align', range);
+  postEditor.complete();
+
+  assert.deepEqual(
+    post.sections.head.attributes,
+    {}
+  );
+  assert.ok(post.sections.objectAt(1).isCardSection);
+  assert.deepEqual(
+    post.sections.tail.attributes,
+    {}
   );
 });
 

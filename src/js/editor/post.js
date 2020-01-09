@@ -841,6 +841,24 @@ class PostEditor {
   }
 
   setAttribute(key, value, range=this._range) {
+    this._mutateAttribute(key, range, (section, attribute) => {
+      if (section.getAttribute(attribute) !== value) {
+        section.setAttribute(attribute, value);
+        return true;
+      }
+    });
+  }
+
+  removeAttribute(key, range=this._range) {
+    this._mutateAttribute(key, range, (section, attribute) => {
+      if (section.hasAttribute(attribute)) {
+        section.removeAttribute(attribute);
+        return true;
+      }
+    });
+  }
+
+  _mutateAttribute(key, range, cb) {
     range = toRange(range);
     let { post } = this.editor;
     let attribute = `data-md-${key}`;
@@ -850,8 +868,7 @@ class PostEditor {
         section = section.parent;
       }
 
-      if (section.getAttribute(attribute) !== value) {
-        section.setAttribute(attribute, value);
+      if (cb(section, attribute) === true) {
         this._markDirty(section);
       }
     });

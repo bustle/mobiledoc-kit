@@ -970,6 +970,17 @@ class Editor {
   }
 
   /**
+   * Removes an attribute from the current active section(s).
+   *
+   * @param {String} key The attribute. The only valid attribute is 'text-align'.
+   * @public
+   * @see PostEditor#removeAttribute
+   */
+  removeAttribute(key) {
+    this.run(postEditor => postEditor.removeAttribute(key, this.range));
+  }
+
+  /**
    * Finds and runs the first matching key command for the event
    *
    * If multiple commands are bound to a key combination, the
