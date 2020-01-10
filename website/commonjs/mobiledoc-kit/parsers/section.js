@@ -28,8 +28,7 @@ var SKIPPABLE_ELEMENT_TAG_NAMES = ['style', 'head', 'title', 'meta'].map(_utilsD
 
 var NEWLINES = /\n/g;
 function sanitize(text) {
-  text = text.replace(NEWLINES, '');
-  return text;
+  return text.replace(NEWLINES, ' ');
 }
 
 /**
@@ -61,11 +60,17 @@ var SectionParser = (function () {
 
       this._updateStateFromElement(element);
 
-      var childNodes = (0, _utilsDomUtils.isTextNode)(element) ? [element] : element.childNodes;
+      var finished = false;
 
-      if (this.state.section.isListSection) {
-        this.parseListItems(childNodes);
-      } else {
+      // top-level text nodes will be run through parseNode later so avoid running
+      // the node through parserPlugins twice
+      if (!(0, _utilsDomUtils.isTextNode)(element)) {
+        finished = this.runPlugins(element);
+      }
+
+      if (!finished) {
+        var childNodes = (0, _utilsDomUtils.isTextNode)(element) ? [element] : element.childNodes;
+
         (0, _utilsArrayUtils.forEach)(childNodes, function (el) {
           _this.parseNode(el);
         });
@@ -76,38 +81,29 @@ var SectionParser = (function () {
       return this.sections;
     }
   }, {
-    key: 'parseListItems',
-    value: function parseListItems(childNodes) {
-      var _this2 = this;
-
-      var state = this.state;
-
-      (0, _utilsArrayUtils.forEach)(childNodes, function (el) {
-        var parsed = new _this2.constructor(_this2.builder).parse(el);
-        var li = parsed[0];
-        if (li && li.isListItem) {
-          state.section.items.append(li);
-        }
-      });
-    }
-  }, {
     key: 'runPlugins',
     value: function runPlugins(node) {
-      var _this3 = this;
+      var _this2 = this;
 
       var isNodeFinished = false;
       var env = {
         addSection: function addSection(section) {
-          _this3._closeCurrentSection();
-          _this3.sections.push(section);
+          // avoid creating empty paragraphs due to wrapper elements around
+          // parser-plugin-handled elements
+          if (_this2.state.section.isMarkerable && !_this2.state.text && !_this2.state.section.text) {
+            _this2.state.section = null;
+          } else {
+            _this2._closeCurrentSection();
+          }
+          _this2.sections.push(section);
         },
         addMarkerable: function addMarkerable(marker) {
-          var state = _this3.state;
+          var state = _this2.state;
           var section = state.section;
 
           (0, _utilsAssert['default'])('Markerables can only be appended to markup sections and list item sections', section && section.isMarkerable);
           if (state.text) {
-            _this3._createMarker();
+            _this2._createMarker();
           }
           section.markers.append(marker);
         },
@@ -124,9 +120,13 @@ var SectionParser = (function () {
       }
       return false;
     }
+
+    /* eslint-disable complexity */
   }, {
     key: 'parseNode',
     value: function parseNode(node) {
+      var _this3 = this;
+
       if (!this.state.section) {
         this._updateStateFromElement(node);
       }
@@ -134,6 +134,72 @@ var SectionParser = (function () {
       var nodeFinished = this.runPlugins(node);
       if (nodeFinished) {
         return;
+      }
+
+      // handle closing the current section and starting a new one if we hit a
+      // new-section-creating element.
+      if (this.state.section && !(0, _utilsDomUtils.isTextNode)(node) && node.tagName) {
+        var tagName = (0, _utilsDomUtils.normalizeTagName)(node.tagName);
+        var isListSection = (0, _utilsArrayUtils.contains)(_modelsListSection.VALID_LIST_SECTION_TAGNAMES, tagName);
+        var isListItem = (0, _utilsArrayUtils.contains)(_modelsListItem.VALID_LIST_ITEM_TAGNAMES, tagName);
+        var isMarkupSection = (0, _utilsArrayUtils.contains)(_modelsMarkupSection.VALID_MARKUP_SECTION_TAGNAMES, tagName);
+        var isNestedListSection = isListSection && this.state.section.isListItem;
+        var lastSection = this.sections[this.sections.length - 1];
+
+        // we can hit a list item after parsing a nested list, when that happens
+        // and the lists are of different types we need to make sure we switch
+        // the list type back
+        if (isListItem && lastSection && lastSection.isListSection) {
+          var parentElement = node.parentElement;
+          var parentElementTagName = (0, _utilsDomUtils.normalizeTagName)(parentElement.tagName);
+          if (parentElementTagName !== lastSection.tagName) {
+            this._closeCurrentSection();
+            this._updateStateFromElement(parentElement);
+          }
+        }
+
+        // if we've broken out of a list due to nested section-level elements we
+        // can hit the next list item without having a list section in the current
+        // state. In this instance we find the parent list node and use it to
+        // re-initialize the state with a new list section
+        if (isListItem && !(this.state.section.isListItem || this.state.section.isListSection) && !lastSection.isListSection) {
+          this._closeCurrentSection();
+          this._updateStateFromElement(node.parentElement);
+        }
+
+        // if we have consecutive list sections of different types (ul, ol) then
+        // ensure we close the current section and start a new one
+        var isNewListSection = lastSection && lastSection.isListSection && this.state.section.isListItem && isListSection && tagName !== lastSection.tagName;
+
+        if (isNewListSection || isListSection && !isNestedListSection || isMarkupSection || isListItem) {
+          // don't break out of the list for list items that contain a single <p>.
+          // deals with typical case of <li><p>Text</p></li><li><p>Text</p></li>
+          if (this.state.section.isListItem && tagName === 'p' && !node.nextSibling && (0, _utilsArrayUtils.contains)(_modelsListItem.VALID_LIST_ITEM_TAGNAMES, (0, _utilsDomUtils.normalizeTagName)(node.parentElement.tagName))) {
+            this.parseElementNode(node);
+            return;
+          }
+
+          // avoid creating empty paragraphs due to wrapper elements around
+          // section-creating elements
+          if (this.state.section.isMarkerable && !this.state.text && this.state.section.markers.length === 0) {
+            this.state.section = null;
+          } else {
+            this._closeCurrentSection();
+          }
+
+          this._updateStateFromElement(node);
+        }
+
+        if (this.state.section.isListSection) {
+          // ensure the list section is closed and added to the sections list.
+          // _closeCurrentSection handles pushing list items onto the list section
+          this._closeCurrentSection();
+
+          (0, _utilsArrayUtils.forEach)(node.childNodes, function (node) {
+            _this3.parseNode(node);
+          });
+          return;
+        }
       }
 
       switch (node.nodeType) {
@@ -154,7 +220,7 @@ var SectionParser = (function () {
       var state = this.state;
 
       var markups = this._markupsFromElement(element);
-      if (markups.length && state.text.length) {
+      if (markups.length && state.text.length && state.section.isMarkerable) {
         this._createMarker();
       }
       (_state$markups = state.markups).push.apply(_state$markups, _toConsumableArray(markups));
@@ -163,7 +229,7 @@ var SectionParser = (function () {
         _this4.parseNode(node);
       });
 
-      if (markups.length && state.text.length) {
+      if (markups.length && state.text.length && state.section.isMarkerable) {
         // create the marker started for this node
         this._createMarker();
       }
@@ -193,17 +259,41 @@ var SectionParser = (function () {
       var sections = this.sections;
       var state = this.state;
 
+      var lastSection = sections[sections.length - 1];
+
       if (!state.section) {
         return;
       }
 
       // close a trailing text node if it exists
-      if (state.text.length) {
+      if (state.text.length && state.section.isMarkerable) {
         this._createMarker();
       }
 
-      sections.push(state.section);
+      // push listItems onto the listSection or add a new section
+      if (state.section.isListItem && lastSection && lastSection.isListSection) {
+        (0, _parsersDom.trimSectionText)(state.section);
+        lastSection.items.append(state.section);
+      } else {
+        // avoid creating empty markup sections, especially useful for indented source
+        if (state.section.isMarkerable && !state.section.text.trim() && !(0, _utilsArrayUtils.any)(state.section.markers, function (marker) {
+          return marker.isAtom;
+        })) {
+          state.section = null;
+          state.text = '';
+          return;
+        }
+
+        // remove empty list sections before creating a new section
+        if (lastSection && lastSection.isListSection && lastSection.items.length === 0) {
+          sections.pop();
+        }
+
+        sections.push(state.section);
+      }
+
       state.section = null;
+      state.text = '';
     }
   }, {
     key: '_markupsFromElement',

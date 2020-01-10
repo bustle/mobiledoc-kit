@@ -107,9 +107,10 @@ var PostNodeBuilder = (function () {
       var tagName = arguments.length <= 0 || arguments[0] === undefined ? _modelsMarkupSection.DEFAULT_TAG_NAME : arguments[0];
       var markers = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
       var isGenerated = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+      var attributes = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
 
       tagName = (0, _utilsDomUtils.normalizeTagName)(tagName);
-      var section = new _modelsMarkupSection['default'](tagName, markers);
+      var section = new _modelsMarkupSection['default'](tagName, markers, attributes);
       if (isGenerated) {
         section.isGenerated = true;
       }
@@ -121,9 +122,10 @@ var PostNodeBuilder = (function () {
     value: function createListSection() {
       var tagName = arguments.length <= 0 || arguments[0] === undefined ? _modelsListSection.DEFAULT_TAG_NAME : arguments[0];
       var items = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+      var attributes = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
       tagName = (0, _utilsDomUtils.normalizeTagName)(tagName);
-      var section = new _modelsListSection['default'](tagName, items);
+      var section = new _modelsListSection['default'](tagName, items, attributes);
       section.builder = this;
       return section;
     }

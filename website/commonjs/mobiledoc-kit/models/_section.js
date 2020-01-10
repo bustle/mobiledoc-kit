@@ -120,7 +120,7 @@ var Section = (function (_LinkedItem) {
     value: function nextLeafSection() {
       var next = this.next;
       if (next) {
-        if (!!next.items) {
+        if (next.items) {
           return next.items.head;
         } else {
           return next;
@@ -146,7 +146,7 @@ var Section = (function (_LinkedItem) {
       var prev = this.prev;
 
       if (prev) {
-        if (!!prev.items) {
+        if (prev.items) {
           return prev.items.tail;
         } else {
           return prev;

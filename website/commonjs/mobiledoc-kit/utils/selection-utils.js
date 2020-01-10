@@ -37,6 +37,7 @@ function findOffsetInTextNode(node, coords) {
  * @see https://github.com/ProseMirror/prosemirror/blob/4c22e3fe97d87a355a0534e25d65aaf0c0d83e57/src/edit/dompos.js
  * @return {Object} {node, offset}
  */
+/* eslint-disable complexity */
 function findOffsetInNode(_x, _x2) {
   var _again = true;
 
@@ -94,6 +95,7 @@ function findOffsetInNode(_x, _x2) {
     return { node: node, offset: offset };
   }
 }
+/* eslint-enable complexity */
 
 function constrainNodeTo(node, parentNode, existingOffset) {
   var compare = parentNode.compareDocumentPosition(node);

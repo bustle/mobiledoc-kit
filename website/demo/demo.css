@@ -87,9 +87,6 @@ table tr {
   border: 2px solid #ccc;
 }
 
-.editor {
-}
-
 .two-column {
   display: -webkit-flex;
   display: flex;
@@ -125,6 +122,26 @@ table tr {
 
 .toolbar {
   text-align: center;
+  display: flex;
+}
+
+.toolbar-section {
+  display: flex;
+  margin: 0 12px;
+}
+.toolbar-section:first-child { margin-left: 0; }
+.toolbar-section:last-child { margin-right: 0; }
+
+.toolbar-section button {
+  display: flex;
+  align-items: center;
+  margin: 0 4px;
+}
+.toolbar-section button:first-child { margin-left: 0; }
+.toolbar-section button:last-child { margin-right: 0; }
+
+.toolbar-section button svg {
+  height: 24px;
 }
 
 #editor-wrapper {

@@ -28,7 +28,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>import Position from '../utils/cursor/position';
 import Range from 'mobiledoc-kit/utils/cursor/range';
-import { forEach, reduce, filter, values, commonItems } from '../utils/array-utils';
+import { detect, forEach, reduce, filter, values, commonItems } from '../utils/array-utils';
 import { DIRECTION } from '../utils/key';
 import LifecycleCallbacks from '../models/lifecycle-callbacks';
 import assert from '../utils/assert';
@@ -818,7 +818,6 @@ class PostEditor {
 
     sectionTagName = normalizeTagName(sectionTagName);
     let { post } = this.editor;
-    let nextRange = range;
 
     let everySectionHasTagName = true;
     post.walkMarkerableSections(range, section => {
@@ -828,16 +827,81 @@ class PostEditor {
     });
 
     let tagName = everySectionHasTagName ? 'p' : sectionTagName;
-    let firstChanged;
+    let sectionTransformations = [];
     post.walkMarkerableSections(range, section => {
       let changedSection = this.changeSectionTagName(section, tagName);
-      firstChanged = firstChanged || changedSection;
+      sectionTransformations.push({
+        from: section,
+        to: changedSection
+      });
     });
 
-    if (firstChanged) {
-      nextRange = firstChanged.headPosition().toRange();
-    }
+    let nextRange = this._determineNextRangeAfterToggleSection(range, sectionTransformations);
     this.setRange(nextRange);
+  }
+
+  _determineNextRangeAfterToggleSection(range, sectionTransformations) {
+    if (sectionTransformations.length) {
+      let changedHeadSection = detect(sectionTransformations, ({ from }) => {
+        return from === range.headSection;
+      }).to;
+      let changedTailSection = detect(sectionTransformations, ({ from }) => {
+        return from === range.tailSection;
+      }).to;
+
+      if (changedHeadSection.isListSection || changedTailSection.isListSection) {
+        // We don't know to which ListItem's the original sections point at, so
+        // we don't have enough information to reconstruct the range when
+        // dealing with lists.
+        return sectionTransformations[0].to.headPosition().toRange();
+      } else {
+        return Range.create(
+          changedHeadSection,
+          range.headSectionOffset,
+          changedTailSection,
+          range.tailSectionOffset,
+          range.direction
+        );
+      }
+    } else {
+      return range;
+    }
+  }
+
+  setAttribute(key, value, range=this._range) {
+    this._mutateAttribute(key, range, (section, attribute) => {
+      if (section.getAttribute(attribute) !== value) {
+        section.setAttribute(attribute, value);
+        return true;
+      }
+    });
+  }
+
+  removeAttribute(key, range=this._range) {
+    this._mutateAttribute(key, range, (section, attribute) => {
+      if (section.hasAttribute(attribute)) {
+        section.removeAttribute(attribute);
+        return true;
+      }
+    });
+  }
+
+  _mutateAttribute(key, range, cb) {
+    range = toRange(range);
+    let { post } = this.editor;
+    let attribute = `data-md-${key}`;
+
+    post.walkMarkerableSections(range, section => {
+      if (section.isListItem) {
+        section = section.parent;
+      }
+
+      if (cb(section, attribute) === true) {
+        this._markDirty(section);
+      }
+    });
+
+    this.setRange(range);
   }
 
   _isSameSectionType(section, sectionTagName) {
@@ -912,7 +976,7 @@ class PostEditor {
     let positionIsMiddle = !position.isHead() &amp;&amp; !position.isTail();
     if (positionIsMiddle) {
       let item = position.section;
-      let [pre, post] = // jshint ignore:line
+      let [pre,] =
         this._splitListItem(item, position);
       position = pre.tailPosition();
     }
@@ -950,7 +1014,7 @@ class PostEditor {
    */
   _splitListAtItem(list, item) {
     let next = list;
-    let prev = this.builder.createListSection(next.tagName);
+    let prev = this.builder.createListSection(next.tagName, [], next.attributes);
     let mid = this.builder.createListSection(next.tagName);
 
     let addToPrev = true;
@@ -998,7 +1062,7 @@ class PostEditor {
     let markupSection = this.builder.createMarkupSection(newTagName);
     markupSection.join(section);
 
-    let [prev, mid, next] = this._splitListAtItem(listSection, section); // jshint ignore:line
+    let [, mid,] = this._splitListAtItem(listSection, section);
     this.replaceSection(mid, markupSection);
     return markupSection;
   }
@@ -1016,7 +1080,7 @@ class PostEditor {
 
     let sectionToReplace;
     if (section.isListItem) {
-      let [prev, mid, next] = this._splitListAtItem(section.parent, section); // jshint ignore:line
+      let [, mid,] = this._splitListAtItem(section.parent, section);
       sectionToReplace = mid;
     } else {
       sectionToReplace = section;
@@ -1230,13 +1294,13 @@ export default PostEditor;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 06 2017 10:05:08 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
 </footer>
 
 <script> prettyPrint(); </script>

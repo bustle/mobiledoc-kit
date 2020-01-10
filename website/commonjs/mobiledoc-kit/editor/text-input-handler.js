@@ -12,6 +12,8 @@ var _utilsAssert = require('../utils/assert');
 
 var _utilsDeprecate = require('../utils/deprecate');
 
+var _utilsCharacters = require('../utils/characters');
+
 var TextInputHandler = (function () {
   function TextInputHandler(editor) {
     _classCallCheck(this, TextInputHandler);
@@ -54,13 +56,29 @@ var TextInputHandler = (function () {
       }
     }
   }, {
+    key: 'handleNewLine',
+    value: function handleNewLine() {
+      var editor = this.editor;
+
+      var matchedHandler = this._findHandler(_utilsCharacters.ENTER);
+      if (matchedHandler) {
+        var _matchedHandler2 = _slicedToArray(matchedHandler, 2);
+
+        var handler = _matchedHandler2[0];
+        var matches = _matchedHandler2[1];
+
+        handler.run(editor, matches);
+      }
+    }
+  }, {
     key: '_findHandler',
     value: function _findHandler() {
+      var string = arguments.length <= 0 || arguments[0] === undefined ? "" : arguments[0];
       var _editor$range = this.editor.range;
       var head = _editor$range.head;
       var section = _editor$range.head.section;
 
-      var preText = section.textUntil(head);
+      var preText = section.textUntil(head) + string;
 
       for (var i = 0; i < this._handlers.length; i++) {
         var handler = this._handlers[i];

@@ -940,8 +940,6 @@ var PostEditor = (function () {
       sectionTagName = (0, _utilsDomUtils.normalizeTagName)(sectionTagName);
       var post = this.editor.post;
 
-      var nextRange = range;
-
       var everySectionHasTagName = true;
       post.walkMarkerableSections(range, function (section) {
         if (!_this13._isSameSectionType(section, sectionTagName)) {
@@ -950,16 +948,90 @@ var PostEditor = (function () {
       });
 
       var tagName = everySectionHasTagName ? 'p' : sectionTagName;
-      var firstChanged = undefined;
+      var sectionTransformations = [];
       post.walkMarkerableSections(range, function (section) {
         var changedSection = _this13.changeSectionTagName(section, tagName);
-        firstChanged = firstChanged || changedSection;
+        sectionTransformations.push({
+          from: section,
+          to: changedSection
+        });
       });
 
-      if (firstChanged) {
-        nextRange = firstChanged.headPosition().toRange();
-      }
+      var nextRange = this._determineNextRangeAfterToggleSection(range, sectionTransformations);
       this.setRange(nextRange);
+    }
+  }, {
+    key: '_determineNextRangeAfterToggleSection',
+    value: function _determineNextRangeAfterToggleSection(range, sectionTransformations) {
+      if (sectionTransformations.length) {
+        var changedHeadSection = (0, _utilsArrayUtils.detect)(sectionTransformations, function (_ref2) {
+          var from = _ref2.from;
+
+          return from === range.headSection;
+        }).to;
+        var changedTailSection = (0, _utilsArrayUtils.detect)(sectionTransformations, function (_ref3) {
+          var from = _ref3.from;
+
+          return from === range.tailSection;
+        }).to;
+
+        if (changedHeadSection.isListSection || changedTailSection.isListSection) {
+          // We don't know to which ListItem's the original sections point at, so
+          // we don't have enough information to reconstruct the range when
+          // dealing with lists.
+          return sectionTransformations[0].to.headPosition().toRange();
+        } else {
+          return _utilsCursorRange['default'].create(changedHeadSection, range.headSectionOffset, changedTailSection, range.tailSectionOffset, range.direction);
+        }
+      } else {
+        return range;
+      }
+    }
+  }, {
+    key: 'setAttribute',
+    value: function setAttribute(key, value) {
+      var range = arguments.length <= 2 || arguments[2] === undefined ? this._range : arguments[2];
+
+      this._mutateAttribute(key, range, function (section, attribute) {
+        if (section.getAttribute(attribute) !== value) {
+          section.setAttribute(attribute, value);
+          return true;
+        }
+      });
+    }
+  }, {
+    key: 'removeAttribute',
+    value: function removeAttribute(key) {
+      var range = arguments.length <= 1 || arguments[1] === undefined ? this._range : arguments[1];
+
+      this._mutateAttribute(key, range, function (section, attribute) {
+        if (section.hasAttribute(attribute)) {
+          section.removeAttribute(attribute);
+          return true;
+        }
+      });
+    }
+  }, {
+    key: '_mutateAttribute',
+    value: function _mutateAttribute(key, range, cb) {
+      var _this14 = this;
+
+      range = (0, _utilsToRange['default'])(range);
+      var post = this.editor.post;
+
+      var attribute = 'data-md-' + key;
+
+      post.walkMarkerableSections(range, function (section) {
+        if (section.isListItem) {
+          section = section.parent;
+        }
+
+        if (cb(section, attribute) === true) {
+          _this14._markDirty(section);
+        }
+      });
+
+      this.setRange(range);
     }
   }, {
     key: '_isSameSectionType',
@@ -1039,13 +1111,11 @@ var PostEditor = (function () {
       if (positionIsMiddle) {
         var item = position.section;
 
-        var _splitListItem3 = // jshint ignore:line
-        this._splitListItem(item, position);
+        var _splitListItem3 = this._splitListItem(item, position);
 
-        var _splitListItem32 = _slicedToArray(_splitListItem3, 2);
+        var _splitListItem32 = _slicedToArray(_splitListItem3, 1);
 
         var pre = _splitListItem32[0];
-        var post = _splitListItem32[1];
 
         position = pre.tailPosition();
       }
@@ -1084,10 +1154,10 @@ var PostEditor = (function () {
   }, {
     key: '_splitListAtItem',
     value: function _splitListAtItem(list, item) {
-      var _this14 = this;
+      var _this15 = this;
 
       var next = list;
-      var prev = this.builder.createListSection(next.tagName);
+      var prev = this.builder.createListSection(next.tagName, [], next.attributes);
       var mid = this.builder.createListSection(next.tagName);
 
       var addToPrev = true;
@@ -1105,7 +1175,7 @@ var PostEditor = (function () {
           return; // break after iterating prev and mid parts of the list
         }
         listToAppend.join(i);
-        _this14.removeSection(i);
+        _this15.removeSection(i);
       });
       var found = !addToPrev;
       (0, _utilsAssert['default'])('Cannot split list at item that is not present in the list', found);
@@ -1119,7 +1189,7 @@ var PostEditor = (function () {
         [prev, next].forEach(function (_list) {
           var isAttached = !!_list.parent;
           if (_list.isBlank && isAttached) {
-            _this14.removeSection(_list);
+            _this15.removeSection(_list);
           }
         });
       });
@@ -1137,12 +1207,10 @@ var PostEditor = (function () {
 
       var _splitListAtItem2 = this._splitListAtItem(listSection, section);
 
-      var _splitListAtItem22 = _slicedToArray(_splitListAtItem2, 3);
+      var _splitListAtItem22 = _slicedToArray(_splitListAtItem2, 2);
 
-      var prev = _splitListAtItem22[0];
       var mid = _splitListAtItem22[1];
-      var next = _splitListAtItem22[2];
-      // jshint ignore:line
+
       this.replaceSection(mid, markupSection);
       return markupSection;
     }
@@ -1162,12 +1230,10 @@ var PostEditor = (function () {
       if (section.isListItem) {
         var _splitListAtItem3 = this._splitListAtItem(section.parent, section);
 
-        var _splitListAtItem32 = _slicedToArray(_splitListAtItem3, 3);
+        var _splitListAtItem32 = _slicedToArray(_splitListAtItem3, 2);
 
-        var prev = _splitListAtItem32[0];
         var mid = _splitListAtItem32[1];
-        var next = _splitListAtItem32[2];
-        // jshint ignore:line
+
         sectionToReplace = mid;
       } else {
         sectionToReplace = section;
@@ -1273,33 +1339,33 @@ var PostEditor = (function () {
   }, {
     key: 'removeAllSections',
     value: function removeAllSections() {
-      var _this15 = this;
+      var _this16 = this;
 
       this.editor.post.sections.toArray().forEach(function (section) {
-        _this15.removeSection(section);
+        _this16.removeSection(section);
       });
     }
   }, {
     key: 'migrateSectionsFromPost',
     value: function migrateSectionsFromPost(post) {
-      var _this16 = this;
+      var _this17 = this;
 
       post.sections.toArray().forEach(function (section) {
         post.sections.remove(section);
-        _this16.insertSectionBefore(_this16.editor.post.sections, section, null);
+        _this17.insertSectionBefore(_this17.editor.post.sections, section, null);
       });
     }
   }, {
     key: '_scheduleListRemovalIfEmpty',
     value: function _scheduleListRemovalIfEmpty(listSection) {
-      var _this17 = this;
+      var _this18 = this;
 
       this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, function () {
         // if the list is attached and blank after we do other rendering stuff,
         // remove it
         var isAttached = !!listSection.parent;
         if (isAttached && listSection.isBlank) {
-          _this17.removeSection(listSection);
+          _this18.removeSection(listSection);
         }
       });
     }

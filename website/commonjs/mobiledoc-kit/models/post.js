@@ -199,7 +199,7 @@ var Post = (function () {
       if (next) {
         if (next.isLeafSection) {
           return next;
-        } else if (!!next.items) {
+        } else if (next.items) {
           return next.items.head;
         } else {
           (0, _utilsAssert['default'])('Cannot determine next section from non-leaf-section', false);
@@ -249,6 +249,7 @@ var Post = (function () {
           });
         } else {
           newSection = section.clone();
+          sectionParent = post;
         }
         if (sectionParent) {
           sectionParent.sections.append(newSection);

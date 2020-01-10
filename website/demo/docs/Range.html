@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2>Range</h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Range<span class="signature">(head, tail<span class="signature-attributes">opt</span>, direction<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
             <div class="class-description"><p>A logical range of a <a href="Post.html">Post</a>.
 Usually an instance of Range will be read from the <a href="Editor.html#range">Editor#range</a> property,
@@ -46,7 +46,9 @@ but it may be useful to instantiate a range directly when programmatically modif
     <h2>Constructor</h2>
     
 
+    
     <h4 class="name" id="Range"><span class="type-signature"></span>new Range<span class="signature">(head, tail<span class="signature-attributes">opt</span>, direction<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -262,6 +264,8 @@ but it may be useful to instantiate a range directly when programmatically modif
 
 
 
+
+
     
     </div>
 
@@ -271,7 +275,9 @@ but it may be useful to instantiate a range directly when programmatically modif
 
     
 
-     
+    
+
+    
 
     
 
@@ -619,7 +625,9 @@ but it may be useful to instantiate a range directly when programmatically modif
 
     
 
+    
     <h4 class="name" id=".create"><span class="type-signature">(static) </span>create<span class="signature">(headSection, headOffset, tailSection<span class="signature-attributes">opt</span>, tailOffset<span class="signature-attributes">opt</span>, direction<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Range.html">Range</a>}</span></h4>
+    
 
     
 
@@ -932,12 +940,16 @@ When given only a head section and offset, creates a collapsed range.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="expandByMarker"><span class="type-signature"></span>expandByMarker<span class="signature">(detectMarker)</span><span class="type-signature"> &rarr; {<a href="Range.html">Range</a>}</span></h4>
+    
 
     
 
@@ -1037,7 +1049,7 @@ When given only a head section and offset, creates a collapsed range.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_cursor_range.js.html">utils/cursor/range.js</a>, <a href="utils_cursor_range.js.html#line128">line 128</a>
+        <a href="utils_cursor_range.js.html">utils/cursor/range.js</a>, <a href="utils_cursor_range.js.html#line129">line 129</a>
     </li></ul></dd>
     
 
@@ -1085,12 +1097,16 @@ When given only a head section and offset, creates a collapsed range.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="extend"><span class="type-signature"></span>extend<span class="signature">(units)</span><span class="type-signature"> &rarr; {<a href="Range.html">Range</a>}</span></h4>
+    
 
     
 
@@ -1237,12 +1253,16 @@ non-collapsed range.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="move"><span class="type-signature"></span>move<span class="signature">(direction)</span><span class="type-signature"> &rarr; {<a href="Range.html">Range</a>}</span></h4>
+    
 
     
 
@@ -1345,7 +1365,7 @@ Always returns a collapsed range.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_cursor_range.js.html">utils/cursor/range.js</a>, <a href="utils_cursor_range.js.html#line107">line 107</a>
+        <a href="utils_cursor_range.js.html">utils/cursor/range.js</a>, <a href="utils_cursor_range.js.html#line108">line 108</a>
     </li></ul></dd>
     
 
@@ -1389,6 +1409,8 @@ Always returns a collapsed range.</p>
 
 
 
+
+
         
     
 
@@ -1405,13 +1427,13 @@ Always returns a collapsed range.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 06 2017 10:05:08 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
 </footer>
 
 <script> prettyPrint(); </script>

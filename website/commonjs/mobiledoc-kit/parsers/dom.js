@@ -3,6 +3,7 @@
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 exports.transformHTMLText = transformHTMLText;
+exports.trimSectionText = trimSectionText;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -30,6 +31,17 @@ function transformHTMLText(textContent) {
   text = text.replace(NO_BREAK_SPACE_REGEX, ' ');
   text = text.replace(TAB_CHARACTER_REGEX, _utilsCharacters.TAB);
   return text;
+}
+
+function trimSectionText(section) {
+  if (section.isMarkerable && section.markers.length) {
+    var _section$markers = section.markers;
+    var head = _section$markers.head;
+    var tail = _section$markers.tail;
+
+    head.value = head.value.replace(/^\s+/, '');
+    tail.value = tail.value.replace(/\s+$/, '');
+  }
 }
 
 function isGoogleDocsContainer(element) {
@@ -104,6 +116,12 @@ var DOMParser = (function () {
         _this.appendSections(post, sections);
       });
 
+      // trim leading/trailing whitespace of markerable sections to avoid
+      // unnessary whitespace from indented HTML input
+      (0, _utilsArrayUtils.forEach)(post.sections, function (section) {
+        return trimSectionText(section);
+      });
+
       return post;
     }
   }, {
@@ -118,7 +136,9 @@ var DOMParser = (function () {
   }, {
     key: 'appendSection',
     value: function appendSection(post, section) {
-      if (section.isBlank || section.isMarkerable && trim(section.text) === '') {
+      if (section.isBlank || section.isMarkerable && trim(section.text) === "" && !(0, _utilsArrayUtils.any)(section.markers, function (marker) {
+        return marker.isAtom;
+      })) {
         return;
       }
 

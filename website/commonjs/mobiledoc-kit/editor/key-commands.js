@@ -172,7 +172,7 @@ function modifierNamesToMask(modiferNames) {
 
 function characterToCode(character) {
   var upperCharacter = character.toUpperCase();
-  var special = _utilsKey.SPECIAL_KEYS[upperCharacter];
+  var special = (0, _utilsKey.specialCharacterToCode)(upperCharacter);
   if (special) {
     return special;
   } else {

@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2>Post</h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Post<span class="signature">()</span><span class="type-signature"></span></h2>
         
             <div class="class-description"><p>The Post is an in-memory representation of an editor's document.
 An editor always has a single post. The post is organized into a list of
@@ -49,7 +49,9 @@ mobiledoc using <a href="Editor.html#serialize">Editor#serialize</a>.</p></div>
     <h2>Constructor</h2>
     
 
+    
     <h4 class="name" id="Post"><span class="type-signature"></span>new Post<span class="signature">()</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -122,6 +124,8 @@ mobiledoc using <a href="Editor.html#serialize">Editor#serialize</a>.</p></div>
 
 
 
+
+
     
     </div>
 
@@ -131,7 +135,9 @@ mobiledoc using <a href="Editor.html#serialize">Editor#serialize</a>.</p></div>
 
     
 
-     
+    
+
+    
 
     
 
@@ -212,7 +218,9 @@ not have content and this method returns false. Otherwise it is true.</p>
 
     
 
+    
     <h4 class="name" id="headPosition"><span class="type-signature"></span>headPosition<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Position.html">Position</a>}</span></h4>
+    
 
     
 
@@ -308,12 +316,16 @@ if the post is blank)</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="markersContainedByRange"><span class="type-signature"></span>markersContainedByRange<span class="signature">(range)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
 
     
 
@@ -457,12 +469,16 @@ if the post is blank)</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="tailPosition"><span class="type-signature"></span>tailPosition<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Position.html">Position</a>}</span></h4>
+    
 
     
 
@@ -558,12 +574,16 @@ if the post is blank)</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="toRange"><span class="type-signature"></span>toRange<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Range.html">Range</a>}</span></h4>
+    
 
     
 
@@ -658,12 +678,16 @@ if the post is blank)</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="trimTo"><span class="type-signature"></span>trimTo<span class="signature">(range)</span><span class="type-signature"> &rarr; {<a href="Post.html">Post</a>}</span></h4>
+    
 
     
 
@@ -807,6 +831,8 @@ if the post is blank)</p>
 
 
 
+
+
         
     
 
@@ -823,13 +849,13 @@ if the post is blank)</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 06 2017 10:05:08 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
 </footer>
 
 <script> prettyPrint(); </script>

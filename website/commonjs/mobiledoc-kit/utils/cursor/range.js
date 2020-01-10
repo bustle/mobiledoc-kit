@@ -103,8 +103,10 @@ var Range = (function () {
         case _key.DIRECTION.BACKWARD:
           return new Range(head.move(units), tail, currentDirection);
         default:
-          var newDirection = units > 0 ? _key.DIRECTION.FORWARD : _key.DIRECTION.BACKWARD;
-          return new Range(head, tail, newDirection).extend(units);
+          {
+            var newDirection = units > 0 ? _key.DIRECTION.FORWARD : _key.DIRECTION.BACKWARD;
+            return new Range(head, tail, newDirection).extend(units);
+          }
       }
     }
 
@@ -156,12 +158,20 @@ var Range = (function () {
         return !detectMarker(i);
       };
 
-      var headMarker = head.section.markers.detect(firstNotMatchingDetect, head.marker, true);
-      headMarker = headMarker && headMarker.next || head.marker;
+      var headMarker = headSection.markers.detect(firstNotMatchingDetect, head.marker, true);
+      if (!headMarker && detectMarker(headSection.markers.head)) {
+        headMarker = headSection.markers.head;
+      } else {
+        headMarker = headMarker.next || head.marker;
+      }
       var headPosition = new _position['default'](headSection, headSection.offsetOfMarker(headMarker));
 
       var tailMarker = tail.section.markers.detect(firstNotMatchingDetect, tail.marker);
-      tailMarker = tailMarker && tailMarker.prev || tail.marker;
+      if (!tailMarker && detectMarker(headSection.markers.tail)) {
+        tailMarker = headSection.markers.tail;
+      } else {
+        tailMarker = tailMarker.prev || tail.marker;
+      }
       var tailPosition = new _position['default'](tail.section, tail.section.offsetOfMarker(tailMarker) + tailMarker.length);
 
       return headPosition.toRange(tailPosition, direction);

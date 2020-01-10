@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2>PostEditor</h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>PostEditor<span class="signature">()</span><span class="type-signature"></span></h2>
         
             <div class="class-description"><p>The PostEditor is used to modify a post. It should not be instantiated directly.
 Instead, a new instance of a PostEditor is created by the editor and passed
@@ -51,7 +51,9 @@ as the argument to the callback in <a href="Editor.html#run">Editor#run</a>.</p>
     <h2>Constructor</h2>
     
 
+    
     <h4 class="name" id="PostEditor"><span class="type-signature"></span>new PostEditor<span class="signature">()</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -124,6 +126,8 @@ as the argument to the callback in <a href="Editor.html#run">Editor#run</a>.</p>
 
 
 
+
+
     
     </div>
 
@@ -133,7 +137,9 @@ as the argument to the callback in <a href="Editor.html#run">Editor#run</a>.</p>
 
     
 
-     
+    
+
+    
 
     
 
@@ -147,7 +153,9 @@ as the argument to the callback in <a href="Editor.html#run">Editor#run</a>.</p>
 
     
 
+    
     <h4 class="name" id="addMarkupToRange"><span class="type-signature"></span>addMarkupToRange<span class="signature">(range, markup)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -229,7 +237,7 @@ editor.run((postEditor) => {
             <td class="type">
             
                 
-<span class="param-type">Markup</span>
+<span class="param-type"><a href="Markup.html">Markup</a></span>
 
 
             
@@ -306,12 +314,16 @@ editor.run((postEditor) => {
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="deleteAtPosition"><span class="type-signature"></span>deleteAtPosition<span class="signature">(position, direction<span class="signature-attributes">opt</span>, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Position.html">Position</a>}</span></h4>
+    
 
     
 
@@ -627,12 +639,16 @@ editor.run((postEditor) => {
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="deleteFrom"><span class="type-signature"></span>deleteFrom<span class="signature">(position, direction)</span><span class="type-signature"> &rarr; {<a href="Position.html">Position</a>}</span></h4>
+    
 
     
 
@@ -801,12 +817,16 @@ editor.run((postEditor) => {
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="deleteRange"><span class="type-signature"></span>deleteRange<span class="signature">(range)</span><span class="type-signature"> &rarr; {<a href="Position.html">Position</a>}</span></h4>
+    
 
     
 
@@ -960,12 +980,16 @@ editor.run((postEditor) => {
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="insertMarkers"><span class="type-signature"></span>insertMarkers<span class="signature">(position, markers)</span><span class="type-signature"> &rarr; {<a href="Position.html">Position</a>}</span></h4>
+    
 
     
 
@@ -1137,12 +1161,16 @@ a non-markerable section (like a card section), this method throws an error.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="insertSection"><span class="type-signature"></span>insertSection<span class="signature">(section)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -1243,7 +1271,7 @@ section is active, at the end of the document.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1031">line 1031</a>
+        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1095">line 1095</a>
     </li></ul></dd>
     
 
@@ -1269,12 +1297,16 @@ section is active, at the end of the document.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="insertSectionAtEnd"><span class="type-signature"></span>insertSectionAtEnd<span class="signature">(section)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -1374,7 +1406,7 @@ section is active, at the end of the document.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1044">line 1044</a>
+        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1108">line 1108</a>
     </li></ul></dd>
     
 
@@ -1400,12 +1432,16 @@ section is active, at the end of the document.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="insertSectionBefore"><span class="type-signature"></span>insertSectionBefore<span class="signature">(collection, section, beforeSection)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -1561,7 +1597,7 @@ and the rendered UI.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1020">line 1020</a>
+        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1084">line 1084</a>
     </li></ul></dd>
     
 
@@ -1587,12 +1623,16 @@ and the rendered UI.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="insertText"><span class="type-signature"></span>insertText<span class="signature">(position, text)</span><span class="type-signature"> &rarr; {<a href="Position.html">Position</a>}</span></h4>
+    
 
     
 
@@ -1764,12 +1804,16 @@ Inherits the markups already at that position, if any.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="insertTextWithMarkup"><span class="type-signature"></span>insertTextWithMarkup<span class="signature">(position, text, markups)</span><span class="type-signature"> &rarr; {<a href="Position.html">Position</a>}</span></h4>
+    
 
     
 
@@ -1865,7 +1909,7 @@ the position, if any.</p>
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;Markup></span>
+<span class="param-type">Array.&lt;<a href="Markup.html">Markup</a>></span>
 
 
             
@@ -1964,12 +2008,16 @@ the position, if any.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="moveSectionDown"><span class="type-signature"></span>moveSectionDown<span class="signature">(section)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -2091,12 +2139,16 @@ the position, if any.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="moveSectionUp"><span class="type-signature"></span>moveSectionUp<span class="signature">(section)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -2218,12 +2270,16 @@ the position, if any.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="removeSection"><span class="type-signature"></span>removeSection<span class="signature">(section)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -2329,7 +2385,7 @@ the position, if any.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1075">line 1075</a>
+        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1139">line 1139</a>
     </li></ul></dd>
     
 
@@ -2355,12 +2411,16 @@ the position, if any.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="replaceSection"><span class="type-signature"></span>replaceSection<span class="signature">(section, newSection)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -2515,12 +2575,16 @@ the position, if any.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="schedule"><span class="type-signature"></span>schedule<span class="signature">(callback, once<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -2675,7 +2739,7 @@ the position, if any.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1116">line 1116</a>
+        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1180">line 1180</a>
     </li></ul></dd>
     
 
@@ -2701,12 +2765,16 @@ the position, if any.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="scheduleDidUpdate"><span class="type-signature"></span>scheduleDidUpdate<span class="signature">()</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -2759,7 +2827,7 @@ hook after the postEditor completes its work (at the end of <a href="Editor.html
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1154">line 1154</a>
+        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1218">line 1218</a>
     </li></ul></dd>
     
 
@@ -2785,12 +2853,16 @@ hook after the postEditor completes its work (at the end of <a href="Editor.html
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="scheduleOnce"><span class="type-signature"></span>scheduleOnce<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -2892,7 +2964,7 @@ The function cannot be an anonymous function.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1134">line 1134</a>
+        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1198">line 1198</a>
     </li></ul></dd>
     
 
@@ -2918,12 +2990,16 @@ The function cannot be an anonymous function.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="scheduleRerender"><span class="type-signature"></span>scheduleRerender<span class="signature">()</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -2974,7 +3050,7 @@ The function cannot be an anonymous function.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1143">line 1143</a>
+        <a href="editor_post.js.html">editor/post.js</a>, <a href="editor_post.js.html#line1207">line 1207</a>
     </li></ul></dd>
     
 
@@ -3000,12 +3076,16 @@ The function cannot be an anonymous function.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="setRange"><span class="type-signature"></span>setRange<span class="signature">(range)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -3144,12 +3224,16 @@ postEditor.setRange(nextPosition);</code></pre><p>  });</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="splitSection"><span class="type-signature"></span>splitSection<span class="signature">(position)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
 
     
 
@@ -3306,12 +3390,16 @@ headMarkerOffset is 0.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="toggleMarkup"><span class="type-signature"></span>toggleMarkup<span class="signature">(markupOrString, range)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -3372,7 +3460,7 @@ editor.run(postEditor => {
             <td class="type">
             
                 
-<span class="param-type">Markup</span>
+<span class="param-type"><a href="Markup.html">Markup</a></span>
 |
 
 <span class="param-type">String</span>
@@ -3480,12 +3568,16 @@ or, if a string, the tag name of the markup (e.g. 'strong', 'em') to toggle.</p>
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="toggleSection"><span class="type-signature"></span>toggleSection<span class="signature">(sectionTagName, range)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -3641,6 +3733,8 @@ Otherwise, every section will be changed to the requested type</p>
 
 
 
+
+
         
     
 
@@ -3657,13 +3751,13 @@ Otherwise, every section will be changed to the requested type</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 06 2017 10:05:08 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
 </footer>
 
 <script> prettyPrint(); </script>

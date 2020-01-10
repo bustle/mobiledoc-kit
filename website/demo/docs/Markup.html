@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Key</title>
+    <title>JSDoc: Class: Markup</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Key</h1>
+    <h1 class="page-title">Class: Markup</h1>
 
     
 
@@ -28,11 +28,11 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Key<span class="signature">()</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Markup<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description"><p>An abstraction around a KeyEvent
-that key listeners in the editor can use
-to determine what sort of key was pressed</p></div>
+            <div class="class-description"><p>A Markup is similar with an inline HTML tag that might be added to
+text to modify its meaning and/or display. Examples of types of markup
+that could be added are bold ('b'), italic ('i'), strikethrough ('s'), and <code>a</code> tags (links).</p></div>
         
     
 </header>
@@ -47,7 +47,7 @@ to determine what sort of key was pressed</p></div>
     
 
     
-    <h4 class="name" id="Key"><span class="type-signature"></span>new Key<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Markup"><span class="type-signature"></span>new Markup<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -62,6 +62,58 @@ to determine what sort of key was pressed</p></div>
 
 
 
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>tagName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -95,7 +147,7 @@ to determine what sort of key was pressed</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_key.js.html">utils/key.js</a>, <a href="utils_key.js.html#line69">line 69</a>
+        <a href="models_markup.js.html">models/markup.js</a>, <a href="models_markup.js.html#line30">line 30</a>
     </li></ul></dd>
     
 
@@ -149,7 +201,7 @@ to determine what sort of key was pressed</p></div>
     
 
     
-    <h4 class="name" id="isPrintable"><span class="type-signature"></span>isPrintable<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="getAttribute"><span class="type-signature"></span>getAttribute<span class="signature">(name,)</span><span class="type-signature"></span></h4>
     
 
     
@@ -157,8 +209,7 @@ to determine what sort of key was pressed</p></div>
 
 
 <div class="description">
-    <p>See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
-  and http://stackoverflow.com/a/12467610/137784</p>
+    <p>Returns the attribute value</p>
 </div>
 
 
@@ -169,93 +220,53 @@ to determine what sort of key was pressed</p></div>
 
 
 
-
-
-
-
-<dl class="details">
-
+    <h5>Parameters:</h5>
     
 
-    
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_key.js.html">utils/key.js</a>, <a href="utils_key.js.html#line315">line 315</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        <th>Type</th>
 
         
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name,</code></td>
             
 
-    
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>e.g. &quot;href&quot;</p></td>
+        </tr>
 
     
-    <h4 class="name" id="isShift"><span class="type-signature"></span>isShift<span class="signature">()</span><span class="type-signature"> &rarr; {bool}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>If the shift key is depressed.
-For example, while holding down meta+shift, pressing the &quot;v&quot;
-key would result in an event whose <code>Key</code> had <code>isShift()</code> with a truthy value,
-because the shift key is down when pressing the &quot;v&quot;.</p>
-</div>
-
-
-
-
-
-
-
+    </tbody>
+</table>
 
 
 
@@ -291,20 +302,13 @@ because the shift key is down when pressing the &quot;v&quot;.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_key.js.html">utils/key.js</a>, <a href="utils_key.js.html#line239">line 239</a>
+        <a href="models_markup.js.html">models/markup.js</a>, <a href="models_markup.js.html#line68">line 68</a>
     </li></ul></dd>
     
 
     
 
     
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>{isShiftKey} which checks if the key is actually the shift key itself.</li>
-        </ul>
-    </dd>
-    
 
     
 </dl>
@@ -321,24 +325,6 @@ because the shift key is down when pressing the &quot;v&quot;.</p>
 
 
 
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">bool</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 

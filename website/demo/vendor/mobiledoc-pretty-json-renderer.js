@@ -1,7 +1,5 @@
-'use strict';
-
 var mobiledocPrettyJSONRenderer =
-/******/(function (modules) {
+/******/function (modules) {
 	// webpackBootstrap
 	/******/ // The module cache
 	/******/var installedModules = {};
@@ -43,11 +41,11 @@ var mobiledocPrettyJSONRenderer =
 	/******/ // Load entry module and return exports
 	/******/return __webpack_require__(0);
 	/******/
-})(
+}(
 /************************************************************************/
 /******/[
 /* 0 */
-function (module, exports, __webpack_require__) {
+/***/function (module, exports, __webpack_require__) {
 
 	var utils = __webpack_require__(1);
 	var formatters = __webpack_require__(2);
@@ -97,7 +95,7 @@ function (module, exports, __webpack_require__) {
 	/***/
 },
 /* 1 */
-function (module, exports) {
+/***/function (module, exports) {
 
 	function indent(multiline, depth) {
 		var indent = [];
@@ -145,7 +143,7 @@ function (module, exports) {
 	/***/
 },
 /* 2 */
-function (module, exports, __webpack_require__) {
+/***/function (module, exports, __webpack_require__) {
 
 	var utils = __webpack_require__(1);
 	var stringify = JSON.stringify;
@@ -206,4 +204,3 @@ function (module, exports, __webpack_require__) {
 	/***/
 }
 /******/]);
-/***/ /***/ /***/

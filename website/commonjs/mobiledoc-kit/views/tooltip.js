@@ -39,6 +39,9 @@ var Tooltip = (function (_View) {
 
     this.addEventListener(rootElement, 'mouseout', function (e) {
       clearTimeout(timeout);
+      if (_this.elementObserver) {
+        _this.elementObserver.cancel();
+      }
       var toElement = e.toElement || e.relatedTarget;
       if (toElement && toElement.className !== _this.element.className) {
         _this.hide();
@@ -57,8 +60,13 @@ var Tooltip = (function (_View) {
   }, {
     key: 'showLink',
     value: function showLink(link, element) {
+      var _this2 = this;
+
       var message = '<a href="' + link + '" target="_blank">' + link + '</a>';
       this.showMessage(message, element);
+      this.elementObserver = (0, _utilsElementUtils.whenElementIsNotInDOM)(element, function () {
+        return _this2.hide();
+      });
     }
   }]);
 

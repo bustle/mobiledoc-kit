@@ -28,6 +28,8 @@ exports['default'] = {
   IME: 229,
 
   TAB: 9,
+  CLEAR: 12,
+  PAUSE: 19,
   PAGEUP: 33,
   PAGEDOWN: 34,
   END: 35,

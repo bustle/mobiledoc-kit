@@ -31,7 +31,6 @@ var MobiledocParser = (function () {
   _createClass(MobiledocParser, [{
     key: 'parse',
     value: function parse(_ref) {
-      var version = _ref.version;
       var sections = _ref.sections;
       var markerTypes = _ref.markups;
       var cardTypes = _ref.cards;
@@ -162,7 +161,6 @@ var MobiledocParser = (function () {
     value: function parseCardSection(_ref5, post) {
       var _ref52 = _slicedToArray(_ref5, 2);
 
-      var type = _ref52[0];
       var cardIndex = _ref52[1];
 
       var _getCardTypeFromIndex = this.getCardTypeFromIndex(cardIndex);
@@ -180,7 +178,6 @@ var MobiledocParser = (function () {
     value: function parseImageSection(_ref6, post) {
       var _ref62 = _slicedToArray(_ref6, 2);
 
-      var type = _ref62[0];
       var src = _ref62[1];
 
       var section = this.builder.createImageSection(src);
@@ -191,7 +188,6 @@ var MobiledocParser = (function () {
     value: function parseMarkupSection(_ref7, post) {
       var _ref72 = _slicedToArray(_ref7, 3);
 
-      var type = _ref72[0];
       var tagName = _ref72[1];
       var markers = _ref72[2];
 
@@ -211,7 +207,6 @@ var MobiledocParser = (function () {
     value: function parseListSection(_ref8, post) {
       var _ref82 = _slicedToArray(_ref8, 3);
 
-      var type = _ref82[0];
       var tagName = _ref82[1];
       var items = _ref82[2];
 
@@ -272,13 +267,17 @@ var MobiledocParser = (function () {
         case _renderersMobiledoc03.MOBILEDOC_MARKUP_MARKER_TYPE:
           return this.builder.createMarker(value, this.markups.slice());
         case _renderersMobiledoc03.MOBILEDOC_ATOM_MARKER_TYPE:
-          var _getAtomTypeFromIndex = this.getAtomTypeFromIndex(value),
-              _getAtomTypeFromIndex2 = _slicedToArray(_getAtomTypeFromIndex, 3),
-              atomName = _getAtomTypeFromIndex2[0],
-              atomValue = _getAtomTypeFromIndex2[1],
-              atomPayload = _getAtomTypeFromIndex2[2];
+          {
+            var _getAtomTypeFromIndex = this.getAtomTypeFromIndex(value);
 
-          return this.builder.createAtom(atomName, atomValue, atomPayload, this.markups.slice());
+            var _getAtomTypeFromIndex2 = _slicedToArray(_getAtomTypeFromIndex, 3);
+
+            var atomName = _getAtomTypeFromIndex2[0];
+            var atomValue = _getAtomTypeFromIndex2[1];
+            var atomPayload = _getAtomTypeFromIndex2[2];
+
+            return this.builder.createAtom(atomName, atomValue, atomPayload, this.markups.slice());
+          }
         default:
           (0, _utilsAssert['default'])('Unexpected marker type ' + type, false);
       }

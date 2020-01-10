@@ -31,12 +31,11 @@ var EventManager = (function () {
     this._textInputHandler = new _editorTextInputHandler['default'](editor);
     this._listeners = [];
     this.modifierKeys = {
-      shift: false,
-      alt: false,
-      ctrl: false
+      shift: false
     };
 
     this._selectionManager = new _editorSelectionManager['default'](this.editor, this.selectionDidChange.bind(this));
+    this.started = true;
   }
 
   _createClass(EventManager, [{
@@ -53,6 +52,16 @@ var EventManager = (function () {
       });
 
       this._selectionManager.start();
+    }
+  }, {
+    key: 'start',
+    value: function start() {
+      this.started = true;
+    }
+  }, {
+    key: 'stop',
+    value: function stop() {
+      this.started = false;
     }
   }, {
     key: 'registerInputHandler',
@@ -114,7 +123,6 @@ var EventManager = (function () {
         var _ref42 = _slicedToArray(_ref4, 3);
 
         var context = _ref42[0];
-        var type = _ref42[1];
         var listener = _ref42[2];
 
         listener.call(context, event);
@@ -131,6 +139,11 @@ var EventManager = (function () {
     key: '_handleEvent',
     value: function _handleEvent(type, event) {
       var element = event.target;
+
+      if (!this.started) {
+        // abort handling this event
+        return true;
+      }
 
       if (!this.isElementAddressable(element)) {
         // abort handling this event
@@ -214,29 +227,34 @@ var EventManager = (function () {
       switch (true) {
         // FIXME This should be restricted to only card/atom boundaries
         case key.isHorizontalArrowWithoutModifiersOtherThanShift():
-          var newRange = undefined;
-          if (key.isShift()) {
-            newRange = range.extend(key.direction * 1);
-          } else {
-            newRange = range.move(key.direction);
-          }
+          {
+            var newRange = undefined;
+            if (key.isShift()) {
+              newRange = range.extend(key.direction * 1);
+            } else {
+              newRange = range.move(key.direction);
+            }
 
-          editor.selectRange(newRange);
-          event.preventDefault();
-          break;
+            editor.selectRange(newRange);
+            event.preventDefault();
+            break;
+          }
         case key.isDelete():
-          var direction = key.direction;
+          {
+            var direction = key.direction;
 
-          var unit = 'char';
-          if (this.modifierKeys.alt && _utilsBrowser['default'].isMac()) {
-            unit = 'word';
-          } else if (this.modifierKeys.ctrl && _utilsBrowser['default'].isWin()) {
-            unit = 'word';
+            var unit = 'char';
+            if (key.altKey && _utilsBrowser['default'].isMac()) {
+              unit = 'word';
+            } else if (key.ctrlKey && !_utilsBrowser['default'].isMac()) {
+              unit = 'word';
+            }
+            editor.performDelete({ direction: direction, unit: unit });
+            event.preventDefault();
+            break;
           }
-          editor.performDelete({ direction: direction, unit: unit });
-          event.preventDefault();
-          break;
         case key.isEnter():
+          this._textInputHandler.handleNewLine();
           editor.handleNewline(event);
           break;
         case key.isTab():
@@ -344,10 +362,6 @@ var EventManager = (function () {
 
       if (key.isShiftKey()) {
         this.modifierKeys.shift = isDown;
-      } else if (key.isAltKey()) {
-        this.modifierKeys.alt = isDown;
-      } else if (key.isCtrlKey()) {
-        this.modifierKeys.ctrl = isDown;
       }
     }
   }]);

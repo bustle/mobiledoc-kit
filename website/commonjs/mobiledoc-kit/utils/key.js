@@ -3,10 +3,13 @@
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 exports.modifierMask = modifierMask;
+exports.specialCharacterToCode = specialCharacterToCode;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var _keycodes = require('./keycodes');
+
+var _keys = require('./keys');
 
 var _utilsCharacters = require('../utils/characters');
 
@@ -63,7 +66,10 @@ var SPECIAL_KEYS = {
   DEL: _keycodes['default'].DELETE
 };
 
-exports.SPECIAL_KEYS = SPECIAL_KEYS;
+function specialCharacterToCode(specialCharacter) {
+  return SPECIAL_KEYS[specialCharacter];
+}
+
 // heuristic for determining if `event` is a key event
 function isKeyEvent(event) {
   return (/^key/.test(event.type)
@@ -79,6 +85,7 @@ var Key = (function () {
   function Key(event) {
     _classCallCheck(this, Key);
 
+    this.key = event.key;
     this.keyCode = event.keyCode;
     this.charCode = event.charCode;
     this.event = event;
@@ -93,20 +100,38 @@ var Key = (function () {
       }
       return String.fromCharCode(this.charCode);
     }
+
+    // See https://caniuse.com/#feat=keyboardevent-key for browser support.
+  }, {
+    key: 'isKeySupported',
+    value: function isKeySupported() {
+      return this.key;
+    }
+  }, {
+    key: 'isKey',
+    value: function isKey(identifier) {
+      if (this.isKeySupported()) {
+        (0, _assert['default'])('Must define Keys.' + identifier + '.', _keys['default'][identifier]);
+        return this.key === _keys['default'][identifier];
+      } else {
+        (0, _assert['default'])('Must define Keycodes.' + identifier + '.', _keycodes['default'][identifier]);
+        return this.keyCode === _keycodes['default'][identifier];
+      }
+    }
   }, {
     key: 'isEscape',
     value: function isEscape() {
-      return this.keyCode === _keycodes['default'].ESC;
+      return this.isKey('ESC');
     }
   }, {
     key: 'isDelete',
     value: function isDelete() {
-      return this.keyCode === _keycodes['default'].BACKSPACE || this.keyCode === _keycodes['default'].DELETE;
+      return this.isKey('BACKSPACE') || this.isForwardDelete();
     }
   }, {
     key: 'isForwardDelete',
     value: function isForwardDelete() {
-      return this.keyCode === _keycodes['default'].DELETE;
+      return this.isKey('DELETE');
     }
   }, {
     key: 'isArrow',
@@ -116,7 +141,7 @@ var Key = (function () {
   }, {
     key: 'isHorizontalArrow',
     value: function isHorizontalArrow() {
-      return this.keyCode === _keycodes['default'].LEFT || this.keyCode === _keycodes['default'].RIGHT;
+      return this.isLeftArrow() || this.isRightArrow();
     }
   }, {
     key: 'isHorizontalArrowWithoutModifiersOtherThanShift',
@@ -126,56 +151,75 @@ var Key = (function () {
   }, {
     key: 'isVerticalArrow',
     value: function isVerticalArrow() {
-      return this.keyCode === _keycodes['default'].UP || this.keyCode === _keycodes['default'].DOWN;
+      return this.isKey('UP') || this.isKey('DOWN');
     }
   }, {
     key: 'isLeftArrow',
     value: function isLeftArrow() {
-      return this.keyCode === _keycodes['default'].LEFT;
+      return this.isKey('LEFT');
     }
   }, {
     key: 'isRightArrow',
     value: function isRightArrow() {
-      return this.keyCode === _keycodes['default'].RIGHT;
+      return this.isKey('RIGHT');
     }
   }, {
     key: 'isHome',
     value: function isHome() {
-      return this.keyCode === _keycodes['default'].HOME;
+      return this.isKey('HOME');
     }
   }, {
     key: 'isEnd',
     value: function isEnd() {
-      return this.keyCode === _keycodes['default'].END;
+      return this.isKey('END');
+    }
+  }, {
+    key: 'isPageUp',
+    value: function isPageUp() {
+      return this.isKey('PAGEUP');
+    }
+  }, {
+    key: 'isPageDown',
+    value: function isPageDown() {
+      return this.isKey('PAGEDOWN');
+    }
+  }, {
+    key: 'isInsert',
+    value: function isInsert() {
+      return this.isKey('INS');
+    }
+  }, {
+    key: 'isClear',
+    value: function isClear() {
+      return this.isKey('CLEAR');
+    }
+  }, {
+    key: 'isPause',
+    value: function isPause() {
+      return this.isKey('PAUSE');
     }
   }, {
     key: 'isSpace',
     value: function isSpace() {
-      return this.keyCode === _keycodes['default'].SPACE;
+      return this.isKey('SPACE');
     }
+
+    // In Firefox, pressing ctrl-TAB will switch to another open browser tab, but
+    // it will also fire a keydown event for the tab+modifier (ctrl). This causes
+    // Mobiledoc to erroneously insert a tab character before FF switches to the
+    // new browser tab.  Chrome doesn't fire this event so the issue doesn't
+    // arise there. Fix this by returning false when the TAB key event includes a
+    // modifier.
+    // See: https://github.com/bustle/mobiledoc-kit/issues/565
   }, {
     key: 'isTab',
     value: function isTab() {
-      return this.keyCode === _keycodes['default'].TAB;
+      return !this.hasAnyModifier() && this.isKey('TAB');
     }
   }, {
     key: 'isEnter',
     value: function isEnter() {
-      return this.keyCode === _keycodes['default'].ENTER;
-    }
-
-    /**
-     * If the shift key is depressed.
-     * For example, while holding down meta+shift, pressing the "v"
-     * key would result in an event whose `Key` had `isShift()` with a truthy value,
-     * because the shift key is down when pressing the "v".
-     * @see {isShiftKey} which checks if the key is actually the shift key itself.
-     * @return {bool}
-     */
-  }, {
-    key: 'isShift',
-    value: function isShift() {
-      return this.shiftKey;
+      return this.isKey('ENTER');
     }
 
     /*
@@ -187,7 +231,7 @@ var Key = (function () {
   }, {
     key: 'isShiftKey',
     value: function isShiftKey() {
-      return this.keyCode === _keycodes['default'].SHIFT;
+      return this.isKey('SHIFT');
     }
 
     /*
@@ -198,7 +242,7 @@ var Key = (function () {
   }, {
     key: 'isAltKey',
     value: function isAltKey() {
-      return this.keyCode === _keycodes['default'].ALT;
+      return this.isKey('ALT');
     }
 
     /*
@@ -209,7 +253,28 @@ var Key = (function () {
   }, {
     key: 'isCtrlKey',
     value: function isCtrlKey() {
-      return this.keyCode === _keycodes['default'].CTRL;
+      return this.isKey('CTRL');
+    }
+  }, {
+    key: 'isIME',
+    value: function isIME() {
+      // FIXME the IME action seems to get lost when we issue an
+      // `editor.deleteSelection` before it (in Chrome)
+      return this.keyCode === _keycodes['default'].IME;
+    }
+  }, {
+    key: 'isShift',
+
+    /**
+     * If the shift key is depressed.
+     * For example, while holding down meta+shift, pressing the "v"
+     * key would result in an event whose `Key` had `isShift()` with a truthy value,
+     * because the shift key is down when pressing the "v".
+     * @see {isShiftKey} which checks if the key is actually the shift key itself.
+     * @return {bool}
+     */
+    value: function isShift() {
+      return this.shiftKey;
     }
   }, {
     key: 'hasModifier',
@@ -222,33 +287,60 @@ var Key = (function () {
       return !!this.modifierMask;
     }
   }, {
-    key: 'isPrintable',
+    key: 'isPrintableKey',
+    value: function isPrintableKey() {
+      return !(this.isArrow() || this.isHome() || this.isEnd() || this.isPageUp() || this.isPageDown() || this.isInsert() || this.isClear() || this.isPause() || this.isEscape());
+    }
+  }, {
+    key: 'isNumberKey',
+    value: function isNumberKey() {
+      if (this.isKeySupported()) {
+        return this.key >= '0' && this.key <= '9';
+      } else {
+        var code = this.keyCode;
+        return code >= _keycodes['default']['0'] && code <= _keycodes['default']['9'] || code >= _keycodes['default'].NUMPAD_0 && code <= _keycodes['default'].NUMPAD_9; // numpad keys
+      }
+    }
+  }, {
+    key: 'isLetterKey',
+    value: function isLetterKey() {
+      if (this.isKeySupported()) {
+        var key = this.key;
+        return key >= 'a' && key <= 'z' || key >= 'A' && key <= 'Z';
+      } else {
+        var code = this.keyCode;
+        return code >= _keycodes['default'].A && code <= _keycodes['default'].Z || code >= _keycodes['default'].a && code <= _keycodes['default'].z;
+      }
+    }
+  }, {
+    key: 'isPunctuation',
+    value: function isPunctuation() {
+      if (this.isKeySupported()) {
+        var key = this.key;
+        return key >= ';' && key <= '`' || key >= '[' && key <= '"';
+      } else {
+        var code = this.keyCode;
+        return code >= _keycodes['default'][';'] && code <= _keycodes['default']['`'] || code >= _keycodes['default']['['] && code <= _keycodes['default']['"'];
+      }
+    }
 
     /**
      * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
      *   and http://stackoverflow.com/a/12467610/137784
      */
+  }, {
+    key: 'isPrintable',
     value: function isPrintable() {
       if (this.ctrlKey || this.metaKey) {
         return false;
       }
 
-      var code = this.keyCode;
-
-      // Firefox calls keypress events for arrow keys, but they should not be
-      // considered printable
-      if (this.isArrow()) {
+      // Firefox calls keypress events for some keys that should not be printable
+      if (!this.isPrintableKey()) {
         return false;
       }
 
-      return code !== 0 || this.toString().length > 0 || code >= _keycodes['default']['0'] && code <= _keycodes['default']['9'] || // number keys
-      this.isSpace() || this.isTab() || this.isEnter() || code >= _keycodes['default'].A && code <= _keycodes['default'].Z || // letter keys
-      code >= _keycodes['default'].a && code <= _keycodes['default'].z || code >= _keycodes['default'].NUMPAD_0 && code <= _keycodes['default'].NUMPAD_9 || // numpad keys
-      code >= _keycodes['default'][';'] && code <= _keycodes['default']['`'] || // punctuation
-      code >= _keycodes['default']['['] && code <= _keycodes['default']['"'] ||
-      // FIXME the IME action seems to get lost when we issue an `editor.deleteSelection`
-      // before it (in Chrome)
-      code === _keycodes['default'].IME;
+      return this.keyCode !== 0 || this.toString().length > 0 || this.isNumberKey() || this.isSpace() || this.isTab() || this.isEnter() || this.isLetterKey() || this.isPunctuation() || this.isIME();
     }
   }, {
     key: 'direction',

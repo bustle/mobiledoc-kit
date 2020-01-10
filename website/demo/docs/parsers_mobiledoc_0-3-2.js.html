@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: parsers/mobiledoc/0-3.js</title>
+    <title>JSDoc: Source: parsers/mobiledoc/0-3-2.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: parsers/mobiledoc/0-3.js</h1>
+    <h1 class="page-title">Source: parsers/mobiledoc/0-3-2.js</h1>
 
     
 
@@ -33,9 +33,11 @@
   MOBILEDOC_CARD_SECTION_TYPE,
   MOBILEDOC_MARKUP_MARKER_TYPE,
   MOBILEDOC_ATOM_MARKER_TYPE
-} from 'mobiledoc-kit/renderers/mobiledoc/0-3';
-import { kvArrayToObject, filter } from "../../utils/array-utils";
-import assert from 'mobiledoc-kit/utils/assert';
+} from '../../renderers/mobiledoc/0-3-2';
+
+import { kvArrayToObject, filter } from '../../utils/array-utils';
+import assert from '../../utils/assert';
+import { entries } from '../../utils/object-utils';
 
 /*
  * Parses from mobiledoc -> post
@@ -137,9 +139,14 @@ export default class MobiledocParser {
     post.sections.append(section);
   }
 
-  parseMarkupSection([, tagName, markers], post) {
-    const section = this.builder.createMarkupSection(tagName.toLowerCase() === 'pull-quote' ? 'aside' : tagName);
+  parseMarkupSection([, tagName, markers, attributesArray], post) {
+    const section = this.builder.createMarkupSection(tagName);
     post.sections.append(section);
+    if (attributesArray) {
+      entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
+        section.setAttribute(key, value);
+      });
+    }
     this.parseMarkers(markers, section);
     // Strip blank markers after they have been created. This ensures any
     // markup they include has been correctly populated.
@@ -148,9 +155,14 @@ export default class MobiledocParser {
     });
   }
 
-  parseListSection([, tagName, items], post) {
+  parseListSection([, tagName, items, attributesArray], post) {
     const section = this.builder.createListSection(tagName);
     post.sections.append(section);
+    if (attributesArray) {
+      entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
+        section.setAttribute(key, value);
+      });
+    }
     this.parseListItems(items, section);
   }
 

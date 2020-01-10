@@ -43,11 +43,12 @@
 
 
     <section>
-        <article><h1>Mobiledoc Kit</h1><p><a href="https://saucelabs.com/u/mobiledoc-kit"><img src="https://saucelabs.com/browser-matrix/mobiledoc-kit.svg" alt="Sauce Test Status"></a></p>
+        <article><h1>Mobiledoc Kit</h1><p><a href="https://travis-ci.org/bustle/mobiledoc-kit"><img src="https://travis-ci.org/bustle/mobiledoc-kit.svg?branch=master" alt="Travis CI Build Status"></a></p>
+<p><a href="https://saucelabs.com/u/mobiledoc-kit"><img src="https://saucelabs.com/browser-matrix/mobiledoc-kit.svg" alt="Sauce Test Status"></a></p>
 <p><a href="https://david-dm.org/bustle/mobiledoc-kit/master"><img src="https://david-dm.org/bustle/mobiledoc-kit/master.svg" alt="Dependency Status"></a>
 <a href="https://david-dm.org/bustle/mobiledoc-kit/master#info=devDependencies"><img src="https://david-dm.org/bustle/mobiledoc-kit/master/dev-status.svg" alt="devDependency Status"></a></p>
 <p><img src="https://bustle.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png" alt="Mobiledoc Logo"></p>
-<p>Mobiledoc Kit (warning: beta) is a library for building WYSIWYG editors
+<p>Mobiledoc Kit (beta) is a framework-agnostic library for building WYSIWYG editors
 supporting rich content via cards.</p>
 <h2>Libraries</h2><p>This repository hosts the core Mobiledoc-Kit library. If you want to use Mobiledoc-Kit to <em>create a WYSIWYG editor</em> you have the following options:</p>
 <table>
@@ -101,6 +102,10 @@ supporting rich content via cards.</p>
 <td>In-Browser (DOM) Rendering, with Ember</td>
 <td><a href="https://github.com/bustle/ember-mobiledoc-dom-renderer">ember-mobiledoc-dom-renderer</a></td>
 </tr>
+<tr>
+<td>React Server and Browser Renderer</td>
+<td><a href="https://github.com/dailybeast/mobiledoc-react-renderer">mobiledoc-react-renderer</a></td>
+</tr>
 </tbody>
 </table>
 <p>Mobiledoc is a deliberately simple and terse format, and you are encouraged to write your own renderer if you have other target output formats (e.g., a PDF renderer, an iOS Native Views Renderer, etc.).</p>
@@ -148,7 +153,7 @@ var options = { mobiledoc: simpleMobiledoc };
 var editor = new Mobiledoc.Editor(options);
 editor.render(element);</code></pre><p><code>options</code> is an object which may include the following properties:</p>
 <ul>
-<li><code>modiledoc</code> - [object] A mobiledoc object to load and edit.</li>
+<li><code>mobiledoc</code> - [object] A mobiledoc object to load and edit.</li>
 <li><code>placeholder</code> - [string] default text to show before a user starts typing.</li>
 <li><code>spellcheck</code> - [boolean] whether to enable spellcheck. Defaults to true.</li>
 <li><code>autofocus</code> - [boolean] When true, focuses on the editor when it is rendered.</li>
@@ -172,7 +177,7 @@ Mobiledoc.</li>
 <li><code>editor.destroy()</code> - teardown the editor event listeners, free memory etc.</li>
 <li><code>editor.disableEditing()</code> - stop the user from being able to edit the
 current post with their cursor. Programmatic edits are still allowed.</li>
-<li><code>editor.enableEditing()</code> - allow the user to make direct edits directly
+<li><code>editor.enableEditing()</code> - allow the user to make edits directly
 to a post's text.</li>
 <li><code>editor.editCard(cardSection)</code> - change the card to its edit mode (will change
 immediately if the card is already rendered, or will ensure that when the card
@@ -253,9 +258,14 @@ edited post.</li>
 <li><code>editor.cursorDidChange()</code> - When the cursor (or selection) changes as a result of arrow-key
 movement or clicking in the document.</li>
 <li><code>editor.onTextInput()</code> - When the user adds text to the document (see <a href="https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input">example</a>)</li>
-<li><code>editor.inputModeDidChange()</code> - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with <code>Editor#activeMarkups</code> and <code>Editor#activeSections</code> to implement a custom toolbar.</li>
+<li><code>editor.inputModeDidChange()</code> - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with <code>Editor#activeMarkups</code>, <code>Editor#activeSections</code>, and <code>Editor#activeSectionAttributes</code> to implement a custom toolbar.</li>
+<li><code>editor.beforeToggleMarkup(({markup, range, willAdd} =&gt; {...})</code> - Register a
+callback that will be called before <code>editor#toggleMarkup</code> is applied. If any
+callback returns literal <code>false</code>, the toggling of markup will be canceled.
+(Toggling markup done via the postEditor, e.g. <code>editor.run(postEditor =&gt;
+postEditor.toggleMarkup(...))</code> will skip this callback.</li>
 </ul>
-<p>For more details on the lifecycle hooks, see the <a href="https://bustlelabs.github.io/mobiledoc-kit/demo/docs/Editor.html">Editor documentation</a>.</p>
+<p>For more details on the lifecycle hooks, see the <a href="https://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html">Editor documentation</a>.</p>
 <h3>Programmatic Post Editing</h3><p>A major goal of the Mobiledoc kit is to allow complete customization of user
 interfaces using the editing surface. The programmatic editing API allows
 the creation of completely custom interfaces for buttons, hot-keys, and
@@ -319,8 +329,19 @@ editor.onTextInput({
   }
 });</code></pre><p>The editor has several default text input handlers that are defined in
 <code>src/js/editor/text-input-handlers.js</code>.</p>
-<p>To remove default text input handlers, simply call the unregister function.</p>
-<pre class="prettyprint source lang-javascript"><code>editor.unregisterAllTextInputHandlers();</code></pre><h3>DOM Parsing hooks</h3><p>A developer can override the default parsing behavior for leaf DOM nodes in
+<p>To remove default text input handlers call the unregister function.</p>
+<pre class="prettyprint source lang-javascript"><code>editor.unregisterAllTextInputHandlers();</code></pre><h4><code>\n</code> special-case match character</h4><p>When writing a matching string it is common to use <code>\s</code> at the end of a match
+regex, thus triggering the handler for a given string when the users presses
+the space or tab key.</p>
+<p>When the enter key is pressed no actual characters are added to a document.
+Instead a new section is created following the current section. Despite this,
+you may use <code>\n</code> in a match regex to capture moments when the enter key is
+pressed. For example if you wanted to process a URL for auto-linking you
+might want to process the string on both the space key and when the user hits
+enter.</p>
+<p>Since <code>\s</code> is a superset of <code>\n</code>, that makes the following regex a valid match
+for a hand-typed URL after the user presses space or enter:</p>
+<pre class="prettyprint source lang-regex"><code>/\b(https?:\/\/[^\s]+)\s$/</code></pre><h3>DOM Parsing hooks</h3><p>A developer can override the default parsing behavior for leaf DOM nodes in
 pasted HTML.</p>
 <p>For example, when an <code>img</code> tag is pasted it may be appropriate to
 fetch that image, upload it to an authoritative source, and create a specific
@@ -384,13 +405,18 @@ If you have a question about usage you can post in the <a href="https://mobiledo
 <li><code>np &lt;version&gt;</code> (e.g. <code>np 0.12.0</code>)</li>
 <li><code>git push &lt;origin&gt; --tags</code></li>
 </ul>
-<h3>Deploy the demo</h3><p>The demo website is hosted at github pages. To publish a new version:</p>
+<h3>Deploy the demo</h3><p>The demo website is hosted at
+<a href="https://bustle.github.io/mobiledoc-kit/demo">bustle.github.io/mobiledoc-kit/demo</a>.</p>
+<p>To preview the website, start the server and visit
+<a href="http://localhost:4200/demo/">http://localhost:4200/demo/</a>. The code for
+this website can be found in <code>assets/demo/</code>. Note that the development server
+does not rebuild jsdoc.</p>
+<p>To publish a new version:</p>
 <ul>
 <li><code>npm run build:website</code> - This builds the website into <code>website/</code> and commits it</li>
 <li><code>npm run deploy:website</code> - Pushes the <code>website/</code> subtree to the <code>gh-pages</code>
  branch of your <code>origin</code> at github</li>
 </ul>
-<p>Visit <a href="https://bustle.github.io/mobiledoc-kit/demo">bustle.github.io/mobiledoc-kit/demo</a>.</p>
 <p><em>Development of Mobiledoc and the supporting libraries was generously funded by <a href="http://www.bustle.com/labs">Bustle Labs</a>. Bustle Labs is the tech team behind the editorial staff at <a href="http://www.bustle.com">Bustle</a>, a fantastic and successful feminist and women’s interest site based in NYC.</em></p></article>
     </section>
 
@@ -402,13 +428,13 @@ If you have a question about usage you can post in the <a href="https://mobiledo
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 06 2017 10:05:08 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
 </footer>
 
 <script> prettyPrint(); </script>

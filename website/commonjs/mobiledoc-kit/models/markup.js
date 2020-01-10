@@ -21,6 +21,12 @@ exports.VALID_MARKUP_TAGNAMES = VALID_MARKUP_TAGNAMES;
 var VALID_ATTRIBUTES = ['href', 'rel'];
 
 exports.VALID_ATTRIBUTES = VALID_ATTRIBUTES;
+/**
+ * A Markup is similar with an inline HTML tag that might be added to
+ * text to modify its meaning and/or display. Examples of types of markup
+ * that could be added are bold ('b'), italic ('i'), strikethrough ('s'), and `a` tags (links).
+ * @property {String} tagName
+ */
 
 var Markup = (function () {
   /*
@@ -42,6 +48,12 @@ var Markup = (function () {
     (0, _utilsAssert['default'])('Cannot create markup of tagName ' + tagName, VALID_MARKUP_TAGNAMES.indexOf(this.tagName) !== -1);
   }
 
+  /**
+   * Whether text in the forward direction of the cursor (i.e. to the right in ltr text)
+   * should be considered to have this markup applied to it.
+   * @private
+   */
+
   _createClass(Markup, [{
     key: 'isForwardInclusive',
     value: function isForwardInclusive() {
@@ -57,6 +69,11 @@ var Markup = (function () {
     value: function hasTag(tagName) {
       return this.tagName === (0, _utilsDomUtils.normalizeTagName)(tagName);
     }
+
+    /**
+     * Returns the attribute value
+     * @param {String} name, e.g. "href"
+     */
   }, {
     key: 'getAttribute',
     value: function getAttribute(name) {

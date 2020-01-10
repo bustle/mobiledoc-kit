@@ -27,6 +27,7 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>import Keycodes from './keycodes';
+import Keys from './keys';
 import { TAB } from 'mobiledoc-kit/utils/characters';
 
 /**
@@ -61,7 +62,7 @@ export function modifierMask(event) {
          modVal(altKey,   MODIFIERS.ALT);
 }
 
-export const SPECIAL_KEYS = {
+const SPECIAL_KEYS = {
   BACKSPACE: Keycodes.BACKSPACE,
   TAB:       Keycodes.TAB,
   ENTER:     Keycodes.ENTER,
@@ -79,6 +80,10 @@ export const SPECIAL_KEYS = {
   DEL:       Keycodes.DELETE
 };
 
+export function specialCharacterToCode(specialCharacter) {
+  return SPECIAL_KEYS[specialCharacter];
+}
+
 // heuristic for determining if `event` is a key event
 function isKeyEvent(event) {
   return /^key/.test(event.type);
@@ -91,6 +96,7 @@ function isKeyEvent(event) {
  */
 const Key = class Key {
   constructor(event) {
+    this.key = event.key;
     this.keyCode = event.keyCode;
     this.charCode = event.charCode;
     this.event = event;
@@ -108,17 +114,31 @@ const Key = class Key {
     return String.fromCharCode(this.charCode);
   }
 
+  // See https://caniuse.com/#feat=keyboardevent-key for browser support.
+  isKeySupported() {
+    return this.key;
+  }
+
+  isKey(identifier) {
+    if (this.isKeySupported()) {
+      assert(`Must define Keys.${identifier}.`, Keys[identifier]);
+      return this.key === Keys[identifier];
+    } else {
+      assert(`Must define Keycodes.${identifier}.`, Keycodes[identifier]);
+      return this.keyCode === Keycodes[identifier];
+    }
+  }
+
   isEscape() {
-    return this.keyCode === Keycodes.ESC;
+    return this.isKey('ESC');
   }
 
   isDelete() {
-    return this.keyCode === Keycodes.BACKSPACE ||
-           this.keyCode === Keycodes.DELETE;
+    return this.isKey('BACKSPACE') || this.isForwardDelete();
   }
 
   isForwardDelete() {
-    return this.keyCode === Keycodes.DELETE;
+    return this.isKey('DELETE');
   }
 
   isArrow() {
@@ -126,8 +146,7 @@ const Key = class Key {
   }
 
   isHorizontalArrow() {
-    return this.keyCode === Keycodes.LEFT ||
-           this.keyCode === Keycodes.RIGHT;
+    return this.isLeftArrow() || this.isRightArrow();
   }
 
   isHorizontalArrowWithoutModifiersOtherThanShift() {
@@ -136,24 +155,96 @@ const Key = class Key {
   }
 
   isVerticalArrow() {
-    return this.keyCode === Keycodes.UP ||
-      this.keyCode === Keycodes.DOWN;
+    return this.isKey('UP') || this.isKey('DOWN');
   }
 
   isLeftArrow() {
-    return this.keyCode === Keycodes.LEFT;
+    return this.isKey('LEFT');
   }
 
   isRightArrow() {
-    return this.keyCode === Keycodes.RIGHT;
+    return this.isKey('RIGHT');
   }
 
   isHome() {
-    return this.keyCode === Keycodes.HOME;
+    return this.isKey('HOME');
   }
 
   isEnd() {
-    return this.keyCode === Keycodes.END;
+    return this.isKey('END');
+  }
+
+  isPageUp() {
+    return this.isKey('PAGEUP');
+  }
+
+  isPageDown() {
+    return this.isKey('PAGEDOWN');
+  }
+
+  isInsert() {
+    return this.isKey('INS');
+  }
+
+  isClear() {
+    return this.isKey('CLEAR');
+  }
+
+  isPause() {
+    return this.isKey('PAUSE');
+  }
+
+  isSpace() {
+    return this.isKey('SPACE');
+  }
+
+  // In Firefox, pressing ctrl-TAB will switch to another open browser tab, but
+  // it will also fire a keydown event for the tab+modifier (ctrl). This causes
+  // Mobiledoc to erroneously insert a tab character before FF switches to the
+  // new browser tab.  Chrome doesn't fire this event so the issue doesn't
+  // arise there. Fix this by returning false when the TAB key event includes a
+  // modifier.
+  // See: https://github.com/bustle/mobiledoc-kit/issues/565
+  isTab() {
+    return !this.hasAnyModifier() &amp;&amp; this.isKey('TAB');
+  }
+
+  isEnter() {
+    return this.isKey('ENTER');
+  }
+
+  /*
+   * If the key is the actual shift key. This is false when the shift key
+   * is held down and the source `event` is not the shift key.
+   * @see {isShift}
+   * @return {bool}
+   */
+  isShiftKey() {
+    return this.isKey('SHIFT');
+  }
+
+  /*
+   * If the key is the actual alt key (aka "option" on mac). This is false when the alt key
+   * is held down and the source `event` is not the alt key.
+   * @return {bool}
+   */
+  isAltKey() {
+    return this.isKey('ALT');
+  }
+
+  /*
+   * If the key is the actual ctrl key. This is false when the ctrl key
+   * is held down and the source `event` is not the ctrl key.
+   * @return {bool}
+   */
+  isCtrlKey() {
+    return this.isKey('CTRL');
+  }
+
+  isIME() {
+    // FIXME the IME action seems to get lost when we issue an
+    // `editor.deleteSelection` before it (in Chrome)
+    return this.keyCode === Keycodes.IME;
   }
 
   get direction() {
@@ -163,18 +254,6 @@ const Key = class Key {
       case this.isHorizontalArrow():
         return this.isRightArrow() ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
     }
-  }
-
-  isSpace() {
-    return this.keyCode === Keycodes.SPACE;
-  }
-
-  isTab() {
-    return this.keyCode === Keycodes.TAB;
-  }
-
-  isEnter() {
-    return this.keyCode === Keycodes.ENTER;
   }
 
   /**
@@ -187,34 +266,6 @@ const Key = class Key {
    */
   isShift() {
     return this.shiftKey;
-  }
-
-  /*
-   * If the key is the actual shift key. This is false when the shift key
-   * is held down and the source `event` is not the shift key.
-   * @see {isShift}
-   * @return {bool}
-   */
-  isShiftKey() {
-    return this.keyCode === Keycodes.SHIFT;
-  }
-
-  /*
-   * If the key is the actual alt key (aka "option" on mac). This is false when the alt key
-   * is held down and the source `event` is not the alt key.
-   * @return {bool}
-   */
-  isAltKey() {
-    return this.keyCode === Keycodes.ALT;
-  }
-
-  /*
-   * If the key is the actual ctrl key. This is false when the ctrl key
-   * is held down and the source `event` is not the ctrl key.
-   * @return {bool}
-   */
-  isCtrlKey() {
-    return this.keyCode === Keycodes.CTRL;
   }
 
   hasModifier(modifier) {
@@ -241,6 +292,50 @@ const Key = class Key {
     return MODIFIERS.ALT &amp; this.modifierMask;
   }
 
+  isPrintableKey() {
+    return !(
+      this.isArrow() ||
+      this.isHome() || this.isEnd() ||
+      this.isPageUp() || this.isPageDown() ||
+      this.isInsert() || this.isClear() || this.isPause() ||
+      this.isEscape()
+    );
+  }
+
+  isNumberKey() {
+    if (this.isKeySupported()) {
+      return this.key >= '0' &amp;&amp; this.key &lt;= '9';
+    } else {
+      const code = this.keyCode;
+      return (code >= Keycodes['0'] &amp;&amp; code &lt;= Keycodes['9']) ||
+        (code >= Keycodes.NUMPAD_0 &amp;&amp; code &lt;= Keycodes.NUMPAD_9); // numpad keys
+    }
+  }
+
+  isLetterKey() {
+    if (this.isKeySupported()) {
+      const key = this.key;
+      return (key >= 'a' &amp;&amp; key &lt;= 'z') ||
+        (key >= 'A' &amp;&amp; key &lt;= 'Z');
+    } else {
+      const code = this.keyCode;
+      return (code >= Keycodes.A &amp;&amp; code &lt;= Keycodes.Z) ||
+        (code >= Keycodes.a &amp;&amp; code &lt;= Keycodes.z);
+    }
+  }
+
+  isPunctuation() {
+    if (this.isKeySupported()) {
+      const key = this.key;
+      return (key >= ';' &amp;&amp; key &lt;= '`') ||
+        (key >= '[' &amp;&amp; key &lt;= '"');
+    } else {
+      const code = this.keyCode;
+      return (code >= Keycodes[';'] &amp;&amp; code &lt;= Keycodes['`']) ||
+      (code >= Keycodes['['] &amp;&amp; code &lt;= Keycodes['"']);
+    }
+  }
+
   /**
    * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
    *   and http://stackoverflow.com/a/12467610/137784
@@ -250,31 +345,21 @@ const Key = class Key {
       return false;
     }
 
-    const {keyCode:code} = this;
-
-    // Firefox calls keypress events for arrow keys, but they should not be
-    // considered printable
-    if (this.isArrow()) {
+    // Firefox calls keypress events for some keys that should not be printable
+    if (!this.isPrintableKey()) {
       return false;
     }
 
     return (
-      code !== 0 ||
+      this.keyCode !== 0 ||
       this.toString().length > 0 ||
-      (code >= Keycodes['0'] &amp;&amp; code &lt;= Keycodes['9']) ||         // number keys
+      this.isNumberKey() ||
       this.isSpace() ||
       this.isTab()   ||
       this.isEnter() ||
-      (
-        (code >= Keycodes.A &amp;&amp; code &lt;= Keycodes.Z) ||               // letter keys
-        (code >= Keycodes.a &amp;&amp; code &lt;= Keycodes.z)
-      ) ||
-      (code >= Keycodes.NUMPAD_0 &amp;&amp; code &lt;= Keycodes.NUMPAD_9) || // numpad keys
-      (code >= Keycodes[';'] &amp;&amp; code &lt;= Keycodes['`']) ||         // punctuation
-      (code >= Keycodes['['] &amp;&amp; code &lt;= Keycodes['"']) ||
-      // FIXME the IME action seems to get lost when we issue an `editor.deleteSelection`
-      // before it (in Chrome)
-      code === Keycodes.IME
+      this.isLetterKey() ||
+      this.isPunctuation() ||
+      this.isIME()
     );
   }
 };
@@ -290,13 +375,13 @@ export default Key;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 06 2017 10:05:08 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
 </footer>
 
 <script> prettyPrint(); </script>

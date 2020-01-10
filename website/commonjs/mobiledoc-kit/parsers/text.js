@@ -74,10 +74,12 @@ var TextParser = (function () {
 
       switch (type) {
         case _modelsTypes.LIST_SECTION_TYPE:
-          var item = this.builder.createListItem(markers);
-          var list = this.builder.createListSection(tagName, [item]);
-          section = list;
-          break;
+          {
+            var item = this.builder.createListItem(markers);
+            var list = this.builder.createListSection(tagName, [item]);
+            section = list;
+            break;
+          }
         case _modelsTypes.MARKUP_SECTION_TYPE:
           section = this.builder.createMarkupSection(tagName, markers);
           break;

@@ -89,25 +89,29 @@ var LinkedList = (function () {
 
           break;
         case 'middle':
-          var prevItem = nextItem.prev;
-          item.next = nextItem;
-          item.prev = prevItem;
-          nextItem.prev = item;
-          prevItem.next = item;
+          {
+            var prevItem = nextItem.prev;
+            item.next = nextItem;
+            item.prev = prevItem;
+            nextItem.prev = item;
+            prevItem.next = item;
 
-          break;
-        case 'end':
-          var tail = this.tail;
-          item.prev = tail;
-
-          if (tail) {
-            tail.next = item;
-          } else {
-            this.head = item;
+            break;
           }
-          this.tail = item;
+        case 'end':
+          {
+            var tail = this.tail;
+            item.prev = tail;
 
-          break;
+            if (tail) {
+              tail.next = item;
+            } else {
+              this.head = item;
+            }
+            this.tail = item;
+
+            break;
+          }
       }
     }
   }, {

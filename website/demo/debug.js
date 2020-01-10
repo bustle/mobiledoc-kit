@@ -1,12 +1,10 @@
 /* global Mobiledoc */
 'use strict';
 
-var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
-
 var editor;
 
 function renderError(event) {
-  var error = event.error;
+  let error = event.error;
   $('#error .name').text(error.name);
   $('#error .message').text(error.message);
 }
@@ -37,29 +35,28 @@ function updateCursor() {
 document.addEventListener('selectionchange', renderNativeSelection);
 
 function renderNativeSelection(event) {
-  var sel = window.getSelection();
-  var anchorNode = sel.anchorNode;
-  var focusNode = sel.focusNode;
-  var anchorOffset = sel.anchorOffset;
-  var focusOffset = sel.focusOffset;
-  var isCollapsed = sel.isCollapsed;
-  var rangeCount = sel.rangeCount;
-
+  let sel = window.getSelection();
+  let { anchorNode, focusNode, anchorOffset, focusOffset, isCollapsed, rangeCount } = sel;
   if (anchorNode === null && focusNode === null) {
-    $('#selection').html('<em>None</em>');
+    $('#selection').html(`<em>None</em>`);
     return;
   }
-  $('#selection').html('\n    <div class=\'node\'>Anchor: ' + renderNode(anchorNode) + ' (' + anchorOffset + ')</div>\n    <div class=\'node\'>Focus: ' + renderNode(focusNode) + ' (' + focusOffset + ')</div>\n    <div>' + (isCollapsed ? 'Collapsed' : 'Not collapsed') + '</div>\n    <div class=\'ranges\'>Ranges: ' + rangeCount + '</div>\n  ');
+  $('#selection').html(`
+    <div class='node'>Anchor: ${renderNode(anchorNode)} (${anchorOffset})</div>
+    <div class='node'>Focus: ${renderNode(focusNode)} (${focusOffset})</div>
+    <div>${isCollapsed ? 'Collapsed' : 'Not collapsed'}</div>
+    <div class='ranges'>Ranges: ${rangeCount}</div>
+  `);
 }
 
 function renderNode(node) {
-  var text = node.textContent.slice(0, 22);
+  let text = node.textContent.slice(0, 22);
   if (node.textContent.length > 22) {
     text += '...';
   }
 
-  var type = node.nodeType === Node.TEXT_NODE ? 'text' : 'el (' + node.tagName + ')';
-  return '<span class=\'type\'>' + type + '</span>: ' + text;
+  let type = node.nodeType === Node.TEXT_NODE ? 'text' : `el (${node.tagName})`;
+  return `<span class='type'>${type}</span>: ${text}`;
 }
 
 function renderMarkup(markup) {
@@ -87,17 +84,15 @@ function updateInputMode() {
 }
 
 function updateButtons() {
-  var activeSectionTagNames = editor.activeSections.map(function (section) {
+  let activeSectionTagNames = editor.activeSections.map(section => {
     return section.tagName;
   });
-  var activeMarkupTagNames = editor.activeMarkups.map(function (markup) {
-    return markup.tagName;
-  });
+  let activeMarkupTagNames = editor.activeMarkups.map(markup => markup.tagName);
 
   $('#toolbar button').each(function () {
-    var toggle = $(this).data('toggle');
+    let toggle = $(this).data('toggle');
 
-    var hasSection = false,
+    let hasSection = false,
         hasMarkup = false;
     if (activeSectionTagNames.indexOf(toggle) !== -1) {
       hasSection = true;
@@ -113,29 +108,23 @@ function updateButtons() {
   });
 }
 
-var mentionAtom = {
+let mentionAtom = {
   name: 'mention',
   type: 'dom',
-  render: function render(_ref) {
-    var value = _ref.value;
-
-    var el = $('<span>@' + value + '</span>')[0];
+  render({ value }) {
+    let el = $(`<span>@${value}</span>`)[0];
     return el;
   }
 };
 
-var clickAtom = {
+let clickAtom = {
   name: 'click',
   type: 'dom',
-  render: function render(_ref2) {
-    var env = _ref2.env;
-    var value = _ref2.value;
-    var payload = _ref2.payload;
-
-    var el = document.createElement('button');
-    var clicks = payload.clicks || 0;
+  render({ env, value, payload }) {
+    let el = document.createElement('button');
+    let clicks = payload.clicks || 0;
     el.appendChild(document.createTextNode('Clicks: ' + clicks));
-    el.onclick = function () {
+    el.onclick = () => {
       payload.clicks = payload.clicks || 0;
       payload.clicks++;
       env.save(value, payload);
@@ -144,19 +133,11 @@ var clickAtom = {
   }
 };
 
-var tableCard = {
+let tableCard = {
   name: 'table',
   type: 'dom',
-  render: function render() {
-    var _map = ['table', 'tr', 'td'].map(function (tagName) {
-      return document.createElement(tagName);
-    });
-
-    var _map2 = _slicedToArray(_map, 3);
-
-    var table = _map2[0];
-    var tr = _map2[1];
-    var td = _map2[2];
+  render() {
+    let [table, tr, td] = ['table', 'tr', 'td'].map(tagName => document.createElement(tagName));
 
     table.appendChild(tr);
     tr.appendChild(td);
@@ -167,7 +148,7 @@ var tableCard = {
 };
 
 function moveCard(section, dir) {
-  editor.run(function (postEditor) {
+  editor.run(postEditor => {
     if (dir === 'up') {
       postEditor.moveSectionUp(section);
     } else {
@@ -176,70 +157,48 @@ function moveCard(section, dir) {
   });
 }
 
-var movableCard = {
+let movableCard = {
   name: 'movable',
   type: 'dom',
-  render: function render(_ref3) {
-    var env = _ref3.env;
-    var payload = _ref3.payload;
+  render({ env, payload }) {
+    let cardSection = env.postModel;
+    let text = payload.text || 'new';
+    let up = $('<button>up</button>').click(() => moveCard(cardSection, 'up'));
+    let down = $('<button>down</button>').click(() => moveCard(cardSection, 'down'));
+    let x = $('<button>X</button>').click(env.remove);
 
-    var cardSection = env.postModel;
-    var text = payload.text || 'new';
-    var up = $('<button>up</button>').click(function () {
-      return moveCard(cardSection, 'up');
-    });
-    var down = $('<button>down</button>').click(function () {
-      return moveCard(cardSection, 'down');
-    });
-    var x = $('<button>X</button>').click(env.remove);
+    let edit = $('<button>edit</button>').click(env.edit);
 
-    var edit = $('<button>edit</button>').click(env.edit);
-
-    var el = $('<div>').append([text, up, down, x, edit])[0];
+    let el = $('<div>').append([text, up, down, x, edit])[0];
     return el;
   },
-  edit: function edit(_ref4) {
-    var env = _ref4.env;
-    var payload = _ref4.payload;
+  edit({ env, payload }) {
+    let cardSection = env.postModel;
+    let text = payload.text || 'new';
+    let up = $('<button>up</button>').click(() => moveCard(cardSection, 'up'));
+    let down = $('<button>down</button>').click(() => moveCard(cardSection, 'down'));
+    let x = $('<button>X</button>').click(env.remove);
 
-    var cardSection = env.postModel;
-    var text = payload.text || 'new';
-    var up = $('<button>up</button>').click(function () {
-      return moveCard(cardSection, 'up');
-    });
-    var down = $('<button>down</button>').click(function () {
-      return moveCard(cardSection, 'down');
-    });
-    var x = $('<button>X</button>').click(env.remove);
-
-    var input = $('<input>');
-    var save = $('<button>save</button>').click(function () {
+    let input = $('<input>');
+    let save = $('<button>save</button>').click(() => {
       payload.text = input.val();
       env.save(payload);
     });
-    var el = $('<div>').append([text, up, down, x, input, save])[0];
+    let el = $('<div>').append([text, up, down, x, input, save])[0];
     return el;
   }
 };
 
-function speakingPlugin(node, builder, _ref5) {
-  var addSection = _ref5.addSection;
-  var addMarkerable = _ref5.addMarkerable;
-  var nodeFinished = _ref5.nodeFinished;
-
+function speakingPlugin(node, builder, { addSection, addMarkerable, nodeFinished }) {
   console.log('got node!', node);
 }
 
-function tableConverterPlugin(node, builder, _ref6) {
-  var addSection = _ref6.addSection;
-  var addMarkerable = _ref6.addMarkerable;
-  var nodeFinished = _ref6.nodeFinished;
-
+function tableConverterPlugin(node, builder, { addSection, addMarkerable, nodeFinished }) {
   if (node.tagName !== 'TABLE') {
     return;
   }
 
-  var tableCard = builder.createCardSection("table");
+  let tableCard = builder.createCardSection("table");
   addSection(tableCard);
   nodeFinished();
 }
@@ -263,32 +222,32 @@ $(function () {
   editor.render(el);
 
   $('#toolbar button.toggle').click(function () {
-    var action = $(this).data('action');
-    var toggle = $(this).data('toggle');
+    let action = $(this).data('action');
+    let toggle = $(this).data('toggle');
 
     editor[action](toggle);
   });
 
   $('#toolbar button.toggle-method').click(function () {
-    var isOn = $(this).data('is-on') === 'true';
-    var methodOn = $(this).data('on');
-    var methodOff = $(this).data('off');
+    let isOn = $(this).data('is-on') === 'true';
+    let methodOn = $(this).data('on');
+    let methodOff = $(this).data('off');
 
-    var nextState = isOn ? 'false' : 'true';
-    var method = isOn ? methodOff : methodOn;
+    let nextState = isOn ? 'false' : 'true';
+    let method = isOn ? methodOff : methodOn;
 
     $(this).data('is-on', nextState);
     editor[method]();
   });
 
   $('#toolbar button.insert-atom').click(function () {
-    var name = $(this).data('name');
-    var value = $(this).data('value') || '';
+    let name = $(this).data('name');
+    let value = $(this).data('value') || '';
     editor.insertAtom(name, value);
   });
 
   $('#toolbar button.insert-card').click(function () {
-    var name = $(this).data('name');
+    let name = $(this).data('name');
     editor.insertCard(name);
   });
 });

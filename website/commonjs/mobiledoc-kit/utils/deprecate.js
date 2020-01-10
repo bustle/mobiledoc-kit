@@ -15,6 +15,7 @@ function deprecate(message) {
   var conditional = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
   if (!conditional) {
-    console.log("[mobiledoc-kit] [DEPRECATED]: " + message); // jshint ignore:line
+    // eslint-disable-next-line no-console
+    console.log("[mobiledoc-kit] [DEPRECATED]: " + message);
   }
 }

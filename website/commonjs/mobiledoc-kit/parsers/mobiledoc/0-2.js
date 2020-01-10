@@ -31,7 +31,6 @@ var MobiledocParser = (function () {
   _createClass(MobiledocParser, [{
     key: 'parse',
     value: function parse(_ref) {
-      var version = _ref.version;
       var sectionData = _ref.sections;
 
       try {
@@ -107,7 +106,6 @@ var MobiledocParser = (function () {
     value: function parseCardSection(_ref3, post) {
       var _ref32 = _slicedToArray(_ref3, 3);
 
-      var type = _ref32[0];
       var name = _ref32[1];
       var payload = _ref32[2];
 
@@ -119,7 +117,6 @@ var MobiledocParser = (function () {
     value: function parseImageSection(_ref4, post) {
       var _ref42 = _slicedToArray(_ref4, 2);
 
-      var type = _ref42[0];
       var src = _ref42[1];
 
       var section = this.builder.createImageSection(src);
@@ -130,7 +127,6 @@ var MobiledocParser = (function () {
     value: function parseMarkupSection(_ref5, post) {
       var _ref52 = _slicedToArray(_ref5, 3);
 
-      var type = _ref52[0];
       var tagName = _ref52[1];
       var markers = _ref52[2];
 
@@ -150,7 +146,6 @@ var MobiledocParser = (function () {
     value: function parseListSection(_ref6, post) {
       var _ref62 = _slicedToArray(_ref6, 3);
 
-      var type = _ref62[0];
       var tagName = _ref62[1];
       var items = _ref62[2];
 

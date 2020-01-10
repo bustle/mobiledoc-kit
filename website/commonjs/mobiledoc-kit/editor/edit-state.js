@@ -24,7 +24,8 @@ var EditState = (function () {
       range: _utilsCursorRange['default'].blankRange(),
       activeMarkups: [],
       activeSections: [],
-      activeSectionTagNames: []
+      activeSectionTagNames: [],
+      activeSectionAttributes: {}
     };
 
     this.prevState = this.state = defaultState;
@@ -65,7 +66,7 @@ var EditState = (function () {
       var state = this.state;
       var prevState = this.prevState;
 
-      return !(0, _utilsArrayUtils.isArrayEqual)(state.activeMarkups, prevState.activeMarkups) || !(0, _utilsArrayUtils.isArrayEqual)(state.activeSectionTagNames, prevState.activeSectionTagNames);
+      return !(0, _utilsArrayUtils.isArrayEqual)(state.activeMarkups, prevState.activeMarkups) || !(0, _utilsArrayUtils.isArrayEqual)(state.activeSectionTagNames, prevState.activeSectionTagNames) || !(0, _utilsArrayUtils.isArrayEqual)((0, _utilsArrayUtils.objectToSortedKVArray)(state.activeSectionAttributes), (0, _utilsArrayUtils.objectToSortedKVArray)(prevState.activeSectionAttributes));
     }
 
     /**
@@ -102,6 +103,7 @@ var EditState = (function () {
       state.activeSectionTagNames = state.activeSections.map(function (s) {
         return s.isNested ? s.parent.tagName : s.tagName;
       });
+      state.activeSectionAttributes = this._readSectionAttributes(state.activeSections);
       return state;
     }
   }, {
@@ -123,6 +125,22 @@ var EditState = (function () {
       var post = this.editor.post;
 
       return post.markupsInRange(range);
+    }
+  }, {
+    key: '_readSectionAttributes',
+    value: function _readSectionAttributes(sections) {
+      return sections.reduce(function (sectionAttributes, s) {
+        var attributes = s.isNested ? s.parent.attributes : s.attributes;
+        Object.keys(attributes || {}).forEach(function (attrName) {
+          var camelizedAttrName = attrName.replace(/^data-md-/, '');
+          var attrValue = attributes[attrName];
+          sectionAttributes[camelizedAttrName] = sectionAttributes[camelizedAttrName] || [];
+          if (!(0, _utilsArrayUtils.contains)(sectionAttributes[camelizedAttrName], attrValue)) {
+            sectionAttributes[camelizedAttrName].push(attrValue);
+          }
+        });
+        return sectionAttributes;
+      }, {});
     }
   }, {
     key: '_removeActiveMarkup',
@@ -148,6 +166,15 @@ var EditState = (function () {
     key: 'activeSections',
     get: function get() {
       return this.state.activeSections;
+    }
+
+    /**
+     * @return {Object}
+     */
+  }, {
+    key: 'activeSectionAttributes',
+    get: function get() {
+      return this.state.activeSectionAttributes;
     }
 
     /**

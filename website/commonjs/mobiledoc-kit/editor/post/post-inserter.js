@@ -156,12 +156,10 @@ var Visitor = (function () {
       } else {
         var _breakListAtCursor2 = this._breakListAtCursor();
 
-        var _breakListAtCursor22 = _slicedToArray(_breakListAtCursor2, 3);
+        var _breakListAtCursor22 = _slicedToArray(_breakListAtCursor2, 2);
 
-        var pre = _breakListAtCursor22[0];
         var blank = _breakListAtCursor22[1];
-        var post = _breakListAtCursor22[2];
-        // jshint ignore:line
+
         this.cursorPosition = blank.tailPosition();
       }
     }
@@ -236,13 +234,11 @@ var Visitor = (function () {
   }, {
     key: '_breakMarkerableAtCursor',
     value: function _breakMarkerableAtCursor() {
-      var _postEditor$splitSection = // jshint ignore:line
-      this.postEditor.splitSection(this.cursorPosition);
+      var _postEditor$splitSection = this.postEditor.splitSection(this.cursorPosition);
 
-      var _postEditor$splitSection2 = _slicedToArray(_postEditor$splitSection, 2);
+      var _postEditor$splitSection2 = _slicedToArray(_postEditor$splitSection, 1);
 
       var pre = _postEditor$splitSection2[0];
-      var post = _postEditor$splitSection2[1];
 
       this.cursorPosition = pre.tailPosition();
     }
@@ -348,7 +344,9 @@ var Inserter = (function () {
     key: 'insert',
     value: function insert(cursorPosition, newPost) {
       var visitor = new Visitor(this, cursorPosition);
-      visitor.visit(newPost);
+      if (!newPost.isBlank) {
+        visitor.visit(newPost);
+      }
       return visitor.cursorPosition;
     }
   }]);

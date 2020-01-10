@@ -26,7 +26,11 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import { contains, isArrayEqual } from 'mobiledoc-kit/utils/array-utils';
+            <pre class="prettyprint source linenums"><code>import {
+  contains,
+  isArrayEqual,
+  objectToSortedKVArray
+} from 'mobiledoc-kit/utils/array-utils';
 import Range from 'mobiledoc-kit/utils/cursor/range';
 
 /**
@@ -42,7 +46,8 @@ class EditState {
       range: Range.blankRange(),
       activeMarkups: [],
       activeSections: [],
-      activeSectionTagNames: []
+      activeSectionTagNames: [],
+      activeSectionAttributes: {}
     };
 
     this.prevState = this.state = defaultState;
@@ -74,7 +79,8 @@ class EditState {
   inputModeDidChange() {
     let { state, prevState } = this;
     return (!isArrayEqual(state.activeMarkups, prevState.activeMarkups) ||
-            !isArrayEqual(state.activeSectionTagNames, prevState.activeSectionTagNames));
+            !isArrayEqual(state.activeSectionTagNames, prevState.activeSectionTagNames) ||
+            !isArrayEqual(objectToSortedKVArray(state.activeSectionAttributes), objectToSortedKVArray(prevState.activeSectionAttributes)));
   }
 
   /**
@@ -89,6 +95,14 @@ class EditState {
    */
   get activeSections() {
     return this.state.activeSections;
+  }
+
+
+  /**
+   * @return {Object}
+   */
+  get activeSectionAttributes() {
+    return this.state.activeSectionAttributes;
   }
 
   /**
@@ -125,6 +139,7 @@ class EditState {
     state.activeSectionTagNames = state.activeSections.map(s => {
       return s.isNested ? s.parent.tagName : s.tagName;
     });
+    state.activeSectionAttributes = this._readSectionAttributes(state.activeSections);
     return state;
   }
 
@@ -141,6 +156,21 @@ class EditState {
   _readActiveMarkups(range) {
     let { editor: { post } } = this;
     return post.markupsInRange(range);
+  }
+
+  _readSectionAttributes(sections) {
+    return sections.reduce((sectionAttributes, s) => {
+      let attributes = s.isNested ? s.parent.attributes : s.attributes;
+      Object.keys(attributes || {}).forEach(attrName => {
+        let camelizedAttrName = attrName.replace(/^data-md-/, '');
+        let attrValue = attributes[attrName];
+        sectionAttributes[camelizedAttrName] = sectionAttributes[camelizedAttrName] || [];
+        if (!contains(sectionAttributes[camelizedAttrName], attrValue)) {
+          sectionAttributes[camelizedAttrName].push(attrValue);
+        }
+      });
+      return sectionAttributes;
+    }, {});
   }
 
   _removeActiveMarkup(markup) {
@@ -164,13 +194,13 @@ export default EditState;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 06 2017 10:05:08 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
 </footer>
 
 <script> prettyPrint(); </script>

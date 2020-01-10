@@ -65,19 +65,14 @@ function toggleLink(editor) {
   var hasLink = editor.detectMarkupInRange(range, 'a');
 
   if (hasLink) {
-    editor.run(function (postEditor) {
-      return postEditor.toggleMarkup('a');
-    });
+    editor.toggleMarkup('a');
   } else {
     showPrompt('Enter a URL', defaultUrl, function (url) {
       if (!url) {
         return;
       }
 
-      editor.run(function (postEditor) {
-        var markup = postEditor.builder.createMarkup('a', { href: url });
-        postEditor.toggleMarkup(markup);
-      });
+      editor.toggleMarkup('a', { href: url });
     });
   }
 }

@@ -71,6 +71,7 @@ const defaults = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
+  showLinkTooltips: true,
   undoDepth: 5,
   undoBlockTimeout: 5000, // ms for an undo event
   cards: [],
@@ -120,6 +121,8 @@ const CALLBACK_QUEUES = {
  *     a custom toolbar.
  *   * {@link Editor#onTextInput} -- Register callbacks when the user enters text
  *     that matches a given string or regex.
+ *   * {@link Editor#beforeToggleMarkup} -- Register callbacks that will be run before
+ *     applying changes from {@link Editor#toggleMarkup}
  */
 class Editor {
   /**
@@ -139,6 +142,7 @@ class Editor {
    * @param {String} [options.placeholder] Default text to show before user starts typing.
    * @param {Boolean} [options.spellcheck=true] Whether to enable spellcheck
    * @param {Boolean} [options.autofocus=true] Whether to focus the editor when it is first rendered.
+   * @param {Boolean} [options.showLinkTooltips=true] Whether to show the url tooltip for links
    * @param {number} [options.undoDepth=5] How many undo levels will be available.
    *        Set to 0 to disable undo/redo functionality.
    * @return {Editor}
@@ -148,7 +152,7 @@ class Editor {
     assert('editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation',
           (options &amp;&amp; !options.nodeType));
     this._views = [];
-    this.isEditable = null;
+    this.isEditable = true;
     this._parserPlugins = options.parserPlugins || [];
 
     // FIXME: This should merge onto this.options
@@ -170,6 +174,7 @@ class Editor {
     this._mutationHandler = new MutationHandler(this);
     this._editState = new EditState(this);
     this._callbacks = new LifecycleCallbacks(values(CALLBACK_QUEUES));
+    this._beforeHooks = { toggleMarkup: [] };
 
     DEFAULT_TEXT_INPUT_HANDLERS.forEach(handler => this.onTextInput(handler));
 
@@ -264,11 +269,9 @@ class Editor {
 
     this.element = element;
 
-    if (this.isEditable === null) {
-      this.enableEditing();
+    if (this.showLinkTooltips) {
+      this._addTooltip();
     }
-
-    this._addTooltip();
 
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
     // postEditor.
@@ -282,6 +285,12 @@ class Editor {
 
     this._mutationHandler.init();
     this._eventManager.init();
+
+    if (this.isEditable === false) {
+      this.disableEditing();
+    } else {
+      this.enableEditing();
+    }
 
     if (this.autofocus) {
       this.selectRange(this.post.headPosition());
@@ -510,6 +519,10 @@ class Editor {
     return activeSections[activeSections.length - 1];
   }
 
+  get activeSectionAttributes() {
+    return this._editState.activeSectionAttributes;
+  }
+
   detectMarkupInRange(range, markupTagName) {
     let markups = this.post.markupsInRange(range);
     return detect(markups, markup => {
@@ -589,7 +602,7 @@ class Editor {
       let rendererOptions = { unknownCardHandler, unknownAtomHandler };
 
       switch (format) {
-        case 'html':
+        case 'html': {
           let result;
           if (Environment.hasDOM()) {
             rendered = new DOMRenderer(rendererOptions).render(mobiledoc);
@@ -599,6 +612,7 @@ class Editor {
             result = this.serializePost(post, 'text', options);
           }
           return result;
+        }
         case 'text':
           rendered = new TextRenderer(rendererOptions).render(mobiledoc);
           return rendered.result;
@@ -653,10 +667,9 @@ class Editor {
    * @public
    */
   disableEditing() {
-    if (this.isEditable === false) { return; }
-
     this.isEditable = false;
     if (this.hasRendered) {
+      this._eventManager.stop();
       this.element.setAttribute('contentEditable', false);
       this.setPlaceholder('');
       this.selectRange(Range.blankRange());
@@ -672,7 +685,8 @@ class Editor {
    */
   enableEditing() {
     this.isEditable = true;
-    if (this.element) {
+    if (this.hasRendered) {
+      this._eventManager.start();
       this.element.setAttribute('contentEditable', true);
       this.setPlaceholder(this.placeholder);
     }
@@ -876,18 +890,45 @@ class Editor {
   }
 
   /**
+   * @callback editorBeforeCallback
+   * @param { Object } details
+   * @param { Markup } details.markup
+   * @param { Range } details.range
+   * @param { boolean } details.willAdd Whether the markup will be applied
+   */
+
+  /**
+   * Register a callback that will be run before {@link Editor#toggleMarkup} is applied.
+   * If any callback returns literal `false`, the toggling of markup will be canceled.
+   * Note this only applies to calling `editor#toggleMarkup`. Using `editor.run` and
+   * modifying markup with the `postEditor` will skip any `beforeToggleMarkup` callbacks.
+   * @param {editorBeforeCallback}
+   */
+  beforeToggleMarkup(callback) {
+    this._beforeHooks.toggleMarkup.push(callback);
+  }
+
+  /**
    * Toggles the given markup at the editor's current {@link Range}.
    * If the range is collapsed this changes the editor's state so that the
    * next characters typed will be affected. If there is text selected
    * (aka a non-collapsed range), the selections' markup will be toggled.
    * If the editor is not focused and has no active range, nothing happens.
+   * Hooks added using #beforeToggleMarkup will be run before toggling,
+   * and if any of them returns literal false, toggling the markup will be canceled
+   * and no change will be applied.
    * @param {String} markup E.g. "b", "em", "a"
+   * @param {Object} [attributes={}] E.g. {href: "http://bustle.com"}
    * @public
    * @see PostEditor#toggleMarkup
    */
-  toggleMarkup(markup) {
-    markup = this.builder.createMarkup(markup);
+  toggleMarkup(markup, attributes={}) {
+    markup = this.builder.createMarkup(markup, attributes);
     let { range } = this;
+    let willAdd = !this.detectMarkupInRange(range, markup.tagName);
+    let shouldCancel = this._runBeforeHooks('toggleMarkup', {markup, range, willAdd});
+    if (shouldCancel) { return; }
+
     if (range.isCollapsed) {
       this._editState.toggleMarkupState(markup);
       this._inputModeDidChange();
@@ -942,6 +983,29 @@ class Editor {
    */
   toggleSection(tagName) {
     this.run(postEditor => postEditor.toggleSection(tagName, this.range));
+  }
+
+  /**
+   * Sets an attribute for the current active section(s).
+   *
+   * @param {String} key The attribute. The only valid attribute is 'text-align'.
+   * @param {String} value The value of the attribute.
+   * @public
+   * @see PostEditor#setAttribute
+   */
+  setAttribute(key, value) {
+    this.run(postEditor => postEditor.setAttribute(key, value, this.range));
+  }
+
+  /**
+   * Removes an attribute from the current active section(s).
+   *
+   * @param {String} key The attribute. The only valid attribute is 'text-align'.
+   * @public
+   * @see PostEditor#removeAttribute
+   */
+  removeAttribute(key) {
+    this.run(postEditor => postEditor.removeAttribute(key, this.range));
   }
 
   /**
@@ -1119,6 +1183,21 @@ class Editor {
     }
     this._callbacks.runCallbacks(...args);
   }
+
+  /**
+   * Runs each callback for the given hookName.
+   * Only the hookName 'toggleMarkup' is currently supported
+   * @return {Boolean} shouldCancel Whether the action in `hookName` should be canceled
+   * @private
+   */
+  _runBeforeHooks(hookName, ...args) {
+    let hooks = this._beforeHooks[hookName] || [];
+    for (let i = 0; i &lt; hooks.length; i++) {
+      if (hooks[i](...args) === false) {
+        return true;
+      }
+    }
+  }
 }
 
 export default Editor;
@@ -1132,13 +1211,13 @@ export default Editor;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 06 2017 10:05:08 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
 </footer>
 
 <script> prettyPrint(); </script>

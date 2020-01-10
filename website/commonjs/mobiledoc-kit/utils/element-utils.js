@@ -67,6 +67,24 @@ function setData(element, name, value) {
   }
 }
 
+function whenElementIsNotInDOM(element, callback) {
+  var isCanceled = false;
+  var observerFn = function observerFn() {
+    if (isCanceled) {
+      return;
+    }
+    if (!element.parentNode) {
+      callback();
+    } else {
+      window.requestAnimationFrame(observerFn);
+    }
+  };
+  observerFn();
+  return { cancel: function cancel() {
+      return isCanceled = true;
+    } };
+}
+
 exports.setData = setData;
 exports.getEventTargetMatchingTag = getEventTargetMatchingTag;
 exports.getElementRelativeOffset = getElementRelativeOffset;
@@ -74,3 +92,4 @@ exports.getElementComputedStyleNumericProp = getElementComputedStyleNumericProp;
 exports.positionElementToRect = positionElementToRect;
 exports.positionElementHorizontallyCenteredToRect = positionElementHorizontallyCenteredToRect;
 exports.positionElementCenteredBelow = positionElementCenteredBelow;
+exports.whenElementIsNotInDOM = whenElementIsNotInDOM;

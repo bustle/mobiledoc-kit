@@ -6,11 +6,13 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _renderersMobiledoc031 = require('../../renderers/mobiledoc/0-3-1');
+var _renderersMobiledoc032 = require('../../renderers/mobiledoc/0-3-2');
 
-var _utilsArrayUtils = require("../../utils/array-utils");
+var _utilsArrayUtils = require('../../utils/array-utils');
 
 var _utilsAssert = require('../../utils/assert');
+
+var _utilsObjectUtils = require('../../utils/object-utils');
 
 /*
  * Parses from mobiledoc -> post
@@ -126,16 +128,16 @@ var MobiledocParser = (function () {
       var type = _section[0];
 
       switch (type) {
-        case _renderersMobiledoc031.MOBILEDOC_MARKUP_SECTION_TYPE:
+        case _renderersMobiledoc032.MOBILEDOC_MARKUP_SECTION_TYPE:
           this.parseMarkupSection(section, post);
           break;
-        case _renderersMobiledoc031.MOBILEDOC_IMAGE_SECTION_TYPE:
+        case _renderersMobiledoc032.MOBILEDOC_IMAGE_SECTION_TYPE:
           this.parseImageSection(section, post);
           break;
-        case _renderersMobiledoc031.MOBILEDOC_CARD_SECTION_TYPE:
+        case _renderersMobiledoc032.MOBILEDOC_CARD_SECTION_TYPE:
           this.parseCardSection(section, post);
           break;
-        case _renderersMobiledoc031.MOBILEDOC_LIST_SECTION_TYPE:
+        case _renderersMobiledoc032.MOBILEDOC_LIST_SECTION_TYPE:
           this.parseListSection(section, post);
           break;
         default:
@@ -186,13 +188,24 @@ var MobiledocParser = (function () {
   }, {
     key: 'parseMarkupSection',
     value: function parseMarkupSection(_ref7, post) {
-      var _ref72 = _slicedToArray(_ref7, 3);
+      var _ref72 = _slicedToArray(_ref7, 4);
 
       var tagName = _ref72[1];
       var markers = _ref72[2];
+      var attributesArray = _ref72[3];
 
       var section = this.builder.createMarkupSection(tagName);
       post.sections.append(section);
+      if (attributesArray) {
+        (0, _utilsObjectUtils.entries)((0, _utilsArrayUtils.kvArrayToObject)(attributesArray)).forEach(function (_ref8) {
+          var _ref82 = _slicedToArray(_ref8, 2);
+
+          var key = _ref82[0];
+          var value = _ref82[1];
+
+          section.setAttribute(key, value);
+        });
+      }
       this.parseMarkers(markers, section);
       // Strip blank markers after they have been created. This ensures any
       // markup they include has been correctly populated.
@@ -204,14 +217,25 @@ var MobiledocParser = (function () {
     }
   }, {
     key: 'parseListSection',
-    value: function parseListSection(_ref8, post) {
-      var _ref82 = _slicedToArray(_ref8, 3);
+    value: function parseListSection(_ref9, post) {
+      var _ref92 = _slicedToArray(_ref9, 4);
 
-      var tagName = _ref82[1];
-      var items = _ref82[2];
+      var tagName = _ref92[1];
+      var items = _ref92[2];
+      var attributesArray = _ref92[3];
 
       var section = this.builder.createListSection(tagName);
       post.sections.append(section);
+      if (attributesArray) {
+        (0, _utilsObjectUtils.entries)((0, _utilsArrayUtils.kvArrayToObject)(attributesArray)).forEach(function (_ref10) {
+          var _ref102 = _slicedToArray(_ref10, 2);
+
+          var key = _ref102[0];
+          var value = _ref102[1];
+
+          section.setAttribute(key, value);
+        });
+      }
       this.parseListItems(items, section);
     }
   }, {
@@ -241,15 +265,15 @@ var MobiledocParser = (function () {
     }
   }, {
     key: 'parseMarker',
-    value: function parseMarker(_ref9, parent) {
+    value: function parseMarker(_ref11, parent) {
       var _this7 = this;
 
-      var _ref92 = _slicedToArray(_ref9, 4);
+      var _ref112 = _slicedToArray(_ref11, 4);
 
-      var type = _ref92[0];
-      var markerTypeIndexes = _ref92[1];
-      var closeCount = _ref92[2];
-      var value = _ref92[3];
+      var type = _ref112[0];
+      var markerTypeIndexes = _ref112[1];
+      var closeCount = _ref112[2];
+      var value = _ref112[3];
 
       markerTypeIndexes.forEach(function (index) {
         _this7.markups.push(_this7.markerTypes[index]);
@@ -264,9 +288,9 @@ var MobiledocParser = (function () {
     key: 'buildMarkerType',
     value: function buildMarkerType(type, value) {
       switch (type) {
-        case _renderersMobiledoc031.MOBILEDOC_MARKUP_MARKER_TYPE:
+        case _renderersMobiledoc032.MOBILEDOC_MARKUP_MARKER_TYPE:
           return this.builder.createMarker(value, this.markups.slice());
-        case _renderersMobiledoc031.MOBILEDOC_ATOM_MARKER_TYPE:
+        case _renderersMobiledoc032.MOBILEDOC_ATOM_MARKER_TYPE:
           {
             var _getAtomTypeFromIndex = this.getAtomTypeFromIndex(value);
 
