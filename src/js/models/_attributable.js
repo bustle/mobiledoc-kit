@@ -12,6 +12,8 @@ export const VALID_ATTRIBUTES = [
 export function attributable(ctx) {
   ctx.attributes = {};
 
+  ctx.hasAttribute = key => key in ctx.attributes;
+
   ctx.setAttribute = (key, value) => {
     if (!contains(VALID_ATTRIBUTES, key)) {
       throw new Error(`Invalid attribute "${key}" was passed. Constrain attributes to the spec-compliant whitelist.`);
