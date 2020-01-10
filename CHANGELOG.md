@@ -1,13 +1,17 @@
+<a name="0.12.2"></a>
+## <small>0.12.2 (2020-01-10)</small>
+
+* Add Editor#removeAttribute to remove section attributes 🕯 ([3b4677a](https://github.com/bustle/mobiledoc-kit/commit/3b4677a))
+* Fix demo toolbars ([56f9929](https://github.com/bustle/mobiledoc-kit/commit/56f9929))
+
+
+
 <a name="0.12.1"></a>
 ## <small>0.12.1 (2019-09-20)</small>
 
-Note: The previous version was released as v0.12.0-0 (a prerelease version)
-due to an issue with the CI infrastructure. v0.12.1 supersedes v0.12.0-0 and
-there is no v0.12.0 release.
-
 * Add button in demo to toggle blockquote ([4005732](https://github.com/bustle/mobiledoc-kit/commit/4005732))
 * Add Editor#activeSectionAttributes to support toolbar state for new section attributes in mobiledoc  ([0f65798](https://github.com/bustle/mobiledoc-kit/commit/0f65798))
-* Fix #689: Original range should be remembered after `toggleSection` ([95146e0](https://github.com/bustle/mobiledoc-kit/commit/95146e0)), closes [#689](https://github.com/bustle/mobiledoc-kit/issues/689)
+* Fix #689 ([95146e0](https://github.com/bustle/mobiledoc-kit/commit/95146e0)), closes [#689](https://github.com/bustle/mobiledoc-kit/issues/689)
 * Fix #694: Alignment of a section is removed when pressing "Enter" ([4fadc60](https://github.com/bustle/mobiledoc-kit/commit/4fadc60)), closes [#694](https://github.com/bustle/mobiledoc-kit/issues/694)
 * Remove redundant CSS from demo.css ([020dee3](https://github.com/bustle/mobiledoc-kit/commit/020dee3))
 * Replace Array.find with detect utility function 🦈 ([ea54c6b](https://github.com/bustle/mobiledoc-kit/commit/ea54c6b))
@@ -17,6 +21,7 @@ there is no v0.12.0 release.
 * Set default range for 'setAttribute' in PostEditor ([53b36d7](https://github.com/bustle/mobiledoc-kit/commit/53b36d7))
 * Specify Sauce Connect version 🐾 ([654943d](https://github.com/bustle/mobiledoc-kit/commit/654943d))
 * Update testem/sauce labs dependencies 🐄 ([105f62b](https://github.com/bustle/mobiledoc-kit/commit/105f62b))
+* v0.12.1 ([d112ec3](https://github.com/bustle/mobiledoc-kit/commit/d112ec3))
 
 
 
