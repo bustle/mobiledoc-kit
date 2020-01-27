@@ -69,11 +69,19 @@ const postOpcodeCompiler = {
   },
   openMarkupSection(tagName, attributes) {
     this.markers = [];
-    this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers, attributes]);
+    if (attributes && attributes.length !== 0) {
+      this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers, attributes]);
+    } else {
+      this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers]);
+    }
   },
   openListSection(tagName, attributes) {
     this.items = [];
-    this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items, attributes]);
+    if (attributes && attributes.length !== 0) {
+      this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items, attributes]);
+    } else {
+      this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items]);
+    }
   },
   openListItem() {
     this.markers = [];
