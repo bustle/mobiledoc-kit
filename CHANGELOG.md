@@ -1,8 +1,17 @@
+<a name="0.12.3"></a>
+## <small>0.12.3 (2020-01-28)</small>
+
+* built website from 5fe628e863773b7681954646309d7a6edc5e0523 ([7b87e74](https://github.com/bustle/mobiledoc-kit/commit/7b87e74))
+* In the 0.3.2 renderer, omit empty section attribute arrays 🍭 ([c115337](https://github.com/bustle/mobiledoc-kit/commit/c115337))
+
+
+
 <a name="0.12.2"></a>
 ## <small>0.12.2 (2020-01-10)</small>
 
 * Add Editor#removeAttribute to remove section attributes 🕯 ([3b4677a](https://github.com/bustle/mobiledoc-kit/commit/3b4677a))
 * Fix demo toolbars ([56f9929](https://github.com/bustle/mobiledoc-kit/commit/56f9929))
+* v0.12.2 ([5fe628e](https://github.com/bustle/mobiledoc-kit/commit/5fe628e))
 
 
 
