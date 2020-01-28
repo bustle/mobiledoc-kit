@@ -40,7 +40,7 @@ test('renders a post with marker', (assert) => {
     cards: [],
     markups: [['strong']],
     sections: [
-      [1, normalizeTagName('P'), [[0, [0], 1, 'Hi']], []]
+      [1, normalizeTagName('P'), [[0, [0], 1, 'Hi']]]
     ]
   });
 });
@@ -65,8 +65,7 @@ test('renders a post section with markers sharing a markup', (assert) => {
         [
           [0, [0], 0, 'Hi'],
           [0, [], 1, ' Guy']
-        ],
-        []
+        ]
       ]
     ]
   });
@@ -102,8 +101,7 @@ test('renders a post with markers with markers with complex attributes', (assert
           [0, [0], 1, 'Hi'],
           [0, [1], 1, ' Guy'],
           [0, [0], 1, ' other guy']
-        ],
-        []
+        ]
       ]
     ]
   });
@@ -169,8 +167,7 @@ test('renders a post with atom', (assert) => {
         [
           [0, [], 0, 'Hi'],
           [1, [], 0, 0]
-        ],
-        []
+        ]
       ]
     ]
   });
@@ -200,8 +197,7 @@ test('renders a post with atom and markup', (assert) => {
         normalizeTagName('P'),
         [
           [1, [0], 1, 0]
-        ],
-        []
+        ]
       ]
     ]
   });
@@ -235,8 +231,7 @@ test('renders a post with atom inside markup', (assert) => {
           [0, [0], 0, 'Hi '],
           [1, [], 0, 0],
           [0, [], 1, ' Bye']
-        ],
-        []
+        ]
       ]
     ]
   });
@@ -340,8 +335,7 @@ test('renders a post with a list', (assert) => {
         [
           [[0, [], 0, 'first item']],
           [[0, [], 0, 'second item']]
-        ],
-        []
+        ]
       ]
     ]
   });
@@ -361,8 +355,7 @@ test('renders an aside as markup section', (assert) => {
       [
         1,
         'aside',
-        [[0, [], 0, 'abc']],
-        []
+        [[0, [], 0, 'abc']]
       ]
     ]
   });
