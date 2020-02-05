@@ -2,7 +2,7 @@
 module.exports = {
   "framework": "qunit",
   "browser_start_timeout": 120,
-  "test_page": "dist/tests/index.html?hidepassed",
+  "test_page": "tests/index.rollup.html?hidepassed",
   "src_files": [
     "tests/**/*.js",
     "src/**/*.js"

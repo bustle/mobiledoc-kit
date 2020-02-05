@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mobiledoc Kit tests</title>
+  <link rel="stylesheet" href="../node_modules/qunit/qunit/qunit.css">
+  <style>
+    /* position qunit-fixture within view, for easier debugging */
+    #qunit-fixture {
+      position: static;
+      border: 1px solid black;
+      width: 33%;
+      height: 33%;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+
+  <script src="../dist/tests.js"></script>
+  <script src="/testem.js"></script>
+</body>
+</html>

@@ -3,11 +3,12 @@
   "version": "0.12.3",
   "description": "A toolkit for building WYSIWYG editors with Mobiledoc",
   "repository": "https://github.com/bustle/mobiledoc-kit",
+  "module": "dist/index.js",
   "scripts": {
-    "start": "broccoli serve --host 0.0.0.0",
+    "start": "rollup --config --watch",
     "test:ci": "npm run build:docs && npm run build && testem ci -f testem-ci.js",
-    "test": "npm run build:docs && npm run build && testem ci -f testem.js",
-    "build": "rm -rf dist && broccoli build dist",
+    "test": "rollup --config --tests && testem ci -f testem.js",
+    "build": "rollup --config",
     "build:docs": "jsdoc -c ./.jsdoc",
     "build:website": "npm run build && npm run build:docs && ./bin/build-website.sh",
     "deploy:website": "./bin/deploy-website.sh",
@@ -23,24 +24,24 @@
     "contenteditable"
   ],
   "files": [
-    "index.js",
-    "src",
-    "dist/amd",
-    "dist/commonjs",
-    "dist/global",
-    "dist/css"
+    "dist/index.js"
   ],
   "author": "Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)",
   "contributors": [
+    "Zahra Jabini <zahra.arch@gmail.com> (http://zahraism.com/)",
+    "Tom Dale <tom@tomdale.net> (https://tomdale.net)",
     "Cory Forsyth <cory.forsyth@gmail.com> (http://coryforsyth.com/)",
     "Matthew Beale <matt.beale@madhatted.com> (http://madhatted.com/)"
   ],
   "license": "MIT",
   "dependencies": {
     "mobiledoc-dom-renderer": "0.7.0",
-    "mobiledoc-text-renderer": "0.4.0"
+    "mobiledoc-text-renderer": "0.4.1"
   },
   "devDependencies": {
+    "@rollup/plugin-alias": "^3.0.0",
+    "@rollup/plugin-commonjs": "^11.0.1",
+    "@rollup/plugin-node-resolve": "^7.0.0",
     "broccoli": "^1.1.3",
     "broccoli-babel-transpiler": "^6.1.2",
     "broccoli-cli": "^1.0.0",
@@ -53,10 +54,17 @@
     "broccoli-test-builder": "^0.4.0",
     "conventional-changelog": "^1.1.3",
     "conventional-changelog-cli": "^1.3.2",
-    "jquery": "^3.2.1",
+    "jquery": "^3.4.1",
     "jsdoc": "^3.5.4",
+    "qunit": "^2.9.3",
+    "rollup": "^1.31.0",
+    "rollup-plugin-glob-import": "^0.4.5",
     "saucie": "^3.3.2",
     "testem": "^2.17.0"
   },
-  "main": "dist/commonjs/mobiledoc-kit/index.js"
+  "main": "dist/commonjs/mobiledoc-kit/index.js",
+  "volta": {
+    "node": "12.14.1",
+    "yarn": "1.21.1"
+  }
 }
