@@ -138,7 +138,7 @@ export default function registerAssertions(QUnit) {
 
   QUnit.assert.hasElement = function(selector,
                                      message=`hasElement "${selector}"`) {
-    let found = $(selector);
+    let found = $('#qunit-fixture').find(selector);
     this.pushResult({
       result: found.length > 0,
       actual: `${found.length} matches for '${selector}'`,
