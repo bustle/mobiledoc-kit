@@ -1,4 +1,5 @@
 import { Editor } from 'mobiledoc-kit';
+import { clearSelection } from 'mobiledoc-kit/utils/selection-utils';
 import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
 
@@ -166,6 +167,8 @@ test('selecting text across markers and deleting joins markers', (assert) => {
 });
 
 test('select text and apply markup multiple times', (assert) => {
+  const done = assert.async();
+
   editor = new Editor({mobiledoc: mobileDocWith2Sections});
   editor.render(editorElement);
 
@@ -174,15 +177,22 @@ test('select text and apply markup multiple times', (assert) => {
 
   editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
-  Helpers.dom.selectText(editor ,'fir', editorElement);
-  editor.run(postEditor => postEditor.toggleMarkup('strong'));
-  Helpers.dom.triggerEvent(document, 'mouseup');
+  setTimeout(() => {
+    Helpers.dom.selectText(editor ,'fir', editorElement);
+    editor.run(postEditor => postEditor.toggleMarkup('strong'));
+    clearSelection();
+    Helpers.dom.triggerEvent(document, 'mouseup');
 
-  editor.run(postEditor => postEditor.toggleMarkup('strong'));
+    setTimeout(() => {
+      editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
-  assert.hasElement('p:contains(first section)', 'correct first section');
-  assert.hasElement('strong:contains(fir)', 'strong "fir"');
-  assert.hasElement('strong:contains(t sect)', 'strong "t sect"');
+      assert.hasElement('p:contains(first section)', 'correct first section');
+      assert.hasElement('strong:contains(fir)', 'strong "fir"');
+      assert.hasElement('strong:contains(t sect)', 'strong "t sect"');
+
+      done();
+    }, 10);
+  }, 10);
 });
 
 test('selecting text across markers deletes intermediary markers', (assert) => {
