@@ -6,15 +6,15 @@
   "module": "dist/index.js",
   "scripts": {
     "start": "rollup --config --watch",
-    "test:ci": "npm run build:docs && npm run build && testem ci -f testem-ci.js",
+    "test:ci": "yarn build:docs && yarn build && testem ci -f testem-ci.js",
     "test": "rollup --config --tests && testem ci -f testem.js",
     "build": "rollup --config",
     "build:docs": "jsdoc -c ./.jsdoc",
-    "build:website": "npm run build && npm run build:docs && ./bin/build-website.sh",
+    "build:website": "yarn build && yarn build:docs && ./bin/build-website.sh",
     "deploy:website": "./bin/deploy-website.sh",
     "update-changelog": "conventional-changelog -i CHANGELOG.md -r 0 -s",
-    "version": "npm run update-changelog && git add CHANGELOG.md",
-    "prepublish": "npm run build"
+    "version": "yarn update-changelog && git add CHANGELOG.md",
+    "prepublish": "yarn build"
   },
   "keywords": [
     "html",

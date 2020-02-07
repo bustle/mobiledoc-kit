@@ -1,16 +1,26 @@
-/* global Mobiledoc */
-'use strict';
+import { Editor } from './mobiledoc.js';
 
-$(() => {
-  bootstrapEditor();
-  bootstrapSimpleDemo();
-  bootstrapToolbarEditor();
-  bootstrapCardEditor();
-});
+function bootstrapSimpleDemo() {
+  let el = $('#editor-basic')[0];
+  let editor = new Editor({
+    placeholder: 'Welcome to Mobiledoc'
+  });
+  editor.render(el);
+}
 
-let bootstrapEditor = () => {
+function activateButtons(parentSelector, editor) {
+  $(`${parentSelector} button`).click(function () {
+    let button = $(this);
+    let action = button.data('action');
+    let args = button.data('args').split(',');
+
+    editor[action](...args);
+  });
+}
+
+function bootstrapEditor() {
   let el = $('#editor')[0];
-  let editor = new Mobiledoc.Editor({
+  let editor = new Editor({
     placeholder: 'Type here',
     autofocus: true
   });
@@ -23,35 +33,17 @@ let bootstrapEditor = () => {
   };
   editor.postDidChange(displayMobiledoc);
   displayMobiledoc();
-};
-
-let bootstrapSimpleDemo = () => {
-  let el = $('#editor-basic')[0];
-  let editor = new Mobiledoc.Editor({
-    placeholder: 'Welcome to Mobiledoc',
-  });
-  editor.render(el);
-};
-
-let activateButtons = (parentSelector, editor) => {
-  $(`${parentSelector} button`).click(function() {
-    let button = $(this);
-    let action = button.data('action');
-    let args = button.data('args').split(',');
-
-    editor[action](...args);
-  });
-};
+}
 
 let bootstrapToolbarEditor = () => {
   let el = $('#editor-toolbar')[0];
-  let editor = new Mobiledoc.Editor({
+  let editor = new Editor({
     placeholder: 'Editor with toolbar'
   });
   editor.render(el);
 
   activateButtons('#editor-toolbar-wrapper', editor);
-}
+};
 
 let bootstrapCardEditor = () => {
   let card = {
@@ -73,7 +65,7 @@ let bootstrapCardEditor = () => {
     }
   };
   let el = $('#editor-card')[0];
-  let editor = new Mobiledoc.Editor({
+  let editor = new Editor({
     placeholder: 'Editor with card',
     cards: [card],
     atoms: [atom]
@@ -81,3 +73,10 @@ let bootstrapCardEditor = () => {
   editor.render(el);
   activateButtons('#editor-card-wrapper', editor);
 };
+
+$(() => {
+  bootstrapEditor();
+  bootstrapSimpleDemo();
+  bootstrapToolbarEditor();
+  bootstrapCardEditor();
+});
