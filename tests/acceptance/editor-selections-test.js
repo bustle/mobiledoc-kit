@@ -177,13 +177,13 @@ test('select text and apply markup multiple times', (assert) => {
 
   editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
-  setTimeout(() => {
+  Helpers.wait(() => {
     Helpers.dom.selectText(editor ,'fir', editorElement);
     editor.run(postEditor => postEditor.toggleMarkup('strong'));
     clearSelection();
     Helpers.dom.triggerEvent(document, 'mouseup');
 
-    setTimeout(() => {
+    Helpers.wait(() => {
       editor.run(postEditor => postEditor.toggleMarkup('strong'));
 
       assert.hasElement('p:contains(first section)', 'correct first section');
@@ -191,8 +191,8 @@ test('select text and apply markup multiple times', (assert) => {
       assert.hasElement('strong:contains(t sect)', 'strong "t sect"');
 
       done();
-    }, 10);
-  }, 10);
+    });
+  });
 });
 
 test('selecting text across markers deletes intermediary markers', (assert) => {
