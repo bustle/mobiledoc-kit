@@ -1,43 +1,45 @@
-import { Editor } from './mobiledoc.js';
+import { Editor } from '../../dist/index.js';
 
 function bootstrapSimpleDemo() {
-  let el = $('#editor-basic')[0];
-  let editor = new Editor({
+  const el = document.querySelector('#editor-basic');
+  const editor = new Editor({
     placeholder: 'Welcome to Mobiledoc'
   });
   editor.render(el);
 }
 
 function activateButtons(parentSelector, editor) {
-  $(`${parentSelector} button`).click(function () {
-    let button = $(this);
-    let action = button.data('action');
-    let args = button.data('args').split(',');
+  document.querySelectorAll(`${parentSelector} button`).forEach(button =>
+    button.addEventListener('click', () => {
+      const action = button.getAttribute('data-action');
+      const args = button.getAttribute('data-args').split(',');
 
-    editor[action](...args);
-  });
+      editor[action](...args);
+    })
+  );
 }
 
 function bootstrapEditor() {
-  let el = $('#editor')[0];
-  let editor = new Editor({
+  const el = document.querySelector('#editor');
+  const editor = new Editor({
     placeholder: 'Type here',
     autofocus: true
   });
   editor.render(el);
   activateButtons('#editor-wrapper', editor);
-  let displayMobiledoc = () => {
-    let mobiledoc = editor.serialize();
-    let html = mobiledocPrettyJSONRenderer(mobiledoc);
-    $('#editor-output').html(html);
+  const displayMobiledoc = () => {
+    const mobiledoc = editor.serialize();
+    // eslint-disable-next-line no-undef
+    const html = mobiledocPrettyJSONRenderer(mobiledoc);
+    document.querySelector('#editor-output').innerHTML = html;
   };
   editor.postDidChange(displayMobiledoc);
   displayMobiledoc();
 }
 
-let bootstrapToolbarEditor = () => {
-  let el = $('#editor-toolbar')[0];
-  let editor = new Editor({
+const bootstrapToolbarEditor = () => {
+  const el = document.querySelector('#editor-toolbar');
+  const editor = new Editor({
     placeholder: 'Editor with toolbar'
   });
   editor.render(el);
@@ -45,27 +47,31 @@ let bootstrapToolbarEditor = () => {
   activateButtons('#editor-toolbar-wrapper', editor);
 };
 
-let bootstrapCardEditor = () => {
-  let card = {
+const bootstrapCardEditor = () => {
+  const card = {
     name: 'kitten',
     type: 'dom',
     render() {
-      let el = $(`<figure><img src="http://placekitten.com/200/100">
-                 <figcaption>Image of a kitten</figcaption>
-                 </figure>`);
-      return el[0];
+      const el = document.createElement('figure');
+      el.innerHTML = `
+        <img src="http://placekitten.com/200/100">
+        <figcaption>Image of a kitten</figcaption>
+      `;
+      return el;
     }
   };
-  let atom = {
+  const atom = {
     name: 'mention',
     type: 'dom',
     render() {
-      let el = $(`<span style='background-color: #CCC;'>@hello</span>`);
-      return el[0];
+      const el = document.createElement('span');
+      el.setAttribute('style', 'background-color: #CCC;');
+      el.innerText = `@hello`;
+      return el;
     }
   };
-  let el = $('#editor-card')[0];
-  let editor = new Editor({
+  const el = document.querySelector('#editor-card');
+  const editor = new Editor({
     placeholder: 'Editor with card',
     cards: [card],
     atoms: [atom]
@@ -74,7 +80,7 @@ let bootstrapCardEditor = () => {
   activateButtons('#editor-card-wrapper', editor);
 };
 
-$(() => {
+document.addEventListener('DOMContentLoaded', () => {
   bootstrapEditor();
   bootstrapSimpleDemo();
   bootstrapToolbarEditor();
