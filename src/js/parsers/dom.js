@@ -1,8 +1,7 @@
 import {
-  NO_BREAK_SPACE,
-  TAB_CHARACTER,
   ATOM_CLASS_NAME
 } from '../renderers/editor-dom';
+
 import {
   MARKUP_SECTION_TYPE,
   LIST_SECTION_TYPE,
@@ -13,37 +12,21 @@ import {
   isCommentNode,
   isElementNode,
   getAttributes,
-  normalizeTagName
+  normalizeTagName,
+  transformHTMLText
 } from '../utils/dom-utils';
 import {
   any,
   detect,
   forEach
 } from '../utils/array-utils';
-import { TAB } from 'mobiledoc-kit/utils/characters';
-import { ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
+import { ZWNJ } from '../utils/characters';
+import { trimSectionText } from '../utils/section-utils';
 
 import SectionParser from 'mobiledoc-kit/parsers/section';
 import Markup from 'mobiledoc-kit/models/markup';
 
 const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/;
-
-const NO_BREAK_SPACE_REGEX = new RegExp(NO_BREAK_SPACE, 'g');
-const TAB_CHARACTER_REGEX = new RegExp(TAB_CHARACTER, 'g');
-export function transformHTMLText(textContent) {
-  let text = textContent;
-  text = text.replace(NO_BREAK_SPACE_REGEX, ' ');
-  text = text.replace(TAB_CHARACTER_REGEX, TAB);
-  return text;
-}
-
-export function trimSectionText(section) {
-  if (section.isMarkerable && section.markers.length) {
-    let { head, tail } = section.markers;
-    head.value = head.value.replace(/^\s+/, '');
-    tail.value = tail.value.replace(/\s+$/, '');
-  }
-}
 
 function isGoogleDocsContainer(element) {
   return !isTextNode(element) &&

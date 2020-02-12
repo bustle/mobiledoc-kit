@@ -26,7 +26,8 @@ import {
   normalizeTagName,
   isTextNode,
   isCommentNode,
-  NODE_TYPES
+  NODE_TYPES,
+  transformHTMLText
 } from 'mobiledoc-kit/utils/dom-utils';
 
 import {
@@ -35,10 +36,7 @@ import {
   contains
 } from 'mobiledoc-kit/utils/array-utils';
 
-import {
-  transformHTMLText,
-  trimSectionText
-} from '../parsers/dom';
+import { trimSectionText } from '../utils/section-utils';
 
 import assert from '../utils/assert';
 

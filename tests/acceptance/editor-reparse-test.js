@@ -1,6 +1,6 @@
 import Helpers from '../test-helpers';
 const { test, module } = Helpers;
-import { ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
+import { ZWNJ } from 'mobiledoc-kit/utils/characters';
 
 const simpleAtom = {
   name: 'simple-atom',

@@ -1,7 +1,6 @@
 import Helpers from '../test-helpers';
 import Range from 'mobiledoc-kit/utils/cursor/range';
-import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
-import { TAB, ENTER } from 'mobiledoc-kit/utils/characters';
+import { TAB, ENTER, NO_BREAK_SPACE } from 'mobiledoc-kit/utils/characters';
 import { MODIFIERS }  from 'mobiledoc-kit/utils/key';
 
 const { module, test } = Helpers;
