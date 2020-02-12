@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Editor<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Editor<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Editor.html">Editor</a>}</span></h2>
         
             <div class="class-description"><p>The Editor is a core component of mobiledoc-kit. After instantiating
 an editor, use <a href="Editor.html#render">Editor#render</a> to display the editor on the web page.</p>
@@ -66,7 +66,7 @@ applying changes from <a href="Editor.html#toggleMarkup">Editor#toggleMarkup</a>
     
 
     
-    <h4 class="name" id="Editor"><span class="type-signature"></span>new Editor<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Editor"><span class="type-signature"></span>new Editor<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Editor.html">Editor</a>}</span></h4>
     
 
     
@@ -195,7 +195,7 @@ applying changes from <a href="Editor.html#toggleMarkup">Editor#toggleMarkup</a>
             
 
             <td class="description last"><p>The mobiledoc to load into the editor.
-       Supersedes <code>options.html</code>.</p></td>
+Supersedes <code>options.html</code>.</p></td>
         </tr>
 
     
@@ -236,8 +236,8 @@ applying changes from <a href="Editor.html#toggleMarkup">Editor#toggleMarkup</a>
             
 
             <td class="description last"><p>The html (as a string or DOM fragment)
-       to parse and load into the editor.
-       Will be ignored if <code>options.mobiledoc</code> is also passed.</p></td>
+to parse and load into the editor.
+Will be ignored if <code>options.mobiledoc</code> is also passed.</p></td>
         </tr>
 
     
@@ -392,7 +392,7 @@ applying changes from <a href="Editor.html#toggleMarkup">Editor#toggleMarkup</a>
             
 
             <td class="description last"><p>Invoked by the editor's renderer
-       whenever it encounters an unknown card.</p></td>
+whenever it encounters an unknown card.</p></td>
         </tr>
 
     
@@ -430,7 +430,7 @@ applying changes from <a href="Editor.html#toggleMarkup">Editor#toggleMarkup</a>
             
 
             <td class="description last"><p>Invoked by the editor's renderer
-       whenever it encounters an unknown atom.</p></td>
+whenever it encounters an unknown atom.</p></td>
         </tr>
 
     
@@ -624,7 +624,7 @@ applying changes from <a href="Editor.html#toggleMarkup">Editor#toggleMarkup</a>
             
 
             <td class="description last"><p>How many undo levels will be available.
-       Set to 0 to disable undo/redo functionality.</p></td>
+Set to 0 to disable undo/redo functionality.</p></td>
         </tr>
 
     
@@ -672,7 +672,7 @@ applying changes from <a href="Editor.html#toggleMarkup">Editor#toggleMarkup</a>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line99">line 99</a>
+        <a href="editor_editor.js.html">editor/editor.js</a>, <a href="editor_editor.js.html#line123">line 123</a>
     </li></ul></dd>
     
 
@@ -695,6 +695,26 @@ applying changes from <a href="Editor.html#toggleMarkup">Editor#toggleMarkup</a>
 
 
 
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Editor.html">Editor</a></span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -1087,6 +1107,8 @@ It's possible to be focused but have no selection</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -1186,6 +1208,8 @@ It's possible to have a selection but not have focus.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1360,6 +1384,8 @@ modifying markup with the <code>postEditor</code> will skip any <code>beforeTogg
 
 
 
+
+
         
             
 
@@ -1423,7 +1449,7 @@ modifying markup with the <code>postEditor</code> will skip any <code>beforeTogg
             
 
             <td class="description last"><p>This callback will be called every time the cursor
-       position (or selection) changes.</p></td>
+position (or selection) changes.</p></td>
         </tr>
 
     
@@ -1474,6 +1500,8 @@ modifying markup with the <code>postEditor</code> will skip any <code>beforeTogg
 
     
 </dl>
+
+
 
 
 
@@ -1561,6 +1589,8 @@ cursor in the new position.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1715,6 +1745,8 @@ cursor in the new position.</p>
 
 
 
+
+
         
             
 
@@ -1783,6 +1815,8 @@ cursor in the new position.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1932,6 +1966,8 @@ cursor in the new position.</p>
 
 
 
+
+
         
             
 
@@ -1995,7 +2031,7 @@ cursor in the new position.</p>
             
 
             <td class="description last"><p>This callback will be called after the editor
-       is rendered.</p></td>
+is rendered.</p></td>
         </tr>
 
     
@@ -2046,6 +2082,8 @@ cursor in the new position.</p>
 
     
 </dl>
+
+
 
 
 
@@ -2195,6 +2233,8 @@ cursor in the new position.</p>
 
 
 
+
+
         
             
 
@@ -2289,6 +2329,8 @@ Modification via the programmatic API is still permitted.</p>
 
 
 
+
+
         
             
 
@@ -2357,6 +2399,8 @@ Modification via the programmatic API is still permitted.</p>
 
     
 </dl>
+
+
 
 
 
@@ -2494,6 +2538,8 @@ it is rendered in display mode when it gets rendered.</p>
 
     
 </dl>
+
+
 
 
 
@@ -2659,6 +2705,8 @@ it is rendered in edit mode when it gets rendered.</p>
 
 
 
+
+
         
             
 
@@ -2736,6 +2784,8 @@ editing after disabling it.</p>
 
     
 </dl>
+
+
 
 
 
@@ -2909,6 +2959,8 @@ editing after disabling it.</p>
 
 
 
+
+
         
             
 
@@ -3038,6 +3090,8 @@ editing after disabling it.</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -3132,6 +3186,8 @@ determine a cursor position, so they will be ignored.</p>
 
     
 </dl>
+
+
 
 
 
@@ -3282,6 +3338,8 @@ active sections) has changed, either via user input or programmatically</p></td>
 
     
 </dl>
+
+
 
 
 
@@ -3513,6 +3571,8 @@ range is not collapsed, it will be deleted before insertion.</p>
 
     
 </dl>
+
+
 
 
 
@@ -3781,6 +3841,8 @@ The editor's cursor will be placed at the end of the inserted card.</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -3927,6 +3989,8 @@ range is not collapsed, it will be deleted before insertion.</p>
 
     
 </dl>
+
+
 
 
 
@@ -4162,11 +4226,11 @@ matching text.</p>
             
 
             <td class="description last"><p>This callback is invoked with the <a href="Editor.html">Editor</a>
-                  instance and an array of matches. If <code>text</code> was provided,
-                  the matches array will equal [<code>text</code>], and if a <code>match</code>
-                  regex was provided the matches array will be the result of
-                  <code>match.exec</code> on the matching text. The callback is called
-                  after the matching text has been inserted.</p></td>
+instance and an array of matches. If <code>text</code> was provided,
+the matches array will equal [<code>text</code>], and if a <code>match</code>
+regex was provided the matches array will be the result of
+<code>match.exec</code> on the matching text. The callback is called
+after the matching text has been inserted.</p></td>
         </tr>
 
     
@@ -4224,6 +4288,8 @@ matching text.</p>
 
     
 </dl>
+
+
 
 
 
@@ -4391,6 +4457,8 @@ matching text.</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -4480,8 +4548,8 @@ matching text.</p>
             
 
             <td class="description last"><p>Called when the post has changed, either via
-       user input or programmatically. Use with <a href="Editor.html#serialize">Editor#serialize</a> to
-       retrieve the post in portable mobiledoc format.</p></td>
+user input or programmatically. Use with <a href="Editor.html#serialize">Editor#serialize</a> to
+retrieve the post in portable mobiledoc format.</p></td>
         </tr>
 
     
@@ -4532,6 +4600,8 @@ matching text.</p>
 
     
 </dl>
+
+
 
 
 
@@ -4666,6 +4736,8 @@ is invoked</p></td>
 
     
 </dl>
+
+
 
 
 
@@ -4826,6 +4898,8 @@ is invoked</p></td>
 
 
 
+
+
         
             
 
@@ -4889,7 +4963,7 @@ is invoked</p></td>
             
 
             <td class="description last"><p>The DOM element to render into.
-       Its contents will be replaced by the editor's rendered post.</p></td>
+Its contents will be replaced by the editor's rendered post.</p></td>
         </tr>
 
     
@@ -4958,6 +5032,8 @@ is invoked</p></td>
 
 
 
+
+
         
             
 
@@ -4986,7 +5062,8 @@ Rendering will be deferred until after the callback is completed.</p>
     // logging not yet flushed
   });
   // editing surface now updated.
-  // logging now flushed</code></pre>
+  // logging now flushed
+</code></pre>
 </div>
 
 
@@ -5039,7 +5116,7 @@ Rendering will be deferred until after the callback is completed.</p>
             
 
             <td class="description last"><p>Called with an instance of
-       <a href="PostEditor.html">PostEditor</a> as its argument.</p></td>
+<a href="PostEditor.html">PostEditor</a> as its argument.</p></td>
         </tr>
 
     
@@ -5090,6 +5167,8 @@ Rendering will be deferred until after the callback is completed.</p>
 
     
 </dl>
+
+
 
 
 
@@ -5270,6 +5349,8 @@ surface encompassing the range.</p>
 
 
 
+
+
         
             
 
@@ -5383,6 +5464,8 @@ surface encompassing the range.</p>
 
     
 </dl>
+
+
 
 
 
@@ -5544,6 +5627,8 @@ cards/atoms.</p>
 
     
 </dl>
+
+
 
 
 
@@ -5734,6 +5819,8 @@ cards/atoms.</p>
 
     
 </dl>
+
+
 
 
 
@@ -5956,6 +6043,8 @@ and no change will be applied.</p>
 
 
 
+
+
         
             
 
@@ -6100,6 +6189,8 @@ and a CardSection, only the MarkupSection will be toggled.</p>
 
 
 
+
+
         
             
 
@@ -6168,6 +6259,8 @@ and a CardSection, only the MarkupSection will be toggled.</p>
 
     
 </dl>
+
+
 
 
 
@@ -6299,6 +6392,8 @@ and a CardSection, only the MarkupSection will be toggled.</p>
 
     
 </dl>
+
+
 
 
 
@@ -6452,6 +6547,8 @@ and a CardSection, only the MarkupSection will be toggled.</p>
 
 
 
+
+
         
             
 
@@ -6565,6 +6662,8 @@ and a CardSection, only the MarkupSection will be toggled.</p>
 
     
 </dl>
+
+
 
 
 
@@ -6714,6 +6813,8 @@ and a CardSection, only the MarkupSection will be toggled.</p>
 
 
 
+
+
         
             
 
@@ -6777,7 +6878,7 @@ and a CardSection, only the MarkupSection will be toggled.</p>
             
 
             <td class="description last"><p>This callback will be called before the editor
-       is rendered.</p></td>
+is rendered.</p></td>
         </tr>
 
     
@@ -6846,6 +6947,8 @@ and a CardSection, only the MarkupSection will be toggled.</p>
 
 
 
+
+
         
     
 
@@ -6862,13 +6965,13 @@ and a CardSection, only the MarkupSection will be toggled.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Feb 12 2020 08:46:40 GMT-0500 (Eastern Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
