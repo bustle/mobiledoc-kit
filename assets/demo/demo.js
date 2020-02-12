@@ -1,4 +1,4 @@
-import { Editor } from '../../dist/index.js';
+import { Editor } from '../mobiledoc.js';
 
 function bootstrapSimpleDemo() {
   const el = document.querySelector('#editor-basic');
