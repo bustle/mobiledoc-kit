@@ -1,0 +1,22 @@
+#toolbar button.active {
+  font-weight: bold;
+}
+
+#error {
+  color: red;
+}
+
+#error .name {
+  font-weight: bold;
+}
+
+#editor {
+  outline: 1px solid black;
+  width: 200px;
+  min-height: 300px;
+}
+
+#editor[contenteditable="false"] {
+  color: #9e9e9e;
+  background-color: #f1f1f1;
+}

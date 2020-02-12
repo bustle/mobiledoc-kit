@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mobiledoc Kit Demo</title>
+</head>
+<body>
+  <script src="./vendor/mobiledoc-pretty-json-renderer.js"></script>
+  <script type="module" src="./demo.js"></script>
+  <link rel="stylesheet" href="../../src/css/mobiledoc-kit.css">
+  <link rel="stylesheet" href="./demo.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/styles/default.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+
+<a href="https://github.com/bustle/mobiledoc-kit"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+
+<header>
+  <a href='https://github.com/bustle/mobiledoc-kit'>
+    <img id='logo' alt="Mobiledoc Kit Logo" src="mobiledoc-logo-color-small.png">
+  </a>
+</header>
+
+<section role="main">
+  <p class='strong'>
+    Mobiledoc is a publishing solution for authoring, saving and rendering rich WYSIWYG content.
+  </p>
+
+  <p>
+    Publishers use the <a href='https://github.com/bustle/mobiledoc-kit' target='_blank'>Mobiledoc-Kit</a> library to
+    build rich-content editors customized for their content. Posts are serialized to the
+    JSON-based <a href='https://github.com/bustle/mobiledoc-kit/blob/master/MOBILEDOC.md' target='_blank'>Mobiledoc format</a>, a
+    structure designed to unambiguously represent the content and be simple to render
+    in a variety of display contexts such as server-side HTML, in-browser DOM, and SEO-friendly text.
+  </p>
+
+  <p>
+  Mobiledoc supports rich, interactive content via <a href='https://github.com/bustle/mobiledoc-kit/blob/master/CARDS.md' target='_blank'>cards</a> and <a href='https://github.com/bustle/mobiledoc-kit/blob/master/ATOMS.md' target='_blank'>atoms</a>.
+  </p>
+
+  <p>
+    Development of Mobiledoc and the supporting libraries is generously funded by <a href='https://bustle.company/' target='_blank'>Bustle Digital Group</a>'s engineering team.
+  </p>
+
+  <div class="two-column">
+    <div class="column left tall">
+      <div class="info">
+        <p>
+        Enter text into the editor below...
+        </p>
+      </div>
+      <div id="editor-wrapper">
+        <div class="toolbar">
+          <!-- Icons are from https://material.io/tools/icons/ -->
+          <div class="toolbar-section">
+            <button data-action='toggleSection' data-args='h1'>H1</button>
+            <button data-action='toggleSection' data-args='h2'>H2</button>
+            <button data-action='toggleSection' data-args='blockquote'>Quote</button>
+          </div>
+          <div class="toolbar-section">
+            <button data-action='toggleMarkup' data-args='strong'>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+            </button>
+            <button data-action='toggleMarkup' data-args='em'>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg>
+            </button>
+          </div>
+          <div class="toolbar-section">
+            <button data-action='toggleSection' data-args='ul'>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/><path fill="none" d="M0 0h24v24H0V0z"/></svg>
+            </button>
+            <button data-action='toggleSection' data-args='ol'>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+            </button>
+          </div>
+          <div class="toolbar-section">
+            <button data-action='setAttribute' data-args='text-align,left'>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+            </button>
+            <button data-action='setAttribute' data-args='text-align,center'>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+            </button>
+            <button data-action='setAttribute' data-args='text-align,right'>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+            </button>
+            <button data-action='setAttribute' data-args='text-align,justify'>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V7H3v2zm0-6v2h18V3H3z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id='editor'></div>
+      </div>
+    </div>
+    <div class="column right tall">
+       <div class="info">
+        <p>
+        And see its representation in <a href='https://github.com/bustle/mobiledoc-kit/blob/master/MOBILEDOC.md'>Mobiledoc format</a> here:
+        </p>
+      </div>
+      <div id='editor-output' class='mobiledoc-output'></div>
+    </div>
+  </div>
+</section>
+
+<section class="libraries">
+  <h2>Libraries</h2>
+
+  <p>
+    Libraries have been created by Bustlelabs and the community to support
+    Mobiledoc usage in a variety of contexts.
+  </p>
+
+  <div class="two-column">
+    <div class="column left">
+      <h3>Create Mobiledoc Editor</h3>
+      <table>
+        <tr>
+          <th>Environment</th>
+          <th>Library</th>
+        </tr>
+        <tr>
+          <td>JavaScript</td>
+          <td><a href='https://github.com/bustle/mobiledoc-kit'>mobiledoc-kit</a></td>
+        </tr>
+        <tr>
+          <td>Ember.js</td>
+          <td><a href='https://github.com/bustle/ember-mobiledoc-editor'>ember-mobiledoc-editor</a></td>
+        </tr>
+        <tr>
+          <td>React</td>
+          <td><a href='https://github.com/upworthy/react-mobiledoc-editor'>react-mobiledoc-editor</a></td>
+        </tr>
+      </table>
+    </div>
+    <div class="column right">
+      <h3>Render Mobiledoc</h3>
+      <table>
+        <tr>
+          <th>Output Format/Environment</th>
+          <th>Library</th>
+        </tr>
+        <tr>
+          <td>JavaScript in-browser (DOM)</td>
+          <td><a href='https://github.com/bustle/mobiledoc-dom-renderer'>mobiledoc-dom-renderer</a></td>
+        </tr>
+        <tr>
+          <td>Server-side (HTML)</td>
+          <td>See mobiledoc-dom-renderer's <a href='https://github.com/bustle/mobiledoc-dom-renderer#rendering-html'>Rendering HTML</a> section</td>
+        </tr>
+        <tr>
+          <td>Server-side (text)</td>
+          <td><a href='https://github.com/bustle/mobiledoc-text-renderer'>mobiledoc-text-renderer</a></td>
+        </tr>
+        <tr>
+          <td>In-browser (DOM) with Ember.js</td>
+          <td><a href='https://github.com/bustle/ember-mobiledoc-dom-renderer'>ember-mobiledoc-dom-renderer</a></td>
+        </tr>
+        <tr>
+          <td>In-browser (DOM) with React</td>
+          <td><a href='https://github.com/upworthy/react-mobiledoc-editor'>react-mobiledoc-editor</a></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+
+<section class="examples" style='background-color: white'>
+  <h2>Examples</h2>
+
+  <h3>Basic Editor</h3>
+
+  <p>
+  To create an editor, make a new instance of <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html'><code>Mobiledoc.Editor</code></a> and render it
+  to an element.
+  </p>
+
+  <div class="two-column">
+    <div class="column left">
+      <pre><code>
+      let el = document.getElementById('editor-basic');
+      let editor = new Mobiledoc.Editor({
+        placeholder: 'Welcome to Mobiledoc'
+      });
+      editor.render(el);
+      </code></pre>
+    </div>
+    <div class="column right">
+      <div class='editor-wrapper'>
+        <div id="editor-basic" class='editor'></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <h3>Toolbar Buttons</h3>
+
+  <p>
+    Use the <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#toggleMarkup'><code>editor.toggleMarkup</code></a>, <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#toggleSection'><code>editor.toggleSection</code></a> and <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#setAttribute'><code>editor.setAttribute</code></a> methods to modify the text.
+  </p>
+
+  <div class="two-column">
+    <div class="column left">
+      <pre><code>
+      $('button.header').click(() =&gt; {
+        editor.toggleSection('h1');
+      });
+      $('button.strong').click(() =&gt; {
+        editor.toggleMarkup('strong');
+      });
+      $('button.center').click(() =&gt; {
+        editor.setAttribute('text-align', 'center');
+      });
+      </code></pre>
+    </div>
+    <div class="column right">
+      <div class="editor-wrapper" id='editor-toolbar-wrapper'>
+        <div class='toolbar'>
+          <button data-action='toggleSection' data-args='h1'>H1</button>
+          <button data-action='toggleSection' data-args='h2'>H2</button>
+          <button data-action='toggleMarkup' data-args='strong'>strong</button>
+          <button data-action='toggleMarkup' data-args='em'>em</button>
+        </div>
+        <div id="editor-toolbar" class="editor"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="cards">
+  <h2>Cards and Atoms</h2>
+
+  <p>
+  Cards and atoms are used by Mobiledoc for editing and rendering rich content.
+  Cards are rich sections and atoms are their inline equivalent. Both can be
+  implemented with a small amount of JavaScript (or Ember.js or React components)
+  and can be created in an afternoon, not days.
+  </p>
+
+  <p>
+  Cards and atoms can be inserted using the <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#insertCard'><code>editor.insertCard</code></a> and <a href='http://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html#insertAtom'><code>editor.insertAtom</code></a> APIs.
+  </p>
+
+  <div class='two-column'>
+    <div class="column left">
+      <pre><code>
+      let card = {
+        name: 'kitten',
+        type: 'dom',
+        render() {
+          let el$ = $(`
+            &lt;figure&gt;
+              &lt;img src="http://placekitten.com/200/100"&gt;
+              &lt;figcaption&gt;Image of a kitten&lt;/figcaption&gt;
+            &lt;/figure&gt;
+          `);
+          return el[0]; // return DOM node
+        }
+      };
+      $('button.insert-card').click(() =&gt; {
+        editor.insertCard('kitten');
+      });
+      </code></pre>
+    </div>
+
+    <div class='column right'>
+      <div class="editor-wrapper" id='editor-card-wrapper'>
+        <div class='toolbar'>
+          <button data-action='insertCard' data-args='kitten'>Insert Kitten Card</button>
+          <button data-action='insertAtom' data-args='mention'>Insert Mention Atom</button>
+        </div>
+        <div id="editor-card" class="editor"></div>
+    </div>
+  </div>
+</section>
