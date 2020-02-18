@@ -1,7 +1,6 @@
 import Helpers from '../../test-helpers';
 import Position from 'mobiledoc-kit/utils/cursor/position';
-import { CARD_ELEMENT_CLASS_NAME } from 'mobiledoc-kit/renderers/editor-dom';
-import { ZWNJ } from 'mobiledoc-kit/utils/characters';
+import { CARD_ELEMENT_CLASS_NAME, ZWNJ } from 'mobiledoc-kit/renderers/editor-dom';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 
 const { FORWARD, BACKWARD } = DIRECTION;

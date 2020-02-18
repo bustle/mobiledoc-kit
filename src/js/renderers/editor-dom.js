@@ -15,9 +15,13 @@ import { startsWith, endsWith } from '../utils/string-utils';
 import { addClassName, removeClassName } from '../utils/dom-utils';
 import { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section';
 import assert from '../utils/assert';
-import { TAB, SPACE, NO_BREAK_SPACE, ZWNJ } from '../utils/characters';
+import { TAB } from 'mobiledoc-kit/utils/characters';
 
 export const CARD_ELEMENT_CLASS_NAME = '__mobiledoc-card';
+export const NO_BREAK_SPACE = '\u00A0';
+export const TAB_CHARACTER = '\u2003';
+export const SPACE = ' ';
+export const ZWNJ = '\u200c';
 export const ATOM_CLASS_NAME = '-mobiledoc-kit__atom';
 export const EDITOR_HAS_NO_CONTENT_CLASS_NAME = '__has-no-content';
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor';
@@ -46,7 +50,7 @@ const startsWithSpace = function(text) {
 function renderHTMLText(marker) {
   let text = marker.value;
   text = text.replace(SPACES_REGEX, SPACE_AND_NO_BREAK)
-             .replace(TAB_REGEX,    TAB);
+             .replace(TAB_REGEX,    TAB_CHARACTER);
 
   // If the first marker has a leading space or the last marker has a
   // trailing space, the browser will collapse the space when we position

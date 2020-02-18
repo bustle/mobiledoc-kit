@@ -62,7 +62,9 @@ function findOffsetInSection(section, node, offset) {
   }
 }
 
-class Position {
+let Position, BlankPosition;
+
+Position = class Position {
   /**
    * A position is a logical location (zero-width, or "collapsed") in a post,
    * typically between two characters in a section.
@@ -434,9 +436,9 @@ class Position {
     assert('cannot get markerPosition of a non-markerable', !!this.section.isMarkerable);
     return this.section.markerPositionAtOffset(this.offset);
   }
-}
+};
 
-class BlankPosition extends Position {
+BlankPosition = class BlankPosition extends Position {
   constructor() {
     super(null, 0, true);
   }
@@ -458,6 +460,6 @@ class BlankPosition extends Position {
   moveWord() { return this; }
 
   get markerPosition() { return {}; }
-}
+};
 
 export default Position;

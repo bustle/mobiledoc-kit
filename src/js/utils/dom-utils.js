@@ -1,5 +1,4 @@
 import { forEach } from './array-utils';
-import { NO_BREAK_SPACE, TAB } from './characters';
 
 export const NODE_TYPES = {
   ELEMENT: 1,
@@ -104,15 +103,6 @@ function serializeHTML(node) {
   return div.innerHTML;
 }
 
-const NO_BREAK_SPACE_REGEX = new RegExp(NO_BREAK_SPACE, 'g');
-const TAB_CHARACTER_REGEX = new RegExp(TAB, 'g');
-function transformHTMLText(textContent) {
-  let text = textContent;
-  text = text.replace(NO_BREAK_SPACE_REGEX, ' ');
-  text = text.replace(TAB_CHARACTER_REGEX, TAB);
-  return text;
-}
-
 export {
   containsNode,
   clearChildNodes,
@@ -126,6 +116,5 @@ export {
   isCommentNode,
   isElementNode,
   parseHTML,
-  serializeHTML,
-  transformHTMLText
+  serializeHTML
 };

@@ -1,8 +1,9 @@
 import { Editor } from 'mobiledoc-kit';
 import Helpers from '../test-helpers';
 import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc/0-2';
-import { NO_BREAK_SPACE } from 'mobiledoc-kit/utils/characters';
+import { NO_BREAK_SPACE } from 'mobiledoc-kit/renderers/editor-dom';
 import Range from 'mobiledoc-kit/utils/cursor/range';
+import Keycodes from 'mobiledoc-kit/utils/keycodes';
 import Browser from 'mobiledoc-kit/utils/browser';
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 
