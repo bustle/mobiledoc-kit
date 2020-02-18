@@ -1,62 +1,83 @@
-/* global Mobiledoc */
-'use strict';
+import { Editor } from '../mobiledoc.js';
 
-var editor;
+let editor;
 
 function renderError(event) {
   let error = event.error;
-  $('#error .name').text(error.name);
-  $('#error .message').text(error.message);
+  document.querySelector('#error .name').innerText = error.name;
+  document.querySelector('#error .message').innerText = error.message;
 }
 
 window.addEventListener('error', renderError);
 
 function renderSection(section) {
-  return '[' +
-    'Section: tagName ' + section.tagName +
-    ' type: ' + section.type +
-    ' isNested? ' + section.isNested +
-    (section.isMarkerable ? (' Markers: ' + section.markers.length + ')') : '') +
-  ']';
+  return (
+    '[' +
+    'Section: tagName ' +
+    section.tagName +
+    ' type: ' +
+    section.type +
+    ' isNested? ' +
+    section.isNested +
+    (section.isMarkerable ? ' Markers: ' + section.markers.length + ')' : '') +
+    ']'
+  );
 }
 
 function renderPosition(pos) {
   if (pos.isBlank) {
     return '[Blank Position]';
   }
-  return '[Position: ' + pos.leafSectionIndex + ':' + pos.offset + '. Section ' + renderSection(pos.section) + ']';
+  return (
+    '[Position: ' +
+    pos.leafSectionIndex +
+    ':' +
+    pos.offset +
+    '. Section ' +
+    renderSection(pos.section) +
+    ']'
+  );
 }
 
 function updateCursor() {
-  var range = editor.range;
+  const range = editor.range;
 
-  var head = renderPosition(range.head);
-  var tail = renderPosition(range.tail);
-  var html = 'Head ' + head + '<br>Tail ' + tail;
+  const head = renderPosition(range.head);
+  const tail = renderPosition(range.tail);
+  const html = 'Head ' + head + '<br>Tail ' + tail;
 
-  $('#cursor').html(html);
+  document.querySelector('#cursor').innerHTML = html;
 }
 
 document.addEventListener('selectionchange', renderNativeSelection);
 
-function renderNativeSelection(event) {
-  let sel = window.getSelection();
-  let { anchorNode, focusNode, anchorOffset, focusOffset, isCollapsed, rangeCount } = sel;
+function renderNativeSelection() {
+  const selection = window.getSelection();
+  const {
+    anchorNode,
+    focusNode,
+    anchorOffset,
+    focusOffset,
+    isCollapsed,
+    rangeCount
+  } = selection;
   if (anchorNode === null && focusNode === null) {
-    $('#selection').html(`<em>None</em>`);
+    document.querySelector('#selection').innerHTML = `<em>None</em>`;
     return;
   }
-  $('#selection').html(`
+  document.querySelector('#selection').innerHTML = `
     <div class='node'>Anchor: ${renderNode(anchorNode)} (${anchorOffset})</div>
     <div class='node'>Focus: ${renderNode(focusNode)} (${focusOffset})</div>
     <div>${isCollapsed ? 'Collapsed' : 'Not collapsed'}</div>
     <div class='ranges'>Ranges: ${rangeCount}</div>
-  `);
+  `;
 }
 
 function renderNode(node) {
   let text = node.textContent.slice(0, 22);
-  if (node.textContent.length > 22) { text += '...'; }
+  if (node.textContent.length > 22) {
+    text += '...';
+  }
 
   let type = node.nodeType === Node.TEXT_NODE ? 'text' : `el (${node.tagName})`;
   return `<span class='type'>${type}</span>: ${text}`;
@@ -64,38 +85,53 @@ function renderNode(node) {
 
 function renderMarkup(markup) {
   function renderAttrs(obj) {
-    var str = Object.keys(obj).reduce(function (memo, key) {
+    let str = Object.keys(obj).reduce(function(memo, key) {
       memo += key + ': ' + obj[key];
       return memo;
     }, '{');
     str += '}';
     return str;
   }
-  return '[' + markup.type + ' tagName <b>' + markup.tagName + '</b> attrs: ' + renderAttrs(markup.attributes) + ']';
+  return (
+    '[' +
+    markup.type +
+    ' tagName <b>' +
+    markup.tagName +
+    '</b> attrs: ' +
+    renderAttrs(markup.attributes) +
+    ']'
+  );
 }
 
 function updatePost() {
-  var serialized = editor.serialize();
-  $('#post').html(JSON.stringify(serialized));
+  const serialized = editor.serialize();
+  document.querySelector('#post').innerHTML = JSON.stringify(serialized);
 }
 
 function updateInputMode() {
-  var activeMarkups = editor.activeMarkups.map(renderMarkup).join(',');
-  var activeSections = editor.activeSections.map(renderSection).join(',');
-  var html = 'Active Markups: ' + activeMarkups + '<br>Active Sections: ' + activeSections;
-  $('#input-mode').html(html);
+  const activeMarkups = editor.activeMarkups.map(renderMarkup).join(',');
+  const activeSections = editor.activeSections.map(renderSection).join(',');
+  const html =
+    'Active Markups: ' +
+    activeMarkups +
+    '<br>Active Sections: ' +
+    activeSections;
+  document.querySelector('#input-mode').innerHTML = html;
 }
 
 function updateButtons() {
-  let activeSectionTagNames = editor.activeSections.map(section => {
+  const activeSectionTagNames = editor.activeSections.map(section => {
     return section.tagName;
   });
-  let activeMarkupTagNames = editor.activeMarkups.map(markup => markup.tagName);
+  const activeMarkupTagNames = editor.activeMarkups.map(
+    markup => markup.tagName
+  );
 
-  $('#toolbar button').each(function() {
-    let toggle = $(this).data('toggle');
+  document.querySelectorAll('#toolbar button').forEach(button => {
+    const toggle = button.getAttribute('data-toggle');
 
-    let hasSection = false, hasMarkup = false;
+    let hasSection = false,
+      hasMarkup = false;
     if (activeSectionTagNames.indexOf(toggle) !== -1) {
       hasSection = true;
     }
@@ -103,9 +139,9 @@ function updateButtons() {
       hasMarkup = true;
     }
     if (hasSection || hasMarkup) {
-      $(this).addClass('active');
+      button.classList.add('active');
     } else {
-      $(this).removeClass('active');
+      button.classList.remove('active');
     }
   });
 }
@@ -113,8 +149,9 @@ function updateButtons() {
 let mentionAtom = {
   name: 'mention',
   type: 'dom',
-  render({value}) {
-    let el = $(`<span>@${value}</span>`)[0];
+  render({ value }) {
+    let el = document.createElement(`span`);
+    el.innerHTML = `@${value}`;
     return el;
   }
 };
@@ -122,9 +159,9 @@ let mentionAtom = {
 let clickAtom = {
   name: 'click',
   type: 'dom',
-  render({env, value, payload}) {
-    let el = document.createElement('button');
-    let clicks = payload.clicks || 0;
+  render({ env, value, payload }) {
+    const el = document.createElement('button');
+    const clicks = payload.clicks || 0;
     el.appendChild(document.createTextNode('Clicks: ' + clicks));
     el.onclick = () => {
       payload.clicks = payload.clicks || 0;
@@ -135,15 +172,19 @@ let clickAtom = {
   }
 };
 
-let tableCard = {
+const tableCard = {
   name: 'table',
   type: 'dom',
   render() {
-    let [table, tr, td] = ['table','tr','td'].map(tagName => document.createElement(tagName));
+    const [table, tr, td] = ['table', 'tr', 'td'].map(tagName =>
+      document.createElement(tagName)
+    );
 
     table.appendChild(tr);
     tr.appendChild(td);
-    td.appendChild(document.createTextNode("I was created from a pasted table"));
+    td.appendChild(
+      document.createTextNode('I was created from a pasted table')
+    );
 
     return table;
   }
@@ -159,53 +200,84 @@ function moveCard(section, dir) {
   });
 }
 
-let movableCard = {
+const movableCard = {
   name: 'movable',
   type: 'dom',
-  render({env, payload}) {
-    let cardSection = env.postModel;
-    let text = payload.text || 'new';
-    let up = $('<button>up</button>').click(() => moveCard(cardSection, 'up'));
-    let down = $('<button>down</button>').click(() => moveCard(cardSection, 'down'));
-    let x = $('<button>X</button>').click(env.remove);
+  render({ env, payload }) {
+    const cardSection = env.postModel;
+    const text = document.createTextNode(payload.text || 'new');
 
-    let edit = $('<button>edit</button>').click(env.edit);
+    const upButton = document.createElement('button');
+    upButton.innerText = `up`;
+    upButton.addEventListener('click', () => moveCard(cardSection, 'up'));
 
-    let el = $('<div>').append([text,up,down,x,edit])[0];
+    const downButton = document.createElement('button');
+    downButton.innerText = `down`;
+    downButton.addEventListener('click', () => moveCard(cardSection, 'down'));
+
+    const xButton = document.createElement('button');
+    xButton.innerText = `X`;
+    xButton.addEventListener('click', env.remove);
+
+    const editButton = document.createElement('button');
+    editButton.innerText = `edit`;
+    editButton.addEventListener('click', env.edit);
+
+    let el = document.createElement('div');
+    [text, upButton, downButton, xButton, editButton].forEach(button => {
+      el.appendChild(button);
+    });
+
     return el;
   },
-  edit({env, payload}) {
-    let cardSection = env.postModel;
-    let text = payload.text || 'new';
-    let up = $('<button>up</button>').click(() => moveCard(cardSection, 'up'));
-    let down = $('<button>down</button>').click(() => moveCard(cardSection, 'down'));
-    let x = $('<button>X</button>').click(env.remove);
+  edit({ env, payload }) {
+    const cardSection = env.postModel;
+    const text = document.createTextNode(payload.text || 'new');
 
-    let input = $('<input>');
-    let save = $('<button>save</button>').click(() => {
-      payload.text = input.val();
+    const upButton = document.createElement('button');
+    upButton.innerText = `up`;
+    upButton.addEventListener('click', () => moveCard(cardSection, 'up'));
+
+    const downButton = document.createElement('button');
+    downButton.innerText = `down`;
+    downButton.addEventListener('click', () => moveCard(cardSection, 'down'));
+
+    const xButton = document.createElement('button');
+    xButton.innerText = `X`;
+    xButton.addEventListener('click', env.remove);
+
+    const input = document.createElement('input');
+    const save = document.createElement('button');
+    save.innerText = 'save';
+
+    save.addEventListener('click', () => {
+      payload.text = input.value;
       env.save(payload);
     });
-    let el = $('<div>').append([text, up,down,x,input,save])[0];
+
+    const el = document.createElement('div');
+    [text, upButton, downButton, xButton, input, save].forEach(button => {
+      el.appendChild(button);
+    });
     return el;
   }
 };
 
-function speakingPlugin(node, builder, {addSection, addMarkerable, nodeFinished}) {
+function speakingPlugin(node) {
   console.log('got node!',node);
 }
 
-function tableConverterPlugin(node, builder, {addSection, addMarkerable, nodeFinished}) {
+function tableConverterPlugin(node, builder, {addSection, nodeFinished}) {
   if (node.tagName !== 'TABLE') { return; }
 
-  let tableCard = builder.createCardSection("table");
+  const tableCard = builder.createCardSection('table');
   addSection(tableCard);
   nodeFinished();
 }
 
-$(function () {
-  var el = $('#editor')[0];
-  editor = new Mobiledoc.Editor({
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.querySelector('#editor');
+  editor = new Editor({
     placeholder: 'write something',
     autofocus: true,
     atoms: [mentionAtom, clickAtom],
@@ -221,33 +293,41 @@ $(function () {
 
   editor.render(el);
 
-  $('#toolbar button.toggle').click(function() {
-    let action = $(this).data('action');
-    let toggle = $(this).data('toggle');
+  document.querySelectorAll('#toolbar button.toggle').forEach(button => {
+    button.addEventListener('click', () => {
+      let action = button.getAttribute('data-action');
+      let toggle = button.getAttribute('data-toggle');
 
-    editor[action](toggle);
+      editor[action](toggle);
+    });
   });
 
-  $('#toolbar button.toggle-method').click(function() {
-    let isOn = $(this).data('is-on') === 'true';
-    let methodOn = $(this).data('on');
-    let methodOff = $(this).data('off');
+  document.querySelectorAll('#toolbar button.toggle-method').forEach(button => {
+    button.addEventListener('click', () => {
+      let isOn = button.getAttribute('data-on') === 'true';
+      let methodOn = button.getAttribute('data-on');
+      let methodOff = button.getAttribute('data-off');
 
-    let nextState = isOn ? 'false' : 'true';
-    let method = isOn ? methodOff : methodOn;
+      let nextState = isOn ? 'false' : 'true';
+      let method = isOn ? methodOff : methodOn;
 
-    $(this).data('is-on', nextState);
-    editor[method]();
+      button.setAttribute('data-on', nextState);
+      editor[method]();
+    });
   });
 
-  $('#toolbar button.insert-atom').click(function() {
-    let name = $(this).data('name');
-    let value = $(this).data('value') || '';
-    editor.insertAtom(name, value);
+  document.querySelectorAll('#toolbar button.insert-atom').forEach(atom => {
+    atom.addEventListener('click', () => {
+      let name = atom.getAttribute('data-name');
+      let value = atom.getAttribute('data-value') || '';
+      editor.insertAtom(name, value);
+    });
   });
 
-  $('#toolbar button.insert-card').click(function() {
-    let name = $(this).data('name');
-    editor.insertCard(name);
+  document.querySelectorAll('#toolbar button.insert-card').forEach(card => {
+    card.addEventListener('click', () => {
+      let name = card.getAttribute('data-name');
+      editor.insertCard(name);
+    });
   });
 });
