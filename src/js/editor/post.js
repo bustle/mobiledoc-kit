@@ -844,7 +844,9 @@ class PostEditor {
    */
   toggleSection(sectionTagName, range = this._range) {
     range = toRange(range);
-    const { tail } = range;
+    const { head, tail } = range;
+    const togglingList = sectionTagName === "ul";
+    const tailNotSelected = tail.offset === 0 && head.section !== tail.section;
 
     sectionTagName = normalizeTagName(sectionTagName);
     let { post } = this.editor;
@@ -852,7 +854,7 @@ class PostEditor {
     let everySectionHasTagName = true;
     post.walkMarkerableSections(range, section => {
       // only care about tail section tag if tail section is selected
-      if (tail.offset === 0 && tail.section === section) {
+      if (!togglingList && tailNotSelected && tail.section === section) {
         return;
       }
 
@@ -867,7 +869,7 @@ class PostEditor {
       let changedSection;
 
       // tail section not selected, no transform needed
-      if (tail.offset === 0 && tail.section === section) {
+      if (!togglingList && tailNotSelected && tail.section === section) {
         changedSection = section;
       } else {
         changedSection = this.changeSectionTagName(section, tagName);
