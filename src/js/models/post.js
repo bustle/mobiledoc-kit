@@ -1,9 +1,9 @@
-import { POST_TYPE } from './types';
-import LinkedList from 'mobiledoc-kit/utils/linked-list';
-import { forEach } from 'mobiledoc-kit/utils/array-utils';
-import Set from 'mobiledoc-kit/utils/set';
-import Position from 'mobiledoc-kit/utils/cursor/position';
-import assert from 'mobiledoc-kit/utils/assert';
+import { POST_TYPE } from "./types";
+import LinkedList from "mobiledoc-kit/utils/linked-list";
+import { forEach } from "mobiledoc-kit/utils/array-utils";
+import Set from "mobiledoc-kit/utils/set";
+import Position from "mobiledoc-kit/utils/cursor/position";
+import assert from "mobiledoc-kit/utils/assert";
 
 /**
  * The Post is an in-memory representation of an editor's document.
@@ -20,8 +20,8 @@ class Post {
   constructor() {
     this.type = POST_TYPE;
     this.sections = new LinkedList({
-      adoptItem: s => s.post = s.parent = this,
-      freeItem: s => s.post = s.parent = null
+      adoptItem: s => (s.post = s.parent = this),
+      freeItem: s => (s.post = s.parent = null)
     });
   }
 
@@ -70,8 +70,10 @@ class Post {
    * @public
    */
   get hasContent() {
-    if ((this.sections.length > 1) ||
-        (this.sections.length === 1 && !this.sections.head.isBlank)) {
+    if (
+      this.sections.length > 1 ||
+      (this.sections.length === 1 && !this.sections.head.isBlank)
+    ) {
       return true;
     } else {
       return false;
@@ -86,10 +88,11 @@ class Post {
     const markers = [];
 
     this.walkMarkerableSections(range, section => {
-      section._markersInRange(
-        range.trimTo(section),
-        (m, {isContained}) => { if (isContained) { markers.push(m); } }
-      );
+      section._markersInRange(range.trimTo(section), (m, { isContained }) => {
+        if (isContained) {
+          markers.push(m);
+        }
+      });
     });
 
     return markers;
@@ -105,12 +108,12 @@ class Post {
         if (back && forward && back === forward) {
           back.markups.forEach(m => markups.add(m));
         } else {
-          (back && back.markups || []).forEach(m => {
+          ((back && back.markups) || []).forEach(m => {
             if (m.isForwardInclusive()) {
               markups.add(m);
             }
           });
-          (forward && forward.markups || []).forEach(m => {
+          ((forward && forward.markups) || []).forEach(m => {
             if (m.isBackwardInclusive()) {
               markups.add(m);
             }
@@ -118,10 +121,9 @@ class Post {
         }
       }
     } else {
-      this.walkMarkerableSections(range, (section) => {
-        forEach(
-          section.markupsInRange(range.trimTo(section)),
-          m => markups.add(m)
+      this.walkMarkerableSections(range, section => {
+        forEach(section.markupsInRange(range.trimTo(section)), m =>
+          markups.add(m)
         );
       });
     }
@@ -167,7 +169,9 @@ class Post {
   // return the next section that has markers after this one,
   // possibly skipping non-markerable sections
   _nextLeafSection(section) {
-    if (!section) { return null; }
+    if (!section) {
+      return null;
+    }
 
     const next = section.next;
     if (next) {
@@ -176,7 +180,7 @@ class Post {
       } else if (next.items) {
         return next.items.head;
       } else {
-        assert('Cannot determine next section from non-leaf-section', false);
+        assert("Cannot determine next section from non-leaf-section", false);
       }
     } else if (section.isNested) {
       // if there is no section after this, but this section is a child
@@ -193,9 +197,10 @@ class Post {
   trimTo(range) {
     const post = this.builder.createPost();
     const { builder } = this;
+    const { tail } = range;
 
     let sectionParent = post,
-        listParent = null;
+      listParent = null;
     this.walkLeafSections(range, section => {
       let newSection;
       if (section.isMarkerable) {
@@ -212,16 +217,26 @@ class Post {
         } else {
           listParent = null;
           sectionParent = post;
-          newSection = builder.createMarkupSection(section.tagName);
+          const tagName =
+            tail.offset === 0 && tail.section === section
+              ? "p"
+              : section.tagName;
+          newSection = builder.createMarkupSection(tagName);
         }
 
         let currentRange = range.trimTo(section);
         forEach(
-          section.markersFor(currentRange.headSectionOffset, currentRange.tailSectionOffset),
+          section.markersFor(
+            currentRange.headSectionOffset,
+            currentRange.tailSectionOffset
+          ),
           m => newSection.markers.append(m)
         );
       } else {
-        newSection = section.clone();
+        newSection =
+          tail.offset === 0 && tail.section === section
+            ? builder.createMarkupSection("p")
+            : section.clone();
         sectionParent = post;
       }
       if (sectionParent) {
