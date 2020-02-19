@@ -197,7 +197,8 @@ class Post {
   trimTo(range) {
     const post = this.builder.createPost();
     const { builder } = this;
-    const { tail } = range;
+    const { head, tail } = range;
+    const tailNotSelected = tail.offset === 0 && head.section !== tail.section;
 
     let sectionParent = post,
       listParent = null;
@@ -218,9 +219,7 @@ class Post {
           listParent = null;
           sectionParent = post;
           const tagName =
-            tail.offset === 0 && tail.section === section
-              ? "p"
-              : section.tagName;
+            tailNotSelected && tail.section === section ? "p" : section.tagName;
           newSection = builder.createMarkupSection(tagName);
         }
 
@@ -234,7 +233,7 @@ class Post {
         );
       } else {
         newSection =
-          tail.offset === 0 && tail.section === section
+          tailNotSelected && tail.section === section
             ? builder.createMarkupSection("p")
             : section.clone();
         sectionParent = post;
