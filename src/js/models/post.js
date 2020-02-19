@@ -214,8 +214,7 @@ class Post {
         } else {
           listParent = null;
           sectionParent = post;
-          const tagName =
-            tailNotSelected && tail.section === section ? 'p' : section.tagName;
+          const tagName = tailNotSelected && tail.section === section ? 'p' : section.tagName;
           newSection = builder.createMarkupSection(tagName);
         }
 
@@ -228,7 +227,7 @@ class Post {
         newSection = tailNotSelected && tail.section === section ?
             builder.createMarkupSection('p') :
             section.clone();
-        
+
         sectionParent = post;
       }
       if (sectionParent) {
