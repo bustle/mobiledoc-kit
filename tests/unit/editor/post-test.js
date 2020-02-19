@@ -881,6 +881,43 @@ test('#toggleSection changes multiple sections to and from tag name', (assert) =
   );
 });
 
+test('#toggleSection does not update tail markup if tail offset is 0', assert => {
+  let post = Helpers.postAbstract.build(({ post, markupSection, marker }) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  const range = Range.create(post.sections.head, 2, post.sections.tail, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.tagName, 'blockquote');
+  assert.equal(post.sections.tail.tagName, 'p');
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.tagName, 'p');
+  assert.equal(post.sections.tail.tagName, 'p');
+
+  assert.positionIsEqual(
+      mockEditor._renderedRange.head,
+      post.sections.head.toPosition(2),
+      'Maintains the selection'
+  );
+  assert.positionIsEqual(
+      mockEditor._renderedRange.tail,
+      post.sections.tail.toPosition(0),
+      'Maintains the selection'
+  );
+});
+
 test('#toggleSection skips over non-markerable sections', (assert) => {
   let post = Helpers.postAbstract.build(
     ({post, markupSection, marker, cardSection}) => {

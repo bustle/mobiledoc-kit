@@ -342,6 +342,68 @@ test('#trimTo copies card sections', (assert) => {
   assert.postIsSimilar(post, expected);
 });
 
+
+test('#trimTo appends new p section when tail section is not selected and is a non-markerable section', assert => {
+  let cardPayload = { foo: 'bar' };
+
+  let buildPost = Helpers.postAbstract.build;
+
+  let post = buildPost(({ post, markupSection, marker, cardSection }) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      cardSection('test-card', cardPayload)
+    ]);
+  });
+
+  const range = Range.create(post.sections.head, 1, // b
+                             post.sections.tail, 0); // start of card
+
+  post = post.trimTo(range);
+  let expected = buildPost(({ post, marker, markupSection, cardSection }) => {
+    return post([
+      markupSection('p', [marker('bc')]),
+      markupSection('p', [marker('')]),
+      cardSection('test-card', cardPayload)
+    ]);
+  });
+
+  const newSection = expected.sections.head.next;
+  assert.equal(expected.sections.length, 3);
+  assert.equal(newSection.tagName, 'p');
+  assert.equal(newSection.isBlank, true);
+});
+
+test('#trimTo appends new p section when tail section is not selected and is a markerable section', assert => {
+  let cardPayload = { foo: 'bar' };
+
+  let buildPost = Helpers.postAbstract.build;
+
+  let post = buildPost(({ post, markupSection, marker }) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  const range = Range.create(post.sections.head, 1, // b
+                             post.sections.tail, 0); // start of 123
+
+  post = post.trimTo(range);
+  let expected = buildPost(({ post, marker, markupSection }) => {
+    return post([
+      markupSection('p', [marker('bc')]),
+      markupSection('p', [marker('')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  const newSection = expected.sections.head.next;
+  assert.equal(expected.sections.length, 3);
+  assert.equal(newSection.tagName, 'p');
+  assert.equal(newSection.isBlank, true);
+});
+
+
 test('#trimTo when range starts and ends in a list item', (assert) => {
   let buildPost = Helpers.postAbstract.build;
 
