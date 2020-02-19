@@ -225,10 +225,10 @@ class Post {
           m => newSection.markers.append(m)
         );
       } else {
-        newSection =
-          tailNotSelected && tail.section === section
-            ? builder.createMarkupSection('p')
-            : section.clone();
+        newSection = tailNotSelected && tail.section === section ?
+            builder.createMarkupSection('p') :
+            section.clone();
+        
         sectionParent = post;
       }
       if (sectionParent) {
