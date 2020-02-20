@@ -214,7 +214,9 @@ class Post {
         } else {
           listParent = null;
           sectionParent = post;
-          const tagName = tailNotSelected && tail.section === section ? 'p' : section.tagName;
+          const tagName = tailNotSelected && tail.section === section ?
+              'p' :
+              section.tagName;
           newSection = builder.createMarkupSection(tagName);
         }
 
