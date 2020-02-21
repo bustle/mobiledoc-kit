@@ -27,7 +27,7 @@ module.exports = {
     },
     "SL_Safari_Current": {
       "exe": "saucie",
-      "args": ["-b", "safari", "-v", "9", "--no-connect", "-u"],
+      "args": ["-b", "safari", "-v", "latest", "--no-connect", "-u"],
       "protocol": "tap"
     }
   },
