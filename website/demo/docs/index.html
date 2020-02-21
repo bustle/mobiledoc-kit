@@ -49,10 +49,10 @@
 <p><a href="https://david-dm.org/bustle/mobiledoc-kit/master"><img src="https://david-dm.org/bustle/mobiledoc-kit/master.svg" alt="Dependency Status"></a>
 <a href="https://david-dm.org/bustle/mobiledoc-kit/master#info=devDependencies"><img src="https://david-dm.org/bustle/mobiledoc-kit/master/dev-status.svg" alt="devDependency Status"></a></p>
 <p><img src="https://bustle.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png" alt="Mobiledoc Logo"></p>
-<p>Mobiledoc Kit (beta) is a framework-agnostic library for building WYSIWYG editors
+<p>Mobiledoc Kit is a framework-agnostic library for building WYSIWYG editors
 supporting rich content via cards.</p>
 <h2>Libraries</h2>
-<p>This repository hosts the core Mobiledoc-Kit library. If you want to use Mobiledoc-Kit to <em>create a WYSIWYG editor</em> you have the following options:</p>
+<p>This repository hosts the core Mobiledoc Kit library. If you want to use Mobiledoc Kit to <em>create a WYSIWYG editor</em> you have the following options:</p>
 <table>
 <thead>
 <tr>
@@ -105,12 +105,12 @@ supporting rich content via cards.</p>
 <td><a href="https://github.com/bustle/ember-mobiledoc-dom-renderer">ember-mobiledoc-dom-renderer</a></td>
 </tr>
 <tr>
-<td>🔮 Render Mobiledoc as VDOM by passing React or React-like <code>createElement</code> function</td>
-<td><a href="https://github.com/bustle/mobiledoc-vdom-renderer">mobiledoc-vdom-renderer</a></td>
-</tr>
-<tr>
 <td>React Server and Browser Renderer</td>
 <td><a href="https://github.com/dailybeast/mobiledoc-react-renderer">mobiledoc-react-renderer</a></td>
+</tr>
+<tr>
+<td>🔮 Render Mobiledoc as VDOM by passing React or React-like <code>createElement</code> function</td>
+<td><a href="https://github.com/bustle/mobiledoc-vdom-renderer">mobiledoc-vdom-renderer</a></td>
 </tr>
 </tbody>
 </table>
@@ -147,7 +147,7 @@ editor used to be named Content-Kit), see these blog posts:</p>
 <h3>Usage</h3>
 <p>The <code>Mobiledoc.Editor</code> class is invoked with an element to render into and
 optionally a Mobiledoc to load. For example:</p>
-<pre class="prettyprint source lang-js"><code>var simpleMobiledoc = {
+<pre class="prettyprint source lang-js"><code>const simpleMobiledoc = {
   version: &quot;0.3.1&quot;,
   markups: [],
   atoms: [],
@@ -158,9 +158,9 @@ optionally a Mobiledoc to load. For example:</p>
     ]]
   ]
 };
-var element = document.querySelector('#editor');
-var options = { mobiledoc: simpleMobiledoc };
-var editor = new Mobiledoc.Editor(options);
+const element = document.querySelector('#editor');
+const options = { mobiledoc: simpleMobiledoc };
+const editor = new Mobiledoc.Editor(options);
 editor.render(element);
 </code></pre>
 <p><code>options</code> is an object which may include the following properties:</p>
@@ -300,7 +300,7 @@ following usage would mark currently selected text as &quot;strong&quot;:</p>
 the <code>run</code> and <code>postEditor</code> API. This API allows the Mobiledoc editor to conserve
 and better understand changes being made to the post.</p>
 <pre class="prettyprint source lang-js"><code>editor.run(postEditor => {
-  const mention = postEditor.builder.createAtom(&quot;mention&quot;, &quot;John Doe&quot;, { id: 42 });
+  const mention = postEditor.builder.createAtom(&quot;mention&quot;, &quot;Jane Doe&quot;, { id: 42 });
   // insert at current cursor position:
   // or should the user have to grab the current position from the editor first?
   postEditor.insertMarkers(editor.range.head, [mention]);
@@ -313,7 +313,7 @@ atoms, and markers, see the <a href="https://github.com/bustle/mobiledoc-kit/blo
 <p>The Mobiledoc editor allows the configuration of hot keys and text expansions.
 For instance, the hot-key command-B to make selected text bold, is registered
 internally as:</p>
-<pre class="prettyprint source lang-javascript"><code>const boldKeyCommand = {
+<pre class="prettyprint source lang-js"><code>const boldKeyCommand = {
   str: 'META+B',
   run(editor) {
     editor.run(postEditor => postEditor.toggleMarkup('strong'));
@@ -329,7 +329,7 @@ editor.registerKeyCommand(boldKeyCommand);
 <h4>Overriding built-in keys</h4>
 <p>You can override built-in behavior by simply registering a hot key with the same name.
 For example, to submit a form instead of entering a new line when <code>enter</code> is pressed you could do the following:</p>
-<pre class="prettyprint source lang-javascript"><code>const enterKeyCommand = {
+<pre class="prettyprint source lang-js"><code>const enterKeyCommand = {
   str: 'enter',
   run(editor) {
     // submit the form
@@ -346,7 +346,7 @@ when the text before the cursor ends with <code>text</code> or matches <code>mat
 The callback is called after the matching text has been inserted. It is passed
 the <code>editor</code> instance and an array of matches (either the result of <code>match.exec</code>
 on the matching user-entered text, or an array containing only the <code>text</code>).</p>
-<pre class="prettyprint source lang-javascript"><code>editor.onTextInput({
+<pre class="prettyprint source lang-js"><code>editor.onTextInput({
   text: 'X',
   run(editor) {
     // This callback is called after user types 'X'
@@ -363,7 +363,7 @@ editor.onTextInput({
 <p>The editor has several default text input handlers that are defined in
 <code>src/js/editor/text-input-handlers.js</code>.</p>
 <p>To remove default text input handlers call the unregister function.</p>
-<pre class="prettyprint source lang-javascript"><code>editor.unregisterAllTextInputHandlers();
+<pre class="prettyprint source lang-js"><code>editor.unregisterAllTextInputHandlers();
 </code></pre>
 <h4><code>\n</code> special-case match character</h4>
 <p>When writing a matching string it is common to use <code>\s</code> at the end of a match
@@ -390,16 +390,16 @@ kind of image card with the new URL in its payload.</p>
   if (node.nodeType !== 1 || node.tagName !== 'IMG') {
     return;
   }
-  var payload = { src: node.src };
-  var cardSection = builder.createCardSection('my-image', payload);
+  const payload = { src: node.src };
+  const cardSection = builder.createCardSection('my-image', payload);
   addSection(cardSection);
   nodeFinished();
 }
-var options = {
+const options = {
   parserPlugins: [imageToCardParser]
 };
-var editor = new Mobiledoc.Editor(options);
-var element = document.querySelector('#editor');
+const editor = new Mobiledoc.Editor(options);
+const element = document.querySelector('#editor');
 editor.render(element);
 </code></pre>
 <p>Parser hooks are called with three arguments:</p>
@@ -417,7 +417,7 @@ editor.render(element);
 <p>Note that you <em>must</em> call <code>nodeFinished</code> to stop a DOM node from being
 parsed by the next plugin or the default parser.</p>
 <h2>Caveats</h2>
-<h3>Mobiledoc-kit and the Grammarly extension</h3>
+<h3>Mobiledoc Kit and the Grammarly extension</h3>
 <p><code>mobiledoc-kit</code> and the <a href="https://www.grammarly.com/">Grammarly extension</a> do not play well together (see <a href="https://github.com/bustle/mobiledoc-kit/issues/422">issue 422</a>). Until this is resolved, you can avoid any such problems by disabling Grammarly for the <code>mobiledoc-kit</code> instances on your page. To do this, add the <code>data-gramm=&quot;false&quot;</code> attribute to the <code>mobiledoc-kit</code> main DOM element.</p>
 <h2>Contributing</h2>
 <p>Fork the repo, write a test, make a change, open a PR.</p>
@@ -430,18 +430,18 @@ parsed by the next plugin or the default parser.</p>
 </ul>
 <p>Run tests via the built-in broccoli server:</p>
 <ul>
-<li><code>npm start</code></li>
+<li><code>yarn start</code></li>
 <li><code>open http://localhost:4200/tests</code></li>
 </ul>
 <p>Or run headless tests via testem:</p>
 <ul>
-<li><code>npm test</code></li>
+<li><code>yarn test</code></li>
 </ul>
-<p>Tests in CI are run at Travis via Saucelabs (see the <code>test:ci</code> npm script).</p>
+<p>Tests in CI are run at Travis via Saucelabs (see the <code>test:ci</code> yarn script).</p>
 <h3>Demo</h3>
 <p>To run the demo site locally:</p>
 <ul>
-<li><code>npm start</code></li>
+<li><code>yarn start</code></li>
 <li><code>open http://localhost:4200/demo</code></li>
 </ul>
 <p>The assets for the demo are in <code>assets/demo</code>.</p>
@@ -450,7 +450,7 @@ parsed by the next plugin or the default parser.</p>
 If you have a question about usage you can post in the <a href="https://mobiledoc-kit.slack.com/">slack channel</a> (automatic invites available from our <a href="https://mobiledoc-slack.herokuapp.com/">slackin app</a>) or on StackOverflow using the <a href="http://stackoverflow.com/questions/tagged/mobiledoc-kit"><code>mobiledoc-kit</code> tag</a>.</p>
 <h3>Releasing (Implementer notes)</h3>
 <ul>
-<li>Use <code>np</code> (<code>npm install -g np</code>)</li>
+<li>Use <code>np</code> (<code>yarn install -g np</code>)</li>
 <li><code>np &lt;version&gt;</code> (e.g. <code>np 0.12.0</code>)</li>
 <li><code>git push &lt;origin&gt; --tags</code></li>
 </ul>
@@ -463,11 +463,11 @@ this website can be found in <code>assets/demo/</code>. Note that the developmen
 does not rebuild jsdoc.</p>
 <p>To publish a new version:</p>
 <ul>
-<li><code>npm run build:website</code> - This builds the website into <code>website/</code> and commits it</li>
-<li><code>npm run deploy:website</code> - Pushes the <code>website/</code> subtree to the <code>gh-pages</code>
+<li><code>yarn run build:website</code> - This builds the website into <code>website/</code> and commits it</li>
+<li><code>yarn run deploy:website</code> - Pushes the <code>website/</code> subtree to the <code>gh-pages</code>
 branch of your <code>origin</code> at github</li>
 </ul>
-<p><em>Development of Mobiledoc and the supporting libraries was generously funded by <a href="https://bustle.company/">Bustle Digital Group's engineering team</a>.</em></p></article>
+<p><em>Development of Mobiledoc and the supporting libraries was generously funded by <a href="https://bustle.company/">Bustle Digital Group</a>.</em></p></article>
     </section>
 
 
@@ -484,7 +484,7 @@ branch of your <code>origin</code> at github</li>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Feb 12 2020 08:47:52 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Feb 21 2020 16:59:47 GMT-0500 (Eastern Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

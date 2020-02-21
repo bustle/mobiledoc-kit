@@ -1,3 +1,7 @@
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
 function detect(enumerable, callback) {
   if (enumerable.detect) {
     return enumerable.detect(callback);
@@ -8206,6 +8210,10 @@ function toggleLink(editor, showPrompt=defaultShowPrompt) {
   }
 }
 
+var ui = {
+  toggleLink
+};
+
 function selectAll(editor) {
   let { post } = editor;
   editor.selectRange(post.toRange());
@@ -12123,5 +12131,12 @@ class Editor {
 
 var version = '##VERSION##';
 
-export { Editor, MobiledocError as Error, ImageCard, MOBILEDOC_VERSION$4 as MOBILEDOC_VERSION, Position$1 as Position, Range, version as VERSION };
-//# sourceMappingURL=index.js.map
+exports.Editor = Editor;
+exports.Error = MobiledocError;
+exports.ImageCard = ImageCard;
+exports.MOBILEDOC_VERSION = MOBILEDOC_VERSION$4;
+exports.Position = Position$1;
+exports.Range = Range;
+exports.UI = ui;
+exports.VERSION = version;
+//# sourceMappingURL=mobiledoc.cjs.map
