@@ -10,7 +10,8 @@ var opts = {
   accessKey: process.env.SAUCE_ACCESS_KEY,
   verbose: true,
   logger: console.log,
-  pidfile: pidFile
+  pidfile: pidFile,
+  connectVersion: '4.5.4'
 };
 
 if (process.env.TRAVIS_JOB_NUMBER) {
