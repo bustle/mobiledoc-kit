@@ -1,8 +1,15 @@
 module.exports = {
   "env": {
-    "browser": true,
-    "jquery": true
+    "browser": true
   },
+  "overrides": [
+    {
+      "files": ["rollup.config.js"],
+      "env": {
+        "node": true
+      }
+    }
+  ],
   "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": 2017,
@@ -160,7 +167,6 @@ module.exports = {
     "no-param-reassign": "off",
     "no-path-concat": "error",
     "no-plusplus": "off",
-    "no-process-env": "error",
     "no-process-exit": "error",
     "no-proto": "error",
     "no-prototype-builtins": "off",

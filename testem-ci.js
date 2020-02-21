@@ -5,7 +5,7 @@ module.exports = {
   "disable_watching": true,
   "timeout": 600,
   "browser_start_timeout": 90,
-  "test_page": "dist/tests/index.html?hidepassed",
+  "test_page": "tests/index.html?hidepassed",
   "on_start": "./sauce_labs/saucie-connect.js",
   "on_exit": "./sauce_labs/saucie-disconnect.js",
   "port": 8080,

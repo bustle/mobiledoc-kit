@@ -4,8 +4,13 @@
   "description": "A toolkit for building WYSIWYG editors with Mobiledoc",
   "repository": "https://github.com/bustle/mobiledoc-kit",
   "module": "dist/mobiledoc.js",
+  "main": "dist/mobiledoc.cjs",
+  "exports": {
+    "import": "./dist/mobiledoc.js",
+    "require": "./dist/mobiledoc.cjs"
+  },
   "scripts": {
-    "start": "yarn build --watch",
+    "start": "rollup -c --watch",
     "test:ci": "yarn build:docs && yarn build && testem ci -f testem-ci.js",
     "test": "yarn build && testem ci -f testem.js",
     "build": "rollup -c",
@@ -14,7 +19,7 @@
     "deploy:website": "./bin/deploy-website.sh",
     "update-changelog": "conventional-changelog -i CHANGELOG.md -r 0 -s",
     "version": "yarn update-changelog && git add CHANGELOG.md",
-    "prepublish": "yarn build"
+    "prepublishOnly": "yarn build"
   },
   "keywords": [
     "html",
@@ -24,7 +29,9 @@
     "contenteditable"
   ],
   "files": [
-    "dist/mobiledoc.js"
+    "dist/mobiledoc.js",
+    "dist/mobiledoc.cjs",
+    "dist/mobiledoc.css"
   ],
   "author": "Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)",
   "contributors": [
@@ -42,28 +49,18 @@
     "@rollup/plugin-alias": "^3.0.0",
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
-    "broccoli": "^1.1.3",
-    "broccoli-babel-transpiler": "^6.1.2",
-    "broccoli-cli": "^1.0.0",
-    "broccoli-funnel": "^2.0.0",
-    "broccoli-livereload": "^1.0.0",
-    "broccoli-merge-trees": "^3.0.0",
-    "broccoli-multi-builder": "^0.3.0",
-    "broccoli-sane-watcher": "^1.1.4",
-    "broccoli-string-replace": "^0.1.1",
-    "broccoli-test-builder": "^0.4.0",
     "conventional-changelog": "^1.1.3",
     "conventional-changelog-cli": "^1.3.2",
     "jquery": "^3.4.1",
     "jsdoc": "^3.5.4",
     "qunit": "^2.9.3",
     "rollup": "^1.31.0",
+    "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-glob-import": "^0.4.5",
     "rollup-plugin-serve": "^1.0.1",
     "saucie": "^3.3.2",
     "testem": "^2.17.0"
   },
-  "main": "dist/commonjs/mobiledoc-kit/index.js",
   "volta": {
     "node": "12.14.1",
     "yarn": "1.21.1"

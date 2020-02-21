@@ -1,4 +1,4 @@
-import { Editor } from '../mobiledoc.js';
+import { Editor } from './mobiledoc.js';
 
 let editor;
 
@@ -264,6 +264,7 @@ const movableCard = {
 };
 
 function speakingPlugin(node) {
+  // eslint-disable-next-line no-console
   console.log('got node!',node);
 }
 
