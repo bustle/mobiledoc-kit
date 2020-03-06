@@ -274,6 +274,58 @@ test("#parse handles multiple headers in list item", assert => {
   assert.equal(h2.tagName, 'h2');
 });
 
+// https://github.com/bustle/mobiledoc-kit/issues/714
+test('#parse handles list items following a markup-section breakout', (assert) => {
+  let container = buildDOM(`
+    <ul><li>One</li><li><h2>Two</h2></li><li>Three</li><li>Four</li></ul>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 3, '3 sections');
+
+  assert.equal(sections[0].type, 'list-section');
+  assert.equal(sections[0].items.length, 1);
+  assert.equal(sections[0].items.objectAt(0).text, 'One');
+
+  assert.equal(sections[1].type, 'markup-section');
+  assert.equal(sections[1].tagName, 'h2');
+  assert.equal(sections[1].text, 'Two');
+
+  assert.equal(sections[2].type, 'list-section');
+  assert.equal(sections[2].items.length, 2);
+  assert.equal(sections[2].items.objectAt(0).text, 'Three');
+  assert.equal(sections[2].items.objectAt(1).text, 'Four');
+});
+
+// https://github.com/bustle/mobiledoc-kit/issues/714
+test('#parse handles "invalid" non-li elems inside lists', (assert) => {
+  let container = buildDOM(`
+    <ul><li>One</li><h2>Two</h2><li>Three</li><li>Four</li></ul>
+  `);
+
+  let element = container.firstChild;
+  parser = new SectionParser(builder);
+  let sections = parser.parse(element);
+
+  assert.equal(sections.length, 3, '3 sections');
+
+  assert.equal(sections[0].type, 'list-section');
+  assert.equal(sections[0].items.length, 1);
+  assert.equal(sections[0].items.objectAt(0).text, 'One');
+
+  assert.equal(sections[1].type, 'markup-section');
+  assert.equal(sections[1].tagName, 'h2');
+  assert.equal(sections[1].text, 'Two');
+
+  assert.equal(sections[2].type, 'list-section');
+  assert.equal(sections[2].items.length, 2);
+  assert.equal(sections[2].items.objectAt(0).text, 'Three');
+  assert.equal(sections[2].items.objectAt(1).text, 'Four');
+});
+
 // see https://github.com/bustle/mobiledoc-kit/issues/656
 test('#parse handles list following node handled by parserPlugin', (assert) => {
   let container = buildDOM(`
@@ -536,3 +588,4 @@ test('#parse handles card-creating element after plain text', (assert) => {
   assert.equal(sections[1].type, 'card-section');
   assert.equal(sections[2].text.trim(), 'After');
 });
+

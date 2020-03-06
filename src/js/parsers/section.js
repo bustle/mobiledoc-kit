@@ -152,6 +152,13 @@ class SectionParser {
       let isNestedListSection = isListSection && this.state.section.isListItem;
       let lastSection = this.sections[this.sections.length - 1];
 
+      // lists can continue after breaking out for a markup section,
+      // in that situation, start a new list using the same list type
+      if (isListItem && this.state.section.isMarkupSection) {
+        this._closeCurrentSection();
+        this._updateStateFromElement(node.parentElement);
+      }
+
       // we can hit a list item after parsing a nested list, when that happens
       // and the lists are of different types we need to make sure we switch
       // the list type back
