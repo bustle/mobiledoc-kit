@@ -20,11 +20,6 @@ module.exports = {
       "args": ["-b", "microsoftedge", "-v", "15", "--no-connect", "-u"],
       "protocol": "tap"
     },
-    "SL_IE_11": {
-      "exe": "saucie",
-      "args": ["-b", "internet explorer", "-v", "11", "--no-connect", "-u"],
-      "protocol": "tap"
-    },
     "SL_Safari_Current": {
       "exe": "saucie",
       "args": ["-b", "safari", "-v", "latest", "--no-connect", "-u"],
@@ -35,8 +30,7 @@ module.exports = {
     "Chrome",
     "Firefox",
     "SL_Safari_Current",
-    "SL_MS_Edge",
-    "SL_IE_11"
+    "SL_MS_Edge"
   ],
   "browser_args": {
     "Chrome": [
