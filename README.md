@@ -438,9 +438,17 @@ Tests in CI are run at Travis via Saucelabs (see the `test:ci` yarn script).
 To run the demo site locally:
 
  * `yarn start`
- * `open http://localhost:4200/demo`
+ * `open http://localhost:4200/website/demo`
 
 The assets for the demo are in `assets/demo`.
+
+### Debugging
+
+A debugging environment that prints useful information about the active Mobiledoc editor
+can be access by:
+
+* `yarn start`
+* `open http://localhost:4200/website/demo/debug.html`
 
 ### Getting Help
 
@@ -459,7 +467,7 @@ The demo website is hosted at
 [bustle.github.io/mobiledoc-kit/demo](https://bustle.github.io/mobiledoc-kit/demo).
 
 To preview the website, start the server and visit
-[http://localhost:4200/demo/](http://localhost:4200/demo/). The code for
+[http://localhost:4200/website/demo/](http://localhost:4200/website/demo/). The code for
 this website can be found in `assets/demo/`. Note that the development server
 does not rebuild jsdoc.
 
