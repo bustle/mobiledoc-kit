@@ -203,7 +203,7 @@ class Editor {
         return this._parser.parse(dom);
       }
     } else {
-      return this.builder.createPost();
+      return this.builder.createPost([this.builder.createMarkupSection()]);
     }
   }
 

@@ -68,6 +68,18 @@ test('typing in empty post correctly adds a section to it', (assert) => {
   assert.hasElement('#editor p:contains(XY)', 'inserts text at correct spot');
 });
 
+test('when presented no mobiledoc to Editor constructor generates empty section', (assert) => {
+  editor = new Editor();
+  editor.render(editorElement);
+
+  assert.hasElement('#editor');
+
+  /* We are asserting here that there is a clickable target in the DOM. */
+  assert.hasElement('#editor p');
+  let {post: expected} = Helpers.postAbstract.buildFromText('');
+  assert.postIsSimilar(editor.post, expected);
+});
+
 test('typing when on the end of a card is blocked', (assert) => {
   editor = Helpers.editor.buildFromText('[my-card]', {element: editorElement, cards});
 
