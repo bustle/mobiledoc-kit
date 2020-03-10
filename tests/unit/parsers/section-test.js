@@ -589,3 +589,22 @@ test('#parse handles card-creating element after plain text', (assert) => {
   assert.equal(sections[2].text.trim(), 'After');
 });
 
+test('#parse handles <p> inside <blockquote>', (assert) => {
+  let container = buildDOM(`
+    <blockquote>
+      <p>One</p>
+      <p>Two</p>
+    </blockquote>
+  `);
+
+  parser = new SectionParser(builder);
+  let sections = parser.parse(container.firstChild);
+
+  assert.equal(sections.length, 2, '2 sections');
+  assert.equal(sections[0].type, 'markup-section');
+  assert.equal(sections[0].tagName, 'blockquote');
+  assert.equal(sections[0].text.trim(), 'One');
+  assert.equal(sections[1].type, 'markup-section');
+  assert.equal(sections[1].tagName, 'blockquote');
+  assert.equal(sections[1].text.trim(), 'Two');
+});
