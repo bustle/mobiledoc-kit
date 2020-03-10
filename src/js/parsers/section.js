@@ -98,7 +98,7 @@ class SectionParser {
       addSection: (section) => {
         // avoid creating empty paragraphs due to wrapper elements around
         // parser-plugin-handled elements
-        if (this.state.section.isMarkerable && !this.state.text && !this.state.section.text) {
+        if (this.state.section && this.state.section.isMarkerable && !this.state.section.text && !this.state.text) {
           this.state.section = null;
         } else {
           this._closeCurrentSection();
@@ -108,6 +108,13 @@ class SectionParser {
       addMarkerable: (marker) => {
         let { state } = this;
         let { section } = state;
+        // if the first element doesn't create it's own state and it's plugin
+        // handler uses `addMarkerable` we won't have a section yet
+        if (!section) {
+          state.text = '';
+          state.section = this.builder.createMarkupSection(normalizeTagName('p'));
+          section = state.section;
+        }
         assert(
           'Markerables can only be appended to markup sections and list item sections',
           section && section.isMarkerable
@@ -271,6 +278,10 @@ class SectionParser {
   }
 
   _updateStateFromElement(element) {
+    if (isCommentNode(element)) {
+      return;
+    }
+
     let { state } = this;
     state.section = this._createSectionFromElement(element);
     state.markups = this._markupsFromElement(element);
@@ -408,8 +419,11 @@ class SectionParser {
   }
 
   _createSectionFromElement(element) {
-    let { builder } = this;
+    if (isCommentNode(element)) {
+      return;
+    }
 
+    let { builder } = this;
     let section;
     let {tagName, sectionType, inferredTagName} =
       this._getSectionDetails(element);
@@ -433,10 +447,9 @@ class SectionParser {
   }
 
   _isSkippable(element) {
-    return isCommentNode(element) ||
-           (element.nodeType === NODE_TYPES.ELEMENT &&
-            contains(SKIPPABLE_ELEMENT_TAG_NAMES,
-                    normalizeTagName(element.tagName)));
+    return element.nodeType === NODE_TYPES.ELEMENT &&
+           contains(SKIPPABLE_ELEMENT_TAG_NAMES,
+                    normalizeTagName(element.tagName));
   }
 }
 
