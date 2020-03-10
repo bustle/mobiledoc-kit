@@ -46,7 +46,7 @@ const SKIPPABLE_ELEMENT_TAG_NAMES = [
   'style', 'head', 'title', 'meta'
 ].map(normalizeTagName);
 
-const NEWLINES = /\n/g;
+const NEWLINES = /\s*\n\s*/g;
 function sanitize(text) {
   return text.replace(NEWLINES, ' ');
 }
