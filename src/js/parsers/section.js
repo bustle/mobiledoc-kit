@@ -373,12 +373,23 @@ class SectionParser {
     let sectionType,
         tagName,
         inferredTagName = false;
+
     if (isTextNode(element)) {
       tagName = DEFAULT_TAG_NAME;
       sectionType = MARKUP_SECTION_TYPE;
       inferredTagName = true;
     } else {
       tagName = normalizeTagName(element.tagName);
+
+      // blockquote>p is valid html and should be treated as a blockquote section
+      // rather than a plain markup section
+      if (
+        tagName === 'p' &&
+        element.parentElement &&
+        normalizeTagName(element.parentElement.tagName) === 'blockquote'
+      ) {
+        tagName = 'blockquote';
+      }
 
       if (contains(VALID_LIST_SECTION_TAGNAMES, tagName)) {
         sectionType = LIST_SECTION_TYPE;
