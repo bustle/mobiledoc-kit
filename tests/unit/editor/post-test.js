@@ -881,6 +881,43 @@ test('#toggleSection changes multiple sections to and from tag name', (assert) =
   );
 });
 
+test('#toggleSection does not update tail markup if tail offset is 0', assert => {
+  let post = Helpers.postAbstract.build(({ post, markupSection, marker }) => {
+    return post([
+      markupSection('p', [marker('abc')]),
+      markupSection('p', [marker('123')])
+    ]);
+  });
+
+  mockEditor = renderBuiltAbstract(post, mockEditor);
+  const range = Range.create(post.sections.head, 2, post.sections.tail, 0);
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.tagName, 'blockquote');
+  assert.equal(post.sections.tail.tagName, 'p');
+
+  postEditor = new PostEditor(mockEditor);
+  postEditor.toggleSection('blockquote', range);
+  postEditor.complete();
+
+  assert.equal(post.sections.head.tagName, 'p');
+  assert.equal(post.sections.tail.tagName, 'p');
+
+  assert.positionIsEqual(
+      mockEditor._renderedRange.head,
+      post.sections.head.toPosition(2),
+      'Maintains the selection'
+  );
+  assert.positionIsEqual(
+      mockEditor._renderedRange.tail,
+      post.sections.head.toPosition(3),
+      'Maintains the selection'
+  );
+});
+
 test('#toggleSection skips over non-markerable sections', (assert) => {
   let post = Helpers.postAbstract.build(
     ({post, markupSection, marker, cardSection}) => {
@@ -1036,7 +1073,7 @@ test('#toggleSection toggle multiple ps -> list and list -> multiple ps', (asser
   assert.equal(listSection.items.head.text, 'abc');
   assert.equal(listSection.items.tail.text, '123');
 
-  range = Range.create(listSection.items.head, 0, listSection.items.tail, 0);
+  range = Range.create(listSection.items.head, 0, listSection.items.tail, 1);
   postEditor = new PostEditor(editor);
   postEditor.toggleSection('ul', range);
   postEditor.complete();
@@ -1159,7 +1196,7 @@ test('#toggleSection untoggle multiple items at end of list changes them to mark
   });
   mockEditor = renderBuiltAbstract(post, mockEditor);
   let range = Range.create(post.sections.head.items.objectAt(1), 0,
-                           post.sections.head.items.tail, 0);
+                           post.sections.head.items.tail, 1);
 
   postEditor = new PostEditor(mockEditor);
   postEditor.toggleSection('ul', range);
@@ -1189,7 +1226,7 @@ test('#toggleSection untoggle multiple items at start of list changes them to ma
   });
   mockEditor = renderBuiltAbstract(post, mockEditor);
   let range = Range.create(post.sections.head.items.head, 0,
-                           post.sections.head.items.objectAt(1), 0);
+                           post.sections.head.items.objectAt(1), 1);
 
   postEditor = new PostEditor(mockEditor);
   postEditor.toggleSection('ul', range);
@@ -1225,7 +1262,7 @@ test('#toggleSection untoggle items and overflowing markup sections changes the 
   editor.render(editorElement);
   let { post } = editor;
   let range = Range.create(post.sections.head.items.objectAt(1), 0,
-                           post.sections.tail, 0);
+                           post.sections.tail, 1);
 
   postEditor = new PostEditor(editor);
   postEditor.toggleSection('ul', range);

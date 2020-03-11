@@ -15,6 +15,16 @@ function isListSectionTagName(tagName) {
   return tagName === 'ul' || tagName === 'ol';
 }
 
+function shrinkRange(range) {
+  const { head, tail } = range;
+
+  if (tail.offset === 0 && head.section !== tail.section) {
+    range.tail = new Position(tail.section.prev, tail.section.prev.length);
+  }
+
+  return range;
+}
+
 const CALLBACK_QUEUES = {
   BEFORE_COMPLETE: 'beforeComplete',
   COMPLETE: 'complete',
@@ -28,7 +38,6 @@ const EDIT_ACTIONS = {
   INSERT_TEXT: 1,
   DELETE: 2
 };
-
 
 /**
  * The PostEditor is used to modify a post. It should not be instantiated directly.
@@ -786,7 +795,7 @@ class PostEditor {
    * @public
    */
   toggleSection(sectionTagName, range=this._range) {
-    range = toRange(range);
+    range = shrinkRange(toRange(range));
 
     sectionTagName = normalizeTagName(sectionTagName);
     let { post } = this.editor;
@@ -802,6 +811,7 @@ class PostEditor {
     let sectionTransformations = [];
     post.walkMarkerableSections(range, section => {
       let changedSection = this.changeSectionTagName(section, tagName);
+
       sectionTransformations.push({
         from: section,
         to: changedSection
