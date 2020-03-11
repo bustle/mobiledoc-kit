@@ -124,11 +124,11 @@
   left: 50%;
   width: 0;
   height: 0;
-  border-left: 0.4em solid transparent;
-  border-right: 0.4em solid transparent;
-  border-bottom: 0.4em solid rgba(43,43,43,0.9);
-  top: -0.4em;
-  margin-left: -0.4em;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid rgba(43,43,43,0.9);
+  top: -5px;
+  margin-left: -5px;
 }
 
 /* help keeps mouseover state when moving from link to tooltip */
@@ -137,8 +137,8 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: -0.4em;
-  height: 0.4em;
+  top: -5px;
+  height: 5px;
 }
 
 .__mobiledoc-tooltip a {
