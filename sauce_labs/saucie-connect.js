@@ -11,7 +11,7 @@ var opts = {
   verbose: true,
   logger: console.log,
   pidfile: pidFile,
-  connectVersion: '4.4.12'
+  connectVersion: '4.5.4'
 };
 
 if (process.env.TRAVIS_JOB_NUMBER) {

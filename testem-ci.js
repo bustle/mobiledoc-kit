@@ -5,7 +5,7 @@ module.exports = {
   "disable_watching": true,
   "timeout": 600,
   "browser_start_timeout": 90,
-  "test_page": "dist/tests/index.html?hidepassed",
+  "test_page": "tests/index.html?hidepassed",
   "on_start": "./sauce_labs/saucie-connect.js",
   "on_exit": "./sauce_labs/saucie-disconnect.js",
   "port": 8080,
@@ -20,14 +20,9 @@ module.exports = {
       "args": ["-b", "microsoftedge", "-v", "15", "--no-connect", "-u"],
       "protocol": "tap"
     },
-    "SL_IE_11": {
-      "exe": "saucie",
-      "args": ["-b", "internet explorer", "-v", "11", "--no-connect", "-u"],
-      "protocol": "tap"
-    },
     "SL_Safari_Current": {
       "exe": "saucie",
-      "args": ["-b", "safari", "-v", "9", "--no-connect", "-u"],
+      "args": ["-b", "safari", "-v", "latest", "--no-connect", "-u"],
       "protocol": "tap"
     }
   },
@@ -35,8 +30,7 @@ module.exports = {
     "Chrome",
     "Firefox",
     "SL_Safari_Current",
-    "SL_MS_Edge",
-    "SL_IE_11"
+    "SL_MS_Edge"
   ],
   "browser_args": {
     "Chrome": [

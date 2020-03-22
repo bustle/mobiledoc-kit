@@ -4,6 +4,9 @@ echo "Clearing $(pwd)/website"
 rm -rf website
 mkdir website
 
+echo "Copying $(pwd)/assets/* to $(pwd)/website/"
+cp -R assets/* website/
+
 echo "Copying $(pwd)/dist/* to $(pwd)/website/"
 cp -R dist/* website/
 

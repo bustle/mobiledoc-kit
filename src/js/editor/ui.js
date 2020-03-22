@@ -64,3 +64,7 @@ export function toggleLink(editor, showPrompt=defaultShowPrompt) {
     });
   }
 }
+
+export default {
+  toggleLink
+};

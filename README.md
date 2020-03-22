@@ -9,12 +9,12 @@
 
 ![Mobiledoc Logo](https://bustle.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png)
 
-Mobiledoc Kit (beta) is a framework-agnostic library for building WYSIWYG editors
+Mobiledoc Kit is a framework-agnostic library for building WYSIWYG editors
 supporting rich content via cards.
 
 ## Libraries
 
-This repository hosts the core Mobiledoc-Kit library. If you want to use Mobiledoc-Kit to *create a WYSIWYG editor* you have the following options:
+This repository hosts the core Mobiledoc Kit library. If you want to use Mobiledoc Kit to *create a WYSIWYG editor* you have the following options:
 
 | Environment | Library |
 | ----------- | ------- |
@@ -32,6 +32,7 @@ If you only want to use the Mobiledoc-Kit runtime, for *rendering mobiledoc post
 | Server-Side Rendering (Text-only, e.g. SEO) | [mobiledoc-text-renderer](https://github.com/bustle/mobiledoc-text-renderer) |
 | In-Browser (DOM) Rendering, with Ember | [ember-mobiledoc-dom-renderer](https://github.com/bustle/ember-mobiledoc-dom-renderer) |
 | React Server and Browser Renderer | [mobiledoc-react-renderer](https://github.com/dailybeast/mobiledoc-react-renderer) |
+| 🔮 Render Mobiledoc as VDOM by passing React or React-like `createElement` function | [mobiledoc-vdom-renderer](https://github.com/bustle/mobiledoc-vdom-renderer) |
 
 Mobiledoc is a deliberately simple and terse format, and you are encouraged to write your own renderer if you have other target output formats (e.g., a PDF renderer, an iOS Native Views Renderer, etc.).
 
@@ -75,7 +76,7 @@ The `Mobiledoc.Editor` class is invoked with an element to render into and
 optionally a Mobiledoc to load. For example:
 
 ```js
-var simpleMobiledoc = {
+const simpleMobiledoc = {
   version: "0.3.1",
   markups: [],
   atoms: [],
@@ -86,9 +87,9 @@ var simpleMobiledoc = {
     ]]
   ]
 };
-var element = document.querySelector('#editor');
-var options = { mobiledoc: simpleMobiledoc };
-var editor = new Mobiledoc.Editor(options);
+const element = document.querySelector('#editor');
+const options = { mobiledoc: simpleMobiledoc };
+const editor = new Mobiledoc.Editor(options);
 editor.render(element);
 ```
 
@@ -253,7 +254,7 @@ and better understand changes being made to the post.
 
 ```js
 editor.run(postEditor => {
-  const mention = postEditor.builder.createAtom("mention", "John Doe", { id: 42 });
+  const mention = postEditor.builder.createAtom("mention", "Jane Doe", { id: 42 });
   // insert at current cursor position:
   // or should the user have to grab the current position from the editor first?
   postEditor.insertMarkers(editor.range.head, [mention]);
@@ -271,7 +272,7 @@ The Mobiledoc editor allows the configuration of hot keys and text expansions.
 For instance, the hot-key command-B to make selected text bold, is registered
 internally as:
 
-```javascript
+```js
 const boldKeyCommand = {
   str: 'META+B',
   run(editor) {
@@ -296,7 +297,7 @@ The key can be any of the alphanumeric characters on the keyboard, or one of the
 You can override built-in behavior by simply registering a hot key with the same name.
 For example, to submit a form instead of entering a new line when `enter` is pressed you could do the following:
 
-```javascript
+```js
 const enterKeyCommand = {
   str: 'enter',
   run(editor) {
@@ -318,7 +319,7 @@ The callback is called after the matching text has been inserted. It is passed
 the `editor` instance and an array of matches (either the result of `match.exec`
 on the matching user-entered text, or an array containing only the `text`).
 
-```javascript
+```js
 editor.onTextInput({
   text: 'X',
   run(editor) {
@@ -339,7 +340,7 @@ The editor has several default text input handlers that are defined in
 
 To remove default text input handlers call the unregister function.
 
-```javascript
+```js
 editor.unregisterAllTextInputHandlers();
 ```
 
@@ -379,16 +380,16 @@ function imageToCardParser(node, builder, {addSection, addMarkerable, nodeFinish
   if (node.nodeType !== 1 || node.tagName !== 'IMG') {
     return;
   }
-  var payload = { src: node.src };
-  var cardSection = builder.createCardSection('my-image', payload);
+  const payload = { src: node.src };
+  const cardSection = builder.createCardSection('my-image', payload);
   addSection(cardSection);
   nodeFinished();
 }
-var options = {
+const options = {
   parserPlugins: [imageToCardParser]
 };
-var editor = new Mobiledoc.Editor(options);
-var element = document.querySelector('#editor');
+const editor = new Mobiledoc.Editor(options);
+const element = document.querySelector('#editor');
 editor.render(element);
 ```
 
@@ -406,7 +407,7 @@ parsed by the next plugin or the default parser.
 
 ## Caveats
 
-### Mobiledoc-kit and the Grammarly extension
+### Mobiledoc Kit and the Grammarly extension
 `mobiledoc-kit` and the [Grammarly extension](https://www.grammarly.com/) do not play well together (see [issue 422](https://github.com/bustle/mobiledoc-kit/issues/422)). Until this is resolved, you can avoid any such problems by disabling Grammarly for the `mobiledoc-kit` instances on your page. To do this, add the `data-gramm="false"` attribute to the `mobiledoc-kit` main DOM element.
 
 ## Contributing
@@ -423,23 +424,31 @@ Install dependencies via yarn:
 
 Run tests via the built-in broccoli server:
 
-  * `npm start`
+  * `yarn start`
   * `open http://localhost:4200/tests`
 
 Or run headless tests via testem:
 
-  * `npm test`
+  * `yarn test`
 
-Tests in CI are run at Travis via Saucelabs (see the `test:ci` npm script).
+Tests in CI are run at Travis via Saucelabs (see the `test:ci` yarn script).
 
 ### Demo
 
 To run the demo site locally:
 
- * `npm start`
- * `open http://localhost:4200/demo`
+ * `yarn start`
+ * `open http://localhost:4200/website/demo`
 
 The assets for the demo are in `assets/demo`.
+
+### Debugging
+
+A debugging environment that prints useful information about the active Mobiledoc editor
+can be access by:
+
+* `yarn start`
+* `open http://localhost:4200/website/demo/debug.html`
 
 ### Getting Help
 
@@ -448,7 +457,7 @@ If you have a question about usage you can post in the [slack channel](https://m
 
 ### Releasing (Implementer notes)
 
-* Use `np` (`npm install -g np`)
+* Use `np` (`yarn install -g np`)
 * `np <version>` (e.g. `np 0.12.0`)
 * `git push <origin> --tags`
 
@@ -458,14 +467,14 @@ The demo website is hosted at
 [bustle.github.io/mobiledoc-kit/demo](https://bustle.github.io/mobiledoc-kit/demo).
 
 To preview the website, start the server and visit
-[http://localhost:4200/demo/](http://localhost:4200/demo/). The code for
+[http://localhost:4200/website/demo/](http://localhost:4200/website/demo/). The code for
 this website can be found in `assets/demo/`. Note that the development server
 does not rebuild jsdoc.
 
 To publish a new version:
 
-  * `npm run build:website` - This builds the website into `website/` and commits it
-  * `npm run deploy:website` - Pushes the `website/` subtree to the `gh-pages`
+  * `yarn run build:website` - This builds the website into `website/` and commits it
+  * `yarn run deploy:website` - Pushes the `website/` subtree to the `gh-pages`
      branch of your `origin` at github
 
-*Development of Mobiledoc and the supporting libraries was generously funded by [Bustle Labs](http://www.bustle.com/labs). Bustle Labs is the tech team behind the editorial staff at [Bustle](http://www.bustle.com), a fantastic and successful feminist and women’s interest site based in NYC.*
+*Development of Mobiledoc and the supporting libraries was generously funded by [Bustle Digital Group](https://bustle.company/).*

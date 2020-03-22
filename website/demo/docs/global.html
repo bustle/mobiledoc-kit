@@ -98,149 +98,6 @@
 
         
             
-<h4 class="name" id="Direction"><span class="type-signature"></span>Direction<span class="type-signature"> :number</span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">number</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>FORWARD</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>BACKWARD</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_key.js.html">utils/key.js</a>, <a href="utils_key.js.html#line5">line 5</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
 <h4 class="name" id="isDirty"><span class="type-signature"></span>isDirty<span class="type-signature"></span></h4>
 
 
@@ -319,13 +176,16 @@
 <div class="description">
     <p>for each mutation:</p>
 <ul>
-<li>find the target nodes:<ul>
-<li>if nodes changed, target nodes are:<ul>
+<li>find the target nodes:
+<ul>
+<li>if nodes changed, target nodes are:
+<ul>
 <li>added nodes</li>
 <li>the target from which removed nodes were removed</li>
 </ul>
 </li>
-<li>if character data changed<ul>
+<li>if character data changed
+<ul>
 <li>target node is the mutation event's target (text node)</li>
 </ul>
 </li>
@@ -389,6 +249,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -538,6 +400,8 @@
 
 
 
+
+
         
             
 
@@ -602,6 +466,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -775,6 +641,8 @@
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -854,6 +722,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -1056,6 +926,8 @@ range. Does not change the existing markers in this section.</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -1089,7 +961,7 @@ range. Does not change the existing markers in this section.</p>
     
 
     
-    <h4 class="name" id="parse"><span class="type-signature"></span>parse<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Post.html">Post</a>}</span></h4>
+    <h4 class="name" id="parse"><span class="type-signature"></span>parse<span class="signature">(html)</span><span class="type-signature"> &rarr; {<a href="Post.html">Post</a>}</span></h4>
     
 
     
@@ -1111,6 +983,8 @@ range. Does not change the existing markers in this section.</p>
     <thead>
     <tr>
         
+        <th>Name</th>
+        
 
         <th>Type</th>
 
@@ -1127,11 +1001,13 @@ range. Does not change the existing markers in this section.</p>
 
         <tr>
             
+                <td class="name"><code>html</code></td>
+            
 
             <td class="type">
             
                 
-<span class="param-type">Mobiledoc</span>
+<span class="param-type">String</span>
 
 
             
@@ -1141,7 +1017,7 @@ range. Does not change the existing markers in this section.</p>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>to parse</p></td>
         </tr>
 
     
@@ -1182,7 +1058,7 @@ range. Does not change the existing markers in this section.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parsers_mobiledoc_0-3.js.html">parsers/mobiledoc/0-3.js</a>, <a href="parsers_mobiledoc_0-3.js.html#line24">line 24</a>
+        <a href="parsers_html.js.html">parsers/html.js</a>, <a href="parsers_html.js.html#line16">line 16</a>
     </li></ul></dd>
     
 
@@ -1205,9 +1081,15 @@ range. Does not change the existing markers in this section.</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <p>A post abstract</p>
+</div>
+
 
 
 <dl>
@@ -1350,162 +1232,11 @@ range. Does not change the existing markers in this section.</p>
 
 
 
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="Post.html">Post</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="parse"><span class="type-signature"></span>parse<span class="signature">(html)</span><span class="type-signature"> &rarr; {<a href="Post.html">Post</a>}</span></h4>
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>html</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>to parse</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parsers_html.js.html">parsers/html.js</a>, <a href="parsers_html.js.html#line16">line 16</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
 
 
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    <p>A post abstract</p>
-</div>
-
 
 
 <dl>
@@ -1635,6 +1366,8 @@ range. Does not change the existing markers in this section.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1793,6 +1526,155 @@ range. Does not change the existing markers in this section.</p>
 
 
 
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Post.html">Post</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="parse"><span class="type-signature"></span>parse<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Post.html">Post</a>}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Mobiledoc</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parsers_mobiledoc_0-3.js.html">parsers/mobiledoc/0-3.js</a>, <a href="parsers_mobiledoc_0-3.js.html#line24">line 24</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <h5>Returns:</h5>
 
         
@@ -1929,6 +1811,8 @@ range. Does not change the existing markers in this section.</p>
 
     
 </dl>
+
+
 
 
 
@@ -2128,6 +2012,8 @@ Does nothing if the cursor position is not at the start of the section.</p>
 
 
 
+
+
         
             
 
@@ -2288,90 +2174,6 @@ or if the section is already a list item.</p>
 
 
 
-        
-            
-
-    
-
-    
-    <h4 class="name" id="splitMarkerAtOffset"><span class="type-signature"></span>splitMarkerAtOffset<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Markerable sections should override this method</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="models__section.js.html">models/_section.js</a>, <a href="models__section.js.html#line101">line 101</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         
@@ -2506,6 +2308,8 @@ a markup to a range)</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -2530,6 +2334,94 @@ result returned from <code>markerBeforeOffset(offset)</code>.</p>
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="splitMarkerAtOffset"><span class="type-signature"></span>splitMarkerAtOffset<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Markerable sections should override this method</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="models__section.js.html">models/_section.js</a>, <a href="models__section.js.html#line101">line 101</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2599,6 +2491,8 @@ result returned from <code>markerBeforeOffset(offset)</code>.</p>
 
     
 </dl>
+
+
 
 
 
@@ -2765,6 +2659,8 @@ result returned from <code>markerBeforeOffset(offset)</code>.</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -2869,6 +2765,8 @@ result returned from <code>markerBeforeOffset(offset)</code>.</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -2903,6 +2801,149 @@ result returned from <code>markerBeforeOffset(offset)</code>.</p>
         <h3 class="subsection-title">Type Definitions</h3>
 
         
+                
+<h4 class="name" id="Direction">Direction</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>FORWARD</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>BACKWARD</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_key.js.html">utils/key.js</a>, <a href="utils_key.js.html#line5">line 5</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
                 
 
     
@@ -3128,6 +3169,8 @@ result returned from <code>markerBeforeOffset(offset)</code>.</p>
 
 
 
+
+
             
     
 
@@ -3142,13 +3185,13 @@ result returned from <code>markerBeforeOffset(offset)</code>.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li><li><a href="Post.html">Post</a></li><li><a href="PostEditor.html">PostEditor</a></li><li><a href="PostNodeBuilder.html">PostNodeBuilder</a></li><li><a href="Range.html">Range</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#Direction">Direction</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-UI.html">UI</a></li></ul><h3>Classes</h3><ul><li><a href="Editor.html">Editor</a></li><li><a href="Key.html">Key</a></li><li><a href="Markup.html">Markup</a></li><li><a href="Position.html">Position</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handleMutations">_handleMutations</a></li><li><a href="global.html#findRenderNodeFromElement">findRenderNodeFromElement</a></li><li><a href="global.html#headPosition">headPosition</a></li><li><a href="global.html#isDirty">isDirty</a></li><li><a href="global.html#join">join</a></li><li><a href="global.html#markersFor">markersFor</a></li><li><a href="global.html#offsetOfMarker">offsetOfMarker</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#replaceWithHeaderSection">replaceWithHeaderSection</a></li><li><a href="global.html#replaceWithListSection">replaceWithListSection</a></li><li><a href="global.html#splitMarkerAtOffset">splitMarkerAtOffset</a></li><li><a href="global.html#tailPosition">tailPosition</a></li><li><a href="global.html#toPosition">toPosition</a></li><li><a href="global.html#toRange">toRange</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 10 2020 08:57:41 GMT-0500 (EST)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Feb 21 2020 16:59:47 GMT-0500 (Eastern Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
