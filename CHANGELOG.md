@@ -1,7 +1,20 @@
+<a name="0.13.0-pre.1"></a>
+## 0.13.0-pre.1 (2020-03-22)
+
+
+
+
 <a name="0.12.4"></a>
 ## <small>0.12.4 (2020-03-13)</small>
 
+* [WIP] Use Rollup 🍣 for build ([48f5689](https://github.com/bustle/mobiledoc-kit/commit/48f5689))
 * 🐛 Fixed parser plugin handling of top-level comment nodes ([96710ce](https://github.com/bustle/mobiledoc-kit/commit/96710ce))
+* Add debug page to README ([33d5033](https://github.com/bustle/mobiledoc-kit/commit/33d5033))
+* Build + Server website 🦊 ([6c8462b](https://github.com/bustle/mobiledoc-kit/commit/6c8462b))
+* built website from 8cbf2aac75e12ea7f24332dfc1542eb0b132946d ([f68c315](https://github.com/bustle/mobiledoc-kit/commit/f68c315))
+* built website from b9a86afaf1a268957ca7ff2e517c6a09aee0aba8 ([c5288be](https://github.com/bustle/mobiledoc-kit/commit/c5288be))
+* built website from f68c3152be5f44ad87c3c17ca2f300d627e70d6c ([6910fbd](https://github.com/bustle/mobiledoc-kit/commit/6910fbd))
+* Cleanup 🚴‍♀️ ([43ab0f1](https://github.com/bustle/mobiledoc-kit/commit/43ab0f1))
 * code style ([11d3c5e](https://github.com/bustle/mobiledoc-kit/commit/11d3c5e))
 * code style ([a2cbc85](https://github.com/bustle/mobiledoc-kit/commit/a2cbc85))
 * Fix link tooltips for any font ([c4a0b63](https://github.com/bustle/mobiledoc-kit/commit/c4a0b63))
@@ -10,10 +23,22 @@
 * Improved section parser handling of blockquote>p ([6229b88](https://github.com/bustle/mobiledoc-kit/commit/6229b88))
 * lint ([e18703b](https://github.com/bustle/mobiledoc-kit/commit/e18703b))
 * Make text selection test asynchronous 🔥 ([192dcb6](https://github.com/bustle/mobiledoc-kit/commit/192dcb6))
+* Okay add back connectVersion but newer ([a344910](https://github.com/bustle/mobiledoc-kit/commit/a344910))
+* Refactor debug.js to remove jQuery 🦺 ([b9a86af](https://github.com/bustle/mobiledoc-kit/commit/b9a86af))
+* Remove bower.json ([2e940a4](https://github.com/bustle/mobiledoc-kit/commit/2e940a4))
+* Remove global 🦺 ([451bd47](https://github.com/bustle/mobiledoc-kit/commit/451bd47))
+* Remove IE11 from tested browsers ([57dd1d1](https://github.com/bustle/mobiledoc-kit/commit/57dd1d1))
+* Remove jquery from website 🍪 ([8cbf2aa](https://github.com/bustle/mobiledoc-kit/commit/8cbf2aa))
+* Remove Saucie connectVersion ([49c5a7c](https://github.com/bustle/mobiledoc-kit/commit/49c5a7c))
 * Restrict dom selector assertion to the qunit fixture element 🦨 ([2e2d60a](https://github.com/bustle/mobiledoc-kit/commit/2e2d60a))
 * Shrink range to only include sections with non-zero selection when toggling sections 🐔 ([071a555](https://github.com/bustle/mobiledoc-kit/commit/071a555))
 * updating model.post.trimTo && editor.post.toggleSection to ignor tail if not selected. Adding tests ([17433a0](https://github.com/bustle/mobiledoc-kit/commit/17433a0))
+* Upgrade to rollup v2 ([5bd0c4c](https://github.com/bustle/mobiledoc-kit/commit/5bd0c4c))
+* Use Node 12 on Travis ([f1c3829](https://github.com/bustle/mobiledoc-kit/commit/f1c3829))
+* Use Safari latest ([1ff9ea4](https://github.com/bustle/mobiledoc-kit/commit/1ff9ea4))
 * Use wait helper instead of setTimeout in async tests ([b547d4d](https://github.com/bustle/mobiledoc-kit/commit/b547d4d))
+* v0.12.4 ([da89e08](https://github.com/bustle/mobiledoc-kit/commit/da89e08))
+* WIP cleanup ⛑ ([f7a1042](https://github.com/bustle/mobiledoc-kit/commit/f7a1042))
 
 
 
