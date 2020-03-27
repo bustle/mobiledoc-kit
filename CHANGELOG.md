@@ -1,28 +1,12 @@
-<a name="0.13.0-pre.1"></a>
 ## 0.13.0-pre.1 (2020-03-22)
 
-
-
-
-<a name="0.12.4"></a>
-## <small>0.12.4 (2020-03-13)</small>
-
 * [WIP] Use Rollup 🍣 for build ([48f5689](https://github.com/bustle/mobiledoc-kit/commit/48f5689))
-* 🐛 Fixed parser plugin handling of top-level comment nodes ([96710ce](https://github.com/bustle/mobiledoc-kit/commit/96710ce))
 * Add debug page to README ([33d5033](https://github.com/bustle/mobiledoc-kit/commit/33d5033))
 * Build + Server website 🦊 ([6c8462b](https://github.com/bustle/mobiledoc-kit/commit/6c8462b))
 * built website from 8cbf2aac75e12ea7f24332dfc1542eb0b132946d ([f68c315](https://github.com/bustle/mobiledoc-kit/commit/f68c315))
 * built website from b9a86afaf1a268957ca7ff2e517c6a09aee0aba8 ([c5288be](https://github.com/bustle/mobiledoc-kit/commit/c5288be))
 * built website from f68c3152be5f44ad87c3c17ca2f300d627e70d6c ([6910fbd](https://github.com/bustle/mobiledoc-kit/commit/6910fbd))
 * Cleanup 🚴‍♀️ ([43ab0f1](https://github.com/bustle/mobiledoc-kit/commit/43ab0f1))
-* code style ([11d3c5e](https://github.com/bustle/mobiledoc-kit/commit/11d3c5e))
-* code style ([a2cbc85](https://github.com/bustle/mobiledoc-kit/commit/a2cbc85))
-* Fix link tooltips for any font ([c4a0b63](https://github.com/bustle/mobiledoc-kit/commit/c4a0b63))
-* Fixed section parser handling of markup sections inside lists ([b13bebb](https://github.com/bustle/mobiledoc-kit/commit/b13bebb))
-* Fixed spaces added by section parser from newlines in html ([ac5f673](https://github.com/bustle/mobiledoc-kit/commit/ac5f673))
-* Improved section parser handling of blockquote>p ([6229b88](https://github.com/bustle/mobiledoc-kit/commit/6229b88))
-* lint ([e18703b](https://github.com/bustle/mobiledoc-kit/commit/e18703b))
-* Make text selection test asynchronous 🔥 ([192dcb6](https://github.com/bustle/mobiledoc-kit/commit/192dcb6))
 * Okay add back connectVersion but newer ([a344910](https://github.com/bustle/mobiledoc-kit/commit/a344910))
 * Refactor debug.js to remove jQuery 🦺 ([b9a86af](https://github.com/bustle/mobiledoc-kit/commit/b9a86af))
 * Remove bower.json ([2e940a4](https://github.com/bustle/mobiledoc-kit/commit/2e940a4))
@@ -30,19 +14,34 @@
 * Remove IE11 from tested browsers ([57dd1d1](https://github.com/bustle/mobiledoc-kit/commit/57dd1d1))
 * Remove jquery from website 🍪 ([8cbf2aa](https://github.com/bustle/mobiledoc-kit/commit/8cbf2aa))
 * Remove Saucie connectVersion ([49c5a7c](https://github.com/bustle/mobiledoc-kit/commit/49c5a7c))
-* Restrict dom selector assertion to the qunit fixture element 🦨 ([2e2d60a](https://github.com/bustle/mobiledoc-kit/commit/2e2d60a))
-* Shrink range to only include sections with non-zero selection when toggling sections 🐔 ([071a555](https://github.com/bustle/mobiledoc-kit/commit/071a555))
-* updating model.post.trimTo && editor.post.toggleSection to ignor tail if not selected. Adding tests ([17433a0](https://github.com/bustle/mobiledoc-kit/commit/17433a0))
 * Upgrade to rollup v2 ([5bd0c4c](https://github.com/bustle/mobiledoc-kit/commit/5bd0c4c))
 * Use Node 12 on Travis ([f1c3829](https://github.com/bustle/mobiledoc-kit/commit/f1c3829))
 * Use Safari latest ([1ff9ea4](https://github.com/bustle/mobiledoc-kit/commit/1ff9ea4))
-* Use wait helper instead of setTimeout in async tests ([b547d4d](https://github.com/bustle/mobiledoc-kit/commit/b547d4d))
-* v0.12.4 ([da89e08](https://github.com/bustle/mobiledoc-kit/commit/da89e08))
+* v0.13.0-pre.1 ([9994a56](https://github.com/bustle/mobiledoc-kit/commit/9994a56))
 * WIP cleanup ⛑ ([f7a1042](https://github.com/bustle/mobiledoc-kit/commit/f7a1042))
 
 
 
-<a name="0.12.3"></a>
+## <small>0.12.4 (2020-03-13)</small>
+
+* 🐛 Fixed parser plugin handling of top-level comment nodes ([96710ce](https://github.com/bustle/mobiledoc-kit/commit/96710ce))
+* code style ([11d3c5e](https://github.com/bustle/mobiledoc-kit/commit/11d3c5e))
+* code style ([a2cbc85](https://github.com/bustle/mobiledoc-kit/commit/a2cbc85))
+* Ensure empty (clickable) section when no mobiledoc is given to Editor ([bcf4639](https://github.com/bustle/mobiledoc-kit/commit/bcf4639))
+* Fix link tooltips for any font ([c4a0b63](https://github.com/bustle/mobiledoc-kit/commit/c4a0b63))
+* Fixed section parser handling of markup sections inside lists ([b13bebb](https://github.com/bustle/mobiledoc-kit/commit/b13bebb))
+* Fixed spaces added by section parser from newlines in html ([ac5f673](https://github.com/bustle/mobiledoc-kit/commit/ac5f673))
+* Improved section parser handling of blockquote>p ([6229b88](https://github.com/bustle/mobiledoc-kit/commit/6229b88))
+* lint ([e18703b](https://github.com/bustle/mobiledoc-kit/commit/e18703b))
+* Make text selection test asynchronous 🔥 ([192dcb6](https://github.com/bustle/mobiledoc-kit/commit/192dcb6))
+* Restrict dom selector assertion to the qunit fixture element 🦨 ([2e2d60a](https://github.com/bustle/mobiledoc-kit/commit/2e2d60a))
+* Shrink range to only include sections with non-zero selection when toggling sections 🐔 ([071a555](https://github.com/bustle/mobiledoc-kit/commit/071a555))
+* updating model.post.trimTo && editor.post.toggleSection to ignor tail if not selected. Adding tests ([17433a0](https://github.com/bustle/mobiledoc-kit/commit/17433a0))
+* Use wait helper instead of setTimeout in async tests ([b547d4d](https://github.com/bustle/mobiledoc-kit/commit/b547d4d))
+* v0.12.4 ([da89e08](https://github.com/bustle/mobiledoc-kit/commit/da89e08))
+
+
+
 ## <small>0.12.3 (2020-01-28)</small>
 
 * built website from 5fe628e863773b7681954646309d7a6edc5e0523 ([7b87e74](https://github.com/bustle/mobiledoc-kit/commit/7b87e74))
@@ -51,7 +50,6 @@
 
 
 
-<a name="0.12.2"></a>
 ## <small>0.12.2 (2020-01-10)</small>
 
 * Add Editor#removeAttribute to remove section attributes 🕯 ([3b4677a](https://github.com/bustle/mobiledoc-kit/commit/3b4677a))
@@ -60,7 +58,6 @@
 
 
 
-<a name="0.12.1"></a>
 ## <small>0.12.1 (2019-09-20)</small>
 
 * Add button in demo to toggle blockquote ([4005732](https://github.com/bustle/mobiledoc-kit/commit/4005732))
@@ -79,7 +76,6 @@
 
 
 
-<a name="0.12.0-0"></a>
 ## 0.12.0-0 (2019-07-16)
 
 * 🐛 Fixed atoms with no text value being removed when parsing top-level markerables ([4828dd6](https://github.com/bustle/mobiledoc-kit/commit/4828dd6))
@@ -94,7 +90,6 @@
 
 
 
-<a name="0.11.2"></a>
 ## <small>0.11.2 (2019-03-31)</small>
 
 * add failing test for #642 ([18d53a1](https://github.com/bustle/mobiledoc-kit/commit/18d53a1)), closes [#642](https://github.com/bustle/mobiledoc-kit/issues/642)
@@ -110,7 +105,6 @@
 * Bump yarn deps ([f85346a](https://github.com/bustle/mobiledoc-kit/commit/f85346a))
 * do not group consecutive list sections of different types ([45e4d27](https://github.com/bustle/mobiledoc-kit/commit/45e4d27))
 * Drop Safari from the base testem ([f1486a6](https://github.com/bustle/mobiledoc-kit/commit/f1486a6))
-* Ensure empty (clickable) section when no mobiledoc is given to Editor ([bcf4639](https://github.com/bustle/mobiledoc-kit/commit/bcf4639))
 * Export MOBILEDOC_VERSION & mobiledocRenderers from index ([acbb829](https://github.com/bustle/mobiledoc-kit/commit/acbb829))
 * failing test for #656 ([4bcbec6](https://github.com/bustle/mobiledoc-kit/commit/4bcbec6)), closes [#656](https://github.com/bustle/mobiledoc-kit/issues/656) [#656](https://github.com/bustle/mobiledoc-kit/issues/656)
 * failing test for section parser handling consecutive lists of varying types ([66d2120](https://github.com/bustle/mobiledoc-kit/commit/66d2120))
@@ -118,6 +112,7 @@
 * Fix format readme missing word ([27b4588](https://github.com/bustle/mobiledoc-kit/commit/27b4588))
 * fix grouping of nested lists into single top-level list ([a5353ff](https://github.com/bustle/mobiledoc-kit/commit/a5353ff))
 * fix handling of nested list sections of different types ([2019c94](https://github.com/bustle/mobiledoc-kit/commit/2019c94))
+* Fix issue #592 ([d318a2b](https://github.com/bustle/mobiledoc-kit/commit/d318a2b)), closes [#592](https://github.com/bustle/mobiledoc-kit/issues/592)
 * Fix json format issue in card description ([f095bb6](https://github.com/bustle/mobiledoc-kit/commit/f095bb6))
 * fix list-items being added as top-level sections when breaking out of lists ([821bf2e](https://github.com/bustle/mobiledoc-kit/commit/821bf2e))
 * Fix website typo (#652) ([1f115a0](https://github.com/bustle/mobiledoc-kit/commit/1f115a0)), closes [#652](https://github.com/bustle/mobiledoc-kit/issues/652)
@@ -135,26 +130,23 @@
 
 
 
-<a name="0.11.1"></a>
 ## <small>0.11.1 (2018-06-21)</small>
 
+* Avoid running top-level text nodes through parserPlugins twice ([9de4405](https://github.com/bustle/mobiledoc-kit/commit/9de4405))
+* Failing tests for #494 ([be446f6](https://github.com/bustle/mobiledoc-kit/commit/be446f6)), closes [#494](https://github.com/bustle/mobiledoc-kit/issues/494)
+* Run parser plugins for top-level unknown elements ([daf2fe0](https://github.com/bustle/mobiledoc-kit/commit/daf2fe0))
 * v0.11.1 ([9cbb2ba](https://github.com/bustle/mobiledoc-kit/commit/9cbb2ba))
 
 
 
-<a name="0.11.0"></a>
 ## 0.11.0 (2018-06-21)
 
 * Add react renderer to readme ([04e20ae](https://github.com/bustle/mobiledoc-kit/commit/04e20ae))
-* Avoid running top-level text nodes through parserPlugins twice ([9de4405](https://github.com/bustle/mobiledoc-kit/commit/9de4405))
 * Be more patient for Safari getting focus ([c82acfe](https://github.com/bustle/mobiledoc-kit/commit/c82acfe))
 * Bump yarn.lock ([215e755](https://github.com/bustle/mobiledoc-kit/commit/215e755))
-* Failing tests for #494 ([be446f6](https://github.com/bustle/mobiledoc-kit/commit/be446f6)), closes [#494](https://github.com/bustle/mobiledoc-kit/issues/494)
 * Fix error when pasting HTML that parses to a blank doc ([cd7fa1d](https://github.com/bustle/mobiledoc-kit/commit/cd7fa1d)), closes [#619](https://github.com/bustle/mobiledoc-kit/issues/619)
-* Fix issue #592 ([d318a2b](https://github.com/bustle/mobiledoc-kit/commit/d318a2b)), closes [#592](https://github.com/bustle/mobiledoc-kit/issues/592)
 * Fix sticky modifier keys for word deletion ([fce2d90](https://github.com/bustle/mobiledoc-kit/commit/fce2d90))
 * Fix typo in README.md ([1abaf40](https://github.com/bustle/mobiledoc-kit/commit/1abaf40))
-* Run parser plugins for top-level unknown elements ([daf2fe0](https://github.com/bustle/mobiledoc-kit/commit/daf2fe0))
 * Scope package.json scripts ([7111f85](https://github.com/bustle/mobiledoc-kit/commit/7111f85))
 * v0.11.0 ([79b074d](https://github.com/bustle/mobiledoc-kit/commit/79b074d))
 * chore(tests): Revert sauce connect addon (#612) ([2bcafaf](https://github.com/bustle/mobiledoc-kit/commit/2bcafaf)), closes [#612](https://github.com/bustle/mobiledoc-kit/issues/612)
@@ -163,7 +155,6 @@
 
 
 
-<a name="0.10.21"></a>
 ## <small>0.10.21 (2018-03-02)</small>
 
 * Fix bug #600 (#601) ([f57215f](https://github.com/bustle/mobiledoc-kit/commit/f57215f)), closes [#600](https://github.com/bustle/mobiledoc-kit/issues/600) [#601](https://github.com/bustle/mobiledoc-kit/issues/601)
@@ -175,7 +166,6 @@
 
 
 
-<a name="0.10.20"></a>
 ## <small>0.10.20 (2017-11-10)</small>
 
 * Add more detail to format documentation (#585) ([2d85ea1](https://github.com/bustle/mobiledoc-kit/commit/2d85ea1)), closes [#585](https://github.com/bustle/mobiledoc-kit/issues/585)
@@ -187,7 +177,6 @@
 
 
 
-<a name="0.10.19"></a>
 ## <small>0.10.19 (2017-08-31)</small>
 
 * v0.10.19 ([766fba5](https://github.com/bustle/mobiledoc-kit/commit/766fba5))
@@ -198,7 +187,6 @@
 
 
 
-<a name="0.10.18"></a>
 ## <small>0.10.18 (2017-08-17)</small>
 
 * v0.10.18 ([4a56c90](https://github.com/bustle/mobiledoc-kit/commit/4a56c90))
@@ -206,7 +194,6 @@
 
 
 
-<a name="0.10.17"></a>
 ## <small>0.10.17 (2017-08-14)</small>
 
 * built website from 1222772e6c820f59df91a8cf95f04bf340fb7fbf ([e75e339](https://github.com/bustle/mobiledoc-kit/commit/e75e339))
@@ -223,7 +210,6 @@
 
 
 
-<a name="0.10.16"></a>
 ## <small>0.10.16 (2017-05-25)</small>
 
 * 0.10.16 ([1222772](https://github.com/bustle/mobiledoc-kit/commit/1222772))
@@ -238,7 +224,6 @@
 
 
 
-<a name="0.10.15"></a>
 ## <small>0.10.15 (2017-03-10)</small>
 
 * 0.10.15 ([91041c7](https://github.com/bustle/mobiledoc-kit/commit/91041c7))
@@ -255,14 +240,12 @@
 
 
 
-<a name="0.10.14"></a>
 ## <small>0.10.14 (2017-02-11)</small>
 
 * 0.10.14 ([441897f](https://github.com/bustle/mobiledoc-kit/commit/441897f))
 
 
 
-<a name="0.10.14-0"></a>
 ## <small>0.10.14-0 (2016-11-17)</small>
 
 * 0.10.14-0 ([a13748a](https://github.com/bustle/mobiledoc-kit/commit/a13748a))
@@ -275,7 +258,6 @@
 
 
 
-<a name="0.10.13"></a>
 ## <small>0.10.13 (2016-11-14)</small>
 
 * 0.10.12 ([cf115f1](https://github.com/bustle/mobiledoc-kit/commit/cf115f1))
@@ -297,7 +279,6 @@
 
 
 
-<a name="0.10.11"></a>
 ## <small>0.10.11 (2016-09-14)</small>
 
 * 0.10.11 ([8a3633e](https://github.com/bustle/mobiledoc-kit/commit/8a3633e))
@@ -305,7 +286,6 @@
 
 
 
-<a name="0.10.11-beta.1"></a>
 ## <small>0.10.11-beta.1 (2016-09-13)</small>
 
 * 0.10.11-beta.1 ([39e3026](https://github.com/bustle/mobiledoc-kit/commit/39e3026))
@@ -313,7 +293,6 @@
 
 
 
-<a name="0.10.10"></a>
 ## <small>0.10.10 (2016-09-13)</small>
 
 * 0.10.10 ([3d3bc2e](https://github.com/bustle/mobiledoc-kit/commit/3d3bc2e))
@@ -325,7 +304,6 @@
 
 
 
-<a name="0.10.9"></a>
 ## <small>0.10.9 (2016-08-31)</small>
 
 * 0.10.9 ([2fe7f0f](https://github.com/bustle/mobiledoc-kit/commit/2fe7f0f))
@@ -336,7 +314,6 @@
 
 
 
-<a name="0.10.8"></a>
 ## <small>0.10.8 (2016-08-25)</small>
 
 * 0.10.8 ([1cef370](https://github.com/bustle/mobiledoc-kit/commit/1cef370))
@@ -345,7 +322,6 @@
 
 
 
-<a name="0.10.8-beta.1"></a>
 ## <small>0.10.8-beta.1 (2016-08-25)</small>
 
 * 0.10.8-beta.1 ([e3efb98](https://github.com/bustle/mobiledoc-kit/commit/e3efb98))
@@ -354,7 +330,6 @@
 
 
 
-<a name="0.10.7"></a>
 ## <small>0.10.7 (2016-08-24)</small>
 
 * 0.10.7 ([919600c](https://github.com/bustle/mobiledoc-kit/commit/919600c))
@@ -366,7 +341,6 @@
 
 
 
-<a name="0.10.6"></a>
 ## <small>0.10.6 (2016-08-23)</small>
 
 * 0.10.6 ([c3aed98](https://github.com/bustle/mobiledoc-kit/commit/c3aed98))
@@ -376,7 +350,6 @@
 
 
 
-<a name="0.10.5"></a>
 ## <small>0.10.5 (2016-08-16)</small>
 
 * 0.10.5 ([9c14bb3](https://github.com/bustle/mobiledoc-kit/commit/9c14bb3))
@@ -386,20 +359,19 @@
 
 
 
-<a name="0.10.4"></a>
 ## <small>0.10.4 (2016-08-04)</small>
 
 * 0.10.4 ([8674702](https://github.com/bustle/mobiledoc-kit/commit/8674702))
 
 
 
-<a name="0.10.4-beta.1"></a>
 ## <small>0.10.4-beta.1 (2016-08-04)</small>
 
 * 0.10.4-beta.1 ([77eb772](https://github.com/bustle/mobiledoc-kit/commit/77eb772))
 * Add `buildWithText` test helper, `postEditor#deleteRange` ([3327408](https://github.com/bustle/mobiledoc-kit/commit/3327408))
 * Add `postEditor#deleteAtPosition`, deprecate `deleteFrom` ([92c3eb6](https://github.com/bustle/mobiledoc-kit/commit/92c3eb6))
 * Add `toRange` and `toPosition` methods to Position, Section, Post ([c7ec6eb](https://github.com/bustle/mobiledoc-kit/commit/c7ec6eb)), closes [#258](https://github.com/bustle/mobiledoc-kit/issues/258)
+* It's useful to expose replace section functions ([8a5945b](https://github.com/bustle/mobiledoc-kit/commit/8a5945b))
 * Refactor `deleteRange` ([54f56cc](https://github.com/bustle/mobiledoc-kit/commit/54f56cc))
 * remove post#sectionsContainedBy(range) ([27ba974](https://github.com/bustle/mobiledoc-kit/commit/27ba974))
 * update changelog ([844239a](https://github.com/bustle/mobiledoc-kit/commit/844239a))
@@ -412,7 +384,6 @@
 
 
 
-<a name="0.10.3"></a>
 ## <small>0.10.3 (2016-07-26)</small>
 
 * 0.10.3 ([b7e4ca5](https://github.com/bustle/mobiledoc-kit/commit/b7e4ca5))
@@ -420,7 +391,6 @@
 
 
 
-<a name="0.10.2"></a>
 ## <small>0.10.2 (2016-07-26)</small>
 
 * 0.10.2 ([3f7eb68](https://github.com/bustle/mobiledoc-kit/commit/3f7eb68))
@@ -435,7 +405,6 @@
 
 
 
-<a name="0.10.1"></a>
 ## <small>0.10.1 (2016-07-15)</small>
 
 * [demo] fix simple card demo (include "remove" button) ([82a141c](https://github.com/bustle/mobiledoc-kit/commit/82a141c))
@@ -444,14 +413,12 @@
 
 
 
-<a name="0.10.0"></a>
 ## 0.10.0 (2016-07-15)
 
 * 0.10.0 ([270123b](https://github.com/bustle/mobiledoc-kit/commit/270123b))
 
 
 
-<a name="0.10.0-beta.3"></a>
 ## 0.10.0-beta.3 (2016-07-15)
 
 * 0.10.0-beta.2 ([4d5db27](https://github.com/bustle/mobiledoc-kit/commit/4d5db27))
@@ -460,7 +427,6 @@
 
 
 
-<a name="0.10.0-beta.1"></a>
 ## 0.10.0-beta.1 (2016-07-15)
 
 * 0.10.0-beta.1 ([4cc772a](https://github.com/bustle/mobiledoc-kit/commit/4cc772a))
@@ -470,7 +436,6 @@
 
 
 
-<a name="0.9.8"></a>
 ## <small>0.9.8 (2016-07-07)</small>
 
 * Add some tests for desired behavior when adding markups ([ae7f0c1](https://github.com/bustle/mobiledoc-kit/commit/ae7f0c1))
@@ -481,7 +446,6 @@
 * Fix #addMarkupToRange documentation ([51e4627](https://github.com/bustle/mobiledoc-kit/commit/51e4627))
 * Fix finicky test failure for FF at SauceLabs ([23bce3e](https://github.com/bustle/mobiledoc-kit/commit/23bce3e)), closes [#428](https://github.com/bustle/mobiledoc-kit/issues/428)
 * Fix typo in README ([6594649](https://github.com/bustle/mobiledoc-kit/commit/6594649))
-* It's useful to expose replace section functions ([8a5945b](https://github.com/bustle/mobiledoc-kit/commit/8a5945b))
 * Pull in mobiledoc-pretty-json-renderer for the demo app ([f096b54](https://github.com/bustle/mobiledoc-kit/commit/f096b54))
 * Return card and atom from high-level insert methods ([fd3dcd2](https://github.com/bustle/mobiledoc-kit/commit/fd3dcd2))
 * Tweak postEditor#addMarkupToRange to consider existing markups ([18463b9](https://github.com/bustle/mobiledoc-kit/commit/18463b9)), closes [#360](https://github.com/bustle/mobiledoc-kit/issues/360)
@@ -491,7 +455,6 @@
 
 
 
-<a name="0.9.7"></a>
 ## <small>0.9.7 (2016-05-31)</small>
 
 * Add failing test. ([a6f3944](https://github.com/bustle/mobiledoc-kit/commit/a6f3944))
@@ -511,7 +474,6 @@
 
 
 
-<a name="0.9.6"></a>
 ## <small>0.9.6 (2016-05-10)</small>
 
 * [docs] Document card `env.didRender` hook ([3a1edde](https://github.com/bustle/mobiledoc-kit/commit/3a1edde))
@@ -530,7 +492,6 @@
 
 
 
-<a name="0.9.5"></a>
 ## <small>0.9.5 (2016-04-26)</small>
 
 * [bugfix] Ensure cursor is in li after "* " expands to li ([be898fb](https://github.com/bustle/mobiledoc-kit/commit/be898fb))
@@ -547,7 +508,6 @@
 
 
 
-<a name="0.9.4"></a>
 ## <small>0.9.4 (2016-04-20)</small>
 
 * Add #insertAtom and #insertCard to Editor, fix #insertText ([b14d7be](https://github.com/bustle/mobiledoc-kit/commit/b14d7be))
@@ -566,7 +526,6 @@
 
 
 
-<a name="0.9.3"></a>
 ## <small>0.9.3 (2016-04-14)</small>
 
 * Turn off mutation-parser logging ([4ba228d](https://github.com/bustle/mobiledoc-kit/commit/4ba228d))
@@ -574,7 +533,6 @@
 
 
 
-<a name="0.9.2"></a>
 ## <small>0.9.2 (2016-04-14)</small>
 
 * [BUGFIX] Ensure Editor#hasActiveMarkup detects complex markups ([36be12a](https://github.com/bustle/mobiledoc-kit/commit/36be12a))
@@ -590,7 +548,6 @@
 
 
 
-<a name="0.9.1"></a>
 ## <small>0.9.1 (2016-03-24)</small>
 
 * [BUGFIX] Do not handle key events when the editor has no cursor ([251675e](https://github.com/bustle/mobiledoc-kit/commit/251675e)), closes [#344](https://github.com/bustle/mobiledoc-kit/issues/344)
@@ -605,7 +562,6 @@
 
 
 
-<a name="0.9.0"></a>
 ## 0.9.0 (2016-03-22)
 
 * Ensure using arrow keys when text is selected moves cursor correctly ([58dec72](https://github.com/bustle/mobiledoc-kit/commit/58dec72))
@@ -613,7 +569,6 @@
 
 
 
-<a name="0.9.0-beta.1"></a>
 ## 0.9.0-beta.1 (2016-03-17)
 
 * Add ctrl+z, ctrl+shift+z key commands for non-mac ([8ad1377](https://github.com/bustle/mobiledoc-kit/commit/8ad1377))
@@ -637,7 +592,6 @@
 
 
 
-<a name="0.8.5"></a>
 ## <small>0.8.5 (2016-02-11)</small>
 
 * 0.8.5 ([d062577](https://github.com/bustle/mobiledoc-kit/commit/d062577))
@@ -647,7 +601,6 @@
 
 
 
-<a name="0.8.4"></a>
 ## <small>0.8.4 (2016-02-10)</small>
 
 * 0.8.4 ([bc9da8b](https://github.com/bustle/mobiledoc-kit/commit/bc9da8b))
@@ -657,7 +610,6 @@
 
 
 
-<a name="0.8.3"></a>
 ## <small>0.8.3 (2016-02-10)</small>
 
 * 0.8.2 ([b215e45](https://github.com/bustle/mobiledoc-kit/commit/b215e45))
@@ -679,7 +631,6 @@
 
 
 
-<a name="0.8.1"></a>
 ## <small>0.8.1 (2016-02-04)</small>
 
 * 0.8.1 ([ee86120](https://github.com/bustle/mobiledoc-kit/commit/ee86120))
@@ -690,7 +641,6 @@
 
 
 
-<a name="0.8.0"></a>
 ## 0.8.0 (2016-02-04)
 
 * 0.8.0 ([07280ce](https://github.com/bustle/mobiledoc-kit/commit/07280ce))
@@ -716,7 +666,6 @@
 
 
 
-<a name="0.8.0-beta.4"></a>
 ## 0.8.0-beta.4 (2016-01-28)
 
 * 0.8.0-beta.4 ([08f37ac](https://github.com/bustle/mobiledoc-kit/commit/08f37ac))
@@ -741,7 +690,6 @@
 
 
 
-<a name="0.8.0-beta.3"></a>
 ## 0.8.0-beta.3 (2016-01-11)
 
 * Always `setRange` in `toggleMarkup` and `toggleSection` ([5ae07ee](https://github.com/bustle/mobiledoc-kit/commit/5ae07ee)), closes [#285](https://github.com/bustle/mobiledoc-kit/issues/285) [#287](https://github.com/bustle/mobiledoc-kit/issues/287)
@@ -749,7 +697,6 @@
 
 
 
-<a name="0.8.0-beta.2"></a>
 ## 0.8.0-beta.2 (2016-01-11)
 
 * Expose Mobiledoc.Range ([c4aebef](https://github.com/bustle/mobiledoc-kit/commit/c4aebef))
@@ -759,7 +706,6 @@
 
 
 
-<a name="0.8.0-beta.1"></a>
 ## 0.8.0-beta.1 (2016-01-07)
 
 * 0.8.0-beta.1 ([704bb20](https://github.com/bustle/mobiledoc-kit/commit/704bb20))
@@ -772,7 +718,6 @@
 
 
 
-<a name="0.7.3"></a>
 ## <small>0.7.3 (2015-12-17)</small>
 
 * 0.7.3 ([45b3b87](https://github.com/bustle/mobiledoc-kit/commit/45b3b87))
@@ -787,7 +732,6 @@
 
 
 
-<a name="0.7.2"></a>
 ## <small>0.7.2 (2015-12-14)</small>
 
 * 0.7.2 ([fc25f1d](https://github.com/bustle/mobiledoc-kit/commit/fc25f1d))
@@ -803,7 +747,6 @@
 
 
 
-<a name="0.7.1"></a>
 ## <small>0.7.1 (2015-12-09)</small>
 
 * 0.7.1 ([49dafd8](https://github.com/bustle/mobiledoc-kit/commit/49dafd8))
@@ -821,7 +764,6 @@
 
 
 
-<a name="0.7.0"></a>
 ## 0.7.0 (2015-11-24)
 
 * 0.7.0 ([afbeb5e](https://github.com/bustle/mobiledoc-kit/commit/afbeb5e))
@@ -830,7 +772,6 @@
 
 
 
-<a name="0.6.2-beta1"></a>
 ## <small>0.6.2-beta1 (2015-11-23)</small>
 
 * Add versioning for Mobiledoc renderer, parser ([69a93e4](https://github.com/bustle/mobiledoc-kit/commit/69a93e4))
@@ -844,7 +785,6 @@
 
 
 
-<a name="0.6.1"></a>
 ## <small>0.6.1 (2015-11-18)</small>
 
 * 0.6.1 ([ff637c1](https://github.com/bustle/mobiledoc-kit/commit/ff637c1))
@@ -852,7 +792,6 @@
 
 
 
-<a name="0.6.0"></a>
 ## 0.6.0 (2015-11-16)
 
 * 0.6.0 ([0001015](https://github.com/bustle/mobiledoc-kit/commit/0001015))
@@ -874,7 +813,6 @@
 
 
 
-<a name="0.6.0-beta4"></a>
 ## 0.6.0-beta4 (2015-11-10)
 
 * 0.6.0-beta4 ([ec3b07e](https://github.com/bustle/mobiledoc-kit/commit/ec3b07e))
@@ -882,7 +820,6 @@
 
 
 
-<a name="0.6.0-beta2"></a>
 ## 0.6.0-beta2 (2015-11-10)
 
 * 0.6.0-beta2 ([a1d1df0](https://github.com/bustle/mobiledoc-kit/commit/a1d1df0))
@@ -890,7 +827,6 @@
 
 
 
-<a name="0.6.0-beta1"></a>
 ## 0.6.0-beta1 (2015-11-10)
 
 * 0.6.0-beta.1 ([13f5193](https://github.com/bustle/mobiledoc-kit/commit/13f5193))
@@ -901,13 +837,13 @@
 
 
 
-<a name="0.5.1"></a>
 ## <small>0.5.1 (2015-11-09)</small>
 
 * 0.5.1 ([132cf33](https://github.com/bustle/mobiledoc-kit/commit/132cf33))
 * Add cursor points at head and tail of cards ([ac4fac8](https://github.com/bustle/mobiledoc-kit/commit/ac4fac8)), closes [#182](https://github.com/bustle/mobiledoc-kit/issues/182)
 * Add underline, subscript, superscript and strikethrough markup ([cae444c](https://github.com/bustle/mobiledoc-kit/commit/cae444c))
 * demo card with image ([2a7753a](https://github.com/bustle/mobiledoc-kit/commit/2a7753a))
+* Enable pasting html and text externally ([3556155](https://github.com/bustle/mobiledoc-kit/commit/3556155)), closes [#180](https://github.com/bustle/mobiledoc-kit/issues/180)
 * fix createMarkup() example in post.js ([336ee8a](https://github.com/bustle/mobiledoc-kit/commit/336ee8a))
 * Fix demo input card for FF ([f6563f8](https://github.com/bustle/mobiledoc-kit/commit/f6563f8))
 * fix typo in Editor Lifecycle Hooks section of README ([193007c](https://github.com/bustle/mobiledoc-kit/commit/193007c))
@@ -918,21 +854,18 @@
 
 
 
-<a name="0.5.0"></a>
 ## 0.5.0 (2015-11-02)
 
 * 0.5.0 ([c7340f2](https://github.com/bustle/mobiledoc-kit/commit/c7340f2))
 * Better error messages when parsing bad mobiledoc ([7d67671](https://github.com/bustle/mobiledoc-kit/commit/7d67671)), closes [#177](https://github.com/bustle/mobiledoc-kit/issues/177)
 * built website from 7774864980b6944edd755346044ff13f730fa299 ([e0b7e0e](https://github.com/bustle/mobiledoc-kit/commit/e0b7e0e))
 * built website from e0b7e0e0bf8326a7e56d8a2eed7052bc64e525cd ([28c57d7](https://github.com/bustle/mobiledoc-kit/commit/28c57d7))
-* Enable pasting html and text externally ([3556155](https://github.com/bustle/mobiledoc-kit/commit/3556155)), closes [#180](https://github.com/bustle/mobiledoc-kit/issues/180)
 * Paste improvements ([d4ce47a](https://github.com/bustle/mobiledoc-kit/commit/d4ce47a)), closes [#196](https://github.com/bustle/mobiledoc-kit/issues/196) [#190](https://github.com/bustle/mobiledoc-kit/issues/190)
 * Remove unused files, remove packages from package.json, docs ([fce0dc4](https://github.com/bustle/mobiledoc-kit/commit/fce0dc4))
 * update website build script, demo prod config ([7fbd438](https://github.com/bustle/mobiledoc-kit/commit/7fbd438))
 
 
 
-<a name="0.5.0-beta2"></a>
 ## 0.5.0-beta2 (2015-10-27)
 
 * 0.5.0-beta2 ([ff395b6](https://github.com/bustle/mobiledoc-kit/commit/ff395b6))
@@ -942,7 +875,6 @@
 
 
 
-<a name="0.5.0-beta1"></a>
 ## 0.5.0-beta1 (2015-10-27)
 
 * 0.5.0-beta1 ([4b1179a](https://github.com/bustle/mobiledoc-kit/commit/4b1179a))
@@ -953,7 +885,6 @@
 
 
 
-<a name="0.4.11"></a>
 ## <small>0.4.11 (2015-10-23)</small>
 
 * 0.4.11 ([2f4f1b6](https://github.com/bustle/mobiledoc-kit/commit/2f4f1b6))
@@ -961,7 +892,6 @@
 
 
 
-<a name="0.4.10"></a>
 ## <small>0.4.10 (2015-10-22)</small>
 
 * 0.4.10 ([b1080ae](https://github.com/bustle/mobiledoc-kit/commit/b1080ae))
@@ -970,7 +900,6 @@
 
 
 
-<a name="0.4.9"></a>
 ## <small>0.4.9 (2015-10-20)</small>
 
 * 0.4.9 ([b76155b](https://github.com/bustle/mobiledoc-kit/commit/b76155b))
@@ -978,7 +907,6 @@
 
 
 
-<a name="0.4.8"></a>
 ## <small>0.4.8 (2015-10-16)</small>
 
 * 0.4.8 ([e069b2e](https://github.com/bustle/mobiledoc-kit/commit/e069b2e))
@@ -987,7 +915,6 @@
 
 
 
-<a name="0.4.7"></a>
 ## <small>0.4.7 (2015-10-15)</small>
 
 * 0.4.7 ([ac3e6c5](https://github.com/bustle/mobiledoc-kit/commit/ac3e6c5))
@@ -1004,7 +931,6 @@
 
 
 
-<a name="0.4.6"></a>
 ## <small>0.4.6 (2015-10-01)</small>
 
 * 0.4.6 ([cad7039](https://github.com/bustle/mobiledoc-kit/commit/cad7039))
@@ -1012,7 +938,6 @@
 
 
 
-<a name="0.4.5"></a>
 ## <small>0.4.5 (2015-09-24)</small>
 
 * 0.4.5 ([e738b32](https://github.com/bustle/mobiledoc-kit/commit/e738b32))
@@ -1020,7 +945,6 @@
 
 
 
-<a name="0.4.4"></a>
 ## <small>0.4.4 (2015-09-23)</small>
 
 * 0.4.4 ([973a1a2](https://github.com/bustle/mobiledoc-kit/commit/973a1a2))
@@ -1029,7 +953,6 @@
 
 
 
-<a name="0.4.3"></a>
 ## <small>0.4.3 (2015-09-23)</small>
 
 * 0.4.3 ([de3113d](https://github.com/bustle/mobiledoc-kit/commit/de3113d))
@@ -1038,7 +961,6 @@
 
 
 
-<a name="0.4.2"></a>
 ## <small>0.4.2 (2015-09-22)</small>
 
 * 0.4.2 ([2a689a5](https://github.com/bustle/mobiledoc-kit/commit/2a689a5))
@@ -1049,7 +971,6 @@
 
 
 
-<a name="0.4.1"></a>
 ## <small>0.4.1 (2015-09-21)</small>
 
 * 0.4.1 ([0dd2d4c](https://github.com/bustle/mobiledoc-kit/commit/0dd2d4c))
@@ -1059,7 +980,6 @@
 
 
 
-<a name="0.4.0"></a>
 ## 0.4.0 (2015-09-21)
 
 * 0.4.0 ([4e4662c](https://github.com/bustle/mobiledoc-kit/commit/4e4662c))
@@ -1073,7 +993,6 @@
 
 
 
-<a name="0.3.13"></a>
 ## <small>0.3.13 (2015-09-16)</small>
 
 * 0.3.13 ([0eb505b](https://github.com/bustle/mobiledoc-kit/commit/0eb505b))
@@ -1091,7 +1010,6 @@
 
 
 
-<a name="0.3.12"></a>
 ## <small>0.3.12 (2015-09-15)</small>
 
 * 0.3.12 ([d3ecb8d](https://github.com/bustle/mobiledoc-kit/commit/d3ecb8d))
@@ -1104,7 +1022,6 @@
 
 
 
-<a name="0.3.11"></a>
 ## <small>0.3.11 (2015-09-10)</small>
 
 * 0.3.11 ([31f4b7a](https://github.com/bustle/mobiledoc-kit/commit/31f4b7a))
@@ -1116,12 +1033,12 @@
 
 
 
-<a name="0.3.10"></a>
 ## <small>0.3.10 (2015-09-08)</small>
 
 * 0.3.10 ([a5b6b50](https://github.com/bustle/mobiledoc-kit/commit/a5b6b50))
 * Add Post#sectionsContainedBy and update #walkMarkerableSections ([703ce12](https://github.com/bustle/mobiledoc-kit/commit/703ce12)), closes [#108](https://github.com/bustle/mobiledoc-kit/issues/108)
 * Add post#walkMarkerableSections and make post.markersFor markerable-aware ([4b2ca18](https://github.com/bustle/mobiledoc-kit/commit/4b2ca18)), closes [#102](https://github.com/bustle/mobiledoc-kit/issues/102)
+* Add prompt button, remove execCommand for links ([dcab0ad](https://github.com/bustle/mobiledoc-kit/commit/dcab0ad)), closes [#98](https://github.com/bustle/mobiledoc-kit/issues/98)
 * bump mobiledoc-html-renderer dep ([58714d6](https://github.com/bustle/mobiledoc-kit/commit/58714d6))
 * bump to use mobiledoc-dom-renderer 0.1.12, with list support ([41e0605](https://github.com/bustle/mobiledoc-kit/commit/41e0605))
 * Cleanup listener code ([3d56c76](https://github.com/bustle/mobiledoc-kit/commit/3d56c76))
@@ -1134,13 +1051,11 @@
 
 
 
-<a name="0.3.9"></a>
 ## <small>0.3.9 (2015-09-01)</small>
 
 * 0.3.9 ([b3d9cdb](https://github.com/bustle/mobiledoc-kit/commit/b3d9cdb))
 * Add #remove env hook to cards ([0787c17](https://github.com/bustle/mobiledoc-kit/commit/0787c17)), closes [#104](https://github.com/bustle/mobiledoc-kit/issues/104)
 * Add ListSection, ListItem, bump MOBILEDOC_VERSION -> 0.2.0 ([44494f0](https://github.com/bustle/mobiledoc-kit/commit/44494f0))
-* Add prompt button, remove execCommand for links ([dcab0ad](https://github.com/bustle/mobiledoc-kit/commit/dcab0ad)), closes [#98](https://github.com/bustle/mobiledoc-kit/issues/98)
 * allow trailing commas ([04cfdc7](https://github.com/bustle/mobiledoc-kit/commit/04cfdc7))
 * Catch render errors in demo and display the error ([789e252](https://github.com/bustle/mobiledoc-kit/commit/789e252))
 * Cleanup ([9fa15e4](https://github.com/bustle/mobiledoc-kit/commit/9fa15e4))
@@ -1151,7 +1066,6 @@
 
 
 
-<a name="0.3.8"></a>
 ## <small>0.3.8 (2015-08-26)</small>
 
 * 0.3.8 ([6f18a98](https://github.com/bustle/mobiledoc-kit/commit/6f18a98))
@@ -1159,7 +1073,6 @@
 
 
 
-<a name="0.3.7"></a>
 ## <small>0.3.7 (2015-08-25)</small>
 
 * 0.3.7 ([7d93666](https://github.com/bustle/mobiledoc-kit/commit/7d93666))
@@ -1169,7 +1082,6 @@
 
 
 
-<a name="0.3.6"></a>
 ## <small>0.3.6 (2015-08-25)</small>
 
 * 0.3.5 ([c8aa07e](https://github.com/bustle/mobiledoc-kit/commit/c8aa07e))
@@ -1182,7 +1094,6 @@
 
 
 
-<a name="0.3.4"></a>
 ## <small>0.3.4 (2015-08-18)</small>
 
 * 0.3.4 ([f48a326](https://github.com/bustle/mobiledoc-kit/commit/f48a326))
@@ -1190,7 +1101,6 @@
 
 
 
-<a name="0.3.3"></a>
 ## <small>0.3.3 (2015-08-18)</small>
 
 * 0.3.3 ([b572547](https://github.com/bustle/mobiledoc-kit/commit/b572547))
@@ -1214,7 +1124,6 @@
 
 
 
-<a name="0.3.2"></a>
 ## <small>0.3.2 (2015-08-12)</small>
 
 * 0.3.2 ([c6d544e](https://github.com/bustle/mobiledoc-kit/commit/c6d544e))
@@ -1224,7 +1133,6 @@
 
 
 
-<a name="0.3.1"></a>
 ## <small>0.3.1 (2015-08-11)</small>
 
 * 0.3.1 ([57aa456](https://github.com/bustle/mobiledoc-kit/commit/57aa456))
@@ -1239,7 +1147,6 @@
 
 
 
-<a name="0.3.0"></a>
 ## 0.3.0 (2015-08-11)
 
 * 0.3.0 ([059f4f3](https://github.com/bustle/mobiledoc-kit/commit/059f4f3))
@@ -1248,30 +1155,27 @@
 
 
 
-<a name="0.2.7"></a>
 ## <small>0.2.7 (2015-08-10)</small>
 
 * 0.2.7 ([b4efbef](https://github.com/bustle/mobiledoc-kit/commit/b4efbef))
-* Drop embed in favor of bustle cards ([237bf4a](https://github.com/bustle/mobiledoc-kit/commit/237bf4a))
-* Ensure multiple markup applications are rendered appropriately ([0687c83](https://github.com/bustle/mobiledoc-kit/commit/0687c83))
-
-
-
-<a name="0.2.6"></a>
-## <small>0.2.6 (2015-08-10)</small>
-
-* 0.2.6 ([63474c8](https://github.com/bustle/mobiledoc-kit/commit/63474c8))
 * Add objectAt to linked-list ([b13be70](https://github.com/bustle/mobiledoc-kit/commit/b13be70))
 * Add splice method to linked list ([6e12e70](https://github.com/bustle/mobiledoc-kit/commit/6e12e70))
 * Drop custom list accessors/methods ([7731668](https://github.com/bustle/mobiledoc-kit/commit/7731668))
+* Drop embed in favor of bustle cards ([237bf4a](https://github.com/bustle/mobiledoc-kit/commit/237bf4a))
+* Ensure multiple markup applications are rendered appropriately ([0687c83](https://github.com/bustle/mobiledoc-kit/commit/0687c83))
 * Port markers to linked list ([34945e8](https://github.com/bustle/mobiledoc-kit/commit/34945e8))
 * Port sections to a linked list ([8c6f343](https://github.com/bustle/mobiledoc-kit/commit/8c6f343))
 * takeRange -> readRange ([3503e5e](https://github.com/bustle/mobiledoc-kit/commit/3503e5e))
+
+
+
+## <small>0.2.6 (2015-08-10)</small>
+
+* 0.2.6 ([63474c8](https://github.com/bustle/mobiledoc-kit/commit/63474c8))
 * Use diff of prev/next marker's markups instead of assuming consistent order ([59b96ef](https://github.com/bustle/mobiledoc-kit/commit/59b96ef)), closes [#51](https://github.com/bustle/mobiledoc-kit/issues/51)
 
 
 
-<a name="0.2.5"></a>
 ## <small>0.2.5 (2015-08-10)</small>
 
 * 0.2.5 ([c9bc65c](https://github.com/bustle/mobiledoc-kit/commit/c9bc65c))
@@ -1287,7 +1191,6 @@
 
 
 
-<a name="0.2.4"></a>
 ## <small>0.2.4 (2015-08-07)</small>
 
 * 0.2.4 ([854dc54](https://github.com/bustle/mobiledoc-kit/commit/854dc54))
@@ -1314,7 +1217,6 @@
 
 
 
-<a name="0.2.3"></a>
 ## <small>0.2.3 (2015-07-31)</small>
 
 * 0.2.3 ([4acc28b](https://github.com/bustle/mobiledoc-kit/commit/4acc28b))
@@ -1324,7 +1226,6 @@
 
 
 
-<a name="0.2.2"></a>
 ## <small>0.2.2 (2015-07-31)</small>
 
 * 0.2.2 ([0cc1746](https://github.com/bustle/mobiledoc-kit/commit/0cc1746))
@@ -1338,7 +1239,6 @@
 
 
 
-<a name="0.2.1"></a>
 ## <small>0.2.1 (2015-07-29)</small>
 
 * 0.2.1 ([33d296a](https://github.com/bustle/mobiledoc-kit/commit/33d296a))
@@ -1347,7 +1247,6 @@
 
 
 
-<a name="0.2.0"></a>
 ## 0.2.0 (2015-07-29)
 
 * 0.2.0 ([14dec35](https://github.com/bustle/mobiledoc-kit/commit/14dec35))
