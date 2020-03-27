@@ -1,3 +1,12 @@
+## 0.13.0 (2020-03-27)
+
+* Correct CHANGELOG for 0.13.0-pre.1 🩸 ([2adc9be](https://github.com/bustle/mobiledoc-kit/commit/2adc9be))
+* Update README w/ correct path 🚣‍♀️ ([1425b87](https://github.com/bustle/mobiledoc-kit/commit/1425b87))
+* Update to latest conventional-changelog-cli 👺 ([2ee356b](https://github.com/bustle/mobiledoc-kit/commit/2ee356b))
+* Update website assets 🤸‍♀️ ([67e7bc4](https://github.com/bustle/mobiledoc-kit/commit/67e7bc4))
+
+
+
 ## 0.13.0-pre.1 (2020-03-22)
 
 * [WIP] Use Rollup 🍣 for build ([48f5689](https://github.com/bustle/mobiledoc-kit/commit/48f5689))
