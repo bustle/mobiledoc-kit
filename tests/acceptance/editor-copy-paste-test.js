@@ -123,6 +123,25 @@ test('paste plain text into an empty Mobiledoc', (assert) => {
   assert.hasElement('#editor p:contains(abc)', 'pastes the text');
 });
 
+test('willCopy callback called before copy', (assert) => {
+  const mobiledoc = Helpers.mobiledoc.build(
+    ({post, markupSection, marker}) => {
+    return post([markupSection('p', [marker('abc')])]);
+  });
+  editor = new Editor({mobiledoc});
+  editor.addCallback('willCopy', data => {
+    assert.deepEqual(data.mobiledoc, mobiledoc);
+    data.mobiledoc.sections[0][1] = 'blockquote';
+    console.log({ data })
+  });
+  editor.render(editorElement);
+
+  assert.hasElement('#editor p:contains(abc)', 'precond - has p');
+
+  Helpers.dom.selectText(editor, 'abc', editorElement);
+  Helpers.dom.triggerCopyEvent(editor);
+});
+
 test('can cut and then paste content', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {

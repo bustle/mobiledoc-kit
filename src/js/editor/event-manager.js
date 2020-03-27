@@ -229,6 +229,8 @@ export default class EventManager {
       mobiledoc: editor.serializePost(post, 'mobiledoc')
     };
 
+    editor.runCallbacks('willCopy', [data]);
+
     setClipboardData(event, data, window);
   }
 
