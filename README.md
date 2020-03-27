@@ -467,7 +467,7 @@ The demo website is hosted at
 [bustle.github.io/mobiledoc-kit/demo](https://bustle.github.io/mobiledoc-kit/demo).
 
 To preview the website, start the server and visit
-[http://localhost:4200/website/demo/](http://localhost:4200/website/demo/). The code for
+[http://localhost:4200/assets/demo/](http://localhost:4200/assets/demo/). The code for
 this website can be found in `assets/demo/`. Note that the development server
 does not rebuild jsdoc.
 
