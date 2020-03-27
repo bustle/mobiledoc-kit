@@ -2281,6 +2281,16 @@ function isListSectionTagName(tagName) {
   return tagName === 'ul' || tagName === 'ol';
 }
 
+function shrinkRange(range) {
+  const { head, tail } = range;
+
+  if (tail.offset === 0 && head.section !== tail.section) {
+    range.tail = new Position$1(tail.section.prev, tail.section.prev.length);
+  }
+
+  return range;
+}
+
 const CALLBACK_QUEUES = {
   BEFORE_COMPLETE: 'beforeComplete',
   COMPLETE: 'complete',
@@ -2294,7 +2304,6 @@ const EDIT_ACTIONS = {
   INSERT_TEXT: 1,
   DELETE: 2
 };
-
 
 /**
  * The PostEditor is used to modify a post. It should not be instantiated directly.
@@ -3052,7 +3061,7 @@ class PostEditor {
    * @public
    */
   toggleSection(sectionTagName, range=this._range) {
-    range = toRange(range);
+    range = shrinkRange(toRange(range));
 
     sectionTagName = normalizeTagName(sectionTagName);
     let { post } = this.editor;
@@ -3068,6 +3077,7 @@ class PostEditor {
     let sectionTransformations = [];
     post.walkMarkerableSections(range, section => {
       let changedSection = this.changeSectionTagName(section, tagName);
+
       sectionTransformations.push({
         from: section,
         to: changedSection
@@ -6425,7 +6435,7 @@ const SKIPPABLE_ELEMENT_TAG_NAMES = [
   'style', 'head', 'title', 'meta'
 ].map(normalizeTagName);
 
-const NEWLINES = /\n/g;
+const NEWLINES = /\s*\n\s*/g;
 function sanitize(text) {
   return text.replace(NEWLINES, ' ');
 }
@@ -6477,7 +6487,7 @@ class SectionParser {
       addSection: (section) => {
         // avoid creating empty paragraphs due to wrapper elements around
         // parser-plugin-handled elements
-        if (this.state.section.isMarkerable && !this.state.text && !this.state.section.text) {
+        if (this.state.section && this.state.section.isMarkerable && !this.state.section.text && !this.state.text) {
           this.state.section = null;
         } else {
           this._closeCurrentSection();
@@ -6487,6 +6497,13 @@ class SectionParser {
       addMarkerable: (marker) => {
         let { state } = this;
         let { section } = state;
+        // if the first element doesn't create it's own state and it's plugin
+        // handler uses `addMarkerable` we won't have a section yet
+        if (!section) {
+          state.text = '';
+          state.section = this.builder.createMarkupSection(normalizeTagName('p'));
+          section = state.section;
+        }
         assert(
           'Markerables can only be appended to markup sections and list item sections',
           section && section.isMarkerable
@@ -6530,6 +6547,13 @@ class SectionParser {
       let isMarkupSection = contains(VALID_MARKUP_SECTION_TAGNAMES, tagName);
       let isNestedListSection = isListSection && this.state.section.isListItem;
       let lastSection = this.sections[this.sections.length - 1];
+
+      // lists can continue after breaking out for a markup section,
+      // in that situation, start a new list using the same list type
+      if (isListItem && this.state.section.isMarkupSection) {
+        this._closeCurrentSection();
+        this._updateStateFromElement(node.parentElement);
+      }
 
       // we can hit a list item after parsing a nested list, when that happens
       // and the lists are of different types we need to make sure we switch
@@ -6643,6 +6667,10 @@ class SectionParser {
   }
 
   _updateStateFromElement(element) {
+    if (isCommentNode(element)) {
+      return;
+    }
+
     let { state } = this;
     state.section = this._createSectionFromElement(element);
     state.markups = this._markupsFromElement(element);
@@ -6745,12 +6773,23 @@ class SectionParser {
     let sectionType,
         tagName,
         inferredTagName = false;
+
     if (isTextNode(element)) {
       tagName = DEFAULT_TAG_NAME;
       sectionType = MARKUP_SECTION_TYPE;
       inferredTagName = true;
     } else {
       tagName = normalizeTagName(element.tagName);
+
+      // blockquote>p is valid html and should be treated as a blockquote section
+      // rather than a plain markup section
+      if (
+        tagName === 'p' &&
+        element.parentElement &&
+        normalizeTagName(element.parentElement.tagName) === 'blockquote'
+      ) {
+        tagName = 'blockquote';
+      }
 
       if (contains(VALID_LIST_SECTION_TAGNAMES, tagName)) {
         sectionType = LIST_SECTION_TYPE;
@@ -6769,8 +6808,11 @@ class SectionParser {
   }
 
   _createSectionFromElement(element) {
-    let { builder } = this;
+    if (isCommentNode(element)) {
+      return;
+    }
 
+    let { builder } = this;
     let section;
     let {tagName, sectionType, inferredTagName} =
       this._getSectionDetails(element);
@@ -6794,10 +6836,9 @@ class SectionParser {
   }
 
   _isSkippable(element) {
-    return isCommentNode(element) ||
-           (element.nodeType === NODE_TYPES.ELEMENT &&
-            contains(SKIPPABLE_ELEMENT_TAG_NAMES,
-                    normalizeTagName(element.tagName)));
+    return element.nodeType === NODE_TYPES.ELEMENT &&
+           contains(SKIPPABLE_ELEMENT_TAG_NAMES,
+                    normalizeTagName(element.tagName));
   }
 }
 
@@ -7779,6 +7820,8 @@ class Post {
   trimTo(range) {
     const post = this.builder.createPost();
     const { builder } = this;
+    const { head, tail } = range;
+    const tailNotSelected = tail.offset === 0 && head.section !== tail.section;
 
     let sectionParent = post,
         listParent = null;
@@ -7798,7 +7841,10 @@ class Post {
         } else {
           listParent = null;
           sectionParent = post;
-          newSection = builder.createMarkupSection(section.tagName);
+          const tagName = tailNotSelected && tail.section === section ?
+              'p' :
+              section.tagName;
+          newSection = builder.createMarkupSection(tagName);
         }
 
         let currentRange = range.trimTo(section);
@@ -7807,7 +7853,10 @@ class Post {
           m => newSection.markers.append(m)
         );
       } else {
-        newSection = section.clone();
+        newSection = tailNotSelected && tail.section === section ?
+            builder.createMarkupSection('p') :
+            section.clone();
+
         sectionParent = post;
       }
       if (sectionParent) {
@@ -11156,7 +11205,7 @@ class Editor {
         return this._parser.parse(dom);
       }
     } else {
-      return this.builder.createPost();
+      return this.builder.createPost([this.builder.createMarkupSection()]);
     }
   }
 
