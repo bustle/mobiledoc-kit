@@ -1,4 +1,4 @@
-import Tooltip, { DEFAULT_TOOLTIP } from '../views/tooltip';
+import Tooltip, { DEFAULT_TOOLTIP_PLUGIN } from '../views/tooltip';
 import PostEditor from './post';
 import ImageCard from '../cards/image';
 import { DIRECTION } from '../utils/key';
@@ -57,7 +57,7 @@ const defaults = {
   },
   mobiledoc: null,
   html: null,
-  tooltip: DEFAULT_TOOLTIP
+  tooltipPlugin: DEFAULT_TOOLTIP_PLUGIN
 };
 
 const CALLBACK_QUEUES = {

@@ -1996,9 +1996,9 @@ class Tooltip extends View {
 
   showLink(linkEl) {
     const { editor, element: tooltipEl } = this;
-    const { tooltip } = editor;
+    const { tooltipPlugin } = editor;
 
-    tooltip.renderLink(tooltipEl, linkEl, {
+    tooltipPlugin.renderLink(tooltipEl, linkEl, {
       editLink: () => {
         editLink(linkEl, editor);
         this.hide();
@@ -2049,15 +2049,15 @@ class Tooltip extends View {
   }
 }
 
-const DEFAULT_TOOLTIP = {
-  renderLink(tooltip, target, { editLink }) {
-    const { href } = target;
-    tooltip.innerHTML = `<a href="${href}" target="_blank">${href}</a>`;
+const DEFAULT_TOOLTIP_PLUGIN = {
+  renderLink(tooltipEl, linkEl, { editLink }) {
+    const { href } = linkEl;
+    tooltipEl.innerHTML = `<a href="${href}" target="_blank">${href}</a>`;
     const button = document.createElement('button');
     button.classList.add('__mobiledoc-tooltip__edit-link');
-    button.innerText = '✎';
+    button.innerText = 'Edit Link';
     button.addEventListener('click', editLink);
-    tooltip.append(button);
+    tooltipEl.append(button);
   }
 };
 
@@ -11128,7 +11128,7 @@ const defaults = {
   },
   mobiledoc: null,
   html: null,
-  tooltip: DEFAULT_TOOLTIP
+  tooltipPlugin: DEFAULT_TOOLTIP_PLUGIN
 };
 
 const CALLBACK_QUEUES$1 = {
