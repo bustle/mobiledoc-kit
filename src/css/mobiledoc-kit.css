@@ -151,9 +151,6 @@
 }
 
 .__mobiledoc-tooltip__edit-link {
-  border: none;
-  border-radius: 5px;
-  -webkit-appearance: none;
   margin-left: 5px;
   cursor: pointer;
 }
