@@ -109,6 +109,7 @@ editor.render(element);
 * `unknownAtomHandler` - [function] This will be invoked by the editor-renderer
   whenever it encounters an unknown atom
 * `parserPlugins` - [array] See [DOM Parsing Hooks](https://github.com/bustle/mobiledoc-kit#dom-parsing-hooks)
+* `tooltipPlugin` - [object] Optional plugin for customizing tooltip appearance
 
 The editor leverages unicode characters, so HTML documents must opt in to
 UTF8. For example this can be done by adding the following to an HTML
@@ -405,6 +406,36 @@ Parser hooks are called with three arguments:
 Note that you *must* call `nodeFinished` to stop a DOM node from being
 parsed by the next plugin or the default parser.
 
+### Tooltip Plugins
+
+Developers can customize the appearance of tooltips (e.g. those shown when a user hovers over a link element) by specificying a tooltip plugin. A tooltip plugin is an object that implements the `renderLink` method.
+
+The `renderLink` method is called with three arguments:
+
+* `tooltip` - The DOM element of the tooltip UI.
+* `link` - The DOM element (HTMLAnchorElement) of the link to display a tooltip for.
+* `actions` - An object containing functions that can be called in response to user interaction.
+  * `editLink` - A function that, when called, prompts the user to edit the `href` of the link element in question.
+
+The `renderLink` method is responsible for populating the passed `tooltip` element with the correct content to display to the user based on the link in question. This allows Mobiledoc users to, for example, provide localized tooltip text via their system of choice.
+
+```js
+const MyTooltip = {
+  renderLink(tooltip, link, { editLink }) {
+    tooltip.innerHTML = `${i18n.translate('URL: ')} ${link.href}`;
+    const button = document.createElement('button');
+    button.innerText = i18n.translate('Edit');
+    button.addEventListener('click', editLink);
+    tooltip.append(button);
+  }
+}
+const editor = new Mobiledoc.Editor({
+  tooltipPlugin: MyTooltip
+});
+const element = document.querySelector('#editor');
+editor.render(element);
+```
+
 ## Caveats
 
 ### Mobiledoc Kit and the Grammarly extension
@@ -438,7 +469,7 @@ Tests in CI are run at Travis via Saucelabs (see the `test:ci` yarn script).
 To run the demo site locally:
 
  * `yarn start`
- * `open http://localhost:4200/website/demo`
+ * `open http://localhost:4200/website/demo/`
 
 The assets for the demo are in `assets/demo`.
 

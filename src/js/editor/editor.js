@@ -1,4 +1,4 @@
-import Tooltip from '../views/tooltip';
+import Tooltip, { DEFAULT_TOOLTIP_PLUGIN } from '../views/tooltip';
 import PostEditor from './post';
 import ImageCard from '../cards/image';
 import { DIRECTION } from '../utils/key';
@@ -56,7 +56,8 @@ const defaults = {
     throw new MobiledocError(`Unknown atom encountered: ${env.name}`);
   },
   mobiledoc: null,
-  html: null
+  html: null,
+  tooltipPlugin: DEFAULT_TOOLTIP_PLUGIN
 };
 
 const CALLBACK_QUEUES = {
@@ -272,7 +273,8 @@ class Editor {
   _addTooltip() {
     this.addView(new Tooltip({
       rootElement: this.element,
-      showForTag: 'a'
+      showForTag: 'a',
+      editor: this
     }));
   }
 

@@ -149,3 +149,8 @@
 .__mobiledoc-tooltip a:hover {
   text-decoration: underline;
 }
+
+.__mobiledoc-tooltip__edit-link {
+  margin-left: 5px;
+  cursor: pointer;
+}

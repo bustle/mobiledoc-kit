@@ -324,7 +324,7 @@ function positionElementToRect(element, rect, topOffset, leftOffset) {
   topOffset = topOffset || 0;
   leftOffset = leftOffset || 0;
   left = round(rect.left - relativeOffset.left - leftOffset);
-  top  = round(rect.top  - relativeOffset.top  - topOffset);
+  top  = round(rect.top  + rect.height - relativeOffset.top  - topOffset);
   style.left = left + 'px';
   style.top  = top + 'px';
   return { left: left, top: top };
@@ -337,7 +337,7 @@ function positionElementHorizontallyCenteredToRect(element, rect, topOffset) {
 
 function positionElementCenteredBelow(element, belowElement) {
   var elementMargin = getElementComputedStyleNumericProp(element, 'marginTop');
-  return positionElementHorizontallyCenteredToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
+  return positionElementHorizontallyCenteredToRect(element, belowElement.getBoundingClientRect(), -elementMargin);
 }
 
 function setData(element, name, value) {
@@ -361,48 +361,6 @@ function whenElementIsNotInDOM(element, callback) {
   };
   observerFn();
   return { cancel: () => isCanceled = true };
-}
-
-const DELAY = 200;
-
-class Tooltip extends View {
-  constructor(options) {
-    let { rootElement } = options;
-    let timeout;
-    options.classNames = ['__mobiledoc-tooltip'];
-    super(options);
-
-    this.addEventListener(rootElement, 'mouseover', (e) => {
-      let target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
-      if (target && target.isContentEditable) {
-        timeout = setTimeout(() => {
-          this.showLink(target.href, target);
-        }, DELAY);
-      }
-    });
-    
-    this.addEventListener(rootElement, 'mouseout', (e) => {
-      clearTimeout(timeout);
-      if (this.elementObserver) { this.elementObserver.cancel(); }
-      let toElement = e.toElement || e.relatedTarget;
-      if (toElement && toElement.className !== this.element.className) {
-        this.hide();
-      }
-    });
-  }
-
-  showMessage(message, element) {
-    let tooltipElement = this.element;
-    tooltipElement.innerHTML = message;
-    this.show();
-    positionElementCenteredBelow(tooltipElement, element);
-  }
-
-  showLink(link, element) {
-    let message = `<a href="${link}" target="_blank">${link}</a>`;
-    this.showMessage(message, element);
-    this.elementObserver = whenElementIsNotInDOM(element, () => this.hide());
-  }
 }
 
 var errorProps = [
@@ -1920,6 +1878,188 @@ BlankPosition = class BlankPosition extends Position {
 };
 
 var Position$1 = Position;
+
+/**
+ * @module UI
+ */
+
+let defaultShowPrompt = (message, defaultValue, callback) => callback(window.prompt(message, defaultValue));
+
+/**
+ * @callback promptCallback
+ * @param {String} url The URL to pass back to the editor for linking
+ *        to the selected text.
+ */
+
+/**
+ * @callback showPrompt
+ * @param {String} message The text of the prompt.
+ * @param {String} defaultValue The initial URL to display in the prompt.
+ * @param {module:UI~promptCallback} callback Once your handler has accepted a URL,
+ *        it should pass it to `callback` so that the editor may link the
+ *        selected text.
+ */
+
+/**
+ * Exposes the core behavior for linking and unlinking text, and allows for
+ * customization of the URL input handler.
+ * @param {Editor} editor An editor instance to operate on. If a range is selected,
+ *        either prompt for a URL and add a link or un-link the
+ *        currently linked text.
+ * @param {module:UI~showPrompt} [showPrompt] An optional custom input handler. Defaults
+ *        to using `window.prompt`.
+ * @example
+ * let myPrompt = (message, defaultURL, promptCallback) => {
+ *   let url = window.prompt("Overriding the defaults", "http://placekitten.com");
+ *   promptCallback(url);
+ * };
+ *
+ * editor.registerKeyCommand({
+ *   str: "META+K",
+ *   run(editor) {
+ *     toggleLink(editor, myPrompt);
+ *   }
+ * });
+ * @public
+ */
+function toggleLink(editor, showPrompt=defaultShowPrompt) {
+  if (editor.range.isCollapsed) {
+    return;
+  }
+
+  let selectedText = editor.cursor.selectedText();
+  let defaultUrl = '';
+  if (selectedText.indexOf('http') !== -1) { defaultUrl = selectedText; }
+
+  let {range} = editor;
+  let hasLink = editor.detectMarkupInRange(range, 'a');
+
+  if (hasLink) {
+    editor.toggleMarkup('a');
+  } else {
+    showPrompt('Enter a URL', defaultUrl, url => {
+      if (!url) { return; }
+
+      editor.toggleMarkup('a', {href: url});
+    });
+  }
+}
+
+/**
+ * Exposes the core behavior for editing an existing link, and allows for
+ * customization of the URL input handler.
+ * @param {HTMLAnchorElement} target The anchor (<a>) DOM element whose URL should be edited.
+ * @param {Editor} editor An editor instance to operate on. If a range is selected,
+ *        either prompt for a URL and add a link or un-link the
+ *        currently linked text.
+ * @param {module:UI~showPrompt} [showPrompt] An optional custom input handler. Defaults
+ *        to using `window.prompt`.
+ *
+ * @public
+ */
+function editLink(target, editor, showPrompt=defaultShowPrompt) {
+  showPrompt('Enter a URL', target.href, url => {
+    if (!url) { return; }
+
+    const position = Position$1.fromNode(editor._renderTree, target.firstChild);
+    const range = new Range(position, new Position$1(position.section, position.offset + target.textContent.length));
+
+    editor.run(post => {
+      let markup = editor.builder.createMarkup('a', {href: url});
+
+      // This is the only way to "update" a markup with new attributes in the
+      // current API.
+      post.toggleMarkup(markup, range);
+      post.toggleMarkup(markup, range);
+    });
+  });
+}
+
+var ui = {
+  toggleLink,
+  editLink
+};
+
+const SHOW_DELAY = 200;
+const HIDE_DELAY = 1000;
+
+class Tooltip extends View {
+  constructor(options) {
+    options.classNames = ['__mobiledoc-tooltip'];
+    super(options);
+
+    this.rootElement = options.rootElement;
+    this.editor = options.editor;
+
+    this.addListeners(options);
+  }
+
+  showLink(linkEl) {
+    const { editor, element: tooltipEl } = this;
+    const { tooltipPlugin } = editor;
+
+    tooltipPlugin.renderLink(tooltipEl, linkEl, {
+      editLink: () => {
+        editLink(linkEl, editor);
+        this.hide();
+      }
+    });
+
+    this.show();
+    positionElementCenteredBelow(this.element, linkEl);
+
+    this.elementObserver = whenElementIsNotInDOM(linkEl, () => this.hide());
+  }
+
+  addListeners(options) {
+    const { rootElement, element: tooltipElement } = this;
+    let showTimeout, hideTimeout;
+
+    const scheduleHide = () => {
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        this.hide();
+      }, HIDE_DELAY);
+    };
+
+    this.addEventListener(tooltipElement, 'mouseenter', e => {
+      clearTimeout(hideTimeout);
+    });
+
+    this.addEventListener(tooltipElement, 'mouseleave', e => {
+      scheduleHide();
+    });
+
+    this.addEventListener(rootElement, 'mouseover', (e) => {
+      let target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement);
+
+      if (target && target.isContentEditable) {
+        clearTimeout(hideTimeout);
+        showTimeout = setTimeout(() => {
+          this.showLink(target);
+        }, SHOW_DELAY);
+      }
+    });
+
+    this.addEventListener(rootElement, 'mouseout', (e) => {
+      clearTimeout(showTimeout);
+      if (this.elementObserver) { this.elementObserver.cancel(); }
+      scheduleHide();
+    });
+  }
+}
+
+const DEFAULT_TOOLTIP_PLUGIN = {
+  renderLink(tooltipEl, linkEl, { editLink }) {
+    const { href } = linkEl;
+    tooltipEl.innerHTML = `<a href="${href}" target="_blank">${href}</a>`;
+    const button = document.createElement('button');
+    button.classList.add('__mobiledoc-tooltip__edit-link');
+    button.innerText = 'Edit Link';
+    button.addEventListener('click', editLink);
+    tooltipEl.append(button);
+  }
+};
 
 class LifecycleCallbacks {
   constructor(queueNames=[]) {
@@ -8188,77 +8328,6 @@ var Browser = {
   }
 };
 
-/**
- * @module UI
- */
-
-/**
- * @callback promptCallback
- * @param {String} url The URL to pass back to the editor for linking
- *        to the selected text.
- */
-
-/**
- * @callback showPrompt
- * @param {String} message The text of the prompt.
- * @param {String} defaultValue The initial URL to display in the prompt.
- * @param {module:UI~promptCallback} callback Once your handler has accepted a URL,
- *        it should pass it to `callback` so that the editor may link the
- *        selected text.
- */
-
-/**
- * Exposes the core behavior for linking and unlinking text, and allows for
- * customization of the URL input handler.
- * @param {Editor} editor An editor instance to operate on. If a range is selected,
- *        either prompt for a URL and add a link or un-link the
- *        currently linked text.
- * @param {module:UI~showPrompt} [showPrompt] An optional custom input handler. Defaults
- *        to using `window.prompt`.
- * @example
- * let myPrompt = (message, defaultURL, promptCallback) => {
- *   let url = window.prompt("Overriding the defaults", "http://placekitten.com");
- *   promptCallback(url);
- * };
- *
- * editor.registerKeyCommand({
- *   str: "META+K",
- *   run(editor) {
- *     toggleLink(editor, myPrompt);
- *   }
- * });
- * @public
- */
-
-let defaultShowPrompt = (message, defaultValue, callback) => callback(window.prompt(message, defaultValue));
-
-function toggleLink(editor, showPrompt=defaultShowPrompt) {
-  if (editor.range.isCollapsed) {
-    return;
-  }
-
-  let selectedText = editor.cursor.selectedText();
-  let defaultUrl = '';
-  if (selectedText.indexOf('http') !== -1) { defaultUrl = selectedText; }
-
-  let {range} = editor;
-  let hasLink = editor.detectMarkupInRange(range, 'a');
-
-  if (hasLink) {
-    editor.toggleMarkup('a');
-  } else {
-    showPrompt('Enter a URL', defaultUrl, url => {
-      if (!url) { return; }
-
-      editor.toggleMarkup('a', {href: url});
-    });
-  }
-}
-
-var ui = {
-  toggleLink
-};
-
 function selectAll(editor) {
   let { post } = editor;
   editor.selectRange(post.toRange());
@@ -11058,7 +11127,8 @@ const defaults = {
     throw new MobiledocError(`Unknown atom encountered: ${env.name}`);
   },
   mobiledoc: null,
-  html: null
+  html: null,
+  tooltipPlugin: DEFAULT_TOOLTIP_PLUGIN
 };
 
 const CALLBACK_QUEUES$1 = {
@@ -11274,7 +11344,8 @@ class Editor {
   _addTooltip() {
     this.addView(new Tooltip({
       rootElement: this.element,
-      showForTag: 'a'
+      showForTag: 'a',
+      editor: this
     }));
   }
 
