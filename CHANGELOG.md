@@ -1,9 +1,24 @@
+## <small>0.13.1-pre.0 (2020-05-18)</small>
+
+* Add `del` tag as valid markup ([610eb75](https://github.com/bustle/mobiledoc-kit/commit/610eb75))
+* Add compiled website assets to gitignore 🎅 ([19181ad](https://github.com/bustle/mobiledoc-kit/commit/19181ad))
+* Adds link editing 🦜 ([093305a](https://github.com/bustle/mobiledoc-kit/commit/093305a))
+* built website from 0b4496ba250f0e3d169ab76ff6b5c61ae5fa72d2 ([43a2f34](https://github.com/bustle/mobiledoc-kit/commit/43a2f34))
+* built website from e91884741ed5f63b372485546d5dae3ffd5b5bf9 ([0b4496b](https://github.com/bustle/mobiledoc-kit/commit/0b4496b))
+* Cleanup + test + documentation 👣👣 ([e918847](https://github.com/bustle/mobiledoc-kit/commit/e918847))
+* Fix positionElementCenteredBelow to center tooltip correctly 🧛‍♂️  ([8c914a5](https://github.com/bustle/mobiledoc-kit/commit/8c914a5))
+* Fix/build docs 🍔 ([41a7f92](https://github.com/bustle/mobiledoc-kit/commit/41a7f92))
+* Remove extra styles 🧊 ([2ab79f3](https://github.com/bustle/mobiledoc-kit/commit/2ab79f3))
+
+
+
 ## 0.13.0 (2020-03-27)
 
 * Correct CHANGELOG for 0.13.0-pre.1 🩸 ([2adc9be](https://github.com/bustle/mobiledoc-kit/commit/2adc9be))
 * Update README w/ correct path 🚣‍♀️ ([1425b87](https://github.com/bustle/mobiledoc-kit/commit/1425b87))
 * Update to latest conventional-changelog-cli 👺 ([2ee356b](https://github.com/bustle/mobiledoc-kit/commit/2ee356b))
 * Update website assets 🤸‍♀️ ([67e7bc4](https://github.com/bustle/mobiledoc-kit/commit/67e7bc4))
+* v0.13.0 ([529e66d](https://github.com/bustle/mobiledoc-kit/commit/529e66d))
 
 
 
