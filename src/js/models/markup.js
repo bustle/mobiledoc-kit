@@ -10,6 +10,7 @@ export const VALID_MARKUP_TAGNAMES = [
   'em',
   'i',
   's',   // strikethrough
+  'del', // deleted text (also strikethrough)
   'strong',
   'sub', // subscript
   'sup', // superscript
