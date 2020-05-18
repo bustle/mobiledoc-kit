@@ -324,7 +324,7 @@ function positionElementToRect(element, rect, topOffset, leftOffset) {
   topOffset = topOffset || 0;
   leftOffset = leftOffset || 0;
   left = round(rect.left - relativeOffset.left - leftOffset);
-  top  = round(rect.top  - relativeOffset.top  - topOffset);
+  top  = round(rect.top  + rect.height - relativeOffset.top  - topOffset);
   style.left = left + 'px';
   style.top  = top + 'px';
   return { left: left, top: top };
@@ -337,7 +337,7 @@ function positionElementHorizontallyCenteredToRect(element, rect, topOffset) {
 
 function positionElementCenteredBelow(element, belowElement) {
   var elementMargin = getElementComputedStyleNumericProp(element, 'marginTop');
-  return positionElementHorizontallyCenteredToRect(element, belowElement.getBoundingClientRect(), -element.offsetHeight - elementMargin);
+  return positionElementHorizontallyCenteredToRect(element, belowElement.getBoundingClientRect(), -elementMargin);
 }
 
 function setData(element, name, value) {
