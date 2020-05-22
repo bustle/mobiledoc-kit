@@ -1,3 +1,12 @@
+## <small>0.13.1-pre.1 (2020-05-22)</small>
+
+* Adds a `willCopy` hook to the editor 🧛‍♀️ ([f5f0cb8](https://github.com/bustle/mobiledoc-kit/commit/f5f0cb8))
+* Adds documentation for `willCopy` 🎀 ([be4324e](https://github.com/bustle/mobiledoc-kit/commit/be4324e))
+* Shorten hide timer for tooltip 🍭 ([c2fd820](https://github.com/bustle/mobiledoc-kit/commit/c2fd820))
+* Upgrade depz 🐿 ([56650a0](https://github.com/bustle/mobiledoc-kit/commit/56650a0))
+
+
+
 ## <small>0.13.1-pre.0 (2020-05-18)</small>
 
 * Add `del` tag as valid markup ([610eb75](https://github.com/bustle/mobiledoc-kit/commit/610eb75))
@@ -9,6 +18,7 @@
 * Fix positionElementCenteredBelow to center tooltip correctly 🧛‍♂️  ([8c914a5](https://github.com/bustle/mobiledoc-kit/commit/8c914a5))
 * Fix/build docs 🍔 ([41a7f92](https://github.com/bustle/mobiledoc-kit/commit/41a7f92))
 * Remove extra styles 🧊 ([2ab79f3](https://github.com/bustle/mobiledoc-kit/commit/2ab79f3))
+* v0.13.1-pre.0 ([e1d066c](https://github.com/bustle/mobiledoc-kit/commit/e1d066c))
 
 
 
