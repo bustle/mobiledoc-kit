@@ -70,7 +70,8 @@ const CALLBACK_QUEUES = {
   CURSOR_DID_CHANGE: 'cursorDidChange',
   DID_REPARSE: 'didReparse',
   POST_DID_CHANGE: 'postDidChange',
-  INPUT_MODE_DID_CHANGE: 'inputModeDidChange'
+  INPUT_MODE_DID_CHANGE: 'inputModeDidChange',
+  WILL_COPY: 'willCopy'
 };
 
 /**
@@ -810,6 +811,10 @@ class Editor {
    */
   didRender(callback) {
     this.addCallback(CALLBACK_QUEUES.DID_RENDER, callback);
+  }
+
+  willCopy(callback) {
+    this.addCallback(CALLBACK_QUEUES.WILL_COPY, callback);
   }
 
   /**

@@ -225,11 +225,14 @@ The available lifecycle hooks are:
   movement or clicking in the document.
 * `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))
 * `editor.inputModeDidChange()` - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with `Editor#activeMarkups`, `Editor#activeSections`, and `Editor#activeSectionAttributes` to implement a custom toolbar.
-* `editor.beforeToggleMarkup(({markup, range, willAdd} => {...})` - Register a
+* `editor.beforeToggleMarkup(({markup, range, willAdd}) => {...})` - Register a
   callback that will be called before `editor#toggleMarkup` is applied. If any
   callback returns literal `false`, the toggling of markup will be canceled.
   (Toggling markup done via the postEditor, e.g. `editor.run(postEditor =>
   postEditor.toggleMarkup(...))` will skip this callback.
+* `editor.willCopy(({html, text, mobiledoc}) => {...})` - Called before the
+  serialized versions of the selected markup is copied to the system
+  pasteboard.
 
 For more details on the lifecycle hooks, see the [Editor documentation](https://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html).
 
