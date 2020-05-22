@@ -4,11 +4,10 @@ import {
   getEventTargetMatchingTag,
   whenElementIsNotInDOM
 } from '../utils/element-utils';
-import Position from '../utils/cursor/position';
 import { editLink } from '../editor/ui';
 
 const SHOW_DELAY = 200;
-const HIDE_DELAY = 1000;
+const HIDE_DELAY = 600;
 
 export default class Tooltip extends View {
   constructor(options) {
