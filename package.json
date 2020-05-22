@@ -51,6 +51,7 @@
     "@rollup/plugin-alias": "^3.1.0",
     "@rollup/plugin-commonjs": "^11.1.0",
     "@rollup/plugin-node-resolve": "^7.1.3",
+    "@rollup/plugin-typescript": "^4.1.2",
     "conventional-changelog-cli": "^2.0.34",
     "eslint": "^7.1.0",
     "eslint-config-prettier": "^6.11.0",
@@ -63,7 +64,9 @@
     "rollup-plugin-glob-import": "^0.4.5",
     "rollup-plugin-serve": "^1.0.1",
     "saucie": "^3.3.3",
-    "testem": "^3.1.0"
+    "testem": "^3.1.0",
+    "tslib": "^2.0.0",
+    "typescript": "^3.9.3"
   },
   "prettier": {
     "arrowParens": "avoid",

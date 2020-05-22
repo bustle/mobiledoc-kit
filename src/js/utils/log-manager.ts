@@ -1,5 +1,8 @@
 class Logger {
-  constructor(type, manager) {
+  type: string
+  manager: LogManager
+
+  constructor(type: string, manager: LogManager) {
     this.type = type
     this.manager = manager
   }
@@ -8,7 +11,7 @@ class Logger {
     return this.manager.isEnabled(this.type)
   }
 
-  log(...args) {
+  log(...args: unknown[]) {
     args.unshift(`[${this.type}]`)
     if (this.isEnabled()) {
       window.console.log(...args)
@@ -16,13 +19,16 @@ class Logger {
   }
 }
 
-class LogManager {
+export default class LogManager {
+  enabledTypes: string[]
+  allEnabled: boolean
+
   constructor() {
     this.enabledTypes = []
     this.allEnabled = false
   }
 
-  for(type) {
+  for(type: string) {
     return new Logger(type, this)
   }
 
@@ -30,7 +36,7 @@ class LogManager {
     this.allEnabled = true
   }
 
-  enableTypes(types) {
+  enableTypes(types: []) {
     this.enabledTypes = this.enabledTypes.concat(types)
   }
 
@@ -39,9 +45,7 @@ class LogManager {
     this.allEnabled = false
   }
 
-  isEnabled(type) {
+  isEnabled(type: string) {
     return this.allEnabled || this.enabledTypes.indexOf(type) !== -1
   }
 }
-
-export default LogManager

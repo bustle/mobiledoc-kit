@@ -5,12 +5,13 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import serve from 'rollup-plugin-serve';
 import copy from 'rollup-plugin-copy';
+import typescript from '@rollup/plugin-typescript';
 
 export default args => [
   {
     input: 'src/js/index.js',
     plugins: [
-      resolve(),
+      resolve({ extensions: ['.js', '.ts'] }),
       alias({
         entries: [
           {
@@ -18,7 +19,8 @@ export default args => [
             replacement: path.join(__dirname, 'src/js')
           }
         ]
-      })
+      }),
+      typescript()
     ],
     output: {
       file: 'dist/mobiledoc.js',
@@ -26,29 +28,30 @@ export default args => [
       sourcemap: true
     }
   },
-  {
-    input: 'src/js/index.js',
-    plugins: [
-      resolve(),
-      alias({
-        entries: [
-          {
-            find: 'mobiledoc-kit',
-            replacement: path.join(__dirname, 'src/js')
-          }
-        ]
-      })
-    ],
-    output: {
-      file: 'dist/mobiledoc.cjs',
-      format: 'cjs',
-      sourcemap: true
-    }
-  },
+  // {
+  //   input: 'src/js/index.js',
+  //   plugins: [
+  //     resolve(),
+  //     alias({
+  //       entries: [
+  //         {
+  //           find: 'mobiledoc-kit',
+  //           replacement: path.join(__dirname, 'src/js')
+  //         }
+  //       ]
+  //     }),
+  //     typescript()
+  //   ],
+  //   output: {
+  //     file: 'dist/mobiledoc.cjs',
+  //     format: 'cjs',
+  //     sourcemap: true
+  //   }
+  // },
   {
     input: 'tests/index.js',
     plugins: [
-      resolve(),
+      resolve({ extensions: ['.js', '.ts'] }),
       commonjs(),
       alias({
         entries: [
@@ -58,6 +61,7 @@ export default args => [
           }
         ]
       }),
+      typescript(),
       globImport(),
       copy({
         targets: [
