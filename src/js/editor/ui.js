@@ -2,10 +2,10 @@
  * @module UI
  */
 
-import Position from '../utils/cursor/position';
-import Range from '../utils/cursor/range';
+import Position from '../utils/cursor/position'
+import Range from '../utils/cursor/range'
 
-let defaultShowPrompt = (message, defaultValue, callback) => callback(window.prompt(message, defaultValue));
+let defaultShowPrompt = (message, defaultValue, callback) => callback(window.prompt(message, defaultValue))
 
 /**
  * @callback promptCallback
@@ -44,26 +44,30 @@ let defaultShowPrompt = (message, defaultValue, callback) => callback(window.pro
  * });
  * @public
  */
-export function toggleLink(editor, showPrompt=defaultShowPrompt) {
+export function toggleLink(editor, showPrompt = defaultShowPrompt) {
   if (editor.range.isCollapsed) {
-    return;
+    return
   }
 
-  let selectedText = editor.cursor.selectedText();
-  let defaultUrl = '';
-  if (selectedText.indexOf('http') !== -1) { defaultUrl = selectedText; }
+  let selectedText = editor.cursor.selectedText()
+  let defaultUrl = ''
+  if (selectedText.indexOf('http') !== -1) {
+    defaultUrl = selectedText
+  }
 
-  let {range} = editor;
-  let hasLink = editor.detectMarkupInRange(range, 'a');
+  let { range } = editor
+  let hasLink = editor.detectMarkupInRange(range, 'a')
 
   if (hasLink) {
-    editor.toggleMarkup('a');
+    editor.toggleMarkup('a')
   } else {
     showPrompt('Enter a URL', defaultUrl, url => {
-      if (!url) { return; }
+      if (!url) {
+        return
+      }
 
-      editor.toggleMarkup('a', {href: url});
-    });
+      editor.toggleMarkup('a', { href: url })
+    })
   }
 }
 
@@ -79,25 +83,27 @@ export function toggleLink(editor, showPrompt=defaultShowPrompt) {
  *
  * @public
  */
-export function editLink(target, editor, showPrompt=defaultShowPrompt) {
+export function editLink(target, editor, showPrompt = defaultShowPrompt) {
   showPrompt('Enter a URL', target.href, url => {
-    if (!url) { return; }
+    if (!url) {
+      return
+    }
 
-    const position = Position.fromNode(editor._renderTree, target.firstChild);
-    const range = new Range(position, new Position(position.section, position.offset + target.textContent.length));
+    const position = Position.fromNode(editor._renderTree, target.firstChild)
+    const range = new Range(position, new Position(position.section, position.offset + target.textContent.length))
 
     editor.run(post => {
-      let markup = editor.builder.createMarkup('a', {href: url});
+      let markup = editor.builder.createMarkup('a', { href: url })
 
       // This is the only way to "update" a markup with new attributes in the
       // current API.
-      post.toggleMarkup(markup, range);
-      post.toggleMarkup(markup, range);
-    });
-  });
+      post.toggleMarkup(markup, range)
+      post.toggleMarkup(markup, range)
+    })
+  })
 }
 
 export default {
   toggleLink,
-  editLink
-};
+  editLink,
+}

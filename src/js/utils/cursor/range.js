@@ -1,6 +1,6 @@
-import Position from './position';
-import { DIRECTION } from '../key';
-import assert from 'mobiledoc-kit/utils/assert';
+import Position from './position'
+import { DIRECTION } from '../key'
+import assert from 'mobiledoc-kit/utils/assert'
 
 /**
  * A logical range of a {@link Post}.
@@ -15,15 +15,15 @@ class Range {
    * @return {Range}
    * @private
    */
-  constructor(head, tail=head, direction=null) {
+  constructor(head, tail = head, direction = null) {
     /** @property {Position} head */
-    this.head = head;
+    this.head = head
 
     /** @property {Position} tail */
-    this.tail = tail;
+    this.tail = tail
 
     /** @property {Direction} direction */
-    this.direction = direction;
+    this.direction = direction
   }
 
   /**
@@ -36,16 +36,12 @@ class Range {
    * @param {Direction} [direction=null]
    * @return {Range}
    */
-  static create(headSection, headOffset, tailSection=headSection, tailOffset=headOffset, direction=null) {
-    return new Range(
-      new Position(headSection, headOffset),
-      new Position(tailSection, tailOffset),
-      direction
-    );
+  static create(headSection, headOffset, tailSection = headSection, tailOffset = headOffset, direction = null) {
+    return new Range(new Position(headSection, headOffset), new Position(tailSection, tailOffset), direction)
   }
 
   static blankRange() {
-    return new Range(Position.blankPosition(), Position.blankPosition());
+    return new Range(Position.blankPosition(), Position.blankPosition())
   }
 
   /**
@@ -59,14 +55,12 @@ class Range {
    * @private
    */
   trimTo(section) {
-    const length = section.length;
+    const length = section.length
 
-    let headOffset = section === this.head.section ?
-      Math.min(this.head.offset, length) : 0;
-    let tailOffset = section === this.tail.section ?
-      Math.min(this.tail.offset, length) : length;
+    let headOffset = section === this.head.section ? Math.min(this.head.offset, length) : 0
+    let tailOffset = section === this.tail.section ? Math.min(this.tail.offset, length) : length
 
-    return Range.create(section, headOffset, section, tailOffset);
+    return Range.create(section, headOffset, section, tailOffset)
   }
 
   /**
@@ -79,19 +73,21 @@ class Range {
    * @public
    */
   extend(units) {
-    assert(`Must pass integer to Range#extend`, typeof units === 'number');
+    assert(`Must pass integer to Range#extend`, typeof units === 'number')
 
-    if (units === 0) { return this; }
+    if (units === 0) {
+      return this
+    }
 
-    let { head, tail, direction: currentDirection } = this;
+    let { head, tail, direction: currentDirection } = this
     switch (currentDirection) {
       case DIRECTION.FORWARD:
-        return new Range(head, tail.move(units), currentDirection);
+        return new Range(head, tail.move(units), currentDirection)
       case DIRECTION.BACKWARD:
-        return new Range(head.move(units), tail, currentDirection);
+        return new Range(head.move(units), tail, currentDirection)
       default: {
-        let newDirection = units > 0 ? DIRECTION.FORWARD : DIRECTION.BACKWARD;
-        return new Range(head, tail, newDirection).extend(units);
+        let newDirection = units > 0 ? DIRECTION.FORWARD : DIRECTION.BACKWARD
+        return new Range(head, tail, newDirection).extend(units)
       }
     }
   }
@@ -106,15 +102,17 @@ class Range {
    * @public
    */
   move(direction) {
-    assert(`Must pass DIRECTION.FORWARD (${DIRECTION.FORWARD}) or DIRECTION.BACKWARD (${DIRECTION.BACKWARD}) to Range#move`,
-           direction === DIRECTION.FORWARD || direction === DIRECTION.BACKWARD);
+    assert(
+      `Must pass DIRECTION.FORWARD (${DIRECTION.FORWARD}) or DIRECTION.BACKWARD (${DIRECTION.BACKWARD}) to Range#move`,
+      direction === DIRECTION.FORWARD || direction === DIRECTION.BACKWARD
+    )
 
-    let { focusedPosition, isCollapsed } = this;
+    let { focusedPosition, isCollapsed } = this
 
     if (isCollapsed) {
-      return new Range(focusedPosition.move(direction));
+      return new Range(focusedPosition.move(direction))
     } else {
-      return this._collapse(direction);
+      return this._collapse(direction)
     }
   }
 
@@ -127,85 +125,81 @@ class Range {
    * @public
    */
   expandByMarker(detectMarker) {
-    let {
-      head,
-      tail,
-      direction
-    } = this;
-    let {section: headSection} = head;
+    let { head, tail, direction } = this
+    let { section: headSection } = head
     if (headSection !== tail.section) {
-      throw new Error('#expandByMarker does not work across sections. Perhaps you should confirm the range is collapsed');
+      throw new Error(
+        '#expandByMarker does not work across sections. Perhaps you should confirm the range is collapsed'
+      )
     }
 
     let firstNotMatchingDetect = i => {
-      return !detectMarker(i);
-    };
+      return !detectMarker(i)
+    }
 
-    let headMarker = headSection.markers.detect(firstNotMatchingDetect, head.marker, true);
+    let headMarker = headSection.markers.detect(firstNotMatchingDetect, head.marker, true)
     if (!headMarker && detectMarker(headSection.markers.head)) {
-      headMarker = headSection.markers.head;
+      headMarker = headSection.markers.head
     } else {
-      headMarker = headMarker.next || head.marker;
+      headMarker = headMarker.next || head.marker
     }
-    let headPosition = new Position(headSection, headSection.offsetOfMarker(headMarker));
+    let headPosition = new Position(headSection, headSection.offsetOfMarker(headMarker))
 
-    let tailMarker = tail.section.markers.detect(firstNotMatchingDetect, tail.marker);
+    let tailMarker = tail.section.markers.detect(firstNotMatchingDetect, tail.marker)
     if (!tailMarker && detectMarker(headSection.markers.tail)) {
-      tailMarker = headSection.markers.tail;
+      tailMarker = headSection.markers.tail
     } else {
-      tailMarker = tailMarker.prev || tail.marker;
+      tailMarker = tailMarker.prev || tail.marker
     }
-    let tailPosition = new Position(tail.section, tail.section.offsetOfMarker(tailMarker) + tailMarker.length);
+    let tailPosition = new Position(tail.section, tail.section.offsetOfMarker(tailMarker) + tailMarker.length)
 
-    return headPosition.toRange(tailPosition, direction);
+    return headPosition.toRange(tailPosition, direction)
   }
 
   _collapse(direction) {
-    return new Range(direction === DIRECTION.BACKWARD ? this.head : this.tail);
+    return new Range(direction === DIRECTION.BACKWARD ? this.head : this.tail)
   }
 
   get focusedPosition() {
-    return this.direction === DIRECTION.BACKWARD ? this.head : this.tail;
+    return this.direction === DIRECTION.BACKWARD ? this.head : this.tail
   }
 
   isEqual(other) {
-    return other &&
-      this.head.isEqual(other.head) &&
-      this.tail.isEqual(other.tail);
+    return other && this.head.isEqual(other.head) && this.tail.isEqual(other.tail)
   }
 
   get isBlank() {
-    return this.head.isBlank && this.tail.isBlank;
+    return this.head.isBlank && this.tail.isBlank
   }
 
   // "legacy" APIs
   get headSection() {
-    return this.head.section;
+    return this.head.section
   }
   get tailSection() {
-    return this.tail.section;
+    return this.tail.section
   }
   get headSectionOffset() {
-    return this.head.offset;
+    return this.head.offset
   }
   get tailSectionOffset() {
-    return this.tail.offset;
+    return this.tail.offset
   }
   get isCollapsed() {
-    return this.head.isEqual(this.tail);
+    return this.head.isEqual(this.tail)
   }
   get headMarker() {
-    return this.head.marker;
+    return this.head.marker
   }
   get tailMarker() {
-    return this.tail.marker;
+    return this.tail.marker
   }
   get headMarkerOffset() {
-    return this.head.offsetInMarker;
+    return this.head.offsetInMarker
   }
   get tailMarkerOffset() {
-    return this.tail.offsetInMarker;
+    return this.tail.offsetInMarker
   }
 }
 
-export default Range;
+export default Range

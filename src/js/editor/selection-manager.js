@@ -1,31 +1,33 @@
-import SelectionChangeObserver from 'mobiledoc-kit/editor/selection-change-observer';
+import SelectionChangeObserver from 'mobiledoc-kit/editor/selection-change-observer'
 
 export default class SelectionManager {
   constructor(editor, callback) {
-    this.editor   = editor;
-    this.callback = callback;
-    this.started  = false;
+    this.editor = editor
+    this.callback = callback
+    this.started = false
   }
 
   start() {
-    if (this.started) { return; }
+    if (this.started) {
+      return
+    }
 
-    SelectionChangeObserver.addListener(this);
-    this.started = true;
+    SelectionChangeObserver.addListener(this)
+    this.started = true
   }
 
   stop() {
-    this.started = false;
-    SelectionChangeObserver.removeListener(this);
+    this.started = false
+    SelectionChangeObserver.removeListener(this)
   }
 
   destroy() {
-    this.stop();
+    this.stop()
   }
 
   selectionDidChange() {
     if (this.started) {
-      this.callback(...arguments);
+      this.callback(...arguments)
     }
   }
 }

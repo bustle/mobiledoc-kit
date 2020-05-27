@@ -1,33 +1,32 @@
-import { DIRECTION } from '../utils/key';
-import { isTextNode, isElementNode } from 'mobiledoc-kit/utils/dom-utils';
+import { DIRECTION } from '../utils/key'
+import { isTextNode, isElementNode } from 'mobiledoc-kit/utils/dom-utils'
 
 function clearSelection() {
-  window.getSelection().removeAllRanges();
+  window.getSelection().removeAllRanges()
 }
 
 function textNodeRects(node) {
-  let range = document.createRange();
-  range.setEnd(node, node.nodeValue.length);
-  range.setStart(node, 0);
-  return range.getClientRects();
+  let range = document.createRange()
+  range.setEnd(node, node.nodeValue.length)
+  range.setStart(node, 0)
+  return range.getClientRects()
 }
 
 function findOffsetInTextNode(node, coords) {
-  let len = node.nodeValue.length;
-  let range = document.createRange();
+  let len = node.nodeValue.length
+  let range = document.createRange()
   for (let i = 0; i < len; i++) {
-    range.setEnd(node, i + 1);
-    range.setStart(node, i);
-    let rect = range.getBoundingClientRect();
+    range.setEnd(node, i + 1)
+    range.setStart(node, i)
+    let rect = range.getBoundingClientRect()
     if (rect.top === rect.bottom) {
-      continue;
+      continue
     }
-    if (rect.left <= coords.left && rect.right >= coords.left &&
-        rect.top <= coords.top && rect.bottom >= coords.top) {
-      return {node, offset: i + (coords.left >= (rect.left + rect.right) / 2 ? 1 : 0)};
+    if (rect.left <= coords.left && rect.right >= coords.left && rect.top <= coords.top && rect.bottom >= coords.top) {
+      return { node, offset: i + (coords.left >= (rect.left + rect.right) / 2 ? 1 : 0) }
     }
   }
-  return {node, offset: 0};
+  return { node, offset: 0 }
 }
 
 /*
@@ -37,77 +36,78 @@ function findOffsetInTextNode(node, coords) {
  */
 /* eslint-disable complexity */
 function findOffsetInNode(node, coords) {
-  let closest, dyClosest = 1e8, coordsClosest, offset = 0;
+  let closest,
+    dyClosest = 1e8,
+    coordsClosest,
+    offset = 0
   for (let child = node.firstChild; child; child = child.nextSibling) {
-    let rects;
+    let rects
     if (isElementNode(child)) {
-      rects = child.getClientRects();
+      rects = child.getClientRects()
     } else if (isTextNode(child)) {
-      rects = textNodeRects(child);
+      rects = textNodeRects(child)
     } else {
-      continue;
+      continue
     }
 
     for (let i = 0; i < rects.length; i++) {
-      let rect = rects[i];
+      let rect = rects[i]
       if (rect.left <= coords.left && rect.right >= coords.left) {
-        let dy = rect.top > coords.top ? rect.top - coords.top
-            : rect.bottom < coords.top ? coords.top - rect.bottom : 0;
+        let dy = rect.top > coords.top ? rect.top - coords.top : rect.bottom < coords.top ? coords.top - rect.bottom : 0
         if (dy < dyClosest) {
-          closest = child;
-          dyClosest = dy;
-          coordsClosest = dy ? {left: coords.left, top: rect.top} : coords;
+          closest = child
+          dyClosest = dy
+          coordsClosest = dy ? { left: coords.left, top: rect.top } : coords
           if (isElementNode(child) && !child.firstChild) {
-            offset = i + (coords.left >= (rect.left + rect.right) / 2 ? 1 : 0);
+            offset = i + (coords.left >= (rect.left + rect.right) / 2 ? 1 : 0)
           }
-          continue;
+          continue
         }
       }
-      if (!closest &&
-          (coords.top >= rect.bottom || coords.top >= rect.top && coords.left >= rect.right)) {
-        offset = i + 1;
+      if (!closest && (coords.top >= rect.bottom || (coords.top >= rect.top && coords.left >= rect.right))) {
+        offset = i + 1
       }
     }
   }
   if (!closest) {
-    return {node, offset};
+    return { node, offset }
   }
   if (isTextNode(closest)) {
-    return findOffsetInTextNode(closest, coordsClosest);
+    return findOffsetInTextNode(closest, coordsClosest)
   }
   if (closest.firstChild) {
-    return findOffsetInNode(closest, coordsClosest);
+    return findOffsetInNode(closest, coordsClosest)
   }
-  return {node, offset};
+  return { node, offset }
 }
 /* eslint-enable complexity */
 
 function constrainNodeTo(node, parentNode, existingOffset) {
-  let compare = parentNode.compareDocumentPosition(node);
+  let compare = parentNode.compareDocumentPosition(node)
   if (compare & Node.DOCUMENT_POSITION_CONTAINED_BY) {
     // the node is inside parentNode, do nothing
-    return { node, offset: existingOffset};
+    return { node, offset: existingOffset }
   } else if (compare & Node.DOCUMENT_POSITION_CONTAINS) {
     // the node contains parentNode. This shouldn't happen.
-    return { node, offset: existingOffset};
+    return { node, offset: existingOffset }
   } else if (compare & Node.DOCUMENT_POSITION_PRECEDING) {
     // node is before parentNode. return start of deepest first child
-    let child = parentNode.firstChild;
+    let child = parentNode.firstChild
     while (child.firstChild) {
-      child = child.firstChild;
+      child = child.firstChild
     }
-    return { node: child, offset: 0};
+    return { node: child, offset: 0 }
   } else if (compare & Node.DOCUMENT_POSITION_FOLLOWING) {
     // node is after parentNode. return end of deepest last child
-    let child = parentNode.lastChild;
+    let child = parentNode.lastChild
     while (child.lastChild) {
-      child = child.lastChild;
+      child = child.lastChild
     }
 
-    let offset = isTextNode(child) ? child.textContent.length : 1;
-    return {node: child, offset};
+    let offset = isTextNode(child) ? child.textContent.length : 1
+    return { node: child, offset }
   } else {
-    return { node, offset: existingOffset};
+    return { node, offset: existingOffset }
   }
 }
 
@@ -117,23 +117,21 @@ function constrainNodeTo(node, parentNode, existingOffset) {
  * or end of the parentNode's children
  */
 function constrainSelectionTo(selection, parentNode) {
-  let {
-    node: anchorNode,
-    offset: anchorOffset
-  } = constrainNodeTo(selection.anchorNode, parentNode, selection.anchorOffset);
-  let {
-    node: focusNode,
-    offset: focusOffset
-  } = constrainNodeTo(selection.focusNode, parentNode, selection.focusOffset);
+  let { node: anchorNode, offset: anchorOffset } = constrainNodeTo(
+    selection.anchorNode,
+    parentNode,
+    selection.anchorOffset
+  )
+  let { node: focusNode, offset: focusOffset } = constrainNodeTo(selection.focusNode, parentNode, selection.focusOffset)
 
-  return { anchorNode, anchorOffset, focusNode, focusOffset };
+  return { anchorNode, anchorOffset, focusNode, focusOffset }
 }
 
 function comparePosition(selection) {
-  let { anchorNode, focusNode, anchorOffset, focusOffset } = selection;
-  let headNode, tailNode, headOffset, tailOffset, direction;
+  let { anchorNode, focusNode, anchorOffset, focusOffset } = selection
+  let headNode, tailNode, headOffset, tailOffset, direction
 
-  const position = anchorNode.compareDocumentPosition(focusNode);
+  const position = anchorNode.compareDocumentPosition(focusNode)
 
   // IE may select return focus and anchor nodes far up the DOM tree instead of
   // picking the deepest, most specific possible node. For example in
@@ -149,63 +147,65 @@ function comparePosition(selection) {
   //
   if (position & Node.DOCUMENT_POSITION_CONTAINS) {
     if (focusOffset < focusNode.childNodes.length) {
-      focusNode = focusNode.childNodes[focusOffset];
-      focusOffset = 0;
+      focusNode = focusNode.childNodes[focusOffset]
+      focusOffset = 0
     } else {
       // This situation happens on IE when triple-clicking to select.
       // Set the focus to the very last character inside the node.
       while (focusNode.lastChild) {
-        focusNode = focusNode.lastChild;
+        focusNode = focusNode.lastChild
       }
-      focusOffset = focusNode.textContent.length;
+      focusOffset = focusNode.textContent.length
     }
 
     return comparePosition({
       focusNode,
       focusOffset,
-      anchorNode, anchorOffset
-    });
+      anchorNode,
+      anchorOffset,
+    })
   } else if (position & Node.DOCUMENT_POSITION_CONTAINED_BY) {
-    let offset = anchorOffset - 1;
+    let offset = anchorOffset - 1
     if (offset < 0) {
-      offset = 0;
+      offset = 0
     }
     return comparePosition({
       anchorNode: anchorNode.childNodes[offset],
       anchorOffset: 0,
-      focusNode, focusOffset
-    });
-  // The meat of translating anchor and focus nodes to head and tail nodes
+      focusNode,
+      focusOffset,
+    })
+    // The meat of translating anchor and focus nodes to head and tail nodes
   } else if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
-    headNode = anchorNode; tailNode = focusNode;
-    headOffset = anchorOffset; tailOffset = focusOffset;
-    direction = DIRECTION.FORWARD;
+    headNode = anchorNode
+    tailNode = focusNode
+    headOffset = anchorOffset
+    tailOffset = focusOffset
+    direction = DIRECTION.FORWARD
   } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
-    headNode = focusNode; tailNode = anchorNode;
-    headOffset = focusOffset; tailOffset = anchorOffset;
-    direction = DIRECTION.BACKWARD;
-  } else { // same node
-    headNode = tailNode = anchorNode;
-    headOffset = anchorOffset;
-    tailOffset = focusOffset;
+    headNode = focusNode
+    tailNode = anchorNode
+    headOffset = focusOffset
+    tailOffset = anchorOffset
+    direction = DIRECTION.BACKWARD
+  } else {
+    // same node
+    headNode = tailNode = anchorNode
+    headOffset = anchorOffset
+    tailOffset = focusOffset
     if (tailOffset < headOffset) {
       // Swap the offset order
-      headOffset = focusOffset;
-      tailOffset = anchorOffset;
-      direction = DIRECTION.BACKWARD;
+      headOffset = focusOffset
+      tailOffset = anchorOffset
+      direction = DIRECTION.BACKWARD
     } else if (headOffset < tailOffset) {
-      direction = DIRECTION.FORWARD;
+      direction = DIRECTION.FORWARD
     } else {
-      direction = null;
+      direction = null
     }
   }
 
-  return {headNode, headOffset, tailNode, tailOffset, direction};
+  return { headNode, headOffset, tailNode, tailOffset, direction }
 }
 
-export {
-  clearSelection,
-  comparePosition,
-  findOffsetInNode,
-  constrainSelectionTo
-};
+export { clearSelection, comparePosition, findOffsetInNode, constrainSelectionTo }

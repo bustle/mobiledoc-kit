@@ -1,7 +1,7 @@
-import { normalizeTagName } from '../utils/dom-utils';
-import { filterObject } from '../utils/array-utils';
-import { MARKUP_TYPE } from './types';
-import assert from '../utils/assert';
+import { normalizeTagName } from '../utils/dom-utils'
+import { filterObject } from '../utils/array-utils'
+import { MARKUP_TYPE } from './types'
+import assert from '../utils/assert'
 
 export const VALID_MARKUP_TAGNAMES = [
   'a',
@@ -9,18 +9,15 @@ export const VALID_MARKUP_TAGNAMES = [
   'code',
   'em',
   'i',
-  's',   // strikethrough
+  's', // strikethrough
   'del', // deleted text (also strikethrough)
   'strong',
   'sub', // subscript
   'sup', // superscript
-  'u'
-].map(normalizeTagName);
+  'u',
+].map(normalizeTagName)
 
-export const VALID_ATTRIBUTES = [
-  'href',
-  'rel'
-];
+export const VALID_ATTRIBUTES = ['href', 'rel']
 
 /**
  * A Markup is similar with an inline HTML tag that might be added to
@@ -32,17 +29,15 @@ class Markup {
   /*
    * @param {Object} attributes key-values
    */
-  constructor(tagName, attributes={}) {
-    this.tagName = normalizeTagName(tagName);
+  constructor(tagName, attributes = {}) {
+    this.tagName = normalizeTagName(tagName)
 
-    assert('Must use attributes object param (not array) for Markup',
-           !Array.isArray(attributes));
+    assert('Must use attributes object param (not array) for Markup', !Array.isArray(attributes))
 
-    this.attributes = filterObject(attributes, VALID_ATTRIBUTES);
-    this.type = MARKUP_TYPE;
+    this.attributes = filterObject(attributes, VALID_ATTRIBUTES)
+    this.type = MARKUP_TYPE
 
-    assert(`Cannot create markup of tagName ${tagName}`,
-           VALID_MARKUP_TAGNAMES.indexOf(this.tagName) !== -1);
+    assert(`Cannot create markup of tagName ${tagName}`, VALID_MARKUP_TAGNAMES.indexOf(this.tagName) !== -1)
   }
 
   /**
@@ -51,15 +46,15 @@ class Markup {
    * @private
    */
   isForwardInclusive() {
-    return this.tagName === normalizeTagName("a") ? false : true;
+    return this.tagName === normalizeTagName('a') ? false : true
   }
 
   isBackwardInclusive() {
-    return false;
+    return false
   }
 
   hasTag(tagName) {
-    return this.tagName === normalizeTagName(tagName);
+    return this.tagName === normalizeTagName(tagName)
   }
 
   /**
@@ -67,13 +62,13 @@ class Markup {
    * @param {String} name, e.g. "href"
    */
   getAttribute(name) {
-    return this.attributes[name];
+    return this.attributes[name]
   }
 
   static isValidElement(element) {
-    const tagName = normalizeTagName(element.tagName);
-    return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1;
+    const tagName = normalizeTagName(element.tagName)
+    return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1
   }
 }
 
-export default Markup;
+export default Markup

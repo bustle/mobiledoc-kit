@@ -12,7 +12,8 @@
   "scripts": {
     "start": "rollup -c --watch",
     "test:ci": "yarn build:docs && yarn build && testem ci -f testem-ci.js",
-    "test": "yarn build && testem ci -f testem.js",
+    "test": "yarn format && yarn build && testem ci -f testem.js",
+    "format": "prettier src --write",
     "build": "rollup -c",
     "build:docs": "jsdoc -c ./.jsdoc",
     "build:website": "yarn build:docs && yarn build && ./bin/build-website.sh",
@@ -52,6 +53,7 @@
     "conventional-changelog-cli": "^2.0.34",
     "jquery": "^3.5.1",
     "jsdoc": "^3.6.4",
+    "prettier": "^2.0.5",
     "qunit": "^2.10.0",
     "rollup": "^2.10.3",
     "rollup-plugin-copy": "^3.3.0",
@@ -59,6 +61,12 @@
     "rollup-plugin-serve": "^1.0.1",
     "saucie": "^3.3.3",
     "testem": "^3.1.0"
+  },
+  "prettier": {
+    "arrowParens": "avoid",
+    "printWidth": 120,
+    "semi": false,
+    "singleQuote": true
   },
   "volta": {
     "node": "12.14.1",

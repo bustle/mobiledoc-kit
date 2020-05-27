@@ -7,9 +7,9 @@
  * conditional is false:
  *   `deprecate('Deprecated only if foo !== bar', foo === bar)`
  */
-export default function deprecate(message, conditional=false) {
+export default function deprecate(message, conditional = false) {
   if (!conditional) {
     // eslint-disable-next-line no-console
-    console.log(`[mobiledoc-kit] [DEPRECATED]: ${message}`);
+    console.log(`[mobiledoc-kit] [DEPRECATED]: ${message}`)
   }
 }

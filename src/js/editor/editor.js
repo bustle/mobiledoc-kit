@@ -1,43 +1,41 @@
-import Tooltip, { DEFAULT_TOOLTIP_PLUGIN } from '../views/tooltip';
-import PostEditor from './post';
-import ImageCard from '../cards/image';
-import { DIRECTION } from '../utils/key';
-import mobiledocParsers from '../parsers/mobiledoc';
-import HTMLParser from '../parsers/html';
-import DOMParser from '../parsers/dom';
-import Renderer  from 'mobiledoc-kit/renderers/editor-dom';
-import RenderTree from 'mobiledoc-kit/models/render-tree';
-import mobiledocRenderers from '../renderers/mobiledoc';
-import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc';
-import { mergeWithOptions } from '../utils/merge';
-import { normalizeTagName, clearChildNodes, serializeHTML } from '../utils/dom-utils';
-import { forEach, filter, contains, values, detect } from '../utils/array-utils';
-import { setData } from '../utils/element-utils';
-import Cursor from '../utils/cursor';
-import Range from '../utils/cursor/range';
-import Position from '../utils/cursor/position';
-import Environment from '../utils/environment';
-import PostNodeBuilder from '../models/post-node-builder';
-import { DEFAULT_TEXT_INPUT_HANDLERS } from './text-input-handlers';
-import {
-  DEFAULT_KEY_COMMANDS, buildKeyCommand, findKeyCommands, validateKeyCommand
-} from './key-commands';
-import { CARD_MODES } from '../models/card';
-import assert from '../utils/assert';
-import MutationHandler from 'mobiledoc-kit/editor/mutation-handler';
-import EditHistory from 'mobiledoc-kit/editor/edit-history';
-import EventManager from 'mobiledoc-kit/editor/event-manager';
-import EditState from 'mobiledoc-kit/editor/edit-state';
-import DOMRenderer from 'mobiledoc-dom-renderer';
-import TextRenderer from 'mobiledoc-text-renderer';
-import LifecycleCallbacks from 'mobiledoc-kit/models/lifecycle-callbacks';
-import LogManager from 'mobiledoc-kit/utils/log-manager';
-import toRange from 'mobiledoc-kit/utils/to-range';
-import MobiledocError from 'mobiledoc-kit/utils/mobiledoc-error';
+import Tooltip, { DEFAULT_TOOLTIP_PLUGIN } from '../views/tooltip'
+import PostEditor from './post'
+import ImageCard from '../cards/image'
+import { DIRECTION } from '../utils/key'
+import mobiledocParsers from '../parsers/mobiledoc'
+import HTMLParser from '../parsers/html'
+import DOMParser from '../parsers/dom'
+import Renderer from 'mobiledoc-kit/renderers/editor-dom'
+import RenderTree from 'mobiledoc-kit/models/render-tree'
+import mobiledocRenderers from '../renderers/mobiledoc'
+import { MOBILEDOC_VERSION } from 'mobiledoc-kit/renderers/mobiledoc'
+import { mergeWithOptions } from '../utils/merge'
+import { normalizeTagName, clearChildNodes, serializeHTML } from '../utils/dom-utils'
+import { forEach, filter, contains, values, detect } from '../utils/array-utils'
+import { setData } from '../utils/element-utils'
+import Cursor from '../utils/cursor'
+import Range from '../utils/cursor/range'
+import Position from '../utils/cursor/position'
+import Environment from '../utils/environment'
+import PostNodeBuilder from '../models/post-node-builder'
+import { DEFAULT_TEXT_INPUT_HANDLERS } from './text-input-handlers'
+import { DEFAULT_KEY_COMMANDS, buildKeyCommand, findKeyCommands, validateKeyCommand } from './key-commands'
+import { CARD_MODES } from '../models/card'
+import assert from '../utils/assert'
+import MutationHandler from 'mobiledoc-kit/editor/mutation-handler'
+import EditHistory from 'mobiledoc-kit/editor/edit-history'
+import EventManager from 'mobiledoc-kit/editor/event-manager'
+import EditState from 'mobiledoc-kit/editor/edit-state'
+import DOMRenderer from 'mobiledoc-dom-renderer'
+import TextRenderer from 'mobiledoc-text-renderer'
+import LifecycleCallbacks from 'mobiledoc-kit/models/lifecycle-callbacks'
+import LogManager from 'mobiledoc-kit/utils/log-manager'
+import toRange from 'mobiledoc-kit/utils/to-range'
+import MobiledocError from 'mobiledoc-kit/utils/mobiledoc-error'
 
 // This export may later be deprecated, but re-export it from the renderer here
 // for consumers that may depend on it.
-export { EDITOR_ELEMENT_CLASS_NAME } from 'mobiledoc-kit/renderers/editor-dom';
+export { EDITOR_ELEMENT_CLASS_NAME } from 'mobiledoc-kit/renderers/editor-dom'
 
 const defaults = {
   placeholder: 'Write here...',
@@ -49,16 +47,16 @@ const defaults = {
   cards: [],
   atoms: [],
   cardOptions: {},
-  unknownCardHandler: ({env}) => {
-    throw new MobiledocError(`Unknown card encountered: ${env.name}`);
+  unknownCardHandler: ({ env }) => {
+    throw new MobiledocError(`Unknown card encountered: ${env.name}`)
   },
-  unknownAtomHandler: ({env}) => {
-    throw new MobiledocError(`Unknown atom encountered: ${env.name}`);
+  unknownAtomHandler: ({ env }) => {
+    throw new MobiledocError(`Unknown atom encountered: ${env.name}`)
   },
   mobiledoc: null,
   html: null,
-  tooltipPlugin: DEFAULT_TOOLTIP_PLUGIN
-};
+  tooltipPlugin: DEFAULT_TOOLTIP_PLUGIN,
+}
 
 const CALLBACK_QUEUES = {
   DID_UPDATE: 'didUpdate',
@@ -71,8 +69,8 @@ const CALLBACK_QUEUES = {
   DID_REPARSE: 'didReparse',
   POST_DID_CHANGE: 'postDidChange',
   INPUT_MODE_DID_CHANGE: 'inputModeDidChange',
-  WILL_COPY: 'willCopy'
-};
+  WILL_COPY: 'willCopy',
+}
 
 /**
  * The Editor is a core component of mobiledoc-kit. After instantiating
@@ -122,37 +120,39 @@ class Editor {
    * @return {Editor}
    * @public
    */
-  constructor(options={}) {
-    assert('editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation',
-          (options && !options.nodeType));
-    this._views = [];
-    this.isEditable = true;
-    this._parserPlugins = options.parserPlugins || [];
+  constructor(options = {}) {
+    assert(
+      'editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation',
+      options && !options.nodeType
+    )
+    this._views = []
+    this.isEditable = true
+    this._parserPlugins = options.parserPlugins || []
 
     // FIXME: This should merge onto this.options
-    mergeWithOptions(this, defaults, options);
-    this.cards.push(ImageCard);
+    mergeWithOptions(this, defaults, options)
+    this.cards.push(ImageCard)
 
-    DEFAULT_KEY_COMMANDS.forEach(kc => this.registerKeyCommand(kc));
+    DEFAULT_KEY_COMMANDS.forEach(kc => this.registerKeyCommand(kc))
 
-    this._logManager = new LogManager();
-    this._parser   = new DOMParser(this.builder);
-    let {cards, atoms, unknownCardHandler, unknownAtomHandler, cardOptions} = this;
-    this._renderer = new Renderer(this, cards, atoms, unknownCardHandler, unknownAtomHandler, cardOptions);
+    this._logManager = new LogManager()
+    this._parser = new DOMParser(this.builder)
+    let { cards, atoms, unknownCardHandler, unknownAtomHandler, cardOptions } = this
+    this._renderer = new Renderer(this, cards, atoms, unknownCardHandler, unknownAtomHandler, cardOptions)
 
-    this.post = this.loadPost();
-    this._renderTree = new RenderTree(this.post);
+    this.post = this.loadPost()
+    this._renderTree = new RenderTree(this.post)
 
-    this._editHistory = new EditHistory(this, this.undoDepth, this.undoBlockTimeout);
-    this._eventManager = new EventManager(this);
-    this._mutationHandler = new MutationHandler(this);
-    this._editState = new EditState(this);
-    this._callbacks = new LifecycleCallbacks(values(CALLBACK_QUEUES));
-    this._beforeHooks = { toggleMarkup: [] };
+    this._editHistory = new EditHistory(this, this.undoDepth, this.undoBlockTimeout)
+    this._eventManager = new EventManager(this)
+    this._mutationHandler = new MutationHandler(this)
+    this._editState = new EditState(this)
+    this._callbacks = new LifecycleCallbacks(values(CALLBACK_QUEUES))
+    this._beforeHooks = { toggleMarkup: [] }
 
-    DEFAULT_TEXT_INPUT_HANDLERS.forEach(handler => this.onTextInput(handler));
+    DEFAULT_TEXT_INPUT_HANDLERS.forEach(handler => this.onTextInput(handler))
 
-    this.hasRendered = false;
+    this.hasRendered = false
   }
 
   /**
@@ -160,11 +160,11 @@ class Editor {
    * @param {Array} [logTypes=[]] If present, only the given log types will be logged.
    * @public
    */
-  enableLogging(logTypes=[]) {
+  enableLogging(logTypes = []) {
     if (logTypes.length === 0) {
-      this._logManager.enableAll();
+      this._logManager.enableAll()
     } else {
-      this._logManager.enableTypes(logTypes);
+      this._logManager.enableTypes(logTypes)
     }
   }
 
@@ -173,14 +173,14 @@ class Editor {
    * @public
    */
   disableLogging() {
-    this._logManager.disable();
+    this._logManager.disable()
   }
 
   /**
    * @private
    */
   loggerFor(type) {
-    return this._logManager.for(type);
+    return this._logManager.for(type)
   }
 
   /**
@@ -188,43 +188,44 @@ class Editor {
    * @type {PostNodeBuilder}
    */
   get builder() {
-    if (!this._builder) { this._builder = new PostNodeBuilder(); }
-    return this._builder;
+    if (!this._builder) {
+      this._builder = new PostNodeBuilder()
+    }
+    return this._builder
   }
 
   loadPost() {
-    let {mobiledoc, html} = this;
+    let { mobiledoc, html } = this
     if (mobiledoc) {
-      return mobiledocParsers.parse(this.builder, mobiledoc);
+      return mobiledocParsers.parse(this.builder, mobiledoc)
     } else if (html) {
       if (typeof html === 'string') {
-        let options = {plugins: this._parserPlugins};
-        return new HTMLParser(this.builder, options).parse(this.html);
+        let options = { plugins: this._parserPlugins }
+        return new HTMLParser(this.builder, options).parse(this.html)
       } else {
-        let dom = html;
-        return this._parser.parse(dom);
+        let dom = html
+        return this._parser.parse(dom)
       }
     } else {
-      return this.builder.createPost([this.builder.createMarkupSection()]);
+      return this.builder.createPost([this.builder.createMarkupSection()])
     }
   }
 
   rerender() {
-    let postRenderNode = this.post.renderNode;
+    let postRenderNode = this.post.renderNode
 
     // if we haven't rendered this post's renderNode before, mark it dirty
     if (!postRenderNode.element) {
-      assert('Must call `render` before `rerender` can be called',
-             this.hasRendered);
-      postRenderNode.element = this.element;
-      postRenderNode.markDirty();
+      assert('Must call `render` before `rerender` can be called', this.hasRendered)
+      postRenderNode.element = this.element
+      postRenderNode.markDirty()
     }
 
-    this.runCallbacks(CALLBACK_QUEUES.WILL_RENDER);
+    this.runCallbacks(CALLBACK_QUEUES.WILL_RENDER)
     this._mutationHandler.suspendObservation(() => {
-      this._renderer.render(this._renderTree);
-    });
-    this.runCallbacks(CALLBACK_QUEUES.DID_RENDER);
+      this._renderer.render(this._renderTree)
+    })
+    this.runCallbacks(CALLBACK_QUEUES.DID_RENDER)
   }
 
   /**
@@ -233,55 +234,60 @@ class Editor {
    * @public
    */
   render(element) {
-    assert('Cannot render an editor twice. Use `rerender` to update the ' +
-           'rendering of an existing editor instance.',
-           !this.hasRendered);
+    assert(
+      'Cannot render an editor twice. Use `rerender` to update the ' + 'rendering of an existing editor instance.',
+      !this.hasRendered
+    )
 
-    element.spellcheck = this.spellcheck;
+    element.spellcheck = this.spellcheck
 
-    clearChildNodes(element);
+    clearChildNodes(element)
 
-    this.element = element;
+    this.element = element
 
     if (this.showLinkTooltips) {
-      this._addTooltip();
+      this._addTooltip()
     }
 
     // A call to `run` will trigger the didUpdatePostCallbacks hooks with a
     // postEditor.
-    this.run(() => {});
+    this.run(() => {})
 
     // Only set `hasRendered` to true after calling `run` to ensure that
     // no cursorDidChange or other callbacks get fired before the editor is
     // done rendering
-    this.hasRendered = true;
-    this.rerender();
+    this.hasRendered = true
+    this.rerender()
 
-    this._mutationHandler.init();
-    this._eventManager.init();
+    this._mutationHandler.init()
+    this._eventManager.init()
 
     if (this.isEditable === false) {
-      this.disableEditing();
+      this.disableEditing()
     } else {
-      this.enableEditing();
+      this.enableEditing()
     }
 
     if (this.autofocus) {
-      this.selectRange(this.post.headPosition());
+      this.selectRange(this.post.headPosition())
     }
   }
 
   _addTooltip() {
-    this.addView(new Tooltip({
-      rootElement: this.element,
-      showForTag: 'a',
-      editor: this
-    }));
+    this.addView(
+      new Tooltip({
+        rootElement: this.element,
+        showForTag: 'a',
+        editor: this,
+      })
+    )
   }
 
   get keyCommands() {
-    if (!this._keyCommands) { this._keyCommands = []; }
-    return this._keyCommands;
+    if (!this._keyCommands) {
+      this._keyCommands = []
+    }
+    return this._keyCommands
   }
 
   /**
@@ -292,9 +298,9 @@ class Editor {
    * @public
    */
   registerKeyCommand(rawKeyCommand) {
-    const keyCommand = buildKeyCommand(rawKeyCommand);
-    assert('Key Command is not valid', validateKeyCommand(keyCommand));
-    this.keyCommands.unshift(keyCommand);
+    const keyCommand = buildKeyCommand(rawKeyCommand)
+    assert('Key Command is not valid', validateKeyCommand(keyCommand))
+    this.keyCommands.unshift(keyCommand)
   }
 
   /**
@@ -302,11 +308,11 @@ class Editor {
    * @public
    */
   unregisterKeyCommands(name) {
-    for(let i = this.keyCommands.length-1; i > -1; i--) {
-      let keyCommand = this.keyCommands[i];
+    for (let i = this.keyCommands.length - 1; i > -1; i--) {
+      let keyCommand = this.keyCommands[i]
 
-      if(keyCommand.name === name) {
-        this.keyCommands.splice(i,1);
+      if (keyCommand.name === name) {
+        this.keyCommands.splice(i, 1)
       }
     }
   }
@@ -316,11 +322,11 @@ class Editor {
    * cursor in the new position.
    * @public
    */
-  deleteAtPosition(position, direction, {unit}) {
+  deleteAtPosition(position, direction, { unit }) {
     this.run(postEditor => {
-      let nextPosition = postEditor.deleteAtPosition(position, direction, {unit});
-      postEditor.setRange(nextPosition);
-    });
+      let nextPosition = postEditor.deleteAtPosition(position, direction, { unit })
+      postEditor.setRange(nextPosition)
+    })
   }
 
   /**
@@ -331,52 +337,60 @@ class Editor {
    */
   deleteRange(range) {
     this.run(postEditor => {
-      let nextPosition = postEditor.deleteRange(range);
-      postEditor.setRange(nextPosition);
-    });
+      let nextPosition = postEditor.deleteRange(range)
+      postEditor.setRange(nextPosition)
+    })
   }
 
   /**
    * @private
    */
-  performDelete({direction, unit}={direction: DIRECTION.BACKWARD, unit: 'char'}) {
-    let { range } = this;
+  performDelete({ direction, unit } = { direction: DIRECTION.BACKWARD, unit: 'char' }) {
+    let { range } = this
 
-    this.runCallbacks(CALLBACK_QUEUES.WILL_DELETE, [range, direction, unit]);
+    this.runCallbacks(CALLBACK_QUEUES.WILL_DELETE, [range, direction, unit])
     if (range.isCollapsed) {
-      this.deleteAtPosition(range.head, direction, {unit});
+      this.deleteAtPosition(range.head, direction, { unit })
     } else {
-      this.deleteRange(range);
+      this.deleteRange(range)
     }
-    this.runCallbacks(CALLBACK_QUEUES.DID_DELETE, [range, direction, unit]);
+    this.runCallbacks(CALLBACK_QUEUES.DID_DELETE, [range, direction, unit])
   }
 
   handleNewline(event) {
-    if (!this.hasCursor()) { return; }
+    if (!this.hasCursor()) {
+      return
+    }
 
-    event.preventDefault();
+    event.preventDefault()
 
-    let { range } = this;
+    let { range } = this
     this.run(postEditor => {
-      let cursorSection;
+      let cursorSection
       if (!range.isCollapsed) {
-        let nextPosition  = postEditor.deleteRange(range);
-        cursorSection = nextPosition.section;
+        let nextPosition = postEditor.deleteRange(range)
+        cursorSection = nextPosition.section
         if (cursorSection && cursorSection.isBlank) {
-          postEditor.setRange(cursorSection.headPosition());
-          return;
+          postEditor.setRange(cursorSection.headPosition())
+          return
         }
       }
 
       // Above logic might delete redundant range, so callback must run after it.
-      let defaultPrevented = false;
-      const event = { preventDefault() { defaultPrevented = true; } };
-      this.runCallbacks(CALLBACK_QUEUES.WILL_HANDLE_NEWLINE, [event]);
-      if (defaultPrevented) { return; }
+      let defaultPrevented = false
+      const event = {
+        preventDefault() {
+          defaultPrevented = true
+        },
+      }
+      this.runCallbacks(CALLBACK_QUEUES.WILL_HANDLE_NEWLINE, [event])
+      if (defaultPrevented) {
+        return
+      }
 
-      cursorSection = postEditor.splitSection(range.head)[1];
-      postEditor.setRange(cursorSection.headPosition());
-    });
+      cursorSection = postEditor.splitSection(range.head)[1]
+      postEditor.setRange(cursorSection.headPosition())
+    })
   }
 
   /**
@@ -385,7 +399,7 @@ class Editor {
    * @private
    */
   _postDidChange() {
-    this.runCallbacks(CALLBACK_QUEUES.POST_DID_CHANGE);
+    this.runCallbacks(CALLBACK_QUEUES.POST_DID_CHANGE)
   }
 
   /**
@@ -395,14 +409,14 @@ class Editor {
    * @param {Range|Position} range
    */
   selectRange(range) {
-    range = toRange(range);
+    range = toRange(range)
 
-    this.cursor.selectRange(range);
-    this.range = range;
+    this.cursor.selectRange(range)
+    this.range = range
   }
 
   get cursor() {
-    return new Cursor(this);
+    return new Cursor(this)
   }
 
   /**
@@ -410,66 +424,66 @@ class Editor {
    * @return {Range}
    */
   get range() {
-    return this._editState.range;
+    return this._editState.range
   }
 
   set range(newRange) {
-    this._editState.updateRange(newRange);
+    this._editState.updateRange(newRange)
 
     if (this._editState.rangeDidChange()) {
-      this._rangeDidChange();
+      this._rangeDidChange()
     }
 
     if (this._editState.inputModeDidChange()) {
-      this._inputModeDidChange();
+      this._inputModeDidChange()
     }
   }
 
   _readRangeFromDOM() {
-    this.range = this.cursor.offsets;
+    this.range = this.cursor.offsets
   }
 
   setPlaceholder(placeholder) {
-    setData(this.element, 'placeholder', placeholder);
+    setData(this.element, 'placeholder', placeholder)
   }
 
   _reparsePost() {
-    let post = this._parser.parse(this.element);
+    let post = this._parser.parse(this.element)
     this.run(postEditor => {
-      postEditor.removeAllSections();
-      postEditor.migrateSectionsFromPost(post);
-      postEditor.setRange(Range.blankRange());
-    });
+      postEditor.removeAllSections()
+      postEditor.migrateSectionsFromPost(post)
+      postEditor.setRange(Range.blankRange())
+    })
 
-    this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
-    this._postDidChange();
+    this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE)
+    this._postDidChange()
   }
 
-  _reparseSections(sections=[]) {
-    let currentRange;
+  _reparseSections(sections = []) {
+    let currentRange
     sections.forEach(section => {
-      this._parser.reparseSection(section, this._renderTree);
-    });
-    this._removeDetachedSections();
+      this._parser.reparseSection(section, this._renderTree)
+    })
+    this._removeDetachedSections()
 
     if (this._renderTree.isDirty) {
-      currentRange = this.range;
+      currentRange = this.range
     }
 
     // force the current snapshot's range to remain the same rather than
     // rereading it from DOM after the new character is applied and the browser
     // updates the cursor position
-    let range = this._editHistory._pendingSnapshot.range;
+    let range = this._editHistory._pendingSnapshot.range
     this.run(() => {
-      this._editHistory._pendingSnapshot.range = range;
-    });
-    this.rerender();
+      this._editHistory._pendingSnapshot.range = range
+    })
+    this.rerender()
     if (currentRange) {
-      this.selectRange(currentRange);
+      this.selectRange(currentRange)
     }
 
-    this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
-    this._postDidChange();
+    this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE)
+    this._postDidChange()
   }
 
   // FIXME this should be able to be removed now -- if any sections are detached,
@@ -478,7 +492,7 @@ class Editor {
     forEach(
       filter(this.post.sections, s => !s.renderNode.isAttached()),
       s => s.renderNode.scheduleForRemoval()
-    );
+    )
   }
 
   /**
@@ -486,23 +500,23 @@ class Editor {
    * @type {Section[]}
    */
   get activeSections() {
-    return this._editState.activeSections;
+    return this._editState.activeSections
   }
 
   get activeSection() {
-    const { activeSections } = this;
-    return activeSections[activeSections.length - 1];
+    const { activeSections } = this
+    return activeSections[activeSections.length - 1]
   }
 
   get activeSectionAttributes() {
-    return this._editState.activeSectionAttributes;
+    return this._editState.activeSectionAttributes
   }
 
   detectMarkupInRange(range, markupTagName) {
-    let markups = this.post.markupsInRange(range);
+    let markups = this.post.markupsInRange(range)
     return detect(markups, markup => {
-      return markup.hasTag(markupTagName);
-    });
+      return markup.hasTag(markupTagName)
+    })
   }
 
   /**
@@ -510,7 +524,7 @@ class Editor {
    * @public
    */
   get activeMarkups() {
-    return this._editState.activeMarkups;
+    return this._editState.activeMarkups
   }
 
   /**
@@ -518,15 +532,15 @@ class Editor {
    * @return {boolean}
    */
   hasActiveMarkup(markup) {
-    let matchesFn;
+    let matchesFn
     if (typeof markup === 'string') {
-      let tagName = normalizeTagName(markup);
-      matchesFn = (m) => m.tagName === tagName;
+      let tagName = normalizeTagName(markup)
+      matchesFn = m => m.tagName === tagName
     } else {
-      matchesFn = (m) => m === markup;
+      matchesFn = m => m === markup
     }
 
-    return !!detect(this.activeMarkups, matchesFn);
+    return !!detect(this.activeMarkups, matchesFn)
   }
 
   /**
@@ -534,8 +548,8 @@ class Editor {
    * @return {Mobiledoc} Serialized mobiledoc
    * @public
    */
-  serialize(version=MOBILEDOC_VERSION) {
-    return this.serializePost(this.post, 'mobiledoc', {version});
+  serialize(version = MOBILEDOC_VERSION) {
+    return this.serializePost(this.post, 'mobiledoc', { version })
   }
 
   /**
@@ -549,8 +563,8 @@ class Editor {
    * @public
    */
   serializeTo(format) {
-    let post = this.post;
-    return this.serializePost(post, format);
+    let post = this.post
+    return this.serializePost(post, format)
   }
 
   /**
@@ -561,47 +575,46 @@ class Editor {
    * @return {Object|String}
    * @private
    */
-  serializePost(post, format, options={}) {
-    const validFormats = ['mobiledoc', 'html', 'text'];
-    assert(`Unrecognized serialization format ${format}`,
-           contains(validFormats, format));
+  serializePost(post, format, options = {}) {
+    const validFormats = ['mobiledoc', 'html', 'text']
+    assert(`Unrecognized serialization format ${format}`, contains(validFormats, format))
 
     if (format === 'mobiledoc') {
-      let version = options.version || MOBILEDOC_VERSION;
-      return mobiledocRenderers.render(post, version);
+      let version = options.version || MOBILEDOC_VERSION
+      return mobiledocRenderers.render(post, version)
     } else {
-      let rendered;
-      let mobiledoc = this.serializePost(post, 'mobiledoc');
-      let unknownCardHandler = () => {};
-      let unknownAtomHandler = () => {};
-      let rendererOptions = { unknownCardHandler, unknownAtomHandler };
+      let rendered
+      let mobiledoc = this.serializePost(post, 'mobiledoc')
+      let unknownCardHandler = () => {}
+      let unknownAtomHandler = () => {}
+      let rendererOptions = { unknownCardHandler, unknownAtomHandler }
 
       switch (format) {
         case 'html': {
-          let result;
+          let result
           if (Environment.hasDOM()) {
-            rendered = new DOMRenderer(rendererOptions).render(mobiledoc);
-            result = `<div>${serializeHTML(rendered.result)}</div>`;
+            rendered = new DOMRenderer(rendererOptions).render(mobiledoc)
+            result = `<div>${serializeHTML(rendered.result)}</div>`
           } else {
             // Fallback to text serialization
-            result = this.serializePost(post, 'text', options);
+            result = this.serializePost(post, 'text', options)
           }
-          return result;
+          return result
         }
         case 'text':
-          rendered = new TextRenderer(rendererOptions).render(mobiledoc);
-          return rendered.result;
+          rendered = new TextRenderer(rendererOptions).render(mobiledoc)
+          return rendered.result
       }
     }
   }
 
   addView(view) {
-    this._views.push(view);
+    this._views.push(view)
   }
 
   removeAllViews() {
-    this._views.forEach((v) => v.destroy());
-    this._views = [];
+    this._views.forEach(v => v.destroy())
+    this._views = []
   }
 
   /**
@@ -613,7 +626,7 @@ class Editor {
    * @public
    */
   hasCursor() {
-    return this.cursor.hasCursor();
+    return this.cursor.hasCursor()
   }
 
   /**
@@ -621,18 +634,18 @@ class Editor {
    * @public
    */
   destroy() {
-    this.isDestroyed = true;
+    this.isDestroyed = true
     if (this._hasSelection()) {
-      this.cursor.clearSelection();
+      this.cursor.clearSelection()
     }
     if (this._hasFocus()) {
-      this.element.blur(); // FIXME This doesn't blur the element on IE11
+      this.element.blur() // FIXME This doesn't blur the element on IE11
     }
-    this._mutationHandler.destroy();
-    this._eventManager.destroy();
-    this.removeAllViews();
-    this._renderer.destroy();
-    this._editState.destroy();
+    this._mutationHandler.destroy()
+    this._eventManager.destroy()
+    this.removeAllViews()
+    this._renderer.destroy()
+    this._editState.destroy()
   }
 
   /**
@@ -642,12 +655,12 @@ class Editor {
    * @public
    */
   disableEditing() {
-    this.isEditable = false;
+    this.isEditable = false
     if (this.hasRendered) {
-      this._eventManager.stop();
-      this.element.setAttribute('contentEditable', false);
-      this.setPlaceholder('');
-      this.selectRange(Range.blankRange());
+      this._eventManager.stop()
+      this.element.setAttribute('contentEditable', false)
+      this.setPlaceholder('')
+      this.selectRange(Range.blankRange())
     }
   }
 
@@ -659,11 +672,11 @@ class Editor {
    * @public
    */
   enableEditing() {
-    this.isEditable = true;
+    this.isEditable = true
     if (this.hasRendered) {
-      this._eventManager.start();
-      this.element.setAttribute('contentEditable', true);
-      this.setPlaceholder(this.placeholder);
+      this._eventManager.start()
+      this.element.setAttribute('contentEditable', true)
+      this.setPlaceholder(this.placeholder)
     }
   }
 
@@ -675,7 +688,7 @@ class Editor {
    * @public
    */
   editCard(cardSection) {
-    this._setCardMode(cardSection, CARD_MODES.EDIT);
+    this._setCardMode(cardSection, CARD_MODES.EDIT)
   }
 
   /**
@@ -687,7 +700,7 @@ class Editor {
    * @public
    */
   displayCard(cardSection) {
-    this._setCardMode(cardSection, CARD_MODES.DISPLAY);
+    this._setCardMode(cardSection, CARD_MODES.DISPLAY)
   }
 
   /**
@@ -716,20 +729,20 @@ class Editor {
    * @public
    */
   run(callback) {
-    const postEditor = new PostEditor(this);
-    postEditor.begin();
-    this._editHistory.snapshot();
-    const result = callback(postEditor);
-    this.runCallbacks(CALLBACK_QUEUES.DID_UPDATE, [postEditor]);
-    postEditor.complete();
-    this._readRangeFromDOM();
+    const postEditor = new PostEditor(this)
+    postEditor.begin()
+    this._editHistory.snapshot()
+    const result = callback(postEditor)
+    this.runCallbacks(CALLBACK_QUEUES.DID_UPDATE, [postEditor])
+    postEditor.complete()
+    this._readRangeFromDOM()
 
     if (postEditor._shouldCancelSnapshot) {
-      this._editHistory._pendingSnapshot = null;
+      this._editHistory._pendingSnapshot = null
     }
-    this._editHistory.storeSnapshot(postEditor.editActionTaken);
+    this._editHistory.storeSnapshot(postEditor.editActionTaken)
 
-    return result;
+    return result
   }
 
   /**
@@ -737,7 +750,7 @@ class Editor {
    * @public
    */
   didUpdatePost(callback) {
-    this.addCallback(CALLBACK_QUEUES.DID_UPDATE, callback);
+    this.addCallback(CALLBACK_QUEUES.DID_UPDATE, callback)
   }
 
   /**
@@ -746,7 +759,7 @@ class Editor {
    *        retrieve the post in portable mobiledoc format.
    */
   postDidChange(callback) {
-    this.addCallback(CALLBACK_QUEUES.POST_DID_CHANGE, callback);
+    this.addCallback(CALLBACK_QUEUES.POST_DID_CHANGE, callback)
   }
 
   /**
@@ -765,7 +778,7 @@ class Editor {
    * @public
    */
   onTextInput(inputHandler) {
-    this._eventManager.registerInputHandler(inputHandler);
+    this._eventManager.registerInputHandler(inputHandler)
   }
 
   /**
@@ -774,7 +787,7 @@ class Editor {
    * @public
    */
   unregisterAllTextInputHandlers() {
-    this._eventManager.unregisterAllTextInputHandlers();
+    this._eventManager.unregisterAllTextInputHandlers()
   }
 
   /**
@@ -784,7 +797,7 @@ class Editor {
    * @public
    */
   unregisterTextInputHandler(name) {
-    this._eventManager.unregisterInputHandler(name);
+    this._eventManager.unregisterInputHandler(name)
   }
 
   /**
@@ -792,7 +805,7 @@ class Editor {
    * active sections) has changed, either via user input or programmatically
    */
   inputModeDidChange(callback) {
-    this.addCallback(CALLBACK_QUEUES.INPUT_MODE_DID_CHANGE, callback);
+    this.addCallback(CALLBACK_QUEUES.INPUT_MODE_DID_CHANGE, callback)
   }
 
   /**
@@ -801,7 +814,7 @@ class Editor {
    * @public
    */
   willRender(callback) {
-    this.addCallback(CALLBACK_QUEUES.WILL_RENDER, callback);
+    this.addCallback(CALLBACK_QUEUES.WILL_RENDER, callback)
   }
 
   /**
@@ -810,11 +823,11 @@ class Editor {
    * @public
    */
   didRender(callback) {
-    this.addCallback(CALLBACK_QUEUES.DID_RENDER, callback);
+    this.addCallback(CALLBACK_QUEUES.DID_RENDER, callback)
   }
 
   willCopy(callback) {
-    this.addCallback(CALLBACK_QUEUES.WILL_COPY, callback);
+    this.addCallback(CALLBACK_QUEUES.WILL_COPY, callback)
   }
 
   /**
@@ -822,7 +835,7 @@ class Editor {
    * @public
    */
   willDelete(callback) {
-    this.addCallback(CALLBACK_QUEUES.WILL_DELETE, callback);
+    this.addCallback(CALLBACK_QUEUES.WILL_DELETE, callback)
   }
 
   /**
@@ -830,7 +843,7 @@ class Editor {
    * @public
    */
   didDelete(callback) {
-    this.addCallback(CALLBACK_QUEUES.DID_DELETE, callback);
+    this.addCallback(CALLBACK_QUEUES.DID_DELETE, callback)
   }
 
   /**
@@ -838,7 +851,7 @@ class Editor {
    * @public
    */
   willHandleNewline(callback) {
-    this.addCallback(CALLBACK_QUEUES.WILL_HANDLE_NEWLINE, callback);
+    this.addCallback(CALLBACK_QUEUES.WILL_HANDLE_NEWLINE, callback)
   }
 
   /**
@@ -847,25 +860,25 @@ class Editor {
    * @public
    */
   cursorDidChange(callback) {
-    this.addCallback(CALLBACK_QUEUES.CURSOR_DID_CHANGE, callback);
+    this.addCallback(CALLBACK_QUEUES.CURSOR_DID_CHANGE, callback)
   }
 
   _rangeDidChange() {
     if (this.hasRendered) {
-      this.runCallbacks(CALLBACK_QUEUES.CURSOR_DID_CHANGE);
+      this.runCallbacks(CALLBACK_QUEUES.CURSOR_DID_CHANGE)
     }
   }
 
   _inputModeDidChange() {
-    this.runCallbacks(CALLBACK_QUEUES.INPUT_MODE_DID_CHANGE);
+    this.runCallbacks(CALLBACK_QUEUES.INPUT_MODE_DID_CHANGE)
   }
 
   _insertEmptyMarkupSectionAtCursor() {
     this.run(postEditor => {
-      const section = postEditor.builder.createMarkupSection('p');
-      postEditor.insertSectionBefore(this.post.sections, section);
-      postEditor.setRange(section.toRange());
-    });
+      const section = postEditor.builder.createMarkupSection('p')
+      postEditor.insertSectionBefore(this.post.sections, section)
+      postEditor.setRange(section.toRange())
+    })
   }
 
   /**
@@ -884,7 +897,7 @@ class Editor {
    * @param {editorBeforeCallback}
    */
   beforeToggleMarkup(callback) {
-    this._beforeHooks.toggleMarkup.push(callback);
+    this._beforeHooks.toggleMarkup.push(callback)
   }
 
   /**
@@ -901,34 +914,36 @@ class Editor {
    * @public
    * @see PostEditor#toggleMarkup
    */
-  toggleMarkup(markup, attributes={}) {
-    markup = this.builder.createMarkup(markup, attributes);
-    let { range } = this;
-    let willAdd = !this.detectMarkupInRange(range, markup.tagName);
-    let shouldCancel = this._runBeforeHooks('toggleMarkup', {markup, range, willAdd});
-    if (shouldCancel) { return; }
+  toggleMarkup(markup, attributes = {}) {
+    markup = this.builder.createMarkup(markup, attributes)
+    let { range } = this
+    let willAdd = !this.detectMarkupInRange(range, markup.tagName)
+    let shouldCancel = this._runBeforeHooks('toggleMarkup', { markup, range, willAdd })
+    if (shouldCancel) {
+      return
+    }
 
     if (range.isCollapsed) {
-      this._editState.toggleMarkupState(markup);
-      this._inputModeDidChange();
+      this._editState.toggleMarkupState(markup)
+      this._inputModeDidChange()
 
       // when clicking a button to toggle markup, the button can end up being focused,
       // so ensure the editor is focused
-      this._ensureFocus();
+      this._ensureFocus()
     } else {
-      this.run(postEditor => postEditor.toggleMarkup(markup, range));
+      this.run(postEditor => postEditor.toggleMarkup(markup, range))
     }
   }
 
   // If the editor has a selection but is not focused, focus it
   _ensureFocus() {
     if (this._hasSelection() && !this._hasFocus()) {
-      this.focus();
+      this.focus()
     }
   }
 
   focus() {
-    this.element.focus();
+    this.element.focus()
   }
 
   /**
@@ -938,8 +953,8 @@ class Editor {
    * @return {Boolean}
    */
   _hasSelection() {
-    let { cursor } = this;
-    return this.hasRendered && (cursor._hasCollapsedSelection() || cursor._hasSelection());
+    let { cursor } = this
+    return this.hasRendered && (cursor._hasCollapsedSelection() || cursor._hasSelection())
   }
 
   /**
@@ -949,7 +964,7 @@ class Editor {
    * @return {Boolean}
    */
   _hasFocus() {
-    return document.activeElement === this.element;
+    return document.activeElement === this.element
   }
 
   /**
@@ -961,7 +976,7 @@ class Editor {
    * @see PostEditor#toggleSection
    */
   toggleSection(tagName) {
-    this.run(postEditor => postEditor.toggleSection(tagName, this.range));
+    this.run(postEditor => postEditor.toggleSection(tagName, this.range))
   }
 
   /**
@@ -973,7 +988,7 @@ class Editor {
    * @see PostEditor#setAttribute
    */
   setAttribute(key, value) {
-    this.run(postEditor => postEditor.setAttribute(key, value, this.range));
+    this.run(postEditor => postEditor.setAttribute(key, value, this.range))
   }
 
   /**
@@ -984,7 +999,7 @@ class Editor {
    * @see PostEditor#removeAttribute
    */
   removeAttribute(key) {
-    this.run(postEditor => postEditor.removeAttribute(key, this.range));
+    this.run(postEditor => postEditor.removeAttribute(key, this.range))
   }
 
   /**
@@ -1001,15 +1016,15 @@ class Editor {
    * @private
    */
   handleKeyCommand(event) {
-    const keyCommands = findKeyCommands(this.keyCommands, event);
-    for (let i=0; i<keyCommands.length; i++) {
-      let keyCommand = keyCommands[i];
+    const keyCommands = findKeyCommands(this.keyCommands, event)
+    for (let i = 0; i < keyCommands.length; i++) {
+      let keyCommand = keyCommands[i]
       if (keyCommand.run(this) !== false) {
-        event.preventDefault();
-        return true;
+        event.preventDefault()
+        return true
       }
     }
-    return false;
+    return false
   }
 
   /**
@@ -1021,19 +1036,25 @@ class Editor {
    * @public
    */
   insertText(text) {
-    if (!this.hasCursor()) { return; }
-    if (this.post.isBlank) {
-      this._insertEmptyMarkupSectionAtCursor();
+    if (!this.hasCursor()) {
+      return
     }
-    let { activeMarkups, range, range: { head: position } } = this;
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor()
+    }
+    let {
+      activeMarkups,
+      range,
+      range: { head: position },
+    } = this
 
     this.run(postEditor => {
       if (!range.isCollapsed) {
-        position = postEditor.deleteRange(range);
+        position = postEditor.deleteRange(range)
       }
 
-      postEditor.insertTextWithMarkup(position, text, activeMarkups);
-    });
+      postEditor.insertTextWithMarkup(position, text, activeMarkups)
+    })
   }
 
   /**
@@ -1046,25 +1067,27 @@ class Editor {
    * @return {Atom} The inserted atom.
    * @public
    */
-  insertAtom(atomName, atomText='', atomPayload={}) {
-    if (!this.hasCursor()) { return; }
+  insertAtom(atomName, atomText = '', atomPayload = {}) {
+    if (!this.hasCursor()) {
+      return
+    }
     if (this.post.isBlank) {
-      this._insertEmptyMarkupSectionAtCursor();
+      this._insertEmptyMarkupSectionAtCursor()
     }
 
-    let atom;
-    let { range } = this;
+    let atom
+    let { range } = this
     this.run(postEditor => {
-      let position = range.head;
+      let position = range.head
 
-      atom = postEditor.builder.createAtom(atomName, atomText, atomPayload);
+      atom = postEditor.builder.createAtom(atomName, atomText, atomPayload)
       if (!range.isCollapsed) {
-        position = postEditor.deleteRange(range);
+        position = postEditor.deleteRange(range)
       }
 
-      postEditor.insertMarkers(position, [atom]);
-    });
-    return atom;
+      postEditor.insertMarkers(position, [atom])
+    })
+    return atom
   }
 
   /**
@@ -1079,33 +1102,37 @@ class Editor {
    * @return {Card} The inserted Card section.
    * @public
    */
-  insertCard(cardName, cardPayload={}, inEditMode=false) {
-    if (!this.hasCursor()) { return; }
+  insertCard(cardName, cardPayload = {}, inEditMode = false) {
+    if (!this.hasCursor()) {
+      return
+    }
     if (this.post.isBlank) {
-      this._insertEmptyMarkupSectionAtCursor();
+      this._insertEmptyMarkupSectionAtCursor()
     }
 
-    let card;
-    let { range } = this;
+    let card
+    let { range } = this
     this.run(postEditor => {
-      let position = range.tail;
-      card = postEditor.builder.createCardSection(cardName, cardPayload);
+      let position = range.tail
+      card = postEditor.builder.createCardSection(cardName, cardPayload)
       if (inEditMode) {
-        this.editCard(card);
+        this.editCard(card)
       }
 
       if (!range.isCollapsed) {
-        position = postEditor.deleteRange(range);
+        position = postEditor.deleteRange(range)
       }
 
-      let section = position.section;
-      if (section.isNested) { section = section.parent; }
+      let section = position.section
+      if (section.isNested) {
+        section = section.parent
+      }
 
       if (section.isBlank) {
-        postEditor.replaceSection(section, card);
+        postEditor.replaceSection(section, card)
       } else {
-        let collection = this.post.sections;
-        postEditor.insertSectionBefore(collection, card, section.next);
+        let collection = this.post.sections
+        postEditor.insertSectionBefore(collection, card, section.next)
       }
 
       // It is important to explicitly set the range to the end of the card.
@@ -1116,9 +1143,9 @@ class Editor {
       // will cause an unexpected DOM mutation (which can wipe out the
       // card).
       // See: https://github.com/bustle/mobiledoc-kit/issues/286
-      postEditor.setRange(card.tailPosition());
-    });
-    return card;
+      postEditor.setRange(card.tailPosition())
+    })
+    return card
   }
 
   /**
@@ -1127,40 +1154,40 @@ class Editor {
    * @return {Position|null}
    */
   positionAtPoint(x, y) {
-    return Position.atPoint(x, y, this);
+    return Position.atPoint(x, y, this)
   }
 
   /**
    * @private
    */
   _setCardMode(cardSection, mode) {
-    const renderNode = cardSection.renderNode;
+    const renderNode = cardSection.renderNode
     if (renderNode && renderNode.isRendered) {
-      const cardNode = renderNode.cardNode;
-      cardNode[mode]();
+      const cardNode = renderNode.cardNode
+      cardNode[mode]()
     } else {
-      cardSection.setInitialMode(mode);
+      cardSection.setInitialMode(mode)
     }
   }
 
   triggerEvent(context, eventName, event) {
-    this._eventManager._trigger(context, eventName, event);
+    this._eventManager._trigger(context, eventName, event)
   }
 
   addCallback(...args) {
-    this._callbacks.addCallback(...args);
+    this._callbacks.addCallback(...args)
   }
 
   addCallbackOnce(...args) {
-    this._callbacks.addCallbackOnce(...args);
+    this._callbacks.addCallbackOnce(...args)
   }
 
   runCallbacks(...args) {
     if (this.isDestroyed) {
       // TODO warn that callback attempted after editor was destroyed
-      return;
+      return
     }
-    this._callbacks.runCallbacks(...args);
+    this._callbacks.runCallbacks(...args)
   }
 
   /**
@@ -1170,13 +1197,13 @@ class Editor {
    * @private
    */
   _runBeforeHooks(hookName, ...args) {
-    let hooks = this._beforeHooks[hookName] || [];
+    let hooks = this._beforeHooks[hookName] || []
     for (let i = 0; i < hooks.length; i++) {
       if (hooks[i](...args) === false) {
-        return true;
+        return true
       }
     }
   }
 }
 
-export default Editor;
+export default Editor

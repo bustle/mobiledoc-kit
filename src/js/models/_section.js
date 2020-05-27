@@ -1,54 +1,52 @@
-import { normalizeTagName } from '../utils/dom-utils';
-import LinkedItem from '../utils/linked-item';
-import assert from '../utils/assert';
-import Position from '../utils/cursor/position';
+import { normalizeTagName } from '../utils/dom-utils'
+import LinkedItem from '../utils/linked-item'
+import assert from '../utils/assert'
+import Position from '../utils/cursor/position'
 
 function unimplementedMethod(methodName, me) {
-  assert(`\`${methodName}()\` must be implemented by ${me.constructor.name}`,
-         false);
+  assert(`\`${methodName}()\` must be implemented by ${me.constructor.name}`, false)
 }
 
 export default class Section extends LinkedItem {
   constructor(type) {
-    super();
-    assert('Cannot create section without type', !!type);
-    this.type = type;
-    this.isSection = true;
-    this.isMarkerable = false;
-    this.isNested = false;
-    this.isSection = true;
-    this.isLeafSection = true;
+    super()
+    assert('Cannot create section without type', !!type)
+    this.type = type
+    this.isSection = true
+    this.isMarkerable = false
+    this.isNested = false
+    this.isSection = true
+    this.isLeafSection = true
   }
 
   set tagName(val) {
-    let normalizedTagName = normalizeTagName(val);
-    assert(`Cannot set section tagName to ${val}`,
-           this.isValidTagName(normalizedTagName));
-    this._tagName = normalizedTagName;
+    let normalizedTagName = normalizeTagName(val)
+    assert(`Cannot set section tagName to ${val}`, this.isValidTagName(normalizedTagName))
+    this._tagName = normalizedTagName
   }
 
   get tagName() {
-    return this._tagName;
+    return this._tagName
   }
 
   isValidTagName(/* normalizedTagName */) {
-    unimplementedMethod('isValidTagName', this);
+    unimplementedMethod('isValidTagName', this)
   }
 
   get length() {
-    return 0;
+    return 0
   }
 
   get isBlank() {
-    unimplementedMethod('isBlank', this);
+    unimplementedMethod('isBlank', this)
   }
 
   clone() {
-    unimplementedMethod('clone', this);
+    unimplementedMethod('clone', this)
   }
 
   canJoin(/* otherSection */) {
-    unimplementedMethod('canJoin', this);
+    unimplementedMethod('canJoin', this)
   }
 
   /**
@@ -56,7 +54,7 @@ export default class Section extends LinkedItem {
    * @public
    */
   headPosition() {
-    return this.toPosition(0);
+    return this.toPosition(0)
   }
 
   /**
@@ -64,7 +62,7 @@ export default class Section extends LinkedItem {
    * @public
    */
   tailPosition() {
-    return this.toPosition(this.length);
+    return this.toPosition(this.length)
   }
 
   /**
@@ -73,10 +71,10 @@ export default class Section extends LinkedItem {
    * @public
    */
   toPosition(offset) {
-    assert("Must pass number to `toPosition`", typeof offset === 'number');
-    assert("Cannot call `toPosition` with offset > length", offset <= this.length);
+    assert('Must pass number to `toPosition`', typeof offset === 'number')
+    assert('Cannot call `toPosition` with offset > length', offset <= this.length)
 
-    return new Position(this, offset);
+    return new Position(this, offset)
   }
 
   /**
@@ -84,60 +82,60 @@ export default class Section extends LinkedItem {
    * @public
    */
   toRange() {
-    return this.headPosition().toRange(this.tailPosition());
+    return this.headPosition().toRange(this.tailPosition())
   }
 
   join() {
-    unimplementedMethod('join', this);
+    unimplementedMethod('join', this)
   }
 
   textUntil(/* position */) {
-    return '';
+    return ''
   }
 
   /**
    * Markerable sections should override this method
    */
   splitMarkerAtOffset() {
-    let blankEdit = { added: [], removed: [] };
-    return blankEdit;
+    let blankEdit = { added: [], removed: [] }
+    return blankEdit
   }
 
   nextLeafSection() {
-    const next = this.next;
+    const next = this.next
     if (next) {
       if (next.items) {
-        return next.items.head;
+        return next.items.head
       } else {
-        return next;
+        return next
       }
     } else {
       if (this.isNested) {
-        return this.parent.nextLeafSection();
+        return this.parent.nextLeafSection()
       }
     }
   }
 
   immediatelyNextMarkerableSection() {
-    let next = this.nextLeafSection();
+    let next = this.nextLeafSection()
     while (next && !next.isMarkerable) {
-      next = next.nextLeafSection();
+      next = next.nextLeafSection()
     }
-    return next;
+    return next
   }
 
   previousLeafSection() {
-    const prev = this.prev;
+    const prev = this.prev
 
     if (prev) {
       if (prev.items) {
-        return prev.items.tail;
+        return prev.items.tail
       } else {
-        return prev;
+        return prev
       }
     } else {
       if (this.isNested) {
-        return this.parent.previousLeafSection();
+        return this.parent.previousLeafSection()
       }
     }
   }

@@ -1,1 +1,1 @@
-export default '##VERSION##';
+export default '##VERSION##'
