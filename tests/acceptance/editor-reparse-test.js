@@ -239,6 +239,29 @@ test('inserting text into text node on left/right of atom is reparsed correctly'
   });
 });
 
+test('inserting a single character into an empty section moves the cursor forward', (assert) => {
+  let done = assert.async();
+  let expected;
+  editor = Helpers.mobiledoc.renderInto(editorElement, ({post, markupSection, marker}) => {
+    expected = post([
+      markupSection('p', [marker('Z')]),
+    ]);
+
+    return post([markupSection('p', [])]);
+  }, editorOptions);
+
+  let node = editorElement.firstChild.firstChild;
+  node.textContent = 'Z';
+
+  Helpers.wait(() => {
+    assert.postIsSimilar(editor.post, expected);
+    assert.equal(editor.range.head.offset, 1);
+    assert.equal(editor.range.tail.offset, 1);
+
+    done();
+  });
+});
+
 test('mutation inside card element does not cause reparse', (assert) => {
   let done = assert.async();
   let parseCount = 0;

@@ -465,7 +465,7 @@ class Editor {
     });
     this.rerender();
     if (currentRange) {
-      this.selectRange(currentRange);
+      this.selectRange(currentRange.move(DIRECTION.FORWARD));
     }
 
     this.runCallbacks(CALLBACK_QUEUES.DID_REPARSE);
