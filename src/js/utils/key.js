@@ -225,6 +225,8 @@ const Key = class Key {
         return this.isForwardDelete() ? DIRECTION.FORWARD : DIRECTION.BACKWARD
       case this.isHorizontalArrow():
         return this.isRightArrow() ? DIRECTION.FORWARD : DIRECTION.BACKWARD
+      default:
+        return DIRECTION.FORWARD
     }
   }
 

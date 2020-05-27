@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 function mergeWithOptions(original, updates, options) {
   options = options || {}
   for (var prop in updates) {

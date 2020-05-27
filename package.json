@@ -12,7 +12,8 @@
   "scripts": {
     "start": "rollup -c --watch",
     "test:ci": "yarn build:docs && yarn build && testem ci -f testem-ci.js",
-    "test": "yarn format && yarn build && testem ci -f testem.js",
+    "test": "yarn lint && yarn build && testem ci -f testem.js",
+    "lint": "prettier src --check && eslint src",
     "format": "prettier src --write",
     "build": "rollup -c",
     "build:docs": "jsdoc -c ./.jsdoc",
@@ -51,6 +52,8 @@
     "@rollup/plugin-commonjs": "^11.1.0",
     "@rollup/plugin-node-resolve": "^7.1.3",
     "conventional-changelog-cli": "^2.0.34",
+    "eslint": "^7.1.0",
+    "eslint-config-prettier": "^6.11.0",
     "jquery": "^3.5.1",
     "jsdoc": "^3.6.4",
     "prettier": "^2.0.5",

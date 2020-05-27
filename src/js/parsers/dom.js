@@ -8,7 +8,7 @@ import { ZWNJ } from 'mobiledoc-kit/renderers/editor-dom'
 import SectionParser from 'mobiledoc-kit/parsers/section'
 import Markup from 'mobiledoc-kit/models/markup'
 
-const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs\-internal\-guid/
+const GOOGLE_DOCS_CONTAINER_ID_REGEX = /^docs-internal-guid/
 
 const NO_BREAK_SPACE_REGEX = new RegExp(NO_BREAK_SPACE, 'g')
 const TAB_CHARACTER_REGEX = new RegExp(TAB_CHARACTER, 'g')

@@ -7,7 +7,7 @@ export const MIME_TEXT_PLAIN = 'text/plain'
 export const MIME_TEXT_HTML = 'text/html'
 export const NONSTANDARD_IE_TEXT_TYPE = 'Text'
 
-const MOBILEDOC_REGEX = new RegExp(/data\-mobiledoc='(.*?)'>/)
+const MOBILEDOC_REGEX = new RegExp(/data-mobiledoc='(.*?)'>/)
 
 /**
  * @return {Post}

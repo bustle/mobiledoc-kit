@@ -44,16 +44,16 @@ export default class Tooltip extends View {
       }, HIDE_DELAY)
     }
 
-    this.addEventListener(tooltipElement, 'mouseenter', e => {
+    this.addEventListener(tooltipElement, 'mouseenter', () => {
       clearTimeout(hideTimeout)
     })
 
-    this.addEventListener(tooltipElement, 'mouseleave', e => {
+    this.addEventListener(tooltipElement, 'mouseleave', () => {
       scheduleHide()
     })
 
-    this.addEventListener(rootElement, 'mouseover', e => {
-      let target = getEventTargetMatchingTag(options.showForTag, e.target, rootElement)
+    this.addEventListener(rootElement, 'mouseover', event => {
+      let target = getEventTargetMatchingTag(options.showForTag, event.target, rootElement)
 
       if (target && target.isContentEditable) {
         clearTimeout(hideTimeout)
@@ -63,7 +63,7 @@ export default class Tooltip extends View {
       }
     })
 
-    this.addEventListener(rootElement, 'mouseout', e => {
+    this.addEventListener(rootElement, 'mouseout', () => {
       clearTimeout(showTimeout)
       if (this.elementObserver) {
         this.elementObserver.cancel()

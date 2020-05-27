@@ -37,6 +37,7 @@ export default class Section extends LinkedItem {
     return 0
   }
 
+  // eslint-disable-next-line getter-return
   get isBlank() {
     unimplementedMethod('isBlank', this)
   }
