@@ -6,12 +6,15 @@ module.exports = {
     },
     "extends": [
         "eslint:recommended",
-        "prettier"
+        "prettier",
+        "prettier/@typescript-eslint"
     ],
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"
     },
+    "plugins": ["@typescript-eslint"],
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": 11,
         "sourceType": "module"
