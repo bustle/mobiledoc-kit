@@ -1,66 +1,63 @@
-import { LIST_SECTION_TYPE } from './types';
-import Section from './_section';
-import { attributable } from './_attributable';
+import { LIST_SECTION_TYPE } from './types'
+import Section from './_section'
+import { attributable } from './_attributable'
 
-import LinkedList from '../utils/linked-list';
-import { forEach, contains } from '../utils/array-utils';
-import { normalizeTagName } from '../utils/dom-utils';
-import assert from '../utils/assert';
-import { entries } from '../utils/object-utils';
+import LinkedList from '../utils/linked-list'
+import { forEach, contains } from '../utils/array-utils'
+import { normalizeTagName } from '../utils/dom-utils'
+import assert from '../utils/assert'
+import { entries } from '../utils/object-utils'
 
-export const VALID_LIST_SECTION_TAGNAMES = [
-  'ul', 'ol'
-].map(normalizeTagName);
+export const VALID_LIST_SECTION_TAGNAMES = ['ul', 'ol'].map(normalizeTagName)
 
-export const DEFAULT_TAG_NAME = VALID_LIST_SECTION_TAGNAMES[0];
+export const DEFAULT_TAG_NAME = VALID_LIST_SECTION_TAGNAMES[0]
 
 export default class ListSection extends Section {
-  constructor(tagName=DEFAULT_TAG_NAME, items=[], attributes={}) {
-    super(LIST_SECTION_TYPE);
-    this.tagName = tagName;
-    this.isListSection = true;
-    this.isLeafSection = false;
+  constructor(tagName = DEFAULT_TAG_NAME, items = [], attributes = {}) {
+    super(LIST_SECTION_TYPE)
+    this.tagName = tagName
+    this.isListSection = true
+    this.isLeafSection = false
 
-    attributable(this);
-    entries(attributes).forEach(([k,v]) => this.setAttribute(k, v));
+    attributable(this)
+    entries(attributes).forEach(([k, v]) => this.setAttribute(k, v))
 
     this.items = new LinkedList({
       adoptItem: i => {
-        assert(`Cannot insert non-list-item to list (is: ${i.type})`,
-               i.isListItem);
-        i.section = i.parent = this;
+        assert(`Cannot insert non-list-item to list (is: ${i.type})`, i.isListItem)
+        i.section = i.parent = this
       },
-      freeItem:  i => i.section = i.parent = null
-    });
-    this.sections = this.items;
+      freeItem: i => (i.section = i.parent = null),
+    })
+    this.sections = this.items
 
-    items.forEach(i => this.items.append(i));
+    items.forEach(i => this.items.append(i))
   }
 
   canJoin() {
-    return false;
+    return false
   }
 
   isValidTagName(normalizedTagName) {
-    return contains(VALID_LIST_SECTION_TAGNAMES, normalizedTagName);
+    return contains(VALID_LIST_SECTION_TAGNAMES, normalizedTagName)
   }
 
   headPosition() {
-    return this.items.head.headPosition();
+    return this.items.head.headPosition()
   }
 
   tailPosition() {
-    return this.items.tail.tailPosition();
+    return this.items.tail.tailPosition()
   }
 
   get isBlank() {
-    return this.items.isEmpty;
+    return this.items.isEmpty
   }
 
   clone() {
-    let newSection = this.builder.createListSection(this.tagName);
-    forEach(this.items, i => newSection.items.append(i.clone()));
-    return newSection;
+    let newSection = this.builder.createListSection(this.tagName)
+    forEach(this.items, i => newSection.items.append(i.clone()))
+    return newSection
   }
 
   /**
@@ -70,11 +67,11 @@ export default class ListSection extends Section {
    */
   join(other) {
     if (other.isListSection) {
-      other.items.forEach(i => this.join(i));
+      other.items.forEach(i => this.join(i))
     } else if (other.isMarkerable) {
-      let item = this.builder.createListItem();
-      item.join(other);
-      this.items.append(item);
+      let item = this.builder.createListItem()
+      item.join(other)
+      this.items.append(item)
     }
   }
 }

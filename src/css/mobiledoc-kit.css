@@ -96,26 +96,34 @@
  */
 
 @-webkit-keyframes fade-in {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 @keyframes fade-in {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .__mobiledoc-tooltip {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 0.7em;
   white-space: nowrap;
   position: absolute;
-  background-color: rgba(43,43,43,0.9);
+  background-color: rgba(43, 43, 43, 0.9);
   border-radius: 3px;
   line-height: 1em;
   padding: 0.7em 0.9em;
-  color: #FFF;
+  color: #fff;
   -webkit-animation: fade-in 0.2s;
-          animation: fade-in 0.2s;
+  animation: fade-in 0.2s;
 }
 
 .__mobiledoc-tooltip:before {
@@ -126,7 +134,7 @@
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 5px solid rgba(43,43,43,0.9);
+  border-bottom: 5px solid rgba(43, 43, 43, 0.9);
   top: -5px;
   margin-left: -5px;
 }
@@ -142,7 +150,7 @@
 }
 
 .__mobiledoc-tooltip a {
-  color: #FFF;
+  color: #fff;
   text-decoration: none;
 }
 

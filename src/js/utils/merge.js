@@ -1,13 +1,14 @@
+/* eslint-disable no-prototype-builtins */
 function mergeWithOptions(original, updates, options) {
-  options = options || {};
-  for(var prop in updates) {
+  options = options || {}
+  for (var prop in updates) {
     if (options.hasOwnProperty(prop)) {
-      original[prop] = options[prop];
+      original[prop] = options[prop]
     } else if (updates.hasOwnProperty(prop)) {
-      original[prop] = updates[prop];
+      original[prop] = updates[prop]
     }
   }
-  return original;
+  return original
 }
 
 /**
@@ -15,7 +16,7 @@ function mergeWithOptions(original, updates, options) {
  * @private
  */
 function merge(original, updates) {
-  return mergeWithOptions(original, updates);
+  return mergeWithOptions(original, updates)
 }
 
-export { mergeWithOptions, merge };
+export { mergeWithOptions, merge }

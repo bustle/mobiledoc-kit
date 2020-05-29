@@ -1,11 +1,9 @@
 function shallowCopyObject(object) {
-  let copy = {};
+  let copy = {}
   Object.keys(object).forEach(key => {
-    copy[key] = object[key];
-  });
-  return copy;
+    copy[key] = object[key]
+  })
+  return copy
 }
 
-export {
-  shallowCopyObject
-};
+export { shallowCopyObject }

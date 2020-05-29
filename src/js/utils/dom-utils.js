@@ -1,49 +1,48 @@
-import { forEach } from './array-utils';
+import { forEach } from './array-utils'
 
 export const NODE_TYPES = {
   ELEMENT: 1,
   TEXT: 3,
-  COMMENT: 8
-};
+  COMMENT: 8,
+}
 
 function isTextNode(node) {
-  return node.nodeType === NODE_TYPES.TEXT;
+  return node.nodeType === NODE_TYPES.TEXT
 }
 
 function isCommentNode(node) {
-  return node.nodeType === NODE_TYPES.COMMENT;
+  return node.nodeType === NODE_TYPES.COMMENT
 }
 
 function isElementNode(node) {
-  return node.nodeType === NODE_TYPES.ELEMENT;
+  return node.nodeType === NODE_TYPES.ELEMENT
 }
 
 // perform a pre-order tree traversal of the dom, calling `callbackFn(node)`
 // for every node for which `conditionFn(node)` is true
-function walkDOM(topNode, callbackFn=()=>{}, conditionFn=()=>true) {
-  let currentNode = topNode;
+function walkDOM(topNode, callbackFn = () => {}, conditionFn = () => true) {
+  let currentNode = topNode
 
   if (conditionFn(currentNode)) {
-    callbackFn(currentNode);
+    callbackFn(currentNode)
   }
 
-  currentNode = currentNode.firstChild;
+  currentNode = currentNode.firstChild
 
   while (currentNode) {
-    walkDOM(currentNode, callbackFn, conditionFn);
-    currentNode = currentNode.nextSibling;
+    walkDOM(currentNode, callbackFn, conditionFn)
+    currentNode = currentNode.nextSibling
   }
 }
 
-function walkTextNodes(topNode, callbackFn=()=>{}) {
-  const conditionFn = (node) => isTextNode(node);
-  walkDOM(topNode, callbackFn, conditionFn);
+function walkTextNodes(topNode, callbackFn = () => {}) {
+  const conditionFn = node => isTextNode(node)
+  walkDOM(topNode, callbackFn, conditionFn)
 }
-
 
 function clearChildNodes(element) {
   while (element.childNodes.length) {
-    element.removeChild(element.childNodes[0]);
+    element.removeChild(element.childNodes[0])
   }
 }
 
@@ -56,10 +55,10 @@ function clearChildNodes(element) {
  */
 function containsNode(parentNode, childNode) {
   if (parentNode === childNode) {
-    return true;
+    return true
   }
-  const position = parentNode.compareDocumentPosition(childNode);
-  return !!(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
+  const position = parentNode.compareDocumentPosition(childNode)
+  return !!(position & Node.DOCUMENT_POSITION_CONTAINED_BY)
 }
 
 /**
@@ -70,37 +69,37 @@ function containsNode(parentNode, childNode) {
  * @private
  */
 function getAttributes(element) {
-  const result = {};
+  const result = {}
   if (element.hasAttributes()) {
-    forEach(element.attributes, ({name,value}) => {
-      result[name] = value;
-    });
+    forEach(element.attributes, ({ name, value }) => {
+      result[name] = value
+    })
   }
-  return result;
+  return result
 }
 
 function addClassName(element, className) {
-  element.classList.add(className);
+  element.classList.add(className)
 }
 
 function removeClassName(element, className) {
-  element.classList.remove(className);
+  element.classList.remove(className)
 }
 
 function normalizeTagName(tagName) {
-  return tagName.toLowerCase();
+  return tagName.toLowerCase()
 }
 
 function parseHTML(html) {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div;
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return div
 }
 
 function serializeHTML(node) {
-  const div = document.createElement('div');
-  div.appendChild(node);
-  return div.innerHTML;
+  const div = document.createElement('div')
+  div.appendChild(node)
+  return div.innerHTML
 }
 
 export {
@@ -116,5 +115,5 @@ export {
   isCommentNode,
   isElementNode,
   parseHTML,
-  serializeHTML
-};
+  serializeHTML,
+}

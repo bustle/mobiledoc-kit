@@ -1,54 +1,55 @@
-import assert from '../utils/assert';
+import assert from '../utils/assert'
 
 export default class CardNode {
   constructor(editor, card, section, element, options) {
-    this.editor  = editor;
-    this.card    = card;
-    this.section = section;
-    this.element = element;
-    this.options = options;
+    this.editor = editor
+    this.card = card
+    this.section = section
+    this.element = element
+    this.options = options
 
-    this.mode = null;
+    this.mode = null
 
-    this._teardownCallback = null;
-    this._rendered         = null;
+    this._teardownCallback = null
+    this._rendered = null
   }
 
   render(mode) {
-    if (this.mode === mode) { return; }
+    if (this.mode === mode) {
+      return
+    }
 
-    this.teardown();
+    this.teardown()
 
-    this.mode = mode;
+    this.mode = mode
 
-    let method = mode === 'display' ? 'render' : 'edit';
-    method = this.card[method];
+    let method = mode === 'display' ? 'render' : 'edit'
+    method = this.card[method]
 
-    assert(`Card is missing "${method}" (tried to render mode: "${mode}")`,
-           !!method);
+    assert(`Card is missing "${method}" (tried to render mode: "${mode}")`, !!method)
     let rendered = method({
       env: this.env,
       options: this.options,
-      payload: this.section.payload
-    });
+      payload: this.section.payload,
+    })
 
-    this._validateAndAppendRenderResult(rendered);
+    this._validateAndAppendRenderResult(rendered)
   }
 
   teardown() {
     if (this._teardownCallback) {
-      this._teardownCallback();
-      this._teardownCallback = null;
+      this._teardownCallback()
+      this._teardownCallback = null
     }
     if (this._rendered) {
-      this.element.removeChild(this._rendered);
-      this._rendered = null;
+      this.element.removeChild(this._rendered)
+      this._rendered = null
     }
   }
 
   didRender() {
     if (this._didRenderCallback) {
-      this._didRenderCallback();
+      this._didRenderCallback()
     }
   }
 
@@ -56,47 +57,46 @@ export default class CardNode {
     return {
       name: this.card.name,
       isInEditor: true,
-      onTeardown: (callback) => this._teardownCallback = callback,
-      didRender: (callback) => this._didRenderCallback = callback,
+      onTeardown: callback => (this._teardownCallback = callback),
+      didRender: callback => (this._didRenderCallback = callback),
       edit: () => this.edit(),
-      save: (payload, transition=true) => {
-        this.section.payload = payload;
+      save: (payload, transition = true) => {
+        this.section.payload = payload
 
-        this.editor._postDidChange();
+        this.editor._postDidChange()
         if (transition) {
-          this.display();
+          this.display()
         }
       },
       cancel: () => this.display(),
       remove: () => this.remove(),
-      postModel: this.section
-    };
+      postModel: this.section,
+    }
   }
 
   display() {
-    this.render('display');
+    this.render('display')
   }
 
   edit() {
-    this.render('edit');
+    this.render('edit')
   }
 
   remove() {
-    this.editor.run(postEditor => postEditor.removeSection(this.section));
+    this.editor.run(postEditor => postEditor.removeSection(this.section))
   }
 
   _validateAndAppendRenderResult(rendered) {
     if (!rendered) {
-      return;
+      return
     }
 
-    let { card: { name } } = this;
-    assert(
-      `Card "${name}" must render dom (render value was: "${rendered}")`,
-      !!rendered.nodeType
-    );
-    this.element.appendChild(rendered);
-    this._rendered = rendered;
-    this.didRender();
+    let {
+      card: { name },
+    } = this
+    assert(`Card "${name}" must render dom (render value was: "${rendered}")`, !!rendered.nodeType)
+    this.element.appendChild(rendered)
+    this._rendered = rendered
+    this.didRender()
   }
 }
