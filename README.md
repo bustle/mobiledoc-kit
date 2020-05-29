@@ -448,7 +448,7 @@ editor.render(element);
 
 Fork the repo, write a test, make a change, open a PR.
 
-### Tests
+### Tests, Linting, Formatting
 
 Install dependencies via yarn:
 
@@ -466,6 +466,14 @@ Or run headless tests via testem:
   * `yarn test`
 
 Tests in CI are run at Travis via Saucelabs (see the `test:ci` yarn script).
+
+Run linter
+
+* `yarn lint`
+
+Run formatting
+
+* `yarn format`
 
 ### Demo
 
