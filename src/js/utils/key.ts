@@ -1,6 +1,7 @@
 import Keycodes from './keycodes'
 import Keys from './keys'
-import { TAB } from 'mobiledoc-kit/utils/characters'
+import assert from './assert'
+import { TAB } from './characters'
 
 /**
  * @typedef Direction
@@ -12,7 +13,6 @@ export const DIRECTION = {
   FORWARD: 1,
   BACKWARD: -1,
 }
-import assert from './assert'
 
 export const MODIFIERS = {
   META: 1, // also called "command" on OS X
@@ -21,11 +21,12 @@ export const MODIFIERS = {
   ALT: 8, // also called "option" on OS X
 }
 
-export function modifierMask(event) {
+export function modifierMask(event: KeyboardEvent) {
   let { metaKey, shiftKey, ctrlKey, altKey } = event
-  let modVal = (val, modifier) => {
+  let modVal = (val: boolean, modifier: number) => {
     return (val && modifier) || 0
   }
+
   return (
     modVal(metaKey, MODIFIERS.META) +
     modVal(shiftKey, MODIFIERS.SHIFT) +
@@ -52,12 +53,12 @@ const SPECIAL_KEYS = {
   DEL: Keycodes.DELETE,
 }
 
-export function specialCharacterToCode(specialCharacter) {
+export function specialCharacterToCode(specialCharacter: keyof typeof SPECIAL_KEYS) {
   return SPECIAL_KEYS[specialCharacter]
 }
 
 // heuristic for determining if `event` is a key event
-function isKeyEvent(event) {
+function isKeyEvent(event: Event) {
   return /^key/.test(event.type)
 }
 
@@ -66,8 +67,14 @@ function isKeyEvent(event) {
  * that key listeners in the editor can use
  * to determine what sort of key was pressed
  */
-const Key = class Key {
-  constructor(event) {
+export default class Key {
+  key: string
+  keyCode: number
+  charCode: number
+  event: KeyboardEvent
+  modifierMask: number
+
+  constructor(event: KeyboardEvent) {
     this.key = event.key
     this.keyCode = event.keyCode
     this.charCode = event.charCode
@@ -75,7 +82,7 @@ const Key = class Key {
     this.modifierMask = modifierMask(event)
   }
 
-  static fromEvent(event) {
+  static fromEvent(event: KeyboardEvent) {
     assert('Must pass a Key event to Key.fromEvent', event && isKeyEvent(event))
     return new Key(event)
   }
@@ -92,12 +99,12 @@ const Key = class Key {
     return this.key
   }
 
-  isKey(identifier) {
+  isKey(identifier: keyof typeof Keys) {
     if (this.isKeySupported()) {
-      assert(`Must define Keys.${identifier}.`, Keys[identifier])
+      assert(`Must define Keys.${identifier}.`, !!Keys[identifier])
       return this.key === Keys[identifier]
     } else {
-      assert(`Must define Keycodes.${identifier}.`, Keycodes[identifier])
+      assert(`Must define Keycodes.${identifier}.`, !!Keycodes[identifier])
       return this.keyCode === Keycodes[identifier]
     }
   }
@@ -242,7 +249,7 @@ const Key = class Key {
     return this.shiftKey
   }
 
-  hasModifier(modifier) {
+  hasModifier(modifier: number) {
     return modifier & this.modifierMask
   }
 
@@ -338,5 +345,3 @@ const Key = class Key {
     )
   }
 }
-
-export default Key
