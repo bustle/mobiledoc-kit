@@ -1,13 +1,28 @@
 import { forEach } from './array-utils'
 import assert from './assert'
 
-export function visit(visitor, node, opcodes) {
+type Opcode = [string] | [string, unknown] | [string, unknown, unknown]
+type Opcodes = Opcode[]
+
+interface Visitor {
+  [key: string]: (node: CompileNode, opcodes: Opcodes) => void
+}
+
+interface CompileNode {
+  type: string
+}
+
+export function visit(visitor: Visitor, node: CompileNode, opcodes: Opcodes) {
   const method = node.type
   assert(`Cannot visit unknown type ${method}`, !!visitor[method])
   visitor[method](node, opcodes)
 }
 
-export function compile(compiler, opcodes) {
+interface Compiler {
+  [key: string]: (...args: unknown[]) => void
+}
+
+export function compile(compiler: Compiler, opcodes: Opcodes) {
   for (var i = 0, l = opcodes.length; i < l; i++) {
     let [method, ...params] = opcodes[i]
     let length = params.length
@@ -23,7 +38,7 @@ export function compile(compiler, opcodes) {
   }
 }
 
-export function visitArray(visitor, nodes, opcodes) {
+export function visitArray(visitor: Visitor, nodes: CompileNode[], opcodes: Opcodes) {
   if (!nodes || nodes.length === 0) {
     return
   }
