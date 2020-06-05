@@ -19,11 +19,6 @@ interface PartialCoords {
   left: number
 }
 
-interface Coords extends PartialCoords {
-  bottom: number
-  right: number
-}
-
 function findOffsetInTextNode(node: Text, coords: PartialCoords) {
   let len = node.nodeValue!.length
   let range = document.createRange()
