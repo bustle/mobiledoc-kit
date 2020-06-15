@@ -78,7 +78,7 @@ export function forEach<T>(enumerable: ForEachable<T> | HasLength<T>, callback: 
   }
 }
 
-export function filter<T>(enumerable: ArrayLike<T>, conditionFn: (val: T) => boolean) {
+export function filter<T>(enumerable: ForEachable<T>, conditionFn: (val: T) => boolean) {
   const filtered: T[] = []
 
   forEach(enumerable, i => {
@@ -125,12 +125,12 @@ export function commonItems<T>(listA: T[], listB: T[]): T[] {
 }
 
 // return new array without falsy items like ruby's `compact`
-export function compact<T>(enumerable: ArrayLike<T>) {
+export function compact<T>(enumerable: ForEachable<T>) {
   return filter(enumerable, i => !!i)
 }
 
 export function reduce<T, U>(
-  enumerable: ArrayLike<T>,
+  enumerable: ForEachable<T>,
   callback: (prev: U, val: T, index: number) => U,
   initialValue: U
 ): U {

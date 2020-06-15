@@ -45,8 +45,8 @@ export function positionElementToRect(element: HTMLElement, rect: ClientRect, to
   leftOffset = leftOffset || 0
   left = round(rect.left - relativeOffset.left - leftOffset)
   top = round(rect.top + rect.height - relativeOffset.top - topOffset)
-  style.left = left + 'px'
-  style.top = top + 'px'
+  style.left = `${left}px`
+  style.top = `${top}px`
   return { left: left, top: top }
 }
 

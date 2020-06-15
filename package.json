@@ -12,7 +12,7 @@
   "scripts": {
     "start": "rollup -c --watch",
     "test:ci": "yarn build:docs && yarn build && testem ci -f testem-ci.js",
-    "test": "yarn lint && yarn build && testem ci -f testem.js",
+    "test": "yarn format && yarn build && testem ci -f testem.js",
     "lint": "prettier src/**/*.{js,ts} --check && eslint src/**/*.{js,ts}",
     "format": "prettier src --write",
     "build": "rollup -c",

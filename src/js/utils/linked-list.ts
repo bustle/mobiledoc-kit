@@ -7,8 +7,7 @@ interface LinkedListOptions<T> {
   freeItem?: FreeItemCallback<T>
 }
 
-interface LinkedListItem<T extends LinkedListItem<T>> {
-  [PARENT_PROP]: LinkedList<T> | null
+export interface LinkedListItem<T extends LinkedListItem<T>> {
   next: T | null
   prev: T | null
 }
@@ -38,7 +37,7 @@ export default class LinkedList<T extends LinkedListItem<T>> {
   }
 
   adoptItem(item: T) {
-    item[PARENT_PROP] = this
+    ;(item as any)[PARENT_PROP] = this
     this.length++
     if (this._adoptItem) {
       this._adoptItem(item)
@@ -46,7 +45,7 @@ export default class LinkedList<T extends LinkedListItem<T>> {
   }
 
   freeItem(item: T) {
-    item[PARENT_PROP] = null
+    ;(item as any)[PARENT_PROP] = null
     this.length--
     if (this._freeItem) {
       this._freeItem(item)
@@ -125,7 +124,7 @@ export default class LinkedList<T extends LinkedListItem<T>> {
   }
 
   remove(item: T) {
-    if (!item[PARENT_PROP]) {
+    if (!getParent(item)) {
       return
     }
     this._ensureItemIsInThisList(item)
@@ -247,10 +246,14 @@ export default class LinkedList<T extends LinkedListItem<T>> {
   }
 
   _ensureItemIsNotInList(item: T) {
-    assert('Cannot insert an item into a list if it is already in a list', !item[PARENT_PROP])
+    assert('Cannot insert an item into a list if it is already in a list', !(item as any)[PARENT_PROP])
   }
 
   _ensureItemIsInThisList(item: T) {
-    assert('Cannot remove item that is in another list', item[PARENT_PROP] === this)
+    assert('Cannot remove item that is in another list', getParent(item) === this)
   }
+}
+
+function getParent<T extends LinkedListItem<T>>(item: {}): LinkedList<T> | null {
+  return (item as any)[PARENT_PROP] || null
 }

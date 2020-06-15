@@ -7,27 +7,27 @@ interface ElementKey {
   _uuid?: string
 }
 
-export default class ElementMap {
+export default class ElementMap<T> {
   _map: {
-    [key: string]: unknown
+    [key: string]: T
   } = {}
 
-  set(key: ElementKey, value: unknown) {
-    let uuid = key._uuid
+  set(key: object, value: T) {
+    let uuid = (key as ElementKey)._uuid
     if (!uuid) {
-      key._uuid = uuid = '' + uuidGenerator++
+      ;(key as ElementKey)._uuid = uuid = '' + uuidGenerator++
     }
     this._map[uuid] = value
   }
 
-  get(key: ElementKey) {
-    if (key._uuid) {
-      return this._map[key._uuid]
+  get(key: object) {
+    if ((key as ElementKey)._uuid) {
+      return this._map[(key as ElementKey)._uuid!]
     }
     return null
   }
 
-  remove(key: ElementKey) {
+  remove(key: object) {
     assertHasUuid(key)
     delete this._map[key._uuid]
   }

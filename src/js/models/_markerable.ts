@@ -1,12 +1,19 @@
 import { forEach, reduce } from '../utils/array-utils'
 import Set from '../utils/set'
+import Marker from './marker'
 
 import LinkedList from '../utils/linked-list'
 import Section from './_section'
 import assert from '../utils/assert'
+import Position from '../utils/cursor/position'
+import { Range } from '../utils/cursor'
 
-export default class Markerable extends Section {
-  constructor(type, tagName, markers = []) {
+export default abstract class Markerable extends Section {
+  tagName: string
+  markers: LinkedList<Marker>
+  builder: any
+
+  constructor(type: string, tagName: string, markers = []) {
     super(type)
     this.isMarkerable = true
     this.tagName = tagName
@@ -21,7 +28,7 @@ export default class Markerable extends Section {
     markers.forEach(m => this.markers.append(m))
   }
 
-  canJoin(other) {
+  canJoin(other: Section) {
     return other.isMarkerable && other.type === this.type && other.tagName === this.tagName
   }
 
@@ -37,7 +44,7 @@ export default class Markerable extends Section {
     return this.markers.every(m => m.isBlank)
   }
 
-  textUntil(position) {
+  textUntil(position: Position) {
     assert(`Cannot get textUntil for a position not in this section`, position.section === this)
     let { marker, offsetInMarker } = position
     let text = ''
@@ -60,7 +67,7 @@ export default class Markerable extends Section {
    *
    * @return {Number} The offset relative to the start of this section
    */
-  offsetOfMarker(marker, markerOffset = 0) {
+  offsetOfMarker(marker: Marker, markerOffset = 0) {
     assert(`Cannot get offsetOfMarker for marker that is not child of this`, marker.section === this)
 
     // FIXME it is possible, when we get a cursor position before having finished reparsing,
@@ -81,7 +88,7 @@ export default class Markerable extends Section {
   // all markers before the marker/offset split go in beforeSection, and all
   // after the marker/offset split go in afterSection
   // @return {Array} [beforeSection, afterSection], two new sections
-  _redistributeMarkers(beforeSection, afterSection, marker, offset = 0) {
+  _redistributeMarkers(beforeSection: Markerable, afterSection: Markerable, marker: Marker, offset = 0) {
     let currentSection = beforeSection
     forEach(this.markers, m => {
       if (m === marker) {
@@ -97,9 +104,7 @@ export default class Markerable extends Section {
     return [beforeSection, afterSection]
   }
 
-  splitAtMarker(/*marker, offset=0*/) {
-    assert('splitAtMarker must be implemented by sub-class', false)
-  }
+  abstract splitAtMarker(marker: Marker, offset: number): [Section, Section]
 
   /**
    * Split this section's marker (if any) at the given offset, so that
@@ -110,12 +115,12 @@ export default class Markerable extends Section {
    * After calling `splitMarkerAtOffset(offset)`, there will always be a valid
    * result returned from `markerBeforeOffset(offset)`.
    */
-  splitMarkerAtOffset(sectionOffset) {
+  splitMarkerAtOffset(sectionOffset: number) {
     assert('Cannot splitMarkerAtOffset when offset is > length', sectionOffset <= this.length)
     let markerOffset
     let len = 0
     let currentMarker = this.markers.head
-    let edit = { added: [], removed: [] }
+    let edit: { added: Marker[]; removed: Marker[] } = { added: [], removed: [] }
 
     if (!currentMarker) {
       let blankMarker = this.builder.createMarker()
@@ -143,7 +148,7 @@ export default class Markerable extends Section {
     return edit
   }
 
-  splitAtPosition(position) {
+  splitAtPosition(position: Position) {
     const { marker, offsetInMarker } = position
     return this.splitAtMarker(marker, offsetInMarker)
   }
@@ -151,7 +156,7 @@ export default class Markerable extends Section {
   // returns the marker just before this offset.
   // It is an error to call this method with an offset that is in the middle
   // of a marker.
-  markerBeforeOffset(sectionOffset) {
+  markerBeforeOffset(sectionOffset: number) {
     let len = 0
     let currentMarker = this.markers.head
 
@@ -166,7 +171,7 @@ export default class Markerable extends Section {
     }
   }
 
-  markerPositionAtOffset(offset) {
+  markerPositionAtOffset(offset: number) {
     let currentOffset = 0
     let currentMarker
     let remaining = offset
@@ -177,6 +182,7 @@ export default class Markerable extends Section {
         currentMarker = marker
         return true // break out of detect
       }
+      return false
     })
 
     return { marker: currentMarker, offset: currentOffset }
@@ -194,10 +200,10 @@ export default class Markerable extends Section {
    * @return {Array} New markers that match the boundaries of the
    * range. Does not change the existing markers in this section.
    */
-  markersFor(headOffset, tailOffset) {
-    const range = { head: { section: this, offset: headOffset }, tail: { section: this, offset: tailOffset } }
+  markersFor(headOffset: number, tailOffset: number) {
+    const range = Range.create(this, headOffset, this, tailOffset)
 
-    let markers = []
+    let markers: Marker[] = []
     this._markersInRange(range, (marker, { markerHead, markerTail, isContained }) => {
       const cloned = marker.clone()
       if (!isContained) {
@@ -211,7 +217,7 @@ export default class Markerable extends Section {
     return markers
   }
 
-  markupsInRange(range) {
+  markupsInRange(range: Range) {
     const markups = new Set()
     this._markersInRange(range, marker => {
       marker.markups.forEach(m => markups.add(m))
@@ -221,7 +227,10 @@ export default class Markerable extends Section {
 
   // calls the callback with (marker, {markerHead, markerTail, isContained})
   // for each marker that is wholly or partially contained in the range.
-  _markersInRange(range, callback) {
+  _markersInRange(
+    range: Range,
+    callback: (marker: Marker, info: { markerHead: number; markerTail: number; isContained: boolean }) => void
+  ) {
     const { head, tail } = range
     assert(
       'Cannot call #_markersInRange if range expands beyond this section',
@@ -255,9 +264,9 @@ export default class Markerable extends Section {
   }
 
   // mutates this by appending the other section's (cloned) markers to it
-  join(otherSection) {
+  join(otherSection: Markerable) {
     let beforeMarker = this.markers.tail
-    let afterMarker = null
+    let afterMarker: Marker | null = null
 
     otherSection.markers.forEach(m => {
       if (!m.isBlank) {

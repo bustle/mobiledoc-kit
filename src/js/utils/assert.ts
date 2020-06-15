@@ -1,6 +1,6 @@
 import MobiledocError from './mobiledoc-error'
 
-export default function (message: string, conditional: boolean) {
+export default function (message: string, conditional: boolean): asserts conditional {
   if (!conditional) {
     throw new MobiledocError(message)
   }

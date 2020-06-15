@@ -12,8 +12,8 @@ type MarkupOrMarkupCallback = Markup | MarkupCallback
 export default class Markerupable {
   markups: Markup[] = []
 
-  prev?: Markerupable
-  next?: Markerupable
+  prev: this | null = null
+  next: this | null = null
 
   clearMarkups() {
     this.markups = []

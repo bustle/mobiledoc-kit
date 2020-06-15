@@ -248,6 +248,8 @@ module.exports = {
         "no-unmodified-loop-condition": "off",
         "no-unneeded-ternary": "off",
         "no-unused-expressions": "off",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": ["error"],
         "no-useless-backreference": "error",
         "no-useless-call": "off",
         "no-useless-computed-key": "error",
