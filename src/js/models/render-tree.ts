@@ -1,8 +1,15 @@
-import RenderNode from 'mobiledoc-kit/models/render-node'
+import RenderNode from '../models/render-node'
 import ElementMap from '../utils/element-map'
 
+interface Post {
+  renderNode: RenderNode
+}
+
 export default class RenderTree {
-  constructor(rootPostNode) {
+  _rootNode: RenderNode
+  _elements: ElementMap<RenderNode>
+
+  constructor(rootPostNode: Post) {
     this._rootNode = this.buildRenderNode(rootPostNode)
     this._elements = new ElementMap()
   }
@@ -28,32 +35,34 @@ export default class RenderTree {
    * @param {DOMNode} element
    * @return {RenderNode} The renderNode for this element, if any
    */
-  getElementRenderNode(element) {
+  getElementRenderNode(element: Node) {
     return this._elements.get(element)
   }
-  setElementRenderNode(element, renderNode) {
+  setElementRenderNode(element: Node, renderNode: RenderNode) {
     this._elements.set(element, renderNode)
   }
-  removeElementRenderNode(element) {
+  removeElementRenderNode(element: Node) {
     this._elements.remove(element)
   }
   /**
    * @param {DOMNode} element
    * Walk up from the dom element until we find a renderNode element
    */
-  findRenderNodeFromElement(element, conditionFn = () => true) {
-    let renderNode
-    while (element) {
-      renderNode = this.getElementRenderNode(element)
+  findRenderNodeFromElement(element: Node, conditionFn: (node: RenderNode) => boolean = () => true) {
+    let renderNode: RenderNode | null
+    let _element: Node | null = element
+
+    while (_element) {
+      renderNode = this.getElementRenderNode(_element)
       if (renderNode && conditionFn(renderNode)) {
         return renderNode
       }
 
       // continue loop
-      element = element.parentNode
+      _element = _element.parentElement
 
       // stop if we are at the root element
-      if (element === this.rootElement) {
+      if (_element === this.rootElement) {
         if (conditionFn(this.rootNode)) {
           return this.rootNode
         } else {
@@ -62,7 +71,8 @@ export default class RenderTree {
       }
     }
   }
-  buildRenderNode(postNode) {
+
+  buildRenderNode(postNode: Post) {
     const renderNode = new RenderNode(postNode, this)
     postNode.renderNode = renderNode
     return renderNode

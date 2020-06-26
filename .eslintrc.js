@@ -6,12 +6,15 @@ module.exports = {
     },
     "extends": [
         "eslint:recommended",
-        "prettier"
+        "prettier",
+        "prettier/@typescript-eslint"
     ],
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"
     },
+    "plugins": ["@typescript-eslint"],
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": 11,
         "sourceType": "module"
@@ -244,8 +247,9 @@ module.exports = {
         "no-underscore-dangle": "off",
         "no-unmodified-loop-condition": "off",
         "no-unneeded-ternary": "off",
-        "no-unused-expressions": "error",
-        "no-use-before-define": "error",
+        "no-unused-expressions": "off",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": ["error"],
         "no-useless-backreference": "error",
         "no-useless-call": "off",
         "no-useless-computed-key": "error",

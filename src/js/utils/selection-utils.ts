@@ -1,19 +1,26 @@
-import { DIRECTION } from '../utils/key'
-import { isTextNode, isElementNode } from 'mobiledoc-kit/utils/dom-utils'
+import { DIRECTION } from './key'
+import { isTextNode, isElementNode } from './dom-utils'
+import { assertNotNull } from './assert'
 
-function clearSelection() {
-  window.getSelection().removeAllRanges()
+export function clearSelection() {
+  const selection = window.getSelection()
+  selection && selection.removeAllRanges()
 }
 
-function textNodeRects(node) {
+function textNodeRects(node: Text) {
   let range = document.createRange()
-  range.setEnd(node, node.nodeValue.length)
+  range.setEnd(node, node.nodeValue!.length)
   range.setStart(node, 0)
   return range.getClientRects()
 }
 
-function findOffsetInTextNode(node, coords) {
-  let len = node.nodeValue.length
+interface PartialCoords {
+  top: number
+  left: number
+}
+
+function findOffsetInTextNode(node: Text, coords: PartialCoords) {
+  let len = node.nodeValue!.length
   let range = document.createRange()
   for (let i = 0; i < len; i++) {
     range.setEnd(node, i + 1)
@@ -35,10 +42,10 @@ function findOffsetInTextNode(node, coords) {
  * @return {Object} {node, offset}
  */
 /* eslint-disable complexity */
-function findOffsetInNode(node, coords) {
+export function findOffsetInNode(node: Node, coords: PartialCoords): { node: Node; offset: number } {
   let closest,
     dyClosest = 1e8,
-    coordsClosest,
+    coordsClosest: PartialCoords,
     offset = 0
   for (let child = node.firstChild; child; child = child.nextSibling) {
     let rects
@@ -73,16 +80,16 @@ function findOffsetInNode(node, coords) {
     return { node, offset }
   }
   if (isTextNode(closest)) {
-    return findOffsetInTextNode(closest, coordsClosest)
+    return findOffsetInTextNode(closest, coordsClosest!)
   }
   if (closest.firstChild) {
-    return findOffsetInNode(closest, coordsClosest)
+    return findOffsetInNode(closest, coordsClosest!)
   }
   return { node, offset }
 }
 /* eslint-enable complexity */
 
-function constrainNodeTo(node, parentNode, existingOffset) {
+function constrainNodeTo(node: Node, parentNode: Node, existingOffset: number) {
   let compare = parentNode.compareDocumentPosition(node)
   if (compare & Node.DOCUMENT_POSITION_CONTAINED_BY) {
     // the node is inside parentNode, do nothing
@@ -93,18 +100,18 @@ function constrainNodeTo(node, parentNode, existingOffset) {
   } else if (compare & Node.DOCUMENT_POSITION_PRECEDING) {
     // node is before parentNode. return start of deepest first child
     let child = parentNode.firstChild
-    while (child.firstChild) {
+    while (child && child.firstChild) {
       child = child.firstChild
     }
     return { node: child, offset: 0 }
   } else if (compare & Node.DOCUMENT_POSITION_FOLLOWING) {
     // node is after parentNode. return end of deepest last child
-    let child = parentNode.lastChild
+    let child = parentNode.lastChild!
     while (child.lastChild) {
       child = child.lastChild
     }
 
-    let offset = isTextNode(child) ? child.textContent.length : 1
+    let offset = isTextNode(child) ? child.textContent!.length : 1
     return { node: child, offset }
   } else {
     return { node, offset: existingOffset }
@@ -116,7 +123,10 @@ function constrainNodeTo(node, parentNode, existingOffset) {
  * If the anchorNode or focusNode are outside the parentNode, they are replaced with the beginning
  * or end of the parentNode's children
  */
-function constrainSelectionTo(selection, parentNode) {
+export function constrainSelectionTo(selection: PartialSelection, parentNode: Node): PartialSelection {
+  assertNotNull('selection anchorNode should not be null', selection.anchorNode)
+  assertNotNull('selection focusNode should not be null', selection.focusNode)
+
   let { node: anchorNode, offset: anchorOffset } = constrainNodeTo(
     selection.anchorNode,
     parentNode,
@@ -127,7 +137,29 @@ function constrainSelectionTo(selection, parentNode) {
   return { anchorNode, anchorOffset, focusNode, focusOffset }
 }
 
-function comparePosition(selection) {
+interface ComparePositionResult {
+  headNode: Node
+  headOffset: number
+  tailNode: Node
+  tailOffset: number
+  direction: number | null
+}
+
+export interface PartialSelection {
+  focusNode: Node | null
+  focusOffset: number
+  anchorNode: Node | null
+  anchorOffset: number
+}
+
+export function isFullSelection(selection: PartialSelection | Selection): selection is Selection {
+  return selection instanceof Selection
+}
+
+export function comparePosition(selection: PartialSelection): ComparePositionResult {
+  assertNotNull('selection anchorNode should not be null', selection.anchorNode)
+  assertNotNull('selection focusNode should not be null', selection.focusNode)
+
   let { anchorNode, focusNode, anchorOffset, focusOffset } = selection
   let headNode, tailNode, headOffset, tailOffset, direction
 
@@ -155,7 +187,7 @@ function comparePosition(selection) {
       while (focusNode.lastChild) {
         focusNode = focusNode.lastChild
       }
-      focusOffset = focusNode.textContent.length
+      focusOffset = focusNode.textContent!.length
     }
 
     return comparePosition({
@@ -207,5 +239,3 @@ function comparePosition(selection) {
 
   return { headNode, headOffset, tailNode, tailOffset, direction }
 }
-
-export { clearSelection, comparePosition, findOffsetInNode, constrainSelectionTo }

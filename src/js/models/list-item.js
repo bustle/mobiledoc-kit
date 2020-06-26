@@ -1,6 +1,6 @@
 import Markerable from './_markerable'
 import { LIST_ITEM_TYPE } from './types'
-import { normalizeTagName } from 'mobiledoc-kit/utils/dom-utils'
+import { normalizeTagName } from '../utils/dom-utils'
 import { contains } from 'mobiledoc-kit/utils/array-utils'
 
 export const VALID_LIST_ITEM_TAGNAMES = ['li'].map(normalizeTagName)

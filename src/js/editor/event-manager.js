@@ -1,7 +1,7 @@
 import assert from 'mobiledoc-kit/utils/assert'
 import { parsePostFromPaste, setClipboardData, parsePostFromDrop } from 'mobiledoc-kit/utils/parse-utils'
 import { filter, forEach } from 'mobiledoc-kit/utils/array-utils'
-import Key from 'mobiledoc-kit/utils/key'
+import Key from '../utils/key'
 import TextInputHandler from 'mobiledoc-kit/editor/text-input-handler'
 import SelectionManager from 'mobiledoc-kit/editor/selection-manager'
 import Browser from 'mobiledoc-kit/utils/browser'

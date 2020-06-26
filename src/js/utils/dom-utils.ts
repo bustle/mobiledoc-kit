@@ -6,22 +6,26 @@ export const NODE_TYPES = {
   COMMENT: 8,
 }
 
-function isTextNode(node) {
+export function isTextNode(node: Node): node is Text {
   return node.nodeType === NODE_TYPES.TEXT
 }
 
-function isCommentNode(node) {
+export function isCommentNode(node: Node) {
   return node.nodeType === NODE_TYPES.COMMENT
 }
 
-function isElementNode(node) {
+export function isElementNode(node: Node): node is Element {
   return node.nodeType === NODE_TYPES.ELEMENT
 }
 
 // perform a pre-order tree traversal of the dom, calling `callbackFn(node)`
 // for every node for which `conditionFn(node)` is true
-function walkDOM(topNode, callbackFn = () => {}, conditionFn = () => true) {
-  let currentNode = topNode
+export function walkDOM(
+  topNode: Node,
+  callbackFn: (node: Node) => void = () => {},
+  conditionFn: (node: Node) => boolean = () => true
+) {
+  let currentNode: Node | null = topNode
 
   if (conditionFn(currentNode)) {
     callbackFn(currentNode)
@@ -35,12 +39,12 @@ function walkDOM(topNode, callbackFn = () => {}, conditionFn = () => true) {
   }
 }
 
-function walkTextNodes(topNode, callbackFn = () => {}) {
-  const conditionFn = node => isTextNode(node)
+export function walkTextNodes(topNode: Node, callbackFn = () => {}) {
+  const conditionFn = (node: Node) => isTextNode(node)
   walkDOM(topNode, callbackFn, conditionFn)
 }
 
-function clearChildNodes(element) {
+export function clearChildNodes(element: Element) {
   while (element.childNodes.length) {
     element.removeChild(element.childNodes[0])
   }
@@ -53,7 +57,7 @@ function clearChildNodes(element) {
  *  Mimics the behavior of `Node.contains`, which is broken in IE 10
  *  @private
  */
-function containsNode(parentNode, childNode) {
+export function containsNode(parentNode: Node, childNode: Node) {
   if (parentNode === childNode) {
     return true
   }
@@ -68,8 +72,8 @@ function containsNode(parentNode, childNode) {
  * @return {Object} key-value pairs
  * @private
  */
-function getAttributes(element) {
-  const result = {}
+export function getAttributes(element: Element) {
+  const result: { [key: string]: unknown } = {}
   if (element.hasAttributes()) {
     forEach(element.attributes, ({ name, value }) => {
       result[name] = value
@@ -78,42 +82,26 @@ function getAttributes(element) {
   return result
 }
 
-function addClassName(element, className) {
+export function addClassName(element: Element, className: string) {
   element.classList.add(className)
 }
 
-function removeClassName(element, className) {
+export function removeClassName(element: Element, className: string) {
   element.classList.remove(className)
 }
 
-function normalizeTagName(tagName) {
+export function normalizeTagName(tagName: string) {
   return tagName.toLowerCase()
 }
 
-function parseHTML(html) {
+export function parseHTML(html: string) {
   const div = document.createElement('div')
   div.innerHTML = html
   return div
 }
 
-function serializeHTML(node) {
+export function serializeHTML(node: Node) {
   const div = document.createElement('div')
   div.appendChild(node)
   return div.innerHTML
-}
-
-export {
-  containsNode,
-  clearChildNodes,
-  getAttributes,
-  walkDOM,
-  walkTextNodes,
-  addClassName,
-  removeClassName,
-  normalizeTagName,
-  isTextNode,
-  isCommentNode,
-  isElementNode,
-  parseHTML,
-  serializeHTML,
 }

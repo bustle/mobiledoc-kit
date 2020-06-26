@@ -1,4 +1,7 @@
-export default class FixedQueue {
+export default class FixedQueue<T> {
+  _maxLength: number
+  _items: T[]
+
   constructor(length = 0) {
     this._maxLength = length
     this._items = []
@@ -12,7 +15,7 @@ export default class FixedQueue {
     return this._items.pop()
   }
 
-  push(item) {
+  push(item: T) {
     this._items.push(item)
     if (this.length > this._maxLength) {
       this._items.shift()

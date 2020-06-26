@@ -1,10 +1,12 @@
-export default class Set {
+export default class Set<T> {
+  items: T[]
+
   constructor(items = []) {
     this.items = []
     items.forEach(i => this.add(i))
   }
 
-  add(item) {
+  add(item: T) {
     if (!this.has(item)) {
       this.items.push(item)
     }
@@ -14,7 +16,7 @@ export default class Set {
     return this.items.length
   }
 
-  has(item) {
+  has(item: T) {
     return this.items.indexOf(item) !== -1
   }
 
