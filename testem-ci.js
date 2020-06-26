@@ -17,7 +17,7 @@ module.exports = {
     },
     "SL_MS_Edge": {
       "exe": "saucie",
-      "args": ["-b", "microsoftedge", "-v", "15", "--no-connect", "-u"],
+      "args": ["-b", "microsoftedge", "-v", "latest", "--no-connect", "-u"],
       "protocol": "tap"
     },
     "SL_Safari_Current": {
