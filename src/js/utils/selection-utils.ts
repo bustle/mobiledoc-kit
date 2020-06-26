@@ -123,7 +123,7 @@ function constrainNodeTo(node: Node, parentNode: Node, existingOffset: number) {
  * If the anchorNode or focusNode are outside the parentNode, they are replaced with the beginning
  * or end of the parentNode's children
  */
-export function constrainSelectionTo(selection: Selection, parentNode: Node) {
+export function constrainSelectionTo(selection: PartialSelection, parentNode: Node): PartialSelection {
   assertNotNull('selection anchorNode should not be null', selection.anchorNode)
   assertNotNull('selection focusNode should not be null', selection.focusNode)
 
@@ -145,11 +145,15 @@ interface ComparePositionResult {
   direction: number | null
 }
 
-interface PartialSelection {
-  focusNode: Node
+export interface PartialSelection {
+  focusNode: Node | null
   focusOffset: number
-  anchorNode: Node
+  anchorNode: Node | null
   anchorOffset: number
+}
+
+export function isFullSelection(selection: PartialSelection | Selection): selection is Selection {
+  return selection instanceof Selection
 }
 
 export function comparePosition(selection: PartialSelection): ComparePositionResult {

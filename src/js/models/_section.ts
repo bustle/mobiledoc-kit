@@ -5,6 +5,7 @@ import Position from '../utils/cursor/position'
 import LinkedList from '../utils/linked-list'
 import Marker from './marker'
 import RenderNode from './render-node'
+import Post from './post'
 
 export default abstract class Section extends LinkedItem<Section> {
   type: string
@@ -13,6 +14,7 @@ export default abstract class Section extends LinkedItem<Section> {
   isNested: boolean
   isLeafSection: boolean
 
+  post?: Post | null
   parent: Section | null = null
   renderNode: RenderNode | null = null
   _tagName: string | null = null

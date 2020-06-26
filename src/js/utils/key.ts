@@ -3,16 +3,12 @@ import Keys from './keys'
 import assert from './assert'
 import { TAB } from './characters'
 
-/**
- * @typedef Direction
- * @enum {number}
- * @property {number} FORWARD
- * @property {number} BACKWARD
- */
-export const DIRECTION = {
-  FORWARD: 1,
-  BACKWARD: -1,
+enum DIRECTION {
+  FORWARD = 1,
+  BACKWARD = -1,
 }
+
+export { DIRECTION }
 
 export const MODIFIERS = {
   META: 1, // also called "command" on OS X

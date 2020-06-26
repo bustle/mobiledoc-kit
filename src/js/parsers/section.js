@@ -1,19 +1,11 @@
 import { DEFAULT_TAG_NAME, VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'
-
 import { VALID_LIST_SECTION_TAGNAMES } from 'mobiledoc-kit/models/list-section'
-
 import { VALID_LIST_ITEM_TAGNAMES } from 'mobiledoc-kit/models/list-item'
-
 import { LIST_SECTION_TYPE, LIST_ITEM_TYPE, MARKUP_SECTION_TYPE } from 'mobiledoc-kit/models/types'
-
 import { VALID_MARKUP_TAGNAMES } from 'mobiledoc-kit/models/markup'
-
-import { getAttributes, normalizeTagName, isTextNode, isCommentNode, NODE_TYPES } from 'mobiledoc-kit/utils/dom-utils'
-
+import { getAttributes, normalizeTagName, isTextNode, isCommentNode, NODE_TYPES } from '../utils/dom-utils'
 import { any, forEach, contains } from 'mobiledoc-kit/utils/array-utils'
-
 import { transformHTMLText, trimSectionText } from '../parsers/dom'
-
 import assert from '../utils/assert'
 
 const SKIPPABLE_ELEMENT_TAG_NAMES = ['style', 'head', 'title', 'meta'].map(normalizeTagName)

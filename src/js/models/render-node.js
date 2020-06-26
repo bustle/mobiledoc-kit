@@ -1,6 +1,6 @@
 import LinkedItem from 'mobiledoc-kit/utils/linked-item'
 import LinkedList from 'mobiledoc-kit/utils/linked-list'
-import { containsNode } from 'mobiledoc-kit/utils/dom-utils'
+import { containsNode } from '../utils/dom-utils'
 import assert from 'mobiledoc-kit/utils/assert'
 
 export default class RenderNode extends LinkedItem {

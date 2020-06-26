@@ -1,12 +1,11 @@
 import { forEach, reduce } from '../utils/array-utils'
+import { Range } from '../utils/cursor'
 import Set from '../utils/set'
-import Marker from './marker'
-
 import LinkedList from '../utils/linked-list'
-import Section from './_section'
 import assert from '../utils/assert'
 import Position from '../utils/cursor/position'
-import { Range } from '../utils/cursor'
+import Section from './_section'
+import Marker from './marker'
 
 export default abstract class Markerable extends Section {
   tagName: string
@@ -150,7 +149,7 @@ export default abstract class Markerable extends Section {
 
   splitAtPosition(position: Position) {
     const { marker, offsetInMarker } = position
-    return this.splitAtMarker(marker, offsetInMarker)
+    return this.splitAtMarker(marker!, offsetInMarker)
   }
 
   // returns the marker just before this offset.
@@ -173,7 +172,7 @@ export default abstract class Markerable extends Section {
 
   markerPositionAtOffset(offset: number) {
     let currentOffset = 0
-    let currentMarker
+    let currentMarker: Marker | null = null
     let remaining = offset
     this.markers.detect(marker => {
       currentOffset = Math.min(remaining, marker.length)
@@ -185,7 +184,7 @@ export default abstract class Markerable extends Section {
       return false
     })
 
-    return { marker: currentMarker, offset: currentOffset }
+    return { marker: currentMarker!, offset: currentOffset }
   }
 
   get text() {

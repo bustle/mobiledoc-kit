@@ -2,22 +2,38 @@ import Section from './_section'
 import { CARD_TYPE } from './types'
 import { shallowCopyObject } from '../utils/copy'
 
-export const CARD_MODES = {
-  DISPLAY: 'display',
-  EDIT: 'edit',
+export enum CARD_MODES {
+  DISPLAY = 'display',
+  EDIT = 'edit',
 }
 
 const CARD_LENGTH = 1
 
-const DEFAULT_INITIAL_MODE = CARD_MODES.DISPLAY
+export function isCardSection(section: Section | Card): section is Card {
+  return (section as Card).isCardSection
+}
 
-export default class Card extends Section {
-  constructor(name, payload) {
+export default class Card<T = {}> extends Section {
+  name: string
+  payload: T
+  isCardSection: true
+  builder: any
+  _initialMode: CARD_MODES = CARD_MODES.DISPLAY
+
+  constructor(name: string, payload: T) {
     super(CARD_TYPE)
     this.name = name
     this.payload = payload
-    this.setInitialMode(DEFAULT_INITIAL_MODE)
     this.isCardSection = true
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  isValidTagName(_normalizedTagName: string): boolean {
+    throw new Error('Method not implemented.')
+  }
+
+  textUntil(): string {
+    return ''
   }
 
   get isBlank() {
@@ -49,7 +65,7 @@ export default class Card extends Section {
    * set the mode that this will be rendered into initially
    * @private
    */
-  setInitialMode(initialMode) {
+  setInitialMode(initialMode: CARD_MODES) {
     // TODO validate initialMode
     this._initialMode = initialMode
   }

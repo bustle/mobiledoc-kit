@@ -6,7 +6,7 @@ import Range from 'mobiledoc-kit/utils/cursor/range'
  * and active sections).
  * @private
  */
-class EditState {
+export default class EditState {
   constructor(editor) {
     this.editor = editor
 
@@ -161,5 +161,3 @@ class EditState {
     this.state.activeMarkups.push(markup)
   }
 }
-
-export default EditState

@@ -1,13 +1,22 @@
 import Position from './position'
 import { DIRECTION } from '../key'
-import assert from 'mobiledoc-kit/utils/assert'
+import assert, { assertNotNull, unwrap } from '../assert'
+import Markerable from '../../models/_markerable'
+import Marker from '../../models/marker'
+import MobiledocError from '../mobiledoc-error'
+import Section from '../../models/_section'
 
+export type Direction = DIRECTION | null
 /**
  * A logical range of a {@link Post}.
  * Usually an instance of Range will be read from the {@link Editor#range} property,
  * but it may be useful to instantiate a range directly when programmatically modifying a Post.
  */
-class Range {
+export default class Range {
+  head: Position
+  tail: Position
+  direction: Direction
+
   /**
    * @param {Position} head
    * @param {Position} [tail=head]
@@ -15,7 +24,7 @@ class Range {
    * @return {Range}
    * @private
    */
-  constructor(head, tail = head, direction = null) {
+  constructor(head: Position, tail: Position = head, direction: Direction = null) {
     /** @property {Position} head */
     this.head = head
 
@@ -36,11 +45,17 @@ class Range {
    * @param {Direction} [direction=null]
    * @return {Range}
    */
-  static create(headSection, headOffset, tailSection = headSection, tailOffset = headOffset, direction = null) {
+  static create(
+    headSection: Markerable,
+    headOffset: number,
+    tailSection: Markerable = headSection,
+    tailOffset = headOffset,
+    direction = null
+  ) {
     return new Range(new Position(headSection, headOffset), new Position(tailSection, tailOffset), direction)
   }
 
-  static blankRange() {
+  static blankRange(): Range {
     return new Range(Position.blankPosition(), Position.blankPosition())
   }
 
@@ -54,7 +69,7 @@ class Range {
    * There's no efficient way to determine if a section is within a range, yet.
    * @private
    */
-  trimTo(section) {
+  trimTo(section: Markerable) {
     const length = section.length
 
     let headOffset = section === this.head.section ? Math.min(this.head.offset, length) : 0
@@ -72,7 +87,7 @@ class Range {
    * @return {Range}
    * @public
    */
-  extend(units) {
+  extend(units: number): Range {
     assert(`Must pass integer to Range#extend`, typeof units === 'number')
 
     if (units === 0) {
@@ -101,7 +116,7 @@ class Range {
    * @return {Range}
    * @public
    */
-  move(direction) {
+  move(direction: Direction) {
     assert(
       `Must pass DIRECTION.FORWARD (${DIRECTION.FORWARD}) or DIRECTION.BACKWARD (${DIRECTION.BACKWARD}) to Range#move`,
       direction === DIRECTION.FORWARD || direction === DIRECTION.BACKWARD
@@ -124,39 +139,44 @@ class Range {
    *
    * @public
    */
-  expandByMarker(detectMarker) {
+  expandByMarker(detectMarker: (marker: Marker) => boolean) {
     let { head, tail, direction } = this
     let { section: headSection } = head
+
+    assertNotNull('expected range section to not be null', headSection)
+    assertMarkerable(headSection)
+
     if (headSection !== tail.section) {
       throw new Error(
         '#expandByMarker does not work across sections. Perhaps you should confirm the range is collapsed'
       )
     }
 
-    let firstNotMatchingDetect = i => {
+    let firstNotMatchingDetect = (i: Marker) => {
       return !detectMarker(i)
     }
 
-    let headMarker = headSection.markers.detect(firstNotMatchingDetect, head.marker, true)
-    if (!headMarker && detectMarker(headSection.markers.head)) {
+    let headMarker: Marker | null | undefined = headSection.markers.detect(firstNotMatchingDetect, head.marker, true)
+    if (!headMarker && detectMarker(headSection.markers.head!)) {
       headMarker = headSection.markers.head
     } else {
-      headMarker = headMarker.next || head.marker
+      headMarker = unwrap(headMarker).next || head.marker
     }
-    let headPosition = new Position(headSection, headSection.offsetOfMarker(headMarker))
+    let headPosition = new Position(headSection, headSection.offsetOfMarker(unwrap(headMarker)))
 
+    assertMarkerable(tail.section)
     let tailMarker = tail.section.markers.detect(firstNotMatchingDetect, tail.marker)
-    if (!tailMarker && detectMarker(headSection.markers.tail)) {
-      tailMarker = headSection.markers.tail
+    if (!tailMarker && detectMarker(unwrap(headSection.markers.tail))) {
+      tailMarker = unwrap(headSection.markers.tail)
     } else {
-      tailMarker = tailMarker.prev || tail.marker
+      tailMarker = unwrap(tailMarker).prev || unwrap(tail.marker)
     }
     let tailPosition = new Position(tail.section, tail.section.offsetOfMarker(tailMarker) + tailMarker.length)
 
     return headPosition.toRange(tailPosition, direction)
   }
 
-  _collapse(direction) {
+  _collapse(direction: Direction) {
     return new Range(direction === DIRECTION.BACKWARD ? this.head : this.tail)
   }
 
@@ -164,7 +184,7 @@ class Range {
     return this.direction === DIRECTION.BACKWARD ? this.head : this.tail
   }
 
-  isEqual(other) {
+  isEqual(other: Range) {
     return other && this.head.isEqual(other.head) && this.tail.isEqual(other.tail)
   }
 
@@ -202,4 +222,8 @@ class Range {
   }
 }
 
-export default Range
+function assertMarkerable(section: Section): asserts section is Markerable {
+  if (!('markers' in section)) {
+    throw new MobiledocError('Expected position section to be markerable')
+  }
+}

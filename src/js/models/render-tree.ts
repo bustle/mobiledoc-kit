@@ -35,22 +35,22 @@ export default class RenderTree {
    * @param {DOMNode} element
    * @return {RenderNode} The renderNode for this element, if any
    */
-  getElementRenderNode(element: Element) {
+  getElementRenderNode(element: Node) {
     return this._elements.get(element)
   }
-  setElementRenderNode(element: Element, renderNode: RenderNode) {
+  setElementRenderNode(element: Node, renderNode: RenderNode) {
     this._elements.set(element, renderNode)
   }
-  removeElementRenderNode(element: Element) {
+  removeElementRenderNode(element: Node) {
     this._elements.remove(element)
   }
   /**
    * @param {DOMNode} element
    * Walk up from the dom element until we find a renderNode element
    */
-  findRenderNodeFromElement(element: Element, conditionFn: (node: RenderNode) => boolean = () => true) {
+  findRenderNodeFromElement(element: Node, conditionFn: (node: RenderNode) => boolean = () => true) {
     let renderNode: RenderNode | null
-    let _element: Element | null = element
+    let _element: Node | null = element
 
     while (_element) {
       renderNode = this.getElementRenderNode(_element)

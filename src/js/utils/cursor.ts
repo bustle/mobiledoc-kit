@@ -1,14 +1,23 @@
-import { clearSelection, comparePosition } from '../utils/selection-utils'
+import { clearSelection, comparePosition, isFullSelection } from '../utils/selection-utils'
 import { containsNode } from '../utils/dom-utils'
 import Position from './cursor/position'
-import Range from './cursor/range'
+import Range, { Direction } from './cursor/range'
 import { DIRECTION } from '../utils/key'
 import { constrainSelectionTo } from '../utils/selection-utils'
+import Editor from '../editor/editor'
+import RenderTree from '../models/render-tree'
+import Post from '../models/post'
+import { unwrap, assertNotNull, expect } from './assert'
+import { isCardSection } from '../models/card'
 
 export { Position, Range }
 
-const Cursor = class Cursor {
-  constructor(editor) {
+class Cursor {
+  editor: Editor
+  renderTree: RenderTree
+  post: Post
+
+  constructor(editor: Editor) {
     this.editor = editor
     this.renderTree = editor._renderTree
     this.post = editor.post
@@ -33,7 +42,7 @@ const Cursor = class Cursor {
   /**
    * @return {Boolean} Can the cursor be on this element?
    */
-  isAddressable(element) {
+  isAddressable(element: Element) {
     let { renderTree } = this
     let renderNode = renderTree.findRenderNodeFromElement(element)
     if (renderNode && renderNode.postNode.isCardSection) {
@@ -61,9 +70,9 @@ const Cursor = class Cursor {
       return Range.blankRange()
     }
 
-    let { selection, renderTree } = this
-    let parentNode = this.editor.element
-    selection = constrainSelectionTo(selection, parentNode)
+    let { renderTree } = this
+    let parentNode = unwrap(this.editor.element)
+    let selection = constrainSelectionTo(this.selection, parentNode)
 
     const { headNode, headOffset, tailNode, tailOffset, direction } = comparePosition(selection)
 
@@ -73,10 +82,12 @@ const Cursor = class Cursor {
     return new Range(headPosition, tailPosition, direction)
   }
 
-  _findNodeForPosition(position) {
-    let { section } = position
+  _findNodeForPosition(position: Position) {
+    let section = unwrap(position.section)
     let node, offset
-    if (section.isCardSection) {
+    assertNotNull('expected section to have render node', section.renderNode)
+
+    if (isCardSection(section)) {
       offset = 0
       if (position.offset === 0) {
         node = section.renderNode.element.firstChild
@@ -88,6 +99,9 @@ const Cursor = class Cursor {
       offset = 0
     } else {
       let { marker, offsetInMarker } = position
+      assertNotNull('expected position to have marker', marker)
+      assertNotNull('expected marker to have render node', marker.renderNode)
+
       if (marker.isAtom) {
         if (offsetInMarker > 0) {
           // FIXME -- if there is a next marker, focus on it?
@@ -106,7 +120,7 @@ const Cursor = class Cursor {
     return { node, offset }
   }
 
-  selectRange(range) {
+  selectRange(range: Range) {
     if (range.isBlank) {
       this.clearSelection()
       return
@@ -122,7 +136,7 @@ const Cursor = class Cursor {
   }
 
   get selection() {
-    return window.getSelection()
+    return expect(window.getSelection(), 'expected window selection to not be null')
   }
 
   selectedText() {
@@ -138,7 +152,7 @@ const Cursor = class Cursor {
    * @param {integer} direction forward or backward, default forward
    * @private
    */
-  _moveToNode(node, offset, endNode, endOffset, direction = DIRECTION.FORWARD) {
+  _moveToNode(node: Text, offset: number, endNode: Text, endOffset: number, direction: Direction = DIRECTION.FORWARD) {
     this.clearSelection()
 
     if (direction === DIRECTION.BACKWARD) {
@@ -147,7 +161,7 @@ const Cursor = class Cursor {
 
     const range = document.createRange()
     range.setStart(node, offset)
-    if (direction === DIRECTION.BACKWARD && !!this.selection.extend) {
+    if (direction === DIRECTION.BACKWARD && isFullSelection(this.selection)) {
       this.selection.addRange(range)
       this.selection.extend(endNode, endOffset)
     } else {
@@ -157,13 +171,16 @@ const Cursor = class Cursor {
   }
 
   _hasSelection() {
-    const element = this.editor.element
+    const element = unwrap(this.editor.element)
     const { _selectionRange } = this
     if (!_selectionRange || _selectionRange.collapsed) {
       return false
     }
 
-    return containsNode(element, this.selection.anchorNode) && containsNode(element, this.selection.focusNode)
+    return (
+      containsNode(element, unwrap(this.selection.anchorNode)) &&
+      containsNode(element, unwrap(this.selection.focusNode))
+    )
   }
 
   _hasCollapsedSelection() {
@@ -173,7 +190,7 @@ const Cursor = class Cursor {
     }
 
     const element = this.editor.element
-    return containsNode(element, this.selection.anchorNode)
+    return containsNode(unwrap(element), unwrap(this.selection.anchorNode))
   }
 
   get _selectionRange() {
