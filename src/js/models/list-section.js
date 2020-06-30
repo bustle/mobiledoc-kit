@@ -12,14 +12,13 @@ export const VALID_LIST_SECTION_TAGNAMES = ['ul', 'ol'].map(normalizeTagName)
 
 export const DEFAULT_TAG_NAME = VALID_LIST_SECTION_TAGNAMES[0]
 
-export default class ListSection extends Section {
+export default class ListSection extends attributable(Section) {
   constructor(tagName = DEFAULT_TAG_NAME, items = [], attributes = {}) {
     super(LIST_SECTION_TYPE)
     this.tagName = tagName
     this.isListSection = true
     this.isLeafSection = false
 
-    attributable(this)
     entries(attributes).forEach(([k, v]) => this.setAttribute(k, v))
 
     this.items = new LinkedList({

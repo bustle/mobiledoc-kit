@@ -87,7 +87,12 @@ export default abstract class Markerable extends Section {
   // all markers before the marker/offset split go in beforeSection, and all
   // after the marker/offset split go in afterSection
   // @return {Array} [beforeSection, afterSection], two new sections
-  _redistributeMarkers(beforeSection: Markerable, afterSection: Markerable, marker: Marker, offset = 0) {
+  _redistributeMarkers(
+    beforeSection: Markerable,
+    afterSection: Markerable,
+    marker: Marker,
+    offset = 0
+  ): [Section, Section] {
     let currentSection = beforeSection
     forEach(this.markers, m => {
       if (m === marker) {
