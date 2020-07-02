@@ -25,19 +25,21 @@ export const VALID_ATTRIBUTES = ['href', 'rel']
  * that could be added are bold ('b'), italic ('i'), strikethrough ('s'), and `a` tags (links).
  * @property {String} tagName
  */
-class Markup {
+export default class Markup {
+  tagName: string
+  attributes: { [key: string]: unknown }
+
+  type = MARKUP_TYPE
+
   /*
    * @param {Object} attributes key-values
    */
-  constructor(tagName, attributes = {}) {
+  constructor(tagName: string, attributes = {}) {
+    assert(`Cannot create markup of tagName ${tagName}`, VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1)
     this.tagName = normalizeTagName(tagName)
 
     assert('Must use attributes object param (not array) for Markup', !Array.isArray(attributes))
-
     this.attributes = filterObject(attributes, VALID_ATTRIBUTES)
-    this.type = MARKUP_TYPE
-
-    assert(`Cannot create markup of tagName ${tagName}`, VALID_MARKUP_TAGNAMES.indexOf(this.tagName) !== -1)
   }
 
   /**
@@ -53,7 +55,7 @@ class Markup {
     return false
   }
 
-  hasTag(tagName) {
+  hasTag(tagName: string) {
     return this.tagName === normalizeTagName(tagName)
   }
 
@@ -61,14 +63,12 @@ class Markup {
    * Returns the attribute value
    * @param {String} name, e.g. "href"
    */
-  getAttribute(name) {
+  getAttribute(name: string) {
     return this.attributes[name]
   }
 
-  static isValidElement(element) {
+  static isValidElement(element: Element) {
     const tagName = normalizeTagName(element.tagName)
     return VALID_MARKUP_TAGNAMES.indexOf(tagName) !== -1
   }
 }
-
-export default Markup

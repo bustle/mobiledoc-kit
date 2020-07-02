@@ -1,6 +1,6 @@
-import CardNode from 'mobiledoc-kit/models/card-node'
-import { detect, forEach } from 'mobiledoc-kit/utils/array-utils'
-import AtomNode from 'mobiledoc-kit/models/atom-node'
+import CardNode from '../models/card-node'
+import { detect, forEach } from '../utils/array-utils'
+import AtomNode from '../models/atom-node'
 import {
   POST_TYPE,
   MARKUP_SECTION_TYPE,
