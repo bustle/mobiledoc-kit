@@ -32,7 +32,7 @@ module('Acceptance: editor: IME Composition Event Handler', {
   });
 });
 
-test('ignore horizontal arrow keydowns when using IME', (assert) => {
+test('ignore horizontal arrow keydowns when using an IME', (assert) => {
   editor = Helpers.editor.buildFromText("안녕하세요", { element: editorElement });
 
   Helpers.dom.moveCursorTo(editor, editorElement.firstChild);
