@@ -228,8 +228,7 @@ test('left arrow when at the head of an atom moves the cursor left off the atom'
         marker('cc')
       ])
     ]);
-  // TODO just make 0.3.1 default
-  }, '0.3.1');
+  });
   editor = new Editor({mobiledoc, atoms});
   editor.render(editorElement);
 
@@ -285,8 +284,7 @@ test('right arrow when at the head of an atom moves the cursor across the atom',
         marker('cc')
       ])
     ]);
-  // TODO just make 0.3.1 default
-  }, '0.3.1');
+  });
   editor = new Editor({mobiledoc, atoms});
   editor.render(editorElement);
 
