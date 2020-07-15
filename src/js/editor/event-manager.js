@@ -6,7 +6,17 @@ import TextInputHandler from 'mobiledoc-kit/editor/text-input-handler'
 import SelectionManager from 'mobiledoc-kit/editor/selection-manager'
 import Browser from 'mobiledoc-kit/utils/browser'
 
-const ELEMENT_EVENT_TYPES = ['keydown', 'keyup', 'cut', 'copy', 'paste', 'keypress', 'drop']
+const ELEMENT_EVENT_TYPES = [
+  'keydown',
+  'keyup',
+  'cut',
+  'copy',
+  'paste',
+  'keypress',
+  'drop',
+  'compositionstart',
+  'compositionend',
+]
 
 export default class EventManager {
   constructor(editor) {
@@ -143,6 +153,13 @@ export default class EventManager {
       event.preventDefault()
     }
 
+    // Handle carriage returns
+    if (!key.isEnter() && key.keyCode === 13) {
+      _textInputHandler.handleNewLine()
+      editor.handleNewline(event)
+      return
+    }
+
     _textInputHandler.handle(key.toString())
   }
 
@@ -169,6 +186,10 @@ export default class EventManager {
     let range = editor.range
 
     switch (true) {
+      // Ignore keydown events when using an IME
+      case key.isIME(): {
+        break
+      }
       // FIXME This should be restricted to only card/atom boundaries
       case key.isHorizontalArrowWithoutModifiersOtherThanShift(): {
         let newRange
@@ -213,6 +234,59 @@ export default class EventManager {
     }
     let key = Key.fromEvent(event)
     this._updateModifiersFromKey(key, { isDown: false })
+  }
+
+  // The mutation handler interferes with IMEs when composing
+  // on a blank line. These two event handlers are for suppressing
+  // mutation handling in this scenario.
+  compositionstart(event) {
+    let { editor } = this
+    // Ignore compositionstart if not on a blank line
+    if (editor.range.headMarker) {
+      return
+    }
+    this._isComposingOnBlankLine = true
+
+    if (editor.post.isBlank) {
+      editor._insertEmptyMarkupSectionAtCursor()
+    }
+
+    // Stop listening for mutations on Chrome browsers and suppress
+    // mutations by prepending a character for other browsers.
+    // The reason why we treat these separately is because
+    // of the way each browser processes IME inputs.
+    if (Browser.isChrome()) {
+      editor.setPlaceholder('')
+      editor._mutationHandler.stopObserving()
+    } else {
+      this._textInputHandler.handle(' ')
+    }
+  }
+
+  compositionend(event) {
+    let { editor } = this
+
+    // Ignore compositionend if not composing on blank line
+    if (!this._isComposingOnBlankLine) {
+      return
+    }
+    this._isComposingOnBlankLine = false
+
+    // Start listening for mutations on Chrome browsers and
+    // delete the prepended character introduced by compositionstart
+    // for other browsers.
+    if (Browser.isChrome()) {
+      editor.insertText(event.data)
+      editor.setPlaceholder(editor.placeholder)
+      editor._mutationHandler.startObserving()
+    } else {
+      let startOfCompositionLine = editor.range.headSection.toPosition(0)
+      let endOfCompositionLine = editor.range.headSection.toPosition(event.data.length)
+      editor.run(postEditor => {
+        postEditor.deleteAtPosition(startOfCompositionLine, 1, { unit: 'char' })
+        postEditor.setRange(endOfCompositionLine)
+      })
+    }
   }
 
   cut(event) {
