@@ -77,7 +77,7 @@ optionally a Mobiledoc to load. For example:
 
 ```js
 const simpleMobiledoc = {
-  version: "0.3.1",
+  version: "0.3.2",
   markups: [],
   atoms: [],
   cards: [],
@@ -121,7 +121,7 @@ document's `<head>`:
 
 ### Editor API
 
-* `editor.serialize(version="0.3.1")` - serialize the current post for persistence. Returns
+* `editor.serialize(version="0.3.2")` - serialize the current post for persistence. Returns
   Mobiledoc.
 * `editor.destroy()` - teardown the editor event listeners, free memory etc.
 * `editor.disableEditing()` - stop the user from being able to edit the
