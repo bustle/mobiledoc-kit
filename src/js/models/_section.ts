@@ -1,59 +1,49 @@
-import { normalizeTagName } from '../utils/dom-utils'
 import LinkedItem from '../utils/linked-item'
 import assert from '../utils/assert'
 import Position from '../utils/cursor/position'
-import LinkedList from '../utils/linked-list'
+import Range from '../utils/cursor/range'
 import Marker from './marker'
 import RenderNode from './render-node'
 import Post from './post'
+import { isListSection } from './is-list-section'
+import PostNodeBuilder from './post-node-builder'
+import { Type } from './types'
 
-export default abstract class Section extends LinkedItem<Section> {
-  type: string
-  isSection: boolean
-  isMarkerable: boolean
-  isNested: boolean
-  isLeafSection: boolean
+export default class Section extends LinkedItem {
+  type: Type
+
+  isSection = true
+  isMarkerable = false
+  isNested = false
+  isListItem = false
+  isListSection = false
+  isLeafSection = true
 
   post?: Post | null
-  parent: Section | null = null
   renderNode: RenderNode | null = null
-  _tagName: string | null = null
 
-  constructor(type: string) {
+  parent: Section | null = null
+  builder!: PostNodeBuilder
+
+  constructor(type: Type) {
     super()
     assert('Cannot create section without type', !!type)
     this.type = type
-    this.isSection = true
-    this.isMarkerable = false
-    this.isNested = false
-    this.isLeafSection = true
   }
 
-  set tagName(val: string) {
-    let normalizedTagName = normalizeTagName(val)
-    assert(`Cannot set section tagName to ${val}`, this.isValidTagName(normalizedTagName))
-    this._tagName = normalizedTagName
-  }
-
-  get tagName() {
-    return this._tagName as string
+  get isBlank() {
+    return false
   }
 
   get length() {
     return 0
   }
 
-  abstract get isBlank(): boolean
-  abstract isValidTagName(_normalizedTagName: string): boolean
-  abstract clone(): Section
-  abstract canJoin(otherSection: Section): boolean
-  abstract textUntil(position: Position): string
-
   /**
    * @return {Position} The position at the start of this section
    * @public
    */
-  headPosition() {
+  headPosition(): Position {
     return this.toPosition(0)
   }
 
@@ -61,7 +51,7 @@ export default abstract class Section extends LinkedItem<Section> {
    * @return {Position} The position at the end of this section
    * @public
    */
-  tailPosition() {
+  tailPosition(): Position {
     return this.toPosition(this.length)
   }
 
@@ -70,7 +60,7 @@ export default abstract class Section extends LinkedItem<Section> {
    * @return {Position} The position in this section at the given offset
    * @public
    */
-  toPosition(offset: number) {
+  toPosition(offset: number): Position {
     assert('Must pass number to `toPosition`', typeof offset === 'number')
     assert('Cannot call `toPosition` with offset > length', offset <= this.length)
 
@@ -81,7 +71,7 @@ export default abstract class Section extends LinkedItem<Section> {
    * @return {Range} A range from this section's head to tail positions
    * @public
    */
-  toRange() {
+  toRange(): Range {
     return this.headPosition().toRange(this.tailPosition())
   }
 
@@ -135,12 +125,4 @@ export default abstract class Section extends LinkedItem<Section> {
 
     return null
   }
-}
-
-interface ListSection {
-  items: LinkedList<Section>
-}
-
-function isListSection(item: any): item is ListSection {
-  return 'items' in item && item.items
 }

@@ -28,7 +28,7 @@ export default class Marker extends Markuperable {
   parent: Markerable | null = null
   renderNode: RenderNode | null = null
 
-  constructor(value = '', markups = []) {
+  constructor(value = '', markups: Markup[] = []) {
     super()
     this.value = value
     assert('Marker must have value', value !== undefined && value !== null)

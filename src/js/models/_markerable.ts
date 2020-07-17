@@ -6,14 +6,18 @@ import assert from '../utils/assert'
 import Position from '../utils/cursor/position'
 import Section from './_section'
 import Marker from './marker'
+import { tagNameable } from './_tag-nameable'
+import { Type } from './types'
 
-export default abstract class Markerable extends Section {
-  tagName: string
+type MarkerableType = Type.LIST_ITEM | Type.MARKUP_SECTION
+
+export default abstract class Markerable extends tagNameable(Section) {
+  type: MarkerableType
   markers: LinkedList<Marker>
-  builder: any
 
-  constructor(type: string, tagName: string, markers = []) {
+  constructor(type: MarkerableType, tagName: string, markers: Marker[] = []) {
     super(type)
+    this.type = type
     this.isMarkerable = true
     this.tagName = tagName
     this.markers = new LinkedList({
@@ -27,13 +31,13 @@ export default abstract class Markerable extends Section {
     markers.forEach(m => this.markers.append(m))
   }
 
-  canJoin(other: Section) {
+  canJoin(other: Markerable) {
     return other.isMarkerable && other.type === this.type && other.tagName === this.tagName
   }
 
-  clone() {
+  clone(): this {
     const newMarkers = this.markers.map(m => m.clone())
-    return this.builder.createMarkerableSection(this.type, this.tagName, newMarkers)
+    return this.builder.createMarkerableSection(this.type, this.tagName, newMarkers) as any as this
   }
 
   get isBlank() {
@@ -284,4 +288,8 @@ export default abstract class Markerable extends Section {
 
     return { beforeMarker, afterMarker }
   }
+}
+
+export function isMarkerable(section: Section): section is Markerable {
+  return section.isMarkerable
 }

@@ -1,5 +1,5 @@
 import Section from './_section'
-import { CARD_TYPE } from './types'
+import { Type } from './types'
 import { shallowCopyObject } from '../utils/copy'
 
 export enum CARD_MODES {
@@ -21,23 +21,14 @@ export default class Card<T = {}> extends Section {
   _initialMode: CARD_MODES = CARD_MODES.DISPLAY
 
   constructor(name: string, payload: T) {
-    super(CARD_TYPE)
+    super(Type.CARD)
     this.name = name
     this.payload = payload
     this.isCardSection = true
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isValidTagName(_normalizedTagName: string): boolean {
-    throw new Error('Method not implemented.')
-  }
-
   textUntil(): string {
     return ''
-  }
-
-  get isBlank() {
-    return false
   }
 
   canJoin() {

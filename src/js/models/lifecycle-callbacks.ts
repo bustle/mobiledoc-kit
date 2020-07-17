@@ -1,17 +1,23 @@
-import assert from 'mobiledoc-kit/utils/assert'
+import assert from '../utils/assert'
+
+interface Queue {
+  [name: string]: LifecycleCallback[]
+}
+
+export type LifecycleCallback = (...args: any[]) => void
 
 export default class LifecycleCallbacks {
-  constructor(queueNames = []) {
-    this.callbackQueues = {}
-    this.removalQueues = {}
+  callbackQueues: Queue = {}
+  removalQueues: Queue = {}
 
+  constructor(queueNames = []) {
     queueNames.forEach(name => {
       this.callbackQueues[name] = []
       this.removalQueues[name] = []
     })
   }
 
-  runCallbacks(queueName, args = []) {
+  runCallbacks(queueName: string, args: unknown[] = []) {
     let queue = this._getQueue(queueName)
     queue.forEach(cb => cb(...args))
 
@@ -26,15 +32,15 @@ export default class LifecycleCallbacks {
     this.removalQueues[queueName] = []
   }
 
-  addCallback(queueName, callback) {
+  addCallback(queueName: string, callback: LifecycleCallback) {
     this._getQueue(queueName).push(callback)
   }
 
-  _scheduleCallbackForRemoval(queueName, callback) {
+  _scheduleCallbackForRemoval(queueName: string, callback: LifecycleCallback) {
     this.removalQueues[queueName].push(callback)
   }
 
-  addCallbackOnce(queueName, callback) {
+  addCallbackOnce(queueName: string, callback: LifecycleCallback) {
     let queue = this._getQueue(queueName)
     if (queue.indexOf(callback) === -1) {
       queue.push(callback)
@@ -42,7 +48,7 @@ export default class LifecycleCallbacks {
     }
   }
 
-  _getQueue(queueName) {
+  _getQueue(queueName: string) {
     let queue = this.callbackQueues[queueName]
     assert(`No queue found for "${queueName}"`, !!queue)
     return queue

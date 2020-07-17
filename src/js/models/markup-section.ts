@@ -21,8 +21,9 @@ export const DEFAULT_TAG_NAME = VALID_MARKUP_SECTION_TAGNAMES[8]
 
 export default class MarkupSection extends attributable(Markerable) {
   isMarkupSection = true
+  isGenerated = false
 
-  constructor(tagName = DEFAULT_TAG_NAME, markers = [], attributes = {}) {
+  constructor(tagName = DEFAULT_TAG_NAME, markers: Marker[] = [], attributes = {}) {
     super(MARKUP_SECTION_TYPE, tagName, markers)
     entries(attributes).forEach(([k, v]) => this.setAttribute(k, v))
   }
