@@ -7,13 +7,13 @@ import Markup from './markup'
 const ATOM_LENGTH = 1
 
 export default class Atom extends Markuperable {
+  type = ATOM_TYPE
+  isAtom = true
+
   name: string
   value: unknown
   text: string
   payload: {}
-  type = ATOM_TYPE
-  isMarker = false
-  isAtom = true
 
   markups: Markup[]
   builder: any

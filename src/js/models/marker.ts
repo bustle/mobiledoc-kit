@@ -17,10 +17,10 @@ export const HIGH_SURROGATE_RANGE = [0xd800, 0xdbff]
 export const LOW_SURROGATE_RANGE = [0xdc00, 0xdfff]
 
 export default class Marker extends Markuperable {
+  type = MARKER_TYPE
+  isMarker = true
+
   value: string
-  type: string = MARKER_TYPE
-  isMarker: boolean = true
-  isAtom: boolean = false
 
   builder: any
   markups: Markup[] = []

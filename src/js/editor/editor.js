@@ -20,7 +20,7 @@ import Environment from '../utils/environment'
 import PostNodeBuilder from '../models/post-node-builder'
 import { DEFAULT_TEXT_INPUT_HANDLERS } from './text-input-handlers'
 import { DEFAULT_KEY_COMMANDS, buildKeyCommand, findKeyCommands, validateKeyCommand } from './key-commands'
-import { CARD_MODES } from '../models/card'
+import { CardMode } from '../models/card'
 import assert from '../utils/assert'
 import MutationHandler from 'mobiledoc-kit/editor/mutation-handler'
 import EditHistory from 'mobiledoc-kit/editor/edit-history'
@@ -688,7 +688,7 @@ class Editor {
    * @public
    */
   editCard(cardSection) {
-    this._setCardMode(cardSection, CARD_MODES.EDIT)
+    this._setCardMode(cardSection, CardMode.EDIT)
   }
 
   /**
@@ -700,7 +700,7 @@ class Editor {
    * @public
    */
   displayCard(cardSection) {
-    this._setCardMode(cardSection, CARD_MODES.DISPLAY)
+    this._setCardMode(cardSection, CardMode.DISPLAY)
   }
 
   /**

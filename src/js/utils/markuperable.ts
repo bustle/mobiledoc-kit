@@ -5,11 +5,16 @@ import Markup from '../models/markup'
 type MarkupCallback = (markup: Markup) => boolean
 type MarkupOrMarkupCallback = Markup | MarkupCallback
 
-export default class Markuperable {
+export default abstract class Markuperable {
   markups: Markup[] = []
 
   prev: this | null = null
   next: this | null = null
+
+  isAtom = false
+  isMarker = false
+
+  abstract length: number
 
   clearMarkups() {
     this.markups = []

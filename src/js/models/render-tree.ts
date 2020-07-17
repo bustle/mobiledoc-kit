@@ -1,15 +1,12 @@
 import RenderNode from '../models/render-node'
 import ElementMap from '../utils/element-map'
-
-interface Post {
-  renderNode: RenderNode
-}
+import Section from './_section'
 
 export default class RenderTree {
   _rootNode: RenderNode
   _elements: ElementMap<RenderNode>
 
-  constructor(rootPostNode: Post) {
+  constructor(rootPostNode: Section) {
     this._rootNode = this.buildRenderNode(rootPostNode)
     this._elements = new ElementMap()
   }
@@ -22,7 +19,7 @@ export default class RenderTree {
   /**
    * @return {Boolean}
    */
-  get isDirty() {
+  get isDirty(): boolean {
     return this.rootNode && this.rootNode.isDirty
   }
   /*
@@ -72,7 +69,7 @@ export default class RenderTree {
     }
   }
 
-  buildRenderNode(postNode: Post) {
+  buildRenderNode(postNode: Section) {
     const renderNode = new RenderNode(postNode, this)
     postNode.renderNode = renderNode
     return renderNode

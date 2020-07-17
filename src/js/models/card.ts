@@ -1,24 +1,26 @@
 import Section from './_section'
 import { Type } from './types'
 import { shallowCopyObject } from '../utils/copy'
+import PostNodeBuilder from './post-node-builder'
 
-export enum CARD_MODES {
+export enum CardMode {
   DISPLAY = 'display',
   EDIT = 'edit',
 }
 
 const CARD_LENGTH = 1
 
-export function isCardSection(section: Section | Card): section is Card {
+export function isCardSection(section: {}): section is Card {
   return (section as Card).isCardSection
 }
 
 export default class Card<T = {}> extends Section {
   name: string
   payload: T
-  isCardSection: true
-  builder: any
-  _initialMode: CARD_MODES = CARD_MODES.DISPLAY
+  builder!: PostNodeBuilder
+  _initialMode: CardMode = CardMode.DISPLAY
+
+  isCardSection = true
 
   constructor(name: string, payload: T) {
     super(Type.CARD)
@@ -56,7 +58,7 @@ export default class Card<T = {}> extends Section {
    * set the mode that this will be rendered into initially
    * @private
    */
-  setInitialMode(initialMode: CARD_MODES) {
+  setInitialMode(initialMode: CardMode) {
     // TODO validate initialMode
     this._initialMode = initialMode
   }

@@ -9,6 +9,7 @@ import RenderTree from '../models/render-tree'
 import Post from '../models/post'
 import { unwrap, assertNotNull, expect } from './assert'
 import { isCardSection } from '../models/card'
+import Section from '../models/_section'
 
 export { Position, Range }
 
@@ -45,8 +46,8 @@ class Cursor {
   isAddressable(element: Element) {
     let { renderTree } = this
     let renderNode = renderTree.findRenderNodeFromElement(element)
-    if (renderNode && renderNode.postNode.isCardSection) {
-      let renderedElement = renderNode.element
+    if (renderNode && (renderNode.postNode as Section).isCardSection) {
+      let renderedElement = renderNode.element!
 
       // card sections have addressable text nodes containing &zwnj;
       // as their first and last child
@@ -90,9 +91,9 @@ class Cursor {
     if (isCardSection(section)) {
       offset = 0
       if (position.offset === 0) {
-        node = section.renderNode.element.firstChild
+        node = section.renderNode.element!.firstChild
       } else {
-        node = section.renderNode.element.lastChild
+        node = section.renderNode.element!.lastChild
       }
     } else if (section.isBlank) {
       node = section.renderNode.cursorElement

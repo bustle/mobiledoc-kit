@@ -1,5 +1,5 @@
 import assert from '../utils/assert'
-import Card from './card'
+import Card, { CardMode } from './card'
 
 export interface CardNodeOptions {}
 
@@ -14,7 +14,6 @@ export interface CardData {
   edit: RenderMethod
 }
 
-type CardRenderMode = 'display' | 'edit'
 type CardRenderMethodName = 'render' | 'edit'
 
 export default class CardNode {
@@ -24,7 +23,7 @@ export default class CardNode {
   element: Element
   options: CardNodeOptions
 
-  mode: CardRenderMode | null = null
+  mode!: CardMode
   _rendered: Element | null = null
   _teardownCallback: TeardownCallback = null
   _didRenderCallback: DidRenderCallback = null
@@ -37,7 +36,7 @@ export default class CardNode {
     this.options = options
   }
 
-  render(mode: CardRenderMode) {
+  render(mode: CardMode) {
     if (this.mode === mode) {
       return
     }
@@ -98,11 +97,11 @@ export default class CardNode {
   }
 
   display() {
-    this.render('display')
+    this.render(CardMode.DISPLAY)
   }
 
   edit() {
-    this.render('edit')
+    this.render(CardMode.EDIT)
   }
 
   remove() {

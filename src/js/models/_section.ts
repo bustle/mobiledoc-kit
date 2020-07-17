@@ -18,6 +18,7 @@ export default class Section extends LinkedItem {
   isListItem = false
   isListSection = false
   isLeafSection = true
+  isCardSection = false
 
   post?: Post | null
   renderNode: RenderNode | null = null

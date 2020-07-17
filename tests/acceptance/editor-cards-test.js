@@ -1,6 +1,6 @@
 import { DIRECTION } from 'mobiledoc-kit/utils/key';
 import Helpers from '../test-helpers';
-import { CARD_MODES } from 'mobiledoc-kit/models/card';
+import { CardMode } from 'mobiledoc-kit/models/card';
 
 const { test, module } = Helpers;
 const { editor: { buildFromText } } = Helpers;
@@ -250,7 +250,7 @@ test('editor ignores events when focus is inside a card', (assert) => {
 
 test('a moved card retains its inital editing mode', (assert) => {
   editorOpts.beforeRender = (editor) => {
-    editor.post.sections.tail.setInitialMode(CARD_MODES.EDIT);
+    editor.post.sections.tail.setInitialMode(CardMode.EDIT);
   };
   editor = buildFromText(['','[simple]'], editorOpts);
 

@@ -12,6 +12,7 @@ import PostNodeBuilder from './post-node-builder'
 import ListSection, { isListSection } from './list-section'
 import ListItem, { isListItem } from './list-item'
 import MarkupSection from './markup-section'
+import RenderNode from './render-node'
 
 type SectionCallback = (section: Section, index: number) => void
 
@@ -27,6 +28,7 @@ export default class Post {
   type = Type.POST
   builder!: PostNodeBuilder
   sections: LinkedList<any>
+  renderNode!: RenderNode
 
   constructor() {
     this.sections = new LinkedList<any>({
