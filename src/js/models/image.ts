@@ -1,17 +1,15 @@
-import { IMAGE_SECTION_TYPE } from './types'
+import { Type } from './types'
 import Section from './_section'
 
 export default class Image extends Section {
+  src: string | null = null
+
   constructor() {
-    super(IMAGE_SECTION_TYPE)
+    super(Type.IMAGE_SECTION)
     this.src = null
   }
 
   canJoin() {
-    return false
-  }
-
-  get isBlank() {
     return false
   }
 
