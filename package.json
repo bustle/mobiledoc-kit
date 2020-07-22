@@ -52,10 +52,10 @@
     "@rollup/plugin-commonjs": "^11.1.0",
     "@rollup/plugin-node-resolve": "^7.1.3",
     "@rollup/plugin-typescript": "^4.1.2",
-    "@typescript-eslint/eslint-plugin": "^3.0.2",
-    "@typescript-eslint/parser": "^3.0.2",
+    "@typescript-eslint/eslint-plugin": "^3.6.1",
+    "@typescript-eslint/parser": "^3.6.1",
     "conventional-changelog-cli": "^2.0.34",
-    "eslint": "^7.1.0",
+    "eslint": "^7.4.0",
     "eslint-config-prettier": "^6.11.0",
     "jquery": "^3.5.1",
     "jsdoc": "^3.6.4",
@@ -78,6 +78,6 @@
   },
   "volta": {
     "node": "12.14.1",
-    "yarn": "1.22.1"
+    "yarn": "1.22.4"
   }
 }

@@ -1,9 +1,20 @@
-import { POST_TYPE } from './types'
-import LinkedList from 'mobiledoc-kit/utils/linked-list'
-import { forEach } from 'mobiledoc-kit/utils/array-utils'
-import Set from 'mobiledoc-kit/utils/set'
-import Position from 'mobiledoc-kit/utils/cursor/position'
-import assert from 'mobiledoc-kit/utils/assert'
+import { Type } from './types'
+import LinkedList from '../utils/linked-list'
+import { forEach } from '../utils/array-utils'
+import Set from '../utils/set'
+import Position from '../utils/cursor/position'
+import Range from '../utils/cursor/range'
+import assert from '../utils/assert'
+import Marker from './marker'
+import Markerable, { isMarkerable } from './_markerable'
+import Section from './_section'
+import PostNodeBuilder from './post-node-builder'
+import ListSection, { isListSection } from './list-section'
+import ListItem, { isListItem } from './list-item'
+import MarkupSection from './markup-section'
+import RenderNode from './render-node'
+
+type SectionCallback = (section: Section, index: number) => void
 
 /**
  * The Post is an in-memory representation of an editor's document.
@@ -13,24 +24,24 @@ import assert from 'mobiledoc-kit/utils/assert'
  * When persisting a post, it must first be serialized (loss-lessly) into
  * mobiledoc using {@link Editor#serialize}.
  */
-class Post {
-  /**
-   * @private
-   */
+export default class Post {
+  type = Type.POST
+  builder!: PostNodeBuilder
+  sections: LinkedList<any>
+  renderNode!: RenderNode
+
   constructor() {
-    this.type = POST_TYPE
-    this.sections = new LinkedList({
+    this.sections = new LinkedList<any>({
       adoptItem: s => (s.post = s.parent = this),
       freeItem: s => (s.post = s.parent = null),
     })
   }
-
   /**
    * @return {Position} The position at the start of the post (will be a {@link BlankPosition}
    * if the post is blank)
    * @public
    */
-  headPosition() {
+  headPosition(): Position {
     if (this.isBlank) {
       return Position.blankPosition()
     } else {
@@ -43,7 +54,7 @@ class Post {
    * if the post is blank)
    * @public
    */
-  tailPosition() {
+  tailPosition(): Position {
     if (this.isBlank) {
       return Position.blankPosition()
     } else {
@@ -55,7 +66,7 @@ class Post {
    * @return {Range} A range encompassing the entire post
    * @public
    */
-  toRange() {
+  toRange(): Range {
     return this.headPosition().toRange(this.tailPosition())
   }
 
@@ -69,7 +80,7 @@ class Post {
    * @return {Boolean}
    * @public
    */
-  get hasContent() {
+  get hasContent(): boolean {
     if (this.sections.length > 1 || (this.sections.length === 1 && !this.sections.head.isBlank)) {
       return true
     } else {
@@ -81,10 +92,10 @@ class Post {
    * @param {Range} range
    * @return {Array} markers that are completely contained by the range
    */
-  markersContainedByRange(range) {
-    const markers = []
+  markersContainedByRange(range: Range): Array<any> {
+    const markers: Marker[] = []
 
-    this.walkMarkerableSections(range, section => {
+    this.walkMarkerableSections(range, (section: Markerable) => {
       section._markersInRange(range.trimTo(section), (m, { isContained }) => {
         if (isContained) {
           markers.push(m)
@@ -95,7 +106,7 @@ class Post {
     return markers
   }
 
-  markupsInRange(range) {
+  markupsInRange(range: Range) {
     const markups = new Set()
 
     if (range.isCollapsed) {
@@ -126,16 +137,17 @@ class Post {
     return markups.toArray()
   }
 
-  walkAllLeafSections(callback) {
+  walkAllLeafSections(callback: SectionCallback) {
     let range = this.headPosition().toRange(this.tailPosition())
     return this.walkLeafSections(range, callback)
   }
 
-  walkLeafSections(range, callback) {
+  walkLeafSections(range: Range, callback: SectionCallback) {
     const { head, tail } = range
 
     let index = 0
-    let nextSection, shouldStop
+    let nextSection: Section
+    let shouldStop: boolean
     let currentSection = head.section
 
     while (currentSection) {
@@ -153,9 +165,9 @@ class Post {
     }
   }
 
-  walkMarkerableSections(range, callback) {
+  walkMarkerableSections(range: Range, callback: (section: Markerable) => void) {
     this.walkLeafSections(range, section => {
-      if (section.isMarkerable) {
+      if (isMarkerable(section)) {
         callback(section)
       }
     })
@@ -163,7 +175,7 @@ class Post {
 
   // return the next section that has markers after this one,
   // possibly skipping non-markerable sections
-  _nextLeafSection(section) {
+  _nextLeafSection(section: Section) {
     if (!section) {
       return null
     }
@@ -172,7 +184,7 @@ class Post {
     if (next) {
       if (next.isLeafSection) {
         return next
-      } else if (next.items) {
+      } else if (isListSection(next)) {
         return next.items.head
       } else {
         assert('Cannot determine next section from non-leaf-section', false)
@@ -181,7 +193,7 @@ class Post {
       // if there is no section after this, but this section is a child
       // (e.g. a ListItem inside a ListSection), check for a markerable
       // section after its parent
-      return this._nextLeafSection(section.parent)
+      return this._nextLeafSection(section.parent!)
     }
   }
 
@@ -189,27 +201,28 @@ class Post {
    * @param {Range} range
    * @return {Post} A new post, constrained to {range}
    */
-  trimTo(range) {
-    const post = this.builder.createPost()
+  trimTo(range: Range): Post {
     const { builder } = this
+    const post = builder.createPost()
     const { head, tail } = range
     const tailNotSelected = tail.offset === 0 && head.section !== tail.section
 
-    let sectionParent = post,
-      listParent = null
+    let sectionParent: Post | null = post,
+      listParent: ListSection | null = null
+
     this.walkLeafSections(range, section => {
-      let newSection
-      if (section.isMarkerable) {
-        if (section.isListItem) {
+      let newSection: Section
+      if (isMarkerable(section)) {
+        if (isListItem(section)) {
           if (listParent) {
             sectionParent = null
           } else {
-            listParent = builder.createListSection(section.parent.tagName)
+            listParent = builder.createListSection((section.parent! as ListSection).tagName)
             post.sections.append(listParent)
             sectionParent = null
           }
           newSection = builder.createListItem()
-          listParent.items.append(newSection)
+          listParent.items.append(newSection as ListItem)
         } else {
           listParent = null
           sectionParent = post
@@ -219,10 +232,10 @@ class Post {
 
         let currentRange = range.trimTo(section)
         forEach(section.markersFor(currentRange.headSectionOffset, currentRange.tailSectionOffset), m =>
-          newSection.markers.append(m)
+          (newSection as MarkupSection | ListItem).markers.append(m)
         )
       } else {
-        newSection = tailNotSelected && tail.section === section ? builder.createMarkupSection('p') : section.clone()
+        newSection = tailNotSelected && tail.section === section ? builder.createMarkupSection('p') : expectCloneable(section).clone()
 
         sectionParent = post
       }
@@ -234,4 +247,14 @@ class Post {
   }
 }
 
-export default Post
+interface Cloneable<T> {
+  clone(): T
+}
+
+function expectCloneable<T extends Section>(section: T): T & Cloneable<T> {
+  if (!('clone' in section)) {
+    throw new Error('Expected section to be cloneable')
+  }
+
+  return section as T & Cloneable<T>
+}

@@ -8,7 +8,8 @@ import Range from './range'
 import Markerable from '../../models/_markerable'
 import Section from '../../models/_section'
 import RenderNode from '../../models/render-node'
-import Card from '../../models/card'
+import Card, { isCardSection } from '../../models/card'
+import Markuperable from '../markuperable'
 
 const { FORWARD, BACKWARD } = DIRECTION
 
@@ -18,9 +19,9 @@ const { FORWARD, BACKWARD } = DIRECTION
 const WORD_CHAR_REGEX = /[A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͅͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙա-ևְ-ׇֽֿׁׂׅׄא-תװ-ײؐ-ؚؠ-ٗٙ-ٟٮ-ۓە-ۜۡ-ۭۨ-ۯۺ-ۼۿܐ-ܿݍ-ޱߊ-ߪߴߵߺࠀ-ࠗࠚ-ࠬࡀ-ࡘࢠ-ࢴࣣ-ࣰࣩ-ऻऽ-ौॎ-ॐॕ-ॣॱ-ঃঅ-ঌএঐও-নপ-রলশ-হঽ-ৄেৈোৌৎৗড়ঢ়য়-ৣৰৱਁ-ਃਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਾ-ੂੇੈੋੌੑਖ਼-ੜਫ਼ੰ-ੵઁ-ઃઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽ-ૅે-ૉોૌૐૠ-ૣૹଁ-ଃଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽ-ୄେୈୋୌୖୗଡ଼ଢ଼ୟ-ୣୱஂஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹா-ூெ-ைொ-ௌௐௗఀ-ఃఅ-ఌఎ-ఐఒ-నప-హఽ-ౄె-ైొ-ౌౕౖౘ-ౚౠ-ౣಁ-ಃಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽ-ೄೆ-ೈೊ-ೌೕೖೞೠ-ೣೱೲഁ-ഃഅ-ഌഎ-ഐഒ-ഺഽ-ൄെ-ൈൊ-ൌൎൗൟ-ൣൺ-ൿංඃඅ-ඖක-නඳ-රලව-ෆා-ුූෘ-ෟෲෳก-ฺเ-ๆํກຂຄງຈຊຍດ-ທນ-ຟມ-ຣລວສຫອ-ູົ-ຽເ-ໄໆໍໜ-ໟༀཀ-ཇཉ-ཬཱ-ཱྀྈ-ྗྙ-ྼက-ံးျ-ဿၐ-ၢၥ-ၨၮ-ႆႎႜႝႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚ፟ᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛮ-ᛸᜀ-ᜌᜎ-ᜓᜠ-ᜳᝀ-ᝓᝠ-ᝬᝮ-ᝰᝲᝳក-ឳា-ៈៗៜᠠ-ᡷᢀ-ᢪᢰ-ᣵᤀ-ᤞᤠ-ᤫᤰ-ᤸᥐ-ᥭᥰ-ᥴᦀ-ᦫᦰ-ᧉᨀ-ᨛᨠ-ᩞᩡ-ᩴᪧᬀ-ᬳᬵ-ᭃᭅ-ᭋᮀ-ᮩᮬ-ᮯᮺ-ᯥᯧ-ᯱᰀ-ᰵᱍ-ᱏᱚ-ᱽᳩ-ᳬᳮ-ᳳᳵᳶᴀ-ᶿᷧ-ᷴḀ-ἕἘ-Ἕἠ-ὅὈ-Ὅὐ-ὗὙὛὝὟ-ώᾀ-ᾴᾶ-ᾼιῂ-ῄῆ-ῌῐ-ΐῖ-Ίῠ-Ῥῲ-ῴῶ-ῼⁱⁿₐ-ₜℂℇℊ-ℓℕℙ-ℝℤΩℨK-ℭℯ-ℹℼ-ℿⅅ-ⅉⅎⅠ-ↈⒶ-ⓩⰀ-Ⱞⰰ-ⱞⱠ-ⳤⳫ-ⳮⳲⳳⴀ-ⴥⴧⴭⴰ-ⵧⵯⶀ-ⶖⶠ-ⶦⶨ-ⶮⶰ-ⶶⶸ-ⶾⷀ-ⷆⷈ-ⷎⷐ-ⷖⷘ-ⷞⷠ-ⷿⸯ々-〇〡-〩〱-〵〸-〼ぁ-ゖゝ-ゟァ-ヺー-ヿㄅ-ㄭㄱ-ㆎㆠ-ㆺㇰ-ㇿ㐀-䶵一-鿕ꀀ-ꒌꓐ-ꓽꔀ-ꘌꘐ-ꘟꘪꘫꙀ-ꙮꙴ-ꙻꙿ-ꛯꜗ-ꜟꜢ-ꞈꞋ-ꞭꞰ-ꞷꟷ-ꠁꠃ-ꠅꠇ-ꠊꠌ-ꠧꡀ-ꡳꢀ-ꣃꣲ-ꣷꣻꣽꤊ-ꤪꤰ-ꥒꥠ-ꥼꦀ-ꦲꦴ-ꦿꧏꧠ-ꧤꧦ-ꧯꧺ-ꧾꨀ-ꨶꩀ-ꩍꩠ-ꩶꩺꩾ-ꪾꫀꫂꫛ-ꫝꫠ-ꫯꫲ-ꫵꬁ-ꬆꬉ-ꬎꬑ-ꬖꬠ-ꬦꬨ-ꬮꬰ-ꭚꭜ-ꭥꭰ-ꯪ가-힣ힰ-ퟆퟋ-ퟻ豈-舘並-龎ﬀ-ﬆﬓ-ﬗיִ-ﬨשׁ-זּטּ-לּמּנּסּףּפּצּ-ﮱﯓ-ﴽﵐ-ﶏﶒ-ﷇﷰ-ﷻﹰ-ﹴﹶ-ﻼＡ-Ｚａ-ｚｦ-ﾾￂ-ￇￊ-ￏￒ-ￗￚ-ￜ]|[0-9]|_|:/
 
 function findParentSectionFromNode(renderTree: RenderTree, node: Node) {
-  let renderNode = renderTree.findRenderNodeFromElement(node, renderNode => renderNode.postNode.isSection)
+  let renderNode = renderTree.findRenderNodeFromElement(node, renderNode => (renderNode.postNode as Section).isSection)
 
-  return renderNode && renderNode.postNode
+  return renderNode && renderNode.postNode as Section
 }
 
 function findOffsetInMarkerable(markerable: Markerable, node: Node, offset: number) {
@@ -58,7 +59,7 @@ function findOffsetInSection(section: Section, node: Node, offset: number) {
   } else {
     assertIsCard(section)
     assertHasRenderNode(section.renderNode)
-    let wrapperNode = section.renderNode.element
+    let wrapperNode = section.renderNode.element!
     let endTextNode = wrapperNode.lastChild
     if (node === endTextNode) {
       return 1
@@ -375,7 +376,7 @@ export default class Position {
     let section, offsetInSection
 
     if (renderNode) {
-      const marker = renderNode.postNode
+      const marker = renderNode.postNode as Marker
       section = marker.section
 
       assert(`Could not find parent section for mapped text node "${textNode.textContent}"`, !!section)
@@ -401,13 +402,13 @@ export default class Position {
     // element if the user clicks an element that is immediately removed,
     // which can happen when clicking to remove a card.
     if (elementNode === renderTree.rootElement) {
-      let post = renderTree.rootNode.postNode
+      let post = renderTree.rootNode.postNode as Section
       position = offset === 0 ? post.headPosition() : post.tailPosition()
     } else {
       let section = findParentSectionFromNode(renderTree, elementNode)
       assert('Could not find parent section from element node', !!section)
 
-      if (section.isCardSection) {
+      if (isCardSection(section)) {
         // Selections in cards are usually made on a text node
         // containing a &zwnj;  on one side or the other of the card but
         // some scenarios (Firefox) will result in selecting the
@@ -424,8 +425,8 @@ export default class Position {
         // to be on the wrapper element itself
         let renderNode = renderTree.getElementRenderNode(elementNode)
         let postNode = renderNode && renderNode.postNode
-        if (postNode && postNode.isAtom) {
-          let sectionOffset = section.offsetOfMarker(postNode)
+        if (postNode && (postNode as Markuperable).isAtom) {
+          let sectionOffset = (section as Markerable).offsetOfMarker(postNode as Marker)
           if (offset > 1) {
             // we are on the tail side of the atom
             sectionOffset += postNode.length

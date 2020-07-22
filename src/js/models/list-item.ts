@@ -1,22 +1,27 @@
 import Markerable from './_markerable'
-import { LIST_ITEM_TYPE } from './types'
+import { Type } from './types'
 import { normalizeTagName } from '../utils/dom-utils'
-import { contains } from 'mobiledoc-kit/utils/array-utils'
+import { contains } from '../utils/array-utils'
+import Section from './_section'
+import { expect } from '../utils/assert'
+import Marker from './marker'
 
 export const VALID_LIST_ITEM_TAGNAMES = ['li'].map(normalizeTagName)
 
 export default class ListItem extends Markerable {
-  constructor(tagName, markers = []) {
-    super(LIST_ITEM_TYPE, tagName, markers)
-    this.isListItem = true
-    this.isNested = true
+  isListItem = true
+  isNested = true
+  section: Section | null = null
+
+  constructor(tagName: string, markers: Marker[] = []) {
+    super(Type.LIST_ITEM, tagName, markers)
   }
 
-  isValidTagName(normalizedTagName) {
+  isValidTagName(normalizedTagName: string) {
     return contains(VALID_LIST_ITEM_TAGNAMES, normalizedTagName)
   }
 
-  splitAtMarker(marker, offset = 0) {
+  splitAtMarker(marker: Marker, offset = 0) {
     // FIXME need to check if we are going to split into two list items
     // or a list item and a new markup section:
     const isLastItem = !this.next
@@ -31,6 +36,10 @@ export default class ListItem extends Markerable {
   }
 
   get post() {
-    return this.section.post
+    return expect(this.section, 'expected list item to have section').post
   }
+}
+
+export function isListItem(section: Section): section is ListItem {
+  return section.isListItem
 }

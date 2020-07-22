@@ -1,19 +1,20 @@
 import { normalizeTagName } from './dom-utils'
 import { detect, commonItemLength, forEach, filter } from './array-utils'
-
-interface Markup {
-  tagName: string
-}
+import Markup from '../models/markup'
 
 type MarkupCallback = (markup: Markup) => boolean
-
 type MarkupOrMarkupCallback = Markup | MarkupCallback
 
-export default class Markerupable {
+export default abstract class Markuperable {
   markups: Markup[] = []
 
   prev: this | null = null
   next: this | null = null
+
+  isAtom = false
+  isMarker = false
+
+  abstract length: number
 
   clearMarkups() {
     this.markups = []

@@ -1,13 +1,24 @@
 import { ATOM_TYPE } from './types'
-import mixin from '../utils/mixin'
-import MarkuperableMixin from '../utils/markuperable'
-import LinkedItem from '../utils/linked-item'
+import Markuperable from '../utils/markuperable'
 import assert from '../utils/assert'
+import Marker from './marker'
+import Markup from './markup'
 
 const ATOM_LENGTH = 1
 
-class Atom extends LinkedItem {
-  constructor(name, value, payload, markups = []) {
+export default class Atom extends Markuperable {
+  type = ATOM_TYPE
+  isAtom = true
+
+  name: string
+  value: unknown
+  text: string
+  payload: {}
+
+  markups: Markup[]
+  builder: any
+
+  constructor(name: string, value: unknown, payload: {}, markups: Markup[] = []) {
     super()
     this.name = name
     this.value = value
@@ -44,7 +55,7 @@ class Atom extends LinkedItem {
   }
 
   split(offset = 0, endOffset = offset) {
-    let markers = []
+    let markers: Marker[] = []
 
     if (endOffset === 0) {
       markers.push(this.builder.createMarker('', this.markups.slice()))
@@ -59,13 +70,13 @@ class Atom extends LinkedItem {
     return markers
   }
 
-  splitAtOffset(offset) {
+  splitAtOffset(offset: number) {
     assert('Cannot split a marker at an offset > its length', offset <= this.length)
 
     let { builder } = this
     let clone = this.clone()
     let blankMarker = builder.createMarker('')
-    let pre, post
+    let pre: Marker, post: Marker
 
     if (offset === 0) {
       ;[pre, post] = [blankMarker, clone]
@@ -82,7 +93,3 @@ class Atom extends LinkedItem {
     return [pre, post]
   }
 }
-
-mixin(Atom, MarkuperableMixin)
-
-export default Atom

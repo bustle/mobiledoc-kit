@@ -1,15 +1,37 @@
 import assert from '../utils/assert'
+import Atom from './atom'
+
+export interface AtomOptions {}
+
+export type TeardownCallback = () => void
+export interface AtomRenderOptions {
+  options: AtomOptions
+  env: any
+  value: unknown
+  payload: {}
+}
+
+export type AtomData = {
+  name: string
+  render(options: AtomRenderOptions): Element
+}
 
 export default class AtomNode {
-  constructor(editor, atom, model, element, atomOptions) {
+  editor: any
+  atom: AtomData
+  model: Atom
+  element: Element
+  atomOptions: AtomOptions
+
+  _teardownCallback: TeardownCallback | null = null
+  _rendered: Node | null = null
+
+  constructor(editor: any, atom: AtomData, model: Atom, element: Element, atomOptions: AtomOptions) {
     this.editor = editor
     this.atom = atom
     this.model = model
     this.atomOptions = atomOptions
     this.element = element
-
-    this._teardownCallback = null
-    this._rendered = null
   }
 
   render() {
@@ -23,14 +45,14 @@ export default class AtomNode {
       this._rendered = this.atom.render({ options, env, value, payload })
     }
 
-    this._validateAndAppendRenderResult(this._rendered)
+    this._validateAndAppendRenderResult(this._rendered!)
   }
 
   get env() {
     return {
       name: this.atom.name,
-      onTeardown: callback => (this._teardownCallback = callback),
-      save: (value, payload = {}) => {
+      onTeardown: (callback: TeardownCallback) => (this._teardownCallback = callback),
+      save: (value: unknown, payload = {}) => {
         this.model.value = value
         this.model.payload = payload
 
@@ -52,7 +74,7 @@ export default class AtomNode {
     }
   }
 
-  _validateAndAppendRenderResult(rendered) {
+  _validateAndAppendRenderResult(rendered: Node) {
     if (!rendered) {
       return
     }

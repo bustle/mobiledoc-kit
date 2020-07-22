@@ -1,28 +1,32 @@
 import { LIST_SECTION_TYPE } from './types'
 import Section from './_section'
 import { attributable } from './_attributable'
-
 import LinkedList from '../utils/linked-list'
 import { forEach, contains } from '../utils/array-utils'
 import { normalizeTagName } from '../utils/dom-utils'
 import assert from '../utils/assert'
 import { entries } from '../utils/object-utils'
+import ListItem from './list-item'
+import { tagNameable } from './_tag-nameable'
 
 export const VALID_LIST_SECTION_TAGNAMES = ['ul', 'ol'].map(normalizeTagName)
 
 export const DEFAULT_TAG_NAME = VALID_LIST_SECTION_TAGNAMES[0]
 
-export default class ListSection extends Section {
+export default class ListSection extends attributable(tagNameable(Section)) {
+  isListSection = true
+  isLeafSection = false
+
+  items: LinkedList<ListItem>
+  sections: LinkedList<ListItem>
+
   constructor(tagName = DEFAULT_TAG_NAME, items = [], attributes = {}) {
     super(LIST_SECTION_TYPE)
     this.tagName = tagName
-    this.isListSection = true
-    this.isLeafSection = false
 
-    attributable(this)
     entries(attributes).forEach(([k, v]) => this.setAttribute(k, v))
 
-    this.items = new LinkedList({
+    this.items = new LinkedList<ListItem>({
       adoptItem: i => {
         assert(`Cannot insert non-list-item to list (is: ${i.type})`, i.isListItem)
         i.section = i.parent = this
@@ -43,11 +47,11 @@ export default class ListSection extends Section {
   }
 
   headPosition() {
-    return this.items.head.headPosition()
+    return this.items.head!.headPosition()
   }
 
   tailPosition() {
-    return this.items.tail.tailPosition()
+    return this.items.tail!.tailPosition()
   }
 
   get isBlank() {
@@ -74,4 +78,8 @@ export default class ListSection extends Section {
       this.items.append(item)
     }
   }
+}
+
+export function isListSection(section: Section): section is ListSection {
+  return section.isListSection
 }

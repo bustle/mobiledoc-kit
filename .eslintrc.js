@@ -151,6 +151,7 @@ module.exports = {
         "no-continue": "off",
         "no-div-regex": "error",
         "no-duplicate-imports": "off",
+        "no-dupe-class-members": "off",
         "no-else-return": "off",
         "no-empty-function": "off",
         "no-eq-null": "error",
