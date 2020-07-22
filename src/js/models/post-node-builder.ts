@@ -52,9 +52,13 @@ export default class PostNodeBuilder {
     return post
   }
 
-  createMarkerableSection(type: Type.LIST_ITEM, tagName: string, markers: Marker[]): ListItem;
-  createMarkerableSection(type: Type.MARKUP_SECTION, tagName: string, markers: Marker[]): MarkupSection;
-  createMarkerableSection(type: Exclude<Type, Type.LIST_ITEM & Type.MARKUP_SECTION>, tagName: string, markers: Marker[]): never;
+  createMarkerableSection(type: Type.LIST_ITEM, tagName: string, markers: Marker[]): ListItem
+  createMarkerableSection(type: Type.MARKUP_SECTION, tagName: string, markers: Marker[]): MarkupSection
+  createMarkerableSection(
+    type: Exclude<Type, Type.LIST_ITEM & Type.MARKUP_SECTION>,
+    tagName: string,
+    markers: Marker[]
+  ): never
   createMarkerableSection(type: Type, tagName: string, markers: Marker[] = []) {
     switch (type) {
       case LIST_ITEM_TYPE:

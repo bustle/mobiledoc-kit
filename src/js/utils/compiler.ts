@@ -1,11 +1,27 @@
-import { forEach } from './array-utils'
+import { forEach, ForEachable, HasLength } from './array-utils'
 import assert from './assert'
+import { Type } from '../models/types'
+import Post from '../models/post'
+import Image from '../models/image'
+import ListSection from '../models/list-section'
+import MarkupSection from '../models/markup-section'
+import ListItem from '../models/list-item'
+import Card from '../models/card'
+import Marker from '../models/marker'
+import Markup from '../models/markup'
 
-type Opcode = [string] | [string, unknown] | [string, unknown, unknown]
-type Opcodes = Opcode[]
+export type Opcode = [string] | [string, unknown] | [string, unknown, unknown]
+export type Opcodes = Opcode[]
 
 interface Visitor {
-  [key: string]: (node: CompileNode, opcodes: Opcodes) => void
+  [Type.POST]: (node: Post, opcodes: Opcodes) => void
+  [Type.MARKUP_SECTION]: (node: MarkupSection, opcodes: Opcodes) => void
+  [Type.LIST_SECTION]: (node: ListSection, opcodes: Opcodes) => void
+  [Type.LIST_ITEM]: (node: ListItem, opcodes: Opcodes) => void
+  [Type.IMAGE_SECTION]: (node: Image, opcodes: Opcodes) => void
+  [Type.CARD]: (node: Card, opcodes: Opcodes) => void
+  [Type.MARKER]: (node: Marker, opcodes: Opcodes) => void
+  [Type.MARKUP]: (node: Markup, opcodes: Opcodes) => void
 }
 
 interface CompileNode {
@@ -38,7 +54,9 @@ export function compile(compiler: Compiler, opcodes: Opcodes) {
   }
 }
 
-export function visitArray(visitor: Visitor, nodes: CompileNode[], opcodes: Opcodes) {
+type CompileNodes = ForEachable<CompileNode> & HasLength<CompileNode>
+
+export function visitArray(visitor: Visitor, nodes: CompileNodes, opcodes: Opcodes) {
   if (!nodes || nodes.length === 0) {
     return
   }

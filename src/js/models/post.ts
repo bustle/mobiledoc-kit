@@ -27,7 +27,7 @@ type SectionCallback = (section: Section, index: number) => void
 export default class Post {
   type = Type.POST
   builder!: PostNodeBuilder
-  sections: LinkedList<any>
+  sections: LinkedList<Section>
   renderNode!: RenderNode
 
   constructor() {
@@ -45,7 +45,7 @@ export default class Post {
     if (this.isBlank) {
       return Position.blankPosition()
     } else {
-      return this.sections.head.headPosition()
+      return this.sections.head!.headPosition()
     }
   }
 
@@ -58,7 +58,7 @@ export default class Post {
     if (this.isBlank) {
       return Position.blankPosition()
     } else {
-      return this.sections.tail.tailPosition()
+      return this.sections.tail!.tailPosition()
     }
   }
 
@@ -81,7 +81,7 @@ export default class Post {
    * @public
    */
   get hasContent(): boolean {
-    if (this.sections.length > 1 || (this.sections.length === 1 && !this.sections.head.isBlank)) {
+    if (this.sections.length > 1 || (this.sections.length === 1 && !this.sections.head!.isBlank)) {
       return true
     } else {
       return false
@@ -235,7 +235,10 @@ export default class Post {
           (newSection as MarkupSection | ListItem).markers.append(m)
         )
       } else {
-        newSection = tailNotSelected && tail.section === section ? builder.createMarkupSection('p') : expectCloneable(section).clone()
+        newSection =
+          tailNotSelected && tail.section === section
+            ? builder.createMarkupSection('p')
+            : expectCloneable(section).clone()
 
         sectionParent = post
       }

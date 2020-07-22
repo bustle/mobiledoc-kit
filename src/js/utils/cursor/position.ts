@@ -21,7 +21,7 @@ const WORD_CHAR_REGEX = /[A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͅͰ-ʹͶͷͺ
 function findParentSectionFromNode(renderTree: RenderTree, node: Node) {
   let renderNode = renderTree.findRenderNodeFromElement(node, renderNode => (renderNode.postNode as Section).isSection)
 
-  return renderNode && renderNode.postNode as Section
+  return renderNode && (renderNode.postNode as Section)
 }
 
 function findOffsetInMarkerable(markerable: Markerable, node: Node, offset: number) {
