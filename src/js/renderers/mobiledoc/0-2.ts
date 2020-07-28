@@ -55,7 +55,7 @@ type OpcodeCompilerSection =
   | [typeof MOBILEDOC_IMAGE_SECTION_TYPE, string]
   | [typeof MOBILEDOC_CARD_SECTION_TYPE, string, {}]
 
-interface PostOpcodeCompilerResult {
+export interface Mobiledoc0_2 {
   version: typeof MOBILEDOC_VERSION
   sections: [PostOpcodeCompilerMarkerType[], OpcodeCompilerSection[]]
 }
@@ -68,7 +68,7 @@ class PostOpcodeCompiler {
   sections!: OpcodeCompilerSection[]
   items!: OpcodeCompilerMarker[][]
   markerTypes!: PostOpcodeCompilerMarkerType[]
-  result!: PostOpcodeCompilerResult
+  result!: Mobiledoc0_2
 
   _markerTypeCache!: { [key: string]: number }
 
@@ -136,8 +136,6 @@ class PostOpcodeCompiler {
   }
 }
 
-const postOpcodeCompiler = new PostOpcodeCompiler()
-
 /**
  * Render from post -> mobiledoc
  */
@@ -146,10 +144,10 @@ export default {
    * @param {Post}
    * @return {Mobiledoc}
    */
-  render(post) {
+  render(post: Post): Mobiledoc0_2 {
     let opcodes = []
     visit(visitor, post, opcodes)
-    let compiler = Object.create(postOpcodeCompiler)
+    let compiler = new PostOpcodeCompiler()
     compile(compiler, opcodes)
     return compiler.result
   },

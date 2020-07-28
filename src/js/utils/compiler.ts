@@ -10,7 +10,7 @@ import Card from '../models/card'
 import Marker from '../models/marker'
 import Markup from '../models/markup'
 
-export type Opcode = [string] | [string, unknown] | [string, unknown, unknown]
+export type Opcode = [string, ...unknown[]]
 export type Opcodes = Opcode[]
 
 interface Visitor {
@@ -34,23 +34,12 @@ export function visit(visitor: Visitor, node: CompileNode, opcodes: Opcodes) {
   visitor[method](node, opcodes)
 }
 
-interface Compiler {
-  [key: string]: (...args: unknown[]) => void
-}
+type Compiler = {}
 
 export function compile(compiler: Compiler, opcodes: Opcodes) {
-  for (var i = 0, l = opcodes.length; i < l; i++) {
+  for (let i = 0, l = opcodes.length; i < l; i++) {
     let [method, ...params] = opcodes[i]
-    let length = params.length
-    if (length === 0) {
-      compiler[method].call(compiler)
-    } else if (length === 1) {
-      compiler[method].call(compiler, params[0])
-    } else if (length === 2) {
-      compiler[method].call(compiler, params[0], params[1])
-    } else {
-      compiler[method].apply(compiler, params)
-    }
+    compiler[method].apply(compiler, params)
   }
 }
 
