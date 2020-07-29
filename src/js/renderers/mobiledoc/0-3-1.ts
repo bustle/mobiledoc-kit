@@ -68,14 +68,6 @@ type OpcodeCompilerAtom = [string, unknown, {}]
 type OpcodeCompilerCard = [string, {}]
 type OpcodeCompilerMarkerType = [string, string[]?]
 
-export interface Mobiledoc0_3_1 {
-  version: typeof MOBILEDOC_VERSION
-  atoms: OpcodeCompilerAtom[]
-  cards: OpcodeCompilerCard[]
-  markups: OpcodeCompilerMarkerType[]
-  sections: OpcodeCompilerSection[]
-}
-
 class PostOpcodeCompiler {
   markupMarkerIds!: number[]
   markers!: OpcodeCompilerMarker[]
@@ -84,7 +76,7 @@ class PostOpcodeCompiler {
   markerTypes!: OpcodeCompilerMarkerType[]
   atomTypes!: OpcodeCompilerAtom[]
   cardTypes!: OpcodeCompilerCard[]
-  result!: Mobiledoc0_3_1
+  result!: MobiledocV0_3_1
 
   _markerTypeCache!: Dict<number>
 
@@ -176,7 +168,13 @@ class PostOpcodeCompiler {
   }
 }
 
-const postOpcodeCompiler = new PostOpcodeCompiler()
+export interface MobiledocV0_3_1 {
+  version: typeof MOBILEDOC_VERSION
+  atoms: OpcodeCompilerAtom[]
+  cards: OpcodeCompilerCard[]
+  markups: OpcodeCompilerMarkerType[]
+  sections: OpcodeCompilerSection[]
+}
 
 /**
  * Render from post -> mobiledoc
@@ -186,10 +184,10 @@ export default {
    * @param {Post}
    * @return {Mobiledoc}
    */
-  render(post: Post): Mobiledoc0_3_1 {
+  render(post: Post): MobiledocV0_3_1 {
     let opcodes = []
     visit(visitor, post, opcodes)
-    let compiler = Object.create(postOpcodeCompiler)
+    let compiler = new PostOpcodeCompiler()
     compile(compiler, opcodes)
     return compiler.result
   },

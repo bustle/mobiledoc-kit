@@ -27,11 +27,11 @@ const visitor = {
     visitArray(visitor, node.sections, opcodes)
   },
   [Type.MARKUP_SECTION](node: MarkupSection, opcodes: Opcodes) {
-    opcodes.push(['openMarkupSection', node.tagName])
+    opcodes.push(['openMarkupSection', node.tagName, objectToSortedKVArray(node.attributes)])
     visitArray(visitor, node.markers, opcodes)
   },
   [Type.LIST_SECTION](node: ListSection, opcodes: Opcodes) {
-    opcodes.push(['openListSection', node.tagName])
+    opcodes.push(['openListSection', node.tagName, objectToSortedKVArray(node.attributes)])
     visitArray(visitor, node.items, opcodes)
   },
   [Type.LIST_ITEM](node: ListItem, opcodes: Opcodes) {
@@ -68,14 +68,6 @@ type OpcodeCompilerAtom = [string, unknown, {}]
 type OpcodeCompilerCard = [string, {}]
 type OpcodeCompilerMarkerType = [string, string[]?]
 
-export interface Mobiledoc0_3_2 {
-  version: typeof MOBILEDOC_VERSION
-  atoms: OpcodeCompilerAtom[]
-  cards: OpcodeCompilerCard[]
-  markups: OpcodeCompilerMarkerType[]
-  sections: OpcodeCompilerSection[]
-}
-
 class PostOpcodeCompiler {
   markupMarkerIds!: number[]
   markers!: OpcodeCompilerMarker[]
@@ -84,7 +76,7 @@ class PostOpcodeCompiler {
   markerTypes!: OpcodeCompilerMarkerType[]
   atomTypes!: OpcodeCompilerAtom[]
   cardTypes!: OpcodeCompilerCard[]
-  result!: Mobiledoc0_3_2
+  result!: MobiledocV0_3_2
 
   _markerTypeCache!: Dict<number>
 
@@ -184,7 +176,13 @@ class PostOpcodeCompiler {
   }
 }
 
-const postOpcodeCompiler = new PostOpcodeCompiler()
+export interface MobiledocV0_3_2 {
+  version: typeof MOBILEDOC_VERSION
+  atoms: OpcodeCompilerAtom[]
+  cards: OpcodeCompilerCard[]
+  markups: OpcodeCompilerMarkerType[]
+  sections: OpcodeCompilerSection[]
+}
 
 /**
  * Render from post -> mobiledoc
@@ -194,10 +192,10 @@ export default {
    * @param {Post}
    * @return {Mobiledoc}
    */
-  render(post: Post): Mobiledoc0_3_2 {
+  render(post: Post): MobiledocV0_3_2 {
     let opcodes = []
     visit(visitor, post, opcodes)
-    let compiler = Object.create(postOpcodeCompiler)
+    let compiler = new PostOpcodeCompiler()
     compile(compiler, opcodes)
     return compiler.result
   },
