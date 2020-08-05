@@ -1,4 +1,5 @@
 import placeholderImageSrc from '../utils/placeholder-image-src'
+import { CardData } from '../models/card-node'
 
 interface ImagePayload {
   src?: string
@@ -13,4 +14,4 @@ export default {
     img.src = payload.src || placeholderImageSrc
     return img
   },
-}
+} as CardData

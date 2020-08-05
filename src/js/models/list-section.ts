@@ -8,12 +8,13 @@ import assert from '../utils/assert'
 import { entries } from '../utils/object-utils'
 import ListItem from './list-item'
 import { tagNameable } from './_tag-nameable'
+import HasChildSections from './_has-child-sections'
 
 export const VALID_LIST_SECTION_TAGNAMES = ['ul', 'ol'].map(normalizeTagName)
 
 export const DEFAULT_TAG_NAME = VALID_LIST_SECTION_TAGNAMES[0]
 
-export default class ListSection extends attributable(tagNameable(Section)) {
+export default class ListSection extends attributable(tagNameable(Section)) implements HasChildSections<ListItem> {
   isListSection = true
   isLeafSection = false
 

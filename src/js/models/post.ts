@@ -13,6 +13,7 @@ import ListSection, { isListSection } from './list-section'
 import ListItem, { isListItem } from './list-item'
 import MarkupSection from './markup-section'
 import RenderNode from './render-node'
+import HasChildSections from './_has-child-sections'
 
 type SectionCallback = (section: Section, index: number) => void
 
@@ -24,7 +25,7 @@ type SectionCallback = (section: Section, index: number) => void
  * When persisting a post, it must first be serialized (loss-lessly) into
  * mobiledoc using {@link Editor#serialize}.
  */
-export default class Post {
+export default class Post implements HasChildSections {
   type = Type.POST
   builder!: PostNodeBuilder
   sections: LinkedList<Section>

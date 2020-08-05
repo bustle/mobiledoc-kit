@@ -1,12 +1,12 @@
 import { Type } from './types'
 import Section from './_section'
+import { Option } from '../utils/types'
 
 export default class Image extends Section {
-  src: string | null = null
+  src: Option<string> = null
 
   constructor() {
     super(Type.IMAGE_SECTION)
-    this.src = null
   }
 
   canJoin() {

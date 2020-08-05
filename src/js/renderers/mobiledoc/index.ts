@@ -32,5 +32,5 @@ export default {
       default:
         assert(`Unknown version of mobiledoc renderer requested: ${version}`, false)
     }
-  }
+  },
 }

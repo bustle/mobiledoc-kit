@@ -1,4 +1,4 @@
-import { ATOM_TYPE } from './types'
+import { Type } from './types'
 import Markuperable from '../utils/markuperable'
 import assert from '../utils/assert'
 import Marker from './marker'
@@ -7,7 +7,7 @@ import Markup from './markup'
 const ATOM_LENGTH = 1
 
 export default class Atom extends Markuperable {
-  type = ATOM_TYPE
+  type: Type = Type.ATOM
   isAtom = true
 
   name: string
@@ -25,7 +25,7 @@ export default class Atom extends Markuperable {
     this.text = '' // An atom never has text, but it does have a value
     assert('Atom must have value', value !== undefined && value !== null)
     this.payload = payload
-    this.type = ATOM_TYPE
+    this.type = Type.ATOM
     this.isMarker = false
     this.isAtom = true
 

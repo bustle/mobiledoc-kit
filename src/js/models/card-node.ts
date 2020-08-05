@@ -3,15 +3,19 @@ import Card, { CardMode } from './card'
 
 export interface CardNodeOptions {}
 
+export type CardRenderHook = (...args: any[]) => Element
+
 type DidRenderCallback = null | (() => void)
 type TeardownCallback = null | (() => void)
 
-type RenderMethod = (...args: any[]) => Element
+type CardDataType = 'dom'
 
 export interface CardData {
   name: string
-  render: RenderMethod
-  edit: RenderMethod
+  type?: CardDataType
+
+  render: CardRenderHook
+  edit?: CardRenderHook
 }
 
 type CardRenderMethodName = 'render' | 'edit'

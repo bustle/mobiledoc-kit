@@ -136,7 +136,6 @@ export interface MobiledocV0_2 {
   sections: [PostOpcodeCompilerMarkerType[], OpcodeCompilerSection[]]
 }
 
-
 /**
  * Render from post -> mobiledoc
  */

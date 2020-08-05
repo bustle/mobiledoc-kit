@@ -1,3 +1,5 @@
+import { Dict } from './types'
+
 interface Detectable<T> {
   detect(cb: (val: T) => boolean): T
 }
@@ -194,8 +196,8 @@ export function isArrayEqual<T>(arr1: ArrayLike<T>, arr2: ArrayLike<T>): boolean
 }
 
 // return an object with only the valid keys
-export function filterObject<T>(object: T, validKeys: string[] = []) {
-  let result: { [key: string]: unknown } = {}
+export function filterObject<T>(object: Dict<T>, validKeys: string[] = []) {
+  let result: Dict<T> = {}
 
   forEach(
     filter(Object.keys(object), key => validKeys.indexOf(key) !== -1),
