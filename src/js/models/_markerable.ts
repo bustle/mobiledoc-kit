@@ -8,10 +8,11 @@ import Section from './_section'
 import Marker from './marker'
 import { tagNameable } from './_tag-nameable'
 import { Type } from './types'
+import Cloneable from './_cloneable'
 
 type MarkerableType = Type.LIST_ITEM | Type.MARKUP_SECTION
 
-export default abstract class Markerable extends tagNameable(Section) {
+export default abstract class Markerable extends tagNameable(Section) implements Cloneable {
   type: MarkerableType
   markers: LinkedList<Marker>
 

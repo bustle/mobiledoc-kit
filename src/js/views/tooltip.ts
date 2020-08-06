@@ -1,14 +1,24 @@
 import View from './view'
-import { positionElementCenteredBelow, getEventTargetMatchingTag, whenElementIsNotInDOM } from '../utils/element-utils'
+import { positionElementCenteredBelow, getEventTargetMatchingTag, whenElementIsNotInDOM, Cancelable } from '../utils/element-utils'
 import { editLink } from '../editor/ui'
 
 const SHOW_DELAY = 200
 const HIDE_DELAY = 600
 
+type Editor = any
+
+interface TooltipOptions {
+  rootElement: HTMLElement
+  editor: Editor
+}
+
 export default class Tooltip extends View {
-  constructor(options) {
-    options.classNames = ['__mobiledoc-tooltip']
-    super(options)
+  rootElement: HTMLElement
+  editor: any
+  elementObserver: Cancelable | null = null
+
+  constructor(options: TooltipOptions) {
+    super({ ...options, classNames: ['__mobiledoc-tooltip'] })
 
     this.rootElement = options.rootElement
     this.editor = options.editor
@@ -35,7 +45,7 @@ export default class Tooltip extends View {
 
   addListeners(options) {
     const { rootElement, element: tooltipElement } = this
-    let showTimeout, hideTimeout
+    let showTimeout: number, hideTimeout: number
 
     const scheduleHide = () => {
       clearTimeout(hideTimeout)
@@ -53,7 +63,7 @@ export default class Tooltip extends View {
     })
 
     this.addEventListener(rootElement, 'mouseover', event => {
-      let target = getEventTargetMatchingTag(options.showForTag, event.target, rootElement)
+      let target = getEventTargetMatchingTag(options.showForTag, event.target as HTMLElement, rootElement)
 
       if (target && target.isContentEditable) {
         clearTimeout(hideTimeout)
@@ -74,7 +84,7 @@ export default class Tooltip extends View {
 }
 
 export const DEFAULT_TOOLTIP_PLUGIN = {
-  renderLink(tooltipEl, linkEl, { editLink }) {
+  renderLink(tooltipEl: Element, linkEl: HTMLLinkElement, { editLink }) {
     const { href } = linkEl
     tooltipEl.innerHTML = `<a href="${href}" target="_blank">${href}</a>`
     const button = document.createElement('button')
