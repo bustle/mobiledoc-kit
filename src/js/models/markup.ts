@@ -27,7 +27,7 @@ export const VALID_ATTRIBUTES = ['href', 'rel']
  */
 export default class Markup {
   tagName: string
-  attributes: { [key: string]: unknown }
+  attributes: { [key: string]: string }
 
   type = MARKUP_TYPE
 

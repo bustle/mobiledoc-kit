@@ -13,6 +13,7 @@ import ListSection, { isListSection } from './list-section'
 import ListItem, { isListItem } from './list-item'
 import MarkupSection from './markup-section'
 import RenderNode from './render-node'
+import HasChildSections from './_has-child-sections'
 
 type SectionCallback = (section: Section, index: number) => void
 
@@ -24,10 +25,10 @@ type SectionCallback = (section: Section, index: number) => void
  * When persisting a post, it must first be serialized (loss-lessly) into
  * mobiledoc using {@link Editor#serialize}.
  */
-export default class Post {
+export default class Post implements HasChildSections {
   type = Type.POST
   builder!: PostNodeBuilder
-  sections: LinkedList<any>
+  sections: LinkedList<Section>
   renderNode!: RenderNode
 
   constructor() {
@@ -45,7 +46,7 @@ export default class Post {
     if (this.isBlank) {
       return Position.blankPosition()
     } else {
-      return this.sections.head.headPosition()
+      return this.sections.head!.headPosition()
     }
   }
 
@@ -58,7 +59,7 @@ export default class Post {
     if (this.isBlank) {
       return Position.blankPosition()
     } else {
-      return this.sections.tail.tailPosition()
+      return this.sections.tail!.tailPosition()
     }
   }
 
@@ -81,7 +82,7 @@ export default class Post {
    * @public
    */
   get hasContent(): boolean {
-    if (this.sections.length > 1 || (this.sections.length === 1 && !this.sections.head.isBlank)) {
+    if (this.sections.length > 1 || (this.sections.length === 1 && !this.sections.head!.isBlank)) {
       return true
     } else {
       return false
@@ -235,7 +236,10 @@ export default class Post {
           (newSection as MarkupSection | ListItem).markers.append(m)
         )
       } else {
-        newSection = tailNotSelected && tail.section === section ? builder.createMarkupSection('p') : expectCloneable(section).clone()
+        newSection =
+          tailNotSelected && tail.section === section
+            ? builder.createMarkupSection('p')
+            : expectCloneable(section).clone()
 
         sectionParent = post
       }

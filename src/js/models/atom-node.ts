@@ -11,9 +11,12 @@ export interface AtomRenderOptions {
   payload: {}
 }
 
+export type AtomRenderHook = (options: AtomRenderOptions) => Element
+
 export type AtomData = {
   name: string
-  render(options: AtomRenderOptions): Element
+  type: 'dom'
+  render: AtomRenderHook
 }
 
 export default class AtomNode {

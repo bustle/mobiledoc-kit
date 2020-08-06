@@ -1,21 +1,28 @@
-import CardNode from '../models/card-node'
-import { detect, forEach } from '../utils/array-utils'
-import AtomNode from '../models/atom-node'
-import {
-  POST_TYPE,
-  MARKUP_SECTION_TYPE,
-  LIST_SECTION_TYPE,
-  LIST_ITEM_TYPE,
-  MARKER_TYPE,
-  IMAGE_SECTION_TYPE,
-  CARD_TYPE,
-  ATOM_TYPE,
-} from '../models/types'
+import CardNode, { CardData, CardRenderHook } from '../models/card-node'
+import { detect, forEach, ForEachable } from '../utils/array-utils'
+import AtomNode, { AtomData, AtomRenderHook } from '../models/atom-node'
+import { Type } from '../models/types'
 import { startsWith, endsWith } from '../utils/string-utils'
 import { addClassName, removeClassName } from '../utils/dom-utils'
-import { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section'
-import assert from '../utils/assert'
-import { TAB } from 'mobiledoc-kit/utils/characters'
+import MarkupSection, { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section'
+import assert, { unwrap, assertNotNull } from '../utils/assert'
+import { TAB } from '../utils/characters'
+import Markup from '../models/markup'
+import Marker from '../models/marker'
+import Section from '../models/_section'
+import { Attributable } from '../models/_attributable'
+import { TagNameable } from '../models/_tag-nameable'
+import ListSection from '../models/list-section'
+import RenderNode, { PostNode } from '../models/render-node'
+import { Option, Maybe } from '../utils/types'
+import Atom from '../models/atom'
+import Editor from '../editor/editor'
+import { hasChildSections } from '../models/_has-child-sections'
+import Post from '../models/post'
+import ListItem from '../models/list-item'
+import Image from '../models/image'
+import Card from '../models/card'
+import RenderTree from '../models/render-tree'
 
 export const CARD_ELEMENT_CLASS_NAME = '__mobiledoc-card'
 export const NO_BREAK_SPACE = '\u00A0'
@@ -26,7 +33,7 @@ export const ATOM_CLASS_NAME = '-mobiledoc-kit__atom'
 export const EDITOR_HAS_NO_CONTENT_CLASS_NAME = '__has-no-content'
 export const EDITOR_ELEMENT_CLASS_NAME = '__mobiledoc-editor'
 
-function createElementFromMarkup(doc, markup) {
+function createElementFromMarkup(doc: Document, markup: Markup) {
   let element = doc.createElement(markup.tagName)
   Object.keys(markup.attributes).forEach(k => {
     element.setAttribute(k, markup.attributes[k])
@@ -38,16 +45,16 @@ const TWO_SPACES = `${SPACE}${SPACE}`
 const SPACE_AND_NO_BREAK = `${SPACE}${NO_BREAK_SPACE}`
 const SPACES_REGEX = new RegExp(TWO_SPACES, 'g')
 const TAB_REGEX = new RegExp(TAB, 'g')
-const endsWithSpace = function (text) {
+const endsWithSpace = function (text: string) {
   return endsWith(text, SPACE)
 }
-const startsWithSpace = function (text) {
+const startsWithSpace = function (text: string) {
   return startsWith(text, SPACE)
 }
 
 // FIXME: This can be done more efficiently with a single pass
 // building a correct string based on the original.
-function renderHTMLText(marker) {
+function renderHTMLText(marker: Marker) {
   let text = marker.value
   text = text.replace(SPACES_REGEX, SPACE_AND_NO_BREAK).replace(TAB_REGEX, TAB_CHARACTER)
 
@@ -71,25 +78,26 @@ function renderHTMLText(marker) {
 
 // ascends from element upward, returning the last parent node that is not
 // parentElement
-function penultimateParentOf(element, parentElement) {
+function penultimateParentOf(element: Node, parentElement: Node) {
   while (
     parentElement &&
     element.parentNode !== parentElement &&
     element.parentNode !== document.body // ensure the while loop stops
   ) {
-    element = element.parentNode
+    element = element.parentNode as Node
   }
   return element
 }
 
-function setSectionAttributesOnElement(section, element) {
+function setSectionAttributesOnElement(section: Attributable, element: HTMLElement) {
   section.eachAttribute((key, value) => {
     element.setAttribute(key, value)
   })
 }
 
-function renderMarkupSection(section) {
-  let element
+function renderMarkupSection(section: TagNameable & Attributable) {
+  let element: HTMLElement
+
   if (MARKUP_SECTION_ELEMENT_NAMES.indexOf(section.tagName) !== -1) {
     element = document.createElement(section.tagName)
   } else {
@@ -102,7 +110,7 @@ function renderMarkupSection(section) {
   return element
 }
 
-function renderListSection(section) {
+function renderListSection(section: ListSection) {
   let element = document.createElement(section.tagName)
 
   setSectionAttributesOnElement(section, element)
@@ -125,7 +133,7 @@ function renderInlineCursorPlaceholder() {
 function renderCard() {
   let wrapper = document.createElement('div')
   let cardElement = document.createElement('div')
-  cardElement.contentEditable = false
+  cardElement.contentEditable = 'false'
   addClassName(cardElement, CARD_ELEMENT_CLASS_NAME)
   wrapper.appendChild(renderInlineCursorPlaceholder())
   wrapper.appendChild(cardElement)
@@ -138,7 +146,7 @@ function renderCard() {
  * @return {DOMElement} the wrapped element
  * @private
  */
-function wrapElement(element, openedMarkups) {
+function wrapElement(element: Node, openedMarkups: Markup[]): Node {
   let wrappedElement = element
 
   for (let i = openedMarkups.length - 1; i >= 0; i--) {
@@ -153,9 +161,9 @@ function wrapElement(element, openedMarkups) {
 
 // Attach the element to its parent element at the correct position based on the
 // previousRenderNode
-function attachElementToParent(element, parentElement, previousRenderNode = null) {
+function attachElementToParent(element: Node, parentElement: Node, previousRenderNode: Option<RenderNode> = null) {
   if (previousRenderNode) {
-    let previousSibling = previousRenderNode.element
+    let previousSibling = previousRenderNode.element!
     let previousSiblingPenultimate = penultimateParentOf(previousSibling, parentElement)
     parentElement.insertBefore(element, previousSiblingPenultimate.nextSibling)
   } else {
@@ -163,9 +171,9 @@ function attachElementToParent(element, parentElement, previousRenderNode = null
   }
 }
 
-function renderAtom(atom, element, previousRenderNode) {
+function renderAtom(atom: Atom, element: HTMLElement, previousRenderNode: Option<RenderNode>) {
   let atomElement = document.createElement('span')
-  atomElement.contentEditable = false
+  atomElement.contentEditable = 'false'
 
   let wrapper = document.createElement('span')
   addClassName(wrapper, ATOM_CLASS_NAME)
@@ -188,15 +196,20 @@ function renderAtom(atom, element, previousRenderNode) {
   }
 }
 
-function getNextMarkerElement(renderNode) {
-  let element = renderNode.element.parentNode
-  let marker = renderNode.postNode
+function getNextMarkerElement(renderNode: RenderNode) {
+  let element = renderNode.element!.parentNode
+  let marker = renderNode.postNode! as Marker
   let closedCount = marker.closedMarkups.length
 
   while (closedCount--) {
-    element = element.parentNode
+    element = element!.parentNode
   }
   return element
+}
+
+interface RenderMarkerResult {
+  element: Node
+  markupElement: Node
 }
 
 /**
@@ -206,12 +219,12 @@ function getNextMarkerElement(renderNode) {
  * @param {RenderNode} [previousRenderNode] The render node before this one, which
  *        affects the determination of where to insert this rendered marker.
  * @return {Object} With properties `element` and `markupElement`.
- *         The element (textNode) that has the text for
+ *         The node (textNode) that has the text for
  *         this marker, and the outermost rendered element. If the marker has no
  *         markups, element and markupElement will be the same textNode
  * @private
  */
-function renderMarker(marker, parentElement, previousRenderNode) {
+function renderMarker(marker: Marker, parentElement: Node, previousRenderNode: Option<RenderNode>): RenderMarkerResult {
   let text = renderHTMLText(marker)
 
   let element = document.createTextNode(text)
@@ -223,29 +236,39 @@ function renderMarker(marker, parentElement, previousRenderNode) {
 
 // Attach the render node's element to the DOM,
 // replacing the originalElement if it exists
-function attachRenderNodeElementToDOM(renderNode, originalElement = null) {
-  const element = renderNode.element
-  const hasRendered = !!originalElement
+function attachRenderNodeElementToDOM(renderNode: RenderNode, originalElement: Option<Node> = null) {
+  const element = unwrap(renderNode.element)
 
-  if (hasRendered) {
-    let parentElement = renderNode.parent.element
+  assertNotNull('expected RenderNode to have a parent', renderNode.parent)
+
+  if (originalElement) {
+    // RenderNode has already rendered
+    let parentElement = renderNode.parent!.element!
     parentElement.replaceChild(element, originalElement)
   } else {
-    let parentElement, nextSiblingElement
+    // RenderNode has not yet been rendered
+    let parentElement: Node
+    let nextSiblingElement: Option<Node>
+
     if (renderNode.prev) {
-      let previousElement = renderNode.prev.element
-      parentElement = previousElement.parentNode
+      let previousElement = unwrap(renderNode.prev.element)
+      parentElement = unwrap(previousElement.parentNode)
       nextSiblingElement = previousElement.nextSibling
     } else {
-      parentElement = renderNode.parent.element
+      parentElement = renderNode.parent.element!
       nextSiblingElement = parentElement.firstChild
     }
     parentElement.insertBefore(element, nextSiblingElement)
   }
 }
 
-function removeRenderNodeSectionFromParent(renderNode, section) {
+function removeRenderNodeSectionFromParent(renderNode: RenderNode, section: Section) {
+  assertNotNull('expected RenderNode to have a parent', renderNode.parent)
+  assertNotNull('expected parent RenderNode to have a PostNode', renderNode.parent.postNode)
+
   const parent = renderNode.parent.postNode
+  assert('expected PostNode to have sections', hasChildSections(parent))
+
   parent.sections.remove(section)
 }
 
@@ -255,7 +278,7 @@ function removeRenderNodeElementFromParent(renderNode) {
   }
 }
 
-function validateCards(cards = []) {
+function validateCards(cards: CardData[] = []) {
   forEach(cards, card => {
     assert(`Card "${card.name}" must define type "dom", has: "${card.type}"`, card.type === 'dom')
     assert(`Card "${card.name}" must define \`render\` method`, !!card.render)
@@ -263,7 +286,7 @@ function validateCards(cards = []) {
   return cards
 }
 
-function validateAtoms(atoms = []) {
+function validateAtoms(atoms: AtomData[] = []) {
   forEach(atoms, atom => {
     assert(`Atom "${atom.name}" must define type "dom", has: "${atom.type}"`, atom.type === 'dom')
     assert(`Atom "${atom.name}" must define \`render\` method`, !!atom.render)
@@ -271,8 +294,27 @@ function validateAtoms(atoms = []) {
   return atoms
 }
 
+type VisitArgs = [RenderNode, ForEachable<PostNode>, boolean?]
+type VisitFn = (...args: VisitArgs) => void
+
 class Visitor {
-  constructor(editor, cards, atoms, unknownCardHandler, unknownAtomHandler, options) {
+  editor: Editor
+  cards: CardData[]
+  atoms: AtomData[]
+
+  unknownCardHandler: CardRenderHook
+  unknownAtomHandler: AtomRenderHook
+
+  options: {}
+
+  constructor(
+    editor: Editor,
+    cards: CardData[],
+    atoms: AtomData[],
+    unknownCardHandler: CardRenderHook,
+    unknownAtomHandler: AtomRenderHook,
+    options: {}
+  ) {
     this.editor = editor
     this.cards = validateCards(cards)
     this.atoms = validateAtoms(atoms)
@@ -281,12 +323,12 @@ class Visitor {
     this.options = options
   }
 
-  _findCard(cardName) {
+  _findCard(cardName: string) {
     let card = detect(this.cards, card => card.name === cardName)
     return card || this._createUnknownCard(cardName)
   }
 
-  _createUnknownCard(cardName) {
+  _createUnknownCard(cardName: string): CardData {
     assert(`Unknown card "${cardName}" found, but no unknownCardHandler is defined`, !!this.unknownCardHandler)
 
     return {
@@ -297,12 +339,12 @@ class Visitor {
     }
   }
 
-  _findAtom(atomName) {
+  _findAtom(atomName: string) {
     let atom = detect(this.atoms, atom => atom.name === atomName)
     return atom || this._createUnknownAtom(atomName)
   }
 
-  _createUnknownAtom(atomName) {
+  _createUnknownAtom(atomName: string): AtomData {
     assert(`Unknown atom "${atomName}" found, but no unknownAtomHandler is defined`, !!this.unknownAtomHandler)
 
     return {
@@ -312,20 +354,24 @@ class Visitor {
     }
   }
 
-  [POST_TYPE](renderNode, post, visit) {
+  [Type.POST](renderNode: RenderNode, post: Post, visit: VisitFn) {
     if (!renderNode.element) {
       renderNode.element = document.createElement('div')
     }
-    addClassName(renderNode.element, EDITOR_ELEMENT_CLASS_NAME)
+
+    let element = renderNode.element as Element
+    addClassName(element, EDITOR_ELEMENT_CLASS_NAME)
+
     if (post.hasContent) {
-      removeClassName(renderNode.element, EDITOR_HAS_NO_CONTENT_CLASS_NAME)
+      removeClassName(element, EDITOR_HAS_NO_CONTENT_CLASS_NAME)
     } else {
-      addClassName(renderNode.element, EDITOR_HAS_NO_CONTENT_CLASS_NAME)
+      addClassName(element, EDITOR_HAS_NO_CONTENT_CLASS_NAME)
     }
+
     visit(renderNode, post.sections)
   }
 
-  [MARKUP_SECTION_TYPE](renderNode, section, visit) {
+  [Type.MARKUP_SECTION](renderNode: RenderNode, section: MarkupSection, visit: VisitFn) {
     const originalElement = renderNode.element
 
     // Always rerender the section -- its tag name or attributes may have changed.
@@ -344,7 +390,7 @@ class Visitor {
     }
   }
 
-  [LIST_SECTION_TYPE](renderNode, section, visit) {
+  [Type.LIST_SECTION](renderNode: RenderNode, section: ListSection, visit: VisitFn) {
     const originalElement = renderNode.element
 
     renderNode.element = renderListSection(section)
@@ -354,7 +400,7 @@ class Visitor {
     visit(renderNode, section.items, visitAll)
   }
 
-  [LIST_ITEM_TYPE](renderNode, item, visit) {
+  [Type.LIST_ITEM](renderNode: RenderNode, item: ListItem, visit: VisitFn) {
     // FIXME do we need to do anything special for rerenders?
     renderNode.element = renderListItem()
     renderNode.cursorElement = null
@@ -370,13 +416,13 @@ class Visitor {
     }
   }
 
-  [MARKER_TYPE](renderNode, marker) {
-    let parentElement
+  [Type.MARKER](renderNode: RenderNode, marker: Marker) {
+    let parentElement: Node
 
     if (renderNode.prev) {
-      parentElement = getNextMarkerElement(renderNode.prev)
+      parentElement = getNextMarkerElement(renderNode.prev)!
     } else {
-      parentElement = renderNode.parent.element
+      parentElement = renderNode.parent!.element!
     }
 
     let { element, markupElement } = renderMarker(marker, parentElement, renderNode.prev)
@@ -385,29 +431,29 @@ class Visitor {
     renderNode.markupElement = markupElement
   }
 
-  [IMAGE_SECTION_TYPE](renderNode, section) {
+  [Type.IMAGE_SECTION](renderNode: RenderNode<HTMLImageElement>, section: Image) {
     if (renderNode.element) {
       if (renderNode.element.src !== section.src) {
-        renderNode.element.src = section.src
+        renderNode.element.src = section.src || ''
       }
     } else {
       let element = document.createElement('img')
-      element.src = section.src
+      element.src = section.src || ''
       if (renderNode.prev) {
-        let previousElement = renderNode.prev.element
+        let previousElement = renderNode.prev.element!
         let nextElement = previousElement.nextSibling
         if (nextElement) {
-          nextElement.parentNode.insertBefore(element, nextElement)
+          nextElement.parentNode!.insertBefore(element, nextElement)
         }
       }
       if (!element.parentNode) {
-        renderNode.parent.element.appendChild(element)
+        renderNode.parent!.element!.appendChild(element)
       }
       renderNode.element = element
     }
   }
 
-  [CARD_TYPE](renderNode, section) {
+  [Type.CARD](renderNode: RenderNode, section: Card) {
     const originalElement = renderNode.element
     const { editor, options } = this
 
@@ -424,19 +470,19 @@ class Visitor {
     cardNode[initialMode]()
   }
 
-  [ATOM_TYPE](renderNode, atomModel) {
-    let parentElement
+  [Type.ATOM](renderNode: RenderNode, atomModel: Atom) {
+    let parentElement: Node
 
     if (renderNode.prev) {
-      parentElement = getNextMarkerElement(renderNode.prev)
+      parentElement = getNextMarkerElement(renderNode.prev)!
     } else {
-      parentElement = renderNode.parent.element
+      parentElement = renderNode.parent!.element!
     }
 
     const { editor, options } = this
     const { wrapper, markupElement, atomElement, headTextNode, tailTextNode } = renderAtom(
       atomModel,
-      parentElement,
+      parentElement as HTMLElement,
       renderNode.prev
     )
     const atom = this._findAtom(atomModel.name)
@@ -461,26 +507,26 @@ class Visitor {
 }
 
 let destroyHooks = {
-  [POST_TYPE](/*renderNode, post*/) {
+  [Type.POST](/*renderNode, post*/) {
     assert('post destruction is not supported by the renderer', false)
   },
 
-  [MARKUP_SECTION_TYPE](renderNode, section) {
+  [Type.MARKUP_SECTION](renderNode: RenderNode, section: MarkupSection) {
     removeRenderNodeSectionFromParent(renderNode, section)
     removeRenderNodeElementFromParent(renderNode)
   },
 
-  [LIST_SECTION_TYPE](renderNode, section) {
+  [Type.LIST_SECTION](renderNode: RenderNode, section: ListSection) {
     removeRenderNodeSectionFromParent(renderNode, section)
     removeRenderNodeElementFromParent(renderNode)
   },
 
-  [LIST_ITEM_TYPE](renderNode, li) {
+  [Type.LIST_ITEM](renderNode: RenderNode, li: ListItem) {
     removeRenderNodeSectionFromParent(renderNode, li)
     removeRenderNodeElementFromParent(renderNode)
   },
 
-  [MARKER_TYPE](renderNode, marker) {
+  [Type.MARKER](renderNode: RenderNode, marker: Marker) {
     // FIXME before we render marker, should delete previous renderNode's element
     // and up until the next marker element
 
@@ -495,18 +541,18 @@ let destroyHooks = {
       marker.section.markers.remove(marker)
     }
 
-    if (markupElement.parentNode) {
+    if (markupElement!.parentNode) {
       // if no parentNode, the browser already removed this element
-      markupElement.parentNode.removeChild(markupElement)
+      markupElement!.parentNode.removeChild(markupElement!)
     }
   },
 
-  [IMAGE_SECTION_TYPE](renderNode, section) {
+  [Type.IMAGE_SECTION](renderNode: RenderNode, section: Image) {
     removeRenderNodeSectionFromParent(renderNode, section)
     removeRenderNodeElementFromParent(renderNode)
   },
 
-  [CARD_TYPE](renderNode, section) {
+  [Type.CARD](renderNode: RenderNode, section: Card) {
     if (renderNode.cardNode) {
       renderNode.cardNode.teardown()
     }
@@ -514,20 +560,20 @@ let destroyHooks = {
     removeRenderNodeElementFromParent(renderNode)
   },
 
-  [ATOM_TYPE](renderNode, atom) {
+  [Type.ATOM](renderNode: RenderNode, atom: Atom) {
     if (renderNode.atomNode) {
       renderNode.atomNode.teardown()
     }
 
     // an atom is a kind of marker so just call its destroy hook vs copying here
-    destroyHooks[MARKER_TYPE](renderNode, atom)
+    destroyHooks[Type.MARKER](renderNode, (atom as unknown) as Marker)
   },
 }
 
 // removes children from parentNode (a RenderNode) that are scheduled for removal
-function removeDestroyedChildren(parentNode, forceRemoval = false) {
+function removeDestroyedChildren(parentNode: RenderNode, forceRemoval = false) {
   let child = parentNode.childNodes.head
-  let nextChild, method
+  let nextChild: Option<RenderNode>, method: Type
   while (child) {
     nextChild = child.next
     if (child.isRemoved || forceRemoval) {
@@ -543,7 +589,7 @@ function removeDestroyedChildren(parentNode, forceRemoval = false) {
 
 // Find an existing render node for the given postNode, or
 // create one, insert it into the tree, and return it
-function lookupNode(renderTree, parentNode, postNode, previousNode) {
+function lookupNode(renderTree: RenderTree, parentNode: RenderNode, postNode: PostNode, previousNode) {
   if (postNode.renderNode) {
     return postNode.renderNode
   } else {
@@ -554,7 +600,21 @@ function lookupNode(renderTree, parentNode, postNode, previousNode) {
 }
 
 export default class Renderer {
-  constructor(editor, cards, atoms, unknownCardHandler, unknownAtomHandler, options) {
+  editor: Editor
+  visitor: Visitor
+  nodes: RenderNode[]
+  hasRendered: boolean
+
+  renderTree: Option<RenderTree> = null
+
+  constructor(
+    editor: Editor,
+    cards: CardData[],
+    atoms: AtomData[],
+    unknownCardHandler: CardRenderHook,
+    unknownAtomHandler: AtomRenderHook,
+    options: {}
+  ) {
     this.editor = editor
     this.visitor = new Visitor(editor, cards, atoms, unknownCardHandler, unknownAtomHandler, options)
     this.nodes = []
@@ -565,13 +625,13 @@ export default class Renderer {
     if (!this.hasRendered) {
       return
     }
-    let renderNode = this.renderTree.rootNode
+    let renderNode = unwrap(this.renderTree).rootNode
     let force = true
     removeDestroyedChildren(renderNode, force)
   }
 
-  visit(renderTree, parentNode, postNodes, visitAll = false) {
-    let previousNode
+  visit(renderTree: RenderTree, parentNode: RenderNode, postNodes: ForEachable<PostNode>, visitAll = false) {
+    let previousNode: RenderNode
     postNodes.forEach(postNode => {
       let node = lookupNode(renderTree, parentNode, postNode, previousNode)
       if (node.isDirty || visitAll) {
@@ -581,19 +641,20 @@ export default class Renderer {
     })
   }
 
-  render(renderTree) {
+  render(renderTree: RenderTree) {
     this.hasRendered = true
     this.renderTree = renderTree
-    let renderNode = renderTree.rootNode
-    let method, postNode
+    let renderNode: Maybe<RenderNode> = renderTree.rootNode
+    let method: Type
+    let postNode: PostNode
 
     while (renderNode) {
       removeDestroyedChildren(renderNode)
-      postNode = renderNode.postNode
+      postNode = renderNode.postNode!
 
       method = postNode.type
       assert(`EditorDom visitor cannot handle type ${method}`, !!this.visitor[method])
-      this.visitor[method](renderNode, postNode, (...args) => this.visit(renderTree, ...args))
+      this.visitor[method](renderNode, postNode, (...args: VisitArgs) => this.visit(renderTree, ...args))
       renderNode.markClean()
       renderNode = this.nodes.shift()
     }

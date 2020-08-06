@@ -1,6 +1,8 @@
 import { normalizeTagName } from './dom-utils'
 import { detect, commonItemLength, forEach, filter } from './array-utils'
 import Markup from '../models/markup'
+import RenderNode from '../models/render-node'
+import { Type } from '../models/types'
 
 type MarkupCallback = (markup: Markup) => boolean
 type MarkupOrMarkupCallback = Markup | MarkupCallback
@@ -14,6 +16,9 @@ export default abstract class Markuperable {
   isAtom = false
   isMarker = false
 
+  renderNode: RenderNode | null = null
+
+  abstract type: Type
   abstract length: number
 
   clearMarkups() {

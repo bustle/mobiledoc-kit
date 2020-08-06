@@ -9,9 +9,9 @@ import AtomNode from './atom-node'
 import Section from './_section'
 import Markuperable from '../utils/markuperable'
 
-type PostNode = Section | Markuperable
+export type PostNode = Section | Markuperable
 
-export default class RenderNode extends LinkedItem {
+export default class RenderNode<T extends Node = Node> extends LinkedItem {
   parent: Option<RenderNode> = null
   isDirty = true
   isRemoved = false
@@ -20,21 +20,21 @@ export default class RenderNode extends LinkedItem {
   renderTree: Option<RenderTree>
 
   // RenderNodes for Markers keep track of their markupElement
-  markupElement = null
+  markupElement: Option<Node> = null
 
   // RenderNodes for Atoms use these properties
-  headTextNode = null
-  tailTextNode = null
+  headTextNode: Option<Text> = null
+  tailTextNode: Option<Text> = null
   atomNode: Option<AtomNode> = null
 
   // RenderNodes for cards use this property
   cardNode: Option<CardNode> = null
 
   _childNodes: Option<LinkedList<RenderNode>> = null
-  _element: Option<Node> = null
+  _element: Option<T> = null
   _cursorElement: Option<Node> = null // blank render nodes need a cursor element
 
-  constructor(postNode: Section, renderTree: RenderTree) {
+  constructor(postNode: PostNode, renderTree: RenderTree) {
     super()
     this.postNode = postNode
     this.renderTree = renderTree

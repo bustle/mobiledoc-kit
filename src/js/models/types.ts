@@ -17,5 +17,5 @@ export const enum Type {
   LIST_ITEM = 'list-item',
   CARD = 'card-section',
   IMAGE_SECTION = 'image-section',
-  ATOM = 'atom'
+  ATOM = 'atom',
 }

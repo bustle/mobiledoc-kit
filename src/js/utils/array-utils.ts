@@ -1,13 +1,19 @@
+import { Dict } from './types'
+
 interface Detectable<T> {
   detect(cb: (val: T) => boolean): T
 }
 
-interface HasLength<T> {
+export interface HasLength<T> {
+  length: number
+}
+
+export interface Indexable<T> {
   [key: number]: T
   length: number
 }
 
-export function detect<T>(enumerable: Detectable<T> | HasLength<T>, callback: (val: T) => boolean): T | undefined {
+export function detect<T>(enumerable: Detectable<T> | Indexable<T>, callback: (val: T) => boolean): T | undefined {
   if ('detect' in enumerable) {
     return enumerable.detect(callback)
   } else {
@@ -23,7 +29,7 @@ interface Anyable<T> {
   any(cb: (val: T) => boolean): boolean
 }
 
-export function any<T>(enumerable: Anyable<T> | HasLength<T>, callback: (val: T) => boolean): boolean {
+export function any<T>(enumerable: Anyable<T> | Indexable<T>, callback: (val: T) => boolean): boolean {
   if ('any' in enumerable) {
     return enumerable.any(callback)
   }
@@ -41,7 +47,7 @@ interface Everyable<T> {
   every(cb: (val: T) => boolean): boolean
 }
 
-export function every<T>(enumerable: Everyable<T> | HasLength<T>, callback: (val: T) => boolean): boolean {
+export function every<T>(enumerable: Everyable<T> | Indexable<T>, callback: (val: T) => boolean): boolean {
   if ('every' in enumerable) {
     return enumerable.every(callback)
   }
@@ -59,7 +65,7 @@ export function toArray<T>(arrayLike: ArrayLike<T>): T[] {
   return Array.prototype.slice.call(arrayLike)
 }
 
-interface ForEachable<T> {
+export interface ForEachable<T> {
   forEach(cb: (val: T, idx: number) => void): void
 }
 
@@ -68,7 +74,7 @@ interface ForEachable<T> {
  * actually arrays, like NodeList
  * @private
  */
-export function forEach<T>(enumerable: ForEachable<T> | HasLength<T>, callback: (val: T, idx: number) => void): void {
+export function forEach<T>(enumerable: ForEachable<T> | Indexable<T>, callback: (val: T, idx: number) => void): void {
   if ('forEach' in enumerable) {
     enumerable.forEach(callback)
   } else {
@@ -190,8 +196,8 @@ export function isArrayEqual<T>(arr1: ArrayLike<T>, arr2: ArrayLike<T>): boolean
 }
 
 // return an object with only the valid keys
-export function filterObject<T>(object: T, validKeys: string[] = []) {
-  let result: { [key: string]: unknown } = {}
+export function filterObject<T>(object: Dict<T>, validKeys: string[] = []) {
+  let result: Dict<T> = {}
 
   forEach(
     filter(Object.keys(object), key => validKeys.indexOf(key) !== -1),

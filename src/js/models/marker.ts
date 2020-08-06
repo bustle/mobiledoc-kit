@@ -1,7 +1,7 @@
 import { isArrayEqual } from '../utils/array-utils'
 import Markuperable from '../utils/markuperable'
 import assert from '../utils/assert'
-import { MARKER_TYPE } from './types'
+import { Type } from './types'
 import Markup from './markup'
 import Markerable from './_markerable'
 import RenderNode from './render-node'
@@ -17,7 +17,7 @@ export const HIGH_SURROGATE_RANGE = [0xd800, 0xdbff]
 export const LOW_SURROGATE_RANGE = [0xdc00, 0xdfff]
 
 export default class Marker extends Markuperable {
-  type = MARKER_TYPE
+  type: Type = Type.MARKER
   isMarker = true
 
   value: string

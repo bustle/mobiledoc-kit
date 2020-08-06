@@ -1,4 +1,4 @@
-import RenderNode from '../models/render-node'
+import RenderNode, { PostNode } from '../models/render-node'
 import ElementMap from '../utils/element-map'
 import Section from './_section'
 
@@ -69,7 +69,7 @@ export default class RenderTree {
     }
   }
 
-  buildRenderNode(postNode: Section) {
+  buildRenderNode(postNode: PostNode) {
     const renderNode = new RenderNode(postNode, this)
     postNode.renderNode = renderNode
     return renderNode

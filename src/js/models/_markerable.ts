@@ -37,7 +37,7 @@ export default abstract class Markerable extends tagNameable(Section) {
 
   clone(): this {
     const newMarkers = this.markers.map(m => m.clone())
-    return this.builder.createMarkerableSection(this.type, this.tagName, newMarkers) as any as this
+    return (this.builder.createMarkerableSection(this.type, this.tagName, newMarkers) as any) as this
   }
 
   get isBlank() {
