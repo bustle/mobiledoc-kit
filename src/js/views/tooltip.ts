@@ -1,5 +1,10 @@
 import View from './view'
-import { positionElementCenteredBelow, getEventTargetMatchingTag, whenElementIsNotInDOM, Cancelable } from '../utils/element-utils'
+import {
+  positionElementCenteredBelow,
+  getEventTargetMatchingTag,
+  whenElementIsNotInDOM,
+  Cancelable,
+} from '../utils/element-utils'
 import { editLink } from '../editor/ui'
 
 const SHOW_DELAY = 200
@@ -10,6 +15,11 @@ type Editor = any
 interface TooltipOptions {
   rootElement: HTMLElement
   editor: Editor
+  showForTag: string
+}
+
+interface AddListenerOptions {
+  showForTag: string
 }
 
 export default class Tooltip extends View {
@@ -26,7 +36,7 @@ export default class Tooltip extends View {
     this.addListeners(options)
   }
 
-  showLink(linkEl) {
+  showLink(linkEl: HTMLElement) {
     const { editor, element: tooltipEl } = this
     const { tooltipPlugin } = editor
 
@@ -43,7 +53,7 @@ export default class Tooltip extends View {
     this.elementObserver = whenElementIsNotInDOM(linkEl, () => this.hide())
   }
 
-  addListeners(options) {
+  addListeners(options: AddListenerOptions) {
     const { rootElement, element: tooltipElement } = this
     let showTimeout: number, hideTimeout: number
 
@@ -68,7 +78,7 @@ export default class Tooltip extends View {
       if (target && target.isContentEditable) {
         clearTimeout(hideTimeout)
         showTimeout = setTimeout(() => {
-          this.showLink(target)
+          target && this.showLink(target)
         }, SHOW_DELAY)
       }
     })

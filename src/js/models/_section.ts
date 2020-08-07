@@ -1,5 +1,6 @@
 import LinkedItem from '../utils/linked-item'
 import assert from '../utils/assert'
+import { Option } from '../utils/types'
 import Position from '../utils/cursor/position'
 import Range from '../utils/cursor/range'
 import Marker from './marker'
@@ -8,6 +9,10 @@ import Post from './post'
 import { isListSection } from './is-list-section'
 import PostNodeBuilder from './post-node-builder'
 import { Type } from './types'
+
+export interface WithParent<T> {
+  parent: Option<T>
+}
 
 export default class Section extends LinkedItem {
   type: Type
@@ -20,10 +25,10 @@ export default class Section extends LinkedItem {
   isLeafSection = true
   isCardSection = false
 
-  post?: Post | null
-  renderNode: RenderNode | null = null
+  post?: Option<Post>
+  renderNode: Option<RenderNode> = null
 
-  parent: Section | null = null
+  parent: Option<Section> = null
   builder!: PostNodeBuilder
 
   constructor(type: Type) {

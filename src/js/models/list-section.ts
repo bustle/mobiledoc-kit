@@ -43,7 +43,7 @@ export default class ListSection extends attributable(tagNameable(Section)) impl
     return false
   }
 
-  isValidTagName(normalizedTagName) {
+  isValidTagName(normalizedTagName: string) {
     return contains(VALID_LIST_SECTION_TAGNAMES, normalizedTagName)
   }
 

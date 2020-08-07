@@ -14,6 +14,7 @@ import ListItem, { isListItem } from './list-item'
 import MarkupSection from './markup-section'
 import RenderNode from './render-node'
 import HasChildSections from './_has-child-sections'
+import { expectCloneable, Cloneable } from './_cloneable'
 
 type SectionCallback = (section: Section, index: number) => void
 
@@ -25,10 +26,10 @@ type SectionCallback = (section: Section, index: number) => void
  * When persisting a post, it must first be serialized (loss-lessly) into
  * mobiledoc using {@link Editor#serialize}.
  */
-export default class Post implements HasChildSections {
+export default class Post implements HasChildSections<Cloneable<Section>> {
   type = Type.POST
   builder!: PostNodeBuilder
-  sections: LinkedList<Section>
+  sections: LinkedList<Cloneable<Section>>
   renderNode!: RenderNode
 
   constructor() {
@@ -212,7 +213,7 @@ export default class Post implements HasChildSections {
       listParent: ListSection | null = null
 
     this.walkLeafSections(range, section => {
-      let newSection: Section
+      let newSection: ListItem | MarkupSection | Cloneable<Section>
       if (isMarkerable(section)) {
         if (isListItem(section)) {
           if (listParent) {
@@ -249,16 +250,4 @@ export default class Post implements HasChildSections {
     })
     return post
   }
-}
-
-interface Cloneable<T> {
-  clone(): T
-}
-
-function expectCloneable<T extends Section>(section: T): T & Cloneable<T> {
-  if (!('clone' in section)) {
-    throw new Error('Expected section to be cloneable')
-  }
-
-  return section as T & Cloneable<T>
 }
