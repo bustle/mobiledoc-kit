@@ -26,6 +26,7 @@ let blankSectionExpecations = [
   ['*abc*'], // section with markup
   ['[my-card]'], // single card
   ['[my-card]', '[my-other-card]'], // multiple cards
+  ['{my-image}'], // single image section
   ['abc','* 123','* 456','[my-card]'], // mixed
 ];
 blankSectionExpecations.forEach(dsl => {

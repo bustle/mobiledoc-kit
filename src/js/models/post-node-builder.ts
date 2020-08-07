@@ -109,6 +109,7 @@ export default class PostNodeBuilder {
     if (url) {
       section.src = url
     }
+    section.builder = this
     return section
   }
 

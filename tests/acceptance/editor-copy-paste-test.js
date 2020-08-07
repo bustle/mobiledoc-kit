@@ -132,7 +132,6 @@ test('willCopy callback called before copy', (assert) => {
   editor.addCallback('willCopy', data => {
     assert.deepEqual(data.mobiledoc, mobiledoc);
     data.mobiledoc.sections[0][1] = 'blockquote';
-    console.log({ data })
   });
   editor.render(editorElement);
 

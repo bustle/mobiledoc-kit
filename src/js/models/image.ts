@@ -9,6 +9,10 @@ export default class Image extends Section {
     super(Type.IMAGE_SECTION)
   }
 
+  clone() {
+    return this.builder.createImageSection(this.src)
+  }
+
   canJoin() {
     return false
   }

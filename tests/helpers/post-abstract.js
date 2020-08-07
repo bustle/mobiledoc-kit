@@ -29,6 +29,7 @@ function build(treeFn) {
 }
 
 let cardRegex = /\[(.*)\]/;
+let imageSectionRegex = /^\{(.*)\}/;
 let markupRegex = /\*/g;
 let listStartRegex = /^\* /;
 let cursorRegex = /<|>|\|/g;
@@ -177,6 +178,8 @@ function parseSingleText(text, builder) {
 
   if (cardRegex.test(text)) {
     section = builder.cardSection(cardRegex.exec(text)[1]);
+  } else if (imageSectionRegex.test(text)) {
+    section = builder.imageSection(imageSectionRegex.exec(text)[1]);
   } else {
     let type = 'p';
     if (listStartRegex.test(text)) {
@@ -224,6 +227,7 @@ function parseSingleText(text, builder) {
  * buildFromText(["abc","def"]) -> { post } with 2 markups sections ("p") with texts "abc" and "def"
  * buildFromText("abc|def") -> { post, range } where range is collapsed at offset 3 (after the "c")
  * buildFromText(["abcdef","[some-card]","def"]) -> { post } with [MarkupSection, Card, MarkupSection] sections
+ * buildFromText(["abc", "{def}", "def"]) -> { post } with [MarkupSection, ImageSection, MarkupSection] sections
  * buildFromText(["* item 1", "* item 2"]) -> { post } with a ListSection with 2 ListItems
  * buildFromText(["<abc", "def", "ghi>"]) -> { post, range } where range is the entire post (before the "a" to after the "i")
  */
