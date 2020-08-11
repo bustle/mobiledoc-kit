@@ -11,10 +11,13 @@ import Marker from '../../models/marker'
 import Markup from '../../models/markup'
 
 export const MOBILEDOC_VERSION = '0.2.0'
-export const MOBILEDOC_MARKUP_SECTION_TYPE = 1
-export const MOBILEDOC_IMAGE_SECTION_TYPE = 2
-export const MOBILEDOC_LIST_SECTION_TYPE = 3
-export const MOBILEDOC_CARD_SECTION_TYPE = 10
+
+export const enum MobiledocSectionKind {
+  MARKUP = 1,
+  IMAGE = 2,
+  LIST = 3,
+  CARD = 10,
+}
 
 const visitor = {
   [Type.POST](node: Post, opcodes: Opcodes) {
@@ -48,38 +51,43 @@ const visitor = {
   },
 }
 
-type OpcodeCompilerMarker = [number[], number, unknown]
-type OpcodeCompilerSection =
-  | [typeof MOBILEDOC_MARKUP_SECTION_TYPE, string, OpcodeCompilerMarker[]]
-  | [typeof MOBILEDOC_LIST_SECTION_TYPE, string, OpcodeCompilerMarker[][]]
-  | [typeof MOBILEDOC_IMAGE_SECTION_TYPE, string]
-  | [typeof MOBILEDOC_CARD_SECTION_TYPE, string, {}]
+export type MobiledocMarker = [number[], number, string]
+export type MobiledocMarkerType = [string, string[]?]
 
-type PostOpcodeCompilerMarkerType = [string, string[]?]
+export type MobiledocMarkupSection = [MobiledocSectionKind.MARKUP, string, MobiledocMarker[]]
+export type MobiledocListSection = [MobiledocSectionKind.LIST, string, MobiledocMarker[][]]
+export type MobiledocImageSection = [MobiledocSectionKind.IMAGE, string]
+export type MobiledocCardSection = [MobiledocSectionKind.CARD, string, {}]
+
+export type MobiledocSection =
+  | MobiledocMarkupSection
+  | MobiledocListSection
+  | MobiledocImageSection
+  | MobiledocCardSection
 
 class PostOpcodeCompiler {
   markupMarkerIds!: number[]
-  markers!: OpcodeCompilerMarker[]
-  sections!: OpcodeCompilerSection[]
-  items!: OpcodeCompilerMarker[][]
-  markerTypes!: PostOpcodeCompilerMarkerType[]
+  markers!: MobiledocMarker[]
+  sections!: MobiledocSection[]
+  items!: MobiledocMarker[][]
+  markerTypes!: MobiledocMarkerType[]
   result!: MobiledocV0_2
 
   _markerTypeCache!: { [key: string]: number }
 
-  openMarker(closeCount: number, value: unknown) {
+  openMarker(closeCount: number, value: string) {
     this.markupMarkerIds = []
     this.markers.push([this.markupMarkerIds, closeCount, value || ''])
   }
 
   openMarkupSection(tagName: string) {
     this.markers = []
-    this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers])
+    this.sections.push([MobiledocSectionKind.MARKUP, tagName, this.markers])
   }
 
   openListSection(tagName: string) {
     this.items = []
-    this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items])
+    this.sections.push([MobiledocSectionKind.LIST, tagName, this.items])
   }
 
   openListItem() {
@@ -88,11 +96,11 @@ class PostOpcodeCompiler {
   }
 
   openImageSection(url: string) {
-    this.sections.push([MOBILEDOC_IMAGE_SECTION_TYPE, url])
+    this.sections.push([MobiledocSectionKind.IMAGE, url])
   }
 
   openCardSection(name: string, payload: {}) {
-    this.sections.push([MOBILEDOC_CARD_SECTION_TYPE, name, payload])
+    this.sections.push([MobiledocSectionKind.CARD, name, payload])
   }
 
   openPost() {
@@ -117,7 +125,7 @@ class PostOpcodeCompiler {
 
     let index = this._markerTypeCache[key]
     if (index === undefined) {
-      let markerType: PostOpcodeCompilerMarkerType = [tagName]
+      let markerType: MobiledocMarkerType = [tagName]
       if (attributesArray.length) {
         markerType.push(attributesArray)
       }
@@ -133,7 +141,7 @@ class PostOpcodeCompiler {
 
 export interface MobiledocV0_2 {
   version: typeof MOBILEDOC_VERSION
-  sections: [PostOpcodeCompilerMarkerType[], OpcodeCompilerSection[]]
+  sections: [MobiledocMarkerType[], MobiledocSection[]]
 }
 
 /**
