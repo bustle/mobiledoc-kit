@@ -1,8 +1,10 @@
 import { normalizeTagName } from './dom-utils'
 import { detect, commonItemLength, forEach, filter } from './array-utils'
+import { Option } from './types'
 import Markup from '../models/markup'
 import RenderNode from '../models/render-node'
 import { Type } from '../models/types'
+import Markerable from '../models/_markerable'
 
 type MarkupCallback = (markup: Markup) => boolean
 type MarkupOrMarkupCallback = Markup | MarkupCallback
@@ -16,10 +18,24 @@ export default abstract class Markuperable {
   isAtom = false
   isMarker = false
 
+  section: Option<Markerable> = null
+  parent: Option<Markerable> = null
+
   renderNode: RenderNode | null = null
 
+  abstract text: string
+  abstract value: string
   abstract type: Type
   abstract length: number
+  abstract clone(): Markuperable
+  abstract isBlank: boolean
+  abstract canJoin(other: Markuperable): boolean
+  abstract textUntil(offset: number): string
+  abstract splitAtOffset(offset: number): [Markuperable, Markuperable]
+
+  charAt(offset: number) {
+    return this.value.slice(offset, offset + 1)
+  }
 
   clearMarkups() {
     this.markups = []

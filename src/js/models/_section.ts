@@ -3,12 +3,12 @@ import assert from '../utils/assert'
 import { Option } from '../utils/types'
 import Position from '../utils/cursor/position'
 import Range from '../utils/cursor/range'
-import Marker from './marker'
 import RenderNode from './render-node'
 import Post from './post'
 import { isListSection } from './is-list-section'
 import PostNodeBuilder from './post-node-builder'
 import { Type } from './types'
+import Markuperable from '../utils/markuperable'
 
 export interface WithParent<T> {
   parent: Option<T>
@@ -86,7 +86,7 @@ export default class Section extends LinkedItem {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   splitMarkerAtOffset(_offset: number) {
-    let blankEdit: { added: Marker[]; removed: Marker[] } = { added: [], removed: [] }
+    let blankEdit: { added: Markuperable[]; removed: Markuperable[] } = { added: [], removed: [] }
     return blankEdit
   }
 

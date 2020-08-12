@@ -2,9 +2,9 @@ import Position from './position'
 import { DIRECTION } from '../key'
 import assert, { assertNotNull, unwrap } from '../assert'
 import Markerable from '../../models/_markerable'
-import Marker from '../../models/marker'
 import MobiledocError from '../mobiledoc-error'
 import Section from '../../models/_section'
+import Markuperable from '../markuperable'
 
 export type Direction = DIRECTION | null
 /**
@@ -139,7 +139,7 @@ export default class Range {
    *
    * @public
    */
-  expandByMarker(detectMarker: (marker: Marker) => boolean) {
+  expandByMarker(detectMarker: (marker: Markuperable) => boolean) {
     let { head, tail, direction } = this
     let { section: headSection } = head
 
@@ -152,11 +152,15 @@ export default class Range {
       )
     }
 
-    let firstNotMatchingDetect = (i: Marker) => {
+    let firstNotMatchingDetect = (i: Markuperable) => {
       return !detectMarker(i)
     }
 
-    let headMarker: Marker | null | undefined = headSection.markers.detect(firstNotMatchingDetect, head.marker, true)
+    let headMarker: Markuperable | null | undefined = headSection.markers.detect(
+      firstNotMatchingDetect,
+      head.marker,
+      true
+    )
     if (!headMarker && detectMarker(headSection.markers.head!)) {
       headMarker = headSection.markers.head
     } else {

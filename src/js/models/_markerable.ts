@@ -9,14 +9,15 @@ import Marker from './marker'
 import { tagNameable } from './_tag-nameable'
 import { Type } from './types'
 import { Cloneable } from './_cloneable'
+import Markuperable from '../utils/markuperable'
 
 type MarkerableType = Type.LIST_ITEM | Type.MARKUP_SECTION
 
 export default abstract class Markerable extends tagNameable(Section) implements Cloneable<Markerable> {
   type: MarkerableType
-  markers: LinkedList<Marker>
+  markers: LinkedList<Markuperable>
 
-  constructor(type: MarkerableType, tagName: string, markers: Marker[] = []) {
+  constructor(type: MarkerableType, tagName: string, markers: Markuperable[] = []) {
     super(type)
     this.type = type
     this.isMarkerable = true
@@ -71,7 +72,7 @@ export default abstract class Markerable extends tagNameable(Section) implements
    *
    * @return {Number} The offset relative to the start of this section
    */
-  offsetOfMarker(marker: Marker, markerOffset = 0) {
+  offsetOfMarker(marker: Markuperable, markerOffset = 0) {
     assert(`Cannot get offsetOfMarker for marker that is not child of this`, marker.section === this)
 
     // FIXME it is possible, when we get a cursor position before having finished reparsing,
@@ -113,7 +114,7 @@ export default abstract class Markerable extends tagNameable(Section) implements
     return [beforeSection, afterSection]
   }
 
-  abstract splitAtMarker(marker: Marker, offset: number): [Section, Section]
+  abstract splitAtMarker(marker: Markuperable, offset: number): [Section, Section]
 
   /**
    * Split this section's marker (if any) at the given offset, so that
@@ -129,7 +130,7 @@ export default abstract class Markerable extends tagNameable(Section) implements
     let markerOffset
     let len = 0
     let currentMarker = this.markers.head
-    let edit: { added: Marker[]; removed: Marker[] } = { added: [], removed: [] }
+    let edit: { added: Markuperable[]; removed: Markuperable[] } = { added: [], removed: [] }
 
     if (!currentMarker) {
       let blankMarker = this.builder.createMarker()
@@ -182,7 +183,7 @@ export default abstract class Markerable extends tagNameable(Section) implements
 
   markerPositionAtOffset(offset: number) {
     let currentOffset = 0
-    let currentMarker: Marker | null = null
+    let currentMarker: Markuperable | null = null
     let remaining = offset
     this.markers.detect(marker => {
       currentOffset = Math.min(remaining, marker.length)
@@ -212,7 +213,7 @@ export default abstract class Markerable extends tagNameable(Section) implements
   markersFor(headOffset: number, tailOffset: number) {
     const range = Range.create(this, headOffset, this, tailOffset)
 
-    let markers: Marker[] = []
+    let markers: Markuperable[] = []
     this._markersInRange(range, (marker, { markerHead, markerTail, isContained }) => {
       const cloned = marker.clone()
       if (!isContained) {
@@ -238,7 +239,7 @@ export default abstract class Markerable extends tagNameable(Section) implements
   // for each marker that is wholly or partially contained in the range.
   _markersInRange(
     range: Range,
-    callback: (marker: Marker, info: { markerHead: number; markerTail: number; isContained: boolean }) => void
+    callback: (marker: Markuperable, info: { markerHead: number; markerTail: number; isContained: boolean }) => void
   ) {
     const { head, tail } = range
     assert(
@@ -275,7 +276,7 @@ export default abstract class Markerable extends tagNameable(Section) implements
   // mutates this by appending the other section's (cloned) markers to it
   join(otherSection: Markerable) {
     let beforeMarker = this.markers.tail
-    let afterMarker: Marker | null = null
+    let afterMarker: Markuperable | null = null
 
     otherSection.markers.forEach(m => {
       if (!m.isBlank) {

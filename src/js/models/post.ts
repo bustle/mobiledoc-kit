@@ -5,7 +5,6 @@ import Set from '../utils/set'
 import Position from '../utils/cursor/position'
 import Range from '../utils/cursor/range'
 import assert from '../utils/assert'
-import Marker from './marker'
 import Markerable, { isMarkerable } from './_markerable'
 import Section from './_section'
 import PostNodeBuilder from './post-node-builder'
@@ -15,6 +14,7 @@ import MarkupSection from './markup-section'
 import RenderNode from './render-node'
 import HasChildSections from './_has-child-sections'
 import { expectCloneable, Cloneable } from './_cloneable'
+import Markuperable from '../utils/markuperable'
 
 type SectionCallback = (section: Section, index: number) => void
 
@@ -95,7 +95,7 @@ export default class Post implements HasChildSections<Cloneable<Section>> {
    * @return {Array} markers that are completely contained by the range
    */
   markersContainedByRange(range: Range): Array<any> {
-    const markers: Marker[] = []
+    const markers: Markuperable[] = []
 
     this.walkMarkerableSections(range, (section: Markerable) => {
       section._markersInRange(range.trimTo(section), (m, { isContained }) => {

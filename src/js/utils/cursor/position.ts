@@ -155,7 +155,7 @@ export default class Position {
    * (i.e., the marker to the left of the cursor if the cursor is on a marker boundary and text is left-to-right)
    * @return {Marker|undefined}
    */
-  get marker(): Marker | null {
+  get marker(): Markuperable | null {
     return (this.isMarkerable && this.markerPosition.marker) || null
   }
 

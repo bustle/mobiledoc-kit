@@ -55,7 +55,7 @@ export default class AtomNode {
     return {
       name: this.atom.name,
       onTeardown: (callback: TeardownCallback) => (this._teardownCallback = callback),
-      save: (value: unknown, payload = {}) => {
+      save: (value: string, payload = {}) => {
         this.model.value = value
         this.model.payload = payload
 
