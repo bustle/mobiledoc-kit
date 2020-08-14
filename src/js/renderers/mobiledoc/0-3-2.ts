@@ -11,15 +11,18 @@ import Marker from '../../models/marker'
 import Markup from '../../models/markup'
 import Atom from '../../models/atom'
 import { Dict } from '../../utils/types'
+import { MobiledocSectionKind, MobiledocMarkerKind } from './constants'
+import { MobiledocCard, MobiledocAtom, MobiledocMarker, MobiledocSection, MobiledocMarkerType } from './0-3'
 
 export const MOBILEDOC_VERSION = '0.3.2'
-export const MOBILEDOC_MARKUP_SECTION_TYPE = 1
-export const MOBILEDOC_IMAGE_SECTION_TYPE = 2
-export const MOBILEDOC_LIST_SECTION_TYPE = 3
-export const MOBILEDOC_CARD_SECTION_TYPE = 10
 
-export const MOBILEDOC_MARKUP_MARKER_TYPE = 0
-export const MOBILEDOC_ATOM_MARKER_TYPE = 1
+export type MobiledocAttributedMarkupSection = [MobiledocSectionKind.MARKUP, string, MobiledocMarker[], string[]]
+export type MobiledocAttributedListSection = [MobiledocSectionKind.LIST, string, MobiledocMarker[][], string[]]
+
+export type MobiledocAttributedSection =
+  | MobiledocSection
+  | MobiledocAttributedMarkupSection
+  | MobiledocAttributedListSection
 
 const visitor = {
   [Type.POST](node: Post, opcodes: Opcodes) {
@@ -56,50 +59,44 @@ const visitor = {
     visitArray(visitor, node.openedMarkups, opcodes)
   },
 }
-
-type OpcodeCompilerMarker = [number, number[], number, unknown]
-type OpcodeCompilerSection =
-  | [typeof MOBILEDOC_MARKUP_SECTION_TYPE, string, OpcodeCompilerMarker[], string[]?]
-  | [typeof MOBILEDOC_LIST_SECTION_TYPE, string, OpcodeCompilerMarker[][], string[]?]
-  | [typeof MOBILEDOC_IMAGE_SECTION_TYPE, string]
-  | [typeof MOBILEDOC_CARD_SECTION_TYPE, number]
-
-type OpcodeCompilerAtom = [string, unknown, {}]
-type OpcodeCompilerCard = [string, {}]
-type OpcodeCompilerMarkerType = [string, string[]?]
-
 class PostOpcodeCompiler {
   markupMarkerIds!: number[]
-  markers!: OpcodeCompilerMarker[]
-  sections!: OpcodeCompilerSection[]
-  items!: OpcodeCompilerMarker[][]
-  markerTypes!: OpcodeCompilerMarkerType[]
-  atomTypes!: OpcodeCompilerAtom[]
-  cardTypes!: OpcodeCompilerCard[]
+  markers!: MobiledocMarker[]
+  sections!: MobiledocAttributedSection[]
+  items!: MobiledocMarker[][]
+  markerTypes!: MobiledocMarkerType[]
+  atomTypes!: MobiledocAtom[]
+  cardTypes!: MobiledocCard[]
   result!: MobiledocV0_3_2
 
   _markerTypeCache!: Dict<number>
 
-  openMarker(closeCount: number, value: unknown) {
+  openMarker(closeCount: number, value: string) {
     this.markupMarkerIds = []
-    this.markers.push([MOBILEDOC_MARKUP_MARKER_TYPE, this.markupMarkerIds, closeCount, value || ''])
+    this.markers.push([MobiledocMarkerKind.MARKUP, this.markupMarkerIds, closeCount, value || ''])
+  }
+
+  openAtom(closeCount: number, name: string, value: string, payload: {}) {
+    const index = this._addAtomTypeIndex(name, value, payload)
+    this.markupMarkerIds = []
+    this.markers.push([MobiledocMarkerKind.ATOM, this.markupMarkerIds, closeCount, index])
   }
 
   openMarkupSection(tagName: string, attributes: string[]) {
     this.markers = []
     if (attributes && attributes.length !== 0) {
-      this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers, attributes])
+      this.sections.push([MobiledocSectionKind.MARKUP, tagName, this.markers, attributes])
     } else {
-      this.sections.push([MOBILEDOC_MARKUP_SECTION_TYPE, tagName, this.markers])
+      this.sections.push([MobiledocSectionKind.MARKUP, tagName, this.markers])
     }
   }
 
   openListSection(tagName: string, attributes: string[]) {
     this.items = []
     if (attributes && attributes.length !== 0) {
-      this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items, attributes])
+      this.sections.push([MobiledocSectionKind.LIST, tagName, this.items, attributes])
     } else {
-      this.sections.push([MOBILEDOC_LIST_SECTION_TYPE, tagName, this.items])
+      this.sections.push([MobiledocSectionKind.LIST, tagName, this.items])
     }
   }
 
@@ -109,18 +106,12 @@ class PostOpcodeCompiler {
   }
 
   openImageSection(url: string) {
-    this.sections.push([MOBILEDOC_IMAGE_SECTION_TYPE, url])
+    this.sections.push([MobiledocSectionKind.IMAGE, url])
   }
 
   openCardSection(name: string, payload: {}) {
     const index = this._addCardTypeIndex(name, payload)
-    this.sections.push([MOBILEDOC_CARD_SECTION_TYPE, index])
-  }
-
-  openAtom(closeCount: number, name: string, value: unknown, payload: {}) {
-    const index = this._addAtomTypeIndex(name, value, payload)
-    this.markupMarkerIds = []
-    this.markers.push([MOBILEDOC_ATOM_MARKER_TYPE, this.markupMarkerIds, closeCount, index])
+    this.sections.push([MobiledocSectionKind.CARD, index])
   }
 
   openPost() {
@@ -143,13 +134,13 @@ class PostOpcodeCompiler {
   }
 
   _addCardTypeIndex(cardName: string, payload: {}) {
-    let cardType: OpcodeCompilerCard = [cardName, payload]
+    let cardType: MobiledocCard = [cardName, payload]
     this.cardTypes.push(cardType)
     return this.cardTypes.length - 1
   }
 
-  _addAtomTypeIndex(atomName: string, atomValue: unknown, payload: {}) {
-    let atomType: OpcodeCompilerAtom = [atomName, atomValue, payload]
+  _addAtomTypeIndex(atomName: string, atomValue: string, payload: {}) {
+    let atomType: MobiledocAtom = [atomName, atomValue, payload]
     this.atomTypes.push(atomType)
     return this.atomTypes.length - 1
   }
@@ -162,7 +153,7 @@ class PostOpcodeCompiler {
 
     let index = this._markerTypeCache[key]
     if (index === undefined) {
-      let markerType: OpcodeCompilerMarkerType = [tagName]
+      let markerType: MobiledocMarkerType = [tagName]
       if (attributesArray.length) {
         markerType.push(attributesArray)
       }
@@ -178,10 +169,10 @@ class PostOpcodeCompiler {
 
 export interface MobiledocV0_3_2 {
   version: typeof MOBILEDOC_VERSION
-  atoms: OpcodeCompilerAtom[]
-  cards: OpcodeCompilerCard[]
-  markups: OpcodeCompilerMarkerType[]
-  sections: OpcodeCompilerSection[]
+  atoms: MobiledocAtom[]
+  cards: MobiledocCard[]
+  markups: MobiledocMarkerType[]
+  sections: MobiledocAttributedSection[]
 }
 
 /**

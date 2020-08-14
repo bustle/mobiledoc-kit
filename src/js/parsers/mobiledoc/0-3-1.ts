@@ -1,21 +1,35 @@
 import {
-  MOBILEDOC_MARKUP_SECTION_TYPE,
-  MOBILEDOC_IMAGE_SECTION_TYPE,
-  MOBILEDOC_LIST_SECTION_TYPE,
-  MOBILEDOC_CARD_SECTION_TYPE,
-  MOBILEDOC_MARKUP_MARKER_TYPE,
-  MOBILEDOC_ATOM_MARKER_TYPE,
-} from '../../renderers/mobiledoc/0-3-2'
-
-import { kvArrayToObject, filter } from '../../utils/array-utils'
+  MobiledocMarkerType,
+  MobiledocMarkupSection,
+  MobiledocSection,
+  MobiledocCard,
+  MobiledocAtom,
+  MobiledocCardSection,
+  MobiledocImageSection,
+  MobiledocListSection,
+  MobiledocMarker,
+} from '../../renderers/mobiledoc/0-3'
+import { kvArrayToObject, filter, ForEachable } from '../../utils/array-utils'
 import assert from '../../utils/assert'
-import { entries } from '../../utils/object-utils'
+import { MobiledocMarkerKind, MobiledocSectionKind } from '../../renderers/mobiledoc/constants'
+import PostNodeBuilder from '../../models/post-node-builder'
+import { MobiledocV0_3_1 } from '../../renderers/mobiledoc/0-3-1'
+import Markup from '../../models/markup'
+import Post from '../../models/post'
+import ListSection from '../../models/list-section'
+import Markerable from '../../models/_markerable'
 
 /*
  * Parses from mobiledoc -> post
  */
 export default class MobiledocParser {
-  constructor(builder) {
+  builder: PostNodeBuilder
+  markups!: Markup[]
+  markerTypes!: Markup[]
+  cardTypes!: MobiledocCard[]
+  atomTypes!: MobiledocAtom[]
+
+  constructor(builder: PostNodeBuilder) {
     this.builder = builder
   }
 
@@ -23,7 +37,7 @@ export default class MobiledocParser {
    * @param {Mobiledoc}
    * @return {Post}
    */
-  parse({ sections, markups: markerTypes, cards: cardTypes, atoms: atomTypes }) {
+  parse({ sections, markups: markerTypes, cards: cardTypes, atoms: atomTypes }: MobiledocV0_3_1): Post {
     try {
       const post = this.builder.createPost()
 
@@ -39,86 +53,80 @@ export default class MobiledocParser {
     }
   }
 
-  parseMarkerTypes(markerTypes) {
+  parseMarkerTypes(markerTypes: MobiledocMarkerType[]) {
     return markerTypes.map(markerType => this.parseMarkerType(markerType))
   }
 
-  parseMarkerType([tagName, attributesArray]) {
+  parseMarkerType([tagName, attributesArray]: MobiledocMarkerType) {
     const attributesObject = kvArrayToObject(attributesArray || [])
     return this.builder.createMarkup(tagName, attributesObject)
   }
 
-  parseCardTypes(cardTypes) {
+  parseCardTypes(cardTypes: MobiledocCard[]) {
     return cardTypes.map(cardType => this.parseCardType(cardType))
   }
 
-  parseCardType([cardName, cardPayload]) {
+  parseCardType([cardName, cardPayload]: MobiledocCard): MobiledocCard {
     return [cardName, cardPayload]
   }
 
-  parseAtomTypes(atomTypes) {
+  parseAtomTypes(atomTypes: MobiledocAtom[]) {
     return atomTypes.map(atomType => this.parseAtomType(atomType))
   }
 
-  parseAtomType([atomName, atomValue, atomPayload]) {
+  parseAtomType([atomName, atomValue, atomPayload]: MobiledocAtom): MobiledocAtom {
     return [atomName, atomValue, atomPayload]
   }
 
-  parseSections(sections, post) {
+  parseSections(sections: ForEachable<MobiledocSection>, post: Post) {
     sections.forEach(section => this.parseSection(section, post))
   }
 
-  parseSection(section, post) {
-    let [type] = section
-    switch (type) {
-      case MOBILEDOC_MARKUP_SECTION_TYPE:
+  parseSection(section: MobiledocSection, post: Post) {
+    switch (section[0]) {
+      case MobiledocSectionKind.MARKUP:
         this.parseMarkupSection(section, post)
         break
-      case MOBILEDOC_IMAGE_SECTION_TYPE:
+      case MobiledocSectionKind.IMAGE:
         this.parseImageSection(section, post)
         break
-      case MOBILEDOC_CARD_SECTION_TYPE:
+      case MobiledocSectionKind.CARD:
         this.parseCardSection(section, post)
         break
-      case MOBILEDOC_LIST_SECTION_TYPE:
+      case MobiledocSectionKind.LIST:
         this.parseListSection(section, post)
         break
       default:
-        assert('Unexpected section type ${type}', false)
+        assert(`Unexpected section type ${section[0]}`, false)
     }
   }
 
-  getAtomTypeFromIndex(index) {
+  getAtomTypeFromIndex(index: number) {
     const atomType = this.atomTypes[index]
     assert(`No atom definition found at index ${index}`, !!atomType)
     return atomType
   }
 
-  getCardTypeFromIndex(index) {
+  getCardTypeFromIndex(index: number) {
     const cardType = this.cardTypes[index]
     assert(`No card definition found at index ${index}`, !!cardType)
     return cardType
   }
 
-  parseCardSection([, cardIndex], post) {
+  parseCardSection([, cardIndex]: MobiledocCardSection, post: Post) {
     const [name, payload] = this.getCardTypeFromIndex(cardIndex)
     const section = this.builder.createCardSection(name, payload)
     post.sections.append(section)
   }
 
-  parseImageSection([, src], post) {
+  parseImageSection([, src]: MobiledocImageSection, post: Post) {
     const section = this.builder.createImageSection(src)
     post.sections.append(section)
   }
 
-  parseMarkupSection([, tagName, markers, attributesArray], post) {
+  parseMarkupSection([, tagName, markers]: MobiledocMarkupSection, post: Post) {
     const section = this.builder.createMarkupSection(tagName)
     post.sections.append(section)
-    if (attributesArray) {
-      entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
-        section.setAttribute(key, value)
-      })
-    }
     this.parseMarkers(markers, section)
     // Strip blank markers after they have been created. This ensures any
     // markup they include has been correctly populated.
@@ -127,32 +135,27 @@ export default class MobiledocParser {
     })
   }
 
-  parseListSection([, tagName, items, attributesArray], post) {
+  parseListSection([, tagName, items]: MobiledocListSection, post: Post) {
     const section = this.builder.createListSection(tagName)
     post.sections.append(section)
-    if (attributesArray) {
-      entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
-        section.setAttribute(key, value)
-      })
-    }
     this.parseListItems(items, section)
   }
 
-  parseListItems(items, section) {
+  parseListItems(items: MobiledocMarker[][], section: ListSection) {
     items.forEach(i => this.parseListItem(i, section))
   }
 
-  parseListItem(markers, section) {
+  parseListItem(markers: MobiledocMarker[], section: ListSection) {
     const item = this.builder.createListItem()
     this.parseMarkers(markers, item)
     section.items.append(item)
   }
 
-  parseMarkers(markers, parent) {
+  parseMarkers(markers: MobiledocMarker[], parent: Markerable) {
     markers.forEach(m => this.parseMarker(m, parent))
   }
 
-  parseMarker([type, markerTypeIndexes, closeCount, value], parent) {
+  parseMarker([type, markerTypeIndexes, closeCount, value]: MobiledocMarker, parent: Markerable) {
     markerTypeIndexes.forEach(index => {
       this.markups.push(this.markerTypes[index])
     })
@@ -163,12 +166,12 @@ export default class MobiledocParser {
     this.markups = this.markups.slice(0, this.markups.length - closeCount)
   }
 
-  buildMarkerType(type, value) {
+  buildMarkerType(type: MobiledocMarkerKind, value: string | number) {
     switch (type) {
-      case MOBILEDOC_MARKUP_MARKER_TYPE:
-        return this.builder.createMarker(value, this.markups.slice())
-      case MOBILEDOC_ATOM_MARKER_TYPE: {
-        const [atomName, atomValue, atomPayload] = this.getAtomTypeFromIndex(value)
+      case MobiledocMarkerKind.MARKUP:
+        return this.builder.createMarker(value as string, this.markups.slice())
+      case MobiledocMarkerKind.ATOM: {
+        const [atomName, atomValue, atomPayload] = this.getAtomTypeFromIndex(value as number)
         return this.builder.createAtom(atomName, atomValue, atomPayload, this.markups.slice())
       }
       default:

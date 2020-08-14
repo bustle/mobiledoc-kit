@@ -11,14 +11,9 @@ import Marker from '../../models/marker'
 import Markup from '../../models/markup'
 import Atom from '../../models/atom'
 import { Dict } from '../../utils/types'
-import { MobiledocSectionKind } from './0-2'
+import { MobiledocSectionKind, MobiledocMarkerKind } from './constants'
 
 export const MOBILEDOC_VERSION = '0.3.0'
-
-export const enum MobiledocMarkerKind {
-  MARKUP = 0,
-  ATOM = 1,
-}
 
 const visitor = {
   [Type.POST](node: Post, opcodes: Opcodes) {

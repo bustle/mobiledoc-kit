@@ -1,19 +1,25 @@
 import {
   MobiledocMarkerType,
-  MobiledocMarkupSection,
-  MobiledocSection,
   MobiledocCard,
   MobiledocAtom,
-  MobiledocV0_3,
   MobiledocMarker,
   MobiledocCardSection,
   MobiledocImageSection,
+  MobiledocMarkupSection,
   MobiledocListSection,
 } from '../../renderers/mobiledoc/0-3'
+
 import { kvArrayToObject, filter, ForEachable } from '../../utils/array-utils'
 import assert from '../../utils/assert'
-import PostNodeBuilder from '../../models/post-node-builder'
+import { entries } from '../../utils/object-utils'
 import Markup from '../../models/markup'
+import PostNodeBuilder from '../../models/post-node-builder'
+import {
+  MobiledocV0_3_2,
+  MobiledocAttributedMarkupSection,
+  MobiledocAttributedListSection,
+  MobiledocAttributedSection,
+} from '../../renderers/mobiledoc/0-3-2'
 import Post from '../../models/post'
 import { MobiledocSectionKind, MobiledocMarkerKind } from '../../renderers/mobiledoc/constants'
 import ListSection from '../../models/list-section'
@@ -37,7 +43,7 @@ export default class MobiledocParser {
    * @param {Mobiledoc}
    * @return {Post}
    */
-  parse({ sections, markups: markerTypes, cards: cardTypes, atoms: atomTypes }: MobiledocV0_3): Post {
+  parse({ sections, markups: markerTypes, cards: cardTypes, atoms: atomTypes }: MobiledocV0_3_2): Post {
     try {
       const post = this.builder.createPost()
 
@@ -78,11 +84,11 @@ export default class MobiledocParser {
     return [atomName, atomValue, atomPayload]
   }
 
-  parseSections(sections: ForEachable<MobiledocSection>, post: Post) {
+  parseSections(sections: ForEachable<MobiledocAttributedSection>, post: Post) {
     sections.forEach(section => this.parseSection(section, post))
   }
 
-  parseSection(section: MobiledocSection, post: Post) {
+  parseSection(section: MobiledocAttributedSection, post: Post) {
     switch (section[0]) {
       case MobiledocSectionKind.MARKUP:
         this.parseMarkupSection(section, post)
@@ -124,9 +130,17 @@ export default class MobiledocParser {
     post.sections.append(section)
   }
 
-  parseMarkupSection([, tagName, markers]: MobiledocMarkupSection, post: Post) {
-    const section = this.builder.createMarkupSection(tagName.toLowerCase() === 'pull-quote' ? 'aside' : tagName)
+  parseMarkupSection(
+    [, tagName, markers, attributesArray]: MobiledocMarkupSection | MobiledocAttributedMarkupSection,
+    post: Post
+  ) {
+    const section = this.builder.createMarkupSection(tagName)
     post.sections.append(section)
+    if (attributesArray) {
+      entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
+        section.setAttribute(key, value)
+      })
+    }
     this.parseMarkers(markers, section)
     // Strip blank markers after they have been created. This ensures any
     // markup they include has been correctly populated.
@@ -135,9 +149,17 @@ export default class MobiledocParser {
     })
   }
 
-  parseListSection([, tagName, items]: MobiledocListSection, post: Post) {
+  parseListSection(
+    [, tagName, items, attributesArray]: MobiledocListSection | MobiledocAttributedListSection,
+    post: Post
+  ) {
     const section = this.builder.createListSection(tagName)
     post.sections.append(section)
+    if (attributesArray) {
+      entries(kvArrayToObject(attributesArray)).forEach(([key, value]) => {
+        section.setAttribute(key, value)
+      })
+    }
     this.parseListItems(items, section)
   }
 

@@ -5,10 +5,10 @@ import {
   MobiledocMarker,
   MobiledocCardSection,
   MobiledocImageSection,
-  MobiledocSectionKind,
   MobiledocMarkupSection,
   MobiledocListSection,
 } from '../../renderers/mobiledoc/0-2'
+import { MobiledocSectionKind } from '../../renderers/mobiledoc/constants'
 import { kvArrayToObject, filter, ForEachable } from '../../utils/array-utils'
 import assert from '../../utils/assert'
 import PostNodeBuilder from '../../models/post-node-builder'

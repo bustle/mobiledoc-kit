@@ -9,15 +9,9 @@ import Image from '../../models/image'
 import Card from '../../models/card'
 import Marker from '../../models/marker'
 import Markup from '../../models/markup'
+import { MobiledocSectionKind } from './constants'
 
 export const MOBILEDOC_VERSION = '0.2.0'
-
-export const enum MobiledocSectionKind {
-  MARKUP = 1,
-  IMAGE = 2,
-  LIST = 3,
-  CARD = 10,
-}
 
 const visitor = {
   [Type.POST](node: Post, opcodes: Opcodes) {
