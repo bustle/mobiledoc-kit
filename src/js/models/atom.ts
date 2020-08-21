@@ -2,7 +2,7 @@ import { Type } from './types'
 import Markuperable from '../utils/markuperable'
 import assert from '../utils/assert'
 import Markup from './markup'
-import PostNodeBuilder from './post-node-builder'
+import PostNodeBuilder, { PostNode } from './post-node-builder'
 
 const ATOM_LENGTH = 1
 
@@ -92,4 +92,8 @@ export default class Atom extends Markuperable {
     })
     return [pre, post]
   }
+}
+
+export function isAtom(postNode: PostNode): postNode is Atom {
+  return postNode.type === Type.ATOM
 }

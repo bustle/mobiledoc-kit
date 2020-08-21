@@ -16,6 +16,7 @@ import { normalizeTagName } from '../utils/dom-utils'
 import { objectToSortedKVArray } from '../utils/array-utils'
 import assert from '../utils/assert'
 import Markuperable from '../utils/markuperable'
+import Section from './_section'
 
 function cacheKey(tagName, attributes) {
   return `${normalizeTagName(tagName)}-${objectToSortedKVArray(attributes).join('-')}`
@@ -167,3 +168,5 @@ export default class PostNodeBuilder {
     return markup
   }
 }
+
+export type PostNode = Section | Markuperable | Marker

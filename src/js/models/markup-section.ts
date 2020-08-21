@@ -6,6 +6,7 @@ import { contains } from '../utils/array-utils'
 import { entries } from '../utils/object-utils'
 import Marker from './marker'
 import Markuperable from '../utils/markuperable'
+import Section from './_section'
 
 // valid values of `tagName` for a MarkupSection
 export const VALID_MARKUP_SECTION_TAGNAMES = ['aside', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].map(
@@ -24,6 +25,8 @@ export default class MarkupSection extends attributable(Markerable) {
   isMarkupSection = true
   isGenerated = false
 
+  _inferredTagName: boolean = false
+
   constructor(tagName = DEFAULT_TAG_NAME, markers: Markuperable[] = [], attributes = {}) {
     super(MARKUP_SECTION_TYPE, tagName, markers)
     entries(attributes).forEach(([k, v]) => this.setAttribute(k, v))
@@ -41,4 +44,12 @@ export default class MarkupSection extends attributable(Markerable) {
 
     return this._redistributeMarkers(beforeSection, afterSection, marker, offset)
   }
+}
+
+export function isMarkupSection(section: Section): section is MarkupSection {
+  return (section as MarkupSection).isMarkupSection
+}
+
+export function hasInferredTagName(section: Section): section is MarkupSection {
+  return isMarkupSection(section) && section._inferredTagName
 }

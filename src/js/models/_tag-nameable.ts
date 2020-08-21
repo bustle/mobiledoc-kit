@@ -28,3 +28,7 @@ export function tagNameable(Base: Constructor<Section>) {
 
   return TagNameable
 }
+
+export function isTagNameable(section: Section): section is Section & TagNameable {
+  return 'tagName' in section
+}

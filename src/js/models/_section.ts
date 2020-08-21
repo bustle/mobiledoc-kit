@@ -26,7 +26,7 @@ export default class Section extends LinkedItem {
   isCardSection = false
 
   post?: Option<Post>
-  renderNode: Option<RenderNode> = null
+  renderNode!: RenderNode
 
   parent: Option<Section> = null
   builder!: PostNodeBuilder

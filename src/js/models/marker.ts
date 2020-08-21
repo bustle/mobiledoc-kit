@@ -4,7 +4,7 @@ import assert from '../utils/assert'
 import { Type } from './types'
 import Markup from './markup'
 import RenderNode from './render-node'
-import PostNodeBuilder from './post-node-builder'
+import PostNodeBuilder, { PostNode } from './post-node-builder'
 
 // Unicode uses a pair of "surrogate" characters" (a high- and low-surrogate)
 // to encode characters outside the basic multilingual plane (like emoji and
@@ -114,4 +114,8 @@ export default class Marker extends Markuperable {
 
     return [pre, post]
   }
+}
+
+export function isMarker(postNode: PostNode): postNode is Marker {
+  return postNode.type === Type.MARKER
 }

@@ -8,8 +8,7 @@ import CardNode from './card-node'
 import AtomNode from './atom-node'
 import Section from './_section'
 import Markuperable from '../utils/markuperable'
-
-export type PostNode = Section | Markuperable
+import { PostNode } from './post-node-builder'
 
 export default class RenderNode<T extends Node = Node> extends LinkedItem {
   parent: Option<RenderNode> = null
