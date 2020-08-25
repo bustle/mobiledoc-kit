@@ -107,7 +107,7 @@ export default class DOMParser {
     let rootElement = detectRootElement(element)
 
     this._eachChildNode(rootElement, child => {
-      let sections = this.parseSections(child)
+      let sections = this.parseSections(child as HTMLElement)
       this.appendSections(post, sections)
     })
 
@@ -148,7 +148,7 @@ export default class DOMParser {
     forEach(nodes, node => callback(node))
   }
 
-  parseSections(element: Node) {
+  parseSections(element: HTMLElement) {
     return this.sectionParser.parse(element)
   }
 
