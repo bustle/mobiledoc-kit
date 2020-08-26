@@ -21,7 +21,7 @@ export default class ListSection extends attributable(tagNameable(Section)) impl
   items: LinkedList<ListItem>
   sections: LinkedList<ListItem>
 
-  constructor(tagName = DEFAULT_TAG_NAME, items = [], attributes = {}) {
+  constructor(tagName = DEFAULT_TAG_NAME, items: ListItem[] = [], attributes = {}) {
     super(LIST_SECTION_TYPE)
     this.tagName = tagName
 

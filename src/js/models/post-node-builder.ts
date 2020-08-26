@@ -92,7 +92,7 @@ export default class PostNodeBuilder {
     return section
   }
 
-  createListSection(tagName = DEFAULT_LIST_SECTION_TAG_NAME, items = [], attributes = {}) {
+  createListSection(tagName = DEFAULT_LIST_SECTION_TAG_NAME, items: ListItem[] = [], attributes = {}) {
     tagName = normalizeTagName(tagName)
     const section = new ListSection(tagName, items, attributes)
     section.builder = this
