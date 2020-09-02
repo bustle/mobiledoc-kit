@@ -53,7 +53,7 @@ interface SectionParseEnv {
   nodeFinished(): void
 }
 
-type SectionParserPlugin = (node: Node, builder: PostNodeBuilder, env: SectionParseEnv) => void
+export type SectionParserPlugin = (node: Node, builder: PostNodeBuilder, env: SectionParseEnv) => void
 
 type SectionParserNode = HTMLElement | Text | Comment
 
