@@ -69,7 +69,11 @@ export function setData(element: HTMLElement, name: string, value: string) {
   }
 }
 
-export function whenElementIsNotInDOM(element: HTMLElement, callback: () => void) {
+export interface Cancelable {
+  cancel(): void
+}
+
+export function whenElementIsNotInDOM(element: HTMLElement, callback: () => void): Cancelable {
   let isCanceled = false
   const observerFn = () => {
     if (isCanceled) {

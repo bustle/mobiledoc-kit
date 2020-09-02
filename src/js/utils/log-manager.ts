@@ -1,4 +1,4 @@
-class Logger {
+export class Logger {
   type: string
   manager: LogManager
 

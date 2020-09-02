@@ -10,7 +10,7 @@ export function isTextNode(node: Node): node is Text {
   return node.nodeType === NODE_TYPES.TEXT
 }
 
-export function isCommentNode(node: Node) {
+export function isCommentNode(node: Node): node is Comment {
   return node.nodeType === NODE_TYPES.COMMENT
 }
 

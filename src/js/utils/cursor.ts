@@ -10,6 +10,7 @@ import Post from '../models/post'
 import { unwrap, assertNotNull, expect } from './assert'
 import { isCardSection } from '../models/card'
 import Section from '../models/_section'
+import { Type } from '../models/types'
 
 export { Position, Range }
 
@@ -95,7 +96,7 @@ class Cursor {
       } else {
         node = section.renderNode.element!.lastChild
       }
-    } else if (section.isBlank) {
+    } else if (section.isBlank || section.type === Type.IMAGE_SECTION) {
       node = section.renderNode.cursorElement
       offset = 0
     } else {

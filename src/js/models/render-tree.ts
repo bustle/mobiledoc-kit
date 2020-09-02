@@ -1,6 +1,7 @@
-import RenderNode, { PostNode } from '../models/render-node'
+import RenderNode from '../models/render-node'
 import ElementMap from '../utils/element-map'
 import Section from './_section'
+import { PostNode } from './post-node-builder'
 
 export default class RenderTree {
   _rootNode: RenderNode

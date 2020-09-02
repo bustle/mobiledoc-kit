@@ -4,7 +4,10 @@ import { normalizeTagName } from '../utils/dom-utils'
 import { contains } from '../utils/array-utils'
 import Section from './_section'
 import { expect } from '../utils/assert'
+import { Option } from '../utils/types'
 import Marker from './marker'
+import ListSection from './list-section'
+import Markuperable from '../utils/markuperable'
 
 export const VALID_LIST_ITEM_TAGNAMES = ['li'].map(normalizeTagName)
 
@@ -12,8 +15,9 @@ export default class ListItem extends Markerable {
   isListItem = true
   isNested = true
   section: Section | null = null
+  parent!: Option<ListSection>
 
-  constructor(tagName: string, markers: Marker[] = []) {
+  constructor(tagName: string, markers: Markuperable[] = []) {
     super(Type.LIST_ITEM, tagName, markers)
   }
 

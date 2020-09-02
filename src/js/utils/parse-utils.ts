@@ -1,7 +1,12 @@
-/* global JSON */
 import mobiledocParsers from '../parsers/mobiledoc'
 import HTMLParser from '../parsers/html'
 import TextParser from '../parsers/text'
+import PostNodeBuilder from '../models/post-node-builder'
+import { SectionParserPlugin } from '../parsers/section'
+import Post from '../models/post'
+import { Logger } from './log-manager'
+import Editor from '../editor/editor'
+import { Maybe } from './types'
 
 export const MIME_TEXT_PLAIN = 'text/plain'
 export const MIME_TEXT_HTML = 'text/html'
@@ -13,11 +18,11 @@ const MOBILEDOC_REGEX = new RegExp(/data-mobiledoc='(.*?)'>/)
  * @return {Post}
  * @private
  */
-function parsePostFromHTML(html, builder, plugins) {
-  let post
+function parsePostFromHTML(html: string, builder: PostNodeBuilder, plugins: SectionParserPlugin[]): Post {
+  let post: Post
 
   if (MOBILEDOC_REGEX.test(html)) {
-    let mobiledocString = html.match(MOBILEDOC_REGEX)[1]
+    let mobiledocString = html.match(MOBILEDOC_REGEX)![1]
     let mobiledoc = JSON.parse(mobiledocString)
     post = mobiledocParsers.parse(builder, mobiledoc)
   } else {
@@ -31,17 +36,22 @@ function parsePostFromHTML(html, builder, plugins) {
  * @return {Post}
  * @private
  */
-function parsePostFromText(text, builder, plugins) {
+function parsePostFromText(text: string, builder: PostNodeBuilder, plugins: SectionParserPlugin[]): Post {
   let parser = new TextParser(builder, { plugins })
   let post = parser.parse(text)
   return post
+}
+
+// Extend TypeScript's Window interface to include clipboardData from events
+interface Window {
+  readonly clipboardData: DataTransfer | null
 }
 
 /**
  * @return {{html: String, text: String}}
  * @private
  */
-export function getContentFromPasteEvent(event, window) {
+export function getContentFromPasteEvent(event: ClipboardEvent, window: Window) {
   let html = '',
     text = ''
 
@@ -65,13 +75,13 @@ export function getContentFromPasteEvent(event, window) {
  * @return {{html: String, text: String}}
  * @private
  */
-function getContentFromDropEvent(event, logger) {
+function getContentFromDropEvent(event: DragEvent, logger?: Logger): { html: string; text: string } {
   let html = '',
     text = ''
 
   try {
-    html = event.dataTransfer.getData(MIME_TEXT_HTML)
-    text = event.dataTransfer.getData(MIME_TEXT_PLAIN)
+    html = event.dataTransfer!.getData(MIME_TEXT_HTML)
+    text = event.dataTransfer!.getData(MIME_TEXT_PLAIN)
   } catch (e) {
     // FIXME IE11 does not include any data in the 'text/html' or 'text/plain'
     // mimetypes. It throws an error 'Invalid argument' when attempting to read
@@ -90,7 +100,7 @@ function getContentFromDropEvent(event, logger) {
  * @param {Window}
  * @private
  */
-export function setClipboardData(event, { mobiledoc, html, text }, window) {
+export function setClipboardData(event: ClipboardEvent, { mobiledoc, html, text }: Editor, window: Window) {
   if (mobiledoc && html) {
     html = `<div data-mobiledoc='${JSON.stringify(mobiledoc)}'>${html}</div>`
   }
@@ -116,11 +126,11 @@ export function setClipboardData(event, { mobiledoc, html, text }, window) {
  * @private
  */
 export function parsePostFromPaste(
-  pasteEvent,
-  { builder, _parserPlugins: plugins },
+  pasteEvent: ClipboardEvent,
+  { builder, _parserPlugins: plugins }: Editor,
   { targetFormat } = { targetFormat: 'html' }
-) {
-  let { html, text } = getContentFromPasteEvent(pasteEvent, window)
+): Maybe<Post> {
+  let { html, text } = getContentFromPasteEvent(pasteEvent, (window as unknown) as ClipboardEvent)
 
   if (targetFormat === 'html' && html && html.length) {
     return parsePostFromHTML(html, builder, plugins)
@@ -136,7 +146,11 @@ export function parsePostFromPaste(
  * @return {Post}
  * @private
  */
-export function parsePostFromDrop(dropEvent, editor, { logger } = {}) {
+export function parsePostFromDrop(
+  dropEvent: DragEvent,
+  editor: Editor,
+  { logger }: { logger?: Logger } = {}
+): Maybe<Post> {
   let { builder, _parserPlugins: plugins } = editor
   let { html, text } = getContentFromDropEvent(dropEvent, logger)
 

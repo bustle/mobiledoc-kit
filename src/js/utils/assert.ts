@@ -1,6 +1,6 @@
 import MobiledocError from './mobiledoc-error'
 
-export default function (message: string, conditional: unknown): asserts conditional {
+export default function assert(message: string, conditional: unknown): asserts conditional {
   if (!conditional) {
     throw new MobiledocError(message)
   }
@@ -10,6 +10,10 @@ export function assertNotNull<T>(message: string, value: T | null): asserts valu
   if (value === null) {
     throw new MobiledocError(message)
   }
+}
+
+export function assertType<T>(message: string, _value: any, conditional: boolean): asserts _value is T {
+  assert(message, conditional)
 }
 
 export function expect<T>(value: T | null | undefined, message: string): T {

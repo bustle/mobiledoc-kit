@@ -19,7 +19,7 @@ function commonPlugins() {
         },
       ],
     }),
-    typescript(),
+    typescript({ noEmitOnError: false }),
   ]
 }
 

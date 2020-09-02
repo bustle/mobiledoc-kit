@@ -1,20 +1,32 @@
-import assert from 'mobiledoc-kit/utils/assert'
-import {
-  MARKUP_SECTION_TYPE,
-  LIST_SECTION_TYPE,
-  POST_TYPE,
-  CARD_TYPE,
-  IMAGE_SECTION_TYPE,
-  LIST_ITEM_TYPE,
-} from 'mobiledoc-kit/models/types'
+import assert from '../../utils/assert'
+import { Option } from '../../utils/types'
+import { Type } from '../../models/types'
+import Post from '../../models/post'
+import Editor from '../editor'
+import PostNodeBuilder from '../../models/post-node-builder'
+import { Position } from '../../utils/cursor'
+import Section, { WithParent } from '../../models/_section'
+import MarkupSection from '../../models/markup-section'
+import ListSection from '../../models/list-section'
+import ListItem from '../../models/list-item'
+import Card from '../../models/card'
+import Image from '../../models/image'
+import Markerable from '../../models/_markerable'
+import { Cloneable } from '../../models/_cloneable'
+import HasChildSections, { hasChildSections } from '../../models/_has-child-sections'
 
-const MARKERABLE = 'markerable',
-  NESTED_MARKERABLE = 'nested_markerable',
-  NON_MARKERABLE = 'non_markerable'
+const MARKERABLE = 'markerable'
+const NESTED_MARKERABLE = 'nested_markerable'
+const NON_MARKERABLE = 'non_markerable'
 
 class Visitor {
-  constructor(inserter, cursorPosition) {
-    let { postEditor, post } = inserter
+  postEditor: Editor
+  builder: PostNodeBuilder
+  _post: Post
+  _hasInsertedFirstLeafSection: boolean
+  _cursorPosition!: Position
+
+  constructor({ postEditor, post }: Inserter, cursorPosition: Position) {
     this.postEditor = postEditor
     this._post = post
     this.cursorPosition = cursorPosition
@@ -32,7 +44,7 @@ class Visitor {
     this.postEditor.setRange(position)
   }
 
-  visit(node) {
+  visit(node: Post | Section) {
     let method = node.type
     assert(`Cannot visit node of type ${node.type}`, !!this[method])
     this[method](node)
@@ -51,7 +63,7 @@ class Visitor {
   }
 
   get cursorSection() {
-    return this.cursorPosition.section
+    return this.cursorPosition.section!
   }
 
   get cursorOffset() {
@@ -62,21 +74,22 @@ class Visitor {
     return this.cursorSection.isNested
   }
 
-  [POST_TYPE](node) {
-    if (this.cursorSection.isBlank && !this._isNested) {
+  [Type.POST](node: Post) {
+    let { cursorSection } = this
+    if (cursorSection.isBlank && !cursorSection.isNested) {
       // replace blank section with entire post
       let newSections = node.sections.map(s => s.clone())
-      this._replaceSection(this.cursorSection, newSections)
+      this._replaceSection(cursorSection as Section & WithParent<HasChildSections>, newSections)
     } else {
       node.sections.forEach(section => this.visit(section))
     }
   }
 
-  [MARKUP_SECTION_TYPE](node) {
+  [Type.MARKUP_SECTION](node: MarkupSection) {
     this[MARKERABLE](node)
   }
 
-  [LIST_SECTION_TYPE](node) {
+  [Type.LIST_SECTION](node: ListSection) {
     let hasNext = !!node.next
     node.items.forEach(item => this.visit(item))
 
@@ -85,19 +98,19 @@ class Visitor {
     }
   }
 
-  [LIST_ITEM_TYPE](node) {
+  [Type.LIST_ITEM](node: ListItem) {
     this[NESTED_MARKERABLE](node)
   }
 
-  [CARD_TYPE](node) {
+  [Type.CARD](node: Card) {
     this[NON_MARKERABLE](node)
   }
 
-  [IMAGE_SECTION_TYPE](node) {
+  [Type.IMAGE_SECTION](node: Image) {
     this[NON_MARKERABLE](node)
   }
 
-  [NON_MARKERABLE](section) {
+  [NON_MARKERABLE](section: Cloneable<Section>) {
     if (this._isNested) {
       this._breakNestedAtCursor()
     } else if (!this.cursorSection.isBlank) {
@@ -107,7 +120,7 @@ class Visitor {
     this._insertLeafSection(section)
   }
 
-  [MARKERABLE](section) {
+  [MARKERABLE](section: Markerable) {
     if (this._canMergeSection(section)) {
       this._mergeSection(section)
     } else if (this._isNested && this._isMarkerable) {
@@ -116,7 +129,7 @@ class Visitor {
       this._breakAtCursor()
 
       // Advance the cursor to the head of the blank list item
-      let nextPosition = this.cursorSection.next.headPosition()
+      let nextPosition = this.cursorSection.next!.headPosition()
       this.cursorPosition = nextPosition
 
       // Merge this section onto the list item
@@ -127,22 +140,22 @@ class Visitor {
     }
   }
 
-  [NESTED_MARKERABLE](section) {
+  [NESTED_MARKERABLE](section: Markerable) {
     if (this._canMergeSection(section)) {
       this._mergeSection(section)
       return
     }
 
-    section = this._isNested ? section : this._wrapNestedSection(section)
+    let insertedSection = this._isNested ? section : this._wrapNestedSection(section as ListItem)
     this._breakAtCursor()
-    this._insertLeafSection(section)
+    this._insertLeafSection(insertedSection)
   }
 
   // break out of a nested cursor position
   _breakNestedAtCursor() {
     assert('Cannot call _breakNestedAtCursor if not nested', this._isNested)
 
-    let parent = this.cursorSection.parent
+    let parent = this.cursorSection.parent!
     let cursorAtEndOfList = this.cursorPosition.isEqual(parent.tailPosition())
 
     if (cursorAtEndOfList) {
@@ -160,6 +173,7 @@ class Visitor {
     let list = this.cursorSection.parent,
       position = this.cursorPosition,
       blank = this.builder.createMarkupSection()
+
     let [pre, post] = this.postEditor._splitListAtPosition(list, position)
 
     let collection = this._post.sections,
@@ -168,14 +182,14 @@ class Visitor {
     return [pre, blank, post]
   }
 
-  _wrapNestedSection(section) {
-    let tagName = section.parent.tagName
+  _wrapNestedSection(section: ListItem) {
+    let tagName = section.parent!.tagName
     let parent = this.builder.createListSection(tagName)
     parent.items.append(section.clone())
     return parent
   }
 
-  _mergeSection(section) {
+  _mergeSection(section: Markerable) {
     assert('Can only merge markerable sections', this._isMarkerable && section.isMarkerable)
     this._hasInsertedFirstLeafSection = true
 
@@ -213,8 +227,8 @@ class Visitor {
     this.cursorPosition = pre.tailPosition()
   }
 
-  _replaceSection(section, newSections) {
-    assert('Cannot replace section that does not have parent.sections', section.parent && section.parent.sections)
+  _replaceSection(section: Section, newSections: Section[]) {
+    assert('Cannot replace section that does not have parent.sections', hasChildSections(section.parent!))
     assert('Must pass enumerable to _replaceSection', !!newSections.forEach)
 
     let collection = section.parent.sections
@@ -228,7 +242,11 @@ class Visitor {
     this.cursorPosition = lastSection.tailPosition()
   }
 
-  _insertSectionBefore(section, reference) {
+  _insertSectionBefore(section: Section, reference?: Option<Section>) {
+    assert(
+      'Cannot insert into section that does not have parent.sections',
+      hasChildSections(this.cursorSection.parent!)
+    )
     let collection = this.cursorSection.parent.sections
     this.postEditor.insertSectionBefore(collection, section, reference)
 
@@ -237,7 +255,7 @@ class Visitor {
 
   // Insert a section after the parent section.
   // E.g., add a markup section after a list section
-  _insertSectionAfter(section, parent) {
+  _insertSectionAfter(section: Section, parent: Section) {
     assert('Cannot _insertSectionAfter nested section', !parent.isNested)
     let reference = parent.next
     let collection = this._post.sections
@@ -245,7 +263,7 @@ class Visitor {
     this.cursorPosition = section.tailPosition()
   }
 
-  _insertLeafSection(section) {
+  _insertLeafSection(section: Cloneable<Section>) {
     assert('Can only _insertLeafSection when cursor is at end of section', this.cursorPosition.isTail())
 
     this._hasInsertedFirstLeafSection = true
@@ -267,12 +285,15 @@ class Visitor {
 }
 
 export default class Inserter {
-  constructor(postEditor, post) {
+  postEditor: Editor
+  post: Post
+
+  constructor(postEditor: Editor, post: Post) {
     this.postEditor = postEditor
     this.post = post
   }
 
-  insert(cursorPosition, newPost) {
+  insert(cursorPosition: Position, newPost: Post) {
     let visitor = new Visitor(this, cursorPosition)
     if (!newPost.isBlank) {
       visitor.visit(newPost)

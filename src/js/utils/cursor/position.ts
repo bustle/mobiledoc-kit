@@ -3,7 +3,7 @@ import RenderTree from '../../models/render-tree'
 import { isTextNode, containsNode, isElementNode } from '../dom-utils'
 import { findOffsetInNode } from '../selection-utils'
 import { DIRECTION } from '../key'
-import assert from '../assert'
+import assert, { assertType } from '../assert'
 import Range from './range'
 import Markerable from '../../models/_markerable'
 import Section from '../../models/_section'
@@ -70,10 +70,6 @@ function findOffsetInSection(section: Section, node: Node, offset: number) {
 
 function assertIsCard(section: any): asserts section is Card {
   assert('findOffsetInSection must be called with markerable or card section', section && section.isCardSection)
-}
-
-function assertType<T>(message: string, _value: any, conditional: boolean): asserts _value is T {
-  assert(message, conditional)
 }
 
 function isMarkerable(section: Section): section is Markerable {
@@ -159,7 +155,7 @@ export default class Position {
    * (i.e., the marker to the left of the cursor if the cursor is on a marker boundary and text is left-to-right)
    * @return {Marker|undefined}
    */
-  get marker(): Marker | null {
+  get marker(): Markuperable | null {
     return (this.isMarkerable && this.markerPosition.marker) || null
   }
 

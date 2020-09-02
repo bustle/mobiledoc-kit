@@ -1,6 +1,12 @@
-import assert from 'mobiledoc-kit/utils/assert'
-import { MARKUP_SECTION_TYPE, LIST_SECTION_TYPE } from 'mobiledoc-kit/models/types'
-import { DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME } from 'mobiledoc-kit/models/markup-section'
+import assert from '../utils/assert'
+import { MARKUP_SECTION_TYPE, LIST_SECTION_TYPE } from '../models/types'
+import { DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME } from '../models/markup-section'
+import PostNodeBuilder from '../models/post-node-builder'
+import Post from '../models/post'
+import Section from '../models/_section'
+import { Option } from '../utils/types'
+import ListSection, { isListSection } from '../models/list-section'
+import { Cloneable } from '../models/_cloneable'
 
 const UL_LI_REGEX = /^\* (.*)$/
 const OL_LI_REGEX = /^\d\.? (.*)$/
@@ -15,8 +21,16 @@ function normalizeLineEndings(text) {
   return text.replace(CR_LF_REGEX, LF).replace(CR_REGEX, LF)
 }
 
+export interface TextParserOptions {}
+
 export default class TextParser {
-  constructor(builder, options) {
+  builder: PostNodeBuilder
+  options: TextParserOptions
+  post: Post
+
+  prevSection: Option<Cloneable<Section>>
+
+  constructor(builder: PostNodeBuilder, options: TextParserOptions) {
     this.builder = builder
     this.options = options
 
@@ -28,7 +42,7 @@ export default class TextParser {
    * @param {String} text to parse
    * @return {Post} a post abstract
    */
-  parse(text) {
+  parse(text: string): Post {
     text = normalizeLineEndings(text)
     text.split(SECTION_BREAK).forEach(text => {
       let section = this._parseSection(text)
@@ -38,7 +52,7 @@ export default class TextParser {
     return this.post
   }
 
-  _parseSection(text) {
+  _parseSection(text: string) {
     let tagName = DEFAULT_MARKUP_SECTION_TAG_NAME,
       type = MARKUP_SECTION_TYPE,
       section
@@ -46,11 +60,11 @@ export default class TextParser {
     if (UL_LI_REGEX.test(text)) {
       tagName = 'ul'
       type = LIST_SECTION_TYPE
-      text = text.match(UL_LI_REGEX)[1]
+      text = text.match(UL_LI_REGEX)![1]
     } else if (OL_LI_REGEX.test(text)) {
       tagName = 'ol'
       type = LIST_SECTION_TYPE
-      text = text.match(OL_LI_REGEX)[1]
+      text = text.match(OL_LI_REGEX)![1]
     }
 
     let markers = [this.builder.createMarker(text)]
@@ -72,19 +86,19 @@ export default class TextParser {
     return section
   }
 
-  _appendSection(section) {
+  _appendSection(section: Cloneable<Section>) {
     let isSameListSection =
-      section.isListSection &&
+      isListSection(section) &&
       this.prevSection &&
-      this.prevSection.isListSection &&
+      isListSection(this.prevSection) &&
       this.prevSection.tagName === section.tagName
 
     if (isSameListSection) {
-      section.items.forEach(item => {
-        this.prevSection.items.append(item.clone())
+      ;(section as ListSection).items.forEach(item => {
+        ;(this.prevSection as ListSection).items.append(item.clone())
       })
     } else {
-      this.post.sections.insertAfter(section, this.prevSection)
+      this.post.sections.insertAfter(section, this.prevSection!)
       this.prevSection = section
     }
   }

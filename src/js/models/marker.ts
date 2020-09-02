@@ -3,8 +3,8 @@ import Markuperable from '../utils/markuperable'
 import assert from '../utils/assert'
 import { Type } from './types'
 import Markup from './markup'
-import Markerable from './_markerable'
 import RenderNode from './render-node'
+import PostNodeBuilder, { PostNode } from './post-node-builder'
 
 // Unicode uses a pair of "surrogate" characters" (a high- and low-surrogate)
 // to encode characters outside the basic multilingual plane (like emoji and
@@ -22,10 +22,8 @@ export default class Marker extends Markuperable {
 
   value: string
 
-  builder: any
+  builder!: PostNodeBuilder
   markups: Markup[] = []
-  section: Markerable | null = null
-  parent: Markerable | null = null
   renderNode: RenderNode | null = null
 
   constructor(value = '', markups: Markup[] = []) {
@@ -46,10 +44,6 @@ export default class Marker extends Markuperable {
 
   get isBlank() {
     return this.length === 0
-  }
-
-  charAt(offset: number) {
-    return this.value.slice(offset, offset + 1)
   }
 
   /**
@@ -93,7 +87,7 @@ export default class Marker extends Markuperable {
   }
 
   split(offset = 0, endOffset = this.length) {
-    let markers = [
+    let markers: [Marker, Marker, Marker] = [
       this.builder.createMarker(this.value.substring(0, offset)),
       this.builder.createMarker(this.value.substring(offset, endOffset)),
       this.builder.createMarker(this.value.substring(endOffset)),
@@ -106,7 +100,7 @@ export default class Marker extends Markuperable {
   /**
    * @return {Array} 2 markers either or both of which could be blank
    */
-  splitAtOffset(offset: number) {
+  splitAtOffset(offset: number): [Marker, Marker] {
     assert('Cannot split a marker at an offset > its length', offset <= this.length)
     let { value, builder } = this
 
@@ -120,4 +114,8 @@ export default class Marker extends Markuperable {
 
     return [pre, post]
   }
+}
+
+export function isMarker(postNode: PostNode): postNode is Marker {
+  return postNode.type === Type.MARKER
 }

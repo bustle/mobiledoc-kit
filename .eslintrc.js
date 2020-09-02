@@ -250,7 +250,7 @@ module.exports = {
         "no-unneeded-ternary": "off",
         "no-unused-expressions": "off",
         "no-unused-vars": "off",
-        "@typescript-eslint/no-unused-vars": ["error"],
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
         "no-useless-backreference": "error",
         "no-useless-call": "off",
         "no-useless-computed-key": "error",

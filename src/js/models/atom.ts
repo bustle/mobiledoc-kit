@@ -1,8 +1,8 @@
 import { Type } from './types'
 import Markuperable from '../utils/markuperable'
 import assert from '../utils/assert'
-import Marker from './marker'
 import Markup from './markup'
+import PostNodeBuilder, { PostNode } from './post-node-builder'
 
 const ATOM_LENGTH = 1
 
@@ -11,14 +11,14 @@ export default class Atom extends Markuperable {
   isAtom = true
 
   name: string
-  value: unknown
+  value: string
   text: string
   payload: {}
 
   markups: Markup[]
-  builder: any
+  builder!: PostNodeBuilder
 
-  constructor(name: string, value: unknown, payload: {}, markups: Markup[] = []) {
+  constructor(name: string, value: string, payload: {}, markups: Markup[] = []) {
     super()
     this.name = name
     this.value = value
@@ -55,7 +55,7 @@ export default class Atom extends Markuperable {
   }
 
   split(offset = 0, endOffset = offset) {
-    let markers: Marker[] = []
+    let markers: Markuperable[] = []
 
     if (endOffset === 0) {
       markers.push(this.builder.createMarker('', this.markups.slice()))
@@ -70,13 +70,13 @@ export default class Atom extends Markuperable {
     return markers
   }
 
-  splitAtOffset(offset: number) {
+  splitAtOffset(offset: number): [Markuperable, Markuperable] {
     assert('Cannot split a marker at an offset > its length', offset <= this.length)
 
     let { builder } = this
     let clone = this.clone()
     let blankMarker = builder.createMarker('')
-    let pre: Marker, post: Marker
+    let pre: Markuperable, post: Markuperable
 
     if (offset === 0) {
       ;[pre, post] = [blankMarker, clone]
@@ -92,4 +92,8 @@ export default class Atom extends Markuperable {
     })
     return [pre, post]
   }
+}
+
+export function isAtom(postNode: PostNode): postNode is Atom {
+  return postNode.type === Type.ATOM
 }

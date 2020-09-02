@@ -1,17 +1,33 @@
-import { DEFAULT_TAG_NAME, VALID_MARKUP_SECTION_TAGNAMES } from 'mobiledoc-kit/models/markup-section'
-import { VALID_LIST_SECTION_TAGNAMES } from 'mobiledoc-kit/models/list-section'
-import { VALID_LIST_ITEM_TAGNAMES } from 'mobiledoc-kit/models/list-item'
-import { LIST_SECTION_TYPE, LIST_ITEM_TYPE, MARKUP_SECTION_TYPE } from 'mobiledoc-kit/models/types'
-import { VALID_MARKUP_TAGNAMES } from 'mobiledoc-kit/models/markup'
-import { getAttributes, normalizeTagName, isTextNode, isCommentNode, NODE_TYPES } from '../utils/dom-utils'
-import { any, forEach, contains } from 'mobiledoc-kit/utils/array-utils'
+import MarkupSection, {
+  DEFAULT_TAG_NAME,
+  VALID_MARKUP_SECTION_TAGNAMES,
+  isMarkupSection as sectionIsMarkupSection,
+} from '../models/markup-section'
+import { VALID_LIST_SECTION_TAGNAMES, isListSection as sectionIsListSection } from '../models/list-section'
+import { VALID_LIST_ITEM_TAGNAMES, isListItem as sectionIsListItem } from '../models/list-item'
+import { LIST_SECTION_TYPE, LIST_ITEM_TYPE, MARKUP_SECTION_TYPE } from '../models/types'
+import Markup, { VALID_MARKUP_TAGNAMES } from '../models/markup'
+import {
+  getAttributes,
+  normalizeTagName,
+  isTextNode,
+  isCommentNode,
+  NODE_TYPES,
+  isElementNode,
+} from '../utils/dom-utils'
+import { any, forEach, contains } from '../utils/array-utils'
 import { transformHTMLText, trimSectionText } from '../parsers/dom'
-import assert from '../utils/assert'
+import assert, { assertType, expect } from '../utils/assert'
+import PostNodeBuilder from '../models/post-node-builder'
+import Section from '../models/_section'
+import Marker from '../models/marker'
+import Markerable, { isMarkerable } from '../models/_markerable'
+import { Cloneable } from '../models/_cloneable'
 
 const SKIPPABLE_ELEMENT_TAG_NAMES = ['style', 'head', 'title', 'meta'].map(normalizeTagName)
 
 const NEWLINES = /\s*\n\s*/g
-function sanitize(text) {
+function sanitize(text: string) {
   return text.replace(NEWLINES, ' ')
 }
 
@@ -20,13 +36,40 @@ function sanitize(text) {
  * elements contained within
  * @private
  */
-class SectionParser {
-  constructor(builder, options = {}) {
+
+interface SectionParserOptions {
+  plugins?: SectionParserPlugin[]
+}
+
+interface SectionParserState {
+  section?: Cloneable<Section> | null
+  text?: string
+  markups?: Markup[]
+}
+
+interface SectionParseEnv {
+  addSection: (section: Cloneable<Section>) => void
+  addMarkerable: (marker: Marker) => void
+  nodeFinished(): void
+}
+
+export type SectionParserPlugin = (node: Node, builder: PostNodeBuilder, env: SectionParseEnv) => void
+
+type SectionParserNode = HTMLElement | Text | Comment
+
+export default class SectionParser {
+  builder: PostNodeBuilder
+  plugins: SectionParserPlugin[]
+
+  sections!: Cloneable<Section>[]
+  state!: SectionParserState
+
+  constructor(builder: PostNodeBuilder, options: SectionParserOptions = {}) {
     this.builder = builder
     this.plugins = options.plugins || []
   }
 
-  parse(element) {
+  parse(element: HTMLElement) {
     if (this._isSkippable(element)) {
       return []
     }
@@ -47,7 +90,7 @@ class SectionParser {
       let childNodes = isTextNode(element) ? [element] : element.childNodes
 
       forEach(childNodes, el => {
-        this.parseNode(el)
+        this.parseNode(el as SectionParserNode)
       })
     }
 
@@ -56,20 +99,20 @@ class SectionParser {
     return this.sections
   }
 
-  runPlugins(node) {
+  runPlugins(node: Node) {
     let isNodeFinished = false
     let env = {
-      addSection: section => {
+      addSection: (section: Cloneable<Section>) => {
         // avoid creating empty paragraphs due to wrapper elements around
         // parser-plugin-handled elements
-        if (this.state.section && this.state.section.isMarkerable && !this.state.section.text && !this.state.text) {
+        if (this.state.section && isMarkerable(this.state.section) && !this.state.section.text && !this.state.text) {
           this.state.section = null
         } else {
           this._closeCurrentSection()
         }
         this.sections.push(section)
       },
-      addMarkerable: marker => {
+      addMarkerable: (marker: Marker) => {
         let { state } = this
         let { section } = state
         // if the first element doesn't create it's own state and it's plugin
@@ -79,8 +122,9 @@ class SectionParser {
           state.section = this.builder.createMarkupSection(normalizeTagName('p'))
           section = state.section
         }
-        assert(
+        assertType<Markerable>(
           'Markerables can only be appended to markup sections and list item sections',
+          section,
           section && section.isMarkerable
         )
         if (state.text) {
@@ -103,7 +147,7 @@ class SectionParser {
   }
 
   /* eslint-disable complexity */
-  parseNode(node) {
+  parseNode(node: SectionParserNode) {
     if (!this.state.section) {
       this._updateStateFromElement(node)
     }
@@ -115,7 +159,7 @@ class SectionParser {
 
     // handle closing the current section and starting a new one if we hit a
     // new-section-creating element.
-    if (this.state.section && !isTextNode(node) && node.tagName) {
+    if (this.state.section && isElementNode(node) && node.tagName) {
       let tagName = normalizeTagName(node.tagName)
       let isListSection = contains(VALID_LIST_SECTION_TAGNAMES, tagName)
       let isListItem = contains(VALID_LIST_ITEM_TAGNAMES, tagName)
@@ -125,16 +169,16 @@ class SectionParser {
 
       // lists can continue after breaking out for a markup section,
       // in that situation, start a new list using the same list type
-      if (isListItem && this.state.section.isMarkupSection) {
+      if (isListItem && sectionIsMarkupSection(this.state.section)) {
         this._closeCurrentSection()
-        this._updateStateFromElement(node.parentElement)
+        this._updateStateFromElement(node.parentElement!)
       }
 
       // we can hit a list item after parsing a nested list, when that happens
       // and the lists are of different types we need to make sure we switch
       // the list type back
-      if (isListItem && lastSection && lastSection.isListSection) {
-        let parentElement = node.parentElement
+      if (isListItem && lastSection && sectionIsListSection(lastSection)) {
+        let parentElement = expect(node.parentElement, 'expected node to have parent element')
         let parentElementTagName = normalizeTagName(parentElement.tagName)
         if (parentElementTagName !== lastSection.tagName) {
           this._closeCurrentSection()
@@ -152,14 +196,14 @@ class SectionParser {
         !lastSection.isListSection
       ) {
         this._closeCurrentSection()
-        this._updateStateFromElement(node.parentElement)
+        this._updateStateFromElement(node.parentElement!)
       }
 
       // if we have consecutive list sections of different types (ul, ol) then
       // ensure we close the current section and start a new one
       let isNewListSection =
         lastSection &&
-        lastSection.isListSection &&
+        sectionIsListSection(lastSection) &&
         this.state.section.isListItem &&
         isListSection &&
         tagName !== lastSection.tagName
@@ -171,7 +215,10 @@ class SectionParser {
           this.state.section.isListItem &&
           tagName === 'p' &&
           !node.nextSibling &&
-          contains(VALID_LIST_ITEM_TAGNAMES, normalizeTagName(node.parentElement.tagName))
+          contains(
+            VALID_LIST_ITEM_TAGNAMES,
+            normalizeTagName(expect(node.parentElement, 'expected node to have parent element').tagName)
+          )
         ) {
           this.parseElementNode(node)
           return
@@ -179,7 +226,7 @@ class SectionParser {
 
         // avoid creating empty paragraphs due to wrapper elements around
         // section-creating elements
-        if (this.state.section.isMarkerable && !this.state.text && this.state.section.markers.length === 0) {
+        if (isMarkerable(this.state.section) && !this.state.text && this.state.section.markers.length === 0) {
           this.state.section = null
         } else {
           this._closeCurrentSection()
@@ -188,13 +235,13 @@ class SectionParser {
         this._updateStateFromElement(node)
       }
 
-      if (this.state.section.isListSection) {
+      if (this.state.section && this.state.section.isListSection) {
         // ensure the list section is closed and added to the sections list.
         // _closeCurrentSection handles pushing list items onto the list section
         this._closeCurrentSection()
 
         forEach(node.childNodes, node => {
-          this.parseNode(node)
+          this.parseNode(node as SectionParserNode)
         })
         return
       }
@@ -202,28 +249,29 @@ class SectionParser {
 
     switch (node.nodeType) {
       case NODE_TYPES.TEXT:
-        this.parseTextNode(node)
+        this.parseTextNode(node as Text)
         break
       case NODE_TYPES.ELEMENT:
-        this.parseElementNode(node)
+        this.parseElementNode(node as HTMLElement)
         break
     }
   }
 
-  parseElementNode(element) {
+  parseElementNode(element: HTMLElement) {
     let { state } = this
+    assert('expected markups to be non-null', state.markups)
 
     const markups = this._markupsFromElement(element)
-    if (markups.length && state.text.length && state.section.isMarkerable) {
+    if (markups.length && state.text!.length && isMarkerable(state.section!)) {
       this._createMarker()
     }
     state.markups.push(...markups)
 
     forEach(element.childNodes, node => {
-      this.parseNode(node)
+      this.parseNode(node as SectionParserNode)
     })
 
-    if (markups.length && state.text.length && state.section.isMarkerable) {
+    if (markups.length && state.text!.length && state.section!.isMarkerable) {
       // create the marker started for this node
       this._createMarker()
     }
@@ -232,12 +280,12 @@ class SectionParser {
     state.markups.splice(-markups.length, markups.length)
   }
 
-  parseTextNode(textNode) {
+  parseTextNode(textNode: Text) {
     let { state } = this
-    state.text += sanitize(textNode.textContent)
+    state.text += sanitize(textNode.textContent!)
   }
 
-  _updateStateFromElement(element) {
+  _updateStateFromElement(element: SectionParserNode) {
     if (isCommentNode(element)) {
       return
     }
@@ -257,18 +305,18 @@ class SectionParser {
     }
 
     // close a trailing text node if it exists
-    if (state.text.length && state.section.isMarkerable) {
+    if (state.text!.length && state.section.isMarkerable) {
       this._createMarker()
     }
 
     // push listItems onto the listSection or add a new section
-    if (state.section.isListItem && lastSection && lastSection.isListSection) {
+    if (sectionIsListItem(state.section) && lastSection && sectionIsListSection(lastSection)) {
       trimSectionText(state.section)
       lastSection.items.append(state.section)
     } else {
       // avoid creating empty markup sections, especially useful for indented source
       if (
-        state.section.isMarkerable &&
+        isMarkerable(state.section) &&
         !state.section.text.trim() &&
         !any(state.section.markers, marker => marker.isAtom)
       ) {
@@ -278,7 +326,7 @@ class SectionParser {
       }
 
       // remove empty list sections before creating a new section
-      if (lastSection && lastSection.isListSection && lastSection.items.length === 0) {
+      if (lastSection && sectionIsListSection(lastSection) && lastSection.items.length === 0) {
         sections.pop()
       }
 
@@ -289,9 +337,9 @@ class SectionParser {
     state.text = ''
   }
 
-  _markupsFromElement(element) {
+  _markupsFromElement(element: HTMLElement | Text) {
     let { builder } = this
-    let markups = []
+    let markups: Markup[] = []
     if (isTextNode(element)) {
       return markups
     }
@@ -306,7 +354,7 @@ class SectionParser {
     return markups
   }
 
-  _isValidMarkupForElement(tagName, element) {
+  _isValidMarkupForElement(tagName: string, element: HTMLElement) {
     if (VALID_MARKUP_TAGNAMES.indexOf(tagName) === -1) {
       return false
     } else if (tagName === 'b') {
@@ -317,9 +365,9 @@ class SectionParser {
     return true
   }
 
-  _markupsFromElementStyle(element) {
+  _markupsFromElementStyle(element: HTMLElement) {
     let { builder } = this
-    let markups = []
+    let markups: Markup[] = []
     let { fontStyle, fontWeight } = element.style
     if (fontStyle === 'italic') {
       markups.push(builder.createMarkup('em'))
@@ -332,15 +380,16 @@ class SectionParser {
 
   _createMarker() {
     let { state } = this
-    let text = transformHTMLText(state.text)
+    let text = transformHTMLText(state.text!)
     let marker = this.builder.createMarker(text, state.markups)
+    assertType<Markerable>('expected section to be markerable', state.section, isMarkerable(state.section!))
     state.section.markers.append(marker)
     state.text = ''
   }
 
-  _getSectionDetails(element) {
-    let sectionType,
-      tagName,
+  _getSectionDetails(element: HTMLElement | Text) {
+    let sectionType: string,
+      tagName: string,
       inferredTagName = false
 
     if (isTextNode(element)) {
@@ -376,13 +425,13 @@ class SectionParser {
     return { sectionType, tagName, inferredTagName }
   }
 
-  _createSectionFromElement(element) {
+  _createSectionFromElement(element: Comment | HTMLElement) {
     if (isCommentNode(element)) {
       return
     }
 
     let { builder } = this
-    let section
+    let section: Cloneable<Section>
     let { tagName, sectionType, inferredTagName } = this._getSectionDetails(element)
 
     switch (sectionType) {
@@ -394,7 +443,7 @@ class SectionParser {
         break
       case MARKUP_SECTION_TYPE:
         section = builder.createMarkupSection(tagName)
-        section._inferredTagName = inferredTagName
+        ;(section as MarkupSection)._inferredTagName = inferredTagName
         break
       default:
         assert('Cannot parse section from element', false)
@@ -403,12 +452,7 @@ class SectionParser {
     return section
   }
 
-  _isSkippable(element) {
-    return (
-      element.nodeType === NODE_TYPES.ELEMENT &&
-      contains(SKIPPABLE_ELEMENT_TAG_NAMES, normalizeTagName(element.tagName))
-    )
+  _isSkippable(element: Node) {
+    return isElementNode(element) && contains(SKIPPABLE_ELEMENT_TAG_NAMES, normalizeTagName(element.tagName))
   }
 }
-
-export default SectionParser
