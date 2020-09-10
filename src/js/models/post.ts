@@ -15,6 +15,7 @@ import RenderNode from './render-node'
 import HasChildSections from './_has-child-sections'
 import { expectCloneable, Cloneable } from './_cloneable'
 import Markuperable from '../utils/markuperable'
+import Markup from './markup'
 
 type SectionCallback = (section: Section, index: number) => void
 
@@ -109,7 +110,7 @@ export default class Post implements HasChildSections<Cloneable<Section>> {
   }
 
   markupsInRange(range: Range) {
-    const markups = new Set()
+    const markups = new Set<Markup>()
 
     if (range.isCollapsed) {
       let pos = range.head

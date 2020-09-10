@@ -10,7 +10,7 @@ export default class LifecycleCallbacks {
   callbackQueues: Queue = {}
   removalQueues: Queue = {}
 
-  constructor(queueNames = []) {
+  constructor(queueNames: string[] = []) {
     queueNames.forEach(name => {
       this.callbackQueues[name] = []
       this.removalQueues[name] = []

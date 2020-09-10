@@ -5,6 +5,7 @@ import MobiledocRenderer_0_3_2, { MOBILEDOC_VERSION as MOBILEDOC_VERSION_0_3_2, 
 import assert from '../../utils/assert'
 import Post from '../../models/post'
 
+export type Mobiledoc = MobiledocV0_2 | MobiledocV0_3 | MobiledocV0_3_1 | MobiledocV0_3_2
 export const MOBILEDOC_VERSION = MOBILEDOC_VERSION_0_3_2
 
 interface VersionTypes {
@@ -14,7 +15,7 @@ interface VersionTypes {
   [MOBILEDOC_VERSION_0_3_2]: MobiledocV0_3_2
 }
 
-type MobiledocVersion = keyof VersionTypes
+export type MobiledocVersion = keyof VersionTypes
 
 export default {
   render<T extends MobiledocVersion = typeof MOBILEDOC_VERSION_0_3_2>(post: Post, version?: T): VersionTypes[T] {

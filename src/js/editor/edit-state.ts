@@ -1,5 +1,19 @@
-import { contains, isArrayEqual, objectToSortedKVArray } from 'mobiledoc-kit/utils/array-utils'
-import Range from 'mobiledoc-kit/utils/cursor/range'
+import { contains, isArrayEqual, objectToSortedKVArray } from '../utils/array-utils'
+import Range from '../utils/cursor/range'
+import { Option, Dict } from '../utils/types'
+import Editor from './editor'
+import { Cloneable } from '../models/_cloneable'
+import Section from '../models/_section'
+import Markup from '../models/markup'
+import { TagNameable } from '../models/_tag-nameable'
+
+interface EditStateState {
+  range: Range
+  activeMarkups: Markup[]
+  activeSections: Section[]
+  activeSectionTagNames: string[]
+  activeSectionAttributes: Dict<string>
+}
 
 /**
  * Used by {@link Editor} to manage its current state (cursor, active markups
@@ -7,10 +21,14 @@ import Range from 'mobiledoc-kit/utils/cursor/range'
  * @private
  */
 export default class EditState {
-  constructor(editor) {
+  editor: Option<Editor>
+  state: Option<EditStateState>
+  prevState: Option<EditStateState>
+
+  constructor(editor: Editor) {
     this.editor = editor
 
-    let defaultState = {
+    let defaultState: EditStateState = {
       range: Range.blankRange(),
       activeMarkups: [],
       activeSections: [],
@@ -21,7 +39,7 @@ export default class EditState {
     this.prevState = this.state = defaultState
   }
 
-  updateRange(newRange) {
+  updateRange(newRange: Range) {
     this.prevState = this.state
     this.state = this._readState(newRange)
   }
@@ -34,11 +52,10 @@ export default class EditState {
   /**
    * @return {Boolean}
    */
-  rangeDidChange() {
-    let {
-      state: { range },
-      prevState: { range: prevRange },
-    } = this
+  rangeDidChange(): boolean {
+    const { state, prevState } = this
+    const { range } = state!
+    const { range: prevRange } = prevState!
 
     return !prevRange.isEqual(range)
   }
@@ -47,8 +64,10 @@ export default class EditState {
    * @return {Boolean} Whether the input mode (active markups or active section tag names)
    * has changed.
    */
-  inputModeDidChange() {
-    let { state, prevState } = this
+  inputModeDidChange(): boolean {
+    const state = this.state!
+    const prevState = this.prevState!
+
     return (
       !isArrayEqual(state.activeMarkups, prevState.activeMarkups) ||
       !isArrayEqual(state.activeSectionTagNames, prevState.activeSectionTagNames) ||
@@ -62,29 +81,29 @@ export default class EditState {
   /**
    * @return {Range}
    */
-  get range() {
-    return this.state.range
+  get range(): Range {
+    return this.state!.range
   }
 
   /**
    * @return {Section[]}
    */
-  get activeSections() {
-    return this.state.activeSections
+  get activeSections(): Section[] {
+    return this.state!.activeSections
   }
 
   /**
    * @return {Object}
    */
   get activeSectionAttributes() {
-    return this.state.activeSectionAttributes
+    return this.state!.activeSectionAttributes
   }
 
   /**
    * @return {Markup[]}
    */
   get activeMarkups() {
-    return this.state.activeMarkups
+    return this.state!.activeMarkups
   }
 
   /**
@@ -101,8 +120,8 @@ export default class EditState {
     }
   }
 
-  _readState(range) {
-    let state = {
+  _readState(range: Range): EditStateState {
+    let state: Partial<EditStateState> = {
       range,
       activeMarkups: this._readActiveMarkups(range),
       activeSections: this._readActiveSections(range),
@@ -111,53 +130,59 @@ export default class EditState {
     // need to map their tagNames now (and compare to mapped tagNames later).
     // In addition, to catch changes from ul -> ol, we keep track of the
     // un-nested tag names (otherwise we'd only see li -> li change)
-    state.activeSectionTagNames = state.activeSections.map(s => {
-      return s.isNested ? s.parent.tagName : s.tagName
+    state.activeSectionTagNames = state.activeSections!.map(s => {
+      return s.isNested ? ((s.parent as unknown) as TagNameable).tagName : ((s as unknown) as TagNameable).tagName
     })
-    state.activeSectionAttributes = this._readSectionAttributes(state.activeSections)
-    return state
+    state.activeSectionAttributes = this._readSectionAttributes(state.activeSections!)
+
+    return state as EditStateState
   }
 
-  _readActiveSections(range) {
-    let { head, tail } = range
-    let {
-      editor: { post },
-    } = this
+  _readActiveSections(range: Range) {
+    const { head, tail } = range
+    const { editor } = this
+    const { post } = editor!
+
     if (range.isBlank) {
       return []
     } else {
-      return post.sections.readRange(head.section, tail.section)
+      return post.sections.readRange(head.section as Cloneable<Section>, tail.section as Cloneable<Section>)
     }
   }
 
-  _readActiveMarkups(range) {
-    let {
-      editor: { post },
-    } = this
+  _readActiveMarkups(range: Range) {
+    const { editor } = this
+    const { post } = editor!
+
     return post.markupsInRange(range)
   }
 
-  _readSectionAttributes(sections) {
+  _readSectionAttributes(sections: Section[]) {
     return sections.reduce((sectionAttributes, s) => {
-      let attributes = s.isNested ? s.parent.attributes : s.attributes
-      Object.keys(attributes || {}).forEach(attrName => {
+      // eslint-disable-next-line dot-notation
+      let attributes: Dict<string> = (s.isNested ? s.parent!['attributes'] : s['attributes']) || {}
+
+      Object.keys(attributes).forEach(attrName => {
         let camelizedAttrName = attrName.replace(/^data-md-/, '')
         let attrValue = attributes[attrName]
+
         sectionAttributes[camelizedAttrName] = sectionAttributes[camelizedAttrName] || []
+
         if (!contains(sectionAttributes[camelizedAttrName], attrValue)) {
           sectionAttributes[camelizedAttrName].push(attrValue)
         }
       })
+
       return sectionAttributes
     }, {})
   }
 
-  _removeActiveMarkup(markup) {
-    let index = this.state.activeMarkups.indexOf(markup)
-    this.state.activeMarkups.splice(index, 1)
+  _removeActiveMarkup(markup: Markup) {
+    let index = this.state!.activeMarkups.indexOf(markup)
+    this.state!.activeMarkups.splice(index, 1)
   }
 
-  _addActiveMarkup(markup) {
-    this.state.activeMarkups.push(markup)
+  _addActiveMarkup(markup: Markup) {
+    this.state!.activeMarkups.push(markup)
   }
 }

@@ -1,13 +1,13 @@
 import RenderNode from '../models/render-node'
 import ElementMap from '../utils/element-map'
-import Section from './_section'
 import { PostNode } from './post-node-builder'
+import Post from './post'
 
 export default class RenderTree {
   _rootNode: RenderNode
   _elements: ElementMap<RenderNode>
 
-  constructor(rootPostNode: Section) {
+  constructor(rootPostNode: Post) {
     this._rootNode = this.buildRenderNode(rootPostNode)
     this._elements = new ElementMap()
   }

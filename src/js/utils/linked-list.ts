@@ -1,4 +1,5 @@
 import assert from './assert'
+import { Maybe } from './types'
 
 const PARENT_PROP = '__parent'
 
@@ -162,7 +163,7 @@ export default class LinkedList<T extends LinkedListItem<T>> {
     return result
   }
 
-  walk(startItem: T | undefined, endItem: T | undefined, callback: ItemCallback<T>) {
+  walk(startItem: Maybe<T>, endItem: Maybe<T>, callback: ItemCallback<T>) {
     let item: T | null = startItem || this.head
     while (item) {
       callback(item)
@@ -173,7 +174,7 @@ export default class LinkedList<T extends LinkedListItem<T>> {
     }
   }
 
-  readRange(startItem?: T, endItem?: T) {
+  readRange(startItem?: Maybe<T>, endItem?: Maybe<T>) {
     let items: T[] = []
     this.walk(startItem, endItem, item => {
       items.push(item)

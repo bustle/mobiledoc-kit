@@ -1,5 +1,7 @@
 import { entries } from '../utils/object-utils'
 import { contains } from '../utils/array-utils'
+import { assertType } from '../utils/assert'
+import Section from './_section'
 
 export const VALID_ATTRIBUTES = ['data-md-text-align']
 
@@ -46,4 +48,9 @@ export function attributable<T extends unknown>(Base: AbstractConstructor<T>): C
       entries(this.attributes).forEach(([k, v]) => cb(k, v))
     }
   } as Constructor<T & Attributable>
+}
+
+export function expectAttributable(section: Section): Section & Attributable {
+  assertType<Section & Attributable>('expected section to be attributable', section, 'attributes' in section)
+  return section
 }

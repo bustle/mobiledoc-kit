@@ -2,7 +2,7 @@ import assert from '../../utils/assert'
 import { Option } from '../../utils/types'
 import { Type } from '../../models/types'
 import Post from '../../models/post'
-import Editor from '../editor'
+import PostEditor from '../post'
 import PostNodeBuilder from '../../models/post-node-builder'
 import { Position } from '../../utils/cursor'
 import Section, { WithParent } from '../../models/_section'
@@ -20,7 +20,7 @@ const NESTED_MARKERABLE = 'nested_markerable'
 const NON_MARKERABLE = 'non_markerable'
 
 class Visitor {
-  postEditor: Editor
+  postEditor: PostEditor
   builder: PostNodeBuilder
   _post: Post
   _hasInsertedFirstLeafSection: boolean
@@ -285,10 +285,10 @@ class Visitor {
 }
 
 export default class Inserter {
-  postEditor: Editor
+  postEditor: PostEditor
   post: Post
 
-  constructor(postEditor: Editor, post: Post) {
+  constructor(postEditor: PostEditor, post: Post) {
     this.postEditor = postEditor
     this.post = post
   }

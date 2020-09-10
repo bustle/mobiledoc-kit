@@ -2,7 +2,7 @@ import Marker, { HIGH_SURROGATE_RANGE, LOW_SURROGATE_RANGE } from '../../models/
 import RenderTree from '../../models/render-tree'
 import { isTextNode, containsNode, isElementNode } from '../dom-utils'
 import { findOffsetInNode } from '../selection-utils'
-import { DIRECTION } from '../key'
+import { Direction } from '../key'
 import assert, { assertType } from '../assert'
 import Range from './range'
 import Markerable from '../../models/_markerable'
@@ -11,7 +11,7 @@ import RenderNode from '../../models/render-node'
 import Card, { isCardSection } from '../../models/card'
 import Markuperable from '../markuperable'
 
-const { FORWARD, BACKWARD } = DIRECTION
+const { FORWARD, BACKWARD } = Direction
 
 // generated via http://xregexp.com/ to cover chars that \w misses
 // (new XRegExp('\\p{Alphabetic}|[0-9]|_|:')).toString()

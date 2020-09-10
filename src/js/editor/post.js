@@ -1,7 +1,7 @@
 import Position from '../utils/cursor/position'
 import Range from 'mobiledoc-kit/utils/cursor/range'
 import { detect, forEach, reduce, filter, values, commonItems } from '../utils/array-utils'
-import { DIRECTION } from '../utils/key'
+import { Direction } from '../utils/key'
 import LifecycleCallbacks from '../models/lifecycle-callbacks'
 import assert from '../utils/assert'
 import { normalizeTagName } from '../utils/dom-utils'
@@ -9,7 +9,7 @@ import PostInserter from './post/post-inserter'
 import deprecate from 'mobiledoc-kit/utils/deprecate'
 import toRange from 'mobiledoc-kit/utils/to-range'
 
-const { FORWARD, BACKWARD } = DIRECTION
+const { FORWARD, BACKWARD } = Direction
 
 function isListSectionTagName(tagName) {
   return tagName === 'ul' || tagName === 'ol'
@@ -366,7 +366,7 @@ class PostEditor {
    * @public
    * @deprecated after v0.10.3
    */
-  deleteFrom(position, direction = DIRECTION.BACKWARD) {
+  deleteFrom(position, direction = Direction.BACKWARD) {
     deprecate(
       "`postEditor#deleteFrom is deprecated. Use `deleteAtPosition(position, direction=BACKWARD, {unit}={unit: 'char'})` instead"
     )
@@ -395,8 +395,8 @@ class PostEditor {
    * @param {String} [options.unit="char"] The unit of deletion ("word" or "char")
    * @return {Position}
    */
-  deleteAtPosition(position, direction = DIRECTION.BACKWARD, { unit } = { unit: 'char' }) {
-    if (direction === DIRECTION.BACKWARD) {
+  deleteAtPosition(position, direction = Direction.BACKWARD, { unit } = { unit: 'char' }) {
+    if (direction === Direction.BACKWARD) {
       return this._deleteAtPositionBackward(position, unit)
     } else {
       return this._deleteAtPositionForward(position, unit)

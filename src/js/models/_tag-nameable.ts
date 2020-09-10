@@ -1,5 +1,5 @@
 import { normalizeTagName } from '../utils/dom-utils'
-import assert from '../utils/assert'
+import assert, { assertType } from '../utils/assert'
 import Section from './_section'
 
 type Constructor<T = {}> = new (...args: any[]) => T
@@ -31,4 +31,9 @@ export function tagNameable(Base: Constructor<Section>) {
 
 export function isTagNameable(section: Section): section is Section & TagNameable {
   return 'tagName' in section
+}
+
+export function expectTagNameable(section: Section): Section & TagNameable {
+  assertType<Section & TagNameable>('expected section to be tag nameable', section, isTagNameable(section))
+  return section
 }

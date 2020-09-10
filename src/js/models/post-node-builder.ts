@@ -17,6 +17,7 @@ import { objectToSortedKVArray } from '../utils/array-utils'
 import assert from '../utils/assert'
 import Markuperable from '../utils/markuperable'
 import Section from './_section'
+import { Cloneable } from './_cloneable'
 
 function cacheKey(tagName, attributes) {
   return `${normalizeTagName(tagName)}-${objectToSortedKVArray(attributes).join('-')}`
@@ -45,7 +46,7 @@ export default class PostNodeBuilder {
   /**
    * @return {Post} A new, blank post
    */
-  createPost(sections = []): Post {
+  createPost(sections: Cloneable<Section>[] = []): Post {
     const post = new Post()
     post.builder = this
 
@@ -169,4 +170,4 @@ export default class PostNodeBuilder {
   }
 }
 
-export type PostNode = Section | Markuperable | Marker
+export type PostNode = Post | Section | Markuperable | Marker
