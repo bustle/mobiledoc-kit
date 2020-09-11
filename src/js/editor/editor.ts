@@ -193,6 +193,7 @@ export default class Editor implements EditorOptions {
   unknownAtomHandler!: CardRenderHook
   mobiledoc!: Option<Mobiledoc>
   html!: Option<string>
+  text!: Option<string>
   tooltipPlugin!: TooltipPlugin
 
   _views: View[]

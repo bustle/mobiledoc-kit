@@ -10,6 +10,7 @@ import { tagNameable } from './_tag-nameable'
 import { Type } from './types'
 import { Cloneable } from './_cloneable'
 import Markuperable from '../utils/markuperable'
+import Markup from './markup'
 
 type MarkerableType = Type.LIST_ITEM | Type.MARKUP_SECTION
 
@@ -228,7 +229,7 @@ export default abstract class Markerable extends tagNameable(Section) implements
   }
 
   markupsInRange(range: Range) {
-    const markups = new Set()
+    const markups = new Set<Markup>()
     this._markersInRange(range, marker => {
       marker.markups.forEach(m => markups.add(m))
     })

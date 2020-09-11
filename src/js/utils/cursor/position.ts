@@ -10,6 +10,7 @@ import Section from '../../models/_section'
 import RenderNode from '../../models/render-node'
 import Card, { isCardSection } from '../../models/card'
 import Markuperable from '../markuperable'
+import { isAtom } from '../../models/atom'
 
 const { FORWARD, BACKWARD } = Direction
 
@@ -421,8 +422,8 @@ export default class Position {
         // to be on the wrapper element itself
         let renderNode = renderTree.getElementRenderNode(elementNode)
         let postNode = renderNode && renderNode.postNode
-        if (postNode && (postNode as Markuperable).isAtom) {
-          let sectionOffset = (section as Markerable).offsetOfMarker(postNode as Marker)
+        if (postNode && isAtom(postNode)) {
+          let sectionOffset = (section as Markerable).offsetOfMarker(postNode)
           if (offset > 1) {
             // we are on the tail side of the atom
             sectionOffset += postNode.length
