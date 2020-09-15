@@ -49,8 +49,8 @@ export default class Range {
     headOffset: number,
     tailSection: Markerable = headSection,
     tailOffset = headOffset,
-    direction = null
-  ) {
+    direction: Option<Direction> = null
+  ): Range {
     return new Range(new Position(headSection, headOffset), new Position(tailSection, tailOffset), direction)
   }
 

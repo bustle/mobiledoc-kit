@@ -77,11 +77,11 @@ export default class LinkedList<T extends LinkedListItem<T>> {
     )
   }
 
-  insertBefore(item: T, nextItem: T | null) {
+  insertBefore(item: T, nextItem?: T | null) {
     this._ensureItemIsNotInList(item)
     this.adoptItem(item)
 
-    let insertPos
+    let insertPos: 'middle' | 'start' | 'end'
     if (nextItem && nextItem.prev) {
       insertPos = 'middle'
     } else if (nextItem) {
@@ -101,7 +101,7 @@ export default class LinkedList<T extends LinkedListItem<T>> {
         break
       case 'middle': {
         let prevItem = nextItem!.prev
-        item.next = nextItem
+        item.next = nextItem!
         item.prev = prevItem
         nextItem!.prev = item
         prevItem!.next = item
