@@ -27,7 +27,7 @@ import {
   KeyCommand,
   CompiledKeyCommand,
 } from './key-commands'
-import Card, { CardMode } from '../models/card'
+import Card, { CardMode, CardPayload } from '../models/card'
 import assert from '../utils/assert'
 import MutationHandler from '../editor/mutation-handler'
 import EditHistory from '../editor/edit-history'
@@ -47,7 +47,7 @@ import { AtomData } from '../models/atom-node'
 import { Option, Maybe, Dict } from '../utils/types'
 import Markup from '../models/markup'
 import View from '../views/view'
-import Atom from '../models/atom'
+import Atom, { AtomPayload } from '../models/atom'
 import Section from '../models/_section'
 
 // This export may later be deprecated, but re-export it from the renderer here
@@ -483,7 +483,7 @@ export default class Editor implements EditorOptions {
 
     let { range } = this
     this.run(postEditor => {
-      let cursorSection: Section
+      let cursorSection: Option<Section>
       if (!range.isCollapsed) {
         let nextPosition = postEditor.deleteRange(range)
         cursorSection = nextPosition.section
@@ -506,7 +506,7 @@ export default class Editor implements EditorOptions {
       }
 
       cursorSection = postEditor.splitSection(range.head)[1]
-      postEditor.setRange(cursorSection.headPosition())
+      postEditor.setRange(cursorSection!.headPosition())
     })
   }
 
@@ -1194,7 +1194,7 @@ export default class Editor implements EditorOptions {
    * @return {Atom} The inserted atom.
    * @public
    */
-  insertAtom(atomName: string, atomText: string = '', atomPayload: unknown = {}): Maybe<Atom> {
+  insertAtom(atomName: string, atomText: string = '', atomPayload: AtomPayload = {}): Maybe<Atom> {
     if (!this.hasCursor()) {
       return
     }
@@ -1230,7 +1230,7 @@ export default class Editor implements EditorOptions {
    * @return {Card} The inserted Card section.
    * @public
    */
-  insertCard(cardName: string, cardPayload: unknown = {}, inEditMode: boolean = false): Maybe<Card> {
+  insertCard(cardName: string, cardPayload: CardPayload = {}, inEditMode: boolean = false): Maybe<Card> {
     if (!this.hasCursor()) {
       return
     }

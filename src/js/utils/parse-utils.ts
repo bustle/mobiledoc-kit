@@ -109,13 +109,13 @@ export function setClipboardData(event: ClipboardEvent, { mobiledoc, html, text 
   let { clipboardData: nonstandardClipboardData } = window
 
   if (clipboardData && clipboardData.setData) {
-    clipboardData.setData(MIME_TEXT_HTML, html)
-    clipboardData.setData(MIME_TEXT_PLAIN, text)
+    clipboardData.setData(MIME_TEXT_HTML, html!)
+    clipboardData.setData(MIME_TEXT_PLAIN, text!)
   } else if (nonstandardClipboardData && nonstandardClipboardData.setData) {
     // The Internet Explorers (including Edge) have a non-standard way of interacting with the
     // Clipboard API (see http://caniuse.com/#feat=clipboard). In short, they expose a global window.clipboardData
     // object instead of the per-event event.clipboardData object on the other browsers.
-    nonstandardClipboardData.setData(NONSTANDARD_IE_TEXT_TYPE, html)
+    nonstandardClipboardData.setData(NONSTANDARD_IE_TEXT_TYPE, html!)
   }
 }
 

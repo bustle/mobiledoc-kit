@@ -170,9 +170,9 @@ class Visitor {
   _breakListAtCursor() {
     assert('Cannot _splitParentSection if cursor position is not nested', this._isNested)
 
-    let list = this.cursorSection.parent,
-      position = this.cursorPosition,
-      blank = this.builder.createMarkupSection()
+    const list = this.cursorSection.parent! as ListSection
+    const position = this.cursorPosition
+    const blank = this.builder.createMarkupSection()
 
     let [pre, post] = this.postEditor._splitListAtPosition(list, position)
 
@@ -214,9 +214,10 @@ class Visitor {
   // Inserts a blank section before/after the cursor,
   // depending on cursor position.
   _breakNonMarkerableAtCursor() {
-    let collection = this._post.sections,
-      blank = this.builder.createMarkupSection(),
-      reference = this.cursorPosition.isHead() ? this.cursorSection : this.cursorSection.next
+    const collection = this._post.sections
+    const blank = this.builder.createMarkupSection()
+    const reference = this.cursorPosition.isHead() ? this.cursorSection : this.cursorSection.next
+
     this.postEditor.insertSectionBefore(collection, blank, reference)
     this.cursorPosition = blank.tailPosition()
   }
@@ -224,7 +225,7 @@ class Visitor {
   _breakMarkerableAtCursor() {
     let [pre] = this.postEditor.splitSection(this.cursorPosition)
 
-    this.cursorPosition = pre.tailPosition()
+    this.cursorPosition = pre!.tailPosition()
   }
 
   _replaceSection(section: Section, newSections: Section[]) {

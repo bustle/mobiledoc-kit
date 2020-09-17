@@ -1,4 +1,4 @@
-import Atom from './atom'
+import Atom, { AtomPayload } from './atom'
 import Post from './post'
 import MarkupSection from './markup-section'
 import ListSection from './list-section'
@@ -6,7 +6,7 @@ import ListItem from './list-item'
 import ImageSection from './image'
 import Marker from './marker'
 import Markup from './markup'
-import Card from './card'
+import Card, { CardPayload } from './card'
 
 import { LIST_ITEM_TYPE, MARKUP_SECTION_TYPE, Type } from './types'
 import { DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME } from './markup-section'
@@ -121,7 +121,7 @@ export default class PostNodeBuilder {
    * @param {Object} [payload={}]
    * @return {CardSection}
    */
-  createCardSection(name: string, payload: {} = {}): Card {
+  createCardSection(name: string, payload: CardPayload = {}): Card {
     const card = new Card(name, payload)
     card.builder = this
     return card
@@ -145,7 +145,7 @@ export default class PostNodeBuilder {
    * @param {Markup[]} [markups=[]]
    * @return {Atom}
    */
-  createAtom(name: string, value: string = '', payload: object = {}, markups: Markup[] = []): Atom {
+  createAtom(name: string, value: string = '', payload: AtomPayload = {}, markups: Markup[] = []): Atom {
     const atom = new Atom(name, value, payload, markups)
     atom.builder = this
     return atom

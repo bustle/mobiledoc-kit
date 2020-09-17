@@ -4,7 +4,7 @@ import mobiledocParsers from '../parsers/mobiledoc'
 import FixedQueue from '../utils/fixed-queue'
 import { Option } from '../utils/types'
 import Editor from './editor'
-import PostEditor from './post'
+import PostEditor, { EditAction } from './post'
 import { Mobiledoc } from '../renderers/mobiledoc'
 
 function findLeafSectionAtIndex(post: Post, index: number) {
@@ -21,14 +21,14 @@ function findLeafSectionAtIndex(post: Post, index: number) {
 export class Snapshot {
   takenAt: number
   editor: Editor
-  editAction: Option<null>
+  editAction: Option<EditAction>
   mobiledoc: Mobiledoc
   range!: {
     head: [number, number]
     tail: [number, number]
   }
 
-  constructor(takenAt: number, editor: Editor, editAction = null) {
+  constructor(takenAt: number, editor: Editor, editAction: Option<EditAction> = null) {
     this.mobiledoc = editor.serialize()
     this.editor = editor
     this.editAction = editAction
@@ -63,7 +63,7 @@ export class Snapshot {
     }
   }
 
-  groupsWith(groupingTimeout: number, editAction: null, takenAt: number) {
+  groupsWith(groupingTimeout: number, editAction: Option<EditAction>, takenAt: number) {
     return editAction !== null && this.editAction === editAction && this.takenAt + groupingTimeout > takenAt
   }
 }
@@ -91,7 +91,7 @@ export default class EditHistory {
     }
   }
 
-  storeSnapshot(editAction = null) {
+  storeSnapshot(editAction: Option<EditAction> = null) {
     let now = Date.now()
     // store pending snapshot
     let pendingSnapshot = this._pendingSnapshot

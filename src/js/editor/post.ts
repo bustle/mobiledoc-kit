@@ -16,12 +16,15 @@ import Section from '../models/_section'
 import Markuperable from '../utils/markuperable'
 import Post from '../models/post'
 import ListSection, { isListSection } from '../models/list-section'
-import { isListItem } from '../models/list-item'
+import ListItem, { isListItem } from '../models/list-item'
 import Card, { isCardSection } from '../models/card'
 import LinkedList from '../utils/linked-list'
 import { Cloneable } from '../models/_cloneable'
 import HasChildSections, { hasChildSections } from '../models/_has-child-sections'
 import { Attributable } from '../models/_attributable'
+import Markup from '../models/markup'
+import { isMarkupSection } from '../models/markup-section'
+import { TagNameable } from '../models/_tag-nameable'
 
 const { FORWARD, BACKWARD } = Direction
 
@@ -48,7 +51,7 @@ const CALLBACK_QUEUES = {
 // There are only two events that we're concerned about for Undo, that is inserting text and deleting content.
 // These are the only two states that go on a "run" and create a combined undo, everything else has it's own
 // deadicated undo.
-const enum EditAction {
+export const enum EditAction {
   INSERT_TEXT = 1,
   DELETE = 2,
 }
@@ -511,7 +514,7 @@ export default class PostEditor {
 
     if (isCardSection(section)) {
       return this._splitCardSection(section, position)
-    } else if (section.isListItem) {
+    } else if (isListItem(section)) {
       let isLastAndBlank = section.isBlank && !section.next
       if (isLastAndBlank) {
         // if is last, replace the item with a blank markup section
@@ -656,9 +659,9 @@ export default class PostEditor {
    * @param {Markup[]} markups
    * @return {Position} position at the end of the inserted text
    */
-  insertTextWithMarkup(position, text, markups = []) {
+  insertTextWithMarkup(position: Position, text: string, markups: Markup[] = []): Maybe<Position> {
     let { section } = position
-    if (!section.isMarkerable) {
+    if (!section!.isMarkerable) {
       return
     }
     let marker = this.builder.createMarker(text, markups)
@@ -673,9 +676,9 @@ export default class PostEditor {
    * @param {String} text
    * @return {Position} position at the end of the inserted text.
    */
-  insertText(position, text) {
+  insertText(position: Position, text: string): Maybe<Position> {
     let { section } = position
-    if (!section.isMarkerable) {
+    if (!section!.isMarkerable) {
       return
     }
     let markups = position.marker && position.marker.markups
@@ -683,16 +686,16 @@ export default class PostEditor {
     return this.insertTextWithMarkup(position, text, markups)
   }
 
-  _replaceSection(section, newSections) {
+  _replaceSection(section: Section, newSections: Section[]) {
     let nextSection = section.next
-    let collection = section.parent.sections
+    let collection = ((section.parent! as unknown) as HasChildSections).sections
 
     let nextNewSection = newSections[0]
-    if (nextNewSection.isMarkupSection && section.isListItem) {
+    if (isMarkupSection(nextNewSection) && isListItem(section)) {
       // put the new section after the ListSection (section.parent)
       // instead of after the ListItem
-      collection = section.parent.parent.sections
-      nextSection = section.parent.next
+      collection = ((section.parent!.parent! as unknown) as HasChildSections).sections
+      nextSection = section.parent!.next
     }
 
     newSections.forEach(s => this.insertSectionBefore(collection, s, nextSection))
@@ -718,7 +721,7 @@ export default class PostEditor {
    * @param {Markup} markup A markup post abstract node
    * @public
    */
-  addMarkupToRange(range, markup) {
+  addMarkupToRange(range: Range, markup: Markup) {
     if (range.isCollapsed) {
       return
     }
@@ -770,7 +773,7 @@ export default class PostEditor {
    * a function that returns true when passed a markup that should be removed
    * @private
    */
-  removeMarkupFromRange(range, markupOrMarkupCallback) {
+  removeMarkupFromRange(range: Range, markupOrMarkupCallback: ((markup: Markup) => boolean) | Markup) {
     if (range.isCollapsed) {
       return
     }
@@ -804,7 +807,7 @@ export default class PostEditor {
    * @param {Range|Position} range in which to toggle. Defaults to current editor range.
    * @public
    */
-  toggleMarkup(markupOrMarkupString, range = this._range) {
+  toggleMarkup(markupOrMarkupString: Markup | string, range: Range | Position = this._range) {
     range = toRange(range)
     const markup =
       typeof markupOrMarkupString === 'string' ? this.builder.createMarkup(markupOrMarkupString) : markupOrMarkupString
@@ -923,20 +926,20 @@ export default class PostEditor {
     this.setRange(range)
   }
 
-  _isSameSectionType(section, sectionTagName) {
-    return section.isListItem ? section.parent.tagName === sectionTagName : section.tagName === sectionTagName
+  _isSameSectionType(section: Section & TagNameable, sectionTagName: string) {
+    return isListItem(section) ? section.parent!.tagName === sectionTagName : section.tagName === sectionTagName
   }
 
   /**
    * @param {Markerable} section
    * @private
    */
-  changeSectionTagName(section, newTagName) {
+  changeSectionTagName(section: Section & TagNameable, newTagName: string) {
     assert('Cannot pass non-markerable section to `changeSectionTagName`', section.isMarkerable)
 
     if (isListSectionTagName(newTagName)) {
       return this._changeSectionToListItem(section, newTagName)
-    } else if (section.isListItem) {
+    } else if (isListItem(section)) {
       return this._changeSectionFromListItem(section, newTagName)
     } else {
       section.tagName = newTagName
@@ -954,7 +957,7 @@ export default class PostEditor {
    * @return {Array} the pre-item and post-item on either side of the split
    * @private
    */
-  _splitListItem(item, position) {
+  _splitListItem(item: ListItem, position: Position): [ListItem, ListItem] {
     let { section, offset } = position
     assert('Cannot split list item at position that does not include item', item === section)
 
@@ -984,12 +987,12 @@ export default class PostEditor {
    *
    * @private
    */
-  _splitListAtPosition(list, position) {
-    assert('Cannot split list at position not in list', position.section.parent === list)
+  _splitListAtPosition(list: ListSection, position: Position): [ListSection, ListSection] {
+    assert('Cannot split list at position not in list', position.section!.parent === list)
 
     let positionIsMiddle = !position.isHead() && !position.isTail()
     if (positionIsMiddle) {
-      let item = position.section
+      let item = position.section! as ListItem
       let [pre] = this._splitListItem(item, position)
       position = pre.tailPosition()
     }
@@ -1025,7 +1028,7 @@ export default class PostEditor {
    *
    * @private
    */
-  _splitListAtItem(list, item) {
+  _splitListAtItem(list: ListSection, item: ListItem) {
     let next = list
     let prev = this.builder.createListSection(next.tagName, [], next.attributes)
     let mid = this.builder.createListSection(next.tagName)
@@ -1035,7 +1038,7 @@ export default class PostEditor {
     // as we iterate through it
     let items = next.items.toArray()
     items.forEach(i => {
-      let listToAppend
+      let listToAppend: ListSection
       if (i === item) {
         addToPrev = false
         listToAppend = mid
@@ -1067,10 +1070,10 @@ export default class PostEditor {
     return [prev, mid, next]
   }
 
-  _changeSectionFromListItem(section, newTagName) {
-    assert('Must pass list item to `_changeSectionFromListItem`', section.isListItem)
+  _changeSectionFromListItem(section: Section, newTagName: string) {
+    assertType<ListItem>('Must pass list item to `_changeSectionFromListItem`', section, isListItem(section))
 
-    let listSection = section.parent
+    let listSection = section.parent! as ListSection
     let markupSection = this.builder.createMarkupSection(newTagName)
     markupSection.join(section)
 
@@ -1079,8 +1082,9 @@ export default class PostEditor {
     return markupSection
   }
 
-  _changeSectionToListItem(section, newTagName) {
-    let isAlreadyCorrectListItem = section.isListItem && section.parent.tagName === newTagName
+  _changeSectionToListItem(section: Section, newTagName: string) {
+    let isAlreadyCorrectListItem =
+      section.isListItem && ((section.parent! as unknown) as TagNameable).tagName === newTagName
 
     if (isAlreadyCorrectListItem) {
       return section
@@ -1089,9 +1093,9 @@ export default class PostEditor {
     let listSection = this.builder.createListSection(newTagName)
     listSection.join(section)
 
-    let sectionToReplace
-    if (section.isListItem) {
-      let [, mid] = this._splitListAtItem(section.parent, section)
+    let sectionToReplace: Section
+    if (isListItem(section)) {
+      let [, mid] = this._splitListAtItem(section.parent!, section)
       sectionToReplace = mid
     } else {
       sectionToReplace = section
