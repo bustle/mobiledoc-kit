@@ -48,7 +48,7 @@ import { Option, Maybe, Dict } from '../utils/types'
 import Markup from '../models/markup'
 import View from '../views/view'
 import Atom, { AtomPayload } from '../models/atom'
-import Section from '../models/_section'
+import Section, { isNested } from '../models/_section'
 
 // This export may later be deprecated, but re-export it from the renderer here
 // for consumers that may depend on it.
@@ -1253,8 +1253,8 @@ export default class Editor implements EditorOptions {
       }
 
       let section = position.section!
-      if (section.isNested) {
-        section = section.parent!
+      if (isNested(section)) {
+        section = section.parent
       }
 
       if (section.isBlank) {

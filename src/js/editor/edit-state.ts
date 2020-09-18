@@ -160,7 +160,7 @@ export default class EditState {
   _readSectionAttributes(sections: Section[]) {
     return sections.reduce((sectionAttributes, s) => {
       // eslint-disable-next-line dot-notation
-      let attributes: Dict<string> = (s.isNested ? s.parent!['attributes'] : s['attributes']) || {}
+      let attributes: Dict<string> = (s.isNested ? s.parent['attributes'] : s['attributes']) || {}
 
       Object.keys(attributes).forEach(attrName => {
         let camelizedAttrName = attrName.replace(/^data-md-/, '')

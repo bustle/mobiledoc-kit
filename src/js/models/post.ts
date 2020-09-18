@@ -6,7 +6,7 @@ import Position from '../utils/cursor/position'
 import Range from '../utils/cursor/range'
 import assert from '../utils/assert'
 import Markerable, { isMarkerable } from './_markerable'
-import Section from './_section'
+import Section, { isNested } from './_section'
 import PostNodeBuilder from './post-node-builder'
 import ListSection, { isListSection } from './list-section'
 import ListItem, { isListItem } from './list-item'
@@ -34,9 +34,9 @@ export default class Post implements HasChildSections<Cloneable<Section>> {
   renderNode!: RenderNode
 
   constructor() {
-    this.sections = new LinkedList<any>({
-      adoptItem: s => (s.post = s.parent = this),
-      freeItem: s => (s.post = s.parent = null),
+    this.sections = new LinkedList({
+      adoptItem: s => (s.post = s._parent = this),
+      freeItem: s => (s.post = s._parent = null),
     })
   }
   /**
@@ -192,11 +192,11 @@ export default class Post implements HasChildSections<Cloneable<Section>> {
       } else {
         assert('Cannot determine next section from non-leaf-section', false)
       }
-    } else if (section.isNested) {
+    } else if (isNested(section)) {
       // if there is no section after this, but this section is a child
       // (e.g. a ListItem inside a ListSection), check for a markerable
       // section after its parent
-      return this._nextLeafSection(section.parent!)
+      return this._nextLeafSection(section.parent)
     }
   }
 
@@ -220,7 +220,7 @@ export default class Post implements HasChildSections<Cloneable<Section>> {
           if (listParent) {
             sectionParent = null
           } else {
-            listParent = builder.createListSection((section.parent! as ListSection).tagName)
+            listParent = builder.createListSection(section.parent.tagName)
             post.sections.append(listParent)
             sectionParent = null
           }

@@ -5,7 +5,7 @@ import Post from '../../models/post'
 import PostEditor from '../post'
 import PostNodeBuilder from '../../models/post-node-builder'
 import { Position } from '../../utils/cursor'
-import Section, { WithParent } from '../../models/_section'
+import Section, { WithParent, NestedSection } from '../../models/_section'
 import MarkupSection from '../../models/markup-section'
 import ListSection from '../../models/list-section'
 import ListItem from '../../models/list-item'
@@ -155,7 +155,7 @@ class Visitor {
   _breakNestedAtCursor() {
     assert('Cannot call _breakNestedAtCursor if not nested', this._isNested)
 
-    let parent = this.cursorSection.parent!
+    let parent = (this.cursorSection as NestedSection).parent
     let cursorAtEndOfList = this.cursorPosition.isEqual(parent.tailPosition())
 
     if (cursorAtEndOfList) {
@@ -170,7 +170,7 @@ class Visitor {
   _breakListAtCursor() {
     assert('Cannot _splitParentSection if cursor position is not nested', this._isNested)
 
-    const list = this.cursorSection.parent! as ListSection
+    const list = this.cursorSection.parent as ListSection
     const position = this.cursorPosition
     const blank = this.builder.createMarkupSection()
 
@@ -183,7 +183,7 @@ class Visitor {
   }
 
   _wrapNestedSection(section: ListItem) {
-    let tagName = section.parent!.tagName
+    let tagName = section.parent.tagName
     let parent = this.builder.createListSection(tagName)
     parent.items.append(section.clone())
     return parent
@@ -229,7 +229,7 @@ class Visitor {
   }
 
   _replaceSection(section: Section, newSections: Section[]) {
-    assert('Cannot replace section that does not have parent.sections', hasChildSections(section.parent!))
+    assert('Cannot replace section that does not have parent.sections', hasChildSections(section.parent))
     assert('Must pass enumerable to _replaceSection', !!newSections.forEach)
 
     let collection = section.parent.sections
@@ -244,10 +244,7 @@ class Visitor {
   }
 
   _insertSectionBefore(section: Section, reference?: Option<Section>) {
-    assert(
-      'Cannot insert into section that does not have parent.sections',
-      hasChildSections(this.cursorSection.parent!)
-    )
+    assert('Cannot insert into section that does not have parent.sections', hasChildSections(this.cursorSection.parent))
     let collection = this.cursorSection.parent.sections
     this.postEditor.insertSectionBefore(collection, section, reference)
 

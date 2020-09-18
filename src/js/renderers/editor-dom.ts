@@ -244,7 +244,7 @@ function attachRenderNodeElementToDOM(renderNode: RenderNode, originalElement: O
 
   if (originalElement) {
     // RenderNode has already rendered
-    let parentElement = renderNode.parent!.element!
+    let parentElement = renderNode.parent.element!
     parentElement.replaceChild(element, originalElement)
   } else {
     // RenderNode has not yet been rendered

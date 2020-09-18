@@ -522,7 +522,7 @@ export default class PostEditor {
         let collection = this.editor.post.sections
         let blank = this.builder.createMarkupSection()
         this.removeSection(section)
-        this.insertSectionBefore(collection, blank, parent!.next)
+        this.insertSectionBefore(collection, blank, parent.next)
 
         return [null, blank]
       } else {
@@ -688,14 +688,14 @@ export default class PostEditor {
 
   _replaceSection(section: Section, newSections: Section[]) {
     let nextSection = section.next
-    let collection = ((section.parent! as unknown) as HasChildSections).sections
+    let collection = ((section.parent as unknown) as HasChildSections).sections
 
     let nextNewSection = newSections[0]
     if (isMarkupSection(nextNewSection) && isListItem(section)) {
       // put the new section after the ListSection (section.parent)
       // instead of after the ListItem
-      collection = ((section.parent!.parent! as unknown) as HasChildSections).sections
-      nextSection = section.parent!.next
+      collection = ((section.parent.parent as unknown) as HasChildSections).sections
+      nextSection = section.parent.next
     }
 
     newSections.forEach(s => this.insertSectionBefore(collection, s, nextSection))
@@ -916,7 +916,7 @@ export default class PostEditor {
     let attribute = `data-md-${key}`
 
     post.walkMarkerableSections(range, section => {
-      const cbSection: Attributable = isListItem(section) ? section.parent! : ((section as unknown) as Attributable)
+      const cbSection: Attributable = isListItem(section) ? section.parent : ((section as unknown) as Attributable)
 
       if (cb(cbSection, attribute) === true) {
         this._markDirty(section)
@@ -927,7 +927,7 @@ export default class PostEditor {
   }
 
   _isSameSectionType(section: Section & TagNameable, sectionTagName: string) {
-    return isListItem(section) ? section.parent!.tagName === sectionTagName : section.tagName === sectionTagName
+    return isListItem(section) ? section.parent.tagName === sectionTagName : section.tagName === sectionTagName
   }
 
   /**
@@ -1060,7 +1060,7 @@ export default class PostEditor {
     // Remove possibly blank prev/next lists
     this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, () => {
       ;[prev, next].forEach(_list => {
-        let isAttached = !!_list.parent
+        let isAttached = !!_list._parent
         if (_list.isBlank && isAttached) {
           this.removeSection(_list)
         }
@@ -1073,7 +1073,7 @@ export default class PostEditor {
   _changeSectionFromListItem(section: Section, newTagName: string) {
     assertType<ListItem>('Must pass list item to `_changeSectionFromListItem`', section, isListItem(section))
 
-    let listSection = section.parent! as ListSection
+    let listSection = section.parent as ListSection
     let markupSection = this.builder.createMarkupSection(newTagName)
     markupSection.join(section)
 
@@ -1084,7 +1084,7 @@ export default class PostEditor {
 
   _changeSectionToListItem(section: Section, newTagName: string) {
     let isAlreadyCorrectListItem =
-      section.isListItem && ((section.parent! as unknown) as TagNameable).tagName === newTagName
+      section.isListItem && ((section.parent as unknown) as TagNameable).tagName === newTagName
 
     if (isAlreadyCorrectListItem) {
       return section
@@ -1095,7 +1095,7 @@ export default class PostEditor {
 
     let sectionToReplace: Section
     if (isListItem(section)) {
-      let [, mid] = this._splitListAtItem(section.parent!, section)
+      let [, mid] = this._splitListAtItem(section.parent, section)
       sectionToReplace = mid
     } else {
       sectionToReplace = section
@@ -1130,7 +1130,7 @@ export default class PostEditor {
     beforeSection?: Option<Section>
   ) {
     ;(collection as LinkedList<Section>).insertBefore(section, beforeSection)
-    this._markDirty(section.parent!)
+    this._markDirty(section.parent)
   }
 
   /**
@@ -1184,7 +1184,7 @@ export default class PostEditor {
    * @public
    */
   removeSection(section: Section) {
-    let parent = section.parent!
+    let parent = section.parent
 
     assertType<HasChildSections>('expected section to have child sections', parent, hasChildSections(parent))
 
@@ -1213,7 +1213,7 @@ export default class PostEditor {
     this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, () => {
       // if the list is attached and blank after we do other rendering stuff,
       // remove it
-      let isAttached = !!listSection.parent
+      let isAttached = !!listSection._parent
       if (isAttached && listSection.isBlank) {
         this.removeSection(listSection)
       }
