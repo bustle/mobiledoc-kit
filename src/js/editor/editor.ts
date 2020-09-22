@@ -576,7 +576,7 @@ export default class Editor implements EditorOptions {
     this._postDidChange()
   }
 
-  _reparseSections(sections = []) {
+  _reparseSections(sections: Section[] = []) {
     let currentRange: Maybe<Range>
 
     sections.forEach(section => {

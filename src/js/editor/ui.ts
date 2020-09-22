@@ -4,8 +4,11 @@
 
 import Position from '../utils/cursor/position'
 import Range from '../utils/cursor/range'
+import Editor from './editor'
 
-let defaultShowPrompt = (message, defaultValue, callback) => callback(window.prompt(message, defaultValue))
+type ShowPromptCallback = (message: string, defaultValue: string, callback: (value: string | null) => void) => void
+const defaultShowPrompt: ShowPromptCallback = (message, defaultValue, callback) =>
+  callback(window.prompt(message, defaultValue))
 
 /**
  * @callback promptCallback
@@ -44,7 +47,7 @@ let defaultShowPrompt = (message, defaultValue, callback) => callback(window.pro
  * });
  * @public
  */
-export function toggleLink(editor, showPrompt = defaultShowPrompt) {
+export function toggleLink(editor: Editor, showPrompt: ShowPromptCallback = defaultShowPrompt) {
   if (editor.range.isCollapsed) {
     return
   }
@@ -83,14 +86,18 @@ export function toggleLink(editor, showPrompt = defaultShowPrompt) {
  *
  * @public
  */
-export function editLink(target, editor, showPrompt = defaultShowPrompt) {
+export function editLink(
+  target: HTMLAnchorElement,
+  editor: Editor,
+  showPrompt: ShowPromptCallback = defaultShowPrompt
+) {
   showPrompt('Enter a URL', target.href, url => {
     if (!url) {
       return
     }
 
-    const position = Position.fromNode(editor._renderTree, target.firstChild)
-    const range = new Range(position, new Position(position.section, position.offset + target.textContent.length))
+    const position = Position.fromNode(editor._renderTree, target.firstChild!)
+    const range = new Range(position, new Position(position.section, position.offset + target.textContent!.length))
 
     editor.run(post => {
       let markup = editor.builder.createMarkup('a', { href: url })

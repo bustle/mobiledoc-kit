@@ -25,7 +25,7 @@ function findParentSectionFromNode(renderTree: RenderTree, node: Node) {
   return renderNode && (renderNode.postNode as Section)
 }
 
-function findOffsetInMarkerable(markerable: Markerable, node: Node, offset: number) {
+function findOffsetInMarkerable(markerable: Markerable, node: Node, offset: number = 0) {
   let offsetInSection = 0
   let marker = markerable.markers.head
   while (marker) {
@@ -54,7 +54,7 @@ function assertHasRenderNode(renderNode: RenderNode | null): asserts renderNode 
   }
 }
 
-function findOffsetInSection(section: Section, node: Node, offset: number) {
+function findOffsetInSection(section: Section, node: Node, offset?: number) {
   if (isMarkerable(section)) {
     return findOffsetInMarkerable(section, node, offset)
   } else {
@@ -358,7 +358,7 @@ export default class Position {
     }
   }
 
-  static fromNode(renderTree: RenderTree, node: Node, offset: number) {
+  static fromNode(renderTree: RenderTree, node: Node, offset?: number) {
     if (isTextNode(node)) {
       return Position.fromTextNode(renderTree, node, offset)
     } else if (isElementNode(node)) {
@@ -368,22 +368,22 @@ export default class Position {
     assert('Positions can only be created from text nodes or elements', false)
   }
 
-  static fromTextNode(renderTree: RenderTree, textNode: Text, offsetInNode: number) {
+  static fromTextNode(renderTree: RenderTree, textNode: Text, offsetInNode?: number) {
     const renderNode = renderTree.getElementRenderNode(textNode)
-    let section, offsetInSection
+    let section: Section, offsetInSection: number
 
     if (renderNode) {
       const marker = renderNode.postNode as Marker
-      section = marker.section
+      section = marker.section!
 
       assert(`Could not find parent section for mapped text node "${textNode.textContent}"`, !!section)
-      offsetInSection = section.offsetOfMarker(marker, offsetInNode)
+      offsetInSection = marker.section!.offsetOfMarker(marker, offsetInNode)
     } else {
       // all text nodes should be rendered by markers except:
       //   * text nodes inside cards
       //   * text nodes created by the browser during text input
       // both of these should have rendered parent sections, though
-      section = findParentSectionFromNode(renderTree, textNode)
+      section = findParentSectionFromNode(renderTree, textNode)!
       assert(`Could not find parent section for un-mapped text node "${textNode.textContent}"`, !!section)
 
       offsetInSection = findOffsetInSection(section, textNode, offsetInNode)
@@ -392,7 +392,7 @@ export default class Position {
     return new Position(section, offsetInSection)
   }
 
-  static fromElementNode(renderTree: RenderTree, elementNode: Element, offset: number) {
+  static fromElementNode(renderTree: RenderTree, elementNode: Element, offset: number = 0) {
     let position
 
     // The browser may change the reported selection to equal the editor's root
