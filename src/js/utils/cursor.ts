@@ -44,7 +44,7 @@ class Cursor {
   /**
    * @return {Boolean} Can the cursor be on this element?
    */
-  isAddressable(element: Element) {
+  isAddressable(element: Node) {
     let { renderTree } = this
     let renderNode = renderTree.findRenderNodeFromElement(element)
     if (renderNode && (renderNode.postNode as Section).isCardSection) {

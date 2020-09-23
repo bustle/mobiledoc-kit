@@ -49,6 +49,7 @@ import Markup from '../models/markup'
 import View from '../views/view'
 import Atom, { AtomPayload } from '../models/atom'
 import Section, { isNested } from '../models/_section'
+import { TextInputHandlerListener } from './text-input-handler'
 
 // This export may later be deprecated, but re-export it from the renderer here
 // for consumers that may depend on it.
@@ -903,7 +904,7 @@ export default class Editor implements EditorOptions {
    *                   after the matching text has been inserted.
    * @public
    */
-  onTextInput(inputHandler: InputHandler) {
+  onTextInput(inputHandler: TextInputHandlerListener) {
     this._eventManager.registerInputHandler(inputHandler)
   }
 
@@ -1299,7 +1300,7 @@ export default class Editor implements EditorOptions {
     }
   }
 
-  triggerEvent(context: unknown, eventName: string, event: Event) {
+  triggerEvent(context: HTMLElement, eventName: string, event: Event) {
     this._eventManager._trigger(context, eventName, event)
   }
 

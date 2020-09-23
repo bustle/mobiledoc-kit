@@ -1,10 +1,13 @@
-import assert from 'mobiledoc-kit/utils/assert'
-import { parsePostFromPaste, setClipboardData, parsePostFromDrop } from 'mobiledoc-kit/utils/parse-utils'
-import { filter, forEach } from 'mobiledoc-kit/utils/array-utils'
+import assert from '../utils/assert'
+import { parsePostFromPaste, setClipboardData, parsePostFromDrop } from '../utils/parse-utils'
+import { filter, forEach } from '../utils/array-utils'
 import Key from '../utils/key'
-import TextInputHandler from 'mobiledoc-kit/editor/text-input-handler'
-import SelectionManager from 'mobiledoc-kit/editor/selection-manager'
-import Browser from 'mobiledoc-kit/utils/browser'
+import TextInputHandler, { TextInputHandlerListener } from '../editor/text-input-handler'
+import SelectionManager from '../editor/selection-manager'
+import Browser from '../utils/browser'
+import Editor, { TextUnit, Format } from './editor'
+import { Logger } from '../utils/log-manager'
+import { PartialSelection } from '../utils/selection-utils'
 
 const ELEMENT_EVENT_TYPES = [
   'keydown',
@@ -18,8 +21,24 @@ const ELEMENT_EVENT_TYPES = [
   'compositionend',
 ]
 
+interface ModifierKeys {
+  shift: boolean
+}
+
+type EventManagerListener = [HTMLElement, string, EventListener]
+
 export default class EventManager {
-  constructor(editor) {
+  editor: Editor
+  logger: Logger
+  modifierKeys: ModifierKeys
+  started: boolean
+
+  _isComposingOnBlankLine: boolean
+  _listeners: EventManagerListener[]
+  _textInputHandler: TextInputHandler
+  _selectionManager: SelectionManager
+
+  constructor(editor: Editor) {
     this.editor = editor
     this.logger = editor.loggerFor('event-manager')
     this._textInputHandler = new TextInputHandler(editor)
@@ -30,6 +49,7 @@ export default class EventManager {
 
     this._selectionManager = new SelectionManager(this.editor, this.selectionDidChange.bind(this))
     this.started = true
+    this._isComposingOnBlankLine = false
   }
 
   init() {
@@ -53,11 +73,11 @@ export default class EventManager {
     this.started = false
   }
 
-  registerInputHandler(inputHandler) {
+  registerInputHandler(inputHandler: TextInputHandlerListener) {
     this._textInputHandler.register(inputHandler)
   }
 
-  unregisterInputHandler(name) {
+  unregisterInputHandler(name: string) {
     this._textInputHandler.unregister(name)
   }
 
@@ -66,10 +86,10 @@ export default class EventManager {
     this._textInputHandler = new TextInputHandler(this.editor)
   }
 
-  _addListener(context, type) {
+  _addListener(context: HTMLElement, type: string) {
     assert(`Missing listener for ${type}`, !!this[type])
 
-    let listener = event => this._handleEvent(type, event)
+    let listener: EventListener = event => this._handleEvent(type, event)
     context.addEventListener(type, listener)
     this._listeners.push([context, type, listener])
   }
@@ -83,7 +103,7 @@ export default class EventManager {
 
   // This is primarily useful for programmatically simulating events on the
   // editor from the tests.
-  _trigger(context, type, event) {
+  _trigger(context: HTMLElement, type: string, event: Event) {
     forEach(
       filter(this._listeners, ([_context, _type]) => {
         return _context === context && _type === type
@@ -100,14 +120,14 @@ export default class EventManager {
     this._removeListeners()
   }
 
-  _handleEvent(type, event) {
+  _handleEvent(type: string, event: Event) {
     let { target: element } = event
     if (!this.started) {
       // abort handling this event
       return true
     }
 
-    if (!this.isElementAddressable(element)) {
+    if (!this.isElementAddressable(element! as HTMLElement)) {
       // abort handling this event
       return true
     }
@@ -115,14 +135,14 @@ export default class EventManager {
     this[type](event)
   }
 
-  isElementAddressable(element) {
+  isElementAddressable(element: Node) {
     return this.editor.cursor.isAddressable(element)
   }
 
-  selectionDidChange(selection /*, prevSelection */) {
+  selectionDidChange(selection: PartialSelection /*, prevSelection */) {
     let shouldNotify = true
     let { anchorNode } = selection
-    if (!this.isElementAddressable(anchorNode)) {
+    if (!this.isElementAddressable(anchorNode!)) {
       if (!this.editor.range.isBlank) {
         // Selection changed from something addressable to something
         // not-addressable -- e.g., blur event, user clicked outside editor,
@@ -140,7 +160,7 @@ export default class EventManager {
     }
   }
 
-  keypress(event) {
+  keypress(event: KeyboardEvent) {
     let { editor, _textInputHandler } = this
     if (!editor.hasCursor()) {
       return
@@ -163,7 +183,7 @@ export default class EventManager {
     _textInputHandler.handle(key.toString())
   }
 
-  keydown(event) {
+  keydown(event: KeyboardEvent) {
     let { editor } = this
     if (!editor.hasCursor()) {
       return
@@ -205,11 +225,11 @@ export default class EventManager {
       }
       case key.isDelete(): {
         let { direction } = key
-        let unit = 'char'
+        let unit = TextUnit.CHAR
         if (key.altKey && Browser.isMac()) {
-          unit = 'word'
+          unit = TextUnit.WORD
         } else if (key.ctrlKey && !Browser.isMac()) {
-          unit = 'word'
+          unit = TextUnit.WORD
         }
         editor.performDelete({ direction, unit })
         event.preventDefault()
@@ -227,7 +247,7 @@ export default class EventManager {
     }
   }
 
-  keyup(event) {
+  keyup(event: KeyboardEvent) {
     let { editor } = this
     if (!editor.hasCursor()) {
       return
@@ -239,7 +259,7 @@ export default class EventManager {
   // The mutation handler interferes with IMEs when composing
   // on a blank line. These two event handlers are for suppressing
   // mutation handling in this scenario.
-  compositionstart(event) {
+  compositionstart(_event: KeyboardEvent) {
     let { editor } = this
     // Ignore compositionstart if not on a blank line
     if (editor.range.headMarker) {
@@ -263,8 +283,8 @@ export default class EventManager {
     }
   }
 
-  compositionend(event) {
-    let { editor } = this
+  compositionend(event: CompositionEvent) {
+    const { editor } = this
 
     // Ignore compositionend if not composing on blank line
     if (!this._isComposingOnBlankLine) {
@@ -280,23 +300,23 @@ export default class EventManager {
       editor.setPlaceholder(editor.placeholder)
       editor._mutationHandler.startObserving()
     } else {
-      let startOfCompositionLine = editor.range.headSection.toPosition(0)
-      let endOfCompositionLine = editor.range.headSection.toPosition(event.data.length)
+      let startOfCompositionLine = editor.range.headSection!.toPosition(0)
+      let endOfCompositionLine = editor.range.headSection!.toPosition(event.data.length)
       editor.run(postEditor => {
-        postEditor.deleteAtPosition(startOfCompositionLine, 1, { unit: 'char' })
+        postEditor.deleteAtPosition(startOfCompositionLine, 1, { unit: TextUnit.CHAR })
         postEditor.setRange(endOfCompositionLine)
       })
     }
   }
 
-  cut(event) {
+  cut(event: ClipboardEvent) {
     event.preventDefault()
 
     this.copy(event)
     this.editor.performDelete()
   }
 
-  copy(event) {
+  copy(event: ClipboardEvent) {
     event.preventDefault()
 
     let {
@@ -306,9 +326,9 @@ export default class EventManager {
     post = post.trimTo(range)
 
     let data = {
-      html: editor.serializePost(post, 'html'),
-      text: editor.serializePost(post, 'text'),
-      mobiledoc: editor.serializePost(post, 'mobiledoc'),
+      html: editor.serializePost(post, Format.HTML),
+      text: editor.serializePost(post, Format.TEXT),
+      mobiledoc: editor.serializePost(post, Format.MOBILEDOC),
     }
 
     editor.runCallbacks('willCopy', [data])
@@ -316,7 +336,7 @@ export default class EventManager {
     setClipboardData(event, data, window)
   }
 
-  paste(event) {
+  paste(event: ClipboardEvent) {
     event.preventDefault()
 
     let { editor } = this
@@ -335,12 +355,12 @@ export default class EventManager {
     let pastedPost = parsePostFromPaste(event, editor, { targetFormat })
 
     editor.run(postEditor => {
-      let nextPosition = postEditor.insertPost(position, pastedPost)
+      let nextPosition = postEditor.insertPost(position, pastedPost!)
       postEditor.setRange(nextPosition)
     })
   }
 
-  drop(event) {
+  drop(event: DragEvent) {
     event.preventDefault()
 
     let { clientX: x, clientY: y } = event
@@ -359,12 +379,12 @@ export default class EventManager {
     }
 
     editor.run(postEditor => {
-      let nextPosition = postEditor.insertPost(position, post)
+      let nextPosition = postEditor.insertPost(position!, post!)
       postEditor.setRange(nextPosition)
     })
   }
 
-  _updateModifiersFromKey(key, { isDown }) {
+  _updateModifiersFromKey(key: Key, { isDown }) {
     if (key.isShiftKey()) {
       this.modifierKeys.shift = isDown
     }
