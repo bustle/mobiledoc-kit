@@ -4,5 +4,8 @@ export default {
   },
   isWin() {
     return (typeof window !== 'undefined') && window.navigator && /Win/.test(window.navigator.platform);
+  },
+  isChrome() {
+    return (typeof window !== 'undefined') && ('chrome' in window);
   }
 };
