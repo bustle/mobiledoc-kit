@@ -550,7 +550,7 @@ export default class PostEditor {
 
     let newSection = this.builder.createMarkupSection()
     let nextSection: Section
-    let surroundingSections
+    let surroundingSections: [Section, Section]
 
     if (offset === 0) {
       nextSection = cardSection
@@ -580,7 +580,11 @@ export default class PostEditor {
     }
   }
 
-  moveSectionBefore(collection, renderedSection, beforeSection) {
+  moveSectionBefore(
+    collection: LinkedList<Cloneable<Section>>,
+    renderedSection: Cloneable<Section>,
+    beforeSection: Section
+  ) {
     const newSection = renderedSection.clone()
     this.removeSection(renderedSection)
     this.insertSectionBefore(collection, newSection, beforeSection)
@@ -591,14 +595,14 @@ export default class PostEditor {
    * @param {Section} section A section that is already in DOM
    * @public
    */
-  moveSectionUp(renderedSection) {
+  moveSectionUp(renderedSection: Cloneable<Section>) {
     const isFirst = !renderedSection.prev
     if (isFirst) {
       return renderedSection
     }
 
     const collection = renderedSection.parent.sections
-    const beforeSection = renderedSection.prev
+    const beforeSection = renderedSection.prev!
     return this.moveSectionBefore(collection, renderedSection, beforeSection)
   }
 
@@ -606,13 +610,13 @@ export default class PostEditor {
    * @param {Section} section A section that is already in DOM
    * @public
    */
-  moveSectionDown(renderedSection) {
+  moveSectionDown(renderedSection: Cloneable<Section>) {
     const isLast = !renderedSection.next
     if (isLast) {
       return renderedSection
     }
 
-    const beforeSection = renderedSection.next.next
+    const beforeSection = renderedSection.next!.next!
     const collection = renderedSection.parent.sections
     return this.moveSectionBefore(collection, renderedSection, beforeSection)
   }
@@ -626,9 +630,11 @@ export default class PostEditor {
    * @return {Position} The position that represents the end of the inserted markers.
    * @public
    */
-  insertMarkers(position, markers) {
-    let { section, offset } = position
-    assert('Cannot insert markers at non-markerable position', section.isMarkerable)
+  insertMarkers(position: Position, markers: Markuperable[]): Position {
+    const section = position.section! as Markerable
+    let offset = position.offset
+
+    assert('Cannot insert markers at non-markerable position', section!.isMarkerable)
 
     this.editActionTaken = EditAction.INSERT_TEXT
 
@@ -637,7 +643,7 @@ export default class PostEditor {
 
     let prevMarker = section.markerBeforeOffset(offset)
     markers.forEach(marker => {
-      section.markers.insertAfter(marker, prevMarker)
+      section.markers.insertAfter(marker, prevMarker!)
       offset += marker.length
       prevMarker = marker
     })
@@ -934,7 +940,7 @@ export default class PostEditor {
    * @param {Markerable} section
    * @private
    */
-  changeSectionTagName(section: Section & TagNameable, newTagName: string) {
+  changeSectionTagName(section: Markerable & TagNameable, newTagName: string) {
     assert('Cannot pass non-markerable section to `changeSectionTagName`', section.isMarkerable)
 
     if (isListSectionTagName(newTagName)) {
@@ -1082,7 +1088,7 @@ export default class PostEditor {
     return markupSection
   }
 
-  _changeSectionToListItem(section: Section, newTagName: string) {
+  _changeSectionToListItem(section: ListSection | Markerable, newTagName: string) {
     let isAlreadyCorrectListItem =
       section.isListItem && ((section.parent as unknown) as TagNameable).tagName === newTagName
 
@@ -1268,7 +1274,7 @@ export default class PostEditor {
     this.scheduleOnce(this._postDidChange)
   }
 
-  scheduleAfterRender(callback, once = false) {
+  scheduleAfterRender(callback: LifecycleCallback, once = false) {
     if (once) {
       this.addCallbackOnce(CALLBACK_QUEUES.AFTER_COMPLETE, callback)
     } else {

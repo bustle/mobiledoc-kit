@@ -293,7 +293,7 @@ export default class DOMParser {
 
         let previousRenderNode = previousMarker && previousMarker.renderNode
         section.markers.insertAfter(marker, previousMarker)
-        section.renderNode.childNodes.insertAfter(renderNode, previousRenderNode)
+        section.renderNode.childNodes.insertAfter(renderNode, previousRenderNode!)
       }
 
       if (renderNode) {

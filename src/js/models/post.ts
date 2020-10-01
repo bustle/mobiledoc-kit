@@ -1,6 +1,7 @@
 import { Type } from './types'
 import LinkedList from '../utils/linked-list'
 import { forEach } from '../utils/array-utils'
+import { Option } from '../utils/types'
 import Set from '../utils/set'
 import Position from '../utils/cursor/position'
 import Range from '../utils/cursor/range'
@@ -149,7 +150,7 @@ export default class Post implements HasChildSections<Cloneable<Section>> {
     const { head, tail } = range
 
     let index = 0
-    let nextSection: Section
+    let nextSection: Option<Section>
     let shouldStop: boolean
     let currentSection = head.section
 
@@ -178,7 +179,7 @@ export default class Post implements HasChildSections<Cloneable<Section>> {
 
   // return the next section that has markers after this one,
   // possibly skipping non-markerable sections
-  _nextLeafSection(section: Section) {
+  _nextLeafSection(section: Section): Option<Section> {
     if (!section) {
       return null
     }
@@ -197,6 +198,8 @@ export default class Post implements HasChildSections<Cloneable<Section>> {
       // (e.g. a ListItem inside a ListSection), check for a markerable
       // section after its parent
       return this._nextLeafSection(section.parent)
+    } else {
+      return null
     }
   }
 

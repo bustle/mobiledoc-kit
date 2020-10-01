@@ -2,6 +2,7 @@ import { normalizeTagName } from '../utils/dom-utils'
 import { filterObject } from '../utils/array-utils'
 import { MARKUP_TYPE } from './types'
 import assert from '../utils/assert'
+import PostNodeBuilder from './post-node-builder'
 
 export const VALID_MARKUP_TAGNAMES = [
   'a',
@@ -26,10 +27,11 @@ export const VALID_ATTRIBUTES = ['href', 'rel']
  * @property {String} tagName
  */
 export default class Markup {
+  type = MARKUP_TYPE
   tagName: string
   attributes: { [key: string]: string }
 
-  type = MARKUP_TYPE
+  builder!: PostNodeBuilder
 
   /*
    * @param {Object} attributes key-values

@@ -147,7 +147,7 @@ export default {
    * @return {Mobiledoc}
    */
   render(post: Post): MobiledocV0_2 {
-    let opcodes = []
+    let opcodes: Opcodes = []
     visit(visitor, post, opcodes)
     let compiler = new PostOpcodeCompiler()
     compile(compiler, opcodes)

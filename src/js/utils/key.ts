@@ -2,6 +2,7 @@ import Keycodes from './keycodes'
 import Keys from './keys'
 import assert from './assert'
 import { TAB } from './characters'
+import { Dict } from './types'
 
 export enum Direction {
   FORWARD = 1,
@@ -11,7 +12,7 @@ export enum Direction {
 // For backwards compatibility
 export { Direction as DIRECTION }
 
-export const MODIFIERS = {
+export const MODIFIERS: Dict<number> = {
   META: 1, // also called "command" on OS X
   CTRL: 2,
   SHIFT: 4,
@@ -32,7 +33,7 @@ export function modifierMask(event: KeyboardEvent) {
   )
 }
 
-const SPECIAL_KEYS = {
+const SPECIAL_KEYS: Dict<number> = {
   BACKSPACE: Keycodes.BACKSPACE,
   TAB: Keycodes.TAB,
   ENTER: Keycodes.ENTER,

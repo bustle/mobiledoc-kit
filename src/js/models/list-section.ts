@@ -10,6 +10,7 @@ import ListItem from './list-item'
 import { tagNameable } from './_tag-nameable'
 import HasChildSections from './_has-child-sections'
 import { PostNode } from './post-node-builder'
+import Markerable from './_markerable'
 
 export const VALID_LIST_SECTION_TAGNAMES = ['ul', 'ol'].map(normalizeTagName)
 
@@ -71,8 +72,8 @@ export default class ListSection extends attributable(tagNameable(Section)) impl
    * @param {ListSection|Markerable}
    * @return null
    */
-  join(other) {
-    if (other.isListSection) {
+  join(other: ListSection | Markerable) {
+    if (isListSection(other)) {
       other.items.forEach(i => this.join(i))
     } else if (other.isMarkerable) {
       let item = this.builder.createListItem()

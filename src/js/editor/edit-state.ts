@@ -6,13 +6,14 @@ import { Cloneable } from '../models/_cloneable'
 import Section from '../models/_section'
 import Markup from '../models/markup'
 import { TagNameable } from '../models/_tag-nameable'
+import { getSectionAttributes } from '../models/_attributable'
 
 interface EditStateState {
   range: Range
   activeMarkups: Markup[]
   activeSections: Section[]
   activeSectionTagNames: string[]
-  activeSectionAttributes: Dict<string>
+  activeSectionAttributes: Dict<string[]>
 }
 
 /**
@@ -95,14 +96,14 @@ export default class EditState {
   /**
    * @return {Object}
    */
-  get activeSectionAttributes() {
+  get activeSectionAttributes(): Dict<string[]> {
     return this.state!.activeSectionAttributes
   }
 
   /**
    * @return {Markup[]}
    */
-  get activeMarkups() {
+  get activeMarkups(): Markup[] {
     return this.state!.activeMarkups
   }
 
@@ -112,7 +113,7 @@ export default class EditState {
    * in this case the editor needs to track that it has an active "b" markup
    * and apply it to the next text the user types.
    */
-  toggleMarkupState(markup) {
+  toggleMarkupState(markup: Markup) {
     if (contains(this.activeMarkups, markup)) {
       this._removeActiveMarkup(markup)
     } else {
@@ -158,9 +159,8 @@ export default class EditState {
   }
 
   _readSectionAttributes(sections: Section[]) {
-    return sections.reduce((sectionAttributes, s) => {
-      // eslint-disable-next-line dot-notation
-      let attributes: Dict<string> = (s.isNested ? s.parent['attributes'] : s['attributes']) || {}
+    return sections.reduce<Dict<string[]>>((sectionAttributes, s) => {
+      let attributes: Dict<string> = getSectionAttributes(s)
 
       Object.keys(attributes).forEach(attrName => {
         let camelizedAttrName = attrName.replace(/^data-md-/, '')

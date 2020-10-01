@@ -31,7 +31,7 @@ import Card, { CardMode, CardPayload } from '../models/card'
 import assert from '../utils/assert'
 import MutationHandler from '../editor/mutation-handler'
 import EditHistory from '../editor/edit-history'
-import EventManager from '../editor/event-manager'
+import EventManager, { EventType, EventForType } from '../editor/event-manager'
 import EditState from '../editor/edit-state'
 import DOMRenderer from 'mobiledoc-dom-renderer'
 import TextRenderer from 'mobiledoc-text-renderer'
@@ -148,6 +148,10 @@ interface DeleteOperation {
   unit: TextUnit
 }
 
+interface BeforeHooks {
+  toggleMarkup: LifecycleCallback[]
+}
+
 /**
  * The Editor is a core component of mobiledoc-kit. After instantiating
  * an editor, use {@link Editor#render} to display the editor on the web page.
@@ -210,7 +214,7 @@ export default class Editor implements EditorOptions {
   _mutationHandler: MutationHandler
   _editState: EditState
   _callbacks: LifecycleCallbacks
-  _beforeHooks: { toggleMarkup: LifecycleCallback[] }
+  _beforeHooks: BeforeHooks
   _isComposingOnBlankLine: boolean
 
   /**
@@ -1300,7 +1304,7 @@ export default class Editor implements EditorOptions {
     }
   }
 
-  triggerEvent(context: HTMLElement, eventName: string, event: Event) {
+  triggerEvent(context: HTMLElement, eventName: EventType, event: EventForType<typeof eventName>) {
     this._eventManager._trigger(context, eventName, event)
   }
 
@@ -1326,7 +1330,7 @@ export default class Editor implements EditorOptions {
    * @return {Boolean} shouldCancel Whether the action in `hookName` should be canceled
    * @private
    */
-  _runBeforeHooks(hookName: string, ...args: unknown[]): true | undefined {
+  _runBeforeHooks(hookName: keyof BeforeHooks, ...args: unknown[]): true | undefined {
     let hooks = this._beforeHooks[hookName] || []
     for (let i = 0; i < hooks.length; i++) {
       if (hooks[i](...args) === false) {

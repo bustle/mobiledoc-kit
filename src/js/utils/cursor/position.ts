@@ -2,6 +2,7 @@ import Marker, { HIGH_SURROGATE_RANGE, LOW_SURROGATE_RANGE } from '../../models/
 import RenderTree from '../../models/render-tree'
 import { isTextNode, containsNode, isElementNode } from '../dom-utils'
 import { findOffsetInNode } from '../selection-utils'
+import { Option } from '../types'
 import { Direction } from '../key'
 import assert, { assertType } from '../assert'
 import Range from './range'
@@ -110,11 +111,11 @@ export default class Position {
    * @param {Editor} editor
    * @return {Position|null}
    */
-  static atPoint(x: number, y: number, editor: Editor) {
+  static atPoint(x: number, y: number, editor: Editor): Option<Position> {
     let { _renderTree, element: rootElement } = editor
     let elementFromPoint = document.elementFromPoint(x, y)
     if (!elementFromPoint || !containsNode(rootElement, elementFromPoint)) {
-      return
+      return null
     }
 
     let { node, offset } = findOffsetInNode(elementFromPoint, { left: x, top: y })
@@ -138,7 +139,7 @@ export default class Position {
 
   get leafSectionIndex() {
     let post = this.section!.post
-    let leafSectionIndex
+    let leafSectionIndex!: number
     post!.walkAllLeafSections((section: Section, index: number) => {
       if (section === this.section) {
         leafSectionIndex = index

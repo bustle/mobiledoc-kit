@@ -4,7 +4,7 @@ interface Queue {
   [name: string]: LifecycleCallback[]
 }
 
-export type LifecycleCallback = (...args: any[]) => void
+export type LifecycleCallback = (...args: any[]) => boolean | void
 
 export default class LifecycleCallbacks {
   callbackQueues: Queue = {}

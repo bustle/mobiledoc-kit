@@ -126,7 +126,7 @@ export default class EditHistory {
     postEditor.cancelSnapshot()
   }
 
-  _restoreFromSnapshot(snapshot, postEditor) {
+  _restoreFromSnapshot(snapshot: Snapshot, postEditor: PostEditor) {
     let { mobiledoc } = snapshot
     let { editor } = this
     let { builder, post } = editor

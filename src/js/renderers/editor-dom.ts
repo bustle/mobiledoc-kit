@@ -5,7 +5,7 @@ import { Type } from '../models/types'
 import { startsWith, endsWith } from '../utils/string-utils'
 import { addClassName, removeClassName } from '../utils/dom-utils'
 import MarkupSection, { MARKUP_SECTION_ELEMENT_NAMES } from '../models/markup-section'
-import assert, { unwrap, assertNotNull } from '../utils/assert'
+import assert, { unwrap, assertNotNull, assertExistsIn } from '../utils/assert'
 import { TAB } from '../utils/characters'
 import Markup from '../models/markup'
 import Marker from '../models/marker'
@@ -273,7 +273,7 @@ function removeRenderNodeSectionFromParent(renderNode: RenderNode, section: Sect
   parent.sections.remove(section)
 }
 
-function removeRenderNodeElementFromParent(renderNode) {
+function removeRenderNodeElementFromParent(renderNode: RenderNode) {
   if (renderNode.element && renderNode.element.parentNode) {
     renderNode.element.parentNode.removeChild(renderNode.element)
   }
@@ -579,9 +579,9 @@ function removeDestroyedChildren(parentNode: RenderNode, forceRemoval = false) {
     nextChild = child.next
     if (child.isRemoved || forceRemoval) {
       removeDestroyedChildren(child, true)
-      method = child.postNode.type
-      assert(`editor-dom cannot destroy "${method}"`, !!destroyHooks[method])
-      destroyHooks[method](child, child.postNode)
+      method = child.postNode!.type
+      assertExistsIn(`editor-dom cannot destroy "${method}"`, method, destroyHooks)
+      ;(destroyHooks[method] as any)(child, child.postNode)
       parentNode.childNodes.remove(child)
     }
     child = nextChild
@@ -590,7 +590,7 @@ function removeDestroyedChildren(parentNode: RenderNode, forceRemoval = false) {
 
 // Find an existing render node for the given postNode, or
 // create one, insert it into the tree, and return it
-function lookupNode(renderTree: RenderTree, parentNode: RenderNode, postNode: PostNode, previousNode) {
+function lookupNode(renderTree: RenderTree, parentNode: RenderNode, postNode: PostNode, previousNode: RenderNode) {
   if (postNode.renderNode) {
     return postNode.renderNode
   } else {
@@ -654,8 +654,8 @@ export default class Renderer {
       postNode = renderNode.postNode!
 
       method = postNode.type
-      assert(`EditorDom visitor cannot handle type ${method}`, !!this.visitor[method])
-      this.visitor[method](renderNode, postNode, (...args: VisitArgs) => this.visit(renderTree, ...args))
+      assertExistsIn(`EditorDom visitor cannot handle type ${method}`, method, this.visitor)
+      this.visitor[method](renderNode as any, postNode as any, (...args: VisitArgs) => this.visit(renderTree, ...args))
       renderNode.markClean()
       renderNode = this.nodes.shift()
     }

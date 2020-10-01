@@ -1,4 +1,5 @@
 import { forEach } from './array-utils'
+import { Dict } from './types'
 
 export const NODE_TYPES = {
   ELEMENT: 1,
@@ -72,8 +73,8 @@ export function containsNode(parentNode: Node, childNode: Node) {
  * @return {Object} key-value pairs
  * @private
  */
-export function getAttributes(element: Element) {
-  const result: { [key: string]: unknown } = {}
+export function getAttributes(element: Element): Dict<string> {
+  const result: Dict<string> = {}
   if (element.hasAttributes()) {
     forEach(element.attributes, ({ name, value }) => {
       result[name] = value

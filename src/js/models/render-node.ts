@@ -44,7 +44,7 @@ export default class RenderNode<T extends Node = Node> extends LinkedItem {
     return containsNode(unwrap(unwrap(this.renderTree).rootElement), this.element)
   }
 
-  get childNodes() {
+  get childNodes(): LinkedList<RenderNode> {
     if (!this._childNodes) {
       this._childNodes = new LinkedList({
         adoptItem: item => (item.parent = this),
@@ -108,7 +108,7 @@ export default class RenderNode<T extends Node = Node> extends LinkedItem {
     this.renderTree = null
   }
 
-  reparsesMutationOfChildNode(node) {
+  reparsesMutationOfChildNode(node: Node) {
     if ((this.postNode as Section).isCardSection) {
       return !containsNode(this.cardNode!.element, node)
     } else if ((this.postNode as Markuperable).isAtom) {

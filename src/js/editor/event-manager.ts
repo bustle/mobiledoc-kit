@@ -9,7 +9,7 @@ import Editor, { TextUnit, Format } from './editor'
 import { Logger } from '../utils/log-manager'
 import { PartialSelection } from '../utils/selection-utils'
 
-const ELEMENT_EVENT_TYPES = [
+const ELEMENT_EVENT_TYPES = <const>[
   'keydown',
   'keyup',
   'cut',
@@ -21,11 +21,25 @@ const ELEMENT_EVENT_TYPES = [
   'compositionend',
 ]
 
+declare global {
+  interface HTMLElementEventMap {
+    compositionstart: CompositionEvent
+    compositionend: CompositionEvent
+  }
+}
+
+export type EventType = typeof ELEMENT_EVENT_TYPES[number]
+export type EventForType<T extends EventType> = HTMLElementEventMap[T]
+
 interface ModifierKeys {
   shift: boolean
 }
 
-type EventManagerListener = [HTMLElement, string, EventListener]
+type EventManagerListener = [
+  HTMLElement,
+  EventType,
+  (event: CompositionEvent | KeyboardEvent | ClipboardEvent | DragEvent) => void
+]
 
 export default class EventManager {
   editor: Editor
@@ -86,10 +100,10 @@ export default class EventManager {
     this._textInputHandler = new TextInputHandler(this.editor)
   }
 
-  _addListener(context: HTMLElement, type: string) {
+  _addListener(context: HTMLElement, type: EventType) {
     assert(`Missing listener for ${type}`, !!this[type])
 
-    let listener: EventListener = event => this._handleEvent(type, event)
+    let listener: (event: EventForType<typeof type>) => void = event => this._handleEvent(type, event)
     context.addEventListener(type, listener)
     this._listeners.push([context, type, listener])
   }
@@ -103,7 +117,7 @@ export default class EventManager {
 
   // This is primarily useful for programmatically simulating events on the
   // editor from the tests.
-  _trigger(context: HTMLElement, type: string, event: Event) {
+  _trigger(context: HTMLElement, type: EventType, event: EventForType<typeof type>) {
     forEach(
       filter(this._listeners, ([_context, _type]) => {
         return _context === context && _type === type
@@ -120,7 +134,7 @@ export default class EventManager {
     this._removeListeners()
   }
 
-  _handleEvent(type: string, event: Event) {
+  _handleEvent(type: EventType, event: EventForType<typeof type>) {
     let { target: element } = event
     if (!this.started) {
       // abort handling this event
@@ -132,7 +146,7 @@ export default class EventManager {
       return true
     }
 
-    this[type](event)
+    ;(this[type] as (evt: typeof event) => void)(event)
   }
 
   isElementAddressable(element: Node) {
@@ -384,7 +398,7 @@ export default class EventManager {
     })
   }
 
-  _updateModifiersFromKey(key: Key, { isDown }) {
+  _updateModifiersFromKey(key: Key, { isDown }: { isDown: boolean }) {
     if (key.isShiftKey()) {
       this.modifierKeys.shift = isDown
     }

@@ -1,9 +1,9 @@
-import assert from '../../utils/assert'
+import assert, { assertType } from '../../utils/assert'
 import { Option } from '../../utils/types'
 import { Type } from '../../models/types'
 import Post from '../../models/post'
 import PostEditor from '../post'
-import PostNodeBuilder from '../../models/post-node-builder'
+import PostNodeBuilder, { PostNode } from '../../models/post-node-builder'
 import { Position } from '../../utils/cursor'
 import Section, { WithParent, NestedSection } from '../../models/_section'
 import MarkupSection from '../../models/markup-section'
@@ -44,13 +44,13 @@ class Visitor {
     this.postEditor.setRange(position)
   }
 
-  visit(node: Post | Section) {
+  visit(node: PostNode) {
     let method = node.type
-    assert(`Cannot visit node of type ${node.type}`, !!this[method])
-    this[method](node)
+    assertType<typeof method & keyof this>(`Cannot visit node of type ${node.type}`, method, method in this)
+    this[method](node as any)
   }
 
-  _canMergeSection(section) {
+  _canMergeSection(section: Section) {
     if (this._hasInsertedFirstLeafSection) {
       return false
     } else {

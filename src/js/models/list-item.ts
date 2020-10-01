@@ -24,7 +24,7 @@ export default class ListItem extends Markerable {
     return contains(VALID_LIST_ITEM_TAGNAMES, normalizedTagName)
   }
 
-  splitAtMarker(marker: Marker, offset = 0) {
+  splitAtMarker(marker: Marker, offset = 0): [Section, Section] {
     // FIXME need to check if we are going to split into two list items
     // or a list item and a new markup section:
     const isLastItem = !this.next

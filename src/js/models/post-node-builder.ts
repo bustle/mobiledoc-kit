@@ -18,16 +18,17 @@ import assert from '../utils/assert'
 import Markuperable from '../utils/markuperable'
 import Section from './_section'
 import { Cloneable } from './_cloneable'
+import { Dict } from '../utils/types'
 
-function cacheKey(tagName, attributes) {
+function cacheKey(tagName: string, attributes: Dict<string>) {
   return `${normalizeTagName(tagName)}-${objectToSortedKVArray(attributes).join('-')}`
 }
 
-function addMarkupToCache(cache, markup) {
+function addMarkupToCache(cache: Dict<Markup>, markup: Markup) {
   cache[cacheKey(markup.tagName, markup.attributes)] = markup
 }
 
-function findMarkupInCache(cache, tagName, attributes) {
+function findMarkupInCache(cache: Dict<Markup>, tagName: string, attributes: Dict<string>) {
   const key = cacheKey(tagName, attributes)
   return cache[key]
 }
@@ -41,7 +42,7 @@ function findMarkupInCache(cache, tagName, attributes) {
  * A PostNodeBuilder should be read from the Editor, *not* instantiated on its own.
  */
 export default class PostNodeBuilder {
-  markupCache: { [key: string]: unknown } = {}
+  markupCache: Dict<Markup> = {}
 
   /**
    * @return {Post} A new, blank post
@@ -107,7 +108,7 @@ export default class PostNodeBuilder {
     return item
   }
 
-  createImageSection(url) {
+  createImageSection(url: string) {
     let section = new ImageSection()
     if (url) {
       section.src = url
@@ -156,7 +157,7 @@ export default class PostNodeBuilder {
    * @param {Object} attributes Key-value pairs of attributes for the markup
    * @return {Markup}
    */
-  createMarkup(tagName: string, attributes: object = {}): Markup {
+  createMarkup(tagName: string, attributes: Dict<string> = {}): Markup {
     tagName = normalizeTagName(tagName)
 
     let markup = findMarkupInCache(this.markupCache, tagName, attributes)

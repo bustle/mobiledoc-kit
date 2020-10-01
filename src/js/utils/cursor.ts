@@ -131,7 +131,7 @@ class Cursor {
     const { head, tail, direction } = range
     const { node: headNode, offset: headOffset } = this._findNodeForPosition(head),
       { node: tailNode, offset: tailOffset } = this._findNodeForPosition(tail)
-    this._moveToNode(headNode, headOffset, tailNode, tailOffset, direction!)
+    this._moveToNode(headNode! as Text, headOffset, tailNode! as Text, tailOffset, direction!)
 
     // Firefox sometimes doesn't keep focus in the editor after adding a card
     this.editor._ensureFocus()

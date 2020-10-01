@@ -18,18 +18,18 @@ interface VersionTypes {
 export type MobiledocVersion = keyof VersionTypes
 
 export default {
-  render<T extends MobiledocVersion = typeof MOBILEDOC_VERSION_0_3_2>(post: Post, version?: T): VersionTypes[T] {
+  render(post: Post, version: keyof VersionTypes = MOBILEDOC_VERSION_0_3_2): VersionTypes[typeof version] {
     switch (version) {
       case MOBILEDOC_VERSION_0_2:
-        return MobiledocRenderer_0_2.render(post) as VersionTypes[T]
+        return MobiledocRenderer_0_2.render(post)
       case MOBILEDOC_VERSION_0_3:
-        return MobiledocRenderer_0_3.render(post) as VersionTypes[T]
+        return MobiledocRenderer_0_3.render(post)
       case MOBILEDOC_VERSION_0_3_1:
-        return MobiledocRenderer_0_3_1.render(post) as VersionTypes[T]
+        return MobiledocRenderer_0_3_1.render(post)
       case undefined:
       case null:
       case MOBILEDOC_VERSION_0_3_2:
-        return MobiledocRenderer_0_3_2.render(post) as VersionTypes[T]
+        return MobiledocRenderer_0_3_2.render(post)
       default:
         assert(`Unknown version of mobiledoc renderer requested: ${version}`, false)
     }

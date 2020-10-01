@@ -1,6 +1,6 @@
 import LinkedItem from '../utils/linked-item'
 import assert, { expect } from '../utils/assert'
-import { Option } from '../utils/types'
+import { Option, Dict } from '../utils/types'
 import Position from '../utils/cursor/position'
 import Range from '../utils/cursor/range'
 import RenderNode from './render-node'
@@ -27,6 +27,8 @@ export default class Section extends LinkedItem {
   isListSection = false
   isLeafSection = true
   isCardSection = false
+
+  attributes?: Dict<string>
 
   post?: Option<Post>
   renderNode!: RenderNode
