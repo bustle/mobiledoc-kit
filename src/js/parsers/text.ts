@@ -17,7 +17,7 @@ const CR_LF_REGEX = new RegExp(CR + LF, 'g')
 
 export const SECTION_BREAK = LF
 
-function normalizeLineEndings(text) {
+function normalizeLineEndings(text: string) {
   return text.replace(CR_LF_REGEX, LF).replace(CR_REGEX, LF)
 }
 

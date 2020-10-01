@@ -4,13 +4,13 @@ interface Queue {
   [name: string]: LifecycleCallback[]
 }
 
-export type LifecycleCallback = (...args: any[]) => void
+export type LifecycleCallback = (...args: any[]) => boolean | void
 
 export default class LifecycleCallbacks {
   callbackQueues: Queue = {}
   removalQueues: Queue = {}
 
-  constructor(queueNames = []) {
+  constructor(queueNames: string[] = []) {
     queueNames.forEach(name => {
       this.callbackQueues[name] = []
       this.removalQueues[name] = []

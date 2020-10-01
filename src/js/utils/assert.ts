@@ -6,6 +6,10 @@ export default function assert(message: string, conditional: unknown): asserts c
   }
 }
 
+export function assertExistsIn<T>(message: string, key: string, object: T): asserts key is string & keyof T {
+  assert(message, key in object)
+}
+
 export function assertNotNull<T>(message: string, value: T | null): asserts value is T {
   if (value === null) {
     throw new MobiledocError(message)

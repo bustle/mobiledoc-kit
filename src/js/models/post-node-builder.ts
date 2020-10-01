@@ -1,4 +1,4 @@
-import Atom from './atom'
+import Atom, { AtomPayload } from './atom'
 import Post from './post'
 import MarkupSection from './markup-section'
 import ListSection from './list-section'
@@ -6,7 +6,7 @@ import ListItem from './list-item'
 import ImageSection from './image'
 import Marker from './marker'
 import Markup from './markup'
-import Card from './card'
+import Card, { CardPayload } from './card'
 
 import { LIST_ITEM_TYPE, MARKUP_SECTION_TYPE, Type } from './types'
 import { DEFAULT_TAG_NAME as DEFAULT_MARKUP_SECTION_TAG_NAME } from './markup-section'
@@ -17,16 +17,18 @@ import { objectToSortedKVArray } from '../utils/array-utils'
 import assert from '../utils/assert'
 import Markuperable from '../utils/markuperable'
 import Section from './_section'
+import { Cloneable } from './_cloneable'
+import { Dict } from '../utils/types'
 
-function cacheKey(tagName, attributes) {
+function cacheKey(tagName: string, attributes: Dict<string>) {
   return `${normalizeTagName(tagName)}-${objectToSortedKVArray(attributes).join('-')}`
 }
 
-function addMarkupToCache(cache, markup) {
+function addMarkupToCache(cache: Dict<Markup>, markup: Markup) {
   cache[cacheKey(markup.tagName, markup.attributes)] = markup
 }
 
-function findMarkupInCache(cache, tagName, attributes) {
+function findMarkupInCache(cache: Dict<Markup>, tagName: string, attributes: Dict<string>) {
   const key = cacheKey(tagName, attributes)
   return cache[key]
 }
@@ -40,12 +42,12 @@ function findMarkupInCache(cache, tagName, attributes) {
  * A PostNodeBuilder should be read from the Editor, *not* instantiated on its own.
  */
 export default class PostNodeBuilder {
-  markupCache: { [key: string]: unknown } = {}
+  markupCache: Dict<Markup> = {}
 
   /**
    * @return {Post} A new, blank post
    */
-  createPost(sections = []): Post {
+  createPost(sections: Cloneable<Section>[] = []): Post {
     const post = new Post()
     post.builder = this
 
@@ -106,7 +108,7 @@ export default class PostNodeBuilder {
     return item
   }
 
-  createImageSection(url) {
+  createImageSection(url: string) {
     let section = new ImageSection()
     if (url) {
       section.src = url
@@ -120,7 +122,7 @@ export default class PostNodeBuilder {
    * @param {Object} [payload={}]
    * @return {CardSection}
    */
-  createCardSection(name: string, payload: {} = {}): Card {
+  createCardSection(name: string, payload: CardPayload = {}): Card {
     const card = new Card(name, payload)
     card.builder = this
     return card
@@ -144,7 +146,7 @@ export default class PostNodeBuilder {
    * @param {Markup[]} [markups=[]]
    * @return {Atom}
    */
-  createAtom(name: string, value: string = '', payload: object = {}, markups: Markup[] = []): Atom {
+  createAtom(name: string, value: string = '', payload: AtomPayload = {}, markups: Markup[] = []): Atom {
     const atom = new Atom(name, value, payload, markups)
     atom.builder = this
     return atom
@@ -155,7 +157,7 @@ export default class PostNodeBuilder {
    * @param {Object} attributes Key-value pairs of attributes for the markup
    * @return {Markup}
    */
-  createMarkup(tagName: string, attributes: object = {}): Markup {
+  createMarkup(tagName: string, attributes: Dict<string> = {}): Markup {
     tagName = normalizeTagName(tagName)
 
     let markup = findMarkupInCache(this.markupCache, tagName, attributes)
@@ -169,4 +171,4 @@ export default class PostNodeBuilder {
   }
 }
 
-export type PostNode = Section | Markuperable | Marker
+export type PostNode = Post | Section | Markuperable | Marker

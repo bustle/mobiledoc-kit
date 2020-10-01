@@ -1,5 +1,8 @@
 import { entries } from '../utils/object-utils'
 import { contains } from '../utils/array-utils'
+import { assertType } from '../utils/assert'
+import Section, { isNested } from './_section'
+import { Dict } from '../utils/types'
 
 export const VALID_ATTRIBUTES = ['data-md-text-align']
 
@@ -21,7 +24,7 @@ type Constructor<T> = new (...args: any[]) => T
  */
 export function attributable<T extends unknown>(Base: AbstractConstructor<T>): Constructor<T & Attributable> {
   return class extends (Base as any) {
-    attributes: { [key: string]: string } = {}
+    attributes: Dict<string> = {}
 
     hasAttribute(key: string) {
       return key in this.attributes
@@ -46,4 +49,16 @@ export function attributable<T extends unknown>(Base: AbstractConstructor<T>): C
       entries(this.attributes).forEach(([k, v]) => cb(k, v))
     }
   } as Constructor<T & Attributable>
+}
+
+export function expectAttributable(section: Section): Section & Attributable {
+  assertType<Section & Attributable>('expected section to be attributable', section, 'attributes' in section)
+  return section
+}
+
+export function getSectionAttributes(section: Section): Dict<string> {
+  if (isNested(section)) {
+    return section.parent.attributes || {}
+  }
+  return section.attributes || {}
 }

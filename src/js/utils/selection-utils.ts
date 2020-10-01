@@ -1,4 +1,4 @@
-import { DIRECTION } from './key'
+import { Direction } from './key'
 import { isTextNode, isElementNode } from './dom-utils'
 import { assertNotNull } from './assert'
 
@@ -213,13 +213,13 @@ export function comparePosition(selection: PartialSelection): ComparePositionRes
     tailNode = focusNode
     headOffset = anchorOffset
     tailOffset = focusOffset
-    direction = DIRECTION.FORWARD
+    direction = Direction.FORWARD
   } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
     headNode = focusNode
     tailNode = anchorNode
     headOffset = focusOffset
     tailOffset = anchorOffset
-    direction = DIRECTION.BACKWARD
+    direction = Direction.BACKWARD
   } else {
     // same node
     headNode = tailNode = anchorNode
@@ -229,9 +229,9 @@ export function comparePosition(selection: PartialSelection): ComparePositionRes
       // Swap the offset order
       headOffset = focusOffset
       tailOffset = anchorOffset
-      direction = DIRECTION.BACKWARD
+      direction = Direction.BACKWARD
     } else if (headOffset < tailOffset) {
-      direction = DIRECTION.FORWARD
+      direction = Direction.FORWARD
     } else {
       direction = null
     }

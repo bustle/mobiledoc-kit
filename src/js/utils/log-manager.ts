@@ -36,7 +36,7 @@ export default class LogManager {
     this.allEnabled = true
   }
 
-  enableTypes(types: []) {
+  enableTypes(types: string[]) {
     this.enabledTypes = this.enabledTypes.concat(types)
   }
 

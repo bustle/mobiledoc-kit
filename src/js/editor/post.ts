@@ -1,25 +1,42 @@
 import Position from '../utils/cursor/position'
-import Range from 'mobiledoc-kit/utils/cursor/range'
+import Range from '../utils/cursor/range'
 import { detect, forEach, reduce, filter, values, commonItems } from '../utils/array-utils'
-import { DIRECTION } from '../utils/key'
-import LifecycleCallbacks from '../models/lifecycle-callbacks'
-import assert from '../utils/assert'
+import { Direction } from '../utils/key'
+import LifecycleCallbacks, { LifecycleCallback } from '../models/lifecycle-callbacks'
+import assert, { assertType } from '../utils/assert'
 import { normalizeTagName } from '../utils/dom-utils'
 import PostInserter from './post/post-inserter'
-import deprecate from 'mobiledoc-kit/utils/deprecate'
-import toRange from 'mobiledoc-kit/utils/to-range'
+import deprecate from '../utils/deprecate'
+import toRange from '../utils/to-range'
+import { Option, Maybe } from '../utils/types'
+import Editor, { TextUnit } from './editor'
+import PostNodeBuilder, { PostNode } from '../models/post-node-builder'
+import Markerable, { isMarkerable } from '../models/_markerable'
+import Section from '../models/_section'
+import Markuperable from '../utils/markuperable'
+import Post from '../models/post'
+import ListSection, { isListSection } from '../models/list-section'
+import ListItem, { isListItem } from '../models/list-item'
+import Card, { isCardSection } from '../models/card'
+import LinkedList from '../utils/linked-list'
+import { Cloneable } from '../models/_cloneable'
+import HasChildSections, { hasChildSections } from '../models/_has-child-sections'
+import { Attributable } from '../models/_attributable'
+import Markup from '../models/markup'
+import { isMarkupSection } from '../models/markup-section'
+import { TagNameable } from '../models/_tag-nameable'
 
-const { FORWARD, BACKWARD } = DIRECTION
+const { FORWARD, BACKWARD } = Direction
 
-function isListSectionTagName(tagName) {
+function isListSectionTagName(tagName: string) {
   return tagName === 'ul' || tagName === 'ol'
 }
 
-function shrinkRange(range) {
+function shrinkRange(range: Range) {
   const { head, tail } = range
 
   if (tail.offset === 0 && head.section !== tail.section) {
-    range.tail = new Position(tail.section.prev, tail.section.prev.length)
+    range.tail = new Position(tail.section!.prev, tail.section!.prev!.length)
   }
 
   return range
@@ -34,9 +51,14 @@ const CALLBACK_QUEUES = {
 // There are only two events that we're concerned about for Undo, that is inserting text and deleting content.
 // These are the only two states that go on a "run" and create a combined undo, everything else has it's own
 // deadicated undo.
-const EDIT_ACTIONS = {
-  INSERT_TEXT: 1,
-  DELETE: 2,
+export const enum EditAction {
+  INSERT_TEXT = 1,
+  DELETE = 2,
+}
+
+interface SectionTransformation {
+  from: Section
+  to: Section
 }
 
 /**
@@ -52,11 +74,24 @@ const EDIT_ACTIONS = {
  * });
  * ```
  */
-class PostEditor {
+export default class PostEditor {
   /**
    * @private
    */
-  constructor(editor) {
+  editor: Editor
+  builder: PostNodeBuilder
+
+  editActionTaken: Option<EditAction>
+
+  _callbacks: LifecycleCallbacks
+  _range!: Range
+  _didComplete: boolean
+  _renderRange: () => void
+  _postDidChange: () => void
+  _rerender: () => void
+  _shouldCancelSnapshot!: boolean
+
+  constructor(editor: Editor) {
     this.editor = editor
     this.builder = this.editor.builder
     this._callbacks = new LifecycleCallbacks(values(CALLBACK_QUEUES))
@@ -69,16 +104,16 @@ class PostEditor {
     this._rerender = () => this.editor.rerender()
   }
 
-  addCallback(...args) {
-    this._callbacks.addCallback(...args)
+  addCallback(queueName: string, callback: LifecycleCallback) {
+    this._callbacks.addCallback(queueName, callback)
   }
 
-  addCallbackOnce(...args) {
-    this._callbacks.addCallbackOnce(...args)
+  addCallbackOnce(queueName: string, callback: LifecycleCallback) {
+    this._callbacks.addCallbackOnce(queueName, callback)
   }
 
-  runCallbacks(...args) {
-    this._callbacks.runCallbacks(...args)
+  runCallbacks(queueName: string) {
+    this._callbacks.runCallbacks(queueName)
   }
 
   begin() {
@@ -104,7 +139,7 @@ class PostEditor {
    * @param {Range|Position} range
    * @public
    */
-  setRange(range) {
+  setRange(range: Range | Position) {
     range = toRange(range)
 
     // TODO validate that the range is valid
@@ -128,42 +163,38 @@ class PostEditor {
    * @return {Position} The position where the cursor would go after deletion
    * @public
    */
-  deleteRange(range) {
+  deleteRange(range: Range): Position {
     assert('Must pass MobiledocKit Range to `deleteRange`', range instanceof Range)
 
-    this.editActionTaken = EDIT_ACTIONS.DELETE
+    this.editActionTaken = EditAction.DELETE
 
-    let {
-      head,
-      head: { section: headSection },
-      tail,
-      tail: { section: tailSection },
-    } = range
+    const { head, tail } = range
+    let headSection = head.section!
+    let tailSection = tail.section!
 
-    let {
-      editor: { post },
-    } = this
+    const { editor } = this
+    const { post } = editor
 
     if (headSection === tailSection) {
       return this.cutSection(headSection, head, tail)
     }
 
-    let nextSection = headSection.nextLeafSection()
+    let nextSection = headSection!.nextLeafSection()
 
-    let nextPos = this.cutSection(headSection, head, headSection.tailPosition())
+    let nextPos = this.cutSection(headSection, head, headSection!.tailPosition())
     // cutSection can replace the section, so re-read headSection here
-    headSection = nextPos.section
+    headSection = nextPos.section!
 
     // Remove sections in the middle of the range
     while (nextSection !== tailSection) {
-      let tmp = nextSection
-      nextSection = nextSection.nextLeafSection()
+      let tmp = nextSection!
+      nextSection = nextSection!.nextLeafSection()
       this.removeSection(tmp)
     }
 
-    let tailPos = this.cutSection(tailSection, tailSection.headPosition(), tail)
+    let tailPos = this.cutSection(tailSection, tailSection!.headPosition(), tail)
     // cutSection can replace the section, so re-read tailSection here
-    tailSection = tailPos.section
+    tailSection = tailPos.section!
 
     if (tailSection.isBlank) {
       this.removeSection(tailSection)
@@ -172,7 +203,7 @@ class PostEditor {
       // Note: They may not be the same section type. E.g. this may join
       // a tail section that was a list item onto a markup section, or vice versa.
       // (This is the desired behavior.)
-      if (headSection.isMarkerable && tailSection.isMarkerable) {
+      if (isMarkerable(headSection) && isMarkerable(tailSection)) {
         headSection.join(tailSection)
         this._markDirty(headSection)
         this.removeSection(tailSection)
@@ -205,7 +236,7 @@ class PostEditor {
    * @return {Position}
    * @private
    */
-  cutSection(section, head, tail) {
+  cutSection(section: Section, head: Position, tail: Position): Position {
     assert(
       'Must pass head position and tail position to `cutSection`',
       head instanceof Position && tail instanceof Position
@@ -231,14 +262,14 @@ class PostEditor {
     return head
   }
 
-  _coalesceMarkers(section) {
-    if (section.isMarkerable) {
+  _coalesceMarkers(section: Section) {
+    if (isMarkerable(section)) {
       this._removeBlankMarkers(section)
       this._joinSimilarMarkers(section)
     }
   }
 
-  _removeBlankMarkers(section) {
+  _removeBlankMarkers(section: Markerable) {
     forEach(
       filter(section.markers, m => m.isBlank),
       m => this.removeMarker(m)
@@ -246,9 +277,9 @@ class PostEditor {
   }
 
   // joins markers that have identical markups
-  _joinSimilarMarkers(section) {
+  _joinSimilarMarkers(section: Markerable) {
     let marker = section.markers.head
-    let nextMarker
+    let nextMarker: Markuperable
     while (marker && marker.next) {
       nextMarker = marker.next
 
@@ -262,7 +293,7 @@ class PostEditor {
     }
   }
 
-  removeMarker(marker) {
+  removeMarker(marker: Markuperable) {
     this._scheduleForRemoval(marker)
     if (marker.section) {
       this._markDirty(marker.section)
@@ -270,7 +301,7 @@ class PostEditor {
     }
   }
 
-  _scheduleForRemoval(postNode) {
+  _scheduleForRemoval(postNode: Exclude<PostNode, Post>) {
     if (postNode.renderNode) {
       postNode.renderNode.scheduleForRemoval()
 
@@ -278,7 +309,8 @@ class PostEditor {
       this.scheduleDidUpdate()
     }
     let removedAdjacentToList =
-      (postNode.prev && postNode.prev.isListSection) || (postNode.next && postNode.next.isListSection)
+      (postNode.prev && isListSection(postNode.prev as Section)) ||
+      (postNode.next && isListSection(postNode.next as Section))
     if (removedAdjacentToList) {
       this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, () => this._joinContiguousListSections())
     }
@@ -287,15 +319,15 @@ class PostEditor {
   _joinContiguousListSections() {
     let { post } = this.editor
     let range = this._range
-    let prev
-    let groups = []
-    let currentGroup
+    let prev: Section
+    let groups: ListSection[][] = []
+    let currentGroup!: Option<ListSection[]>
 
     // FIXME do we need to force a re-render of the range if changed sections
     // are contained within the range?
-    let updatedHead = null
+    let updatedHead: Option<Position> = null
     forEach(post.sections, section => {
-      if (prev && prev.isListSection && section.isListSection && prev.tagName === section.tagName) {
+      if (prev && isListSection(prev) && isListSection(section) && prev.tagName === section.tagName) {
         currentGroup = currentGroup || [prev]
         currentGroup.push(section)
       } else {
@@ -319,11 +351,11 @@ class PostEditor {
         }
 
         let currentHead = range.head
-        let prevPosition
+        let prevPosition: Maybe<Position>
 
         // FIXME is there a currentHead if there is no range?
         // is the current head a list item in the section
-        if (!range.isBlank && currentHead.section.isListItem && currentHead.section.parent === listSection) {
+        if (!range.isBlank && isListItem(currentHead.section!) && currentHead.section.parent === listSection) {
           prevPosition = list.tailPosition()
         }
         this._joinListSections(list, listSection)
@@ -338,24 +370,24 @@ class PostEditor {
     }
   }
 
-  _joinListSections(baseList, nextList) {
+  _joinListSections(baseList: ListSection, nextList: ListSection) {
     baseList.join(nextList)
     this._markDirty(baseList)
     this.removeSection(nextList)
   }
 
-  _markDirty(postNode) {
+  _markDirty(postNode: PostNode) {
     if (postNode.renderNode) {
       postNode.renderNode.markDirty()
 
       this.scheduleRerender()
       this.scheduleDidUpdate()
     }
-    if (postNode.section) {
+    if ('section' in postNode && postNode.section) {
       this._markDirty(postNode.section)
     }
-    if (postNode.isMarkerable) {
-      this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, () => this._coalesceMarkers(postNode))
+    if (isMarkerable(postNode as Section)) {
+      this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, () => this._coalesceMarkers(postNode as Markerable))
     }
   }
 
@@ -366,11 +398,11 @@ class PostEditor {
    * @public
    * @deprecated after v0.10.3
    */
-  deleteFrom(position, direction = DIRECTION.BACKWARD) {
+  deleteFrom(position: Position, direction: Direction = Direction.BACKWARD): Position {
     deprecate(
       "`postEditor#deleteFrom is deprecated. Use `deleteAtPosition(position, direction=BACKWARD, {unit}={unit: 'char'})` instead"
     )
-    return this.deleteAtPosition(position, direction, { unit: 'char' })
+    return this.deleteAtPosition(position, direction, { unit: TextUnit.CHAR })
   }
 
   /**
@@ -395,16 +427,20 @@ class PostEditor {
    * @param {String} [options.unit="char"] The unit of deletion ("word" or "char")
    * @return {Position}
    */
-  deleteAtPosition(position, direction = DIRECTION.BACKWARD, { unit } = { unit: 'char' }) {
-    if (direction === DIRECTION.BACKWARD) {
+  deleteAtPosition(
+    position: Position,
+    direction: Direction = Direction.BACKWARD,
+    { unit }: { unit: TextUnit } = { unit: TextUnit.CHAR }
+  ): Position {
+    if (direction === Direction.BACKWARD) {
       return this._deleteAtPositionBackward(position, unit)
     } else {
       return this._deleteAtPositionForward(position, unit)
     }
   }
 
-  _deleteAtPositionBackward(position, unit) {
-    if (position.isHead() && position.section.isListItem) {
+  _deleteAtPositionBackward(position: Position, unit: TextUnit) {
+    if (position.isHead() && isListItem(position.section!)) {
       this.toggleSection('p', position)
       return this._range.head
     } else {
@@ -414,7 +450,7 @@ class PostEditor {
     }
   }
 
-  _deleteAtPositionForward(position, unit) {
+  _deleteAtPositionForward(position: Position, unit: TextUnit) {
     let nextPosition = unit === 'word' ? position.moveWord(FORWARD) : position.move(FORWARD)
     let range = position.toRange(nextPosition)
     return this.deleteRange(range)
@@ -438,17 +474,17 @@ class PostEditor {
    * @return {Array} of markers that are inside the split
    * @private
    */
-  splitMarkers(range) {
+  splitMarkers(range: Range): Markuperable[] {
     const { post } = this.editor
     const { head, tail } = range
 
-    this.splitSectionMarkerAtOffset(head.section, head.offset)
-    this.splitSectionMarkerAtOffset(tail.section, tail.offset)
+    this.splitSectionMarkerAtOffset(head.section!, head.offset)
+    this.splitSectionMarkerAtOffset(tail.section!, tail.offset)
 
     return post.markersContainedByRange(range)
   }
 
-  splitSectionMarkerAtOffset(section, offset) {
+  splitSectionMarkerAtOffset(section: Section, offset: number) {
     const edit = section.splitMarkerAtOffset(offset)
     edit.removed.forEach(m => this.removeMarker(m))
   }
@@ -473,12 +509,12 @@ class PostEditor {
    * @return {Array} new sections, one for the first half and one for the second (either one can be null)
    * @public
    */
-  splitSection(position) {
-    const { section } = position
+  splitSection(position: Position): [Option<Section>, Option<Section>] {
+    const section = position.section!
 
-    if (section.isCardSection) {
+    if (isCardSection(section)) {
       return this._splitCardSection(section, position)
-    } else if (section.isListItem) {
+    } else if (isListItem(section)) {
       let isLastAndBlank = section.isBlank && !section.next
       if (isLastAndBlank) {
         // if is last, replace the item with a blank markup section
@@ -494,7 +530,7 @@ class PostEditor {
         return [pre, post]
       }
     } else {
-      let splitSections = section.splitAtPosition(position)
+      let splitSections = (section as Markerable).splitAtPosition(position)
       splitSections.forEach(s => this._coalesceMarkers(s))
       this._replaceSection(section, splitSections)
 
@@ -508,19 +544,19 @@ class PostEditor {
    * @return {Section[]} 2-item array of pre and post-split sections
    * @private
    */
-  _splitCardSection(cardSection, position) {
+  _splitCardSection(cardSection: Card, position: Position): [Section, Section] {
     let { offset } = position
     assert('Cards section must be split at offset 0 or 1', offset === 0 || offset === 1)
 
     let newSection = this.builder.createMarkupSection()
-    let nextSection
-    let surroundingSections
+    let nextSection: Section
+    let surroundingSections: [Section, Section]
 
     if (offset === 0) {
       nextSection = cardSection
       surroundingSections = [newSection, cardSection]
     } else {
-      nextSection = cardSection.next
+      nextSection = cardSection.next!
       surroundingSections = [cardSection, newSection]
     }
 
@@ -533,10 +569,9 @@ class PostEditor {
   /**
    * @param {Section} section
    * @param {Section} newSection
-   * @return null
    * @public
    */
-  replaceSection(section, newSection) {
+  replaceSection(section: Section, newSection: Section) {
     if (!section) {
       // FIXME should a falsy section be a valid argument?
       this.insertSectionBefore(this.editor.post.sections, newSection, null)
@@ -545,7 +580,11 @@ class PostEditor {
     }
   }
 
-  moveSectionBefore(collection, renderedSection, beforeSection) {
+  moveSectionBefore(
+    collection: LinkedList<Cloneable<Section>>,
+    renderedSection: Cloneable<Section>,
+    beforeSection: Section
+  ) {
     const newSection = renderedSection.clone()
     this.removeSection(renderedSection)
     this.insertSectionBefore(collection, newSection, beforeSection)
@@ -556,14 +595,14 @@ class PostEditor {
    * @param {Section} section A section that is already in DOM
    * @public
    */
-  moveSectionUp(renderedSection) {
+  moveSectionUp(renderedSection: Cloneable<Section>) {
     const isFirst = !renderedSection.prev
     if (isFirst) {
       return renderedSection
     }
 
     const collection = renderedSection.parent.sections
-    const beforeSection = renderedSection.prev
+    const beforeSection = renderedSection.prev!
     return this.moveSectionBefore(collection, renderedSection, beforeSection)
   }
 
@@ -571,13 +610,13 @@ class PostEditor {
    * @param {Section} section A section that is already in DOM
    * @public
    */
-  moveSectionDown(renderedSection) {
+  moveSectionDown(renderedSection: Cloneable<Section>) {
     const isLast = !renderedSection.next
     if (isLast) {
       return renderedSection
     }
 
-    const beforeSection = renderedSection.next.next
+    const beforeSection = renderedSection.next!.next!
     const collection = renderedSection.parent.sections
     return this.moveSectionBefore(collection, renderedSection, beforeSection)
   }
@@ -591,18 +630,20 @@ class PostEditor {
    * @return {Position} The position that represents the end of the inserted markers.
    * @public
    */
-  insertMarkers(position, markers) {
-    let { section, offset } = position
-    assert('Cannot insert markers at non-markerable position', section.isMarkerable)
+  insertMarkers(position: Position, markers: Markuperable[]): Position {
+    const section = position.section! as Markerable
+    let offset = position.offset
 
-    this.editActionTaken = EDIT_ACTIONS.INSERT_TEXT
+    assert('Cannot insert markers at non-markerable position', section!.isMarkerable)
+
+    this.editActionTaken = EditAction.INSERT_TEXT
 
     let edit = section.splitMarkerAtOffset(offset)
     edit.removed.forEach(marker => this._scheduleForRemoval(marker))
 
     let prevMarker = section.markerBeforeOffset(offset)
     markers.forEach(marker => {
-      section.markers.insertAfter(marker, prevMarker)
+      section.markers.insertAfter(marker, prevMarker!)
       offset += marker.length
       prevMarker = marker
     })
@@ -624,9 +665,9 @@ class PostEditor {
    * @param {Markup[]} markups
    * @return {Position} position at the end of the inserted text
    */
-  insertTextWithMarkup(position, text, markups = []) {
+  insertTextWithMarkup(position: Position, text: string, markups: Markup[] = []): Maybe<Position> {
     let { section } = position
-    if (!section.isMarkerable) {
+    if (!section!.isMarkerable) {
       return
     }
     let marker = this.builder.createMarker(text, markups)
@@ -641,9 +682,9 @@ class PostEditor {
    * @param {String} text
    * @return {Position} position at the end of the inserted text.
    */
-  insertText(position, text) {
+  insertText(position: Position, text: string): Maybe<Position> {
     let { section } = position
-    if (!section.isMarkerable) {
+    if (!section!.isMarkerable) {
       return
     }
     let markups = position.marker && position.marker.markups
@@ -651,15 +692,15 @@ class PostEditor {
     return this.insertTextWithMarkup(position, text, markups)
   }
 
-  _replaceSection(section, newSections) {
+  _replaceSection(section: Section, newSections: Section[]) {
     let nextSection = section.next
-    let collection = section.parent.sections
+    let collection = ((section.parent as unknown) as HasChildSections).sections
 
     let nextNewSection = newSections[0]
-    if (nextNewSection.isMarkupSection && section.isListItem) {
+    if (isMarkupSection(nextNewSection) && isListItem(section)) {
       // put the new section after the ListSection (section.parent)
       // instead of after the ListItem
-      collection = section.parent.parent.sections
+      collection = ((section.parent.parent as unknown) as HasChildSections).sections
       nextSection = section.parent.next
     }
 
@@ -686,7 +727,7 @@ class PostEditor {
    * @param {Markup} markup A markup post abstract node
    * @public
    */
-  addMarkupToRange(range, markup) {
+  addMarkupToRange(range: Range, markup: Markup) {
     if (range.isCollapsed) {
       return
     }
@@ -738,7 +779,7 @@ class PostEditor {
    * a function that returns true when passed a markup that should be removed
    * @private
    */
-  removeMarkupFromRange(range, markupOrMarkupCallback) {
+  removeMarkupFromRange(range: Range, markupOrMarkupCallback: ((markup: Markup) => boolean) | Markup) {
     if (range.isCollapsed) {
       return
     }
@@ -772,7 +813,7 @@ class PostEditor {
    * @param {Range|Position} range in which to toggle. Defaults to current editor range.
    * @public
    */
-  toggleMarkup(markupOrMarkupString, range = this._range) {
+  toggleMarkup(markupOrMarkupString: Markup | string, range: Range | Position = this._range) {
     range = toRange(range)
     const markup =
       typeof markupOrMarkupString === 'string' ? this.builder.createMarkup(markupOrMarkupString) : markupOrMarkupString
@@ -801,7 +842,7 @@ class PostEditor {
    *        Defaults to the current editor range.
    * @public
    */
-  toggleSection(sectionTagName, range = this._range) {
+  toggleSection(sectionTagName: string, range: Range | Position = this._range) {
     range = shrinkRange(toRange(range))
 
     sectionTagName = normalizeTagName(sectionTagName)
@@ -815,7 +856,7 @@ class PostEditor {
     })
 
     let tagName = everySectionHasTagName ? 'p' : sectionTagName
-    let sectionTransformations = []
+    let sectionTransformations: SectionTransformation[] = []
     post.walkMarkerableSections(range, section => {
       let changedSection = this.changeSectionTagName(section, tagName)
 
@@ -829,14 +870,14 @@ class PostEditor {
     this.setRange(nextRange)
   }
 
-  _determineNextRangeAfterToggleSection(range, sectionTransformations) {
+  _determineNextRangeAfterToggleSection(range: Range, sectionTransformations: SectionTransformation[]) {
     if (sectionTransformations.length) {
       let changedHeadSection = detect(sectionTransformations, ({ from }) => {
         return from === range.headSection
-      }).to
+      })!.to
       let changedTailSection = detect(sectionTransformations, ({ from }) => {
         return from === range.tailSection
-      }).to
+      })!.to
 
       if (changedHeadSection.isListSection || changedTailSection.isListSection) {
         // We don't know to which ListItem's the original sections point at, so
@@ -845,9 +886,9 @@ class PostEditor {
         return sectionTransformations[0].to.headPosition().toRange()
       } else {
         return Range.create(
-          changedHeadSection,
+          changedHeadSection as Markerable,
           range.headSectionOffset,
-          changedTailSection,
+          changedTailSection as Markerable,
           range.tailSectionOffset,
           range.direction
         )
@@ -857,7 +898,7 @@ class PostEditor {
     }
   }
 
-  setAttribute(key, value, range = this._range) {
+  setAttribute(key: string, value: string, range: Range = this._range) {
     this._mutateAttribute(key, range, (section, attribute) => {
       if (section.getAttribute(attribute) !== value) {
         section.setAttribute(attribute, value)
@@ -866,7 +907,7 @@ class PostEditor {
     })
   }
 
-  removeAttribute(key, range = this._range) {
+  removeAttribute(key: string, range: Range = this._range) {
     this._mutateAttribute(key, range, (section, attribute) => {
       if (section.hasAttribute(attribute)) {
         section.removeAttribute(attribute)
@@ -875,17 +916,15 @@ class PostEditor {
     })
   }
 
-  _mutateAttribute(key, range, cb) {
+  _mutateAttribute(key: string, range: Range, cb: (section: Attributable, attribute: string) => boolean | void) {
     range = toRange(range)
     let { post } = this.editor
     let attribute = `data-md-${key}`
 
     post.walkMarkerableSections(range, section => {
-      if (section.isListItem) {
-        section = section.parent
-      }
+      const cbSection: Attributable = isListItem(section) ? section.parent : ((section as unknown) as Attributable)
 
-      if (cb(section, attribute) === true) {
+      if (cb(cbSection, attribute) === true) {
         this._markDirty(section)
       }
     })
@@ -893,20 +932,20 @@ class PostEditor {
     this.setRange(range)
   }
 
-  _isSameSectionType(section, sectionTagName) {
-    return section.isListItem ? section.parent.tagName === sectionTagName : section.tagName === sectionTagName
+  _isSameSectionType(section: Section & TagNameable, sectionTagName: string) {
+    return isListItem(section) ? section.parent.tagName === sectionTagName : section.tagName === sectionTagName
   }
 
   /**
    * @param {Markerable} section
    * @private
    */
-  changeSectionTagName(section, newTagName) {
+  changeSectionTagName(section: Markerable & TagNameable, newTagName: string) {
     assert('Cannot pass non-markerable section to `changeSectionTagName`', section.isMarkerable)
 
     if (isListSectionTagName(newTagName)) {
       return this._changeSectionToListItem(section, newTagName)
-    } else if (section.isListItem) {
+    } else if (isListItem(section)) {
       return this._changeSectionFromListItem(section, newTagName)
     } else {
       section.tagName = newTagName
@@ -924,7 +963,7 @@ class PostEditor {
    * @return {Array} the pre-item and post-item on either side of the split
    * @private
    */
-  _splitListItem(item, position) {
+  _splitListItem(item: ListItem, position: Position): [ListItem, ListItem] {
     let { section, offset } = position
     assert('Cannot split list item at position that does not include item', item === section)
 
@@ -954,12 +993,12 @@ class PostEditor {
    *
    * @private
    */
-  _splitListAtPosition(list, position) {
-    assert('Cannot split list at position not in list', position.section.parent === list)
+  _splitListAtPosition(list: ListSection, position: Position): [ListSection, ListSection] {
+    assert('Cannot split list at position not in list', position.section!.parent === list)
 
     let positionIsMiddle = !position.isHead() && !position.isTail()
     if (positionIsMiddle) {
-      let item = position.section
+      let item = position.section! as ListItem
       let [pre] = this._splitListItem(item, position)
       position = pre.tailPosition()
     }
@@ -995,7 +1034,7 @@ class PostEditor {
    *
    * @private
    */
-  _splitListAtItem(list, item) {
+  _splitListAtItem(list: ListSection, item: ListItem) {
     let next = list
     let prev = this.builder.createListSection(next.tagName, [], next.attributes)
     let mid = this.builder.createListSection(next.tagName)
@@ -1005,7 +1044,7 @@ class PostEditor {
     // as we iterate through it
     let items = next.items.toArray()
     items.forEach(i => {
-      let listToAppend
+      let listToAppend: ListSection
       if (i === item) {
         addToPrev = false
         listToAppend = mid
@@ -1027,7 +1066,7 @@ class PostEditor {
     // Remove possibly blank prev/next lists
     this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, () => {
       ;[prev, next].forEach(_list => {
-        let isAttached = !!_list.parent
+        let isAttached = !!_list._parent
         if (_list.isBlank && isAttached) {
           this.removeSection(_list)
         }
@@ -1037,10 +1076,10 @@ class PostEditor {
     return [prev, mid, next]
   }
 
-  _changeSectionFromListItem(section, newTagName) {
-    assert('Must pass list item to `_changeSectionFromListItem`', section.isListItem)
+  _changeSectionFromListItem(section: Section, newTagName: string) {
+    assertType<ListItem>('Must pass list item to `_changeSectionFromListItem`', section, isListItem(section))
 
-    let listSection = section.parent
+    let listSection = section.parent as ListSection
     let markupSection = this.builder.createMarkupSection(newTagName)
     markupSection.join(section)
 
@@ -1049,8 +1088,9 @@ class PostEditor {
     return markupSection
   }
 
-  _changeSectionToListItem(section, newTagName) {
-    let isAlreadyCorrectListItem = section.isListItem && section.parent.tagName === newTagName
+  _changeSectionToListItem(section: ListSection | Markerable, newTagName: string) {
+    let isAlreadyCorrectListItem =
+      section.isListItem && ((section.parent as unknown) as TagNameable).tagName === newTagName
 
     if (isAlreadyCorrectListItem) {
       return section
@@ -1059,8 +1099,8 @@ class PostEditor {
     let listSection = this.builder.createListSection(newTagName)
     listSection.join(section)
 
-    let sectionToReplace
-    if (section.isListItem) {
+    let sectionToReplace: Section
+    if (isListItem(section)) {
       let [, mid] = this._splitListAtItem(section.parent, section)
       sectionToReplace = mid
     } else {
@@ -1090,8 +1130,12 @@ class PostEditor {
    *        if falsy the new section will be appended to the collection
    * @public
    */
-  insertSectionBefore(collection, section, beforeSection) {
-    collection.insertBefore(section, beforeSection)
+  insertSectionBefore(
+    collection: LinkedList<Section> | LinkedList<Cloneable<Section>>,
+    section: Section,
+    beforeSection?: Option<Section>
+  ) {
+    ;(collection as LinkedList<Section>).insertBefore(section, beforeSection)
     this._markDirty(section.parent)
   }
 
@@ -1101,11 +1145,11 @@ class PostEditor {
    * @param {Section} section
    * @public
    */
-  insertSection(section) {
+  insertSection(section: Section) {
     const activeSection = this.editor.activeSection
     const nextSection = activeSection && activeSection.next
 
-    const collection = this.editor.post.sections
+    const collection = (this.editor.post.sections as unknown) as LinkedList<Section>
     this.insertSectionBefore(collection, section, nextSection)
   }
 
@@ -1114,7 +1158,7 @@ class PostEditor {
    * @param {Section} section
    * @public
    */
-  insertSectionAtEnd(section) {
+  insertSectionAtEnd(section: Section) {
     this.insertSectionBefore(this.editor.post.sections, section, null)
   }
 
@@ -1124,7 +1168,7 @@ class PostEditor {
    * @param {Post} post
    * @private
    */
-  insertPost(position, newPost) {
+  insertPost(position: Position, newPost: Post) {
     let post = this.editor.post
     let inserter = new PostInserter(this, post)
     let nextPosition = inserter.insert(position, newPost)
@@ -1145,12 +1189,15 @@ class PostEditor {
    * @param {Object} section The section to remove
    * @public
    */
-  removeSection(section) {
+  removeSection(section: Section) {
     let parent = section.parent
+
+    assertType<HasChildSections>('expected section to have child sections', parent, hasChildSections(parent))
+
     this._scheduleForRemoval(section)
     parent.sections.remove(section)
 
-    if (parent.isListSection) {
+    if (isListSection(parent)) {
       this._scheduleListRemovalIfEmpty(parent)
     }
   }
@@ -1161,18 +1208,18 @@ class PostEditor {
     })
   }
 
-  migrateSectionsFromPost(post) {
+  migrateSectionsFromPost(post: Post) {
     post.sections.toArray().forEach(section => {
       post.sections.remove(section)
       this.insertSectionBefore(this.editor.post.sections, section, null)
     })
   }
 
-  _scheduleListRemovalIfEmpty(listSection) {
+  _scheduleListRemovalIfEmpty(listSection: ListSection) {
     this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, () => {
       // if the list is attached and blank after we do other rendering stuff,
       // remove it
-      let isAttached = !!listSection.parent
+      let isAttached = !!listSection._parent
       if (isAttached && listSection.isBlank) {
         this.removeSection(listSection)
       }
@@ -1186,7 +1233,7 @@ class PostEditor {
    * @param {Boolean} [once=false] Whether to only schedule the callback once.
    * @public
    */
-  schedule(callback, once = false) {
+  schedule(callback: LifecycleCallback, once: boolean = false) {
     assert('Work can only be scheduled before a post edit has completed', !this._didComplete)
     if (once) {
       this.addCallbackOnce(CALLBACK_QUEUES.COMPLETE, callback)
@@ -1203,7 +1250,7 @@ class PostEditor {
    * @param {Function} callback to run during completion
    * @public
    */
-  scheduleOnce(callback) {
+  scheduleOnce(callback: LifecycleCallback) {
     this.schedule(callback, true)
   }
 
@@ -1227,7 +1274,7 @@ class PostEditor {
     this.scheduleOnce(this._postDidChange)
   }
 
-  scheduleAfterRender(callback, once = false) {
+  scheduleAfterRender(callback: LifecycleCallback, once = false) {
     if (once) {
       this.addCallbackOnce(CALLBACK_QUEUES.AFTER_COMPLETE, callback)
     } else {
@@ -1262,5 +1309,3 @@ class PostEditor {
     this._shouldCancelSnapshot = true
   }
 }
-
-export default PostEditor

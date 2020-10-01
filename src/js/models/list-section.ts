@@ -9,6 +9,8 @@ import { entries } from '../utils/object-utils'
 import ListItem from './list-item'
 import { tagNameable } from './_tag-nameable'
 import HasChildSections from './_has-child-sections'
+import { PostNode } from './post-node-builder'
+import Markerable from './_markerable'
 
 export const VALID_LIST_SECTION_TAGNAMES = ['ul', 'ol'].map(normalizeTagName)
 
@@ -30,9 +32,9 @@ export default class ListSection extends attributable(tagNameable(Section)) impl
     this.items = new LinkedList<ListItem>({
       adoptItem: i => {
         assert(`Cannot insert non-list-item to list (is: ${i.type})`, i.isListItem)
-        i.section = i.parent = this
+        i.section = i._parent = this
       },
-      freeItem: i => (i.section = i.parent = null),
+      freeItem: i => (i.section = i._parent = null),
     })
     this.sections = this.items
 
@@ -70,8 +72,8 @@ export default class ListSection extends attributable(tagNameable(Section)) impl
    * @param {ListSection|Markerable}
    * @return null
    */
-  join(other) {
-    if (other.isListSection) {
+  join(other: ListSection | Markerable) {
+    if (isListSection(other)) {
       other.items.forEach(i => this.join(i))
     } else if (other.isMarkerable) {
       let item = this.builder.createListItem()
@@ -81,6 +83,6 @@ export default class ListSection extends attributable(tagNameable(Section)) impl
   }
 }
 
-export function isListSection(section: Section): section is ListSection {
-  return section.isListSection
+export function isListSection(section: PostNode): section is ListSection {
+  return (section as Section).isListSection
 }

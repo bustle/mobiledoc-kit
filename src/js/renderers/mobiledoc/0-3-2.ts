@@ -128,7 +128,7 @@ class PostOpcodeCompiler {
     }
   }
 
-  openMarkup(tagName, attributes) {
+  openMarkup(tagName: string, attributes: string[]) {
     const index = this._findOrAddMarkerTypeIndex(tagName, attributes)
     this.markupMarkerIds.push(index)
   }
@@ -184,7 +184,7 @@ export default {
    * @return {Mobiledoc}
    */
   render(post: Post): MobiledocV0_3_2 {
-    let opcodes = []
+    let opcodes: Opcodes = []
     visit(visitor, post, opcodes)
     let compiler = new PostOpcodeCompiler()
     compile(compiler, opcodes)

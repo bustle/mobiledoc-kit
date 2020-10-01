@@ -1,8 +1,8 @@
 import { clearSelection, comparePosition, isFullSelection } from '../utils/selection-utils'
 import { containsNode } from '../utils/dom-utils'
 import Position from './cursor/position'
-import Range, { Direction } from './cursor/range'
-import { DIRECTION } from '../utils/key'
+import Range from './cursor/range'
+import { Direction } from '../utils/key'
 import { constrainSelectionTo } from '../utils/selection-utils'
 import Editor from '../editor/editor'
 import RenderTree from '../models/render-tree'
@@ -44,7 +44,7 @@ class Cursor {
   /**
    * @return {Boolean} Can the cursor be on this element?
    */
-  isAddressable(element: Element) {
+  isAddressable(element: Node) {
     let { renderTree } = this
     let renderNode = renderTree.findRenderNodeFromElement(element)
     if (renderNode && (renderNode.postNode as Section).isCardSection) {
@@ -131,7 +131,7 @@ class Cursor {
     const { head, tail, direction } = range
     const { node: headNode, offset: headOffset } = this._findNodeForPosition(head),
       { node: tailNode, offset: tailOffset } = this._findNodeForPosition(tail)
-    this._moveToNode(headNode, headOffset, tailNode, tailOffset, direction)
+    this._moveToNode(headNode! as Text, headOffset, tailNode! as Text, tailOffset, direction!)
 
     // Firefox sometimes doesn't keep focus in the editor after adding a card
     this.editor._ensureFocus()
@@ -154,16 +154,16 @@ class Cursor {
    * @param {integer} direction forward or backward, default forward
    * @private
    */
-  _moveToNode(node: Text, offset: number, endNode: Text, endOffset: number, direction: Direction = DIRECTION.FORWARD) {
+  _moveToNode(node: Text, offset: number, endNode: Text, endOffset: number, direction: Direction = Direction.FORWARD) {
     this.clearSelection()
 
-    if (direction === DIRECTION.BACKWARD) {
+    if (direction === Direction.BACKWARD) {
       ;[node, offset, endNode, endOffset] = [endNode, endOffset, node, offset]
     }
 
     const range = document.createRange()
     range.setStart(node, offset)
-    if (direction === DIRECTION.BACKWARD && isFullSelection(this.selection)) {
+    if (direction === Direction.BACKWARD && isFullSelection(this.selection)) {
       this.selection.addRange(range)
       this.selection.extend(endNode, endOffset)
     } else {

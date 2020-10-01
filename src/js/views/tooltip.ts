@@ -36,7 +36,7 @@ export default class Tooltip extends View {
     this.addListeners(options)
   }
 
-  showLink(linkEl: HTMLElement) {
+  showLink(linkEl: HTMLAnchorElement) {
     const { editor, element: tooltipEl } = this
     const { tooltipPlugin } = editor
 
@@ -78,7 +78,7 @@ export default class Tooltip extends View {
       if (target && target.isContentEditable) {
         clearTimeout(hideTimeout)
         showTimeout = setTimeout(() => {
-          target && this.showLink(target)
+          target && this.showLink(target as HTMLAnchorElement)
         }, SHOW_DELAY)
       }
     })
@@ -93,7 +93,12 @@ export default class Tooltip extends View {
   }
 }
 
-export const DEFAULT_TOOLTIP_PLUGIN = {
+type EditLinkCallback = () => void
+export interface TooltipPlugin {
+  renderLink(tooltipEl: Element, linkEl: HTMLLinkElement, options: { editLink: EditLinkCallback }): void
+}
+
+export const DEFAULT_TOOLTIP_PLUGIN: TooltipPlugin = {
   renderLink(tooltipEl: Element, linkEl: HTMLLinkElement, { editLink }) {
     const { href } = linkEl
     tooltipEl.innerHTML = `<a href="${href}" target="_blank">${href}</a>`

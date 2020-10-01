@@ -14,7 +14,9 @@ export function isCardSection(section: {}): section is Card {
   return (section as Card).isCardSection
 }
 
-export default class Card<T = {}> extends Section {
+export type CardPayload = {}
+
+export default class Card<T = CardPayload> extends Section {
   name: string
   payload: T
   builder!: PostNodeBuilder

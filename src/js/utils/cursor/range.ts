@@ -1,12 +1,12 @@
 import Position from './position'
-import { DIRECTION } from '../key'
+import { Direction } from '../key'
 import assert, { assertNotNull, unwrap } from '../assert'
 import Markerable from '../../models/_markerable'
 import MobiledocError from '../mobiledoc-error'
 import Section from '../../models/_section'
 import Markuperable from '../markuperable'
+import { Option } from '../types'
 
-export type Direction = DIRECTION | null
 /**
  * A logical range of a {@link Post}.
  * Usually an instance of Range will be read from the {@link Editor#range} property,
@@ -15,16 +15,15 @@ export type Direction = DIRECTION | null
 export default class Range {
   head: Position
   tail: Position
-  direction: Direction
+  direction: Option<Direction>
 
   /**
    * @param {Position} head
    * @param {Position} [tail=head]
    * @param {Direction} [direction=null]
-   * @return {Range}
    * @private
    */
-  constructor(head: Position, tail: Position = head, direction: Direction = null) {
+  constructor(head: Position, tail: Position = head, direction: Option<Direction> = null) {
     /** @property {Position} head */
     this.head = head
 
@@ -50,8 +49,8 @@ export default class Range {
     headOffset: number,
     tailSection: Markerable = headSection,
     tailOffset = headOffset,
-    direction = null
-  ) {
+    direction: Option<Direction> = null
+  ): Range {
     return new Range(new Position(headSection, headOffset), new Position(tailSection, tailOffset), direction)
   }
 
@@ -96,12 +95,12 @@ export default class Range {
 
     let { head, tail, direction: currentDirection } = this
     switch (currentDirection) {
-      case DIRECTION.FORWARD:
+      case Direction.FORWARD:
         return new Range(head, tail.move(units), currentDirection)
-      case DIRECTION.BACKWARD:
+      case Direction.BACKWARD:
         return new Range(head.move(units), tail, currentDirection)
       default: {
-        let newDirection = units > 0 ? DIRECTION.FORWARD : DIRECTION.BACKWARD
+        let newDirection = units > 0 ? Direction.FORWARD : Direction.BACKWARD
         return new Range(head, tail, newDirection).extend(units)
       }
     }
@@ -118,8 +117,8 @@ export default class Range {
    */
   move(direction: Direction) {
     assert(
-      `Must pass DIRECTION.FORWARD (${DIRECTION.FORWARD}) or DIRECTION.BACKWARD (${DIRECTION.BACKWARD}) to Range#move`,
-      direction === DIRECTION.FORWARD || direction === DIRECTION.BACKWARD
+      `Must pass DIRECTION.FORWARD (${Direction.FORWARD}) or DIRECTION.BACKWARD (${Direction.BACKWARD}) to Range#move`,
+      direction === Direction.FORWARD || direction === Direction.BACKWARD
     )
 
     let { focusedPosition, isCollapsed } = this
@@ -181,11 +180,11 @@ export default class Range {
   }
 
   _collapse(direction: Direction) {
-    return new Range(direction === DIRECTION.BACKWARD ? this.head : this.tail)
+    return new Range(direction === Direction.BACKWARD ? this.head : this.tail)
   }
 
   get focusedPosition() {
-    return this.direction === DIRECTION.BACKWARD ? this.head : this.tail
+    return this.direction === Direction.BACKWARD ? this.head : this.tail
   }
 
   isEqual(other: Range) {

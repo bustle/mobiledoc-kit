@@ -1,3 +1,6 @@
+import Editor from './editor'
+import { TextInputHandlerListener } from './text-input-handler'
+
 /**
  * Convert section at the editor's cursor position into a list.
  * Does nothing if the cursor position is not at the start of the section,
@@ -7,19 +10,17 @@
  * @param {String} listTagName ("ul" or "ol")
  * @public
  */
-export function replaceWithListSection(editor, listTagName) {
-  let {
-    range: {
-      head,
-      head: { section },
-    },
-  } = editor
+export function replaceWithListSection(editor: Editor, listTagName: string) {
+  const { range } = editor
+  const { head } = range
+  const { section } = head
+
   // Skip if cursor is not at end of section
   if (!head.isTail()) {
     return
   }
 
-  if (section.isListItem) {
+  if (section!.isListItem) {
     return
   }
 
@@ -28,7 +29,7 @@ export function replaceWithListSection(editor, listTagName) {
     let item = builder.createListItem()
     let listSection = builder.createListSection(listTagName, [item])
 
-    postEditor.replaceSection(section, listSection)
+    postEditor.replaceSection(section!, listSection)
     postEditor.setRange(listSection.headPosition())
   })
 }
@@ -41,13 +42,14 @@ export function replaceWithListSection(editor, listTagName) {
  * @param {String} headingTagName ('h1', 'h2', 'h3', 'h4', 'h5', 'h6')
  * @public
  */
-export function replaceWithHeaderSection(editor, headingTagName) {
+export function replaceWithHeaderSection(editor: Editor, headingTagName: string) {
   let {
     range: {
       head,
       head: { section },
     },
   } = editor
+
   // Skip if cursor is not at end of section
   if (!head.isTail()) {
     return
@@ -56,12 +58,12 @@ export function replaceWithHeaderSection(editor, headingTagName) {
   editor.run(postEditor => {
     let { builder } = postEditor
     let newSection = builder.createMarkupSection(headingTagName)
-    postEditor.replaceSection(section, newSection)
+    postEditor.replaceSection(section!, newSection)
     postEditor.setRange(newSection.headPosition())
   })
 }
 
-export const DEFAULT_TEXT_INPUT_HANDLERS = [
+export const DEFAULT_TEXT_INPUT_HANDLERS: TextInputHandlerListener[] = [
   {
     name: 'ul',
     // "* " -> ul

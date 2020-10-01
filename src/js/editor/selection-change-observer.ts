@@ -1,10 +1,20 @@
-let instance
+import { PartialSelection } from '../utils/selection-utils'
+
+let instance: SelectionChangeObserver
+
+export interface SelectionChangeListener {
+  selectionDidChange(nextSelection: PartialSelection, prevSelection: PartialSelection): void
+}
 
 class SelectionChangeObserver {
+  started: boolean
+  listeners: SelectionChangeListener[]
+  selection: PartialSelection
+
   constructor() {
     this.started = false
     this.listeners = []
-    this.selection = {}
+    this.selection = {} as PartialSelection
   }
 
   static getInstance() {
@@ -14,22 +24,22 @@ class SelectionChangeObserver {
     return instance
   }
 
-  static addListener(listener) {
+  static addListener(listener: SelectionChangeListener) {
     SelectionChangeObserver.getInstance().addListener(listener)
   }
 
-  addListener(listener) {
+  addListener(listener: SelectionChangeListener) {
     if (this.listeners.indexOf(listener) === -1) {
       this.listeners.push(listener)
       this.start()
     }
   }
 
-  static removeListener(listener) {
+  static removeListener(listener: SelectionChangeListener) {
     SelectionChangeObserver.getInstance().removeListener(listener)
   }
 
-  removeListener(listener) {
+  removeListener(listener: SelectionChangeListener) {
     let index = this.listeners.indexOf(listener)
     if (index !== -1) {
       this.listeners.splice(index, 1)
@@ -50,12 +60,12 @@ class SelectionChangeObserver {
 
   stop() {
     this.started = false
-    this.selection = {}
+    this.selection = {} as Selection
   }
 
-  notifyListeners(/* newSelection, prevSelection */) {
+  notifyListeners(newSelection: PartialSelection, prevSelection: PartialSelection) {
     this.listeners.forEach(listener => {
-      listener.selectionDidChange(...arguments)
+      listener.selectionDidChange(newSelection, prevSelection)
     })
   }
 
@@ -64,8 +74,8 @@ class SelectionChangeObserver {
     this.listeners = []
   }
 
-  getSelection() {
-    let selection = window.getSelection()
+  getSelection(): PartialSelection {
+    let selection = window.getSelection()!
     let { anchorNode, focusNode, anchorOffset, focusOffset } = selection
     return { anchorNode, focusNode, anchorOffset, focusOffset }
   }
@@ -77,20 +87,20 @@ class SelectionChangeObserver {
     }
   }
 
-  runNext(fn) {
+  runNext(fn: FrameRequestCallback) {
     window.requestAnimationFrame(fn)
   }
 
   update() {
     let prevSelection = this.selection
-    let curSelection = this.getSelection()
+    let curSelection = this.getSelection()!
     if (!this.selectionIsEqual(prevSelection, curSelection)) {
       this.selection = curSelection
       this.notifyListeners(curSelection, prevSelection)
     }
   }
 
-  selectionIsEqual(s1, s2) {
+  selectionIsEqual(s1: PartialSelection, s2: PartialSelection) {
     return (
       s1.anchorNode === s2.anchorNode &&
       s1.anchorOffset === s2.anchorOffset &&

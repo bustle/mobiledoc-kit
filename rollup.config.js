@@ -25,7 +25,7 @@ function commonPlugins() {
 
 export default args => [
   {
-    input: 'src/js/index.js',
+    input: 'src/js/index.ts',
     plugins: commonPlugins(),
     output: {
       file: 'dist/mobiledoc.js',
@@ -34,7 +34,7 @@ export default args => [
     }
   },
   {
-    input: 'src/js/index.js',
+    input: 'src/js/index.ts',
     plugins: commonPlugins(),
     output: {
       file: 'dist/mobiledoc.cjs',

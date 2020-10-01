@@ -1,11 +1,11 @@
-import assert from '../../utils/assert'
+import assert, { assertType } from '../../utils/assert'
 import { Option } from '../../utils/types'
 import { Type } from '../../models/types'
 import Post from '../../models/post'
-import Editor from '../editor'
-import PostNodeBuilder from '../../models/post-node-builder'
+import PostEditor from '../post'
+import PostNodeBuilder, { PostNode } from '../../models/post-node-builder'
 import { Position } from '../../utils/cursor'
-import Section, { WithParent } from '../../models/_section'
+import Section, { WithParent, NestedSection } from '../../models/_section'
 import MarkupSection from '../../models/markup-section'
 import ListSection from '../../models/list-section'
 import ListItem from '../../models/list-item'
@@ -20,7 +20,7 @@ const NESTED_MARKERABLE = 'nested_markerable'
 const NON_MARKERABLE = 'non_markerable'
 
 class Visitor {
-  postEditor: Editor
+  postEditor: PostEditor
   builder: PostNodeBuilder
   _post: Post
   _hasInsertedFirstLeafSection: boolean
@@ -44,13 +44,13 @@ class Visitor {
     this.postEditor.setRange(position)
   }
 
-  visit(node: Post | Section) {
+  visit(node: PostNode) {
     let method = node.type
-    assert(`Cannot visit node of type ${node.type}`, !!this[method])
-    this[method](node)
+    assertType<typeof method & keyof this>(`Cannot visit node of type ${node.type}`, method, method in this)
+    this[method](node as any)
   }
 
-  _canMergeSection(section) {
+  _canMergeSection(section: Section) {
     if (this._hasInsertedFirstLeafSection) {
       return false
     } else {
@@ -155,7 +155,7 @@ class Visitor {
   _breakNestedAtCursor() {
     assert('Cannot call _breakNestedAtCursor if not nested', this._isNested)
 
-    let parent = this.cursorSection.parent!
+    let parent = (this.cursorSection as NestedSection).parent
     let cursorAtEndOfList = this.cursorPosition.isEqual(parent.tailPosition())
 
     if (cursorAtEndOfList) {
@@ -170,9 +170,9 @@ class Visitor {
   _breakListAtCursor() {
     assert('Cannot _splitParentSection if cursor position is not nested', this._isNested)
 
-    let list = this.cursorSection.parent,
-      position = this.cursorPosition,
-      blank = this.builder.createMarkupSection()
+    const list = this.cursorSection.parent as ListSection
+    const position = this.cursorPosition
+    const blank = this.builder.createMarkupSection()
 
     let [pre, post] = this.postEditor._splitListAtPosition(list, position)
 
@@ -183,7 +183,7 @@ class Visitor {
   }
 
   _wrapNestedSection(section: ListItem) {
-    let tagName = section.parent!.tagName
+    let tagName = section.parent.tagName
     let parent = this.builder.createListSection(tagName)
     parent.items.append(section.clone())
     return parent
@@ -214,9 +214,10 @@ class Visitor {
   // Inserts a blank section before/after the cursor,
   // depending on cursor position.
   _breakNonMarkerableAtCursor() {
-    let collection = this._post.sections,
-      blank = this.builder.createMarkupSection(),
-      reference = this.cursorPosition.isHead() ? this.cursorSection : this.cursorSection.next
+    const collection = this._post.sections
+    const blank = this.builder.createMarkupSection()
+    const reference = this.cursorPosition.isHead() ? this.cursorSection : this.cursorSection.next
+
     this.postEditor.insertSectionBefore(collection, blank, reference)
     this.cursorPosition = blank.tailPosition()
   }
@@ -224,11 +225,11 @@ class Visitor {
   _breakMarkerableAtCursor() {
     let [pre] = this.postEditor.splitSection(this.cursorPosition)
 
-    this.cursorPosition = pre.tailPosition()
+    this.cursorPosition = pre!.tailPosition()
   }
 
   _replaceSection(section: Section, newSections: Section[]) {
-    assert('Cannot replace section that does not have parent.sections', hasChildSections(section.parent!))
+    assert('Cannot replace section that does not have parent.sections', hasChildSections(section.parent))
     assert('Must pass enumerable to _replaceSection', !!newSections.forEach)
 
     let collection = section.parent.sections
@@ -243,10 +244,7 @@ class Visitor {
   }
 
   _insertSectionBefore(section: Section, reference?: Option<Section>) {
-    assert(
-      'Cannot insert into section that does not have parent.sections',
-      hasChildSections(this.cursorSection.parent!)
-    )
+    assert('Cannot insert into section that does not have parent.sections', hasChildSections(this.cursorSection.parent))
     let collection = this.cursorSection.parent.sections
     this.postEditor.insertSectionBefore(collection, section, reference)
 
@@ -285,10 +283,10 @@ class Visitor {
 }
 
 export default class Inserter {
-  postEditor: Editor
+  postEditor: PostEditor
   post: Post
 
-  constructor(postEditor: Editor, post: Post) {
+  constructor(postEditor: PostEditor, post: Post) {
     this.postEditor = postEditor
     this.post = post
   }

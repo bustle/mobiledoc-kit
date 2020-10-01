@@ -10,7 +10,7 @@ export default class Image extends Section {
   }
 
   clone() {
-    return this.builder.createImageSection(this.src)
+    return this.builder.createImageSection(this.src!)
   }
 
   canJoin() {

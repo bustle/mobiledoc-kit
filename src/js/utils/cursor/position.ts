@@ -2,7 +2,8 @@ import Marker, { HIGH_SURROGATE_RANGE, LOW_SURROGATE_RANGE } from '../../models/
 import RenderTree from '../../models/render-tree'
 import { isTextNode, containsNode, isElementNode } from '../dom-utils'
 import { findOffsetInNode } from '../selection-utils'
-import { DIRECTION } from '../key'
+import { Option } from '../types'
+import { Direction } from '../key'
 import assert, { assertType } from '../assert'
 import Range from './range'
 import Markerable from '../../models/_markerable'
@@ -10,8 +11,9 @@ import Section from '../../models/_section'
 import RenderNode from '../../models/render-node'
 import Card, { isCardSection } from '../../models/card'
 import Markuperable from '../markuperable'
+import { isAtom } from '../../models/atom'
 
-const { FORWARD, BACKWARD } = DIRECTION
+const { FORWARD, BACKWARD } = Direction
 
 // generated via http://xregexp.com/ to cover chars that \w misses
 // (new XRegExp('\\p{Alphabetic}|[0-9]|_|:')).toString()
@@ -24,7 +26,7 @@ function findParentSectionFromNode(renderTree: RenderTree, node: Node) {
   return renderNode && (renderNode.postNode as Section)
 }
 
-function findOffsetInMarkerable(markerable: Markerable, node: Node, offset: number) {
+function findOffsetInMarkerable(markerable: Markerable, node: Node, offset: number = 0) {
   let offsetInSection = 0
   let marker = markerable.markers.head
   while (marker) {
@@ -53,7 +55,7 @@ function assertHasRenderNode(renderNode: RenderNode | null): asserts renderNode 
   }
 }
 
-function findOffsetInSection(section: Section, node: Node, offset: number) {
+function findOffsetInSection(section: Section, node: Node, offset?: number) {
   if (isMarkerable(section)) {
     return findOffsetInMarkerable(section, node, offset)
   } else {
@@ -109,11 +111,11 @@ export default class Position {
    * @param {Editor} editor
    * @return {Position|null}
    */
-  static atPoint(x: number, y: number, editor: Editor) {
+  static atPoint(x: number, y: number, editor: Editor): Option<Position> {
     let { _renderTree, element: rootElement } = editor
     let elementFromPoint = document.elementFromPoint(x, y)
     if (!elementFromPoint || !containsNode(rootElement, elementFromPoint)) {
-      return
+      return null
     }
 
     let { node, offset } = findOffsetInNode(elementFromPoint, { left: x, top: y })
@@ -137,7 +139,7 @@ export default class Position {
 
   get leafSectionIndex() {
     let post = this.section!.post
-    let leafSectionIndex
+    let leafSectionIndex!: number
     post!.walkAllLeafSections((section: Section, index: number) => {
       if (section === this.section) {
         leafSectionIndex = index
@@ -357,7 +359,7 @@ export default class Position {
     }
   }
 
-  static fromNode(renderTree: RenderTree, node: Node, offset: number) {
+  static fromNode(renderTree: RenderTree, node: Node, offset?: number) {
     if (isTextNode(node)) {
       return Position.fromTextNode(renderTree, node, offset)
     } else if (isElementNode(node)) {
@@ -367,22 +369,22 @@ export default class Position {
     assert('Positions can only be created from text nodes or elements', false)
   }
 
-  static fromTextNode(renderTree: RenderTree, textNode: Text, offsetInNode: number) {
+  static fromTextNode(renderTree: RenderTree, textNode: Text, offsetInNode?: number) {
     const renderNode = renderTree.getElementRenderNode(textNode)
-    let section, offsetInSection
+    let section: Section, offsetInSection: number
 
     if (renderNode) {
       const marker = renderNode.postNode as Marker
-      section = marker.section
+      section = marker.section!
 
       assert(`Could not find parent section for mapped text node "${textNode.textContent}"`, !!section)
-      offsetInSection = section.offsetOfMarker(marker, offsetInNode)
+      offsetInSection = marker.section!.offsetOfMarker(marker, offsetInNode)
     } else {
       // all text nodes should be rendered by markers except:
       //   * text nodes inside cards
       //   * text nodes created by the browser during text input
       // both of these should have rendered parent sections, though
-      section = findParentSectionFromNode(renderTree, textNode)
+      section = findParentSectionFromNode(renderTree, textNode)!
       assert(`Could not find parent section for un-mapped text node "${textNode.textContent}"`, !!section)
 
       offsetInSection = findOffsetInSection(section, textNode, offsetInNode)
@@ -391,7 +393,7 @@ export default class Position {
     return new Position(section, offsetInSection)
   }
 
-  static fromElementNode(renderTree: RenderTree, elementNode: Element, offset: number) {
+  static fromElementNode(renderTree: RenderTree, elementNode: Element, offset: number = 0) {
     let position
 
     // The browser may change the reported selection to equal the editor's root
@@ -421,8 +423,8 @@ export default class Position {
         // to be on the wrapper element itself
         let renderNode = renderTree.getElementRenderNode(elementNode)
         let postNode = renderNode && renderNode.postNode
-        if (postNode && (postNode as Markuperable).isAtom) {
-          let sectionOffset = (section as Markerable).offsetOfMarker(postNode as Marker)
+        if (postNode && isAtom(postNode)) {
+          let sectionOffset = (section as Markerable).offsetOfMarker(postNode)
           if (offset > 1) {
             // we are on the tail side of the atom
             sectionOffset += postNode.length

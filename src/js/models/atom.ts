@@ -6,6 +6,8 @@ import PostNodeBuilder, { PostNode } from './post-node-builder'
 
 const ATOM_LENGTH = 1
 
+export type AtomPayload = {}
+
 export default class Atom extends Markuperable {
   type: Type = Type.ATOM
   isAtom = true
@@ -18,7 +20,7 @@ export default class Atom extends Markuperable {
   markups: Markup[]
   builder!: PostNodeBuilder
 
-  constructor(name: string, value: string, payload: {}, markups: Markup[] = []) {
+  constructor(name: string, value: string, payload: AtomPayload, markups: Markup[] = []) {
     super()
     this.name = name
     this.value = value

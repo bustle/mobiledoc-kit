@@ -2,15 +2,17 @@ import Keycodes from './keycodes'
 import Keys from './keys'
 import assert from './assert'
 import { TAB } from './characters'
+import { Dict } from './types'
 
-enum DIRECTION {
+export enum Direction {
   FORWARD = 1,
   BACKWARD = -1,
 }
 
-export { DIRECTION }
+// For backwards compatibility
+export { Direction as DIRECTION }
 
-export const MODIFIERS = {
+export const MODIFIERS: Dict<number> = {
   META: 1, // also called "command" on OS X
   CTRL: 2,
   SHIFT: 4,
@@ -31,7 +33,7 @@ export function modifierMask(event: KeyboardEvent) {
   )
 }
 
-const SPECIAL_KEYS = {
+const SPECIAL_KEYS: Dict<number> = {
   BACKSPACE: Keycodes.BACKSPACE,
   TAB: Keycodes.TAB,
   ENTER: Keycodes.ENTER,
@@ -49,7 +51,7 @@ const SPECIAL_KEYS = {
   DEL: Keycodes.DELETE,
 }
 
-export function specialCharacterToCode(specialCharacter: keyof typeof SPECIAL_KEYS) {
+export function specialCharacterToCode(specialCharacter: keyof typeof SPECIAL_KEYS | string): number {
   return SPECIAL_KEYS[specialCharacter]
 }
 
@@ -225,11 +227,11 @@ export default class Key {
   get direction() {
     switch (true) {
       case this.isDelete():
-        return this.isForwardDelete() ? DIRECTION.FORWARD : DIRECTION.BACKWARD
+        return this.isForwardDelete() ? Direction.FORWARD : Direction.BACKWARD
       case this.isHorizontalArrow():
-        return this.isRightArrow() ? DIRECTION.FORWARD : DIRECTION.BACKWARD
+        return this.isRightArrow() ? Direction.FORWARD : Direction.BACKWARD
       default:
-        return DIRECTION.FORWARD
+        return Direction.FORWARD
     }
   }
 

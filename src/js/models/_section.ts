@@ -1,18 +1,21 @@
 import LinkedItem from '../utils/linked-item'
-import assert from '../utils/assert'
-import { Option } from '../utils/types'
+import assert, { expect } from '../utils/assert'
+import { Option, Dict } from '../utils/types'
 import Position from '../utils/cursor/position'
 import Range from '../utils/cursor/range'
 import RenderNode from './render-node'
 import Post from './post'
-import { isListSection } from './is-list-section'
 import PostNodeBuilder from './post-node-builder'
 import { Type } from './types'
 import Markuperable from '../utils/markuperable'
+import { isListSection } from './is-list-section'
+import HasChildSections from './_has-child-sections'
 
 export interface WithParent<T> {
   parent: Option<T>
 }
+
+type ParentSection = Post | (Section & HasChildSections<any>)
 
 export default class Section extends LinkedItem {
   type: Type
@@ -25,11 +28,17 @@ export default class Section extends LinkedItem {
   isLeafSection = true
   isCardSection = false
 
+  attributes?: Dict<string>
+
   post?: Option<Post>
   renderNode!: RenderNode
 
-  parent: Option<Section> = null
+  _parent: Option<ParentSection> = null
   builder!: PostNodeBuilder
+
+  get parent() {
+    return expect(this._parent, 'expected section parent to be assigned')
+  }
 
   constructor(type: Type) {
     super()
@@ -99,8 +108,8 @@ export default class Section extends LinkedItem {
         return next
       }
     } else {
-      if (this.isNested) {
-        return this.parent!.nextLeafSection()
+      if (isNested(this)) {
+        return this.parent.nextLeafSection()
       }
     }
     return null
@@ -124,11 +133,19 @@ export default class Section extends LinkedItem {
         return prev
       }
     } else {
-      if (this.isNested) {
-        return this.parent!.previousLeafSection()
+      if (isNested(this)) {
+        return this.parent.previousLeafSection()
       }
     }
 
     return null
   }
+}
+
+export interface NestedSection {
+  parent: Section
+}
+
+export function isNested<T extends Section>(section: T): section is T & NestedSection {
+  return section.isNested
 }

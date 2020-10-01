@@ -1,5 +1,5 @@
 import { forEach, ForEachable, HasLength } from './array-utils'
-import assert from './assert'
+import { assertExistsIn } from './assert'
 import { Type } from '../models/types'
 import Post from '../models/post'
 import Image from '../models/image'
@@ -9,9 +9,25 @@ import ListItem from '../models/list-item'
 import Card from '../models/card'
 import Marker from '../models/marker'
 import Markup from '../models/markup'
+import Section from '../models/_section'
+import Markuperable from './markuperable'
 
-export type Opcode = [string, ...unknown[]]
+export type OpcodeName =
+  | 'openPost'
+  | 'openMarkupSection'
+  | 'openListSection'
+  | 'openListItem'
+  | 'openImageSection'
+  | 'openCardSection'
+  | 'openMarker'
+  | 'openAtom'
+  | 'openMarkup'
+  | 'openAtom'
+export type Opcode = [OpcodeName, ...unknown[]]
 export type Opcodes = Opcode[]
+export type Compiler = { [key in OpcodeName]?: (...params: any[]) => void }
+
+export type CompileNode = Section | Markup | Markuperable | Post
 
 interface Visitor {
   [Type.POST]: (node: Post, opcodes: Opcodes) => void
@@ -24,22 +40,16 @@ interface Visitor {
   [Type.MARKUP]: (node: Markup, opcodes: Opcodes) => void
 }
 
-interface CompileNode {
-  type: string
-}
-
 export function visit(visitor: Visitor, node: CompileNode, opcodes: Opcodes) {
   const method = node.type
-  assert(`Cannot visit unknown type ${method}`, !!visitor[method])
-  visitor[method](node, opcodes)
+  assertExistsIn(`Cannot visit unknown type ${method}`, method, visitor)
+  visitor[method](node as any, opcodes)
 }
-
-type Compiler = {}
 
 export function compile(compiler: Compiler, opcodes: Opcodes) {
   for (let i = 0, l = opcodes.length; i < l; i++) {
     let [method, ...params] = opcodes[i]
-    compiler[method].apply(compiler, params)
+    compiler[method]!.apply(compiler, params)
   }
 }
 
