@@ -1,3 +1,9 @@
+<a name="0.12.5"></a>
+## <small>0.12.5 (2020-10-06)</small>
+
+* Backport fix for IME bug (#745) ([3c20cc9](https://github.com/bustle/mobiledoc-kit/commit/3c20cc9)), closes [#745](https://github.com/bustle/mobiledoc-kit/issues/745)
+* Pin older Node version for 0.12 release branch 💄 (#747) ([958f4cd](https://github.com/bustle/mobiledoc-kit/commit/958f4cd)), closes [#747](https://github.com/bustle/mobiledoc-kit/issues/747)
+
 <a name="0.12.4"></a>
 ## <small>0.12.4 (2020-03-13)</small>
 
