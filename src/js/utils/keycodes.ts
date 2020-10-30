@@ -1,4 +1,4 @@
-export default {
+export default <const>{
   BACKSPACE: 8,
   SPACE: 32,
   ENTER: 13,

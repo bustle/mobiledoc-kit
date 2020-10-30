@@ -11,7 +11,7 @@ module.exports = {
     ],
     "globals": {
         "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+        "SharedArrayBuffer": "readonly",
     },
     "plugins": ["@typescript-eslint"],
     "parser": "@typescript-eslint/parser",
@@ -62,7 +62,6 @@ module.exports = {
             "error",
             "last"
         ],
-        "complexity": "error",
         "computed-property-spacing": [
             "error",
             "never"

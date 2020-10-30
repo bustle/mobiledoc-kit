@@ -2,5 +2,5 @@ import $ from "jquery";
 window.$ = $;
 import "qunit";
 
-import "./unit/**/*.js";
-import "./acceptance/**/*.js";
+import "./unit/**/*.{js,ts}";
+import "./acceptance/**/*.{js,ts}";

@@ -19,7 +19,7 @@ function commonPlugins() {
         },
       ],
     }),
-    typescript({ noEmitOnError: false }),
+    typescript({ sourceMap: true, inlineSources: true, noEmitOnError: false }),
   ]
 }
 

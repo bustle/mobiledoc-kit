@@ -28,8 +28,9 @@ declare global {
   }
 }
 
-export type EventType = typeof ELEMENT_EVENT_TYPES[number]
-export type EventForType<T extends EventType> = HTMLElementEventMap[T]
+export type DOMEventType = typeof ELEMENT_EVENT_TYPES[number]
+export type DOMEventForType<T extends DOMEventType> = HTMLElementEventMap[T]
+export type DOMEvent = HTMLElementEventMap[DOMEventType]
 
 interface ModifierKeys {
   shift: boolean
@@ -37,7 +38,7 @@ interface ModifierKeys {
 
 type EventManagerListener = [
   HTMLElement,
-  EventType,
+  DOMEventType,
   (event: CompositionEvent | KeyboardEvent | ClipboardEvent | DragEvent) => void
 ]
 
@@ -100,10 +101,10 @@ export default class EventManager {
     this._textInputHandler = new TextInputHandler(this.editor)
   }
 
-  _addListener(context: HTMLElement, type: EventType) {
+  _addListener(context: HTMLElement, type: DOMEventType) {
     assert(`Missing listener for ${type}`, !!this[type])
 
-    let listener: (event: EventForType<typeof type>) => void = event => this._handleEvent(type, event)
+    let listener: (event: DOMEventForType<typeof type>) => void = event => this._handleEvent(type, event)
     context.addEventListener(type, listener)
     this._listeners.push([context, type, listener])
   }
@@ -117,7 +118,7 @@ export default class EventManager {
 
   // This is primarily useful for programmatically simulating events on the
   // editor from the tests.
-  _trigger(context: HTMLElement, type: EventType, event: EventForType<typeof type>) {
+  _trigger(context: HTMLElement, type: DOMEventType, event: DOMEventForType<typeof type>) {
     forEach(
       filter(this._listeners, ([_context, _type]) => {
         return _context === context && _type === type
@@ -134,7 +135,7 @@ export default class EventManager {
     this._removeListeners()
   }
 
-  _handleEvent(type: EventType, event: EventForType<typeof type>) {
+  _handleEvent(type: DOMEventType, event: DOMEventForType<typeof type>) {
     let { target: element } = event
     if (!this.started) {
       // abort handling this event
