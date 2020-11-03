@@ -9,3 +9,7 @@ export function entries<T extends { [key: string]: unknown }, K extends Extract<
 
   return resArray
 }
+
+export function keys<T extends { [key: string]: unknown }>(obj: T): (keyof T)[] {
+  return Object.keys(obj)
+}

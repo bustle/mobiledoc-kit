@@ -1,17 +1,18 @@
-import assert from '../utils/assert'
 import Atom from './atom'
+import assert from '../utils/assert'
+import { JsonData, Dict, Maybe } from '../utils/types'
 
-export interface AtomOptions {}
+export type AtomOptions = Dict<unknown>
 
 export type TeardownCallback = () => void
 export interface AtomRenderOptions {
   options: AtomOptions
   env: any
   value: unknown
-  payload: {}
+  payload: JsonData
 }
 
-export type AtomRenderHook = (options: AtomRenderOptions) => Element
+export type AtomRenderHook = (options: AtomRenderOptions) => Maybe<Element>
 
 export type AtomData = {
   name: string
@@ -27,7 +28,7 @@ export default class AtomNode {
   atomOptions: AtomOptions
 
   _teardownCallback: TeardownCallback | null = null
-  _rendered: Node | null = null
+  _rendered: Maybe<Node>
 
   constructor(editor: any, atom: AtomData, model: Atom, element: Element, atomOptions: AtomOptions) {
     this.editor = editor

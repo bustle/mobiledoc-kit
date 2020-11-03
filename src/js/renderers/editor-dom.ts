@@ -14,7 +14,7 @@ import { Attributable } from '../models/_attributable'
 import { TagNameable } from '../models/_tag-nameable'
 import ListSection from '../models/list-section'
 import RenderNode from '../models/render-node'
-import { Option, Maybe } from '../utils/types'
+import { Option, Maybe, Dict } from '../utils/types'
 import Atom from '../models/atom'
 import Editor from '../editor/editor'
 import { hasChildSections } from '../models/_has-child-sections'
@@ -306,7 +306,7 @@ class Visitor {
   unknownCardHandler: CardRenderHook
   unknownAtomHandler: AtomRenderHook
 
-  options: {}
+  options: Dict<unknown>
 
   constructor(
     editor: Editor,
@@ -314,7 +314,7 @@ class Visitor {
     atoms: AtomData[],
     unknownCardHandler: CardRenderHook,
     unknownAtomHandler: AtomRenderHook,
-    options: {}
+    options: Dict<unknown>
   ) {
     this.editor = editor
     this.cards = validateCards(cards)

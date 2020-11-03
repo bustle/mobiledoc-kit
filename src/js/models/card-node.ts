@@ -1,9 +1,10 @@
-import assert from '../utils/assert'
 import Card, { CardMode } from './card'
+import assert from '../utils/assert'
+import { Dict, Maybe } from '../utils/types'
 
-export interface CardNodeOptions {}
+export type CardNodeOptions = Dict<unknown>
 
-export type CardRenderHook = (...args: any[]) => Element
+export type CardRenderHook = (...args: any[]) => Maybe<Element>
 
 type DidRenderCallback = null | (() => void)
 type TeardownCallback = null | (() => void)
@@ -25,14 +26,14 @@ export default class CardNode {
   card: CardData
   section: Card
   element: Element
-  options: CardNodeOptions
+  options?: CardNodeOptions
 
   mode!: CardMode
   _rendered: Element | null = null
   _teardownCallback: TeardownCallback = null
   _didRenderCallback: DidRenderCallback = null
 
-  constructor(editor: any, card: CardData, section: Card, element: Element, options: CardNodeOptions) {
+  constructor(editor: any, card: CardData, section: Card, element: Element, options?: CardNodeOptions) {
     this.editor = editor
     this.card = card
     this.section = section
@@ -112,7 +113,7 @@ export default class CardNode {
     this.editor.run((postEditor: any) => postEditor.removeSection(this.section))
   }
 
-  _validateAndAppendRenderResult(rendered: Element | null) {
+  _validateAndAppendRenderResult(rendered: Maybe<Element>) {
     if (!rendered) {
       return
     }

@@ -31,7 +31,7 @@ import Card, { CardMode, CardPayload } from '../models/card'
 import assert from '../utils/assert'
 import MutationHandler from '../editor/mutation-handler'
 import EditHistory from '../editor/edit-history'
-import EventManager, { EventType, EventForType } from '../editor/event-manager'
+import EventManager, { DOMEventType, DOMEventForType } from '../editor/event-manager'
 import EditState from '../editor/edit-state'
 import DOMRenderer from 'mobiledoc-dom-renderer'
 import TextRenderer from 'mobiledoc-text-renderer'
@@ -56,27 +56,27 @@ import { TextInputHandlerListener } from './text-input-handler'
 export { EDITOR_ELEMENT_CLASS_NAME } from '../renderers/editor-dom'
 
 export interface EditorOptions {
-  parserPlugins: SectionParserPlugin[]
-  placeholder: string
-  spellcheck: boolean
-  autofocus: boolean
-  showLinkTooltips: boolean
-  undoDepth: number
-  undoBlockTimeout: number
-  cards: CardData[]
-  atoms: AtomData[]
-  cardOptions: {}
-  unknownCardHandler: CardRenderHook
-  unknownAtomHandler: CardRenderHook
-  mobiledoc: Option<Mobiledoc>
-  html: Option<string>
-  tooltipPlugin: TooltipPlugin
+  parserPlugins?: SectionParserPlugin[]
+  placeholder?: string
+  spellcheck?: boolean
+  autofocus?: boolean
+  showLinkTooltips?: boolean
+  undoDepth?: number
+  undoBlockTimeout?: number
+  cards?: CardData[]
+  atoms?: AtomData[]
+  cardOptions?: {}
+  unknownCardHandler?: CardRenderHook
+  unknownAtomHandler?: CardRenderHook
+  mobiledoc?: Option<Mobiledoc>
+  html?: Option<string>
+  tooltipPlugin?: TooltipPlugin
 
   /** @internal */
   nodeType?: number
 }
 
-const defaults: Partial<EditorOptions> = {
+const defaults: EditorOptions = {
   placeholder: 'Write here...',
   spellcheck: true,
   autofocus: true,
@@ -239,7 +239,7 @@ export default class Editor implements EditorOptions {
    *        Set to 0 to disable undo/redo functionality.
    * @public
    */
-  constructor(options: Partial<EditorOptions> = {}) {
+  constructor(options: EditorOptions = {}) {
     assert(
       'editor create accepts an options object. For legacy usage passing an element for the first argument, consider the `html` option for loading DOM or HTML posts. For other cases call `editor.render(domNode)` after editor creation',
       options && !options.nodeType
@@ -1304,7 +1304,7 @@ export default class Editor implements EditorOptions {
     }
   }
 
-  triggerEvent(context: HTMLElement, eventName: EventType, event: EventForType<typeof eventName>) {
+  triggerEvent(context: HTMLElement, eventName: DOMEventType, event: DOMEventForType<typeof eventName>) {
     this._eventManager._trigger(context, eventName, event)
   }
 
