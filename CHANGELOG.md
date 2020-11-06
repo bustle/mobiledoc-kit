@@ -1,3 +1,9 @@
+## <small>0.13.2 (2020-11-06)</small>
+
+* Typescriptify Phase VI 🥃🧉 (#749) ([3170b48](https://github.com/bustle/mobiledoc-kit/commit/3170b48)), closes [#749](https://github.com/bustle/mobiledoc-kit/issues/749)
+
+
+
 ## <small>0.13.2-pre.0 (2020-10-07)</small>
 
 * Adds eslint + fixes linting errors 🧞‍♂️ ([2ecfd5c](https://github.com/bustle/mobiledoc-kit/commit/2ecfd5c))
@@ -13,6 +19,7 @@
 * Update ReadME 💽 ([bfcd8cf](https://github.com/bustle/mobiledoc-kit/commit/bfcd8cf))
 * Upgrade DEPZ 🐩 (#740) ([9bb0b49](https://github.com/bustle/mobiledoc-kit/commit/9bb0b49)), closes [#740](https://github.com/bustle/mobiledoc-kit/issues/740)
 * Upgrade DEPZ 🦘 (#743) ([d27f98d](https://github.com/bustle/mobiledoc-kit/commit/d27f98d)), closes [#743](https://github.com/bustle/mobiledoc-kit/issues/743)
+* v0.13.2-pre.0 ([49238cd](https://github.com/bustle/mobiledoc-kit/commit/49238cd))
 
 
 
