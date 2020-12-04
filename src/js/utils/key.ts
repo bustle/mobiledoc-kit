@@ -187,7 +187,11 @@ export default class Key {
   }
 
   isEnter() {
-    return this.isKey('ENTER')
+    return this.isKey('ENTER') && !this.isShift()
+  }
+
+  isShiftEnter() {
+    return this.isKey('ENTER') && !!this.isShift()
   }
 
   /*

@@ -76,6 +76,14 @@ export interface EditorOptions {
   nodeType?: number
 }
 
+const SoftBreakAtom: AtomData = {
+  name: '-soft-break',
+  type: 'dom',
+  render() {
+    return document.createElement('br')
+  }
+}
+
 const defaults: EditorOptions = {
   placeholder: 'Write here...',
   spellcheck: true,
@@ -84,7 +92,7 @@ const defaults: EditorOptions = {
   undoDepth: 5,
   undoBlockTimeout: 5000, // ms for an undo event
   cards: [],
-  atoms: [],
+  atoms: [SoftBreakAtom],
   cardOptions: {},
   unknownCardHandler: ({ env }) => {
     throw new MobiledocError(`Unknown card encountered: ${env.name}`)

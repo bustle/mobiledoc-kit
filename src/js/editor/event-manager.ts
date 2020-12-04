@@ -220,6 +220,7 @@ export default class EventManager {
 
     let range = editor.range
 
+    console.log(key.isShiftEnter())
     switch (true) {
       // Ignore keydown events when using an IME
       case key.isIME(): {
@@ -253,6 +254,10 @@ export default class EventManager {
       case key.isEnter():
         this._textInputHandler.handleNewLine()
         editor.handleNewline(event)
+        break
+      case key.isShiftEnter():
+        event.preventDefault()
+        editor.insertAtom('-soft-break')
         break
       case key.isTab():
         // Handle tab here because it does not fire a `keypress` event
