@@ -12,7 +12,7 @@ export interface AtomRenderOptions {
   payload: JsonData
 }
 
-export type AtomRenderHook = (options: AtomRenderOptions) => Maybe<Element>
+export type AtomRenderHook = (options: AtomRenderOptions) => Maybe<Element | Text> | void
 
 export type AtomData = {
   name: string
@@ -46,7 +46,7 @@ export default class AtomNode {
         model: { value, payload },
       } = this
       // cache initial render
-      this._rendered = this.atom.render({ options, env, value, payload })
+      this._rendered = this.atom.render({ options, env, value, payload }) || null
     }
 
     this._validateAndAppendRenderResult(this._rendered!)

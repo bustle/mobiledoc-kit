@@ -4,7 +4,7 @@ import { Dict, Maybe } from '../utils/types'
 
 export type CardNodeOptions = Dict<unknown>
 
-export type CardRenderHook = (...args: any[]) => Maybe<Element>
+export type CardRenderHook = (...args: any[]) => void | Maybe<Element>
 
 type DidRenderCallback = null | (() => void)
 type TeardownCallback = null | (() => void)
@@ -54,11 +54,12 @@ export default class CardNode {
     let method = this.card[methodName]
 
     assert(`Card is missing "${methodName}" (tried to render mode: "${mode}")`, !!method)
-    let rendered = method({
-      env: this.env,
-      options: this.options,
-      payload: this.section.payload,
-    })
+    let rendered =
+      method({
+        env: this.env,
+        options: this.options,
+        payload: this.section.payload,
+      }) || null
 
     this._validateAndAppendRenderResult(rendered)
   }

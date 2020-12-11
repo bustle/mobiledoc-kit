@@ -263,7 +263,7 @@ function triggerKeyCommand(editor: Editor, string: keyof typeof KEY_CODES, modif
   _triggerEditorEvent(editor, keyEvent)
 }
 
-function triggerRightArrowKey(editor: Editor, modifier: number) {
+function triggerRightArrowKey(editor: Editor, modifier?: number) {
   if (!(editor instanceof Editor)) {
     throw new Error('Must pass editor to triggerRightArrowKey')
   }
@@ -279,7 +279,7 @@ function triggerRightArrowKey(editor: Editor, modifier: number) {
   _triggerEditorEvent(editor, keyup)
 }
 
-function triggerLeftArrowKey(editor: Editor, modifier: number) {
+function triggerLeftArrowKey(editor: Editor, modifier?: number) {
   assertEditor(editor)
   let keydown = createMockEvent('keydown', editor.element, {
     keyCode: KEY_CODES.LEFT,

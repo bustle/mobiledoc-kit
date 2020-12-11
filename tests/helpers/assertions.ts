@@ -111,17 +111,17 @@ function comparePostNode<T extends PostNode | Markup>(actual: T, expected: any, 
 
 declare global {
   interface Assert {
-    isBlank(val: unknown, message: string): void
-    hasElement(selector: string, message: string): void
-    hasNoElement(selector: string, message: string): JQuery<HTMLElement>
-    hasClass(element: HTMLElement, className: string, message: string): void
-    notHasClass(element: HTMLElement, className: string, message: string): void
-    selectedText(text: string, message: string): void
-    inArray<T>(element: T, array: T[], message: string): void
-    postIsSimilar(post: Post, expected: Post, postName: string): void
+    isBlank(val: unknown, message?: string): void
+    hasElement(selector: string, message?: string): void
+    hasNoElement(selector: string, message?: string): JQuery<HTMLElement>
+    hasClass(element: HTMLElement, className: string, message?: string): void
+    notHasClass(element: HTMLElement, className: string, message?: string): void
+    selectedText(text: string, message?: string): void
+    inArray<T>(element: T, array: T[], message?: string): void
+    postIsSimilar(post: Post, expected: Post, postName?: string): void
     renderTreeIsEqual(renderTree: RenderTree, expectedPost: Post): void
-    positionIsEqual(position: Position, expected: Position, message: string): void
-    rangeIsEqual(range: Range, expected: Range, message: string): void
+    positionIsEqual(position: Position, expected: Position, message?: string): void
+    rangeIsEqual(range: Range, expected: Range, message?: string): void
   }
 }
 

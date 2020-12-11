@@ -8,6 +8,7 @@ import Markuperable from 'mobiledoc-kit/utils/markuperable'
 import Section from 'mobiledoc-kit/models/_section'
 import { unwrap } from 'mobiledoc-kit/utils/assert'
 import Position from 'mobiledoc-kit/utils/cursor/position'
+import Range from 'mobiledoc-kit/utils/cursor/range'
 import ListSection from 'mobiledoc-kit/models/list-section'
 import { isListItem } from 'mobiledoc-kit/models/list-item'
 import { Cloneable } from 'mobiledoc-kit/models/_cloneable'
@@ -331,7 +332,8 @@ function buildFromText(_texts: string | string[]) {
     return builder.post(sections)
   })
 
-  let range
+  let range!: Range
+
   if (positions.start) {
     if (!positions.end) {
       throw new Error(`startPos but no endPos ${texts.join('\n')}`)
