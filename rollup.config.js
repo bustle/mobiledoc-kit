@@ -43,10 +43,14 @@ export default args => [
     }
   },
   {
-    input: 'tests/index.js',
+    input: 'tests/index.ts',
     plugins: [
       ...commonPlugins(),
-      globImport(),
+      globImport({
+        // without this option, the plugin will try to parse imported files (as
+        // JS) and fail with TS files
+        format: 'import'
+      }),
       copy({
         targets: [
           { src: 'dist/mobiledoc.js', dest: 'assets/demo' },
