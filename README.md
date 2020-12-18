@@ -4,9 +4,6 @@
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/mobiledoc-kit.svg)](https://saucelabs.com/u/mobiledoc-kit)
 
-[![Dependency Status](https://david-dm.org/bustle/mobiledoc-kit/master.svg)](https://david-dm.org/bustle/mobiledoc-kit/master)
-[![devDependency Status](https://david-dm.org/bustle/mobiledoc-kit/master/dev-status.svg)](https://david-dm.org/bustle/mobiledoc-kit/master#info=devDependencies)
-
 ![Mobiledoc Logo](https://bustle.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png)
 
 Mobiledoc Kit is a framework-agnostic library for building WYSIWYG editors
