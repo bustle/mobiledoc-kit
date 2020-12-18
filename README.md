@@ -1,6 +1,6 @@
 # Mobiledoc Kit
 
-[![Travis CI Build Status](https://travis-ci.org/bustle/mobiledoc-kit.svg?branch=master)](https://travis-ci.org/bustle/mobiledoc-kit)
+[![CI Build Status](https://github.com/bustle/mobiledoc-kit/workflows/CI/badge.svg)](https://github.com/bustle/mobiledoc-kit/actions?query=workflow%3ACI)
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/mobiledoc-kit.svg)](https://saucelabs.com/u/mobiledoc-kit)
 
@@ -465,7 +465,7 @@ Or run headless tests via testem:
 
   * `yarn test`
 
-Tests in CI are run at Travis via Saucelabs (see the `test:ci` yarn script).
+Tests in CI are run at Github Actions via Saucelabs (see the `test:ci` yarn script).
 
 Run linter
 
