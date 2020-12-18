@@ -14,10 +14,6 @@ var opts = {
   connectVersion: '4.6.2'
 };
 
-if (process.env.GITHUB_RUN_ID) {
-  opts.tunnelIdentifier = process.env.GITHUB_RUN_ID;
-}
-
 saucie.connect(opts).then(function () {
   process.exit();
 });
