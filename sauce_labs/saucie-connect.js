@@ -14,10 +14,6 @@ var opts = {
   connectVersion: '4.6.2'
 };
 
-if (process.env.TRAVIS_JOB_NUMBER) {
-  opts.tunnelIdentifier = process.env.TRAVIS_JOB_NUMBER;
-}
-
 saucie.connect(opts).then(function () {
   process.exit();
 });

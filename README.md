@@ -1,11 +1,8 @@
 # Mobiledoc Kit
 
-[![Travis CI Build Status](https://travis-ci.org/bustle/mobiledoc-kit.svg?branch=master)](https://travis-ci.org/bustle/mobiledoc-kit)
+[![CI Build Status](https://github.com/bustle/mobiledoc-kit/workflows/CI/badge.svg)](https://github.com/bustle/mobiledoc-kit/actions?query=workflow%3ACI)
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/mobiledoc-kit.svg)](https://saucelabs.com/u/mobiledoc-kit)
-
-[![Dependency Status](https://david-dm.org/bustle/mobiledoc-kit/master.svg)](https://david-dm.org/bustle/mobiledoc-kit/master)
-[![devDependency Status](https://david-dm.org/bustle/mobiledoc-kit/master/dev-status.svg)](https://david-dm.org/bustle/mobiledoc-kit/master#info=devDependencies)
 
 ![Mobiledoc Logo](https://bustle.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png)
 
@@ -21,7 +18,6 @@ This repository hosts the core Mobiledoc Kit library. If you want to use Mobiled
 | Plain JavaScript | [mobiledoc-kit](https://github.com/bustle/mobiledoc-kit) (this repo) |
 | Ember | [ember-mobiledoc-editor](https://github.com/bustle/ember-mobiledoc-editor) |
 | React | [react-mobiledoc-editor](https://github.com/upworthy/react-mobiledoc-editor) |
-| Vue | [vue-mobiledoc-editor](https://github.com/alidcastano/vue-mobiledoc-editor) |
 
 If you only want to use the Mobiledoc-Kit runtime, for *rendering mobiledoc posts only* (not editing or creating them), you can use:
 
@@ -465,7 +461,7 @@ Or run headless tests via testem:
 
   * `yarn test`
 
-Tests in CI are run at Travis via Saucelabs (see the `test:ci` yarn script).
+Tests in CI are run at Github Actions via Saucelabs (see the `test:ci` yarn script).
 
 Run linter
 
