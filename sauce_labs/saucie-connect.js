@@ -14,8 +14,8 @@ var opts = {
   connectVersion: '4.6.2'
 };
 
-if (process.env.TRAVIS_JOB_NUMBER) {
-  opts.tunnelIdentifier = process.env.TRAVIS_JOB_NUMBER;
+if (process.env.GITHUB_RUN_ID) {
+  opts.tunnelIdentifier = process.env.GITHUB_RUN_ID;
 }
 
 saucie.connect(opts).then(function () {
