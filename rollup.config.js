@@ -46,7 +46,9 @@ export default args => [
     input: 'tests/index.js',
     plugins: [
       ...commonPlugins(),
-      globImport(),
+      globImport({
+        format: 'import'
+      }),
       copy({
         targets: [
           { src: 'dist/mobiledoc.js', dest: 'assets/demo' },

@@ -1,4 +1,4 @@
-import Atom, { AtomPayload } from './atom'
+import Atom, { AtomPayload } from './atoms/custom-atom'
 import Post from './post'
 import MarkupSection from './markup-section'
 import ListSection from './list-section'
@@ -19,6 +19,7 @@ import Markuperable from '../utils/markuperable'
 import Section from './_section'
 import { Cloneable } from './_cloneable'
 import { Dict } from '../utils/types'
+import ElementAtom from './atoms/element-atom'
 
 function cacheKey(tagName: string, attributes: Dict<string>) {
   return `${normalizeTagName(tagName)}-${objectToSortedKVArray(attributes).join('-')}`
@@ -148,6 +149,18 @@ export default class PostNodeBuilder {
    */
   createAtom(name: string, value: string = '', payload: AtomPayload = {}, markups: Markup[] = []): Atom {
     const atom = new Atom(name, value, payload, markups)
+    atom.builder = this
+    return atom
+  }
+
+  /**
+   * @param {String} name
+   * @param {String} [value='']
+   * @param {Markup[]} [markups=[]]
+   * @return {Atom}
+   */
+  createElementAtom(tagName: string, markups: Markup[] = []): ElementAtom {
+    const atom = new ElementAtom(tagName, markups)
     atom.builder = this
     return atom
   }

@@ -1,35 +1,29 @@
-import { Type } from './types'
-import Markuperable from '../utils/markuperable'
-import assert from '../utils/assert'
-import Markup from './markup'
-import PostNodeBuilder, { PostNode } from './post-node-builder'
+import { Type } from '../types'
+import Markuperable from '../../utils/markuperable'
+import assert from '../../utils/assert'
+import Markup from '../markup'
+import PostNodeBuilder from '../post-node-builder'
+import AtomType from './atom-type'
 
 const ATOM_LENGTH = 1
 
-export type AtomPayload = {}
-
-export default class Atom extends Markuperable {
+export default class ElementAtom extends Markuperable {
   type: Type = Type.ATOM
+  atomType = AtomType.ELEMENT
+
+  isMarker = false
   isAtom = true
 
   name: string
-  value: string
-  text: string
-  payload: {}
+  value: string = ''
+  text: string = ''
 
   markups: Markup[]
   builder!: PostNodeBuilder
 
-  constructor(name: string, value: string, payload: AtomPayload, markups: Markup[] = []) {
+  constructor(tagName: string, markups: Markup[] = []) {
     super()
-    this.name = name
-    this.value = value
-    this.text = '' // An atom never has text, but it does have a value
-    assert('Atom must have value', value !== undefined && value !== null)
-    this.payload = payload
-    this.type = Type.ATOM
-    this.isMarker = false
-    this.isAtom = true
+    this.name = tagName
 
     this.markups = []
     markups.forEach(m => this.addMarkup(m))
@@ -37,7 +31,7 @@ export default class Atom extends Markuperable {
 
   clone() {
     let clonedMarkups = this.markups.slice()
-    return this.builder.createAtom(this.name, this.value, this.payload, clonedMarkups)
+    return this.builder.createElementAtom(this.name, clonedMarkups)
   }
 
   get isBlank() {
@@ -92,10 +86,7 @@ export default class Atom extends Markuperable {
       pre.addMarkup(markup)
       post.addMarkup(markup)
     })
+
     return [pre, post]
   }
-}
-
-export function isAtom(postNode: PostNode): postNode is Atom {
-  return postNode.type === Type.ATOM
 }

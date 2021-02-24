@@ -43,13 +43,14 @@ import Post from '../models/post'
 import { Mobiledoc } from '../renderers/mobiledoc'
 import { SectionParserPlugin } from '../parsers/section'
 import { CardData, CardRenderHook } from '../models/card-node'
-import { AtomData } from '../models/atom-node'
+import { AtomData } from '../models/atoms/atom-node'
 import { Option, Maybe, Dict } from '../utils/types'
 import Markup from '../models/markup'
 import View from '../views/view'
-import Atom, { AtomPayload } from '../models/atom'
+import Atom, { AtomPayload } from '../models/atoms/atom'
 import Section, { isNested } from '../models/_section'
 import { TextInputHandlerListener } from './text-input-handler'
+import ElementAtom from 'mobiledoc-kit/models/atoms/element-atom'
 
 // This export may later be deprecated, but re-export it from the renderer here
 // for consumers that may depend on it.
@@ -1197,6 +1198,27 @@ export default class Editor implements EditorOptions {
     })
   }
 
+  insertTextWithMarkup(text: string, markups: Markup[] = []) {
+    if (!this.hasCursor()) {
+      return
+    }
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor()
+    }
+    let {
+      range,
+      range: { head: position },
+    } = this
+
+    this.run(postEditor => {
+      if (!range.isCollapsed) {
+        position = postEditor.deleteRange(range)
+      }
+
+      postEditor.insertTextWithMarkup(position, text, markups)
+    })
+  }
+
   /**
    * Inserts an atom at the current cursor position. If the editor has
    * no current cursor position, nothing will be inserted. If the editor's
@@ -1222,6 +1244,40 @@ export default class Editor implements EditorOptions {
       let position = range.head
 
       atom = postEditor.builder.createAtom(atomName, atomText, atomPayload)
+      if (!range.isCollapsed) {
+        position = postEditor.deleteRange(range)
+      }
+
+      postEditor.insertMarkers(position, [atom])
+    })
+    return atom!
+  }
+
+  /**
+   * Inserts an atom at the current cursor position. If the editor has
+   * no current cursor position, nothing will be inserted. If the editor's
+   * range is not collapsed, it will be deleted before insertion.
+   * @param {String} atomName
+   * @param {String} [atomText='']
+   * @param {Object} [atomPayload={}]
+   * @return {Atom} The inserted atom.
+   * @public
+   */
+  insertElementAtom(tagName: string): Maybe<ElementAtom> {
+    if (!this.hasCursor()) {
+      return
+    }
+
+    if (this.post.isBlank) {
+      this._insertEmptyMarkupSectionAtCursor()
+    }
+
+    let atom: ElementAtom
+    let { range } = this
+    this.run(postEditor => {
+      let position = range.head
+
+      atom = postEditor.builder.createElementAtom(tagName)
       if (!range.isCollapsed) {
         position = postEditor.deleteRange(range)
       }

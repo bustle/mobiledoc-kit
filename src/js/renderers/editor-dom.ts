@@ -1,6 +1,6 @@
 import CardNode, { CardData, CardRenderHook } from '../models/card-node'
 import { detect, forEach, ForEachable } from '../utils/array-utils'
-import AtomNode, { AtomData, AtomRenderHook } from '../models/atom-node'
+import AtomNode, { AtomData, AtomRenderHook } from '../models/atoms/atom-node'
 import { Type } from '../models/types'
 import { startsWith, endsWith } from '../utils/string-utils'
 import { addClassName, removeClassName } from '../utils/dom-utils'
@@ -15,7 +15,7 @@ import { TagNameable } from '../models/_tag-nameable'
 import ListSection from '../models/list-section'
 import RenderNode from '../models/render-node'
 import { Option, Maybe, Dict } from '../utils/types'
-import Atom from '../models/atom'
+import Atom, { AtomType } from '../models/atoms/atom'
 import Editor from '../editor/editor'
 import { hasChildSections } from '../models/_has-child-sections'
 import Post from '../models/post'
@@ -24,6 +24,7 @@ import Image from '../models/image'
 import Card from '../models/card'
 import RenderTree from '../models/render-tree'
 import { PostNode } from '../models/post-node-builder'
+import CustomAtom from '../models/atoms/atom'
 
 export const CARD_ELEMENT_CLASS_NAME = '__mobiledoc-card'
 export const NO_BREAK_SPACE = '\u00A0'
@@ -172,14 +173,36 @@ function attachElementToParent(element: Node, parentElement: Node, previousRende
   }
 }
 
-function renderAtom(atom: Atom, element: HTMLElement, previousRenderNode: Option<RenderNode>) {
-  let atomElement = document.createElement('span')
-  atomElement.contentEditable = 'false'
+function renderElementAtom(atomModel: Atom, renderNode: RenderNode) {
+  let atomElement = document.createElement(atomModel.name)
 
   let wrapper = document.createElement('span')
-  addClassName(wrapper, ATOM_CLASS_NAME)
   let headTextNode = renderInlineCursorPlaceholder()
   let tailTextNode = renderInlineCursorPlaceholder()
+
+  wrapper.appendChild(headTextNode)
+  wrapper.appendChild(atomElement)
+  wrapper.appendChild(tailTextNode)
+
+  renderNode.headTextNode = headTextNode
+  renderNode.tailTextNode = tailTextNode
+  renderNode.element = wrapper
+  renderNode.markupElement = atomElement
+}
+
+function renderCustomAtom(atom: CustomAtom, element: HTMLElement, previousRenderNode: Option<RenderNode>) {
+  let atomElement: HTMLElement
+  let wrapper: HTMLElement
+  let headTextNode: Text
+  let tailTextNode: Text
+
+  atomElement = document.createElement('span')
+  atomElement.contentEditable = 'false'
+
+  wrapper = document.createElement('span')
+  addClassName(wrapper, ATOM_CLASS_NAME)
+  headTextNode = renderInlineCursorPlaceholder()
+  tailTextNode = renderInlineCursorPlaceholder()
 
   wrapper.appendChild(headTextNode)
   wrapper.appendChild(atomElement)
@@ -481,29 +504,42 @@ class Visitor {
     }
 
     const { editor, options } = this
-    const { wrapper, markupElement, atomElement, headTextNode, tailTextNode } = renderAtom(
-      atomModel,
-      parentElement as HTMLElement,
-      renderNode.prev
-    )
-    const atom = this._findAtom(atomModel.name)
 
-    let atomNode = renderNode.atomNode
-    if (!atomNode) {
-      // create new AtomNode
-      atomNode = new AtomNode(editor, atom, atomModel, atomElement, options)
-    } else {
-      // retarget atomNode to new atom element
-      atomNode.element = atomElement
+    switch (atomModel.atomType) {
+      case AtomType.ELEMENT: {
+        if (!renderNode.element) {
+          renderElementAtom(atomModel, renderNode)
+        }
+
+        attachElementToParent(renderNode.element!, parentElement, renderNode.prev)
+        break
+      }
+      case AtomType.CUSTOM: {
+        const { wrapper, markupElement, atomElement, headTextNode, tailTextNode } = renderCustomAtom(
+          atomModel,
+          parentElement as HTMLElement,
+          renderNode.prev
+        )
+        const atom = this._findAtom(atomModel.name)
+
+        let atomNode = renderNode.atomNode
+        if (!atomNode) {
+          // create new AtomNode
+          atomNode = new AtomNode(editor, atom, atomModel, atomElement, options)
+        } else {
+          // retarget atomNode to new atom element
+          atomNode.element = atomElement
+        }
+
+        atomNode.render()
+
+        renderNode.atomNode = atomNode
+        renderNode.element = wrapper
+        renderNode.headTextNode = headTextNode
+        renderNode.tailTextNode = tailTextNode
+        renderNode.markupElement = markupElement
+      }
     }
-
-    atomNode.render()
-
-    renderNode.atomNode = atomNode
-    renderNode.element = wrapper
-    renderNode.headTextNode = headTextNode
-    renderNode.tailTextNode = tailTextNode
-    renderNode.markupElement = markupElement
   }
 }
 

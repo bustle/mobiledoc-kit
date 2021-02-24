@@ -9,7 +9,7 @@ import Image from '../../models/image'
 import Card from '../../models/card'
 import Marker from '../../models/marker'
 import Markup from '../../models/markup'
-import Atom from '../../models/atom'
+import Atom from '../../models/atoms/atom'
 import { Dict } from '../../utils/types'
 import { MobiledocSectionKind, MobiledocMarkerKind } from './constants'
 
@@ -53,8 +53,9 @@ const visitor = {
 
 export type MobiledocMarkupMarker = [MobiledocMarkerKind.MARKUP, number[], number, string]
 export type MobiledocAtomMarker = [MobiledocMarkerKind.ATOM, number[], number, number]
+export type MobiledocElementAtomMarker = [MobiledocMarkerKind.ATOM, number[], number, string]
 
-export type MobiledocMarker = MobiledocMarkupMarker | MobiledocAtomMarker
+export type MobiledocMarker = MobiledocMarkupMarker | MobiledocAtomMarker | MobiledocElementAtomMarker
 
 export type MobiledocMarkupSection = [MobiledocSectionKind.MARKUP, string, MobiledocMarker[]]
 export type MobiledocListSection = [MobiledocSectionKind.LIST, string, MobiledocMarker[][]]

@@ -252,7 +252,8 @@ export default class EventManager {
       }
       case key.isShiftEnter():
         event.preventDefault()
-        editor.insertAtom('-soft-break')
+        // editor.insertTextWithMarkup(' ', [editor.builder.createMarkup('br')])
+        editor.insertElementAtom('br')
         break
       case key.isEnter():
         this._textInputHandler.handleNewLine()

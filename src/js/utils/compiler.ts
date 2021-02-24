@@ -23,6 +23,7 @@ export type OpcodeName =
   | 'openAtom'
   | 'openMarkup'
   | 'openAtom'
+  | 'openElementAtom'
 export type Opcode = [OpcodeName, ...unknown[]]
 export type Opcodes = Opcode[]
 export type Compiler = { [key in OpcodeName]?: (...params: any[]) => void }

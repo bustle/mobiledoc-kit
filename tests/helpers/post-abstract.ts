@@ -1,7 +1,7 @@
 import PostNodeBuilder from 'mobiledoc-kit/models/post-node-builder'
 import Post from 'mobiledoc-kit/models/post'
 import { Dict, Maybe } from 'mobiledoc-kit/utils/types'
-import Atom from 'mobiledoc-kit/models/atom'
+import Atom from 'mobiledoc-kit/models/atoms/atom'
 import { keys } from 'mobiledoc-kit/utils/object-utils'
 import Markup from 'mobiledoc-kit/models/markup'
 import Markuperable from 'mobiledoc-kit/utils/markuperable'

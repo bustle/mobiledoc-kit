@@ -6,6 +6,8 @@ import { MODIFIERS } from 'mobiledoc-kit/utils/key'
 import { Editor } from 'mobiledoc-kit'
 import { BuildCallback } from 'tests/helpers/post-abstract'
 import { EditorOptions } from 'mobiledoc-kit/editor/editor'
+import ListSection from 'mobiledoc-kit/models/list-section'
+import { AtomData } from 'mobiledoc-kit/models/atoms/atom-node'
 
 const { module, test } = Helpers
 const {
@@ -24,7 +26,7 @@ function renderEditor(treeFn: BuildCallback, editorOptions: EditorOptions = {}) 
   return editor
 }
 
-let atom = {
+let atom: AtomData = {
   name: DEFAULT_ATOM_NAME,
   type: 'dom',
   render() {},
@@ -156,7 +158,7 @@ test('typing "* " inside of a list section does not create a new list section', 
   renderEditor(({ post, listSection, listItem, marker }) => {
     return post([listSection('ul', [listItem([marker('*')])])])
   })
-  let position = editor.post.sections.head.items.head.tailPosition()
+  let position = (editor.post.sections.head! as ListSection).items.head!.tailPosition()
   editor.selectRange(position)
 
   assert.hasElement('#editor ul > li:contains(*)', 'precond - has li')
@@ -339,7 +341,7 @@ test('input handler can be triggered by ENTER', assert => {
 test('typing ctrl-TAB does not insert TAB text', assert => {
   editor = Helpers.editor.buildFromText('abc|', { element: editorElement })
 
-  Helpers.dom.triggerKeyCommand(editor, TAB, [MODIFIERS.CTRL])
+  Helpers.dom.triggerKeyCommand(editor, 'TAB', [MODIFIERS.CTRL])
 
   assert.equal(editorElement.textContent, 'abc', 'no TAB is inserted')
 })

@@ -16,6 +16,7 @@ export const VALID_MARKUP_TAGNAMES = [
   'sub', // subscript
   'sup', // superscript
   'u',
+  'br'
 ].map(normalizeTagName)
 
 export const VALID_ATTRIBUTES = ['href', 'rel']

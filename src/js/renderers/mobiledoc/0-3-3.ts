@@ -9,12 +9,12 @@ import Image from '../../models/image'
 import Card from '../../models/card'
 import Marker from '../../models/marker'
 import Markup from '../../models/markup'
-import Atom from '../../models/atoms/atom'
+import Atom, { AtomType } from '../../models/atoms/atom'
 import { Dict } from '../../utils/types'
 import { MobiledocSectionKind, MobiledocMarkerKind } from './constants'
 import { MobiledocCard, MobiledocAtom, MobiledocMarker, MobiledocSection, MobiledocMarkerType } from './0-3'
 
-export const MOBILEDOC_VERSION = '0.3.2'
+export const MOBILEDOC_VERSION = '0.3.3'
 
 export type MobiledocAttributedMarkupSection = [MobiledocSectionKind.MARKUP, string, MobiledocMarker[], string[]]
 export type MobiledocAttributedListSection = [MobiledocSectionKind.LIST, string, MobiledocMarker[][], string[]]
@@ -55,7 +55,15 @@ const visitor = {
     opcodes.push(['openMarkup', node.tagName, objectToSortedKVArray(node.attributes)])
   },
   [Type.ATOM](node: Atom, opcodes: Opcodes) {
-    opcodes.push(['openAtom', node.closedMarkups.length, node.name, node.value, node.payload])
+    switch (node.atomType) {
+      case AtomType.CUSTOM:
+        opcodes.push(['openAtom', node.closedMarkups.length, node.name, node.value, node.payload])
+        break
+      case AtomType.ELEMENT:
+        opcodes.push(['openElementAtom', node.closedMarkups.length, node.name, node.value, node.payload])
+        break
+    }
+
     visitArray(visitor, node.openedMarkups, opcodes)
   },
 }
@@ -67,7 +75,7 @@ class PostOpcodeCompiler {
   markerTypes!: MobiledocMarkerType[]
   atomTypes!: MobiledocAtom[]
   cardTypes!: MobiledocCard[]
-  result!: MobiledocV0_3_2
+  result!: MobiledocV0_3_3
 
   _markerTypeCache!: Dict<number>
 
@@ -80,6 +88,11 @@ class PostOpcodeCompiler {
     const index = this._addAtomTypeIndex(name, value, payload)
     this.markupMarkerIds = []
     this.markers.push([MobiledocMarkerKind.ATOM, this.markupMarkerIds, closeCount, index])
+  }
+
+  openElementAtom(closeCount: number, name: string) {
+    this.markupMarkerIds = []
+    this.markers.push([MobiledocMarkerKind.ATOM, this.markupMarkerIds, closeCount, name])
   }
 
   openMarkupSection(tagName: string, attributes: string[]) {
@@ -167,7 +180,7 @@ class PostOpcodeCompiler {
   }
 }
 
-export interface MobiledocV0_3_2 {
+export interface MobiledocV0_3_3 {
   version: typeof MOBILEDOC_VERSION
   atoms: MobiledocAtom[]
   cards: MobiledocCard[]
@@ -183,7 +196,7 @@ export default {
    * @param {Post}
    * @return {Mobiledoc}
    */
-  render(post: Post): MobiledocV0_3_2 {
+  render(post: Post): MobiledocV0_3_3 {
     let opcodes: Opcodes = []
     visit(visitor, post, opcodes)
     let compiler = new PostOpcodeCompiler()

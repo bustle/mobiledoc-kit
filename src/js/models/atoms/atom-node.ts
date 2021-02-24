@@ -1,6 +1,6 @@
-import Atom from './atom'
-import assert from '../utils/assert'
-import { JsonData, Dict, Maybe } from '../utils/types'
+import CustomAtom from './custom-atom'
+import assert from '../../utils/assert'
+import { JsonData, Dict, Maybe } from '../../utils/types'
 
 export type AtomOptions = Dict<unknown>
 
@@ -12,7 +12,7 @@ export interface AtomRenderOptions {
   payload: JsonData
 }
 
-export type AtomRenderHook = (options: AtomRenderOptions) => Maybe<Element>
+export type AtomRenderHook = (options: AtomRenderOptions) => Maybe<Element> | void
 
 export type AtomData = {
   name: string
@@ -23,14 +23,14 @@ export type AtomData = {
 export default class AtomNode {
   editor: any
   atom: AtomData
-  model: Atom
+  model: CustomAtom
   element: Element
   atomOptions: AtomOptions
 
   _teardownCallback: TeardownCallback | null = null
   _rendered: Maybe<Node>
 
-  constructor(editor: any, atom: AtomData, model: Atom, element: Element, atomOptions: AtomOptions) {
+  constructor(editor: any, atom: AtomData, model: CustomAtom, element: Element, atomOptions: AtomOptions) {
     this.editor = editor
     this.atom = atom
     this.model = model
@@ -46,7 +46,7 @@ export default class AtomNode {
         model: { value, payload },
       } = this
       // cache initial render
-      this._rendered = this.atom.render({ options, env, value, payload })
+      this._rendered = this.atom.render({ options, env, value, payload }) || null
     }
 
     this._validateAndAppendRenderResult(this._rendered!)

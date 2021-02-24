@@ -108,10 +108,10 @@ class Cursor {
         if (offsetInMarker > 0) {
           // FIXME -- if there is a next marker, focus on it?
           offset = 0
-          node = marker.renderNode.tailTextNode
+          node = marker.renderNode.tailTextNode || marker.renderNode.element
         } else {
           offset = 0
-          node = marker.renderNode.headTextNode
+          node = marker.renderNode.headTextNode || marker.renderNode.element
         }
       } else {
         node = marker.renderNode.element
@@ -162,6 +162,7 @@ class Cursor {
     }
 
     const range = document.createRange()
+    assertExistsInDocument(node, document)
     range.setStart(node, offset)
     if (direction === Direction.BACKWARD && isFullSelection(this.selection)) {
       this.selection.addRange(range)
@@ -202,6 +203,18 @@ class Cursor {
     }
     return selection.getRangeAt(0)
   }
+}
+
+function assertExistsInDocument(node: Node, doc: Document) {
+  let parent = node.parentNode
+  while (parent) {
+    if (parent === doc) {
+      return
+    }
+    parent = parent.parentNode
+  }
+
+  throw new Error('node did not exist in document')
 }
 
 export default Cursor

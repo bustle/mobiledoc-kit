@@ -11,7 +11,7 @@ import Section from '../../models/_section'
 import RenderNode from '../../models/render-node'
 import Card, { isCardSection } from '../../models/card'
 import Markuperable from '../markuperable'
-import { isAtom } from '../../models/atom'
+import { isAtom } from '../../models/atoms/atom'
 
 const { FORWARD, BACKWARD } = Direction
 
