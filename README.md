@@ -435,11 +435,6 @@ const element = document.querySelector('#editor');
 editor.render(element);
 ```
 
-## Caveats
-
-### Mobiledoc Kit and the Grammarly extension
-`mobiledoc-kit` and the [Grammarly extension](https://www.grammarly.com/) do not play well together (see [issue 422](https://github.com/bustle/mobiledoc-kit/issues/422)). Until this is resolved, you can avoid any such problems by disabling Grammarly for the `mobiledoc-kit` instances on your page. To do this, add the `data-gramm="false"` attribute to the `mobiledoc-kit` main DOM element.
-
 ## Contributing
 
 Fork the repo, write a test, make a change, open a PR.
