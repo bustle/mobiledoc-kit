@@ -1,6 +1,16 @@
+## <small>0.13.3 (2021-09-23)</small>
+
+* Add GitHub Actions CI 🎷 (#753) ([9ee86ce](https://github.com/bustle/mobiledoc-kit/commit/9ee86ce)), closes [#753](https://github.com/bustle/mobiledoc-kit/issues/753)
+* Export modules useful for HTML processing ([2121de6](https://github.com/bustle/mobiledoc-kit/commit/2121de6))
+* Typescriptify VII 📺  (#751) ([79a37b6](https://github.com/bustle/mobiledoc-kit/commit/79a37b6)), closes [#751](https://github.com/bustle/mobiledoc-kit/issues/751)
+* Update README.md ([5dd5647](https://github.com/bustle/mobiledoc-kit/commit/5dd5647))
+
+
+
 ## <small>0.13.2 (2020-11-06)</small>
 
 * Typescriptify Phase VI 🥃🧉 (#749) ([3170b48](https://github.com/bustle/mobiledoc-kit/commit/3170b48)), closes [#749](https://github.com/bustle/mobiledoc-kit/issues/749)
+* v0.13.2 ([e8454e3](https://github.com/bustle/mobiledoc-kit/commit/e8454e3))
 
 
 
