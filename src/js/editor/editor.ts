@@ -109,7 +109,7 @@ const CALLBACK_QUEUES = {
   POST_DID_CHANGE: 'postDidChange',
   INPUT_MODE_DID_CHANGE: 'inputModeDidChange',
   WILL_COPY: 'willCopy',
-  WILL_PASTE: 'willPaster',
+  WILL_PASTE: 'willPaste',
 }
 
 export enum Format {
