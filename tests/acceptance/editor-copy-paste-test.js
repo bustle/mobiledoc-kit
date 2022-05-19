@@ -141,6 +141,30 @@ test('willCopy callback called before copy', (assert) => {
   Helpers.dom.triggerCopyEvent(editor);
 });
 
+test('willPaste callback called before paste', assert => {
+  const mobiledoc = Helpers.mobiledoc.build(({ post, markupSection, marker, markup }) => {
+    return post([markupSection('p', [marker('a', [markup('strong')]), marker('bc')])])
+  })
+  editor = new Editor({ mobiledoc })
+  editor.addCallback('willPaste', post => {
+    assert.equal(post.sections.head.text, 'bc')
+  })
+  editor.render(editorElement)
+
+  Helpers.dom.selectText(editor, 'a', editorElement, 'b', editorElement)
+  Helpers.dom.triggerCopyEvent(editor)
+
+  let textNode = $('#editor p')[0].childNodes[1]
+  assert.equal(textNode.textContent, 'bc') //precond
+  Helpers.dom.moveCursorTo(editor, textNode, textNode.length)
+
+  Helpers.dom.triggerPasteEvent(editor)
+
+  assert.hasElement('#editor p:contains(abcab)', 'pastes the text')
+  assert.equal($('#editor p strong:contains(a)').length, 2, 'two bold As')
+})
+
+
 test('can cut and then paste content', (assert) => {
   const mobiledoc = Helpers.mobiledoc.build(
     ({post, markupSection, marker}) => {
