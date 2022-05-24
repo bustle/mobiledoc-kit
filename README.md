@@ -229,6 +229,8 @@ The available lifecycle hooks are:
 * `editor.willCopy(({html, text, mobiledoc}) => {...})` - Called before the
   serialized versions of the selected markup is copied to the system
   pasteboard.
+  `editor.willPaste(({html, text, mobiledoc}) => {...})` - Called before the
+  serialized versions of the system pasteboard is pasted into the mobiledoc.
 
 For more details on the lifecycle hooks, see the [Editor documentation](https://bustle.github.io/mobiledoc-kit/demo/docs/Editor.html).
 

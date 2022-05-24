@@ -109,6 +109,7 @@ const CALLBACK_QUEUES = {
   POST_DID_CHANGE: 'postDidChange',
   INPUT_MODE_DID_CHANGE: 'inputModeDidChange',
   WILL_COPY: 'willCopy',
+  WILL_PASTE: 'willPaste',
 }
 
 export enum Format {
@@ -959,6 +960,14 @@ export default class Editor implements EditorOptions {
 
   willCopy(callback: LifecycleCallback) {
     this.addCallback(CALLBACK_QUEUES.WILL_COPY, callback)
+  }
+
+  /**
+   * @param {Function} callback This callback will be called before pasting.
+   * @public
+   */
+  willPaste(callback: LifecycleCallback) {
+    this.addCallback(CALLBACK_QUEUES.WILL_PASTE, callback)
   }
 
   /**
