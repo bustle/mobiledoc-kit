@@ -1,9 +1,17 @@
+## 0.14.0 (2022-05-25)
+
+* add willPaste event ([7768fa5](https://github.com/bustle/mobiledoc-kit/commit/7768fa5))
+* fix typo/test ([e1adb0c](https://github.com/bustle/mobiledoc-kit/commit/e1adb0c))
+
+
+
 ## <small>0.13.3 (2021-09-23)</small>
 
 * Add GitHub Actions CI 🎷 (#753) ([9ee86ce](https://github.com/bustle/mobiledoc-kit/commit/9ee86ce)), closes [#753](https://github.com/bustle/mobiledoc-kit/issues/753)
 * Export modules useful for HTML processing ([2121de6](https://github.com/bustle/mobiledoc-kit/commit/2121de6))
 * Typescriptify VII 📺  (#751) ([79a37b6](https://github.com/bustle/mobiledoc-kit/commit/79a37b6)), closes [#751](https://github.com/bustle/mobiledoc-kit/issues/751)
 * Update README.md ([5dd5647](https://github.com/bustle/mobiledoc-kit/commit/5dd5647))
+* v0.13.3 ([33cbf1d](https://github.com/bustle/mobiledoc-kit/commit/33cbf1d))
 
 
 
