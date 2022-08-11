@@ -11,17 +11,17 @@
   },
   "scripts": {
     "start": "rollup -c --watch",
-    "test:ci": "yarn build:docs && yarn build && testem ci -f testem-ci.js",
-    "test": "yarn format && yarn build && testem ci -f testem.js",
+    "test:ci": "npm run build:docs && npm run build && testem ci -f testem-ci.js",
+    "test": "npm run format && npm run build && testem ci -f testem.js",
     "lint": "prettier src/**/*.{js,ts} --check && eslint src/**/*.{js,ts}",
     "format": "prettier src --write",
     "build": "rollup -c",
     "build:docs": "jsdoc -c ./.jsdoc",
-    "build:website": "yarn build:docs && yarn build && ./bin/build-website.sh",
+    "build:website": "npm run build:docs && npm run build && ./bin/build-website.sh",
     "deploy:website": "./bin/deploy-website.sh",
     "update-changelog": "conventional-changelog -i CHANGELOG.md -r 0 -s",
-    "version": "yarn update-changelog && git add CHANGELOG.md",
-    "prepublishOnly": "yarn build"
+    "version": "npm run update-changelog && git add CHANGELOG.md",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "html",
