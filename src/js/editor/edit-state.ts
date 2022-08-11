@@ -132,7 +132,7 @@ export default class EditState {
     // In addition, to catch changes from ul -> ol, we keep track of the
     // un-nested tag names (otherwise we'd only see li -> li change)
     state.activeSectionTagNames = state.activeSections!.map(s => {
-      return s.isNested ? ((s.parent as unknown) as TagNameable).tagName : ((s as unknown) as TagNameable).tagName
+      return s.isNested ? (s.parent as unknown as TagNameable).tagName : (s as unknown as TagNameable).tagName
     })
     state.activeSectionAttributes = this._readSectionAttributes(state.activeSections!)
 

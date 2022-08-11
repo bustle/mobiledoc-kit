@@ -567,7 +567,7 @@ let destroyHooks = {
     }
 
     // an atom is a kind of marker so just call its destroy hook vs copying here
-    destroyHooks[Type.MARKER](renderNode, (atom as unknown) as Marker)
+    destroyHooks[Type.MARKER](renderNode, atom as unknown as Marker)
   },
 }
 
