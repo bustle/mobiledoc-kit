@@ -57,7 +57,7 @@ class TextInputHandler {
     const { head } = range
     const { section } = head
 
-    let preText = ((section! as unknown) as Markerable).textUntil(head) + string
+    let preText = (section! as unknown as Markerable).textUntil(head) + string
 
     for (let i = 0; i < this._handlers.length; i++) {
       let handler = this._handlers[i]

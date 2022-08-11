@@ -694,13 +694,13 @@ export default class PostEditor {
 
   _replaceSection(section: Section, newSections: Section[]) {
     let nextSection = section.next
-    let collection = ((section.parent as unknown) as HasChildSections).sections
+    let collection = (section.parent as unknown as HasChildSections).sections
 
     let nextNewSection = newSections[0]
     if (isMarkupSection(nextNewSection) && isListItem(section)) {
       // put the new section after the ListSection (section.parent)
       // instead of after the ListItem
-      collection = ((section.parent.parent as unknown) as HasChildSections).sections
+      collection = (section.parent.parent as unknown as HasChildSections).sections
       nextSection = section.parent.next
     }
 
@@ -922,7 +922,7 @@ export default class PostEditor {
     let attribute = `data-md-${key}`
 
     post.walkMarkerableSections(range, section => {
-      const cbSection: Attributable = isListItem(section) ? section.parent : ((section as unknown) as Attributable)
+      const cbSection: Attributable = isListItem(section) ? section.parent : (section as unknown as Attributable)
 
       if (cb(cbSection, attribute) === true) {
         this._markDirty(section)
@@ -1090,7 +1090,7 @@ export default class PostEditor {
 
   _changeSectionToListItem(section: ListSection | Markerable, newTagName: string) {
     let isAlreadyCorrectListItem =
-      section.isListItem && ((section.parent as unknown) as TagNameable).tagName === newTagName
+      section.isListItem && (section.parent as unknown as TagNameable).tagName === newTagName
 
     if (isAlreadyCorrectListItem) {
       return section
@@ -1149,7 +1149,7 @@ export default class PostEditor {
     const activeSection = this.editor.activeSection
     const nextSection = activeSection && activeSection.next
 
-    const collection = (this.editor.post.sections as unknown) as LinkedList<Section>
+    const collection = this.editor.post.sections as unknown as LinkedList<Section>
     this.insertSectionBefore(collection, section, nextSection)
   }
 
