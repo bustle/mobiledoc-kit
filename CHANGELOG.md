@@ -1,7 +1,18 @@
+## <small>0.14.1 (2022-08-11)</small>
+
+* Add package-lock, use npm run ([87a046f](https://github.com/bustle/mobiledoc-kit/commit/87a046f))
+* Create SECURITY.md ([2943be1](https://github.com/bustle/mobiledoc-kit/commit/2943be1))
+* Fix emoji input on iOS (#764) ([305b1a2](https://github.com/bustle/mobiledoc-kit/commit/305b1a2)), closes [#764](https://github.com/bustle/mobiledoc-kit/issues/764) [TryGhost/Ghost#11541](https://github.com/TryGhost/Ghost/issues/11541)
+* Update CI: run on PRs, use node 16 (#766) ([083112d](https://github.com/bustle/mobiledoc-kit/commit/083112d)), closes [#766](https://github.com/bustle/mobiledoc-kit/issues/766)
+* Update dependencies 8/11/22 (#767) ([4b40e51](https://github.com/bustle/mobiledoc-kit/commit/4b40e51)), closes [#767](https://github.com/bustle/mobiledoc-kit/issues/767)
+
+
+
 ## 0.14.0 (2022-05-25)
 
 * add willPaste event ([7768fa5](https://github.com/bustle/mobiledoc-kit/commit/7768fa5))
 * fix typo/test ([e1adb0c](https://github.com/bustle/mobiledoc-kit/commit/e1adb0c))
+* v0.14.0 ([5fc54ab](https://github.com/bustle/mobiledoc-kit/commit/5fc54ab))
 
 
 
