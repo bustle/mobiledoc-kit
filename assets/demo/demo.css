@@ -1,12 +1,14 @@
-* , *:before, *:after {
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
+*,
+*:before,
+*:after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-  background-color: #F3F3F3;
-  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  background-color: #f3f3f3;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   margin: 1.5em 0 0 0;
   padding: 0;
   font-size: 1.1rem;
@@ -41,16 +43,18 @@ section {
   padding: 1rem 2rem;
 }
 
-section.libraries, section.examples, section.cards {
+section.libraries,
+section.examples,
+section.cards {
   border-top: 2px solid #ccc;
-  background-color: #FFF;
+  background-color: #fff;
 }
 
-section[role="main"] {
+section[role='main'] {
   text-align: center;
 }
 
-section[role="main"] p {
+section[role='main'] p {
   margin-left: auto;
   margin-right: auto;
   line-height: 1.6;
@@ -61,7 +65,8 @@ table {
   border-spacing: 0;
 }
 
-table th, table td {
+table th,
+table td {
   border: 1px solid #ddd;
   padding: 6px 13px;
 }
@@ -105,7 +110,8 @@ table tr {
   overflow: scroll;
 }
 
-#editor-output, #editor-wrapper {
+#editor-output,
+#editor-wrapper {
   height: 350px;
   overflow: scroll;
   text-align: left;
@@ -116,29 +122,35 @@ table tr {
   font-family: monospace;
   padding: 1rem;
   font-size: 12px;
-  background-color: #FFFFFF;
-  border: 2px solid #CCCCCC;
+  background-color: #ffffff;
+  border: 2px solid #cccccc;
 }
 
 .toolbar {
-  text-align: center;
   display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #ccc;
 }
 
 .toolbar-section {
   display: flex;
-  margin: 0 12px;
+  margin: 0 12px 12px 0;
 }
-.toolbar-section:first-child { margin-left: 0; }
-.toolbar-section:last-child { margin-right: 0; }
+.toolbar-section:last-child {
+  margin-right: 0;
+}
 
 .toolbar-section button {
   display: flex;
   align-items: center;
-  margin: 0 4px;
+  margin: 0 3px;
 }
-.toolbar-section button:first-child { margin-left: 0; }
-.toolbar-section button:last-child { margin-right: 0; }
+.toolbar-section button:first-child {
+  margin-left: 0;
+}
+.toolbar-section button:last-child {
+  margin-right: 0;
+}
 
 .toolbar-section button svg {
   height: 24px;
@@ -146,6 +158,6 @@ table tr {
 
 #editor-wrapper {
   padding: 1rem;
-  background-color: #FFFFFF;
-  border: 2px solid #CCCCCC;
+  background-color: #ffffff;
+  border: 2px solid #cccccc;
 }
