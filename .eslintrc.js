@@ -295,7 +295,6 @@ module.exports = {
         "radix": "error",
         "require-atomic-updates": "error",
         "require-await": "error",
-        "require-jsdoc": "off",
         "require-unicode-regexp": "off",
         "rest-spread-spacing": [
             "error",
@@ -342,7 +341,6 @@ module.exports = {
             "error",
             "never"
         ],
-        "valid-jsdoc": "off",
         "vars-on-top": "off",
         "wrap-iife": "error",
         "wrap-regex": "off",

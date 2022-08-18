@@ -16,7 +16,7 @@
     "lint": "prettier src/**/*.{js,ts} --check && eslint src/**/*.{js,ts}",
     "format": "prettier src --write",
     "build": "rollup -c",
-    "build:docs": "jsdoc -c ./.jsdoc",
+    "build:docs": "typedoc",
     "build:website": "npm run build:docs && npm run build && ./bin/build-website.sh",
     "deploy:website": "./bin/deploy-website.sh",
     "update-changelog": "conventional-changelog -i CHANGELOG.md -r 0 -s",
@@ -60,7 +60,6 @@
     "eslint": "^8.22.0",
     "eslint-config-prettier": "^8.5.0",
     "jquery": "^3.6.0",
-    "jsdoc": "^3.6.5",
     "prettier": "^2.7.1",
     "qunit": "^2.19.1",
     "rollup": "^2.78.0",
@@ -70,7 +69,8 @@
     "saucie": "^3.3.3",
     "testem": "^3.2.0",
     "tslib": "^2.4.0",
-    "typescript": "^3.9.3"
+    "typedoc": "^0.22.18",
+    "typescript": "^3.9.10"
   },
   "prettier": {
     "arrowParens": "avoid",
