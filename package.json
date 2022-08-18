@@ -15,6 +15,7 @@
     "test": "npm run format && npm run build && testem ci -f testem.js",
     "lint": "prettier src/**/*.{js,ts} --check && eslint src/**/*.{js,ts}",
     "format": "prettier src --write",
+    "clean": "rm -rf dist",
     "build": "rollup -c",
     "build:docs": "typedoc",
     "build:website": "npm run build:docs && npm run build && ./bin/build-website.sh",
@@ -77,9 +78,5 @@
     "printWidth": 120,
     "semi": false,
     "singleQuote": true
-  },
-  "volta": {
-    "node": "12.14.1",
-    "yarn": "1.22.4"
   }
 }
