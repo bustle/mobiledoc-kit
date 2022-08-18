@@ -9,8 +9,6 @@ import typescript from '@rollup/plugin-typescript'
 
 function commonPlugins() {
   return [
-    resolve({ extensions: ['.js', '.ts'] }),
-    commonjs(),
     alias({
       entries: [
         {
@@ -19,6 +17,8 @@ function commonPlugins() {
         },
       ],
     }),
+    resolve({ extensions: ['.js', '.ts'] }),
+    commonjs(),
     typescript({ noEmitOnError: false }),
   ]
 }
@@ -30,8 +30,8 @@ export default args => [
     output: {
       file: 'dist/mobiledoc.js',
       format: 'es',
-      sourcemap: true
-    }
+      sourcemap: true,
+    },
   },
   {
     input: 'src/js/index.ts',
@@ -39,8 +39,8 @@ export default args => [
     output: {
       file: 'dist/mobiledoc.cjs',
       format: 'cjs',
-      sourcemap: true
-    }
+      sourcemap: true,
+    },
   },
   {
     input: 'tests/index.ts',
@@ -49,7 +49,7 @@ export default args => [
       globImport({
         // without this option, the plugin will try to parse imported files (as
         // JS) and fail with TS files
-        format: 'import'
+        format: 'import',
       }),
       copy({
         targets: [
