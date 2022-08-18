@@ -504,7 +504,7 @@ The demo website is hosted at
 To preview the website, start the server and visit
 [http://localhost:4200/assets/demo/](http://localhost:4200/assets/demo/). The code for
 this website can be found in `assets/demo/`. Note that the development server
-does not rebuild jsdoc.
+does not rebuild docs.
 
 To publish a new version:
 
