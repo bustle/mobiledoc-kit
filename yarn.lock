@@ -2546,7 +2546,7 @@
   "resolved" "https://registry.npmjs.org/mkdirp/-/mkdirp-1.0.4.tgz"
   "version" "1.0.4"
 
-"mobiledoc-dom-renderer@^0.7.2":
+"mobiledoc-dom-renderer@0.7.2":
   "integrity" "sha512-0vw/ybxCWXI0sIcBk9GVq3PMfVWJ4qpLWBal8ZoZVP/S5MMRjxFwyOctOfUmsY2dVi6BSvomp8yFqNloawwyig=="
   "resolved" "https://registry.npmjs.org/mobiledoc-dom-renderer/-/mobiledoc-dom-renderer-0.7.2.tgz"
   "version" "0.7.2"

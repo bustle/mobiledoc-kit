@@ -35,7 +35,7 @@
     "dist/mobiledoc.cjs",
     "dist/mobiledoc.css"
   ],
-  "author": "Garth Poitras <garth22@gmail.com> (http://garthpoitras.com/)",
+  "author": "Garth Poitras <garth22@gmail.com> (https://www.garthpoitras.com)",
   "contributors": [
     "Zahra Jabini <zahra.arch@gmail.com> (http://zahraism.com/)",
     "Tom Dale <tom@tomdale.net> (https://tomdale.net)",
@@ -44,7 +44,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "mobiledoc-dom-renderer": "^0.7.2",
+    "mobiledoc-dom-renderer": "0.7.2",
     "mobiledoc-text-renderer": "0.4.1"
   },
   "devDependencies": {
