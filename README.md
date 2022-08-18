@@ -11,24 +11,24 @@ supporting rich content via cards.
 
 ## Libraries
 
-This repository hosts the core Mobiledoc Kit library. If you want to use Mobiledoc Kit to *create a WYSIWYG editor* you have the following options:
+This repository hosts the core Mobiledoc Kit library. If you want to use Mobiledoc Kit to _create a WYSIWYG editor_ you have the following options:
 
-| Environment | Library |
-| ----------- | ------- |
-| Plain JavaScript | [mobiledoc-kit](https://github.com/bustle/mobiledoc-kit) (this repo) |
-| Ember | [ember-mobiledoc-editor](https://github.com/bustle/ember-mobiledoc-editor) |
-| React | [react-mobiledoc-editor](https://github.com/upworthy/react-mobiledoc-editor) |
+| Environment      | Library                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| Plain JavaScript | [mobiledoc-kit](https://github.com/bustle/mobiledoc-kit) (this repo)         |
+| Ember            | [ember-mobiledoc-editor](https://github.com/bustle/ember-mobiledoc-editor)   |
+| React            | [react-mobiledoc-editor](https://github.com/upworthy/react-mobiledoc-editor) |
 
-If you only want to use the Mobiledoc-Kit runtime, for *rendering mobiledoc posts only* (not editing or creating them), you can use:
+If you only want to use the Mobiledoc-Kit runtime, for _rendering mobiledoc posts only_ (not editing or creating them), you can use:
 
-| Output Format/Environment | Library |
-| ----------  | ------- |
-| Plain JavaScript In-Browser (DOM) | [mobiledoc-dom-renderer](https://github.com/bustle/mobiledoc-dom-renderer) |
-| Server-Side Rendering (HTML) | see [mobiledoc-dom-renderer's Rendering HTML section](https://github.com/bustle/mobiledoc-dom-renderer#rendering-html) |
-| Server-Side Rendering (Text-only, e.g. SEO) | [mobiledoc-text-renderer](https://github.com/bustle/mobiledoc-text-renderer) |
-| In-Browser (DOM) Rendering, with Ember | [ember-mobiledoc-dom-renderer](https://github.com/bustle/ember-mobiledoc-dom-renderer) |
-| React Server and Browser Renderer | [mobiledoc-react-renderer](https://github.com/dailybeast/mobiledoc-react-renderer) |
-| 🔮 Render Mobiledoc as VDOM by passing React or React-like `createElement` function | [mobiledoc-vdom-renderer](https://github.com/bustle/mobiledoc-vdom-renderer) |
+| Output Format/Environment                                                           | Library                                                                                                                |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Plain JavaScript In-Browser (DOM)                                                   | [mobiledoc-dom-renderer](https://github.com/bustle/mobiledoc-dom-renderer)                                             |
+| Server-Side Rendering (HTML)                                                        | see [mobiledoc-dom-renderer's Rendering HTML section](https://github.com/bustle/mobiledoc-dom-renderer#rendering-html) |
+| Server-Side Rendering (Text-only, e.g. SEO)                                         | [mobiledoc-text-renderer](https://github.com/bustle/mobiledoc-text-renderer)                                           |
+| In-Browser (DOM) Rendering, with Ember                                              | [ember-mobiledoc-dom-renderer](https://github.com/bustle/ember-mobiledoc-dom-renderer)                                 |
+| React Server and Browser Renderer                                                   | [mobiledoc-react-renderer](https://github.com/dailybeast/mobiledoc-react-renderer)                                     |
+| 🔮 Render Mobiledoc as VDOM by passing React or React-like `createElement` function | [mobiledoc-vdom-renderer](https://github.com/bustle/mobiledoc-vdom-renderer)                                           |
 
 Mobiledoc is a deliberately simple and terse format, and you are encouraged to write your own renderer if you have other target output formats (e.g., a PDF renderer, an iOS Native Views Renderer, etc.).
 
@@ -42,12 +42,12 @@ API Documentation is [available online](http://bustle.github.io/mobiledoc-kit/de
 
 ## Intro to Mobiledoc Kit
 
-* Posts are serialized to a JSON format called **Mobiledoc** instead of to
+- Posts are serialized to a JSON format called **Mobiledoc** instead of to
   HTML. Mobiledoc can be rendered for the web, mobile web, or in theory on any
   platform. Mobiledoc is portable and fast.
-* The editor makes limited use of Content Editable, the siren-song of doomed
+- The editor makes limited use of Content Editable, the siren-song of doomed
   web editor technologies.
-* Mobiledoc is designed for *rich* content. We call rich sections of an
+- Mobiledoc is designed for _rich_ content. We call rich sections of an
   article "cards" and rich inline elements "atoms" and implementing a new one doesn't require an understanding
   of Mobiledoc editor internals. Adding a new atom or card takes an afternoon, not several
   days. To learn more, see the docs for
@@ -59,9 +59,9 @@ API Documentation is [available online](http://bustle.github.io/mobiledoc-kit/de
 To learn more about the ideas behind Mobiledoc and the editor (note that the
 editor used to be named Content-Kit), see these blog posts:
 
-* [The Content-Kit announcement post](http://madhatted.com/2015/7/31/announcing-content-kit-and-mobiledoc).
-* [Building the Content-Kit Editor on Content Editable](https://medium.com/@bantic/building-content-kit-editor-on-contenteditable-99a94871c951)
-* [Content-Kit: Programmatic Editing](http://madhatted.com/2015/8/25/content-kit-programmatic-editing)
+- [The Content-Kit announcement post](http://madhatted.com/2015/7/31/announcing-content-kit-and-mobiledoc).
+- [Building the Content-Kit Editor on Content Editable](https://medium.com/@bantic/building-content-kit-editor-on-contenteditable-99a94871c951)
+- [Content-Kit: Programmatic Editing](http://madhatted.com/2015/8/25/content-kit-programmatic-editing)
 
 The Mobiledoc kit saves posts in
 **[Mobiledoc format](https://github.com/bustle/mobiledoc-kit/blob/master/MOBILEDOC.md)**.
@@ -73,39 +73,35 @@ optionally a Mobiledoc to load. For example:
 
 ```js
 const simpleMobiledoc = {
-  version: "0.3.2",
+  version: '0.3.2',
   markups: [],
   atoms: [],
   cards: [],
-  sections: [
-    [1, "p", [
-      [0, [], 0, "Welcome to Mobiledoc"]
-    ]]
-  ]
-};
-const element = document.querySelector('#editor');
-const options = { mobiledoc: simpleMobiledoc };
-const editor = new Mobiledoc.Editor(options);
-editor.render(element);
+  sections: [[1, 'p', [[0, [], 0, 'Welcome to Mobiledoc']]]],
+}
+const element = document.querySelector('#editor')
+const options = { mobiledoc: simpleMobiledoc }
+const editor = new Mobiledoc.Editor(options)
+editor.render(element)
 ```
 
 `options` is an object which may include the following properties:
 
-* `mobiledoc` - [object] A mobiledoc object to load and edit.
-* `placeholder` - [string] default text to show before a user starts typing.
-* `spellcheck` - [boolean] whether to enable spellcheck. Defaults to true.
-* `autofocus` - [boolean] When true, focuses on the editor when it is rendered.
-* `undoDepth` - [number] How many undo levels should be available. Default
+- `mobiledoc` - [object] A mobiledoc object to load and edit.
+- `placeholder` - [string] default text to show before a user starts typing.
+- `spellcheck` - [boolean] whether to enable spellcheck. Defaults to true.
+- `autofocus` - [boolean] When true, focuses on the editor when it is rendered.
+- `undoDepth` - [number] How many undo levels should be available. Default
   value is five. Set this to zero to disable undo/redo.
-* `cards` - [array] The list of cards that the editor may render
-* `atoms` - [array] The list of atoms that the editor may render
-* `cardOptions` - [object] Options passed to cards and atoms
-* `unknownCardHandler` - [function] This will be invoked by the editor-renderer
+- `cards` - [array] The list of cards that the editor may render
+- `atoms` - [array] The list of atoms that the editor may render
+- `cardOptions` - [object] Options passed to cards and atoms
+- `unknownCardHandler` - [function] This will be invoked by the editor-renderer
   whenever it encounters an unknown card
-* `unknownAtomHandler` - [function] This will be invoked by the editor-renderer
+- `unknownAtomHandler` - [function] This will be invoked by the editor-renderer
   whenever it encounters an unknown atom
-* `parserPlugins` - [array] See [DOM Parsing Hooks](https://github.com/bustle/mobiledoc-kit#dom-parsing-hooks)
-* `tooltipPlugin` - [object] Optional plugin for customizing tooltip appearance
+- `parserPlugins` - [array] See [DOM Parsing Hooks](https://github.com/bustle/mobiledoc-kit#dom-parsing-hooks)
+- `tooltipPlugin` - [object] Optional plugin for customizing tooltip appearance
 
 The editor leverages unicode characters, so HTML documents must opt in to
 UTF8. For example this can be done by adding the following to an HTML
@@ -117,18 +113,18 @@ document's `<head>`:
 
 ### Editor API
 
-* `editor.serialize(version="0.3.2")` - serialize the current post for persistence. Returns
+- `editor.serialize(version="0.3.2")` - serialize the current post for persistence. Returns
   Mobiledoc.
-* `editor.destroy()` - teardown the editor event listeners, free memory etc.
-* `editor.disableEditing()` - stop the user from being able to edit the
+- `editor.destroy()` - teardown the editor event listeners, free memory etc.
+- `editor.disableEditing()` - stop the user from being able to edit the
   current post with their cursor. Programmatic edits are still allowed.
-* `editor.enableEditing()` - allow the user to make edits directly
+- `editor.enableEditing()` - allow the user to make edits directly
   to a post's text.
-* `editor.editCard(cardSection)` - change the card to its edit mode (will change
+- `editor.editCard(cardSection)` - change the card to its edit mode (will change
   immediately if the card is already rendered, or will ensure that when the card
   does get rendered it will be rendered in the "edit" state initially)
-* `editor.displayCard(cardSection)` - same as `editCard` except in display mode.
-* `editor.range` - Read the current Range object for the cursor.
+- `editor.displayCard(cardSection)` - same as `editCard` except in display mode.
+- `editor.range` - Read the current Range object for the cursor.
 
 ### Position API
 
@@ -144,17 +140,17 @@ A position can be created for any point in a document with
 
 Position API includes:
 
-* `position.section` - The section of this position
-* `position.offset` - The character offset of this position in the section.
-* `position.marker` - Based on the section and offset, the marker this position
+- `position.section` - The section of this position
+- `position.offset` - The character offset of this position in the section.
+- `position.marker` - Based on the section and offset, the marker this position
   is on. A position may not always have a marker (for example a cursor before
   or after a card).
-* `position.toRange(endPosition)` - Create a range based on two positions. Accepts
+- `position.toRange(endPosition)` - Create a range based on two positions. Accepts
   the direction of the range as a second optional argument.
-* `position.isEqual(otherPosition)` - Is this position the same as another
-* `position.move(characterCount)` - Move a number of characters to the right
+- `position.isEqual(otherPosition)` - Is this position the same as another
+- `position.move(characterCount)` - Move a number of characters to the right
   (positive number) or left (negative number)
-* `position.moveWord(direction)` - Move a single word in a given direction.
+- `position.moveWord(direction)` - Move a single word in a given direction.
 
 ### Range API
 
@@ -171,17 +167,17 @@ expect a range as an argument, for example `setRange` or `deleteRange`.
 Ranges sport several public APIs for manipulation, each of which returns a new,
 unique range instance:
 
-* `range.head` - The position on the range closer to the start of the document.
-* `range.tail` - The position on the range closer to the end of the document.
-* `range.isCollapsed` - A range is collapsed when its head and tail are the same
+- `range.head` - The position on the range closer to the start of the document.
+- `range.tail` - The position on the range closer to the end of the document.
+- `range.isCollapsed` - A range is collapsed when its head and tail are the same
   position.
-* `range.focusedPosition` - If a range has a forward direction, then tail. If
+- `range.focusedPosition` - If a range has a forward direction, then tail. If
   it has a backward direction, then head.
-* `range.extend(characterCount)` - Grow a range one character in whatever its
+- `range.extend(characterCount)` - Grow a range one character in whatever its
   direction is.
-* `range.move(direction)` - If the range is collapsed, move the range forward
+- `range.move(direction)` - If the range is collapsed, move the range forward
   one character. If it is not, collapse it in the direction passed.
-* `range.expandByMarker(callback)` - In both directions attempt grow the
+- `range.expandByMarker(callback)` - In both directions attempt grow the
   range as long as `callback` returns true. `callback` is passed each marker
   as the range is grown.
 
@@ -196,37 +192,36 @@ callback function. For example:
 
 ```js
 editor.didUpdatePost(postEditor => {
-  let { range } = editor;
-  let cursorSection = range.head.section;
+  let { range } = editor
+  let cursorSection = range.head.section
 
   if (cursorSection.text === 'add-section-when-i-type-this') {
-    let section = editor.builder.createMarkupSection('p');
-    postEditor.insertSectionBefore(section, cursorSection.next);
-    postEditor.setRange(new Mobiledoc.Range(section.headPosition));
+    let section = editor.builder.createMarkupSection('p')
+    postEditor.insertSectionBefore(section, cursorSection.next)
+    postEditor.setRange(new Mobiledoc.Range(section.headPosition))
   }
-});
+})
 ```
 
 The available lifecycle hooks are:
 
-* `editor.didUpdatePost(postEditor => {})` - An opportunity to use the
+- `editor.didUpdatePost(postEditor => {})` - An opportunity to use the
   `postEditor` and possibly change the post before rendering begins.
-* `editor.willRender()` - After all post mutation has finished, but before
-   the DOM is updated.
-* `editor.didRender()` - After the DOM has been updated to match the
+- `editor.willRender()` - After all post mutation has finished, but before
+  the DOM is updated.
+- `editor.didRender()` - After the DOM has been updated to match the
   edited post.
-* `editor.willDelete((range, direction, unit))` - Provides `range`, `direction` and `unit` to identify the coming deletion.
-* `editor.didDelete((range, direction, unit))` - Provides `range`, `direction` and `unit` to identify the completed deletion.
-* `editor.cursorDidChange()` - When the cursor (or selection) changes as a result of arrow-key
+- `editor.willDelete((range, direction, unit))` - Provides `range`, `direction` and `unit` to identify the coming deletion.
+- `editor.didDelete((range, direction, unit))` - Provides `range`, `direction` and `unit` to identify the completed deletion.
+- `editor.cursorDidChange()` - When the cursor (or selection) changes as a result of arrow-key
   movement or clicking in the document.
-* `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))
-* `editor.inputModeDidChange()` - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with `Editor#activeMarkups`, `Editor#activeSections`, and `Editor#activeSectionAttributes` to implement a custom toolbar.
-* `editor.beforeToggleMarkup(({markup, range, willAdd}) => {...})` - Register a
+- `editor.onTextInput()` - When the user adds text to the document (see [example](https://github.com/bustlelabs/mobiledoc-kit#responding-to-text-input))
+- `editor.inputModeDidChange()` - The active section(s) or markup(s) at the current cursor position or selection have changed. This hook can be used with `Editor#activeMarkups`, `Editor#activeSections`, and `Editor#activeSectionAttributes` to implement a custom toolbar.
+- `editor.beforeToggleMarkup(({markup, range, willAdd}) => {...})` - Register a
   callback that will be called before `editor#toggleMarkup` is applied. If any
   callback returns literal `false`, the toggling of markup will be canceled.
-  (Toggling markup done via the postEditor, e.g. `editor.run(postEditor =>
-  postEditor.toggleMarkup(...))` will skip this callback.
-* `editor.willCopy(({html, text, mobiledoc}) => {...})` - Called before the
+  (Toggling markup done via the postEditor, e.g. `editor.run(postEditor => postEditor.toggleMarkup(...))` will skip this callback.
+- `editor.willCopy(({html, text, mobiledoc}) => {...})` - Called before the
   serialized versions of the selected markup is copied to the system
   pasteboard.
   `editor.willPaste(({html, text, mobiledoc}) => {...})` - Called before the
@@ -246,8 +241,8 @@ following usage would mark currently selected text as "strong":
 
 ```js
 editor.run(postEditor => {
-  postEditor.toggleMarkup('strong');
-});
+  postEditor.toggleMarkup('strong')
+})
 ```
 
 It is important that you make changes to posts, sections, and markers through
@@ -256,11 +251,11 @@ and better understand changes being made to the post.
 
 ```js
 editor.run(postEditor => {
-  const mention = postEditor.builder.createAtom("mention", "Jane Doe", { id: 42 });
+  const mention = postEditor.builder.createAtom('mention', 'Jane Doe', { id: 42 })
   // insert at current cursor position:
   // or should the user have to grab the current position from the editor first?
-  postEditor.insertMarkers(editor.range.head, [mention]);
-});
+  postEditor.insertMarkers(editor.range.head, [mention])
+})
 ```
 
 For more details on the API of `postEditor`, see the [API documentation](https://github.com/bustle/mobiledoc-kit/blob/master/src/js/editor/post.js).
@@ -278,10 +273,10 @@ internally as:
 const boldKeyCommand = {
   str: 'META+B',
   run(editor) {
-    editor.run(postEditor => postEditor.toggleMarkup('strong'));
-  }
-};
-editor.registerKeyCommand(boldKeyCommand);
+    editor.run(postEditor => postEditor.toggleMarkup('strong'))
+  },
+}
+editor.registerKeyCommand(boldKeyCommand)
 ```
 
 All key commands must have `str` and `run` properties as shown above.
@@ -304,9 +299,9 @@ const enterKeyCommand = {
   str: 'enter',
   run(editor) {
     // submit the form
-  }
-};
-editor.registerKeyCommand(enterKeyCommand);
+  },
+}
+editor.registerKeyCommand(enterKeyCommand)
 ```
 
 To fall-back to the default behavior, return `false` from `run`.
@@ -326,15 +321,15 @@ editor.onTextInput({
   text: 'X',
   run(editor) {
     // This callback is called after user types 'X'
-  }
-});
+  },
+})
 
 editor.onTextInput({
-  match: /\d\dX$/,  // Note the "$" end anchor
+  match: /\d\dX$/, // Note the "$" end anchor
   run(editor) {
     // This callback is called after user types number-number-X
-  }
-});
+  },
+})
 ```
 
 The editor has several default text input handlers that are defined in
@@ -343,7 +338,7 @@ The editor has several default text input handlers that are defined in
 To remove default text input handlers call the unregister function.
 
 ```js
-editor.unregisterAllTextInputHandlers();
+editor.unregisterAllTextInputHandlers()
 ```
 
 #### `\n` special-case match character
@@ -378,33 +373,33 @@ kind of image card with the new URL in its payload.
 A demonstration of this:
 
 ```js
-function imageToCardParser(node, builder, {addSection, addMarkerable, nodeFinished}) {
+function imageToCardParser(node, builder, { addSection, addMarkerable, nodeFinished }) {
   if (node.nodeType !== 1 || node.tagName !== 'IMG') {
-    return;
+    return
   }
-  const payload = { src: node.src };
-  const cardSection = builder.createCardSection('my-image', payload);
-  addSection(cardSection);
-  nodeFinished();
+  const payload = { src: node.src }
+  const cardSection = builder.createCardSection('my-image', payload)
+  addSection(cardSection)
+  nodeFinished()
 }
 const options = {
-  parserPlugins: [imageToCardParser]
-};
-const editor = new Mobiledoc.Editor(options);
-const element = document.querySelector('#editor');
-editor.render(element);
+  parserPlugins: [imageToCardParser],
+}
+const editor = new Mobiledoc.Editor(options)
+const element = document.querySelector('#editor')
+editor.render(element)
 ```
 
 Parser hooks are called with three arguments:
 
-* `node` - The node of DOM being parsed. This may be a text node or an element.
-* `builder` - The abstract model builder.
-* `env` - An object containing three callbacks to modify the abstract
-  * `addSection` - Close the current section and add a new one
-  * `addMarkerable` - Add a markerable (marker or atom) to the current section
-  * `nodeFinished` - Bypass all remaining parse steps for this node
+- `node` - The node of DOM being parsed. This may be a text node or an element.
+- `builder` - The abstract model builder.
+- `env` - An object containing three callbacks to modify the abstract
+  - `addSection` - Close the current section and add a new one
+  - `addMarkerable` - Add a markerable (marker or atom) to the current section
+  - `nodeFinished` - Bypass all remaining parse steps for this node
 
-Note that you *must* call `nodeFinished` to stop a DOM node from being
+Note that you _must_ call `nodeFinished` to stop a DOM node from being
 parsed by the next plugin or the default parser.
 
 ### Tooltip Plugins
@@ -413,28 +408,28 @@ Developers can customize the appearance of tooltips (e.g. those shown when a use
 
 The `renderLink` method is called with three arguments:
 
-* `tooltip` - The DOM element of the tooltip UI.
-* `link` - The DOM element (HTMLAnchorElement) of the link to display a tooltip for.
-* `actions` - An object containing functions that can be called in response to user interaction.
-  * `editLink` - A function that, when called, prompts the user to edit the `href` of the link element in question.
+- `tooltip` - The DOM element of the tooltip UI.
+- `link` - The DOM element (HTMLAnchorElement) of the link to display a tooltip for.
+- `actions` - An object containing functions that can be called in response to user interaction.
+  - `editLink` - A function that, when called, prompts the user to edit the `href` of the link element in question.
 
 The `renderLink` method is responsible for populating the passed `tooltip` element with the correct content to display to the user based on the link in question. This allows Mobiledoc users to, for example, provide localized tooltip text via their system of choice.
 
 ```js
 const MyTooltip = {
   renderLink(tooltip, link, { editLink }) {
-    tooltip.innerHTML = `${i18n.translate('URL: ')} ${link.href}`;
-    const button = document.createElement('button');
-    button.innerText = i18n.translate('Edit');
-    button.addEventListener('click', editLink);
-    tooltip.append(button);
-  }
+    tooltip.innerHTML = `${i18n.translate('URL: ')} ${link.href}`
+    const button = document.createElement('button')
+    button.innerText = i18n.translate('Edit')
+    button.addEventListener('click', editLink)
+    tooltip.append(button)
+  },
 }
 const editor = new Mobiledoc.Editor({
-  tooltipPlugin: MyTooltip
-});
-const element = document.querySelector('#editor');
-editor.render(element);
+  tooltipPlugin: MyTooltip,
+})
+const element = document.querySelector('#editor')
+editor.render(element)
 ```
 
 ## Contributing
@@ -445,45 +440,45 @@ Fork the repo, write a test, make a change, open a PR.
 
 Install dependencies via yarn:
 
-  * [Node.js](http://nodejs.org/) is required
-  * Install [yarn](https://yarnpkg.com/en/docs/install) globally: `npm install -g yarn` or `brew install yarn`
-  * Install dependencies with yarn: `yarn install`
+- [Node.js](http://nodejs.org/) is required
+- Install [yarn](https://yarnpkg.com/en/docs/install) globally: `npm install -g yarn` or `brew install yarn`
+- Install dependencies with yarn: `yarn install`
 
 Run tests via the built-in broccoli server:
 
-  * `yarn start`
-  * `open http://localhost:4200/tests`
+- `yarn start`
+- `open http://localhost:4200/tests`
 
 Or run headless tests via testem:
 
-  * `yarn test`
+- `yarn test`
 
 Tests in CI are run at Github Actions via Saucelabs (see the `test:ci` yarn script).
 
 Run linter
 
-* `yarn lint`
+- `yarn lint`
 
 Run formatting
 
-* `yarn format`
+- `yarn format`
 
 ### Demo
 
 To run the demo site locally:
 
- * `yarn start`
- * `open http://localhost:4200/website/demo/`
+- `yarn start`
+- `open http://localhost:4200/demo/`
 
-The assets for the demo are in `assets/demo`.
+The assets for the demo are in `/demo`.
 
 ### Debugging
 
 A debugging environment that prints useful information about the active Mobiledoc editor
 can be access by:
 
-* `yarn start`
-* `open http://localhost:4200/website/demo/debug.html`
+- `yarn start`
+- `open http://localhost:4200/demo/debug.html`
 
 ### Getting Help
 
@@ -492,24 +487,19 @@ If you have a question about usage you can post in the [slack channel](https://m
 
 ### Releasing (Implementer notes)
 
-* Use `np` (`yarn install -g np`)
-* `np <version>` (e.g. `np 0.12.0`)
-* `git push <origin> --tags`
+- Use `np` (`yarn install -g np`)
+- `np <version>` (e.g. `np 0.12.0`)
+- `git push <origin> --tags`
 
-### Deploy the demo
+### Deploy the website (demo & docs)
 
 The demo website is hosted at
 [bustle.github.io/mobiledoc-kit/demo](https://bustle.github.io/mobiledoc-kit/demo).
 
-To preview the website, start the server and visit
-[http://localhost:4200/assets/demo/](http://localhost:4200/assets/demo/). The code for
-this website can be found in `assets/demo/`. Note that the development server
-does not rebuild docs.
-
 To publish a new version:
 
-  * `yarn run build:website` - This builds the website into `website/` and commits it
-  * `yarn run deploy:website` - Pushes the `website/` subtree to the `gh-pages`
-     branch of your `origin` at github
+- `yarn run build:website` - This builds the website into `website/`
+- `yarn run deploy:website` - Pushes the `website/` subtree to the `gh-pages`
+  branch of your `origin` at github
 
-*Development of Mobiledoc and the supporting libraries was generously funded by [Bustle Digital Group](https://bustle.company/).*
+_Development of Mobiledoc and the supporting libraries was generously funded by [BDG Media](https://www.bdg.com)._

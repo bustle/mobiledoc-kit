@@ -26,7 +26,12 @@ function commonPlugins() {
 export default args => [
   {
     input: 'src/js/index.ts',
-    plugins: commonPlugins(),
+    plugins: [
+      ...commonPlugins(),
+      copy({
+        targets: [{ src: 'src/css/mobiledoc-kit.css', dest: 'dist', rename: 'mobiledoc.css' }],
+      }),
+    ],
     output: {
       file: 'dist/mobiledoc.js',
       format: 'es',
@@ -53,14 +58,13 @@ export default args => [
       }),
       copy({
         targets: [
-          { src: 'dist/mobiledoc.js', dest: 'assets/demo' },
-          { src: 'src/css/mobiledoc-kit.css', dest: 'dist', rename: 'mobiledoc.css' },
-          { src: 'src/css/mobiledoc-kit.css', dest: 'assets/demo/', rename: 'mobiledoc.css' },
+          { src: 'demo', dest: 'website' },
+          { src: 'dist/*', dest: 'website/demo' },
         ],
       }),
       args.watch &&
         serve({
-          contentBase: '',
+          contentBase: 'website',
           // eslint-disable-next-line no-process-env
           port: process.env.PORT || 4200,
         }),
