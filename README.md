@@ -1,10 +1,6 @@
-# Mobiledoc Kit
+# Mobiledoc Kit [![CI Build Status](https://github.com/bustle/mobiledoc-kit/workflows/CI/badge.svg)](https://github.com/bustle/mobiledoc-kit/actions?query=workflow%3ACI)
 
-[![CI Build Status](https://github.com/bustle/mobiledoc-kit/workflows/CI/badge.svg)](https://github.com/bustle/mobiledoc-kit/actions?query=workflow%3ACI)
-
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/mobiledoc-kit.svg)](https://saucelabs.com/u/mobiledoc-kit)
-
-![Mobiledoc Logo](https://bustle.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png)
+<img width="300" src="https://bustle.github.io/mobiledoc-kit/demo/mobiledoc-logo-color-small.png" alt="Mobiledoc Logo"/>
 
 Mobiledoc Kit is a framework-agnostic library for building WYSIWYG editors
 supporting rich content via cards.
