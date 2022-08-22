@@ -1,3 +1,15 @@
+## <small>0.14.2 (2022-08-22)</small>
+
+* Demo Updates 2022 (#768) ([1d41e85](https://github.com/bustle/mobiledoc-kit/commit/1d41e85)), closes [#768](https://github.com/bustle/mobiledoc-kit/issues/768)
+* High-res logo ([612d315](https://github.com/bustle/mobiledoc-kit/commit/612d315))
+* Improve website build process (#773) ([d580de7](https://github.com/bustle/mobiledoc-kit/commit/d580de7)), closes [#773](https://github.com/bustle/mobiledoc-kit/issues/773)
+* Update demo files in the correct place ([c2df73e](https://github.com/bustle/mobiledoc-kit/commit/c2df73e))
+* Update dependencies 8/18/22 (#771) ([f3fdaa5](https://github.com/bustle/mobiledoc-kit/commit/f3fdaa5)), closes [#771](https://github.com/bustle/mobiledoc-kit/issues/771)
+* Use Typedoc (#772) ([f0f6b69](https://github.com/bustle/mobiledoc-kit/commit/f0f6b69)), closes [#772](https://github.com/bustle/mobiledoc-kit/issues/772)
+* v0.14.2 ([70e11ed](https://github.com/bustle/mobiledoc-kit/commit/70e11ed))
+
+
+
 ## <small>0.14.1 (2022-08-11)</small>
 
 * Add package-lock, use npm run ([87a046f](https://github.com/bustle/mobiledoc-kit/commit/87a046f))
@@ -5,6 +17,7 @@
 * Fix emoji input on iOS (#764) ([305b1a2](https://github.com/bustle/mobiledoc-kit/commit/305b1a2)), closes [#764](https://github.com/bustle/mobiledoc-kit/issues/764) [TryGhost/Ghost#11541](https://github.com/TryGhost/Ghost/issues/11541)
 * Update CI: run on PRs, use node 16 (#766) ([083112d](https://github.com/bustle/mobiledoc-kit/commit/083112d)), closes [#766](https://github.com/bustle/mobiledoc-kit/issues/766)
 * Update dependencies 8/11/22 (#767) ([4b40e51](https://github.com/bustle/mobiledoc-kit/commit/4b40e51)), closes [#767](https://github.com/bustle/mobiledoc-kit/issues/767)
+* v0.14.1 ([1b44ca1](https://github.com/bustle/mobiledoc-kit/commit/1b44ca1))
 
 
 
