@@ -109,8 +109,3 @@ export function editLink(
     })
   })
 }
-
-export default {
-  toggleLink,
-  editLink,
-}

@@ -1,4 +1,4 @@
-export default <const>{
+const keycodes = {
   BACKSPACE: 8,
   SPACE: 32,
   ENTER: 13,
@@ -41,3 +41,5 @@ export default <const>{
   ALT: 18,
   CTRL: 17,
 }
+
+export default keycodes

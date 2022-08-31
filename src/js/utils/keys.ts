@@ -1,4 +1,4 @@
-export default {
+const keys = {
   BACKSPACE: 'Backspace',
   SPACE: ' ',
   ENTER: 'Enter',
@@ -21,3 +21,5 @@ export default {
   UP: 'ArrowUp',
   DOWN: 'ArrowDown',
 }
+
+export default keys
