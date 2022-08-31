@@ -14,6 +14,7 @@ export default class ListItem extends Markerable {
   isListItem = true
   isNested = true
   section: Section | null = null
+  // @ts-ignore: TODO: remove ignore
   parent!: ListSection
 
   constructor(tagName: string, markers: Markuperable[] = []) {
@@ -38,6 +39,7 @@ export default class ListItem extends Markerable {
     return this._redistributeMarkers(beforeSection, afterSection, marker, offset)
   }
 
+  // @ts-ignore: TODO: remove ignore
   get post() {
     return expect(this.section, 'expected list item to have section').post
   }

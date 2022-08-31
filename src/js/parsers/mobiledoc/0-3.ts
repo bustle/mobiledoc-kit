@@ -49,7 +49,7 @@ export default class MobiledocParser {
 
       return post
     } catch (e) {
-      assert(`Unable to parse mobiledoc: ${e.message}`, false)
+      assert(`Unable to parse mobiledoc: ${e instanceof Error ? e.message : ''}`, false)
     }
   }
 
