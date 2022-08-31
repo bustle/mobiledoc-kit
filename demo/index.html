@@ -378,8 +378,12 @@
         <div class="column right">
           <div class="editor-wrapper" id="editor-card-wrapper">
             <div class="toolbar">
-              <button data-action="insertCard" data-args="kitten">Insert Kitten Card</button>
-              <button data-action="insertAtom" data-args="mention">Insert Mention Atom</button>
+              <button data-action="insertCard" data-args="kitten" data-payload='{"caption":"Image of a kitten"}'>
+                Insert Kitten Card
+              </button>
+              <button data-action="insertAtom" data-args="click-counter" data-payload="">
+                Insert Click-Counter Atom
+              </button>
             </div>
             <div id="editor-card" class="editor"></div>
           </div>

@@ -13,7 +13,12 @@ function activateButtons(parentSelector, editor) {
     button.addEventListener('click', () => {
       const action = button.getAttribute('data-action')
       const args = button.getAttribute('data-args').split(',')
-      args[0] === 'a' ? UI[action](editor) : editor[action](...args)
+      const payload = (function () {
+        try {
+          return JSON.parse(button.getAttribute('data-payload'))
+        } catch {}
+      })()
+      args[0] === 'a' ? UI[action](editor) : editor[action](...args, payload)
     })
   )
 }
@@ -50,23 +55,50 @@ const bootstrapCardEditor = () => {
   const card = {
     name: 'kitten',
     type: 'dom',
-    render() {
-      const el = document.createElement('figure')
-      el.innerHTML = `
-        <img src="http://placekitten.com/200/100">
-        <figcaption>Image of a kitten</figcaption>
-      `
+    render({ env, opts, payload }) {
+      const el = document.createElement('div')
+      const img = document.createElement('img')
+      const caption = document.createElement('figcaption')
+      const button = document.createElement('button')
+      img.src = 'https://placekitten.com/200/100'
+      caption.innerText = payload.caption
+      button.innerText = 'Edit'
+      button.addEventListener('click', () => env.edit())
+      el.appendChild(img)
+      el.appendChild(caption)
+      el.appendChild(button)
+      return el
+    },
+    edit({ env, opts, payload }) {
+      const el = document.createElement('div')
+      const img = document.createElement('img')
+      const button = document.createElement('button')
+      const input = document.createElement('input')
+      img.src = 'https://placekitten.com/200/100'
+      input.value = payload.caption
+      input.autofocus = true
+      button.innerText = 'Save'
+      button.addEventListener('click', () => {
+        env.save({ caption: input.value })
+      })
+      el.appendChild(img)
+      el.appendChild(input)
+      el.appendChild(button)
       return el
     },
   }
   const atom = {
-    name: 'mention',
+    name: 'click-counter',
     type: 'dom',
-    render() {
-      const el = document.createElement('span')
-      el.setAttribute('style', 'background-color: #CCC;')
-      el.innerText = `@hello`
-      return el
+    render({ env, value, payload }) {
+      let clicks = payload.clicks || 0
+      const button = document.createElement('button')
+      button.appendChild(document.createTextNode('Clicks: ' + clicks))
+      button.onclick = () => {
+        payload.clicks = clicks + 1
+        env.save(value, payload)
+      }
+      return button
     },
   }
   const el = document.querySelector('#editor-card')
