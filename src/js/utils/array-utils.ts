@@ -4,10 +4,6 @@ interface Detectable<T> {
   detect(cb: (val: T) => boolean): T
 }
 
-export interface HasLength<T> {
-  length: number
-}
-
 export interface Indexable<T> {
   [key: number]: T
   length: number

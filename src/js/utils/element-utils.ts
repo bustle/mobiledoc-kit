@@ -35,7 +35,7 @@ export function getElementComputedStyleNumericProp(
   return parseFloat(window.getComputedStyle(element)[prop])
 }
 
-export function positionElementToRect(element: HTMLElement, rect: ClientRect, topOffset: number, leftOffset: number) {
+export function positionElementToRect(element: HTMLElement, rect: DOMRect, topOffset: number, leftOffset: number) {
   const relativeOffset = getElementRelativeOffset(element)
   const style = element.style
   const round = Math.round
@@ -50,7 +50,7 @@ export function positionElementToRect(element: HTMLElement, rect: ClientRect, to
   return { left: left, top: top }
 }
 
-export function positionElementHorizontallyCenteredToRect(element: HTMLElement, rect: ClientRect, topOffset: number) {
+export function positionElementHorizontallyCenteredToRect(element: HTMLElement, rect: DOMRect, topOffset: number) {
   const horizontalCenter = element.offsetWidth / 2 - rect.width / 2
   return positionElementToRect(element, rect, topOffset, horizontalCenter)
 }
