@@ -30,9 +30,9 @@ export default args => [
       ...commonPlugins(),
       copy({
         targets: [
-          { src: 'src/css/mobiledoc-kit.css', dest: 'dist', rename: 'mobiledoc.css' },
-          { src: 'demo', dest: 'website' },
-          { src: 'dist/*', dest: 'website/demo' },
+          { src: 'src/css/mobiledoc-kit.css', dest: ['dist', 'dist/website/demo'], rename: 'mobiledoc.css' },
+          { src: 'demo', dest: 'dist/website' },
+          { src: 'dist/mobiledoc.*', dest: 'dist/website/demo' },
         ],
         hook: 'writeBundle',
       }),
@@ -45,7 +45,7 @@ export default args => [
               },
             },
             serve({
-              contentBase: 'website',
+              contentBase: 'dist/website',
               port: process.env.PORT || 4200,
             }),
           ]

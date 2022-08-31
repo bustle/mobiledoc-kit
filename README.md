@@ -494,8 +494,7 @@ The demo website is hosted at
 
 To publish a new version:
 
-- `yarn run build:website` - This builds the website into `website/`
-- `yarn run deploy:website` - Pushes the `website/` subtree to the `gh-pages`
-  branch of your `origin` at github
+- `yarn run build:website` - This builds the website into `dist/website`
+- `yarn run deploy:website` - Pushes the website to the `gh-pages` branch of the `origin` at github
 
 _Development of Mobiledoc and the supporting libraries was generously funded by [BDG Media](https://www.bdg.com)._

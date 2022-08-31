@@ -49,6 +49,5 @@ Session.vim
 keys.txt
 export.sh
 /dist
-/website
 /tmp
 server.sh
