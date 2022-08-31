@@ -110,7 +110,7 @@ function _triggerEditorEvent(editor: Editor, event: DOMEvent) {
   editor.triggerEvent(editor.element, event.type as DOMEventType, event)
 }
 
-function _buildDOM(tagName: string, attributes: Dict<string> = {}, children = []) {
+export function _buildDOM(tagName: string, attributes: Dict<string> = {}, children = []) {
   const el = document.createElement(tagName)
   Object.keys(attributes).forEach(k => el.setAttribute(k, attributes[k]))
   children.forEach(child => el.appendChild(child))
@@ -163,7 +163,7 @@ function createMockEvent(eventName: string, element: HTMLElement, options = {}) 
     target: element,
   }
   merge(event, options)
-  return (event as unknown) as DOMEvent
+  return event as unknown as DOMEvent
 }
 
 // options is merged into the mocked `KeyboardEvent` data.

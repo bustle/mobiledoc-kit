@@ -8,7 +8,7 @@ import Post from '../../models/post'
 export type Mobiledoc = MobiledocV0_2 | MobiledocV0_3 | MobiledocV0_3_1 | MobiledocV0_3_2
 export const MOBILEDOC_VERSION = MOBILEDOC_VERSION_0_3_2
 
-interface VersionTypes {
+export interface VersionTypes {
   [MOBILEDOC_VERSION_0_2]: MobiledocV0_2
   [MOBILEDOC_VERSION_0_3]: MobiledocV0_3
   [MOBILEDOC_VERSION_0_3_1]: MobiledocV0_3_1
