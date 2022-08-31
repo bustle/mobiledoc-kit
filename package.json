@@ -5,9 +5,15 @@
   "repository": "https://github.com/bustle/mobiledoc-kit",
   "module": "dist/mobiledoc.js",
   "main": "dist/mobiledoc.cjs",
+  "style": "dist/mobiledoc.css",
   "exports": {
-    "import": "./dist/mobiledoc.js",
-    "require": "./dist/mobiledoc.cjs"
+    ".": {
+      "import": "./dist/mobiledoc.js",
+      "require": "./dist/mobiledoc.cjs"
+    },
+    "./style.css": {
+      "style": "./dist/mobiledoc.css"
+    }
   },
   "scripts": {
     "start": "rollup -c --watch",
