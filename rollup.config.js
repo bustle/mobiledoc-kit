@@ -41,12 +41,13 @@ export default args => [
             {
               name: 'watch-external',
               buildStart() {
-                this.addWatchFile(path.resolve(__dirname, 'demo/demo.js'))
+                const demoFiles = ['demo.js', 'demo.css', 'index.html']
+                demoFiles.forEach(f => this.addWatchFile(path.join(__dirname, 'demo', f)))
               },
             },
             serve({
               contentBase: 'dist/website',
-              port: process.env.PORT || 4200,
+              port: process.env.PORT || 4200, // eslint-disable-line no-process-env
             }),
           ]
         : []),

@@ -1,5 +1,56 @@
 import { Editor, UI } from './mobiledoc.js'
 
+const card = {
+  name: 'image',
+  type: 'dom',
+  render({ env, opts, payload }) {
+    const el = document.createElement('div')
+    const img = document.createElement('img')
+    const caption = document.createElement('figcaption')
+    const button = document.createElement('button')
+    img.src = 'https://placekitten.com/200/100'
+    caption.innerText = payload.caption
+    button.innerText = 'Edit'
+    button.addEventListener('click', () => env.edit())
+    el.appendChild(img)
+    el.appendChild(caption)
+    el.appendChild(button)
+    return el
+  },
+  edit({ env, opts, payload }) {
+    const el = document.createElement('div')
+    const img = document.createElement('img')
+    const button = document.createElement('button')
+    const input = document.createElement('input')
+    img.src = 'https://placekitten.com/200/100'
+    input.value = payload.caption
+    input.autofocus = true
+    button.innerText = 'Save'
+    button.addEventListener('click', () => {
+      env.save({ caption: input.value })
+    })
+    el.appendChild(img)
+    el.appendChild(input)
+    el.appendChild(button)
+    return el
+  },
+}
+
+const atom = {
+  name: 'clicker',
+  type: 'dom',
+  render({ env, value, payload }) {
+    let clicks = payload.clicks || 0
+    const button = document.createElement('button')
+    button.appendChild(document.createTextNode('Clicks: ' + clicks))
+    button.onclick = () => {
+      payload.clicks = clicks + 1
+      env.save(value, payload)
+    }
+    return button
+  },
+}
+
 function bootstrapSimpleDemo() {
   const el = document.querySelector('#editor-basic')
   const editor = new Editor({
@@ -18,7 +69,9 @@ function activateButtons(parentSelector, editor) {
           return JSON.parse(button.getAttribute('data-payload'))
         } catch {}
       })()
-      args[0] === 'a' ? UI[action](editor) : editor[action](...args, payload)
+      if (args[0] === 'a') UI[action](editor)
+      else if (payload) editor[action](...args, payload)
+      else editor[action](...args)
     })
   )
 }
@@ -28,6 +81,8 @@ function bootstrapEditor() {
   const editor = new Editor({
     placeholder: 'Type here',
     autofocus: true,
+    cards: [card],
+    atoms: [atom],
   })
   editor.render(el)
   activateButtons('#editor-wrapper', editor)
@@ -38,6 +93,14 @@ function bootstrapEditor() {
     document.querySelector('#editor-output').innerHTML = html
   }
   editor.postDidChange(displayMobiledoc)
+  editor.inputModeDidChange(() => {
+    const activeMarkupTags = editor.activeMarkups.map(m => m.tagName)
+    const activeSectionTags = editor.activeSections.map(s => (s.isNested ? s.parent.tagName : s.tagName))
+    const allActive = [...activeMarkupTags, ...activeSectionTags]
+    const selector = allActive.map(arg => `[data-args="${arg}"]`).join(',')
+    document.querySelectorAll(`[data-args]`).forEach(el => el.classList.remove('active'))
+    selector && document.querySelectorAll(selector).forEach(el => el.classList.add('active'))
+  })
   displayMobiledoc()
 }
 
@@ -47,60 +110,10 @@ const bootstrapToolbarEditor = () => {
     placeholder: 'Editor with toolbar',
   })
   editor.render(el)
-
   activateButtons('#editor-toolbar-wrapper', editor)
 }
 
 const bootstrapCardEditor = () => {
-  const card = {
-    name: 'kitten',
-    type: 'dom',
-    render({ env, opts, payload }) {
-      const el = document.createElement('div')
-      const img = document.createElement('img')
-      const caption = document.createElement('figcaption')
-      const button = document.createElement('button')
-      img.src = 'https://placekitten.com/200/100'
-      caption.innerText = payload.caption
-      button.innerText = 'Edit'
-      button.addEventListener('click', () => env.edit())
-      el.appendChild(img)
-      el.appendChild(caption)
-      el.appendChild(button)
-      return el
-    },
-    edit({ env, opts, payload }) {
-      const el = document.createElement('div')
-      const img = document.createElement('img')
-      const button = document.createElement('button')
-      const input = document.createElement('input')
-      img.src = 'https://placekitten.com/200/100'
-      input.value = payload.caption
-      input.autofocus = true
-      button.innerText = 'Save'
-      button.addEventListener('click', () => {
-        env.save({ caption: input.value })
-      })
-      el.appendChild(img)
-      el.appendChild(input)
-      el.appendChild(button)
-      return el
-    },
-  }
-  const atom = {
-    name: 'click-counter',
-    type: 'dom',
-    render({ env, value, payload }) {
-      let clicks = payload.clicks || 0
-      const button = document.createElement('button')
-      button.appendChild(document.createTextNode('Clicks: ' + clicks))
-      button.onclick = () => {
-        payload.clicks = clicks + 1
-        env.save(value, payload)
-      }
-      return button
-    },
-  }
   const el = document.querySelector('#editor-card')
   const editor = new Editor({
     placeholder: 'Editor with card',
