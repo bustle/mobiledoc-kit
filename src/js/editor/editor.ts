@@ -46,6 +46,7 @@ import { CardData, CardRenderHook } from '../models/card-node'
 import { AtomData } from '../models/atom-node'
 import { Option, Maybe, Dict } from '../utils/types'
 import Markup from '../models/markup'
+import { isMarkupSection } from '../models/markup-section'
 import View from '../views/view'
 import Atom, { AtomPayload } from '../models/atom'
 import Section, { isNested } from '../models/_section'
@@ -1288,6 +1289,21 @@ export default class Editor implements EditorOptions {
       // See: https://github.com/bustle/mobiledoc-kit/issues/286
       postEditor.setRange(card.tailPosition())
     })
+
+    // Insert or move to the next markup section after inserting the card.
+    // Otherwise, typing after inserting a card does nothing / errors.
+    // See: https://github.com/bustle/mobiledoc-kit/issues/590
+    this.run(postEditor => {
+      let nextSection = this.activeSection && this.activeSection.next
+      if (nextSection && isMarkupSection(nextSection)) {
+        postEditor.setRange(nextSection.headPosition())
+      } else {
+        const markupSection = postEditor.builder.createMarkupSection()
+        postEditor.insertSection(markupSection)
+        postEditor.setRange(markupSection.headPosition())
+      }
+    })
+
     return card!
   }
 
