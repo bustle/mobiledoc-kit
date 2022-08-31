@@ -11,8 +11,7 @@ test('#throws a MobiledocError when conditional is false', assert => {
     mobiledocAssert('The message', false)
   } catch (e) {
     assert.ok(true, 'caught error')
-    assert.equal(e.message, 'The message')
+    assert.equal(e instanceof Error ? e.message : '', 'The message')
     assert.ok(e instanceof MobiledocError, 'e instanceof MobiledocError')
   }
 })
-
