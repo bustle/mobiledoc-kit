@@ -5,12 +5,13 @@
   "repository": "https://github.com/bustle/mobiledoc-kit",
   "module": "dist/mobiledoc.js",
   "main": "dist/mobiledoc.cjs",
+  "style": "dist/mobiledoc.css",
   "exports": {
     ".": {
       "import": "./dist/mobiledoc.js",
       "require": "./dist/mobiledoc.cjs"
     },
-    "./styles.css": {
+    "./style.css": {
       "style": "./dist/mobiledoc.css"
     }
   },
