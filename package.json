@@ -38,9 +38,7 @@
     "contenteditable"
   ],
   "files": [
-    "dist/mobiledoc.js",
-    "dist/mobiledoc.cjs",
-    "dist/mobiledoc.css"
+    "dist/mobiledoc.*"
   ],
   "author": "Garth Poitras <garth22@gmail.com> (https://www.garthpoitras.com)",
   "contributors": [
