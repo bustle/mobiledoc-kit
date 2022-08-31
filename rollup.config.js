@@ -29,8 +29,27 @@ export default args => [
     plugins: [
       ...commonPlugins(),
       copy({
-        targets: [{ src: 'src/css/mobiledoc-kit.css', dest: 'dist', rename: 'mobiledoc.css' }],
+        targets: [
+          { src: 'src/css/mobiledoc-kit.css', dest: 'dist', rename: 'mobiledoc.css' },
+          { src: 'demo', dest: 'website' },
+          { src: 'dist/*', dest: 'website/demo' },
+        ],
+        hook: 'writeBundle',
       }),
+      ...(args.watch
+        ? [
+            {
+              name: 'watch-external',
+              buildStart() {
+                this.addWatchFile(path.resolve(__dirname, 'demo/demo.js'))
+              },
+            },
+            serve({
+              contentBase: 'website',
+              port: process.env.PORT || 4200,
+            }),
+          ]
+        : []),
     ],
     output: {
       file: 'dist/mobiledoc.js',
@@ -56,18 +75,6 @@ export default args => [
         // JS) and fail with TS files
         format: 'import',
       }),
-      copy({
-        targets: [
-          { src: 'demo', dest: 'website' },
-          { src: 'dist/*', dest: 'website/demo' },
-        ],
-      }),
-      args.watch &&
-        serve({
-          contentBase: 'website',
-          // eslint-disable-next-line no-process-env
-          port: process.env.PORT || 4200,
-        }),
     ],
     output: {
       file: 'dist/tests.js',
