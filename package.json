@@ -6,8 +6,13 @@
   "module": "dist/mobiledoc.js",
   "main": "dist/mobiledoc.cjs",
   "exports": {
-    "import": "./dist/mobiledoc.js",
-    "require": "./dist/mobiledoc.cjs"
+    ".": {
+      "import": "./dist/mobiledoc.js",
+      "require": "./dist/mobiledoc.cjs"
+    },
+    "./styles.css": {
+      "style": "./dist/mobiledoc.css"
+    }
   },
   "scripts": {
     "start": "rollup -c --watch",
