@@ -179,7 +179,7 @@ export default class Range {
     return headPosition.toRange(tailPosition, direction)
   }
 
-  _collapse(direction: Direction) {
+  private _collapse(direction: Direction) {
     return new Range(direction === Direction.BACKWARD ? this.head : this.tail)
   }
 
