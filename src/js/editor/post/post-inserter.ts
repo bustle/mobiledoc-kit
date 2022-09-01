@@ -47,6 +47,7 @@ class Visitor {
   visit(node: PostNode) {
     let method = node.type
     assertType<typeof method & keyof this>(`Cannot visit node of type ${node.type}`, method, method in this)
+    // @ts-ignore: TODO: this isn't safely callable for all types
     this[method](node as any)
   }
 

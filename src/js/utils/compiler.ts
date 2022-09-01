@@ -1,4 +1,4 @@
-import { forEach, ForEachable, HasLength } from './array-utils'
+import { forEach, ForEachable } from './array-utils'
 import { assertExistsIn } from './assert'
 import { Type } from '../models/types'
 import Post from '../models/post'
@@ -53,7 +53,7 @@ export function compile(compiler: Compiler, opcodes: Opcodes) {
   }
 }
 
-type CompileNodes = ForEachable<CompileNode> & HasLength<CompileNode>
+type CompileNodes = ForEachable<CompileNode> & { length: number }
 
 export function visitArray(visitor: Visitor, nodes: CompileNodes, opcodes: Opcodes) {
   if (!nodes || nodes.length === 0) {

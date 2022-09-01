@@ -138,7 +138,7 @@ table tr {
 
 .toolbar-section {
   display: flex;
-  margin: 0 12px 12px 0;
+  margin: 0 12px 8px 0;
 }
 .toolbar-section:last-child {
   margin-right: 0;
@@ -147,7 +147,10 @@ table tr {
 .toolbar-section button {
   display: flex;
   align-items: center;
-  margin: 0 3px;
+  margin: 0 2px;
+  border: 1px solid #999;
+  border-radius: 2px;
+  background: #eee;
 }
 .toolbar-section button:first-child {
   margin-left: 0;
@@ -157,7 +160,11 @@ table tr {
 }
 
 .toolbar-section button svg {
-  height: 24px;
+  height: 16px;
+}
+
+.toolbar-section button.active {
+  background: #459dab;
 }
 
 #editor-wrapper {
