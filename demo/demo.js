@@ -64,14 +64,15 @@ function activateButtons(parentSelector, editor) {
     button.addEventListener('click', () => {
       const action = button.getAttribute('data-action')
       const args = button.getAttribute('data-args').split(',')
-      const payload = (function () {
-        try {
-          return JSON.parse(button.getAttribute('data-payload'))
-        } catch {}
-      })()
       if (args[0] === 'a') UI[action](editor)
-      else if (payload) editor[action](...args, payload)
-      else editor[action](...args)
+      else {
+        if (action === 'insertCard') {
+          args[1] = JSON.parse(args[1])
+          args[2] = args[2] === 'true'
+          args[3] = args[3] === 'true'
+        }
+        editor[action](...args)
+      }
     })
   )
 }

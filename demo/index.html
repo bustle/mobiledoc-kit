@@ -175,10 +175,10 @@
                 </button>
               </div>
               <div class="toolbar-section">
-                <button data-action="insertCard" data-args="image" data-payload='{"caption":"Image of a kitten"}'>
+                <button data-action="insertCard" data-args='image,{"caption":"Image of a kitten"},false,true'>
                   Image Card
                 </button>
-                <button data-action="insertAtom" data-args="clicker" data-payload="">Clicker Atom</button>
+                <button data-action="insertAtom" data-args="clicker,''">Clicker Atom</button>
               </div>
             </div>
             <div id="editor"></div>
@@ -384,10 +384,10 @@
         <div class="column right">
           <div class="editor-wrapper" id="editor-card-wrapper">
             <div class="toolbar">
-              <button data-action="insertCard" data-args="image" data-payload='{"caption":"Image of a kitten"}'>
+              <button data-action="insertCard" data-args='image,{"caption":"Image of a kitten"},false,true'>
                 Insert Kitten Card
               </button>
-              <button data-action="insertAtom" data-args="clicker" data-payload="">Insert Click-Counter Atom</button>
+              <button data-action="insertAtom" data-args="clicker,''">Insert Click-Counter Atom</button>
             </div>
             <div id="editor-card" class="editor"></div>
           </div>

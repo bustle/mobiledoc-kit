@@ -1240,12 +1240,18 @@ export default class Editor implements EditorOptions {
    * a blank section, it will be replaced with a card section.
    * The editor's cursor will be placed at the end of the inserted card.
    * @param {String} cardName
-   * @param {Object} [cardPayload={}]
-   * @param {Boolean} [inEditMode=false] Whether the card should be inserted in edit mode.
+   * @param {Object} cardPayload
+   * @param {Boolean} inEditMode Whether the card should be inserted in edit mode.
+   * @param {Boolean} continueCursor Whether the cursor should continue to the next (or create) a text section after the card
    * @return {Card} The inserted Card section.
    * @public
    */
-  insertCard(cardName: string, cardPayload: CardPayload = {}, inEditMode: boolean = false): Maybe<Card> {
+  insertCard(
+    cardName: string,
+    cardPayload: CardPayload = {},
+    inEditMode: boolean = false,
+    continueCursor: boolean = false
+  ): Maybe<Card> {
     if (!this.hasCursor()) {
       return
     }
@@ -1290,19 +1296,21 @@ export default class Editor implements EditorOptions {
       postEditor.setRange(card.tailPosition())
     })
 
-    // Insert or move to the next markup section after inserting the card.
+    // Move to the next or insert a markup section after inserting the card.
     // Otherwise, typing after inserting a card does nothing / errors.
     // See: https://github.com/bustle/mobiledoc-kit/issues/590
-    this.run(postEditor => {
-      let nextSection = this.activeSection && this.activeSection.next
-      if (nextSection && isMarkupSection(nextSection)) {
-        postEditor.setRange(nextSection.headPosition())
-      } else {
-        const markupSection = postEditor.builder.createMarkupSection()
-        postEditor.insertSection(markupSection)
-        postEditor.setRange(markupSection.headPosition())
-      }
-    })
+    if (continueCursor) {
+      this.run(postEditor => {
+        let nextSection = this.activeSection && this.activeSection.next
+        if (nextSection && isMarkupSection(nextSection)) {
+          postEditor.setRange(nextSection.headPosition())
+        } else {
+          const markupSection = postEditor.builder.createMarkupSection()
+          postEditor.insertSection(markupSection)
+          postEditor.setRange(markupSection.headPosition())
+        }
+      })
+    }
 
     return card!
   }
