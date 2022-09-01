@@ -17,7 +17,7 @@ interface VersionTypes {
 
 export type MobiledocVersion = keyof VersionTypes
 
-const renderer = {
+const MobiledocRenderer = {
   render(post: Post, version: keyof VersionTypes = MOBILEDOC_VERSION_0_3_2): VersionTypes[typeof version] {
     switch (version) {
       case MOBILEDOC_VERSION_0_2:
@@ -36,4 +36,4 @@ const renderer = {
   },
 }
 
-export default renderer
+export default MobiledocRenderer

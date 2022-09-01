@@ -182,7 +182,7 @@ export interface MobiledocV0_3 {
 /**
  * Render from post -> mobiledoc
  */
-const renderer = {
+const MobiledocRenderer = {
   /**
    * @param {Post}
    * @return {Mobiledoc}
@@ -196,4 +196,4 @@ const renderer = {
   },
 }
 
-export default renderer
+export default MobiledocRenderer

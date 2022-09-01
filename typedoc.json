@@ -1,5 +1,6 @@
 {
   "entryPoints": ["src/js/index.ts"],
   "out": "dist/website/demo/docs",
-  "excludePrivate": true
+  "excludePrivate": true,
+  "includeVersion": true
 }

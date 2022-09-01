@@ -697,7 +697,7 @@ export default class Editor implements EditorOptions {
    * the editor does not have access to the html and text versions of the
    * cards/atoms.
    * @param {string} format The format to serialize ('mobiledoc', 'text', 'html')
-   * @return {Object|String} The editor's post, serialized to {format}
+   * @return {Object|String} The editor's post, serialized to `format`
    * @public
    */
   serializeTo(format: Format.MOBILEDOC): Mobiledoc
@@ -709,7 +709,7 @@ export default class Editor implements EditorOptions {
 
   /**
    * @param {Post}
-   * @param {String} format Same as {serializeTo}
+   * @param {String} format Same as `serializeTo`
    * @param {Object} [options]
    * @param {String} [options.version=MOBILEDOC_VERSION] version to serialize to
    * @return {Object|String}
@@ -1058,8 +1058,8 @@ export default class Editor implements EditorOptions {
    * Hooks added using #beforeToggleMarkup will be run before toggling,
    * and if any of them returns literal false, toggling the markup will be canceled
    * and no change will be applied.
-   * @param {String} markup E.g. "b", "em", "a"
-   * @param {Object} [attributes={}] E.g. {href: "http://bustle.com"}
+   * @param {String} markup e.g. "b", "em", "a"
+   * @param {Object} attributes e.g. `{ href: "https://bdg.com" }`
    * @public
    * @see PostEditor#toggleMarkup
    */
@@ -1212,11 +1212,7 @@ export default class Editor implements EditorOptions {
    * Inserts an atom at the current cursor position. If the editor has
    * no current cursor position, nothing will be inserted. If the editor's
    * range is not collapsed, it will be deleted before insertion.
-   * @param {String} atomName
-   * @param {String} [atomText='']
-   * @param {Object} [atomPayload={}]
-   * @return {Atom} The inserted atom.
-   * @public
+   * @return The inserted atom.
    */
   insertAtom(atomName: string, atomText: string = '', atomPayload: AtomPayload = {}): Maybe<Atom> {
     if (!this.hasCursor()) {
@@ -1249,10 +1245,9 @@ export default class Editor implements EditorOptions {
    * a blank section, it will be replaced with a card section.
    * The editor's cursor will be placed at the end of the inserted card.
    * @param {String} cardName
-   * @param {Object} [cardPayload={}]
-   * @param {Boolean} [inEditMode=false] Whether the card should be inserted in edit mode.
-   * @return {Card} The inserted Card section.
-   * @public
+   * @param {Object} cardPayload
+   * @param {Boolean} inEditMode Whether the card should be inserted in edit mode.
+   * @return The inserted Card section.
    */
   insertCard(cardName: string, cardPayload: CardPayload = {}, inEditMode: boolean = false): Maybe<Card> {
     if (!this.hasCursor()) {
