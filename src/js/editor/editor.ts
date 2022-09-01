@@ -72,6 +72,7 @@ export interface EditorOptions {
   mobiledoc?: Option<Mobiledoc>
   html?: Option<string>
   tooltipPlugin?: TooltipPlugin
+  continueToTextAfterCard?: boolean
 
   /** @internal */
   nodeType?: number
@@ -96,6 +97,7 @@ const defaults: EditorOptions = {
   mobiledoc: null,
   html: null,
   tooltipPlugin: DEFAULT_TOOLTIP_PLUGIN,
+  continueToTextAfterCard: false,
 }
 
 const CALLBACK_QUEUES = {
@@ -202,6 +204,7 @@ export default class Editor implements EditorOptions {
   html!: Option<string>
   text!: Option<string>
   tooltipPlugin!: TooltipPlugin
+  continueToTextAfterCard!: boolean
 
   _views: View[]
   _keyCommands?: CompiledKeyCommand[]
@@ -1241,17 +1244,11 @@ export default class Editor implements EditorOptions {
    * The editor's cursor will be placed at the end of the inserted card.
    * @param {String} cardName
    * @param {Object} cardPayload
-   * @param {Boolean} inEditMode Whether the card should be inserted in edit mode.
-   * @param {Boolean} continueCursor Whether the cursor should continue to the next (or create) a text section after the card
+   * @param {Boolean} inEditMode Whether the card should be inserted in edit mode
    * @return {Card} The inserted Card section.
    * @public
    */
-  insertCard(
-    cardName: string,
-    cardPayload: CardPayload = {},
-    inEditMode: boolean = false,
-    continueCursor: boolean = false
-  ): Maybe<Card> {
+  insertCard(cardName: string, cardPayload: CardPayload = {}, inEditMode: boolean = false): Maybe<Card> {
     if (!this.hasCursor()) {
       return
     }
@@ -1262,6 +1259,8 @@ export default class Editor implements EditorOptions {
 
     let card: Card
     let { range } = this
+    let nextSection = this.activeSection && this.activeSection.next
+
     this.run(postEditor => {
       let position = range.tail
       card = postEditor.builder.createCardSection(cardName, cardPayload)
@@ -1281,36 +1280,36 @@ export default class Editor implements EditorOptions {
       if (section.isBlank) {
         postEditor.replaceSection(section, card)
       } else {
-        let collection = this.post.sections
-        postEditor.insertSectionBefore(collection, card, section.next)
+        postEditor.insertSectionBefore(this.post.sections, card, section.next)
       }
 
-      // It is important to explicitly set the range to the end of the card.
-      // Otherwise it is possible to create an inconsistent state in the
-      // browser. For instance, if the user clicked a button that
-      // called `editor.insertCard`, the editor surface may retain
-      // the selection but lose focus, and the next keystroke by the user
-      // will cause an unexpected DOM mutation (which can wipe out the
-      // card).
-      // See: https://github.com/bustle/mobiledoc-kit/issues/286
-      postEditor.setRange(card.tailPosition())
-    })
-
-    // Move to the next or insert a markup section after inserting the card.
-    // Otherwise, typing after inserting a card does nothing / errors.
-    // See: https://github.com/bustle/mobiledoc-kit/issues/590
-    if (continueCursor) {
-      this.run(postEditor => {
-        let nextSection = this.activeSection && this.activeSection.next
+      // Move to the next or insert a markup section after inserting the card.
+      // Otherwise, typing after inserting a card does nothing.
+      // See: https://github.com/bustle/mobiledoc-kit/issues/590
+      if (this.continueToTextAfterCard) {
         if (nextSection && isMarkupSection(nextSection)) {
           postEditor.setRange(nextSection.headPosition())
         } else {
           const markupSection = postEditor.builder.createMarkupSection()
-          postEditor.insertSection(markupSection)
+          if (nextSection) {
+            postEditor.insertSectionBefore(this.post.sections, markupSection, nextSection)
+          } else {
+            postEditor.insertSection(markupSection)
+          }
           postEditor.setRange(markupSection.headPosition())
         }
-      })
-    }
+      } else {
+        // It is important to explicitly set the range to the end of the card.
+        // Otherwise it is possible to create an inconsistent state in the
+        // browser. For instance, if the user clicked a button that
+        // called `editor.insertCard`, the editor surface may retain
+        // the selection but lose focus, and the next keystroke by the user
+        // will cause an unexpected DOM mutation (which can wipe out the
+        // card).
+        // See: https://github.com/bustle/mobiledoc-kit/issues/286
+        postEditor.setRange(card.tailPosition())
+      }
+    })
 
     return card!
   }

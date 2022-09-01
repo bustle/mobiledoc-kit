@@ -69,7 +69,6 @@ function activateButtons(parentSelector, editor) {
         if (action === 'insertCard') {
           args[1] = JSON.parse(args[1])
           args[2] = args[2] === 'true'
-          args[3] = args[3] === 'true'
         }
         editor[action](...args)
       }
@@ -82,6 +81,7 @@ function bootstrapEditor() {
   const editor = new Editor({
     placeholder: 'Type here',
     autofocus: true,
+    continueToTextAfterCard: true,
     cards: [card],
     atoms: [atom],
   })
