@@ -19,7 +19,7 @@ export type CardPayload = {}
 export default class Card<T extends {} = CardPayload> extends Section {
   name: string
   payload: T
-  builder!: PostNodeBuilder
+  declare builder: PostNodeBuilder
   _initialMode: CardMode = CardMode.DISPLAY
 
   isCardSection = true

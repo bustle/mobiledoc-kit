@@ -6,6 +6,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import serve from 'rollup-plugin-serve'
 import copy from 'rollup-plugin-copy'
 import typescript from '@rollup/plugin-typescript'
+import dts from 'rollup-plugin-dts'
 
 function commonPlugins() {
   return [
@@ -65,6 +66,14 @@ export default args => [
       file: 'dist/mobiledoc.cjs',
       format: 'cjs',
       sourcemap: true,
+    },
+  },
+  {
+    input: 'src/js/index.ts',
+    plugins: [dts()],
+    output: {
+      file: 'dist/mobiledoc.d.ts',
+      format: 'es',
     },
   },
   {

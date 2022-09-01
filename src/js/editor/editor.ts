@@ -202,21 +202,26 @@ export default class Editor implements EditorOptions {
   text!: Option<string>
   tooltipPlugin!: TooltipPlugin
 
-  _views: View[]
-  _keyCommands?: CompiledKeyCommand[]
+  private _views: View[]
+  private _keyCommands?: CompiledKeyCommand[]
+  private _logManager: LogManager
+  private _parser: DOMParser
+  private _builder!: PostNodeBuilder
+  private _renderer: Renderer
+  private _eventManager: EventManager
+  private _editState: EditState
+  private _callbacks: LifecycleCallbacks
+  private _beforeHooks: BeforeHooks
+  private _isComposingOnBlankLine: boolean
+
+  /** @private */
   _parserPlugins: SectionParserPlugin[]
-  _logManager: LogManager
-  _parser: DOMParser
-  _builder!: PostNodeBuilder
-  _renderer: Renderer
+  /** @private */
   _renderTree: RenderTree
+  /** @private */
   _editHistory: EditHistory
-  _eventManager: EventManager
+  /** @private */
   _mutationHandler: MutationHandler
-  _editState: EditState
-  _callbacks: LifecycleCallbacks
-  _beforeHooks: BeforeHooks
-  _isComposingOnBlankLine: boolean
 
   /**
    * @param {Object} [options]
@@ -396,7 +401,7 @@ export default class Editor implements EditorOptions {
     }
   }
 
-  _addTooltip() {
+  private _addTooltip() {
     this.addView(
       new Tooltip({
         rootElement: this.element,
@@ -562,6 +567,7 @@ export default class Editor implements EditorOptions {
     }
   }
 
+  /** @private */
   _readRangeFromDOM() {
     this.range = this.cursor.offsets
   }
@@ -570,6 +576,7 @@ export default class Editor implements EditorOptions {
     setData(this.element, 'placeholder', placeholder)
   }
 
+  /** @private */
   _reparsePost() {
     let post = this._parser.parse(this.element)
     this.run(postEditor => {
@@ -582,6 +589,7 @@ export default class Editor implements EditorOptions {
     this._postDidChange()
   }
 
+  /** @private */
   _reparseSections(sections: Section[] = []) {
     let currentRange: Maybe<Range>
 
@@ -617,7 +625,7 @@ export default class Editor implements EditorOptions {
 
   // FIXME this should be able to be removed now -- if any sections are detached,
   // it's due to a bug in the code.
-  _removeDetachedSections() {
+  private _removeDetachedSections() {
     forEach(
       filter(this.post.sections, s => !s.renderNode.isAttached()),
       s => s.renderNode.scheduleForRemoval()
@@ -689,7 +697,7 @@ export default class Editor implements EditorOptions {
    * the editor does not have access to the html and text versions of the
    * cards/atoms.
    * @param {string} format The format to serialize ('mobiledoc', 'text', 'html')
-   * @return {Object|String} The editor's post, serialized to {format}
+   * @return {Object|String} The editor's post, serialized to `format`
    * @public
    */
   serializeTo(format: Format.MOBILEDOC): Mobiledoc
@@ -701,7 +709,7 @@ export default class Editor implements EditorOptions {
 
   /**
    * @param {Post}
-   * @param {String} format Same as {serializeTo}
+   * @param {String} format Same as `serializeTo`
    * @param {Object} [options]
    * @param {String} [options.version=MOBILEDOC_VERSION] version to serialize to
    * @return {Object|String}
@@ -1003,16 +1011,17 @@ export default class Editor implements EditorOptions {
     this.addCallback(CALLBACK_QUEUES.CURSOR_DID_CHANGE, callback)
   }
 
-  _rangeDidChange() {
+  private _rangeDidChange() {
     if (this.hasRendered) {
       this.runCallbacks(CALLBACK_QUEUES.CURSOR_DID_CHANGE)
     }
   }
 
-  _inputModeDidChange() {
+  private _inputModeDidChange() {
     this.runCallbacks(CALLBACK_QUEUES.INPUT_MODE_DID_CHANGE)
   }
 
+  /** @private */
   _insertEmptyMarkupSectionAtCursor() {
     this.run(postEditor => {
       const section = postEditor.builder.createMarkupSection('p')
@@ -1049,8 +1058,8 @@ export default class Editor implements EditorOptions {
    * Hooks added using #beforeToggleMarkup will be run before toggling,
    * and if any of them returns literal false, toggling the markup will be canceled
    * and no change will be applied.
-   * @param {String} markup E.g. "b", "em", "a"
-   * @param {Object} [attributes={}] E.g. {href: "http://bustle.com"}
+   * @param {String} markup e.g. "b", "em", "a"
+   * @param {Object} attributes e.g. `{ href: "https://bdg.com" }`
    * @public
    * @see PostEditor#toggleMarkup
    */
@@ -1077,6 +1086,7 @@ export default class Editor implements EditorOptions {
   }
 
   // If the editor has a selection but is not focused, focus it
+  /** @private */
   _ensureFocus() {
     if (this._hasSelection() && !this._hasFocus()) {
       this.focus()
@@ -1093,7 +1103,7 @@ export default class Editor implements EditorOptions {
    * @see #_hasFocus
    * @return {Boolean}
    */
-  _hasSelection(): boolean {
+  private _hasSelection(): boolean {
     const { cursor } = this
     return this.hasRendered && (cursor._hasCollapsedSelection() || cursor._hasSelection())
   }
@@ -1104,7 +1114,7 @@ export default class Editor implements EditorOptions {
    * @see #_hasSelection
    * @return {Boolean}
    */
-  _hasFocus(): boolean {
+  private _hasFocus(): boolean {
     return document.activeElement === this.element
   }
 
@@ -1202,11 +1212,7 @@ export default class Editor implements EditorOptions {
    * Inserts an atom at the current cursor position. If the editor has
    * no current cursor position, nothing will be inserted. If the editor's
    * range is not collapsed, it will be deleted before insertion.
-   * @param {String} atomName
-   * @param {String} [atomText='']
-   * @param {Object} [atomPayload={}]
-   * @return {Atom} The inserted atom.
-   * @public
+   * @return The inserted atom.
    */
   insertAtom(atomName: string, atomText: string = '', atomPayload: AtomPayload = {}): Maybe<Atom> {
     if (!this.hasCursor()) {
@@ -1239,10 +1245,9 @@ export default class Editor implements EditorOptions {
    * a blank section, it will be replaced with a card section.
    * The editor's cursor will be placed at the end of the inserted card.
    * @param {String} cardName
-   * @param {Object} [cardPayload={}]
-   * @param {Boolean} [inEditMode=false] Whether the card should be inserted in edit mode.
-   * @return {Card} The inserted Card section.
-   * @public
+   * @param {Object} cardPayload
+   * @param {Boolean} inEditMode Whether the card should be inserted in edit mode.
+   * @return The inserted Card section.
    */
   insertCard(cardName: string, cardPayload: CardPayload = {}, inEditMode: boolean = false): Maybe<Card> {
     if (!this.hasCursor()) {
@@ -1300,10 +1305,7 @@ export default class Editor implements EditorOptions {
     return Position.atPoint(x, y, this)
   }
 
-  /**
-   * @private
-   */
-  _setCardMode(cardSection: Card, mode: CardMode) {
+  private _setCardMode(cardSection: Card, mode: CardMode) {
     const renderNode = cardSection.renderNode
     if (renderNode && renderNode.isRendered) {
       const cardNode = renderNode.cardNode!
@@ -1337,9 +1339,8 @@ export default class Editor implements EditorOptions {
    * Runs each callback for the given hookName.
    * Only the hookName 'toggleMarkup' is currently supported
    * @return {Boolean} shouldCancel Whether the action in `hookName` should be canceled
-   * @private
    */
-  _runBeforeHooks(hookName: keyof BeforeHooks, ...args: unknown[]): true | undefined {
+  private _runBeforeHooks(hookName: keyof BeforeHooks, ...args: unknown[]): true | undefined {
     let hooks = this._beforeHooks[hookName] || []
     for (let i = 0; i < hooks.length; i++) {
       if (hooks[i](...args) === false) {

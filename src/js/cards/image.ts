@@ -5,7 +5,7 @@ interface ImagePayload {
   src?: string
 }
 
-export default {
+const ImageCard: CardData = {
   name: 'image',
   type: 'dom',
 
@@ -14,4 +14,6 @@ export default {
     img.src = payload.src || placeholderImageSrc
     return img
   },
-} as CardData
+}
+
+export default ImageCard

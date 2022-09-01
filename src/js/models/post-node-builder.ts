@@ -74,11 +74,6 @@ export default class PostNodeBuilder {
     }
   }
 
-  /**
-   * @param {tagName} [tagName='P']
-   * @param {Marker[]} [markers=[]]
-   * @return {MarkupSection}
-   */
   createMarkupSection(
     tagName: string = DEFAULT_MARKUP_SECTION_TAG_NAME,
     markers: Markuperable[] = [],
@@ -117,35 +112,18 @@ export default class PostNodeBuilder {
     return section
   }
 
-  /**
-   * @param {String} name
-   * @param {Object} [payload={}]
-   * @return {CardSection}
-   */
   createCardSection(name: string, payload: CardPayload = {}): Card {
     const card = new Card(name, payload)
     card.builder = this
     return card
   }
 
-  /**
-   * @param {String} value
-   * @param {Markup[]} [markups=[]]
-   * @return {Marker}
-   */
   createMarker(value?: string, markups: Markup[] = []): Marker {
     const marker = new Marker(value, markups)
     marker.builder = this
     return marker
   }
 
-  /**
-   * @param {String} name
-   * @param {String} [value='']
-   * @param {Object} [payload={}]
-   * @param {Markup[]} [markups=[]]
-   * @return {Atom}
-   */
   createAtom(name: string, value: string = '', payload: AtomPayload = {}, markups: Markup[] = []): Atom {
     const atom = new Atom(name, value, payload, markups)
     atom.builder = this
