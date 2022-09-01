@@ -1,3 +1,15 @@
+## 0.15.0 (2022-09-01)
+
+* Add css in "exports" section of package.json (#774) ([3c71089](https://github.com/bustle/mobiledoc-kit/commit/3c71089)), closes [#774](https://github.com/bustle/mobiledoc-kit/issues/774)
+* Build tooling updates (#775) ([427f8bc](https://github.com/bustle/mobiledoc-kit/commit/427f8bc)), closes [#775](https://github.com/bustle/mobiledoc-kit/issues/775)
+* Fix Linting (#777) ([bd05164](https://github.com/bustle/mobiledoc-kit/commit/bd05164)), closes [#777](https://github.com/bustle/mobiledoc-kit/issues/777)
+* Generate Typescript Type Definitions (#779) ([28809c3](https://github.com/bustle/mobiledoc-kit/commit/28809c3)), closes [#779](https://github.com/bustle/mobiledoc-kit/issues/779)
+* Typescript ^4 (#778) ([ad1f4e4](https://github.com/bustle/mobiledoc-kit/commit/ad1f4e4)), closes [#778](https://github.com/bustle/mobiledoc-kit/issues/778)
+* Demo: active button states. Cards in main editor ([4b225fa](https://github.com/bustle/mobiledoc-kit/commit/4b225fa))
+* Demo: editable card example ([c3a6523](https://github.com/bustle/mobiledoc-kit/commit/c3a6523))
+
+
+
 ## <small>0.14.2 (2022-08-22)</small>
 
 * Demo Updates 2022 (#768) ([1d41e85](https://github.com/bustle/mobiledoc-kit/commit/1d41e85)), closes [#768](https://github.com/bustle/mobiledoc-kit/issues/768)
@@ -6,7 +18,7 @@
 * Update demo files in the correct place ([c2df73e](https://github.com/bustle/mobiledoc-kit/commit/c2df73e))
 * Update dependencies 8/18/22 (#771) ([f3fdaa5](https://github.com/bustle/mobiledoc-kit/commit/f3fdaa5)), closes [#771](https://github.com/bustle/mobiledoc-kit/issues/771)
 * Use Typedoc (#772) ([f0f6b69](https://github.com/bustle/mobiledoc-kit/commit/f0f6b69)), closes [#772](https://github.com/bustle/mobiledoc-kit/issues/772)
-* v0.14.2 ([70e11ed](https://github.com/bustle/mobiledoc-kit/commit/70e11ed))
+* v0.14.2 ([3d5048b](https://github.com/bustle/mobiledoc-kit/commit/3d5048b))
 
 
 

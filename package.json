@@ -1,6 +1,6 @@
 {
   "name": "mobiledoc-kit",
-  "version": "0.14.2",
+  "version": "0.15.0",
   "description": "A toolkit for building WYSIWYG editors with Mobiledoc",
   "repository": "https://github.com/bustle/mobiledoc-kit",
   "module": "dist/mobiledoc.js",
@@ -29,7 +29,6 @@
     "build:website": "npm run build && npm run build:docs",
     "deploy:website": "./bin/deploy-website.sh",
     "update-changelog": "conventional-changelog -i CHANGELOG.md -r 0 -s",
-    "version": "npm run update-changelog && git add CHANGELOG.md",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
