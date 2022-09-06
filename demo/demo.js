@@ -96,8 +96,9 @@ function bootstrapEditor() {
   editor.inputModeDidChange(() => {
     const activeMarkupTags = editor.activeMarkups.map(m => m.tagName)
     const activeSectionTags = editor.activeSections.map(s => (s.isNested ? s.parent.tagName : s.tagName))
-    const allActive = [...activeMarkupTags, ...activeSectionTags]
-    const selector = allActive.map(arg => `[data-args="${arg}"]`).join(',')
+    const activeAttributeVals = editor.activeSections.map(s => Object.values(s.attributes || {}))
+    const allActive = [...activeMarkupTags, ...activeSectionTags, ...activeAttributeVals]
+    const selector = allActive.map(arg => `[data-args*="${arg}"]`).join(',')
     document.querySelectorAll(`[data-args]`).forEach(el => el.classList.remove('active'))
     selector && document.querySelectorAll(selector).forEach(el => el.classList.add('active'))
   })
