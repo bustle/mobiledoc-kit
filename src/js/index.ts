@@ -1,4 +1,5 @@
 import Editor from './editor/editor'
+import PostEditor from './editor/post'
 import ImageCard from './cards/image'
 import * as UI from './editor/ui'
 import Range from './utils/cursor/range'
@@ -11,6 +12,7 @@ import PostNodeBuilder from './models/post-node-builder'
 
 export {
   Editor,
+  PostEditor,
   UI,
   ImageCard,
   Range,

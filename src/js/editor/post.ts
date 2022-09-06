@@ -75,20 +75,17 @@ interface SectionTransformation {
  * ```
  */
 export default class PostEditor {
-  /**
-   * @private
-   */
-  editor: Editor
   builder: PostNodeBuilder
-
   editActionTaken: Option<EditAction>
 
-  _callbacks: LifecycleCallbacks
-  _range!: Range
-  _didComplete: boolean
-  _renderRange: () => void
-  _postDidChange: () => void
-  _rerender: () => void
+  private editor: Editor
+  private _callbacks: LifecycleCallbacks
+  private _range!: Range
+  private _didComplete: boolean
+  private _renderRange: () => void
+  private _postDidChange: () => void
+  private _rerender: () => void
+  /** @private */
   _shouldCancelSnapshot!: boolean
 
   constructor(editor: Editor) {
@@ -262,14 +259,14 @@ export default class PostEditor {
     return head
   }
 
-  _coalesceMarkers(section: Section) {
+  private _coalesceMarkers(section: Section) {
     if (isMarkerable(section)) {
       this._removeBlankMarkers(section)
       this._joinSimilarMarkers(section)
     }
   }
 
-  _removeBlankMarkers(section: Markerable) {
+  private _removeBlankMarkers(section: Markerable) {
     forEach(
       filter(section.markers, m => m.isBlank),
       m => this.removeMarker(m)
@@ -277,7 +274,7 @@ export default class PostEditor {
   }
 
   // joins markers that have identical markups
-  _joinSimilarMarkers(section: Markerable) {
+  private _joinSimilarMarkers(section: Markerable) {
     let marker = section.markers.head
     let nextMarker: Markuperable
     while (marker && marker.next) {
@@ -301,7 +298,7 @@ export default class PostEditor {
     }
   }
 
-  _scheduleForRemoval(postNode: Exclude<PostNode, Post>) {
+  private _scheduleForRemoval(postNode: Exclude<PostNode, Post>) {
     if (postNode.renderNode) {
       postNode.renderNode.scheduleForRemoval()
 
@@ -316,7 +313,7 @@ export default class PostEditor {
     }
   }
 
-  _joinContiguousListSections() {
+  private _joinContiguousListSections() {
     let { post } = this.editor
     let range = this._range
     let prev: Section
@@ -370,13 +367,13 @@ export default class PostEditor {
     }
   }
 
-  _joinListSections(baseList: ListSection, nextList: ListSection) {
+  private _joinListSections(baseList: ListSection, nextList: ListSection) {
     baseList.join(nextList)
     this._markDirty(baseList)
     this.removeSection(nextList)
   }
 
-  _markDirty(postNode: PostNode) {
+  private _markDirty(postNode: PostNode) {
     if (postNode.renderNode) {
       postNode.renderNode.markDirty()
 
@@ -439,7 +436,7 @@ export default class PostEditor {
     }
   }
 
-  _deleteAtPositionBackward(position: Position, unit: TextUnit) {
+  private _deleteAtPositionBackward(position: Position, unit: TextUnit) {
     if (position.isHead() && isListItem(position.section!)) {
       this.toggleSection('p', position)
       return this._range.head
@@ -450,7 +447,7 @@ export default class PostEditor {
     }
   }
 
-  _deleteAtPositionForward(position: Position, unit: TextUnit) {
+  private _deleteAtPositionForward(position: Position, unit: TextUnit) {
     let nextPosition = unit === 'word' ? position.moveWord(FORWARD) : position.move(FORWARD)
     let range = position.toRange(nextPosition)
     return this.deleteRange(range)
@@ -542,9 +539,8 @@ export default class PostEditor {
    * @param {Section} cardSection
    * @param {Position} position to split at
    * @return {Section[]} 2-item array of pre and post-split sections
-   * @private
    */
-  _splitCardSection(cardSection: Card, position: Position): [Section, Section] {
+  private _splitCardSection(cardSection: Card, position: Position): [Section, Section] {
     let { offset } = position
     assert('Cards section must be split at offset 0 or 1', offset === 0 || offset === 1)
 
@@ -692,7 +688,7 @@ export default class PostEditor {
     return this.insertTextWithMarkup(position, text, markups)
   }
 
-  _replaceSection(section: Section, newSections: Section[]) {
+  private _replaceSection(section: Section, newSections: Section[]) {
     let nextSection = section.next
     let collection = (section.parent as unknown as HasChildSections).sections
 
@@ -870,7 +866,7 @@ export default class PostEditor {
     this.setRange(nextRange)
   }
 
-  _determineNextRangeAfterToggleSection(range: Range, sectionTransformations: SectionTransformation[]) {
+  private _determineNextRangeAfterToggleSection(range: Range, sectionTransformations: SectionTransformation[]) {
     if (sectionTransformations.length) {
       let changedHeadSection = detect(sectionTransformations, ({ from }) => {
         return from === range.headSection
@@ -916,7 +912,11 @@ export default class PostEditor {
     })
   }
 
-  _mutateAttribute(key: string, range: Range, cb: (section: Attributable, attribute: string) => boolean | void) {
+  private _mutateAttribute(
+    key: string,
+    range: Range,
+    cb: (section: Attributable, attribute: string) => boolean | void
+  ) {
     range = toRange(range)
     let { post } = this.editor
     let attribute = `data-md-${key}`
@@ -932,7 +932,7 @@ export default class PostEditor {
     this.setRange(range)
   }
 
-  _isSameSectionType(section: Section & TagNameable, sectionTagName: string) {
+  private _isSameSectionType(section: Section & TagNameable, sectionTagName: string) {
     return isListItem(section) ? section.parent.tagName === sectionTagName : section.tagName === sectionTagName
   }
 
@@ -961,9 +961,8 @@ export default class PostEditor {
    * @param {ListItem} item
    * @param {Position} position
    * @return {Array} the pre-item and post-item on either side of the split
-   * @private
    */
-  _splitListItem(item: ListItem, position: Position): [ListItem, ListItem] {
+  private _splitListItem(item: ListItem, position: Position): [ListItem, ListItem] {
     let { section, offset } = position
     assert('Cannot split list item at position that does not include item', item === section)
 
@@ -990,7 +989,6 @@ export default class PostEditor {
    *
    * Note: Contiguous list sections will be joined in the before_complete queue
    * of the postEditor.
-   *
    * @private
    */
   _splitListAtPosition(list: ListSection, position: Position): [ListSection, ListSection] {
@@ -1031,10 +1029,8 @@ export default class PostEditor {
    *         be a 1-item list containing `item`. `prev` and `next` will be
    *         removed in the before_complete queue if they are blank
    *         (and still attached).
-   *
-   * @private
    */
-  _splitListAtItem(list: ListSection, item: ListItem) {
+  private _splitListAtItem(list: ListSection, item: ListItem) {
     let next = list
     let prev = this.builder.createListSection(next.tagName, [], next.attributes)
     let mid = this.builder.createListSection(next.tagName)
@@ -1076,7 +1072,7 @@ export default class PostEditor {
     return [prev, mid, next]
   }
 
-  _changeSectionFromListItem(section: Section, newTagName: string) {
+  private _changeSectionFromListItem(section: Section, newTagName: string) {
     assertType<ListItem>('Must pass list item to `_changeSectionFromListItem`', section, isListItem(section))
 
     let listSection = section.parent as ListSection
@@ -1088,7 +1084,7 @@ export default class PostEditor {
     return markupSection
   }
 
-  _changeSectionToListItem(section: ListSection | Markerable, newTagName: string) {
+  private _changeSectionToListItem(section: ListSection | Markerable, newTagName: string) {
     let isAlreadyCorrectListItem =
       section.isListItem && (section.parent as unknown as TagNameable).tagName === newTagName
 
@@ -1215,7 +1211,7 @@ export default class PostEditor {
     })
   }
 
-  _scheduleListRemovalIfEmpty(listSection: ListSection) {
+  private _scheduleListRemovalIfEmpty(listSection: ListSection) {
     this.addCallback(CALLBACK_QUEUES.BEFORE_COMPLETE, () => {
       // if the list is attached and blank after we do other rendering stuff,
       // remove it
