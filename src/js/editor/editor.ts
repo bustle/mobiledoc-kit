@@ -1058,13 +1058,15 @@ export default class Editor implements EditorOptions {
    * Hooks added using #beforeToggleMarkup will be run before toggling,
    * and if any of them returns literal false, toggling the markup will be canceled
    * and no change will be applied.
-   * @param {String} markup e.g. "b", "em", "a"
-   * @param {Object} attributes e.g. `{ href: "https://bdg.com" }`
+   * @param markup e.g. "b", "em", "a"
+   * @param attributes e.g. `{ href: "https://bdg.com" }`
    * @public
    * @see PostEditor#toggleMarkup
    */
-  toggleMarkup(markupTag: string, attributes: Dict<string> = {}) {
-    const markup = this.builder.createMarkup(markupTag, attributes)
+  toggleMarkup(markupOrString: Markup | string, attributes: Dict<string> = {}) {
+    const markup =
+      typeof markupOrString === 'string' ? this.builder.createMarkup(markupOrString, attributes) : markupOrString
+
     const { range } = this
     const willAdd = !this.detectMarkupInRange(range, markup.tagName)
     const shouldCancel = this._runBeforeHooks('toggleMarkup', { markup, range, willAdd })
