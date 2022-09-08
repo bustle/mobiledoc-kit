@@ -3,7 +3,7 @@ import { Editor, UI } from './mobiledoc.js'
 const card = {
   name: 'image',
   type: 'dom',
-  render({ env, opts, payload }) {
+  render({ env, payload }) {
     const el = document.createElement('div')
     const img = document.createElement('img')
     const caption = document.createElement('figcaption')
@@ -17,7 +17,7 @@ const card = {
     el.appendChild(button)
     return el
   },
-  edit({ env, opts, payload }) {
+  edit({ env, payload }) {
     const el = document.createElement('div')
     const img = document.createElement('img')
     const button = document.createElement('button')
@@ -64,14 +64,20 @@ function activateButtons(parentSelector, editor) {
     button.addEventListener('click', () => {
       const action = button.getAttribute('data-action')
       const args = button.getAttribute('data-args').split(',')
-      const payload = (function () {
-        try {
-          return JSON.parse(button.getAttribute('data-payload'))
-        } catch {}
-      })()
-      if (args[0] === 'a') UI[action](editor)
-      else if (payload) editor[action](...args, payload)
-      else editor[action](...args)
+      if (args[0] === 'a') {
+        UI[action](editor)
+      } else if (action === 'insertCard') {
+        args[1] = JSON.parse(args[1])
+        editor[action](...args)
+        // Insert a blank paragraph section after card to continue typing
+        editor.run(postEditor => {
+          const section = postEditor.builder.createMarkupSection()
+          postEditor.insertSectionBefore(editor.post.sections, section, editor.activeSection.next)
+          postEditor.setRange(section.toRange())
+        })
+      } else {
+        editor[action](...args)
+      }
     })
   )
 }
@@ -98,7 +104,7 @@ function bootstrapEditor() {
     const activeSectionTags = editor.activeSections.map(s => (s.isNested ? s.parent.tagName : s.tagName))
     const activeAttributeVals = editor.activeSections.map(s => Object.values(s.attributes || {}))
     const allActive = [...activeMarkupTags, ...activeSectionTags, ...activeAttributeVals]
-    const selector = allActive.map(arg => `[data-args*="${arg}"]`).join(',')
+    const selector = allActive.map(arg => `[data-args="${arg}"],[data-args="text-align,${arg}"]`).join(',')
     document.querySelectorAll(`[data-args]`).forEach(el => el.classList.remove('active'))
     selector && document.querySelectorAll(selector).forEach(el => el.classList.add('active'))
   })
