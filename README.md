@@ -254,10 +254,10 @@ editor.run(postEditor => {
 })
 ```
 
-For more details on the API of `postEditor`, see the [API documentation](https://github.com/bustle/mobiledoc-kit/blob/master/src/js/editor/post.js).
+For more details on the API of `postEditor`, see the [API documentation](https://github.com/bustle/mobiledoc-kit/blob/master/src/js/editor/post.ts).
 
 For more details on the API for the builder, required to create new sections
-atoms, and markers, see the [builder API](https://github.com/bustle/mobiledoc-kit/blob/master/src/js/models/post-node-builder.js).
+atoms, and markers, see the [builder API](https://github.com/bustle/mobiledoc-kit/blob/master/src/js/models/post-node-builder.ts).
 
 ### Configuring hot keys
 
