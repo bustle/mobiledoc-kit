@@ -26,6 +26,12 @@ If you only want to use the Mobiledoc-Kit runtime, for _rendering mobiledoc post
 | React Server and Browser Renderer                                                   | [mobiledoc-react-renderer](https://github.com/dailybeast/mobiledoc-react-renderer)                                     |
 | 🔮 Render Mobiledoc as VDOM by passing React or React-like `createElement` function | [mobiledoc-vdom-renderer](https://github.com/bustle/mobiledoc-vdom-renderer)                                           |
 
+If you want to easily create mobiledoc files in _Python_ (such as making a backend application that uses AI to automatically write blog posts), you can use:
+| Environment      | Library                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| Python           | [mobiledoc-py](https://github.com/SuhJae/mobiledoc-py)                       |
+
+
 Mobiledoc is a deliberately simple and terse format, and you are encouraged to write your own renderer if you have other target output formats (e.g., a PDF renderer, an iOS Native Views Renderer, etc.).
 
 ## Demo
