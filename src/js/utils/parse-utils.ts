@@ -19,7 +19,7 @@ const MOBILEDOC_REGEX = new RegExp(/data-mobiledoc='(.*?)'>/)
  * @return {Post}
  * @private
  */
-function parsePostFromHTML(html: string, builder: PostNodeBuilder, plugins: SectionParserPlugin[]): Post {
+export function parsePostFromHTML(html: string, builder: PostNodeBuilder, plugins: SectionParserPlugin[]): Post {
   let post: Post
 
   if (MOBILEDOC_REGEX.test(html)) {
@@ -37,7 +37,7 @@ function parsePostFromHTML(html: string, builder: PostNodeBuilder, plugins: Sect
  * @return {Post}
  * @private
  */
-function parsePostFromText(text: string, builder: PostNodeBuilder, plugins: SectionParserPlugin[]): Post {
+export function parsePostFromText(text: string, builder: PostNodeBuilder, plugins: SectionParserPlugin[]): Post {
   let parser = new TextParser(builder, { plugins })
   let post = parser.parse(text)
   return post
