@@ -8,6 +8,9 @@ import Error from './utils/mobiledoc-error'
 import Renderer, { MOBILEDOC_VERSION } from './renderers/mobiledoc'
 import DOMParser from './parsers/dom'
 import PostNodeBuilder from './models/post-node-builder'
+import MobiledocParser from './parsers/mobiledoc'
+import { parsePostFromHTML, parsePostFromText } from './utils/parse-utils'
+import { detect } from './utils/array-utils'
 
 export {
   Editor,
@@ -18,7 +21,11 @@ export {
   Markup,
   Error,
   DOMParser,
+  MobiledocParser,
   PostNodeBuilder,
   Renderer,
   MOBILEDOC_VERSION,
+  detect,
+  parsePostFromHTML,
+  parsePostFromText,
 }
