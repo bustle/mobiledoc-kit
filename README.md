@@ -28,6 +28,13 @@ If you only want to use the Mobiledoc-Kit runtime, for _rendering mobiledoc post
 
 Mobiledoc is a deliberately simple and terse format, and you are encouraged to write your own renderer if you have other target output formats (e.g., a PDF renderer, an iOS Native Views Renderer, etc.).
 
+Other 3rd Party Libraries:
+
+| Environment      | Library                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| Python           | [mobiledoc-py](https://github.com/SuhJae/mobiledoc-py)         |
+
+
 ## Demo
 
 Try a demo at [bustle.github.io/mobiledoc-kit/demo](https://bustle.github.io/mobiledoc-kit/demo/).
