@@ -172,3 +172,28 @@ table tr {
   background-color: #ffffff;
   border: 2px solid #cccccc;
 }
+
+#md-render-input {
+  width: 100%;
+  height: 300px;
+}
+
+#md-render-output {
+  padding: 1rem;
+  background-color: #ffffff;
+  border: 2px solid #cccccc;
+}
+
+.md-render-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  color: #5c5c5c;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.md-output-error {
+  color: red;
+  opacity: 0.6;
+  font-size: 0.8rem;
+}
