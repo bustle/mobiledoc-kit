@@ -1,5 +1,6 @@
 import { MODIFIERS } from 'mobiledoc-kit/utils/key';
 import Helpers from '../test-helpers';
+import Browser from 'mobiledoc-kit/utils/browser';
 
 const { module, test } = Helpers;
 
@@ -8,11 +9,11 @@ const undoBlockTimeout = 2000;
 let editor, editorElement, oldDateNow;
 
 function undo(editor) {
-  Helpers.dom.triggerKeyCommand(editor, 'Z', [MODIFIERS.META]);
+  Helpers.dom.triggerKeyCommand(editor, 'Z', [Browser.isMac() ? MODIFIERS.META : MODIFIERS.CTRL]);
 }
 
 function redo(editor) {
-  Helpers.dom.triggerKeyCommand(editor, 'Z', [MODIFIERS.META, MODIFIERS.SHIFT]);
+  Helpers.dom.triggerKeyCommand(editor, 'Z', [Browser.isMac() ? MODIFIERS.META : MODIFIERS.CTRL, MODIFIERS.SHIFT]);
 }
 
 module('Acceptance: Editor: Undo/Redo', {
