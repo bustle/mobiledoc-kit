@@ -1,0 +1,164 @@
+/**
+ * Editor
+ */
+
+.__mobiledoc-editor {
+  font-family: 'Lora', Georgia, serif;
+  margin: 1em 0;
+  color: #454545;
+  font-size: 1.2em;
+  line-height: 1.6em;
+  position: relative;
+  min-height: 1em;
+}
+
+.__mobiledoc-editor:focus {
+  outline: none;
+}
+
+.__mobiledoc-editor > * {
+  position: relative;
+}
+
+.__mobiledoc-editor.__has-no-content:after {
+  content: attr(data-placeholder);
+  color: #bbb;
+  cursor: text;
+  position: absolute;
+  top: 0;
+}
+
+.__mobiledoc-editor a {
+  color: #0b8bff;
+  white-space: nowrap;
+}
+
+.__mobiledoc-editor h1,
+.__mobiledoc-editor h2,
+.__mobiledoc-editor h3,
+.__mobiledoc-editor h4,
+.__mobiledoc-editor h5,
+.__mobiledoc-editor h6 {
+  font-family: 'Merriweather Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.__mobiledoc-editor blockquote {
+  border-left: 4px solid #0b8bff;
+  margin: 1em 0 1em -1.2em;
+  padding-left: 1.05em;
+  color: #a0a0a0;
+}
+
+.__mobiledoc-editor img {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.__mobiledoc-editor div,
+.__mobiledoc-editor iframe {
+  max-width: 100%;
+}
+
+.__mobiledoc-editor [data-md-text-align='left'] {
+  text-align: left;
+}
+
+.__mobiledoc-editor [data-md-text-align='center'] {
+  text-align: center;
+}
+
+.__mobiledoc-editor [data-md-text-align='right'] {
+  text-align: right;
+}
+
+.__mobiledoc-editor [data-md-text-align='justify'] {
+  text-align: justify;
+}
+
+.__mobiledoc-editor ol,
+.__mobiledoc-editor ul {
+  list-style-position: inside;
+}
+
+/**
+ * Cards
+ */
+
+.__mobiledoc-card {
+  display: inline-block;
+}
+
+/**
+ * Tooltips
+ */
+
+@-webkit-keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.__mobiledoc-tooltip {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.7em;
+  white-space: nowrap;
+  position: absolute;
+  background-color: rgba(43, 43, 43, 0.9);
+  border-radius: 3px;
+  line-height: 1em;
+  padding: 0.7em 0.9em;
+  color: #fff;
+  -webkit-animation: fade-in 0.2s;
+  animation: fade-in 0.2s;
+}
+
+.__mobiledoc-tooltip:before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid rgba(43, 43, 43, 0.9);
+  top: -5px;
+  margin-left: -5px;
+}
+
+/* help keeps mouseover state when moving from link to tooltip */
+.__mobiledoc-tooltip:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -5px;
+  height: 5px;
+}
+
+.__mobiledoc-tooltip a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.__mobiledoc-tooltip a:hover {
+  text-decoration: underline;
+}
+
+.__mobiledoc-tooltip__edit-link {
+  margin-left: 5px;
+  cursor: pointer;
+}
