@@ -9,6 +9,7 @@
   </head>
   <body>
     <script src="./vendor/mobiledoc-pretty-json-renderer.js"></script>
+    <script src="./vendor/mobiledoc-dom-renderer.js"></script>
     <script type="module" src="./demo.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
     <script>
@@ -389,6 +390,22 @@
             </div>
             <div id="editor-card" class="editor"></div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Render Mobiledoc</h2>
+      <p>Enter some mobiledoc json and see it rendered to html</p>
+
+      <div class="two-column">
+        <div class="column left tall">
+          <div class="md-render-label">Input:</div>
+          <textarea id="md-render-input" class="mobiledoc-output" placeholder="Enter mobiledoc..."></textarea>
+        </div>
+        <div class="column right tall">
+          <div class="md-render-label">Output:</div>
+          <div id="md-render-output"></div>
         </div>
       </div>
     </section>

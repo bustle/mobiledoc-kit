@@ -131,9 +131,31 @@ const bootstrapCardEditor = () => {
   activateButtons('#editor-card-wrapper', editor)
 }
 
+const bootstrapRenderer = () => {
+  const inputEl = document.querySelector('#md-render-input')
+  const outputEl = document.querySelector('#md-render-output')
+  const renderer = new window.MobiledocDOMRenderer()
+  inputEl.addEventListener('input', e => {
+    const text = e.target.value.trim()
+    if (!text) {
+      outputEl.innerHTML = ''
+    } else {
+      try {
+        const text = e.target.value.trim()
+        const json = JSON.parse(text)
+        outputEl.innerHTML = ''
+        outputEl.append(renderer.render(json).result)
+      } catch (e) {
+        outputEl.innerHTML = `<span class="md-output-error">${e.toString()}</span>`
+      }
+    }
+  })
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   bootstrapEditor()
   bootstrapSimpleDemo()
   bootstrapToolbarEditor()
   bootstrapCardEditor()
+  bootstrapRenderer()
 })
