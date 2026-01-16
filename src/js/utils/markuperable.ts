@@ -42,11 +42,17 @@ export default abstract class Markuperable {
   }
 
   addMarkup(markup: Markup) {
-    this.markups.push(markup)
+    // Prevent duplicate markup instances from being added
+    if (this.markups.indexOf(markup) === -1) {
+      this.markups.push(markup)
+    }
   }
 
   addMarkupAtIndex(markup: Markup, index: number) {
-    this.markups.splice(index, 0, markup)
+    // Prevent duplicate markup instances from being added
+    if (this.markups.indexOf(markup) === -1) {
+      this.markups.splice(index, 0, markup)
+    }
   }
 
   removeMarkup(markupOrMarkupCallback: MarkupOrMarkupCallback) {
